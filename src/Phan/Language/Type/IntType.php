@@ -64,4 +64,16 @@ class IntType extends ScalarType
     {
         return false;
     }
+
+    public function asNonTruthyType(): Type
+    {
+        return LiteralIntType::instanceForValue(0, $this->is_nullable);
+    }
+
+    public function asNonFalseyType(): Type
+    {
+        return NonZeroIntType::instance(false);
+    }
 }
+\class_exists(NonZeroIntType::class);  // Must load this before LiteralIntType
+\class_exists(LiteralIntType::class);

@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
- * Phan's representation of the type for `non-empty-string` (a truthy string)
+ * Phan's representation of a non-zero-int.
  * @phan-pure
  */
-final class NonEmptyStringType extends StringType
+final class NonZeroIntType extends IntType
 {
-    /** @phan-override */
-    public const NAME = 'non-empty-string';
+    public const NAME = 'non-zero-int';
 
-    public function __construct(bool $is_nullable)
+    /** @var int $value */
+    private $value;
+
+    protected function __construct(bool $is_nullable)
     {
         parent::__construct('\\', self::NAME, [], $is_nullable);
     }
@@ -55,53 +58,61 @@ final class NonEmptyStringType extends StringType
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
+                case 'int':
+                    if ($type instanceof LiteralIntType) {
+                        return (bool)$type->getValue();
+                    }
+                    return true;
+                case 'non-zero-int':
+                    return true;
                 case 'string':
                     if ($type instanceof LiteralStringType) {
                         return (bool)$type->getValue();
                     }
+                    break;
+                case 'float':
+                    if ($type instanceof LiteralFloatType) {
+                        return (bool)$type->getValue();
+                    }
                     return true;
-                case 'non-empty-string':
-                    return true;
+                case 'true':
+                    if (!$this->value) {
+                        return false;
+                    }
+                    break;
                 case 'false':
+                    if ($this->value) {
+                        return false;
+                    }
+                    break;
                 case 'null':
-                    return false;
+                    // null is also a scalar.
+                    if ($this->value && !Config::get_null_casts_as_any_type()) {
+                        return false;
+                    }
+                    break;
             }
         }
 
         return parent::canCastToNonNullableType($type);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type): bool
-    {
-        if ($type instanceof ScalarType) {
-            switch ($type::NAME) {
-                case 'string':
-                    if ($type instanceof LiteralStringType) {
-                        return (bool)$type->getValue();
-                    }
-                    return true;
-                case 'non-empty-string':
-                    return true;
-            }
-            return !$context->isStrictTypes();
-        }
-        return $type instanceof CallableType;
-    }
-
     /**
      * @return bool
      * True if this Type can be cast to the given Type
-     * cleanly without config overrides
-     * @override
+     * cleanly
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
-                case 'non-empty-string':
+                case 'int':
+                    if ($type instanceof LiteralIntType) {
+                        return (bool)$type->getValue();
+                    }
                     return true;
-                case 'string':
-                    if ($type instanceof LiteralStringType) {
+                case 'float':
+                    if ($type instanceof LiteralFloatType) {
                         return (bool)$type->getValue();
                     }
                     return true;
@@ -115,13 +126,13 @@ final class NonEmptyStringType extends StringType
 
     /**
      * @return bool
-     * True if this Type is a subtype of the given type.
+     * True if this Type is a subtype of the given type
      */
     protected function isSubtypeOfNonNullableType(Type $type): bool
     {
         if ($type instanceof ScalarType) {
-            if ($type instanceof StringType) {
-                if ($type instanceof LiteralStringType) {
+            if ($type instanceof IntType) {
+                if ($type instanceof LiteralIntType) {
                     return (bool)$type->getValue();
                 }
                 return true;
@@ -134,7 +145,7 @@ final class NonEmptyStringType extends StringType
 
     public function asSignatureType(): Type
     {
-        return StringType::instance($this->is_nullable);
+        return IntType::instance($this->is_nullable);
     }
 
     public function weaklyOverlaps(Type $other): bool
@@ -144,14 +155,26 @@ final class NonEmptyStringType extends StringType
             if ($other instanceof LiteralTypeInterface) {
                 return (bool)$other->getValue();
             }
-            if ($other instanceof NullType || $other instanceof FalseType) {
-                // Allow 0 == null but not 1 == null
-                if (!$this->isPossiblyFalsey()) {
-                    return false;
-                }
+            if (!$other->isPossiblyTruthy()) {
+                return $this->is_nullable;
             }
             return true;
         }
         return parent::weaklyOverlaps($other);
+    }
+
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
+    {
+        if ($other instanceof LiteralIntType) {
+            return (bool)$other->getValue();
+        } elseif ($other instanceof NonZeroIntType)  {
+            return true;
+        }
+        return parent::canCastToDeclaredType($code_base, $context, $other);
+    }
+
+    public function asNonTruthyType(): Type
+    {
+        return $this->is_nullable ? NullType::instance(false) : LiteralIntType::instanceForValue(0, true);
     }
 }

@@ -32,10 +32,12 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
@@ -444,7 +446,7 @@ trait ConditionVisitorUtil
             $var_node,
             $context,
             static function (UnionType $type) use ($access_type): bool {
-                return $type->hasTypeMatchingCallback(static function (Type $type) use ($access_type): bool {
+                return $type->hasPhpdocOrRealTypeMatchingCallback(static function (Type $type) use ($access_type): bool {
                     if ($type->isPossiblyFalsey()) {
                         return true;
                     }
@@ -502,7 +504,7 @@ trait ConditionVisitorUtil
             $var_node,
             $context,
             static function (UnionType $union_type) use ($cb): bool {
-                return $union_type->hasTypeMatchingCallback($cb);
+                return $union_type->hasPhpdocOrRealTypeMatchingCallback($cb);
             },
             function (UnionType $union_type) use ($cb, $var_node, $context): UnionType {
                 $has_nullable = false;
@@ -974,6 +976,20 @@ trait ConditionVisitorUtil
                     if (!Type::performComparison(null, $expr_value, $flags)) {
                         // E.g. $x > 0 will remove the type null.
                         $union_type = $union_type->nonNullableClone();
+                    }
+                }
+                if ($union_type->hasPhpdocOrRealTypeMatchingCallback(static function (Type $type) : bool {
+                    return \get_class($type) === IntType::class;
+                })) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    if (!Type::performComparison(0, $expr_value, $flags)) {
+                        // E.g. $x > 0 will remove the type null.
+                        $union_type = $union_type->asMappedUnionType(static function (Type $type) : Type {
+                            if (\get_class($type) === IntType::class) {
+                                return NonZeroIntType::instance($type->isNullable());
+                            }
+                            return $type;
+                        });
                     }
                 }
                 $variable->setUnionType($union_type);

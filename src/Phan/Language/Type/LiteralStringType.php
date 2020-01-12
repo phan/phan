@@ -419,15 +419,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             if ($other instanceof LiteralTypeInterface) {
                 return $other->getValue() == $this->value;
             }
-            if ($other instanceof NullType || $other instanceof FalseType) {
-                // Allow 0 == null but not 1 == null
-                if (!$this->isPossiblyFalsey()) {
-                    return false;
-                }
-            } elseif ($other instanceof NonEmptyStringType) {
-                return (bool)$this->value;
-            }
-            return true;
+            // Allow 0 == null but not 1 == null
+            return $this->value ? ($this->is_nullable || $other->isPossiblyTruthy()) : $other->isPossiblyFalsey();
         }
         return parent::weaklyOverlaps($other);
     }

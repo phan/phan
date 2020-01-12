@@ -1,10 +1,10 @@
 %s:3 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to 2.0 of type 2.0
-%s:4 PhanImpossibleTypeComparison Impossible attempt to check if 2 of type 2 is identical to 2.0 of type 2.0
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 2.0 of type 2.0 with operator '==='
 %s:5 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to $f of type float
 %s:6 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to [] of type array{}
 %s:6 PhanTypeComparisonToArray int to array comparison
 %s:7 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to 2.0 of type 2.0
-%s:8 PhanImpossibleTypeComparison Impossible attempt to check if 2 of type 2 is identical to 2.0 of type 2.0
+%s:8 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 2.0 of type 2.0 with operator '!=='
 %s:9 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to $f of type float
 %s:10 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to [] of type array{}
 %s:10 PhanTypeComparisonToArray int to array comparison

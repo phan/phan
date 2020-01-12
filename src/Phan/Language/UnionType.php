@@ -3562,6 +3562,24 @@ class UnionType implements Serializable
     }
 
     /**
+     * Equivalent to hasTypeMatchingCallback || hasRealTypeMatchingCallback
+     */
+    public function hasPhpdocOrRealTypeMatchingCallback(Closure $matcher_callback): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($matcher_callback($type)) {
+                return true;
+            }
+        }
+        foreach ($this->real_type_set as $type) {
+            if ($matcher_callback($type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool
      * True if each of the types in this UnionType made $matcher_callback return true
      */
