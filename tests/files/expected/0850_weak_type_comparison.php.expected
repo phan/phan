@@ -1,0 +1,6 @@
+%s:5 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $s of type non-empty-string to '0' of type '0'
+%s:6 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $s of type non-empty-string to 0 of type 0
+%s:14 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $i of type non-zero-int to 0 of type 0
+%s:15 PhanImpossibleTypeComparison Impossible attempt to check if $i of type non-zero-int is identical to 0 of type 0
+%s:16 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $i of type non-zero-int to 0 of type 0
+%s:17 PhanImpossibleTypeComparison Impossible attempt to check if $i of type non-zero-int is identical to 0 of type 0
