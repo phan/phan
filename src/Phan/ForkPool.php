@@ -40,6 +40,9 @@ class ForkPool
     /** @var list<Progress> a map from workers to their progress */
     private $progress = [];
 
+    /** @var float the maximum memory usage at any time during the run. Excludes finished workers. */
+    private $max_total_mem = 0;
+
     /** @var list<IssueInstance> the combination of issues emitted by all workers */
     private $issues = [];
 
@@ -83,11 +86,14 @@ class ForkPool
         foreach ($this->progress as $progress) {
             $total_progress += $progress->progress;
             $total_cur_mem += $progress->cur_mem / 1024 / 1024;
-            $total_max_mem += $progress->max_mem / 1024 / 1024;
+            if ($progress->cur_mem) {
+                $total_max_mem += $progress->max_mem / 1024 / 1024;
+            }
             $file_count += $progress->file_count;
             $analyzed_files += $progress->analyzed_files;
         }
-        CLI::outputProgressLine('analyze', $total_progress / count($this->progress), $total_cur_mem, $total_max_mem, $file_count, $analyzed_files);
+        $this->max_total_mem = \max($this->max_total_mem, $total_max_mem);
+        CLI::outputProgressLine('analyze', $total_progress / count($this->progress), $total_cur_mem, $this->max_total_mem, $file_count, $analyzed_files);
     }
 
     /**
