@@ -216,10 +216,13 @@ trait ConditionVisitorUtil
                 return $type->containsFalsey() || !$type->hasRealTypeSet();
             },
             function (UnionType $type) use ($var_node, $context): UnionType {
-                $result = $type->nonFalseyClone();
+                // nonFalseyClone will always be non-empty because it returns non-empty-mixed
+                if ($type->containsTruthy()) {
+                    return $type->nonFalseyClone();
+                }
                 $fallback = $this->getTypesFallback($var_node, $context);
                 if (!$fallback) {
-                    return $result;
+                    return $type->nonFalseyClone();
                 }
                 return $fallback->nonFalseyClone();
             },
