@@ -418,6 +418,13 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    private const EQUALITY_CHECKS = [
+        flags\BINARY_IS_EQUAL,
+        flags\BINARY_IS_IDENTICAL,
+        flags\BINARY_IS_NOT_EQUAL,
+        flags\BINARY_IS_NOT_IDENTICAL,
+    ];
+
     private function checkImpossibleComparison(Node $node, bool $strict): void
     {
         $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['left']);
@@ -436,7 +443,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         if ($this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType())) {
             return;
         }
-        if (!$left->hasAnyTypeOverlap($code_base, $right) && ($strict || !$left->hasAnyWeakTypeOverlap($right))) {
+        if (
+            !$left->hasAnyTypeOverlap($code_base, $right) &&
+            ($strict || (
+                // Warn about 0 == non-zero-int, but not non-zero-int <= 0
+                \in_array($node->flags, self::EQUALITY_CHECKS, true)
+                ? !$left->hasAnyWeakTypeOverlap($right)
+                : !$left->asNonLiteralType()->hasAnyWeakTypeOverlap($right->asNonLiteralType())
+            ))
+        ) {
             $this->emitIssueForBinaryOp(
                 $node,
                 $left,
