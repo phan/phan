@@ -2141,9 +2141,12 @@ EOB
         } else {
             $percent_progress = \sprintf("%1$ 3d", (int)(100 * $p));
         }
+        // Don't make the current memory usage in the progress bar shorter (avoid showing "MBB")
+        $width = \max(2, strlen((string)(int)$peak));
         $right_side =
                " " . $percent_progress . "%" .
-               \sprintf(' %.2dMB/%.2dMB', (int)$memory, (int)$peak);
+               \sprintf(' %' . $width . 'dMB/%' . $width . 'dMB', (int)$memory, (int)$peak);
+        // @phan-suppress-previous-line PhanPluginPrintfVariableFormatString
 
         // strlen("  99% 999MB/999MB") == 17
         $used_length = strlen($left_side) + \max(17, strlen($right_side));
