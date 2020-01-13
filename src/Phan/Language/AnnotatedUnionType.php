@@ -43,6 +43,22 @@ class AnnotatedUnionType extends UnionType
     }
 
     /**
+     * @param bool|1 $is_possibly_undefined
+     * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
+     */
+    private function withIsPossiblyUndefinedRaw($is_possibly_undefined): UnionType
+    {
+        if ($this->is_possibly_undefined === $is_possibly_undefined) {
+            return $this;
+        }
+        if (!$is_possibly_undefined) {
+            return UnionType::of($this->getTypeSet(), $this->getRealTypeSet());
+        }
+        $result = clone($this);
+        $result->is_possibly_undefined = $is_possibly_undefined;
+        return $result;
+    }
+    /**
      * @override
      * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
@@ -224,5 +240,28 @@ class AnnotatedUnionType extends UnionType
         }
 
         return true;
+    }
+
+    /**
+     * Converts the real part of the union type to a standalone union type
+     * @override
+     */
+    public function getRealUnionType(): UnionType
+    {
+        $real_type_set = $this->getRealTypeSet();
+        if ($this->getTypeSet() === $real_type_set) {
+            return $this;
+        }
+        return (new AnnotatedUnionType($real_type_set, true, $real_type_set))->withIsPossiblyUndefinedRaw($this->is_possibly_undefined);
+    }
+
+    /**
+     * Converts a phpdoc type into the real union type equivalent.
+     * @override
+     */
+    public function asRealUnionType(): UnionType
+    {
+        $type_set = $this->getTypeSet();
+        return (new AnnotatedUnionType($type_set, true, $type_set))->withIsPossiblyUndefinedRaw($this->is_possibly_undefined);
     }
 }

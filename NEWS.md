@@ -24,7 +24,7 @@ New Features(Analysis):
 + Normalize union types of generic array elements after fetching `$x[$offset]`.
   (e.g. change `bool|false|null` to `?bool`)
 + Normalize union types of result of `??` operator.
-+ Fix false positives in redundant condition detection for the real types of array accesses. (#3638)
++ Fix false positives in redundant condition detection for the real types of array accesses. (#3638, #3650)
 + Support the `non-empty-string` type in phpdoc comments (neither `''` nor `'0'`).
   Warn about redundant/impossible checks of `non-empty-string`.
 + Support the `non-zero-int` type in phpdoc comments. Infer it in real types and warn about redundant checks for zero/truthiness.

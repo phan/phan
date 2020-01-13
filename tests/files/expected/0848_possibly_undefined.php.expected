@@ -1,0 +1,1 @@
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type array{c?:non-empty-string}(real=array{c?:non-empty-string})
