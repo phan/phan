@@ -1,0 +1,2 @@
+%s:8 PhanRedundantCondition Redundant attempt to cast $x['val'] of type non-empty-mixed to truthy
+%s:22 PhanRedundantCondition Redundant attempt to cast $x['val'] of type object to truthy

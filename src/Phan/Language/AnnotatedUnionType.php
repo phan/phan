@@ -145,11 +145,20 @@ class AnnotatedUnionType extends UnionType
 
     /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
+     * XXX consider merging into containsNullable
      * @override
      */
     public function containsNullableOrUndefined(): bool
     {
         return $this->is_possibly_undefined || $this->containsNullable();
+    }
+
+    /**
+     * @override
+     */
+    public function containsFalsey(): bool
+    {
+        return $this->is_possibly_undefined || parent::containsFalsey();
     }
 
     /**
