@@ -1,0 +1,1 @@
+%s:22 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \NS851\MySubclass|\NS851\MyTest (real type \NS851\MyTest) but \strlen() takes string

@@ -188,4 +188,11 @@ final class TemplateType extends Type
         // Always possible until we support inferring `@template T as ConcreteType`
         return true;
     }
+
+    /** @param list<Type> $unused_target_type_set */
+    public function canCastToAnyTypeInSetWithoutConfig(array $unused_target_type_set): bool
+    {
+        // Always possible until we support inferring `@template T as ConcreteType`
+        return true;
+    }
 }
