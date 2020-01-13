@@ -498,9 +498,9 @@ class ASTSimplifier
         $outer_node_elem->flags = 0;
         return new Node(
             \ast\AST_IF,
-            $node->lineno,
+            0,
             [$outer_node_elem],
-            0
+            $node->lineno
         );
     }
 
@@ -522,9 +522,9 @@ class ASTSimplifier
                 'cond' => $cond_node->children['left'],
                 'stmts' => new Node(
                     ast\AST_STMT_LIST,
-                    $lineno,
+                    0,
                     array_merge([$conditional_break_elem], $node->children['stmts']->children),
-                    0
+                    $lineno
                 ),
             ],
             $node->lineno
@@ -550,7 +550,7 @@ class ASTSimplifier
                 'stmts' => new Node(
                     ast\AST_STMT_LIST,
                     0,
-                    [new Node(ast\AST_BREAK, $lineno, ['depth' => null], 0)],
+                    [new Node(ast\AST_BREAK, 0, ['depth' => null], $lineno)],
                     $lineno
                 ),
             ],
