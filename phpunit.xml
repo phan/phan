@@ -1,7 +1,7 @@
 <phpunit
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/5.0/phpunit.xsd"
-        bootstrap="src/Phan/Bootstrap.php"
+        bootstrap="tests/bootstrap.php"
         colors="true"
         convertErrorsToExceptions="true"
         convertNoticesToExceptions="true"
@@ -19,28 +19,6 @@
     </listeners>
 
     <php>
-        <const name="RASMUS_TEST_FILE_DIR" value="./tests/rasmus_files/src"/>
-        <const name="RASMUS_EXPECTED_DIR" value="./tests/rasmus_files/expected"/>
-        <const name="AST_TEST_FILE_DIR" value="./tests/misc/ast/src"/>
-        <const name="AST_EXPECTED_DIR" value="./tests/misc/ast/expected"/>
-        <const name="TEST_FILE_DIR" value="./tests/files/src"/>
-        <const name="EXPECTED_DIR" value="./tests/files/expected"/>
-        <const name="MULTI_FILE_DIR" value="./tests/multi_files/src"/>
-        <const name="MULTI_EXPECTED_DIR" value="./tests/multi_files/expected"/>
-        <const name="SOAP_TEST_FILE_DIR" value="./tests/misc/soap_files/src"/>
-        <const name="SOAP_EXPECTED_DIR" value="./tests/misc/soap_files/expected"/>
-        <const name="INTL_TEST_FILE_DIR" value="./tests/misc/intl_files/src"/>
-        <const name="INTL_EXPECTED_DIR" value="./tests/misc/intl_files/expected"/>
-        <const name="PHP70_TEST_FILE_DIR" value="./tests/php70_files/src"/>
-        <const name="PHP70_EXPECTED_DIR" value="./tests/php70_files/expected"/>
-        <const name="PHP72_TEST_FILE_DIR" value="./tests/php72_files/src"/>
-        <const name="PHP72_EXPECTED_DIR" value="./tests/php72_files/expected"/>
-        <const name="PHP73_TEST_FILE_DIR" value="./tests/php73_files/src"/>
-        <const name="PHP73_EXPECTED_DIR" value="./tests/php73_files/expected"/>
-        <const name="PHP74_TEST_FILE_DIR" value="./tests/php74_files/src"/>
-        <const name="PHP74_EXPECTED_DIR" value="./tests/php74_files/expected"/>
-        <const name="PHP80_TEST_FILE_DIR" value="./tests/php80_files/src"/>
-        <const name="PHP80_EXPECTED_DIR" value="./tests/php80_files/expected"/>
         <!-- Affects tests of CLI, etc. -->
         <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true" />
         <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true" />
