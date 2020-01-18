@@ -24,6 +24,20 @@ class StringUtil
             // Use double quoted strings if this contains newlines, tabs, control characters, etc.
             return '"' . ASTReverter::escapeInnerString($value, '"') . '"';
         }
+        return self::varExportPretty($value);
+    }
+
+    /**
+     * Same as var_export($value, true), but converts top-level NULL to null.
+     * Other changes may be made in the future, e.g. shorter list representations.
+     *
+     * @param ?(int|bool|string|array|float) $value
+     */
+    public static function varExportPretty($value) : string
+    {
+        if ($value === null) {
+            return 'null';  // return lowercase instead of uppercase 'NULL'
+        }
         return \var_export($value, true);
     }
 

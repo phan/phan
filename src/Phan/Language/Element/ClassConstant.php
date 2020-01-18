@@ -9,6 +9,7 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * ClassConstant represents the information Phan has
@@ -175,7 +176,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
             // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
-            $string .= \var_export(\constant($fqsen), true) . ';';
+            $string .= StringUtil::varExportPretty(\constant($fqsen)) . ';';
         } else {
             $string .= "null;  // could not find";
         }

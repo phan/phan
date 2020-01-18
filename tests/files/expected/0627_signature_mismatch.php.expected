@@ -6,8 +6,8 @@
 %s:22 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment '* @method isNotReference(&$x)': '&$x'
 %s:23 PhanParamSignatureMismatch Declaration of function variadic($x) : void should be compatible with function variadic(...$x) defined in %s:10
 %s:23 PhanParamSignaturePHPDocMismatchTooManyRequiredParameters Declaration of real/@method function variadic($x) should be compatible with real/@method function variadic(...$x) (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:10
-%s:24 PhanParamSignatureMismatch Declaration of function variadic2($x = NULL) : void should be compatible with function variadic2(...$x) defined in %s:11
-%s:24 PhanParamSignaturePHPDocMismatchParamNotVariadic Declaration of real/@method function variadic2($x = NULL) should be compatible with real/@method function variadic2(...$x) (parameter #1 is a non-variadic parameter replacing a variadic parameter) defined in %s:11
+%s:24 PhanParamSignatureMismatch Declaration of function variadic2($x = null) : void should be compatible with function variadic2(...$x) defined in %s:11
+%s:24 PhanParamSignaturePHPDocMismatchParamNotVariadic Declaration of real/@method function variadic2($x = null) should be compatible with real/@method function variadic2(...$x) (parameter #1 is a non-variadic parameter replacing a variadic parameter) defined in %s:11
 %s:25 PhanParamSignatureMismatch Declaration of function notVariadic(...$x) : void should be compatible with function notVariadic($x) defined in %s:12
 %s:25 PhanParamSignaturePHPDocMismatchParamVariadic Declaration of real/@method function notVariadic(...$x) should be compatible with real/@method function notVariadic($x) (parameter #1 is a variadic parameter replacing a non-variadic parameter) defined in %s:12
 %s:26 PhanParamSignatureMismatch Declaration of function returnsInt() : string should be compatible with function returnsInt() : int defined in %s:13

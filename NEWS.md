@@ -13,6 +13,7 @@ New features(CLI, Configs):
   - `PhanSuspiciousTruthyCondition` (e.g. for `if ($x)` where `$x` is `object|int`)
   - `PhanSuspiciousTruthyString` (e.g. for `?string` - `'0'` is also falsey in PHP)
 + Limit calculation of max memory usage to the **running** worker processes with `--processes N` (#3606)
++ Omit options that should almost always be on (e.g. `analyze_signature_compatibility`) from the output of `phan --init` (#3660)
 
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
@@ -45,6 +46,7 @@ Maintenance:
   (`<?php` on its own line, `function(): T` instead of `function() : T`, declare visibility for class constants)
 + Internal: Check if strings are non-zero length in Phan's implementation instead of checking for variable truthiness.
   (`'0'` is falsey)
++ Show `null` as lowercase instead of uppercase (the way `var_export` renders it) in more places.
 
 Dec 29 2019, Phan 2.4.6
 -----------------------
