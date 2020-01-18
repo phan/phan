@@ -58,4 +58,14 @@ final class ConfigTest extends BaseTest
             [[], "Invalid config value for 'language_server_enable_completion': Expected a scalar, but got type 'array'"],
         ];
     }
+
+    public function testScalarImplicitPartial(): void {
+        Config::setValue('scalar_implicit_partial', ['null' => ['int', 'string', 'false'], 'int' => ['string', 'null']]);
+        $this->assertSame([
+            'null' => ['int', 'string', 'false'],
+            'int' => ['string', 'null', 'non-empty-string'],
+            'non-zero-int' => ['string', 'non-empty-string'],
+        ], Config::getValue('scalar_implicit_partial'), 'should add implied allowed casts');
+        Config::setValue('scalar_implicit_partial', []);
+        $this->assertSame([], Config::getValue('scalar_implicit_partial')); }
 }

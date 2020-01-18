@@ -9,6 +9,7 @@ use Phan\Library\StringUtil;
 
 use function array_key_exists;
 use function gettype;
+use function in_array;
 use function is_array;
 use function is_bool;
 use function is_float;
@@ -1163,7 +1164,51 @@ class Config
             case 'directory_list':
                 self::$configuration['__directory_regex'] = self::generateDirectoryListRegex($value);
                 break;
+            case 'scalar_implicit_partial':
+                self::$configuration[$name] = self::normalizeScalarImplicitPartial($value);
+                break;
         }
+    }
+
+    private const TRUTHY_SCALAR_EQUIVALENTS = [
+        'int' => 'non-zero-int',
+        'string' => 'non-empty-string',
+    ];
+
+    /**
+     * If int can cast to/from T, where T is possibly not falsey,
+     * then allow non-zero-int to cast to/from T.
+     *
+     * @param array<string,list<string>> $value
+     * @return array<string,list<string>>
+     * @suppress PhanPluginCanUseParamType
+     */
+    private static function normalizeScalarImplicitPartial($value) : array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+        foreach (self::TRUTHY_SCALAR_EQUIVALENTS as $scalar => $non_falsey_scalar) {
+            if (isset($value[$scalar]) && !isset($value[$non_falsey_scalar])) {
+                $value[$non_falsey_scalar] = \array_values(\array_filter(
+                    $value[$scalar],
+                    static function (string $type) : bool {
+                        return !in_array($type, ['null', 'false'], true);
+                    }
+                ));
+            }
+        }
+        foreach ($value as $key => &$allowed_casts) {
+            if (in_array($key, ['null', 'false'], true)) {
+                continue;
+            }
+            foreach (self::TRUTHY_SCALAR_EQUIVALENTS as $scalar => $non_falsey_scalar) {
+                if (in_array($scalar, $allowed_casts, true) && !in_array($non_falsey_scalar, $allowed_casts, true)) {
+                    $allowed_casts[] = $non_falsey_scalar;
+                }
+            }
+        }
+        return $value;
     }
 
     /**
