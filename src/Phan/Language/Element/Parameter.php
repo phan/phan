@@ -22,6 +22,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 
 use function strlen;
@@ -522,7 +523,7 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . \var_export($default_value, true);
+                $string .= ' = ' . StringUtil::varExportPretty($default_value);
             }
         }
 
@@ -576,7 +577,7 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = \var_export($this->default_value, true);
+                $default_repr = StringUtil::varExportPretty($default_value);
             }
             if (\strtolower($default_repr) === 'null') {
                 $default_repr = 'null';
@@ -639,7 +640,7 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = \var_export($this->default_value, true);
+                $default_repr = StringUtil::varExportPretty($default_value);
                 if (strlen($default_repr) >= 50) {
                     $default_repr = 'default';
                 }

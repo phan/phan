@@ -144,8 +144,10 @@ class NodeDumper
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
                 \Phan\Library\StringUtil::jsonEncode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
             );
-        } elseif (\is_scalar($ast_node) || $ast_node === null) {
+        } elseif (\is_scalar($ast_node)) {
             return \var_export($ast_node, true);
+        } elseif ($ast_node === null) {
+            return 'null';
         } else {
             $type = is_object($ast_node) ? get_class($ast_node) : gettype($ast_node);
             throw new \InvalidArgumentException("Unexpected type of \$ast_node was seen in dumper: " . $type);

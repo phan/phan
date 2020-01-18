@@ -11,6 +11,7 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * Phan's representation of a global constant
@@ -144,7 +145,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
 
         $is_defined = \defined($fqsen);
         if ($is_defined) {
-            $repr = \var_export(\constant($fqsen), true);
+            $repr = StringUtil::varExportPretty(\constant($fqsen));
             $comment = '';
         } else {
             $repr = 'null';

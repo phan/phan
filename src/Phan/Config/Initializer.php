@@ -15,6 +15,7 @@ use Phan\Config;
 use Phan\Exception\UsageException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Library\StringUtil;
 use TypeError;
 
 use function count;
@@ -152,14 +153,14 @@ class Initializer
                     if (!is_int($key)) {
                         throw new TypeError("Expected setting default for $setting_name to have consecutive integer keys");
                     }
-                    $source .= '        ' . \var_export($element, true) . ",\n";
+                    $source .= '        ' . StringUtil::varExportPretty($element) . ",\n";
                 }
                 $source .= "    ],\n";
             } else {
                 $source .= "[],\n";
             }
         } else {
-            $encoded_value = \var_export($setting_value, true);
+            $encoded_value = StringUtil::varExportPretty($setting_value);
             if ($setting_name === 'minimum_severity') {
                 switch ($setting_value) {
                     case Issue::SEVERITY_LOW:
@@ -316,18 +317,14 @@ EOT;
             'strict_return_checking'   => $is_strongest_level,
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
             'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
-            'backward_compatibility_checks' => false,  // this is slow
+            'backward_compatibility_checks' => false,  // this is only useful for migrating from php5
             'check_docblock_signature_return_type_match' => !$is_average_level,
-            'prefer_narrowed_phpdoc_param_type' => true,
-            'prefer_narrowed_phpdoc_return_type' => true,
-            'analyze_signature_compatibility' => !$is_weak_level,
             'phpdoc_type_mapping' => [],
             'dead_code_detection' => false,  // this is slow
             'unused_variable_detection' => !$is_average_level,
             'redundant_condition_detection' => !$is_average_level,
             'assume_real_types_for_internal_functions' => !$is_average_level,
             'quick_mode' => $is_weakest_level,
-            'generic_types_enabled' => true,
             'globals_type_map' => [],
             'minimum_severity' => $minimum_severity,
             'suppress_issue_types' => [],
