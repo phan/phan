@@ -81,7 +81,7 @@ final class FileCacheTest extends BaseTest
             FileCache::getOrReadEntry('/path/to/missingfile');
             $this->fail('should throw');
         } catch (\RuntimeException $e) {
-            $this->assertContains('FileCache::getOrReadEntry: unable to find', $e->getMessage());
+            $this->assertStringContainsString('FileCache::getOrReadEntry: unable to find', $e->getMessage());
         }
     }
 }

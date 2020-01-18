@@ -27,8 +27,8 @@ final class IssueExceptionTest extends BaseTest
         $issue_instance = new IssueInstance($issue, "issue_exception_test.php", 11, ['string']);
         $exception = new IssueException($issue_instance);
         $stringified = (string)$exception;
-        $this->assertContains('IssueException at ', $stringified);
-        $this->assertContains('issue_exception_test.php:11 Placeholder string', $stringified);
-        $this->assertContains(__FUNCTION__, $stringified);
+        $this->assertStringContainsString('IssueException at ', $stringified);
+        $this->assertStringContainsString('issue_exception_test.php:11 Placeholder string', $stringified);
+        $this->assertStringContainsString(__FUNCTION__, $stringified);
     }
 }
