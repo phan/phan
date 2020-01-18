@@ -540,33 +540,26 @@ class ContextNode
         }
 
         $class_list = [];
-        if ($ignore_missing_classes) {
-            try {
-                // TODO: Not sure why iterator_to_array would cause a test failure
-                foreach ($union_type->asClassList(
-                    $code_base,
-                    $context
-                ) as $clazz) {
-                    $class_list[] = $clazz;
-                }
-                $result = [$union_type, $class_list];
-                $context->setCachedClassListOfNode($node_id, $result);
-                return $result;
-            } catch (CodeBaseException $_) {
+        try {
+            foreach ($union_type->asClassList(
+                $code_base,
+                $context
+            ) as $clazz) {
+                $class_list[] = $clazz;
+            }
+            $result = [$union_type, $class_list];
+            $context->setCachedClassListOfNode($node_id, $result);
+            return $result;
+        }
+        catch (CodeBaseException $e) {
+            if ($ignore_missing_classes) {
                 // swallow it
                 // TODO: Is it appropriate to return class_list
                 return [$union_type, $class_list];
             }
+
+            throw $e;
         }
-        foreach ($union_type->asClassList(
-            $code_base,
-            $context
-        ) as $clazz) {
-            $class_list[] = $clazz;
-        }
-        $result = [$union_type, $class_list];
-        $context->setCachedClassListOfNode($node_id, $result);
-        return $result;
     }
     /**
      * @param bool $ignore_missing_classes
