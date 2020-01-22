@@ -14,6 +14,7 @@ New features(CLI, Configs):
   - `PhanSuspiciousTruthyString` (e.g. for `?string` - `'0'` is also falsey in PHP)
 + Limit calculation of max memory usage to the **running** worker processes with `--processes N` (#3606)
 + Omit options that should almost always be on (e.g. `analyze_signature_compatibility`) from the output of `phan --init` (#3660)
++ Allow `phan --init` to create config file with `target_php_version` of `'7.4'` or `'8.0'` based on composer.json (#3671)
 
 New Features(Analysis):
 + Infer that merging defined variables with possibly undefined variables is also possibly undefined. (#1942)
