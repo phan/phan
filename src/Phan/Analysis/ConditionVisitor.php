@@ -920,6 +920,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     public function visitCall(Node $node): Context
     {
+        // Analyze the call to the node, in case it modifies any variables (e.g. count($x = new_value()), if (preg_match(..., $matches), etc.
+        // TODO: Limit this to nodes which actually contain variables or properties?
+        // TODO: Only call this if the caller is also a ConditionVisitor, since BlockAnalysisVisitor would call this for ternaries and if statements already.
+        // TODO: Also implement this for visitStaticCall, visitMethodCall, etc?
+        $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($node);
+
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
             return $this->context;

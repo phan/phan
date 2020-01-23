@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.4.7 (dev)
+Jan 22 2020, Phan 2.4.7
 -----------------------
 
 New features(CLI, Configs):
@@ -32,6 +32,8 @@ New Features(Analysis):
   Warn about redundant/impossible checks of `non-empty-string`.
 + Support the `non-zero-int` type in phpdoc comments. Infer it in real types and warn about redundant checks for zero/truthiness.
 + Support the the `non-empty-mixed` in phpdoc comments and in inferences.
++ Fix false positives possibly undefined variable warnings after conditions
+  such as `if (X || count($x = []))`, `if (X && preg_match(..., $matches))`, etc.
 
 Bug fixes:
 + Fix a crash analyzing assignment operations on `$GLOBALS` such as `$GLOBALS['var'] += expr;` (#3615)

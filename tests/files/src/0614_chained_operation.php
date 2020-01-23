@@ -18,7 +18,7 @@ function test_false_positive_and_fail($arr) {
 
 /**
  * @param ?string $docComment
- * @return int should warn
+ * @return int should warn, but PhanTypeMismatchArgumentNullableInternal is fixed
  */
 function test_false_positive_preg_match($docComment) {
     if (\is_string($docComment)
