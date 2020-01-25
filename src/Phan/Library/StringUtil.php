@@ -33,7 +33,7 @@ class StringUtil
      *
      * @param ?(int|bool|string|array|float) $value
      */
-    public static function varExportPretty($value) : string
+    public static function varExportPretty($value): string
     {
         if ($value === null) {
             return 'null';  // return lowercase instead of uppercase 'NULL'

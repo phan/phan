@@ -550,8 +550,7 @@ class ContextNode
             $result = [$union_type, $class_list];
             $context->setCachedClassListOfNode($node_id, $result);
             return $result;
-        }
-        catch (CodeBaseException $e) {
+        } catch (CodeBaseException $e) {
             if ($ignore_missing_classes) {
                 // swallow it
                 // TODO: Is it appropriate to return class_list
