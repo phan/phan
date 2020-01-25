@@ -443,8 +443,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         if ($this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType())) {
             return;
         }
-        if (
-            !$left->hasAnyTypeOverlap($code_base, $right) &&
+        if (!$left->hasAnyTypeOverlap($code_base, $right) &&
             ($strict || (
                 // Warn about 0 == non-zero-int, but not non-zero-int <= 0
                 \in_array($node->flags, self::EQUALITY_CHECKS, true)

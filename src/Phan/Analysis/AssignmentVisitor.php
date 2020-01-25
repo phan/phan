@@ -1815,7 +1815,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asPHPDocUnionType();
                     }
                 }
-            } elseif (!$assign_type->hasTypeMatchingCallback(static function (Type $type) use ($simple_xml_element_type) : bool {
+            } elseif (!$assign_type->hasTypeMatchingCallback(static function (Type $type) use ($simple_xml_element_type): bool {
                 return !$type->isNullable() && ($type instanceof MixedType || $type === $simple_xml_element_type);
             })) {
                 // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.

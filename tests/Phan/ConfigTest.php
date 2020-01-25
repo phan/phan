@@ -59,7 +59,8 @@ final class ConfigTest extends BaseTest
         ];
     }
 
-    public function testScalarImplicitPartial(): void {
+    public function testScalarImplicitPartial(): void
+    {
         Config::setValue('scalar_implicit_partial', ['null' => ['int', 'string', 'false'], 'int' => ['string', 'null']]);
         $this->assertSame([
             'null' => ['int', 'string', 'false'],
@@ -67,5 +68,6 @@ final class ConfigTest extends BaseTest
             'non-zero-int' => ['string', 'non-empty-string'],
         ], Config::getValue('scalar_implicit_partial'), 'should add implied allowed casts');
         Config::setValue('scalar_implicit_partial', []);
-        $this->assertSame([], Config::getValue('scalar_implicit_partial')); }
+        $this->assertSame([], Config::getValue('scalar_implicit_partial'));
+    }
 }

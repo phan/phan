@@ -1183,7 +1183,7 @@ class Config
      * @return array<string,list<string>>
      * @suppress PhanPluginCanUseParamType
      */
-    private static function normalizeScalarImplicitPartial($value) : array
+    private static function normalizeScalarImplicitPartial($value): array
     {
         if (!is_array($value)) {
             return [];
@@ -1192,7 +1192,7 @@ class Config
             if (isset($value[$scalar]) && !isset($value[$non_falsey_scalar])) {
                 $value[$non_falsey_scalar] = \array_values(\array_filter(
                     $value[$scalar],
-                    static function (string $type) : bool {
+                    static function (string $type): bool {
                         return !in_array($type, ['null', 'false'], true);
                     }
                 ));
