@@ -188,7 +188,7 @@ final class StringFunctionPlugin extends PluginV3 implements
             'preg_match_all'            => $var_2_const_1,
             'preg_match'                => $var_2_const_1,
             'preg_quote'                => $var_1_const_2,
-            'preg_replace_callback'     => $var_2_const_1,
+            'preg_replace_callback'     => $var_3_const_1,
             'preg_replace'              => $var_3_const_1,
             'preg_split'                => $var_2_const_1,
             // End of PCRE preg_* functions

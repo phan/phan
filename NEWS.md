@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2020, Phan 2.4.9 (dev)
+-----------------------
+
+Bug fixes:
++ Fix false positive PhanParamSuspiciousOrder for `preg_replace_callback` (#3680)
+
 Jan 25 2020, Phan 2.4.8
 -----------------------
 
