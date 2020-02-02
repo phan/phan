@@ -1587,4 +1587,14 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function classStringTypes(): UnionType
+    {
+        return $this;
+    }
+
+    public function classStringOrObjectTypes(): UnionType
+    {
+        return $this;
+    }
 }
