@@ -1,0 +1,6 @@
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type class-string(real=class-string)
+%s:3 PhanTypeMismatchArgumentNullableInternal Argument 1 ($classname) is ?string but \class_exists() takes string (expected type to be non-nullable)
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $objOrClass - it has union type class-string|object(real=class-string|object)
+%s:11 PhanImpossibleCondition Impossible attempt to cast '123' of type '123' to class-string
+%s:17 PhanImpossibleCondition Impossible attempt to cast 'OCI-lobbbb' of type 'OCI-lobbbb' to class-string
+%s:20 PhanUndeclaredClassConstant Reference to constant class from undeclared class \SomeArbitraryClass

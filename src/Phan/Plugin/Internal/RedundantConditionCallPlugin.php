@@ -21,6 +21,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\ObjectType;
@@ -235,6 +236,16 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'scalar');
+        $class_exists_callback = $make_first_arg_checker(static function (UnionType $type): int {
+            if ($type->isType(ClassStringType::instance(false))) {
+                return self::_IS_REDUNDANT;
+            }
+            $new_real_type = $type->classStringTypes();
+            if ($new_real_type->isEmpty()) {
+                return self::_IS_IMPOSSIBLE;
+            }
+            return self::_IS_REASONABLE_CONDITION;
+        }, 'class-string');
 
         $intval_callback = $make_cast_callback(static function (UnionType $union_type): bool {
             return $union_type->intTypes()->isEqualTo($union_type);
@@ -302,6 +313,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             'is_scalar' => $scalar_callback,
             'is_string' => $string_callback,
 
+            'class_exists' => $class_exists_callback,
             'intval' => $intval_callback,
             'boolval' => $boolval_callback,
             'floatval' => $doubleval_callback,

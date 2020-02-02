@@ -3,6 +3,12 @@ Phan NEWS
 ??? ?? 2020, Phan 2.4.9 (dev)
 -----------------------
 
+New Features(Analysis):
++ Infer that `class_exists` implies the first argument is a class-string,
+  and that `method_exists` implies the first argument is a class-string or an object. (#2804, #3058)
+
+  Note that Phan still does not infer that the class or method actually exists.
+
 Bug fixes:
 + Fix false positive PhanParamSuspiciousOrder for `preg_replace_callback` (#3680)
 

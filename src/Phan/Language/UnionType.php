@@ -27,6 +27,7 @@ use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
@@ -1848,7 +1849,7 @@ class UnionType implements Serializable
         if ($this->isEqualTo($union_type)) {
             return true;
         }
-        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
+        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?)
 
         // Resolve 'static' for the given context to
         // determine what's actually being referred
@@ -3362,6 +3363,75 @@ class UnionType implements Serializable
             }
         }
         return $result;
+    }
+
+    /**
+     * Returns the types for which class_exists($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known class string types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function classStringTypes(): UnionType
+    {
+        return UnionType::of(
+            self::castTypeListToClassString($this->type_set),
+            self::castTypeListToClassString($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @return list<Type>
+     */
+    private static function castTypeListToClassString(array $type_set): array
+    {
+        $result = [];
+        $is_possibly_string = false;
+        foreach ($type_set as $type) {
+            if ($type instanceof LiteralStringType) {
+                if (!\preg_match(FullyQualifiedClassName::VALID_CLASS_REGEX, $type->getValue()) && !\preg_match('/^\\\\?oci-(lob|collection)$/i', $type->getValue())) {
+                    continue;
+                }
+                $result[] = $type->withIsNullable(false);
+                continue;
+            }
+            if ($type instanceof StringType || $type instanceof MixedType) {
+                $is_possibly_string = true;
+            }
+        }
+        if ($is_possibly_string) {
+            $result[] = ClassStringType::instance(false);
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the types for which method_exists($x, ...) could be true.
+     *
+     * @return UnionType
+     * A UnionType with known class string types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function classStringOrObjectTypes(): UnionType
+    {
+        return UnionType::of(
+            self::castTypeListToClassStringOrObject($this->type_set),
+            self::castTypeListToClassStringOrObject($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @return list<Type>
+     */
+    private static function castTypeListToClassStringOrObject(array $type_set): array
+    {
+        return \array_merge(self::castTypeListToClassString($type_set), self::castToObjectTypesStrict($type_set));
     }
 
     /**

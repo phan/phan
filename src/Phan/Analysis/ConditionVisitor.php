@@ -25,6 +25,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
@@ -872,6 +873,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // (E.g. ?ArrayObject|false becomes ArrayObject)
             $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base));
         };
+        $class_exists_callback = $make_callback('classStringTypes', ClassStringType::instance(false)->asRealUnionType());
+        $method_exists_callback = $make_callback('classStringOrObjectTypes', UnionType::fromFullyQualifiedRealString('class-string|object'));
         /** @return void */
         $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
         $bool_callback = $make_callback('boolTypes', BoolType::instance(false)->asRealUnionType());
@@ -886,6 +889,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Note: isset() is handled in visitIsset()
 
         return [
+            'class_exists' => $class_exists_callback,
+            'method_exists' => $method_exists_callback,
             'is_a' => $is_a_callback,
             'is_array' => $array_callback,
             'is_bool' => $bool_callback,
@@ -959,8 +964,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $this->modifyComplexExpression($first_arg, $type_modification_callback, $this->context, $args);
         }
 
+        $function_name = \strtolower($raw_function_name);
         if (\count($args) !== 1) {
-            if (!(\strcasecmp($raw_function_name, 'is_a') === 0 && \count($args) === 2)) {
+            if (!(\count($args) === 2 && \in_array($function_name, ['is_a', 'class_exists', 'method_exists'], true))) {
                 if (Config::getValue('redundant_condition_detection')) {
                     $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
                 }
@@ -968,7 +974,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
         }
 
-        $function_name = \strtolower($raw_function_name);
         $type_modification_callback = $map[$function_name] ?? null;
         if ($type_modification_callback === null) {
             if (Config::getValue('redundant_condition_detection')) {
