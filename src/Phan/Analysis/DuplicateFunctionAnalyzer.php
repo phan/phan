@@ -72,6 +72,22 @@ class DuplicateFunctionAnalyzer
                 $original_method->getFileRef()->getFile(),
                 $original_method->getFileRef()->getLineNumberStart()
             );
+            // If there are 3 functions with the same namespace and name,
+            // warn *once* about the first functions being a duplicate.
+            // NOTE: This won't work very well in language server mode.
+            if ($fqsen->getAlternateId() === 1) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $original_method->getContext(),
+                    Issue::RedefineFunction,
+                    $original_method->getFileRef()->getLineNumberStart(),
+                    $original_method->getName(),
+                    $original_method->getFileRef()->getFile(),
+                    $original_method->getFileRef()->getLineNumberStart(),
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart()
+                );
+            }
         }
     }
 }

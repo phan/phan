@@ -1,5 +1,8 @@
+src/001_dead_code.php:4 PhanRedefineFunction Function duplicateFnA defined at src/001_dead_code.php:4 was previously defined at src/001_dead_code.php:29
+src/001_dead_code.php:8 PhanRedefineFunction Function duplicateFnB defined at src/001_dead_code.php:8 was previously defined at src/001_dead_code.php:33
 src/001_dead_code.php:8 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB()
 src/001_dead_code.php:13 PhanUnreferencedConstant Possibly zero references to global constant \Const1B
+src/001_dead_code.php:15 PhanRedefineClass Class \DuplicateClass001 defined at src/001_dead_code.php:15 was previously defined as Class \DuplicateClass001 at src/001_dead_code.php:39
 src/001_dead_code.php:18 PhanReadOnlyPublicProperty Possibly zero write references to public property \DuplicateClass001::$static_prop1
 src/001_dead_code.php:19 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001::$static_prop2
 src/001_dead_code.php:21 PhanReadOnlyPublicProperty Possibly zero write references to public property \DuplicateClass001->instance_prop1

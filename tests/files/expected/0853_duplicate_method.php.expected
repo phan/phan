@@ -1,0 +1,2 @@
+%s:3 PhanRedefineFunction Function isB defined at %s:3 was previously defined at %s:4
+%s:4 PhanRedefineFunction Function isB defined at %s:4 was previously defined at %s:3

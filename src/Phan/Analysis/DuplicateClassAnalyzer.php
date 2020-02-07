@@ -55,7 +55,6 @@ class DuplicateClassAnalyzer
                     (string)$original_class
                 );
             }
-
         // Otherwise, print the coordinates of the original
         // definition
         } else {
@@ -72,6 +71,25 @@ class DuplicateClassAnalyzer
                     $original_class->getFileRef()->getFile(),
                     $original_class->getFileRef()->getLineNumberStart()
                 );
+            }
+            // If there are 3 classes with the same namespace and name,
+            // warn *once* about the first (user-defined) class being a duplicate.
+            // NOTE: This won't work very well in language server mode.
+            if ($clazz->getFQSEN()->getAlternateId() === 1) {
+                if (!$original_class->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClass)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $original_class->getContext(),
+                        Issue::RedefineClass,
+                        $original_class->getFileRef()->getLineNumberStart(),
+                        (string)$original_class,
+                        $original_class->getFileRef()->getFile(),
+                        $original_class->getFileRef()->getLineNumberStart(),
+                        (string)$clazz,
+                        $clazz->getFileRef()->getFile(),
+                        $clazz->getFileRef()->getLineNumberStart()
+                    );
+                }
             }
         }
 

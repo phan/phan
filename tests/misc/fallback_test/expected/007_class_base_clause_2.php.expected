@@ -1,1 +1,2 @@
+src/007_class_base_clause_2.php:3 PhanRedefineClass Class \A defined at src/007_class_base_clause_2.php:3 was previously defined as Class \A at src/015_class_const_declaration9.php:2
 src/007_class_base_clause_2.php:3 PhanSyntaxError syntax error, unexpected '{', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\ (T_NS_SEPARATOR) (at column 17)
