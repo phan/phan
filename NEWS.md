@@ -8,6 +8,8 @@ New Features(Analysis):
   and that `method_exists` implies the first argument is a class-string or an object. (#2804, #3058)
 
   Note that Phan still does not infer that the class or method actually exists.
++ Emit `PhanRedefineClass` on **all** occurrences of a duplicate class, not just the ones after the first occurrence of the class. (#511)
++ Emit `PhanRedefineFunction` on **all** occurrences of a duplicate function/method, not just the ones after the first.
 
 Bug fixes:
 + Fix false positive PhanParamSuspiciousOrder for `preg_replace_callback` (#3680)
@@ -1670,7 +1672,7 @@ New features(Analysis):
 
   To enable these checks, set `enable_include_path_checks` to `true` in your Phan config.
 
-  New issue types: `PhanRelativePathUsed`, `PhanTypeInvalidEval`, `PhanTypeInvalidRequire`, `PhanInvalidRequireFile`, `PhanMissingRequiredFile`
+  New issue types: `PhanRelativePathUsed`, `PhanTypeInvalidEval`, `PhanTypeInvalidRequire`, `PhanInvalidRequireFile`, `PhanMissingRequireFile`
 
   New config settings: `enable_include_path_checks`, `include_paths`, `warn_about_relative_include_statement`
 + Warn when attempting to unset a property that was declared (i.e. not a dynamic or magic property) (#569)
