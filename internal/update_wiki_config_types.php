@@ -73,6 +73,7 @@ class ConfigEntry
         'scalar_implicit_cast' => self::CATEGORY_TYPE_CASTING,
         'scalar_array_key_cast' => self::CATEGORY_TYPE_CASTING,
         'scalar_implicit_partial' => self::CATEGORY_TYPE_CASTING,
+        'error_prone_truthy_condition_detection' => self::CATEGORY_ANALYSIS,
         'ignore_undeclared_variables_in_global_scope' => self::CATEGORY_ANALYSIS,
         'convert_possibly_undefined_offset_to_nullable' => self::CATEGORY_ANALYSIS,
         'check_docblock_signature_return_type_match' => self::CATEGORY_ANALYSIS,

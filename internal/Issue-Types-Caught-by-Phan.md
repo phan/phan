@@ -2413,6 +2413,18 @@ Suspicious loop appears to {DETAILS} after each iteration in {CODE}, but the loo
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0724_suspicious_comparison_in_loop.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0724_suspicious_comparison_in_loop.php#L8).
 
+## PhanSuspiciousTruthyCondition
+
+```
+Suspicious attempt to check if {CODE} of type {TYPE} is truthy/falsey. This contains both objects/arrays and scalars
+```
+
+## PhanSuspiciousTruthyString
+
+```
+Suspicious attempt to check if {CODE} of type {TYPE} is truthy/falsey. This is false both for '' and '0'
+```
+
 ## PhanSuspiciousValueComparison
 
 ```

@@ -123,7 +123,8 @@ These settings can be used to control what issues show up in Phan's output.
 ## baseline_path
 
 This is the path to a file containing a list of pre-existing issues to ignore, on a per-file basis.
-It's recommended to set this with --load-baseline=path/to/baseline.php
+It's recommended to set this with `--load-baseline=path/to/baseline.php`.
+A baseline file can be created or updated with `--save-baseline=path/to/baseline.php`.
 
 (Default: `null`)
 
@@ -317,6 +318,14 @@ Set this to false to disable the plugins that Phan uses to infer more accurate r
 Phan is slightly faster when these are disabled.
 
 (Default: `true`)
+
+## error_prone_truthy_condition_detection
+
+Set to true in order to attempt to detect error-prone truthiness/falsiness checks.
+
+This is not suitable for all codebases.
+
+(Default: `false`)
 
 ## exception_classes_with_optional_throws_phpdoc
 

@@ -890,7 +890,8 @@ class Config
         'dump_matching_functions' => false,
 
         // This is the path to a file containing a list of pre-existing issues to ignore, on a per-file basis.
-        // It's recommended to set this with --load-baseline=path/to/baseline.php
+        // It's recommended to set this with `--load-baseline=path/to/baseline.php`.
+        // A baseline file can be created or updated with `--save-baseline=path/to/baseline.php`.
         'baseline_path' => null,
 
         // For internal use only.
