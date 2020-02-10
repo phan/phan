@@ -88,11 +88,13 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // Check from least specific path to most specific path if any should be supressed
 
-        foreach($parts as $part) {
-            if($part == '') continue;
+        foreach ($parts as $part) {
+            if ($part == '') {
+                continue;
+            }
 
             $dirPath .= $part;
-            if(\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)
+            if (\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)
                 || \in_array($issue_type, $this->directory_suppressions[$dirPath . '/'] ?? [], true)) {
                 $suppressed_by_dir = true;
                 break;
