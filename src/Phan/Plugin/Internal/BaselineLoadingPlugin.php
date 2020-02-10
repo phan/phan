@@ -29,6 +29,11 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * Maps relative file paths to a list of issue kinds that are suppressed everywhere in the file by the baseline.
      */
     private $file_suppressions = [];
+
+    /**
+     * @var array<string,list<string>>
+     * Maps relative directory paths to a list of issue kinds that are suppressed everywhere in the file by the baseline.
+     */
     private $directory_suppressions = [];
 
     public function __construct(string $baseline_path)
@@ -79,12 +84,15 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         ?Suggestion $suggestion
     ): bool {
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+        if($suppressed_by_file)
+            return true;
+
+        // Not suppressed by file, check for suppression by directory
 
         $parts = explode('/', $context->getFile());
         array_pop($parts); // Remove file name
 
         $dirPath = '';
-        $suppressed_by_dir = false;
 
         // Check from least specific path to most specific path if any should be supressed
 
@@ -96,13 +104,12 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             $dirPath .= $part;
             if (\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)
                 || \in_array($issue_type, $this->directory_suppressions[$dirPath . '/'] ?? [], true)) {
-                $suppressed_by_dir = true;
-                break;
+                return true;
             }
             $dirPath .= '/';
         }
 
-        return $suppressed_by_file || $suppressed_by_dir;
+        return false;
     }
 
     /**
