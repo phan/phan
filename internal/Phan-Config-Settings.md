@@ -308,6 +308,7 @@ Phan is slightly faster when these are disabled.
 ## enable_include_path_checks
 
 Enable this to enable checks of require/include statements referring to valid paths.
+The settings [`include_paths`](#include_paths) and [`warn_about_relative_include_statement`](#warn_about_relative_include_statement) affect the checks.
 
 (Default: `false`)
 

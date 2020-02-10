@@ -270,7 +270,7 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler
         return true;
     }
-    if ($errno === E_USER_DEPRECATED && preg_match('/^Passing a command as string when creating a /', $errstr)) {
+    if ($errno === E_USER_DEPRECATED && preg_match('/(^Passing a command as string when creating a |method is deprecated since Symfony 4\.4)/', $errstr)) {
         // Suppress deprecation notices running `vendor/bin/paratest`.
         // Don't execute the PHP internal error handler.
         return true;

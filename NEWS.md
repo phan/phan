@@ -12,7 +12,9 @@ New Features(Analysis):
 + Emit `PhanRedefineFunction` on **all** occurrences of a duplicate function/method, not just the ones after the first.
 
 Bug fixes:
-+ Fix false positive PhanParamSuspiciousOrder for `preg_replace_callback` (#3680)
++ Fix false positive `PhanParamSuspiciousOrder` for `preg_replace_callback` (#3680)
++ Fix false positive `PhanUnanalyzableInheritance` for renamed methods from traits. (#3695)
++ Fix false positive `PhanUndeclaredConstant` previously seen for inherited class constants in some parse orders. (#3706)
 
 Jan 25 2020, Phan 2.4.8
 -----------------------
