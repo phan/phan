@@ -6,6 +6,7 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
@@ -52,7 +53,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // file_suppressions and directory suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
         $this->file_suppressions = $baseline['file_suppressions'] ?? [];
-        $this->directory_suppressions = $baseline['directory_suppressions'] ?? [];
+        Config::setValue('directory_suppressions', $baseline['directory_suppressions'] ?? []);
+        $this->directory_suppressions = Config::getValue('directory_suppressions');
     }
 
     /**
@@ -102,8 +104,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             }
 
             $dirPath .= $part;
-            if (\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)
-                || \in_array($issue_type, $this->directory_suppressions[$dirPath . '/'] ?? [], true)) {
+            if (\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)) {
                 return true;
             }
             $dirPath .= '/';
