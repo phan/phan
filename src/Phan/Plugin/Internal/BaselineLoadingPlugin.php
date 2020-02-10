@@ -29,6 +29,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * Maps relative file paths to a list of issue kinds that are suppressed everywhere in the file by the baseline.
      */
     private $file_suppressions = [];
+    private $directory_suppressions = [];
 
     public function __construct(string $baseline_path)
     {
@@ -39,12 +40,14 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected it to return an array, got " . \gettype($baseline_path) . "\n");
             return;
         }
-        if (!\array_key_exists('file_suppressions', $baseline)) {
-            CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected the returned array to contain the key 'file_suppressions' (new baselines can be generated with --save-baseline)\n");
+        if (!\array_key_exists('file_suppressions', $baseline) && !\array_key_exists('directory_suppressions', $baseline)) {
+            CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected the returned array to contain the key 'file_suppressions' or 'directory_suppressions' (new baselines can be generated with --save-baseline)\n");
             return;
         }
-        // file_suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
-        $this->file_suppressions = $baseline['file_suppressions'];
+
+        // file_suppressions and directory suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
+        $this->file_suppressions = $baseline['file_suppressions'] ?? [];
+        $this->directory_suppressions = $baseline['directory_suppressions'] ?? [];
     }
 
     /**
@@ -75,7 +78,29 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         array $parameters,
         ?Suggestion $suggestion
     ): bool {
-        return \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+        $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+
+        $parts = explode('/', $context->getFile());
+        array_pop($parts); // Remove file name
+
+        $dirPath = '';
+        $suppressed_by_dir = false;
+
+        // Check from least specific path to most specific path if any should be supressed
+
+        foreach($parts as $part) {
+            if($part == '') continue;
+
+            $dirPath .= $part;
+            if(\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)
+                || \in_array($issue_type, $this->directory_suppressions[$dirPath . '/'] ?? [], true)) {
+                $suppressed_by_dir = true;
+                break;
+            }
+            $dirPath .= '/';
+        }
+
+        return $suppressed_by_file || $suppressed_by_dir;
     }
 
     /**
