@@ -30,6 +30,12 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      */
     private $file_suppressions = [];
 
+    /**
+     * @var array<string,list<string>>
+     * Maps relative directory paths to a list of issue kinds that are suppressed everywhere in the file by the baseline.
+     */
+    private $directory_suppressions = [];
+
     public function __construct(string $baseline_path)
     {
         // Evaluate the php file with the baseline contents.
@@ -39,12 +45,14 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected it to return an array, got " . \gettype($baseline_path) . "\n");
             return;
         }
-        if (!\array_key_exists('file_suppressions', $baseline)) {
-            CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected the returned array to contain the key 'file_suppressions' (new baselines can be generated with --save-baseline)\n");
+        if (!\array_key_exists('file_suppressions', $baseline) && !\array_key_exists('directory_suppressions', $baseline)) {
+            CLI::printWarningToStderr("Phan read an invalid baseline from '$baseline_path' : Expected the returned array to contain the key 'file_suppressions' or 'directory_suppressions' (new baselines can be generated with --save-baseline)\n");
             return;
         }
-        // file_suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
-        $this->file_suppressions = $baseline['file_suppressions'];
+
+        // file_suppressions and directory suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
+        $this->file_suppressions = $baseline['file_suppressions'] ?? [];
+        $this->directory_suppressions = self::normalizeDirectorySuppressions($baseline['directory_suppressions'] ?? []);
     }
 
     /**
@@ -74,8 +82,72 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ): bool {
-        return \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+    ): bool
+    {
+        $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+        if ($suppressed_by_file)
+            return true;
+
+        // Not suppressed by file, check for suppression by directory
+
+        $parts = self::normalizeDirPathString($context->getFile());
+        $parts = explode('/', $parts);
+        array_pop($parts); // Remove file name
+
+        $dirPath = '';
+
+        // Check from least specific path to most specific path if any should be supressed
+
+        foreach ($parts as $part) {
+            if ($part === '') {
+                continue;
+            }
+
+            $dirPath .= $part;
+            if (\in_array($issue_type, $this->directory_suppressions[$dirPath] ?? [], true)) {
+                return true;
+            }
+            $dirPath .= '/';
+        }
+
+        return false;
+    }
+
+    /**
+     * Normalize directory path entries in directory_suppressions from baseline.
+     *
+     * @param array<string,list<string>> $dir_suppressions
+     * @return array<string,list<string>>
+     */
+    private static function normalizeDirectorySuppressions(array $dir_suppressions): array
+    {
+        foreach ($dir_suppressions as $file_path => $rules) {
+
+            $new_file_path = self::normalizeDirPathString($file_path);
+
+            if ($new_file_path != $file_path) {
+                $dir_suppressions[$new_file_path] = $rules;
+                unset($dir_suppressions[$file_path]);
+            }
+
+        }
+        return $dir_suppressions;
+    }
+
+    /**
+     * Normalize path string.
+     *
+     * @param string $path
+     */
+    private static function normalizeDirPathString(string $path): string {
+        $path = str_replace('\\', '/', $path);
+        $path = rtrim($path, '/');
+        if (strpos($path, './') === 0) {
+            $substr_path = substr($path, 2);
+            if ($substr_path !== false)
+                return $substr_path;
+        }
+        return $path;
     }
 
     /**
@@ -87,7 +159,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     public function getIssueSuppressionList(
         CodeBase $unused_code_base,
         string $unused_file_path
-    ): array {
+    ): array
+    {
         return [];
     }
 }

@@ -197,15 +197,15 @@ EOT;
     private function generateSuppressFileEntries(): string
     {
         $result = '';
-        $result .= "    // Currently, file_suppressions are the only supported suppressions\n";
+        $result .= " // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
         foreach ($this->suppressions_by_file as $fileName => $type_set) {
             $types = \array_map('strval', \array_keys($type_set));
             \usort($types, 'strcmp');
             $result .= "        '$fileName' => [" . \implode(', ', \array_map(static function (string $type): string {
-                return "'" . $type . "'";
-            }, $types)) . "],\n";
+                    return "'" . $type . "'";
+                }, $types)) . "],\n";
         }
         $result .= "    ],\n";
         return $result;
