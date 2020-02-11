@@ -142,9 +142,11 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     private static function normalizeDirPathString(string $path): string {
         $path = str_replace('\\', '/', $path);
         $path = rtrim($path, '/');
-        if (strpos($path, './') === 0)
-            $path = substr($path, 2);
-
+        if (strpos($path, './') === 0) {
+            $substr_path = substr($path, 2);
+            if ($substr_path !== false)
+                return $substr_path;
+        }
         return $path;
     }
 
