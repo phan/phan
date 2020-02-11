@@ -135,9 +135,9 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     }
 
     /**
-     * Normalize path string
+     * Normalize path string.
+     *
      * @param string $path
-     * @return string
      */
     private static function normalizeDirPathString(string $path): string {
         $path = str_replace('\\', '/', $path);
