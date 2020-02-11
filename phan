@@ -1,2 +1,9 @@
 #!/usr/bin/env php
-<?php require_once __DIR__ . '/src/phan.php';
+<?php
+if (PHP_VERSION_ID < 70000) {
+    fwrite(STDERR, "ERROR: Phan 2.x requires PHP 7.1+, but it is being run with PHP " . PHP_VERSION . PHP_EOL);
+    fwrite(STDERR, "PHP 5.6 reached its end of life in December 2018." . PHP_EOL);
+    fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
+    exit(1);
+}
+require_once __DIR__ . '/src/phan.php';
