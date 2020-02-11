@@ -1168,32 +1168,7 @@ class Config
             case 'scalar_implicit_partial':
                 self::$configuration[$name] = self::normalizeScalarImplicitPartial($value);
                 break;
-            case 'directory_suppressions':
-                self::$configuration[$name] = self::normalizeDirectorySuppressions($value);
-                break;
         }
-    }
-
-    /**
-     * Normalize directory path entries in directory_suppressions from baseline.
-     *
-     * @param array<string,list<string>> $dir_suppressions
-     * @return array<string,list<string>>
-     */
-    private static function normalizeDirectorySuppressions($dir_suppressions) {
-        foreach($dir_suppressions as $file_path => $rules) {
-            $new_file_path = str_replace('\\', '/', $file_path);
-            $new_file_path = rtrim($new_file_path, '/');
-            if(strpos($new_file_path, './') === 0)
-                $new_file_path = substr($new_file_path, 2);
-
-            if($new_file_path != $file_path) {
-                $dir_suppressions[$new_file_path] = $rules;
-                unset($dir_suppressions[$file_path]);
-            }
-
-        }
-        return $dir_suppressions;
     }
 
     private const TRUTHY_SCALAR_EQUIVALENTS = [

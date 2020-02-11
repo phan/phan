@@ -53,8 +53,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // file_suppressions and directory suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
         $this->file_suppressions = $baseline['file_suppressions'] ?? [];
-        Config::setValue('directory_suppressions', $baseline['directory_suppressions'] ?? []);
-        $this->directory_suppressions = Config::getValue('directory_suppressions');
+        $this->directory_suppressions = self::normalizeDirectorySuppressions($baseline['directory_suppressions'] ?? []);
     }
 
     /**
@@ -84,14 +83,16 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ): bool {
+    ): bool
+    {
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
-        if($suppressed_by_file)
+        if ($suppressed_by_file)
             return true;
 
         // Not suppressed by file, check for suppression by directory
 
-        $parts = explode('/', $context->getFile());
+        $parts = self::normalizeDirPathString($context->getFile());
+        $parts = explode('/', $parts);
         array_pop($parts); // Remove file name
 
         $dirPath = '';
@@ -99,7 +100,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         // Check from least specific path to most specific path if any should be supressed
 
         foreach ($parts as $part) {
-            if ($part == '') {
+            if ($part === '') {
                 continue;
             }
 
@@ -114,6 +115,41 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     }
 
     /**
+     * Normalize directory path entries in directory_suppressions from baseline.
+     *
+     * @param array<string,list<string>> $dir_suppressions
+     * @return array<string,list<string>>
+     */
+    private static function normalizeDirectorySuppressions(array $dir_suppressions): array
+    {
+        foreach ($dir_suppressions as $file_path => $rules) {
+
+            $new_file_path = self::normalizeDirPathString($file_path);
+
+            if ($new_file_path != $file_path) {
+                $dir_suppressions[$new_file_path] = $rules;
+                unset($dir_suppressions[$file_path]);
+            }
+
+        }
+        return $dir_suppressions;
+    }
+
+    /**
+     * Normalize path string
+     * @param string $path
+     * @return string
+     */
+    private static function normalizeDirPathString(string $path): string {
+        $path = str_replace('\\', '/', $path);
+        $path = rtrim($path, '/');
+        if (strpos($path, './') === 0)
+            $path = substr($path, 2);
+
+        return $path;
+    }
+
+    /**
      * @return array{} the baseline plugin is not meant for use with UnusedSuppressionPlugin.
      *
      * This helper method is externally used only by UnusedSuppressionPlugin
@@ -122,7 +158,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     public function getIssueSuppressionList(
         CodeBase $unused_code_base,
         string $unused_file_path
-    ): array {
+    ): array
+    {
         return [];
     }
 }
