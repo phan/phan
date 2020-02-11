@@ -6,7 +6,6 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CLI;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
