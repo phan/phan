@@ -1407,7 +1407,7 @@ class Issue
             new Issue(
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
@@ -1415,7 +1415,7 @@ class Issue
             new Issue(
                 self::TypeMismatchArgumentReal,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10140
