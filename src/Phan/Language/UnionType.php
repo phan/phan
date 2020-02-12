@@ -2954,9 +2954,45 @@ class UnionType implements Serializable
                     "Cannot find class $class_fqsen"
                 );
             }
+            $class = $code_base->getClassByFQSEN($class_fqsen);
+            if (!$class->isPHPInternal() && $code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
+                self::emitRedefinedClassReferenceWarning($code_base, $context, $class_fqsen);
+            }
 
-            yield $code_base->getClassByFQSEN($class_fqsen);
+            yield $class;
         }
+    }
+
+    /**
+     * Warn about both "$class_fqsen" and the first alternate existing.
+     */
+    public static function emitRedefinedClassReferenceWarning(
+        CodeBase $code_base,
+        Context $context,
+        FullyQualifiedClassName $class_fqsen
+    ): void {
+        $class = $code_base->getClassByFQSENWithoutHydrating($class_fqsen);
+        if ($class->isPHPInternal() || $class->hasSuppressIssue(Issue::RedefinedClassReference)) {
+            // already checked if $class was internal.
+            return;
+        }
+
+        $other_class = $code_base->getClassByFQSENWithoutHydrating($class_fqsen->withAlternateId(1));
+        if ($other_class->isPHPInternal() || $other_class->hasSuppressIssue(Issue::RedefinedClassReference)) {
+            // already checked if $class was internal.
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::RedefinedClassReference,
+            $context->getLineNumberStart(),
+            $class_fqsen,
+            $class->getContext()->getFile(),
+            $class->getContext()->getLineNumberStart(),
+            $other_class->getContext()->getFile(),
+            $other_class->getContext()->getLineNumberStart()
+        );
     }
 
     /**

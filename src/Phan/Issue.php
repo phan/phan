@@ -442,6 +442,7 @@ class Issue
     public const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
     public const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
     public const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
+    public const RedefinedClassReference       = 'PhanRedefinedClassReference';
 
     // Issue::CATEGORY_ACCESS
     public const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
@@ -3899,9 +3900,17 @@ class Issue
                 self::RedefinedExtendedClass,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list.",
                 self::REMEDIATION_B,
                 8009
+            ),
+            new Issue(
+                self::RedefinedClassReference,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "Saw reference to {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. This issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.",
+                self::REMEDIATION_B,
+                8012
             ),
             new Issue(
                 self::RedefineClassConstant,
