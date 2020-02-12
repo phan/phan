@@ -1331,6 +1331,12 @@ trait FunctionTrait
                         [$this->getNameForIssue(), (string)$outer_type],
                         IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
                     );
+                } elseif ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                    UnionType::emitRedefinedClassReferenceWarning(
+                        $code_base,
+                        $this->getContext(),
+                        $type_fqsen
+                    );
                 }
             }
         }

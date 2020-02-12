@@ -1,6 +1,6 @@
 <?php
-class A {
+class A15 {
     const a = b = "hello";
 }
 
-echo A::b;
+echo A15::b;

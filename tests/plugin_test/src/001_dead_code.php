@@ -60,5 +60,20 @@ function test001() {
     DuplicateClass001::f1();
     printf("Static prop: %s\n", DuplicateClass001::$static_prop1 . "\n");
     echo ($x->instance_prop1) . "\n";
+    test001b($x);
 }
 test001();
+function test001b(
+    DuplicateClass001 $param
+) {
+    HasDuplicateProp::$p = $param;
+    return test001c($param);
+}
+function test001c($param) : DuplicateClass001 {
+    return $param;
+}
+
+class HasDuplicateProp {
+    /** @var DuplicateClass001 */
+    public static $p;
+}

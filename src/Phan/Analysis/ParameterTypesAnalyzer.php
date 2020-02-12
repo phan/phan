@@ -134,6 +134,12 @@ class ParameterTypesAnalyzer
                                 IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES
                             )
                         );
+                    } elseif ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                        UnionType::emitRedefinedClassReferenceWarning(
+                            $code_base,
+                            (clone($method->getContext()))->withLineNumberStart($parameter->getFileRef()->getLineNumberStart()),
+                            $type_fqsen
+                        );
                     }
                 }
             }

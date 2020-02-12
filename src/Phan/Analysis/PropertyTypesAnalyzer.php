@@ -11,6 +11,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\UnionType;
 
 /**
  * An analyzer that checks a class's properties for issues.
@@ -58,17 +59,25 @@ class PropertyTypesAnalyzer
                         }
                         continue;
                     }
+                    if (!($property->hasDefiningFQSEN() && $property->getDefiningFQSEN() === $property->getFQSEN())) {
+                        continue;
+                    }
+                    if ($type instanceof TemplateType) {
+                        continue;
+                    }
 
                     // Make sure the class exists
                     $type_fqsen = FullyQualifiedClassName::fromType($type);
 
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)
-                        && !($type instanceof TemplateType)
-                        && (
-                            !$property->hasDefiningFQSEN()
-                            || $property->getDefiningFQSEN() === $property->getFQSEN()
-                        )
-                    ) {
+                    if ($code_base->hasClassWithFQSEN($type_fqsen)) {
+                        if ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                            UnionType::emitRedefinedClassReferenceWarning(
+                                $code_base,
+                                $property->getContext(),
+                                $type_fqsen
+                            );
+                        }
+                    } else {
                         Issue::maybeEmitWithParameters(
                             $code_base,
                             $property->getContext(),

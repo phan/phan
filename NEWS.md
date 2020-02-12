@@ -10,6 +10,9 @@ New Features(Analysis):
   Note that Phan still does not infer that the class or method actually exists.
 + Emit `PhanRedefineClass` on **all** occurrences of a duplicate class, not just the ones after the first occurrence of the class. (#511)
 + Emit `PhanRedefineFunction` on **all** occurrences of a duplicate function/method, not just the ones after the first.
++ Emit `PhanRedefinedClassReference` for many types of uses of user-defined classes that Phan has parsed multiple definitions of.
+  Phan will not warn about internal classes, because the duplicate definition is probably a polyfill.
+  (e.g. `new DuplicateClass()`, `DuplicateClass::someMethod()`)
 
 Bug fixes:
 + Fix false positive `PhanParamSuspiciousOrder` for `preg_replace_callback` (#3680)
