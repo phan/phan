@@ -179,6 +179,7 @@ class Config
         'exclude_file_list' => [],
 
         // Enable this to enable checks of require/include statements referring to valid paths.
+        // The settings `include_paths` and `warn_about_relative_include_statement` affect the checks.
         'enable_include_path_checks' => false,
 
         // A list of [include paths](https://secure.php.net/manual/en/ini.core.php#ini.include-path) to check when checking if `require_once`, `include`, etc. are pointing to valid files.

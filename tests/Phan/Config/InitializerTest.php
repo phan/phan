@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Phan\Tests;
+namespace Phan\Tests\Config;
 
 use Phan\Config;
 use Phan\Config\Initializer;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.

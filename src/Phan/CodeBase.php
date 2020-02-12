@@ -289,6 +289,14 @@ class CodeBase
     }
 
     /**
+     * Returns true if hydration of elements is enabled.
+     * This is called after the parse phase is finished.
+     */
+    public function shouldHydrateRequestedElements(): bool {
+        return $this->should_hydrate_requested_elements;
+    }
+
+    /**
      * @return list<string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,

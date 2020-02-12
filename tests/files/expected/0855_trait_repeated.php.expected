@@ -1,0 +1,5 @@
+%s:9 PhanUndeclaredAliasedMethodOfTrait Alias \UsesTrait::alias was defined for a method \HasMethod::magicMethod which does not exist in trait HasMethod
+%s:10 PhanUndeclaredAliasedMethodOfTrait Alias \UsesTrait::alias2 was defined for a method \HasMethod::missingMethod which does not exist in trait HasMethod
+%s:12 PhanUndeclaredStaticMethod Static call to undeclared method \UsesTrait::alias
+%s:13 PhanUndeclaredStaticMethod Static call to undeclared method \UsesTrait::alias2
+%s:14 PhanParamTooMany Call with 1 arg(s) to \UsesTrait::actualMethod() which only takes 0 arg(s) defined at %s:4

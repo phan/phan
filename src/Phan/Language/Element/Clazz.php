@@ -1963,7 +1963,14 @@ class Clazz extends AddressableElement
 
     public function addTraitAdaptations(TraitAdaptations $trait_adaptations): void
     {
-        $this->trait_adaptations_map[\strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
+        $key = \strtolower($trait_adaptations->getTraitFQSEN()->__toString());
+        $old_adaptations = $this->trait_adaptations_map[$key] ?? null;
+        if ($old_adaptations) {
+            $old_adaptations->alias_methods += $trait_adaptations->alias_methods;
+            $old_adaptations->hidden_methods += $trait_adaptations->hidden_methods;
+        } else {
+            $this->trait_adaptations_map[$key] = $trait_adaptations;
+        }
     }
 
     /**
@@ -2768,7 +2775,12 @@ class Clazz extends AddressableElement
     ): void {
         foreach ($trait_adaptations->alias_methods ?? [] as $alias_method_name => $original_trait_alias_source) {
             $source_method_name = $original_trait_alias_source->getSourceMethodName();
-            if (!$class->hasMethodWithName($code_base, $source_method_name)) {
+            if ($class->hasMethodWithName($code_base, $source_method_name)) {
+                $source_method = $class->getMethodByName($code_base, $source_method_name);
+            } else {
+                $source_method = null;
+            }
+            if (!$source_method || $source_method->isFromPHPDoc()) {
                 Issue::maybeEmit(
                     $code_base,
                     $this->getContext(),
@@ -2780,7 +2792,6 @@ class Clazz extends AddressableElement
                 );
                 continue;
             }
-            $source_method = $class->getMethodByName($code_base, $source_method_name);
             $alias_method = $source_method->createUseAlias(
                 $this,
                 $alias_method_name,
@@ -3218,6 +3229,9 @@ class Clazz extends AddressableElement
         if ($this->are_constants_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
         }
+        if (!$code_base->shouldHydrateRequestedElements()) {
+            return;
+        }
         $this->are_constants_hydrated = true;
 
         $this->hydrateConstantsOnce($code_base);
@@ -3231,10 +3245,13 @@ class Clazz extends AddressableElement
      */
     public function hydrateConstantsIndicatingFirstTime(CodeBase $code_base): bool
     {
-        if (!$this->did_finish_parsing) {
+        if (!$this->did_finish_parsing) {  // Is **this** class fully parsed
             return false;
         }
         if ($this->are_constants_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        if (!$code_base->shouldHydrateRequestedElements()) {
             return false;
         }
         $this->are_constants_hydrated = true;
@@ -3256,6 +3273,9 @@ class Clazz extends AddressableElement
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
         }
+        if (!$code_base->shouldHydrateRequestedElements()) {
+            return;
+        }
         $this->is_hydrated = true;
 
         $this->hydrateOnce($code_base);
@@ -3272,6 +3292,9 @@ class Clazz extends AddressableElement
             return false;
         }
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        if (!$code_base->shouldHydrateRequestedElements()) {
             return false;
         }
         $this->is_hydrated = true;

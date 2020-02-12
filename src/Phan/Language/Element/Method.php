@@ -421,7 +421,7 @@ class Method extends ClassElement implements FunctionInterface
             $method_fqsen,
             $this->getParameterList()
         );
-        $method->setPhanFlags($this->getPhanFlags());
+        $method->setPhanFlags($this->getPhanFlags() & ~(Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER));
         switch ($new_visibility_flags) {
             case ast\flags\MODIFIER_PUBLIC:
             case ast\flags\MODIFIER_PROTECTED:
