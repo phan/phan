@@ -18,6 +18,7 @@ Bug fixes:
 + Fix false positive `PhanParamSuspiciousOrder` for `preg_replace_callback` (#3680)
 + Fix false positive `PhanUnanalyzableInheritance` for renamed methods from traits. (#3695)
 + Fix false positive `PhanUndeclaredConstant` previously seen for inherited class constants in some parse orders. (#3706)
++ Fix uncaught `TypeError` converting `iterable<T>` to nullable (#3709)
 
 Jan 25 2020, Phan 2.4.8
 -----------------------
