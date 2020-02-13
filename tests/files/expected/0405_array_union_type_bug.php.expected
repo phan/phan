@@ -1,1 +1,1 @@
-%s:12 PhanUndeclaredConstant Reference to undeclared constant \CC::TYPE_MISSING
+%s:12 PhanUndeclaredConstantOfClass Reference to undeclared class constant \CC::TYPE_MISSING

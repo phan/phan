@@ -1,2 +1,2 @@
 %s:18 PhanUndeclaredProperty Reference to undeclared property \B->x
-%s:19 PhanUndeclaredConstant Reference to undeclared constant \A::y
+%s:19 PhanUndeclaredConstantOfClass Reference to undeclared class constant \A::y
