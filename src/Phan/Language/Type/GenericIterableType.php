@@ -242,6 +242,19 @@ final class GenericIterableType extends IterableType
             return self::fromKeyAndValueTypes($this->key_union_type, $erased_element_union_type, $this->is_nullable);
         });
     }
+
+    /**
+     * @override
+     */
+    public function withIsNullable(bool $is_nullable): Type {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+
+        return self::fromKeyAndValueTypes(
+            $this->key_union_type,
+            $this->element_union_type,
+            $is_nullable
+        );
+    }
 }
-// Trigger autoloader for subclass before make() can get called.
-\class_exists(ArrayType::class);
