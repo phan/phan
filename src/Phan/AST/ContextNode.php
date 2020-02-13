@@ -1914,7 +1914,7 @@ class ContextNode
         if ($class_fqsen) {
             $class_constant_fqsen = FullyQualifiedClassConstantName::make($class_fqsen, $constant_name);
             throw new IssueException(
-                Issue::fromType(Issue::UndeclaredConstant)(
+                Issue::fromType(Issue::UndeclaredConstantOfClass)(
                     $this->context->getFile(),
                     $node->lineno,
                     [ "$class_fqsen::$constant_name" ],

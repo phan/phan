@@ -1,2 +1,2 @@
-src/013_duplicate_array_key_uncaught.php:7 PhanUndeclaredConstant Reference to undeclared constant \Bar13::B
-src/013_duplicate_array_key_uncaught.php:17 PhanUndeclaredConstant Reference to undeclared constant \Bar13::a
+src/013_duplicate_array_key_uncaught.php:7 PhanUndeclaredConstantOfClass Reference to undeclared class constant \Bar13::B
+src/013_duplicate_array_key_uncaught.php:17 PhanUndeclaredConstantOfClass Reference to undeclared class constant \Bar13::a

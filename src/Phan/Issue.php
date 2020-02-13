@@ -62,6 +62,8 @@ class Issue
     public const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
     public const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     public const UndeclaredConstant        = 'PhanUndeclaredConstant';
+    // Sadly, PhanUndeclaredClassConstant already exists and means the class is undeclared
+    public const UndeclaredConstantOfClass = 'PhanUndeclaredConstantOfClass';
     public const UndeclaredMagicConstant   = 'PhanUndeclaredMagicConstant';
     public const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
     public const UndeclaredFunction        = 'PhanUndeclaredFunction';
@@ -1014,6 +1016,14 @@ class Issue
                 "Reference to undeclared constant {CONST}",
                 self::REMEDIATION_B,
                 11011
+            ),
+            new Issue(
+                self::UndeclaredConstantOfClass,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Reference to undeclared class constant {CONST}",
+                self::REMEDIATION_B,
+                11053
             ),
             new Issue(
                 self::UndeclaredFunction,

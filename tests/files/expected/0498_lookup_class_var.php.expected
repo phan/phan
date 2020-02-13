@@ -1,2 +1,2 @@
 %s:11 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \X\Example (real type object) but \strlen() takes string
-%s:13 PhanUndeclaredConstant Reference to undeclared constant \X\Example::BAD (Did you mean \X\Example::BAR)
+%s:13 PhanUndeclaredConstantOfClass Reference to undeclared class constant \X\Example::BAD (Did you mean \X\Example::BAR)

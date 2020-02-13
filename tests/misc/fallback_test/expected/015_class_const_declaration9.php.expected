@@ -2,4 +2,4 @@ src/015_class_const_declaration9.php:3 PhanInvalidConstantExpression Constant ex
 src/015_class_const_declaration9.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ';'
 src/015_class_const_declaration9.php:3 PhanUnanalyzable Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.
 src/015_class_const_declaration9.php:3 PhanUndeclaredConstant Reference to undeclared constant \b
-src/015_class_const_declaration9.php:6 PhanUndeclaredConstant Reference to undeclared constant \A15::b
+src/015_class_const_declaration9.php:6 PhanUndeclaredConstantOfClass Reference to undeclared class constant \A15::b

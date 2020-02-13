@@ -1,2 +1,2 @@
-%s:11 PhanUndeclaredConstant Reference to undeclared constant \Shop804::LIST_OF_CHEESES (Did you mean \Shop804::$LIST_OF_CHEESES)
-%s:12 PhanUndeclaredConstant Reference to undeclared constant \Shop804::buyCheese (Did you mean \Shop804::buyCheese())
+%s:11 PhanUndeclaredConstantOfClass Reference to undeclared class constant \Shop804::LIST_OF_CHEESES (Did you mean \Shop804::$LIST_OF_CHEESES)
+%s:12 PhanUndeclaredConstantOfClass Reference to undeclared class constant \Shop804::buyCheese (Did you mean \Shop804::buyCheese())
