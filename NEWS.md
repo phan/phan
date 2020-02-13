@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.4.9 (dev)
+Feb 13 2020, Phan 2.4.9
 -----------------------
 
 New Features(Analysis):
