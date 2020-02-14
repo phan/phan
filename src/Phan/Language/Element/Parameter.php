@@ -275,10 +275,10 @@ class Parameter extends Variable
 
         // Create the skeleton parameter from what we know so far
         $parameter = Parameter::create(
-            $context,
+            (clone($context))->withLineNumberStart($node->lineno),
             (string)$node->children['name'],
             $union_type,
-            $node->flags ?? 0
+            $node->flags
         );
         if (($type_node->kind ?? null) === \ast\AST_NULLABLE_TYPE) {
             $parameter->setIsUsingNullableSyntax();

@@ -498,7 +498,7 @@ class Issue
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
     public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
     public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
-    public const CompatibleObjectTypePHP71          = 'PhanCompatibleNullableTypePHP71';
+    public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
     public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
     public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
     public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
@@ -513,6 +513,8 @@ class Issue
     public const CompatibleTypedProperty            = 'PhanCompatibleTypedProperty';
     public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
+    public const CompatibleScalarTypePHP56          = 'PhanCompatibleScalarTypePHP56';
+    public const CompatibleAnyReturnTypePHP56       = 'PhanCompatibleAnyReturnTypePHP56';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4406,6 +4408,22 @@ class Issue
                 "In PHP 8.0, using a default ({CODE}) that resolves to null will no longer cause the parameter ({PARAMETER}) to be nullable",
                 self::REMEDIATION_B,
                 3023
+            ),
+            new Issue(
+                self::CompatibleScalarTypePHP56,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names",
+                self::REMEDIATION_B,
+                3024
+            ),
+            new Issue(
+                self::CompatibleAnyReturnTypePHP56,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "In PHP 5.6, return types ({TYPE}) are not supported",
+                self::REMEDIATION_B,
+                3025
             ),
 
             // Issue::CATEGORY_GENERIC

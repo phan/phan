@@ -7,9 +7,13 @@ New Features(Analysis):
 + Emit `PhanUndeclaredConstantOfClass` (severity critical) for undeclared class constants instead of `PhanUndeclaredConstant` (severity normal)
   This should not be confused with `PhanUndeclaredClassConstant`, which already exists and refers to accessing class constants of classes that don't exist.
 + Emit the expression that's an invalid object with issue types such as `PhanTypeExpectedObject*`, `PhanTypeInvalidInstanceof` (#3717)
++ Emit `PhanCompatibleScalarTypePHP56` and `PhanCompatibleAnyReturnTypePHP56` for function signatures when `target_php_version` is `'5.6'` (#915)
+  (This also requires that `backward_compatibility_checks` be enabled.)
++ Use more accurate line numbers for warnings about function parameters.
 
 Bug fixes:
 + Fix incorrect file location for other definition in `PhanRedefinedClassReference` under some circumstances.
++ Fix incorrect issue name: `PhanCompatibleNullableTypePHP71` should be named `PhanCompatibleObjectTypePHP71`
 
 Feb 13 2020, Phan 2.4.9
 -----------------------

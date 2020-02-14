@@ -24,6 +24,7 @@ use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
@@ -233,6 +234,16 @@ class ParameterTypesAnalyzer
                             $real_parameter->getFileRef()->getLineNumberStart(),
                             (string)$type
                         );
+                        continue;
+                    }
+                    if ($target_php_version < 70000 && $type instanceof ScalarType) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleScalarTypePHP56,
+                            $real_parameter->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
                     }
                 }
                 if ($type_class === ObjectType::class) {
@@ -249,6 +260,15 @@ class ParameterTypesAnalyzer
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
             if ($php70_checks) {
+                if ($target_php_version < 70000) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleAnyReturnTypePHP56,
+                        $real_parameter->getFileRef()->getLineNumberStart(),
+                        (string)$method->getRealReturnType()
+                    );
+                }
                 // Could check for use statements, but `php7.1 -l path/to/file.php` would do that already.
                 if ($type_class === VoidType::class) {
                     Issue::maybeEmit(
@@ -275,6 +295,16 @@ class ParameterTypesAnalyzer
                             $method->getContext(),
                             Issue::CompatibleIterableTypePHP70,
                             $method->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                        continue;
+                    }
+                    if ($target_php_version < 70000 && $type instanceof ScalarType) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleScalarTypePHP56,
+                            $real_parameter->getFileRef()->getLineNumberStart(),
                             (string)$type
                         );
                     }

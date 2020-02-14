@@ -1,4 +1,4 @@
-%s:9 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:9 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 %s:18 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result array_values($a)[0] for function returning list<mixed>
 %s:19 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result array_values($a) for function returning list<mixed>
 %s:20 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result $e->returnsArray()[] for function returning array

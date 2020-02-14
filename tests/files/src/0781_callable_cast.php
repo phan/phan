@@ -7,7 +7,15 @@ class SomeCallable {
     }
 }
 
-function accepts_object(object $object, iterable $i, array $a, SomeCallable $c, string $s, int $int, callable $c2) {
+function accepts_object(
+    object $object,
+    iterable $i,
+    array $a,
+    SomeCallable $c,
+    string $s,
+    int $int,
+    callable $c2
+) {
     var_export([$object, $i, $a, $c, $s, $int]);
 }
 function test_callable(callable $c) {
