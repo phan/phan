@@ -2965,6 +2965,8 @@ class UnionType implements Serializable
 
     /**
      * Warn about both "$class_fqsen" and the first alternate existing.
+     *
+     * TODO: Make callers such as ContextNode->asClassList() check if the reference is 'self' and don't emit this if it is?
      */
     public static function emitRedefinedClassReferenceWarning(
         CodeBase $code_base,
@@ -2977,7 +2979,12 @@ class UnionType implements Serializable
             return;
         }
 
-        $other_class = $code_base->getClassByFQSENWithoutHydrating($class_fqsen->withAlternateId(1));
+        $other_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() ? 0 : 1);
+        if (!$code_base->hasClassWithFQSEN($other_fqsen)) {
+            return;
+        }
+        $other_class = $code_base->getClassByFQSENWithoutHydrating($other_fqsen);
+
         if ($other_class->isPHPInternal() || $other_class->hasSuppressIssue(Issue::RedefinedClassReference)) {
             // already checked if $class was internal.
             return;

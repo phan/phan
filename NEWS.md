@@ -7,6 +7,9 @@ New Features(Analysis):
 + Emit `PhanUndeclaredConstantOfClass` (severity critical) for undeclared class constants instead of `PhanUndeclaredConstant` (severity normal)
   This should not be confused with `PhanUndeclaredClassConstant`, which already exists and refers to accessing class constants of classes that don't exist.
 
+Bug fixes:
++ Fix incorrect file location for other definition in `PhanRedefinedClassReference` under some circumstances.
+
 Feb 13 2020, Phan 2.4.9
 -----------------------
 
