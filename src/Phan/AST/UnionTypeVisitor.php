@@ -1508,6 +1508,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $context,
                     Issue::TypeInvalidInstanceof,
                     $context->getLineNumberStart(),
+                    ASTReverter::toShortString($node),
                     (string)$type
                 );
             }
@@ -3079,6 +3080,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::TypeExpectedObjectOrClassName,
                 $node->lineno,
+                ASTReverter::toShortString($node),
                 $node_type
             );
         }

@@ -1,5 +1,5 @@
 %s:11 PhanNonClassMethodCall Call to method __construct on non-class type int
-%s:11 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type int
+%s:11 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression $i with type int
 %s:15 PhanAccessMethodPrivate Cannot access private method \Closure::__construct defined at internal:0
 %s:16 PhanUndeclaredMethodInCallable Call to undeclared method name in callable. Possible object type(s) for that method are Closure():void
 %s:17 PhanUndeclaredMethod Call to undeclared method \Closure::name

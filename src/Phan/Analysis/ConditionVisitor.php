@@ -10,6 +10,7 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor\HasTypeCondition;
 use Phan\Analysis\ConditionVisitor\NotHasTypeCondition;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
@@ -670,6 +671,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     $this->context,
                     Issue::TypeInvalidInstanceof,
                     $this->context->getLineNumberStart(),
+                    ASTReverter::toShortString($class_node),
                     (string)$type->asNonLiteralType()
                 );
             }

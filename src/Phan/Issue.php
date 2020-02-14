@@ -1890,7 +1890,7 @@ class Issue
                 self::TypeInvalidInstanceof,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string',
+                'Found an instanceof class name {CODE} of type {TYPE}, but class name must be a valid object or a string',
                 self::REMEDIATION_B,
                 10029
             ),
@@ -1954,7 +1954,7 @@ class Issue
                 self::TypeExpectedObject,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Expected an object instance but saw expression with type {TYPE}',
+                'Expected an object instance but saw expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10036
             ),
@@ -1962,7 +1962,7 @@ class Issue
                 self::TypeExpectedObjectOrClassName,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Expected an object instance or the name of a class but saw expression with type {TYPE}',
+                'Expected an object instance or the name of a class but saw expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10037
             ),
@@ -1970,7 +1970,7 @@ class Issue
                 self::TypeExpectedObjectPropAccess,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
+                'Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10038
             ),
@@ -1978,7 +1978,7 @@ class Issue
                 self::TypeExpectedObjectStaticPropAccess,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}',
+                'Expected an object instance or a class name when accessing a static property, but saw an expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10039
             ),
@@ -1986,7 +1986,7 @@ class Issue
                 self::TypeExpectedObjectPropAccessButGotNull,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
+                'Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10040
             ),

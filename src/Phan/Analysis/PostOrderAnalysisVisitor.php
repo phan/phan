@@ -2226,6 +2226,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $this->context,
                         Issue::TypeExpectedObjectOrClassName,
                         $node->lineno,
+                        ASTReverter::toShortString($node),
                         $type->getValue()
                     );
                     continue;

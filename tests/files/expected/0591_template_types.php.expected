@@ -1,4 +1,4 @@
-%s:64 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type string
+%s:64 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $l->details with type string
 %s:65 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
 %s:66 PhanTypeSuspiciousEcho Suspicious argument \ArrayObject for an echo/print statement
 %s:69 PhanTypeMismatchArgument Argument 1 ($v) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValue() takes \stdClass defined at %s:37
