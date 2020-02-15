@@ -1,9 +1,11 @@
 [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Phan attempts to adhere to the [PSR-2](http://www.php-fig.org/psr/psr-2/) style guide (and the [PSR-12 draft](https://github.com/php-fig/fig-standards/blob/master/proposed/extended-coding-style-guide.md)). All files should use
+Phan attempts to adhere to the [PSR-2](http://www.php-fig.org/psr/psr-2/) and [PSR-12](https://www.php-fig.org/psr/psr-12/) style guides. All files should use
 
 ```php
-declare(strict_types=1)
+<?php
+
+declare(strict_types=1);
 ```
 
 - [Phan's ruleset.xml](https://github.com/phan/phan/blob/master/ruleset.xml) can be used with [`phpcs` and `phpcbf`](https://github.com/squizlabs/PHP_CodeSniffer) to adhere to the style guide.
