@@ -7,6 +7,10 @@ New Features(CLI):
 + Support using `directory_suppressions` in Phan baseline files in `--load-baseline`. (#3698)
 
 New Features(Analysis):
++ Instead of failing to parse intersection types in phpdoc entirely, parse them as if they were union types. (#1629)
+  The annotations `@phan-param`, `@phan-return`, `@phan-var`, etc. can be used to override the regular phpdoc in the various cases where this behavior causes problems.
+
+  **Future** Phan releases will likely about unsupported phpdoc (e.g. `int&string`) and have actual support for intersection types.
 + Emit `PhanUndeclaredConstantOfClass` (severity critical) for undeclared class constants instead of `PhanUndeclaredConstant` (severity normal)
   This should not be confused with `PhanUndeclaredClassConstant`, which already exists and refers to accessing class constants of classes that don't exist.
 + Emit the expression that's an invalid object with issue types such as `PhanTypeExpectedObject*`, `PhanTypeInvalidInstanceof` (#3717)
