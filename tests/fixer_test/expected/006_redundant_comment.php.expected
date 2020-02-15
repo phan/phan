@@ -1,3 +1,3 @@
-src_copy/006_redundant_comment.php:8 PhanPluginRedundantFunctionComment Redundant doc comment on function returns_int(): '/** @return int */'
-src_copy/006_redundant_comment.php:18 PhanPluginRedundantClosureComment Redundant doc comment on closure Closure(int $input) : int: "/**\n * @param int \$input\n * @return int\n */"
-src_copy/006_redundant_comment.php:27 PhanPluginRedundantMethodComment Redundant doc comment on method f(): "/**\n     *\n     */"
+src_copy/006_redundant_comment.php:8 PhanPluginRedundantFunctionComment Redundant doc comment on function returns_int(). Either add a description or remove the comment: '/** @return int */'
+src_copy/006_redundant_comment.php:18 PhanPluginRedundantClosureComment Redundant doc comment on closure Closure(int $input) : int. Either add a description or remove the comment: "/**\n * @param int \$input\n * @return int\n */"
+src_copy/006_redundant_comment.php:27 PhanPluginRedundantMethodComment Redundant doc comment on method f(). Either add a description or remove the comment: "/**\n     *\n     */"
