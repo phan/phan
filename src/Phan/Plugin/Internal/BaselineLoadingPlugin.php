@@ -12,6 +12,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\Paths;
 use Phan\PluginV3;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
@@ -50,7 +51,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             return;
         }
 
-        // file_suppressions and directory suppressions is currently the only way to suppress issues in a baseline. Other ways may be added later.
+        // file_suppressions and directory suppressions are currently the only way to suppress issues in a baseline. Other ways may be added later.
         $this->file_suppressions = $baseline['file_suppressions'] ?? [];
         $this->directory_suppressions = self::normalizeDirectorySuppressions($baseline['directory_suppressions'] ?? []);
     }
@@ -83,20 +84,28 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         array $parameters,
         ?Suggestion $suggestion
     ): bool {
-        $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
+        $file = $context->getFile();
+        $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$file] ?? [], true);
         if ($suppressed_by_file) {
             return true;
         }
 
+        // Support suppressing '.' in a baseline (may be useful when plugins affecting type inference get enabled)
+        $normalized_file = self::normalizeDirectoryPathString($file);
+        if (\in_array($issue_type, $this->directory_suppressions[''] ?? [], true)) {
+            if (!Paths::isAbsolutePath($issue_type) && \substr($normalized_file, 0, 3) !== '../') {
+                return true;
+            }
+        }
+
         // Not suppressed by file, check for suppression by directory
 
-        $parts = self::normalizeDirPathString($context->getFile());
-        $parts = explode('/', $parts);
-        array_pop($parts); // Remove file name
+        $parts = self::normalizeDirectoryPathString($context->getFile());
+        $parts = \explode('/', $parts);
+        \array_pop($parts); // Remove file name
 
         $dirPath = '';
-
-        // Check from least specific path to most specific path if any should be supressed
+        // Check from least specific path to most specific path if any should be suppressed
 
         foreach ($parts as $part) {
             if ($part === '') {
@@ -122,10 +131,15 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     private static function normalizeDirectorySuppressions(array $dir_suppressions): array
     {
         foreach ($dir_suppressions as $file_path => $rules) {
-            $new_file_path = self::normalizeDirPathString($file_path);
+            $new_file_path = self::normalizeDirectoryPathString($file_path);
 
-            if ($new_file_path != $file_path) {
-                $dir_suppressions[$new_file_path] = $rules;
+            if ($new_file_path !== $file_path) {
+                $old_suppressions = $dir_suppressions[$new_file_path] ?? null;
+                if ($old_suppressions) {
+                    $dir_suppressions[$new_file_path] = \array_merge($old_suppressions, $rules);
+                } else {
+                    $dir_suppressions[$new_file_path] = $rules;
+                }
                 unset($dir_suppressions[$file_path]);
             }
         }
@@ -137,15 +151,13 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      *
      * @param string $path
      */
-    private static function normalizeDirPathString(string $path): string
+    private static function normalizeDirectoryPathString(string $path): string
     {
-        $path = str_replace('\\', '/', $path);
-        $path = rtrim($path, '/');
-        if (strpos($path, './') === 0) {
-            $substr_path = substr($path, 2);
-            if ($substr_path !== false) {
-                return $substr_path;
-            }
+        $path = \str_replace('\\', '/', $path);
+        $path = \rtrim($path, '/');
+        $path = \preg_replace('@^(\./)+@', '', $path);
+        if ($path === '.') {
+            return '';
         }
         return $path;
     }
