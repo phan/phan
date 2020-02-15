@@ -228,7 +228,7 @@ Usage: ./phan [options] [files...]
 
   Paths such as .phan/baseline.php, .phan/baseline_deadcode.php, etc. are recommended.
 
- -B, -load-baseline <path/to/baseline.php>
+ -B, --load-baseline <path/to/baseline.php>
   Loads a baseline of pre-existing issues to suppress.
 
   (For best results, the baseline should be generated with the same/similar
