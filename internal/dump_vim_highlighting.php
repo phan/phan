@@ -7,7 +7,7 @@ use Phan\Issue;
 
 require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';
 
-call_user_func(function () {
+call_user_func(static function () {
     $issue_groups = [
         Issue::SEVERITY_CRITICAL => [],
         Issue::SEVERITY_NORMAL => [],

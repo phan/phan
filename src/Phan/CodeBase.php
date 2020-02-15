@@ -292,7 +292,8 @@ class CodeBase
      * Returns true if hydration of elements is enabled.
      * This is called after the parse phase is finished.
      */
-    public function shouldHydrateRequestedElements(): bool {
+    public function shouldHydrateRequestedElements(): bool
+    {
         return $this->should_hydrate_requested_elements;
     }
 

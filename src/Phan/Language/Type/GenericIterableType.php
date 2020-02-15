@@ -246,7 +246,8 @@ final class GenericIterableType extends IterableType
     /**
      * @override
      */
-    public function withIsNullable(bool $is_nullable): Type {
+    public function withIsNullable(bool $is_nullable): Type
+    {
         if ($is_nullable === $this->is_nullable) {
             return $this;
         }
