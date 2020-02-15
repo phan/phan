@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 2.4.10 (dev)
 ------------------------
 
+New Features(CLI):
++ Support using `directory_suppressions` in Phan baseline files in `--load-baseline`. (#3698)
+
 New Features(Analysis):
 + Emit `PhanUndeclaredConstantOfClass` (severity critical) for undeclared class constants instead of `PhanUndeclaredConstant` (severity normal)
   This should not be confused with `PhanUndeclaredClassConstant`, which already exists and refers to accessing class constants of classes that don't exist.

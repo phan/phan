@@ -197,7 +197,7 @@ EOT;
     private function generateSuppressFileEntries(): string
     {
         $result = '';
-        $result .= " // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
+        $result .= "     // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
         foreach ($this->suppressions_by_file as $fileName => $type_set) {
@@ -208,6 +208,8 @@ EOT;
             }, $types)) . "],\n";
         }
         $result .= "    ],\n";
+        $result .= "    // 'directory_suppressions' => ['src/directory_name' => ['PhanIssueNames']] can be manually added if needed.\n";
+        $result .= "    // (directory_suppressions will currently be ignored by subsequent calls to --save-baseline, but may be preserved in future Phan releases)\n";
         return $result;
     }
 }
