@@ -140,7 +140,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 $code_base,
                 $method->getContext(),
                 self::RedundantMethodComment,
-                'Redundant doc comment on method {METHOD}(): {COMMENT}',
+                'Redundant doc comment on method {METHOD}(). Either add a description or remove the comment: {COMMENT}',
                 [$method->getName(), $encoded_comment]
             );
         } elseif ($method instanceof Func && $method->isClosure()) {
@@ -148,7 +148,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 $code_base,
                 $method->getContext(),
                 self::RedundantClosureComment,
-                'Redundant doc comment on closure {FUNCTION}: {COMMENT}',
+                'Redundant doc comment on closure {FUNCTION}. Either add a description or remove the comment: {COMMENT}',
                 [$method->getNameForIssue(), $encoded_comment]
             );
         } else {
@@ -156,7 +156,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 $code_base,
                 $method->getContext(),
                 self::RedundantFunctionComment,
-                'Redundant doc comment on function {FUNCTION}(): {COMMENT}',
+                'Redundant doc comment on function {FUNCTION}(). Either add a description or remove the comment: {COMMENT}',
                 [$method->getName(), $encoded_comment]
             );
         }
@@ -207,7 +207,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 $code_base,
                 $method->getContext()->withLineNumberStart($comment->getReturnLineno()),
                 self::RedundantReturnComment,
-                'Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}',
+                'Redundant @return {TYPE} on function {FUNCTION}. Either add a description or remove the @return annotation: {COMMENT}',
                 [$comment_return_type, $method->getNameForIssue(), $line]
             );
             return;

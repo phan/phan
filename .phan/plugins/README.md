@@ -427,10 +427,10 @@ E.g. this will warn about `/** @return void */ function () : void {}` and `/** *
 
 This supports `--automatic-fix`
 
-- **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(): {COMMENT}`
-- **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(): {COMMENT}`
-- **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}: {COMMENT}`
-- **PhanPluginRedundantReturnComment**: `Redundant @return {TYPE} on function {FUNCTION}: {COMMENT}`
+- **PhanPluginRedundantFunctionComment**: `Redundant doc comment on function {FUNCTION}(). Either add a description or remove the comment: {COMMENT}`
+- **PhanPluginRedundantMethodComment**: `Redundant doc comment on method {METHOD}(). Either add a description or remove the comment: {COMMENT}`
+- **PhanPluginRedundantClosureComment**: `Redundant doc comment on closure {FUNCTION}. Either add a description or remove the comment: {COMMENT}`
+- **PhanPluginRedundantReturnComment**: `Redundant @return {TYPE} on function {FUNCTION}. Either add a description or remove the @return annotation: {COMMENT}`
 
 #### PreferNamespaceUsePlugin.php
 
