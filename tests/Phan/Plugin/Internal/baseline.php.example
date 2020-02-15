@@ -1,0 +1,11 @@
+<?php
+return [
+    'file_suppressions' => [
+        'src/test.php' => ['PhanUndeclaredMethod'],
+    ],
+    'directory_suppressions' => [
+        'src/' => ['PhanUnreferencedUseNormal'],
+        'lib' => ['PhanNoopConstant'],
+        '.' => ['PhanUndeclaredProperty'],
+    ],
+];
