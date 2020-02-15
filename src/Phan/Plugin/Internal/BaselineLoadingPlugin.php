@@ -82,11 +82,11 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         int $lineno,
         array $parameters,
         ?Suggestion $suggestion
-    ): bool
-    {
+    ): bool {
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$context->getFile()] ?? [], true);
-        if ($suppressed_by_file)
+        if ($suppressed_by_file) {
             return true;
+        }
 
         // Not suppressed by file, check for suppression by directory
 
@@ -122,14 +122,12 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     private static function normalizeDirectorySuppressions(array $dir_suppressions): array
     {
         foreach ($dir_suppressions as $file_path => $rules) {
-
             $new_file_path = self::normalizeDirPathString($file_path);
 
             if ($new_file_path != $file_path) {
                 $dir_suppressions[$new_file_path] = $rules;
                 unset($dir_suppressions[$file_path]);
             }
-
         }
         return $dir_suppressions;
     }
@@ -139,13 +137,15 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      *
      * @param string $path
      */
-    private static function normalizeDirPathString(string $path): string {
+    private static function normalizeDirPathString(string $path): string
+    {
         $path = str_replace('\\', '/', $path);
         $path = rtrim($path, '/');
         if (strpos($path, './') === 0) {
             $substr_path = substr($path, 2);
-            if ($substr_path !== false)
+            if ($substr_path !== false) {
                 return $substr_path;
+            }
         }
         return $path;
     }
@@ -159,8 +159,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     public function getIssueSuppressionList(
         CodeBase $unused_code_base,
         string $unused_file_path
-    ): array
-    {
+    ): array {
         return [];
     }
 }

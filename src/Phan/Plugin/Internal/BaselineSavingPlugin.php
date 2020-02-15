@@ -205,7 +205,7 @@ EOT;
             \usort($types, 'strcmp');
             $result .= "        '$fileName' => [" . \implode(', ', \array_map(static function (string $type): string {
                     return "'" . $type . "'";
-                }, $types)) . "],\n";
+            }, $types)) . "],\n";
         }
         $result .= "    ],\n";
         return $result;
