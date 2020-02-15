@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
+use Phan\CLI;
 use Phan\CodeBase;
-use Phan\Language\Context;
-use Phan\Language\Element\TypedElement;
-use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\IssueInstance;
 use Phan\Language\FileRef;
-use Phan\Language\FQSEN;
-use Phan\Language\Type;
-use Phan\Language\UnionType;
 use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\FinalizeProcessCapability;
-use Phan\PluginV3\SuppressionCapability;
-use Phan\Suggestion;
+use Phan\PluginV3\SubscribeEmitIssueCapability;
 
 /**
  * This plugin generates a baseline from the issues that weren't suppressed by other plugins or config settings.
@@ -24,7 +19,7 @@ use Phan\Suggestion;
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
 final class BaselineSavingPlugin extends PluginV3 implements
-    SuppressionCapability,
+    SubscribeEmitIssueCapability,
     FinalizeProcessCapability
 {
     /** @var string the path of the file to save to. */
@@ -53,66 +48,32 @@ final class BaselineSavingPlugin extends PluginV3 implements
     }
 
     /**
-     * This will be called if both of these conditions hold:
+     * This method is called before Phan emits an issue not suppressed elsewhere.
      *
-     * 1. Phan's file, line and element-based suppressions did not suppress the issue
-     * 2. Earlier plugins didn't suppress the issue.
-     *
-     * @param CodeBase $unused_code_base
-     *
-     * @param string $issue_type
-     * The type of issue to emit such as Issue::ParentlessClass
-     *
-     * @param int $lineno
-     * The line number where the issue was found
-     *
-     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters @phan-unused-param
-     *
-     * @param ?Suggestion $suggestion @phan-unused-param
+     * @param IssueInstance $issue_instance
      *
      * @return false this plugin does not suppress anything - it just records issues to generate a file that can be used by BaselineReadingPlugin in subsequent runs.
      */
-    public function shouldSuppressIssue(
-        CodeBase $unused_code_base,
-        Context $context,
-        string $issue_type,
-        int $lineno,
-        array $parameters,
-        ?Suggestion $suggestion
+    public function onEmitIssue(
+        IssueInstance $issue_instance
     ): bool {
-        $file_path = $context->getFile();
+        $file_path = $issue_instance->getFile();
+        $file_path = FileRef::getProjectRelativePathForPath($file_path);
         if (Phan::isExcludedAnalysisFile($file_path)) {
-            // Phan might call Issue::maybeEmit on code in vendor.
-            // Don't bother loading or tokenizing the code in that case.
             return false;
         }
-        $file_path = FileRef::getProjectRelativePathForPath($file_path);
 
         // Would prefer to use formatSortableKey, but this doesn't provide the IssueInstance, and plugins have issues that can't be fetched with Issue::fromType.
-        $hash = \sha1($lineno . ':' . \implode('|', \array_map('strval', $parameters)));
+        $hash = \sha1($issue_instance->__toString());
+        $issue_type = $issue_instance->getIssue()->getType();
         $this->suppressions_by_file[$file_path][$issue_type] = true;
         $this->suppressions_by_type[$issue_type][$hash] = true;
         return false;
     }
 
-    /**
-     * @return array<string,list<int>> empty because this list doesn't suppress anything
-     * @override
-     *
-     * This list is externally used only by UnusedSuppressionPlugin
-     *
-     * An empty array can be returned if this is unknown.
-     */
-    public function getIssueSuppressionList(
-        CodeBase $unused_code_base,
-        string $unused_file_path
-    ): array {
-        return [];
-    }
-
     public function finalizeProcess(CodeBase $unused_code_base): void
     {
-        \fwrite(\STDERR, "Saving a new issue baseline to '$this->baseline_path'\nSubsequent Phan runs can read from this file with --load-baseline='$this->baseline_path' to ignore pre-existing issues.\n");
+        CLI::printToStderr("Saving a new issue baseline to '$this->baseline_path'\nSubsequent Phan runs can read from this file with --load-baseline='$this->baseline_path' to ignore pre-existing issues.\n");
         $contents = $this->generateAllBaselineContents();
         \file_put_contents($this->baseline_path, $contents);
     }
@@ -127,6 +88,7 @@ final class BaselineSavingPlugin extends PluginV3 implements
  * The pre-existing issues listed in this file won't be emitted.
  *
  * This file can be updated by invoking Phan with --save-baseline=path/to/baseline.php
+ * (can be combined with --load-baseline)
  */
 return [
 
@@ -197,7 +159,7 @@ EOT;
     private function generateSuppressFileEntries(): string
     {
         $result = '';
-        $result .= "     // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
+        $result .= "    // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
         foreach ($this->suppressions_by_file as $fileName => $type_set) {
@@ -208,7 +170,7 @@ EOT;
             }, $types)) . "],\n";
         }
         $result .= "    ],\n";
-        $result .= "    // 'directory_suppressions' => ['src/directory_name' => ['PhanIssueNames']] can be manually added if needed.\n";
+        $result .= "    // 'directory_suppressions' => ['src/directory_name' => ['PhanIssueName1', 'PhanIssueName2']] can be manually added if needed.\n";
         $result .= "    // (directory_suppressions will currently be ignored by subsequent calls to --save-baseline, but may be preserved in future Phan releases)\n";
         return $result;
     }

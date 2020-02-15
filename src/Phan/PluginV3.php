@@ -109,6 +109,15 @@ use Phan\PluginV3\IssueEmitter;
  *     beforeAnalyze is invoked immediately after analyzing methods and before forking analysis workers and before starting the analysis phase.
  *
  *     (implement \Phan\PluginV3\BeforeAnalyzePhaseCapability)
+ * 17. public function onEmitIssue(IssueInstance $issue_instance): bool
+ *
+ *     This method is called before Phan emits an (unsuppressed) issue.
+ *     Returns true if the issue should be suppressed.
+ *     Most plugins should use SuppressionCapability instead,
+ *     so that more generic issues can be used to suppress specific issues,
+ *     and to avoid interfering with baselines.
+ *
+ *     (implement \Phan\PluginV3\SubscribeEmitIssueCapability)
  */
 abstract class PluginV3
 {

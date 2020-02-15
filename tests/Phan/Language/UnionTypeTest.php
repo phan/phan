@@ -767,22 +767,22 @@ final class UnionTypeTest extends BaseTest
 
     public function testIntersectionTypeFallback(): void
     {
-        $type = self::makePHPDocUnionType('MyClass&MyInterface');
+        $type = self::makePHPDocUnionType('MyClass&MyInterfaceUTT');
         $this->assertSame(2, $type->typeCount());
-        $this->assertSame('\MyClass|\MyInterface', (string)$type);
+        $this->assertSame('\MyClass|\MyInterfaceUTT', (string)$type);
     }
 
     public function testIntersectionTypeInArrayFallback(): void
     {
-        $type = self::makePHPDocUnionType('(MyClass&MyInterface)[]');
+        $type = self::makePHPDocUnionType('(MyClass&MyInterfaceUTT)[]');
         $this->assertSame(2, $type->typeCount());
-        $this->assertSame('\MyClass[]|\MyInterface[]', (string)$type);
+        $this->assertSame('\MyClass[]|\MyInterfaceUTT[]', (string)$type);
     }
     public function testIntersectionTypeInShapeFallback(): void
     {
-        $type = self::makePHPDocUnionType('array{keyName:MyClass&MyInterface,other:array}');
+        $type = self::makePHPDocUnionType('array{keyName:MyClass&MyInterfaceUTT,other:array}');
         $this->assertSame(1, $type->typeCount());
-        $this->assertSame('array{keyName:\MyClass|\MyInterface,other:array}', (string)$type);
+        $this->assertSame('array{keyName:\MyClass|\MyInterfaceUTT,other:array}', (string)$type);
         $array_shape_type = $type->getTypeSet()[0];
         $this->assertInstanceof(ArrayShapeType::class, $array_shape_type);
         $this->assertSame(2, \count($array_shape_type->getFieldTypes()));
@@ -790,8 +790,8 @@ final class UnionTypeTest extends BaseTest
 
     public function testIntersectionTypeInAngleBracketsFallback(): void
     {
-        $type = self::makePHPDocUnionType('list<\MyClass&NS\MyInterface>');
+        $type = self::makePHPDocUnionType('list<\MyClass&NS\MyInterfaceUTT>');
         $this->assertSame(2, $type->typeCount());
-        $this->assertSame('list<\MyClass>|list<\NS\MyInterface>', (string)$type);
+        $this->assertSame('list<\MyClass>|list<\NS\MyInterfaceUTT>', (string)$type);
     }
 }

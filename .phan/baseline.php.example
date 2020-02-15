@@ -7,12 +7,12 @@
  * The pre-existing issues listed in this file won't be emitted.
  *
  * This file can be updated by invoking Phan with --save-baseline=path/to/baseline.php
+ * (can be combined with --load-baseline)
  */
 return [
     // # Issue statistics:
     // PhanTypeMismatchArgumentInternal : 1 occurrence
-
-     // Currently, file_suppressions and directory_suppressions are the only supported suppressions
+    // Currently, file_suppressions and directory_suppressions are the only supported suppressions
     'file_suppressions' => [
         '.phan/plugins/DuplicateExpressionPlugin.php' => ['PhanTypeMismatchArgumentInternal'],
     ],

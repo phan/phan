@@ -4978,6 +4978,12 @@ class Issue
     public static function emitInstance(
         IssueInstance $issue_instance
     ): void {
+        if (Phan::isExcludedAnalysisFile($issue_instance->getFile())) {
+            return;
+        }
+        if (ConfigPluginSet::instance()->onEmitIssue($issue_instance)) {
+            return;
+        }
         Phan::getIssueCollector()->collectIssue($issue_instance);
     }
 

@@ -5,17 +5,10 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use Phan\CLI;
-use Phan\CodeBase;
-use Phan\Language\Context;
-use Phan\Language\Element\TypedElement;
-use Phan\Language\Element\UnaddressableTypedElement;
-use Phan\Language\FQSEN;
-use Phan\Language\Type;
-use Phan\Language\UnionType;
+use Phan\IssueInstance;
 use Phan\Library\Paths;
 use Phan\PluginV3;
-use Phan\PluginV3\SuppressionCapability;
-use Phan\Suggestion;
+use Phan\PluginV3\SubscribeEmitIssueCapability;
 
 /**
  * Suppresses issues based on the contents of a baseline file.
@@ -23,7 +16,7 @@ use Phan\Suggestion;
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
 final class BaselineLoadingPlugin extends PluginV3 implements
-    SuppressionCapability
+    SubscribeEmitIssueCapability
 {
     /**
      * @var array<string,list<string>>
@@ -62,29 +55,23 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * 1. Phan's file and element-based suppressions did not suppress the issue
      * 2. Earlier plugins didn't suppress the issue.
      *
-     * @param CodeBase $code_base @phan-unused-param
+     * @param IssueInstance $issue_instance the issue that would be emitted
      *
-     * @param string $issue_type
-     * The type of issue to emit such as Issue::ParentlessClass
-     *
-     * @param int $lineno @phan-unused-param
-     * The line number where the issue was found
-     *
-     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters @phan-unused-param
-     *
-     * @param ?Suggestion $suggestion @phan-unused-param
-     *
-     * @return bool true if the given issue instance should be suppressed, given the current file contents.
+     * @return bool true if the issue should be suppressed for the baseline.
+     * @override
      */
-    public function shouldSuppressIssue(
-        CodeBase $code_base,
-        Context $context,
-        string $issue_type,
-        int $lineno,
-        array $parameters,
-        ?Suggestion $suggestion
-    ): bool {
-        $file = $context->getFile();
+    public function onEmitIssue(IssueInstance $issue_instance): bool {
+        return $this->shouldSuppressIssueTypeInFile(
+            $issue_instance->getIssue()->getType(),
+            $issue_instance->getFile()
+        );
+    }
+
+    /**
+     * Check if the given issue type should be suppressed in the given file path.
+     * @internal - used for testing
+     */
+    public function shouldSuppressIssueTypeInFile(string $issue_type, string $file) : bool {
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$file] ?? [], true);
         if ($suppressed_by_file) {
             return true;
@@ -100,7 +87,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // Not suppressed by file, check for suppression by directory
 
-        $parts = self::normalizeDirectoryPathString($context->getFile());
+        $parts = self::normalizeDirectoryPathString($file);
         $parts = \explode('/', $parts);
         \array_pop($parts); // Remove file name
 
@@ -160,18 +147,5 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             return '';
         }
         return $path;
-    }
-
-    /**
-     * @return array{} the baseline plugin is not meant for use with UnusedSuppressionPlugin.
-     *
-     * This helper method is externally used only by UnusedSuppressionPlugin
-     * @override
-     */
-    public function getIssueSuppressionList(
-        CodeBase $unused_code_base,
-        string $unused_file_path
-    ): array {
-        return [];
     }
 }

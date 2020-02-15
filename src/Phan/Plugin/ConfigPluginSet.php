@@ -13,6 +13,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -65,6 +66,7 @@ use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\PreAnalyzeNodeCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
+use Phan\PluginV3\SubscribeEmitIssueCapability;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
 use Throwable;
@@ -100,6 +102,7 @@ final class ConfigPluginSet extends PluginV3 implements
     \Phan\PluginV3\BeforeAnalyzeFileCapability,
     \Phan\PluginV3\FinalizeProcessCapability,
     ReturnTypeOverrideCapability,
+    SubscribeEmitIssueCapability,
     SuppressionCapability
 {
 
@@ -159,6 +162,9 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /** @var list<ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $return_type_override_plugin_set;
+
+    /** @var list<SubscribeEmitIssueCapability>|null - plugins which get called on issues that aren't suppressed. */
+    private $subscribe_emit_issue_plugin_set;
 
     /** @var list<SuppressionCapability>|null - plugins which can be used to suppress issues or inspect suppressions. */
     private $suppression_plugin_set;
@@ -643,6 +649,45 @@ final class ConfigPluginSet extends PluginV3 implements
         return $result;
     }
 
+    /** @var list<IssueInstance> $issues */
+    private $deferred_emitted_issues = [];
+
+    /**
+     * This method is called before Phan emits an issue not suppressed elsewhere.
+     *
+     * @return bool true if the issue should be suppressed.
+     *              Most plugins should use SuppressionCapability instead,
+     *              so that more generic issues can be used to suppress specific issues,
+     *              and to avoid interfering with baselines.
+     */
+    public function onEmitIssue(IssueInstance $issue_instance): bool
+    {
+        if (is_null($this->plugin_set)) {
+            $this->deferred_emitted_issues[] = $issue_instance;
+            return false;
+        }
+        if ($this->deferred_emitted_issues) {
+            try {
+                foreach ($this->deferred_emitted_issues as $issue) {
+                    foreach ($this->subscribe_emit_issue_plugin_set as $plugin) {
+                        if ($plugin->onEmitIssue($issue)) {
+                            break;
+                        }
+                    }
+                }
+            } finally {
+                $this->deferred_emitted_issues = [];
+            }
+        }
+
+        foreach ($this->subscribe_emit_issue_plugin_set as $plugin) {
+            if ($plugin->onEmitIssue($issue_instance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** @var ?NodeSelectionPlugin - If the language server requests more information about a node, this may be set (e.g. for "Go To Definition") */
     private $node_selection_plugin;
 
@@ -887,6 +932,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->analyze_class_plugin_set         = self::filterByClass($plugin_set, AnalyzeClassCapability::class);
         $this->finalize_process_plugin_set      = self::filterByClass($plugin_set, FinalizeProcessCapability::class);
         $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->subscribe_emit_issue_plugin_set  = self::filterByClass($plugin_set, SubscribeEmitIssueCapability::class);
         $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class, \Phan\PluginV2\SuppressionCapability::class);
         $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
