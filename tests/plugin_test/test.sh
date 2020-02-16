@@ -32,6 +32,7 @@ echo "Comparing the output:"
 # Normalize PHP_VERSION_ID
 # and remove php 8.0 warnings
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
+    -e 's@src/157_polyfill_compilation_warning.php:3 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Parse error: Unterminated comment starting line 3"@src/157_polyfill_compilation_warning.php:77 PhanSyntaxCompileWarning Saw a warning while parsing: Unterminated comment starting line 3@g' \
     -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
     $ACTUAL_PATH
 

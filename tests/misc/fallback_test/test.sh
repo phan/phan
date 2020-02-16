@@ -20,6 +20,7 @@ sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
 sed -i \
     -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
     -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
+    -e "s/expecting identifier (T_STRING) or static (T_STATIC) or namespace (T_NAMESPACE)/expecting identifier (T_STRING) or namespace (T_NAMESPACE)/" \
     -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
     -e "s/is \\\\Countable|\\\\SimpleXMLElement|\\\\Traversable|iterable/is \\\\SimpleXMLElement|\\\\Traversable|iterable/" \
     -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \

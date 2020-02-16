@@ -1,7 +1,6 @@
-src/142_phan_ignore_reference.php:17 PhanPluginPrintfUnusedArgument Format string "Hello, %s!" does not use provided argument #2
-src/142_phan_ignore_reference.php:18 PhanPluginPrintfVariableFormatString Code $fmt2 has a dynamic format string that could not be inferred by Phan
-src/142_phan_ignore_reference.php:20 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Fatal error: Only variables can be passed by reference"
-src/142_phan_ignore_reference.php:20 PhanTypeMismatchArgumentReal Argument 1 ($fmt) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:8
-src/142_phan_ignore_reference.php:20 PhanTypeMismatchArgumentReal Argument 2 ($fmt2) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:8
-src/142_phan_ignore_reference.php:20 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \prepend_format_string()
-src/142_phan_ignore_reference.php:20 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 2 of \prepend_format_string()
+src/142_phan_ignore_reference.php:20 PhanPluginPrintfVariableFormatString Code $fmt has a dynamic format string that could not be inferred by Phan
+src/142_phan_ignore_reference.php:21 PhanPluginPrintfVariableFormatString Code $fmt2 has a dynamic format string that could not be inferred by Phan
+src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 1 ($fmt) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
+src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 2 ($fmt2) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
+src/142_phan_ignore_reference.php:23 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \prepend_format_string()
+src/142_phan_ignore_reference.php:23 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 2 of \prepend_format_string()

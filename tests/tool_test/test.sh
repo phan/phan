@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-EXPECTED_PATH=json_stubs.expected
+if php -r 'exit(PHP_MAJOR_VERSION >= 8 ? 0 : 1);'; then
+    EXPECTED_PATH=json_stubs.expected80
+else
+    EXPECTED_PATH=json_stubs.expected
+fi
 ACTUAL_PATH=all_output.actual
 if [ ! -e $EXPECTED_PATH  ]; then
 	echo "Error: must run this script from tests/tool_test folder" 1>&2

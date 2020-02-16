@@ -5,7 +5,7 @@ function accepts_string(string $s) : void {
 }
 
 call_user_func(function () {
-    $values = sscanf('10 values', '%d');
+    $values = sscanf('10 values', '%d'); '@phan-debug-var $values';
     foreach ($values as $i => $value) {
         echo strlen($i);
         echo strlen($value);

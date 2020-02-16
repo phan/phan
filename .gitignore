@@ -19,3 +19,4 @@ nohup.out
 src_copy
 phpspy.*
 .phpunit.result.cache
+errors.txt

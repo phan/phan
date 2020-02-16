@@ -5,9 +5,12 @@
  * @param string &$fmt @phan-ignore-reference
  * @param string &$fmt2
  */
+if (!function_exists('prepend_format_string')) {
+// The compile-time warning about passing non-variable to a reference (for known functions) stopped being a compile-time warning in php 8.
 function prepend_format_string(string &$fmt, string &$fmt2) {
     $fmt = 'INFO: ' . $fmt;
     $fmt2 = 'INFO: ' . $fmt2;
+}
 }
 
 function test_ignore_reference() {
