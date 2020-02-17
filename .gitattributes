@@ -14,3 +14,4 @@
 /plugins           export-ignore
 /test              export-ignore
 /tests             export-ignore
+/.editorconfig     export-ignore
