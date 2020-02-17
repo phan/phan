@@ -3920,7 +3920,7 @@ class Issue
                 self::RedefinedClassReference,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "Saw reference to {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. This issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.",
+                "Saw reference to {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.",
                 self::REMEDIATION_B,
                 8012
             ),
