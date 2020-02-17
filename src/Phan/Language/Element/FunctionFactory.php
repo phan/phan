@@ -53,13 +53,13 @@ class FunctionFactory
         );
         $function->setIsDeprecated($reflection_function->isDeprecated());
         $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
-        if ($real_return_type->isEmpty()) {
-            if (Config::getValue('assume_real_types_for_internal_functions')) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
-                $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$namespaced_name] ?? null;
-                if (\is_string($real_type_string)) {
-                    $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
-                }
+        if (Config::getValue('assume_real_types_for_internal_functions')) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$namespaced_name] ?? null;
+            if (\is_string($real_type_string)) {
+                // Override it with Phan's information, useful for list<string> overriding array
+                // TODO: Validate that Phan's signatures are compatible (e.g. nullability)
+                $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
             }
         }
         $function->setRealReturnType($real_return_type);

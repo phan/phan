@@ -17,6 +17,9 @@ New Features(Analysis):
 + Emit `PhanCompatibleScalarTypePHP56` and `PhanCompatibleAnyReturnTypePHP56` for function signatures when `target_php_version` is `'5.6'` (#915)
   (This also requires that `backward_compatibility_checks` be enabled.)
 + Use more accurate line numbers for warnings about function parameters.
++ When `assume_real_types_for_internal_functions` is on *and* a function has a non-empty return type in Reflection,
+  make Phan's known real type signatures override the real reflection return type information (useful when Phan infers `list<string>` and Reflection says `array`).
+  Phan previously used the type from Reflection.
 
 Plugins:
 + Add `SubscribeEmitIssueCapability` to detect or suppress issues immediately before they are emitted. (#3719)

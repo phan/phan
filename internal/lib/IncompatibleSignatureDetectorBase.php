@@ -327,7 +327,7 @@ EOT;
             $method_name = $this->aliases[$method_name];
         }
         if (strpos($method_name, '::') !== false) {
-            $parts = \explode('::', $method_name) ?: [];
+            $parts = \explode('::', $method_name);
             if (\count($parts) !== 2) {
                 throw new InvalidArgumentException("Wrong number of parts in $method_name");
             }

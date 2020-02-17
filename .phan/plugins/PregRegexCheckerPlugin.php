@@ -48,7 +48,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                 // Annoyingly, preg_match would not warn about the `/e` modifier, removed in php 7.
                 // Use `preg_replace` instead (The eval body is empty and phan requires 7.0+ to run)
                 $result = @\preg_replace($pattern, '', '');
-                if ($result === false || $result === null) {
+                if (!\is_string($result)) {
                     return \error_get_last() ?? [];
                 }
                 return null;

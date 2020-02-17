@@ -1,3 +1,4 @@
+src/004_array_real_key.php:8 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type int|list<mixed>(real=?int|?list<mixed>)
 src/004_array_real_key.php:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is int but \strlen() takes string
 src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
 src/004_array_real_key.php:19 PhanTypeMismatchArgumentReal Argument 1 ($s) is int but \accepts_string() takes string defined at src/004_array_real_key.php:3

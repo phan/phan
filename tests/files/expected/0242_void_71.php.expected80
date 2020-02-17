@@ -1,5 +1,0 @@
-%s:3 PhanSyntaxReturnValueInVoid Syntax error: void function f2() must not return a value (did you mean "return;" instead of "return rand(0, 2);"?)
-%s:4 PhanTypeMissingReturn Method \f3 is declared to return int but has no return value
-%s:5 PhanRedefineFunction Function f3 defined at %s:5 was previously defined at %s:4
-%s:5 PhanTypeMissingReturn Method \f3 is declared to return int but has no return value
-%s:6 PhanSyntaxReturnExpectedValue Syntax error: Function f5() with return type ?string must return a value (did you mean "return null" instead of "return"?)
