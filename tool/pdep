@@ -177,11 +177,13 @@ call_user_func(static function () : void {
         pdep_usage(1);
     }
 
+    $cwd = \getcwd();
+
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli_builder->setOption('allow-polyfill-parser');
     $cli_builder->setOption('processes', '1');
     $cli_builder->setOption('plugin', dirname($tool_dir) . '/src/Phan/Plugin/Internal/DependencyGraphPlugin.php');
-    $cli_builder->setOption('config-file', dirname($tool_dir) . '/internal/pdep_config.php');
+    $cli_builder->setOption('config-file', "$cwd/.phan/pdep_config.php");
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli = $cli_builder->build();
     $putenv = static function (string $key, string $value) : void {
