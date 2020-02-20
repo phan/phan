@@ -1,7 +1,7 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.4.10 (dev)
-------------------------
+Feb 20 2020, Phan 2.5.0
+-----------------------
 
 New Features(CLI):
 + Support using `directory_suppressions` in Phan baseline files in `--load-baseline`. (#3698)
