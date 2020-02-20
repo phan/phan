@@ -365,7 +365,8 @@ class ParseVisitor extends ScopeVisitor
         }
         if ($type_node) {
             try {
-                $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))->fromTypeInSignature($type_node);
+                // Normalize to normalize php8 union types such as int|false|null to ?int|?false
+                $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))->fromTypeInSignature($type_node)->asNormalizedTypes();
             } catch (IssueException $e) {
                 Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                 $real_union_type = UnionType::empty();
@@ -473,8 +474,15 @@ class ParseVisitor extends ScopeVisitor
                             $union_type
                         );
                         $union_type = $real_union_type;
+                    } else {
+                        $original_union_type = $union_type;
+                        foreach ($real_union_type->getTypeSet() as $type) {
+                            if (!$type->asPHPDocUnionType()->isStrictSubtypeOf($this->code_base, $original_union_type)) {
+                                $union_type = $union_type->withType($type);
+                            }
+                        }
                     }
-                    $union_type = $union_type->withRealTypeSet($real_union_type->getTypeSet());
+                    $union_type = $union_type->withRealTypeSet($real_union_type->getTypeSet())->asNormalizedTypes();
                 }
             }
 

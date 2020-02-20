@@ -443,7 +443,7 @@ class CLI
                             }
                         }
                         throw new UsageException(
-                            "Unable to read file $file_path",
+                            "Unable to read --file-list of $file_path",
                             EXIT_FAILURE,
                             null,
                             true
@@ -1929,9 +1929,15 @@ EOB
                 if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                     return false;
                 }
-                if (!$file_info->isFile() || !$file_info->isReadable()) {
+                if (!$file_info->isFile()) {
+                    // Handle symlinks to invalid real paths
+                    $file_path = $file_info->getRealPath() ?: $file_info->__toString();
+                    CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isFile() is false for SplFileInfo->getType() == " . \var_export(@$file_info->getType(), true) . "\n");
+                    return false;
+                }
+                if (!$file_info->isReadable()) {
                     $file_path = $file_info->getRealPath();
-                    CLI::printErrorToStderr("Unable to read file $file_path\n");
+                    CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isReadable() is false, getPerms()=" . \sprintf("%o(octal)", @$file_info->getPerms()) . "\n");
                     return false;
                 }
 
