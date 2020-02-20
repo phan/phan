@@ -5,6 +5,7 @@ Phan NEWS
 
 New Features(CLI):
 + Support using `directory_suppressions` in Phan baseline files in `--load-baseline`. (#3698)
++ Improve error message for warnings about Phan being unable to read files in the analyzed directory.
 
 New Features(Analysis):
 + Instead of failing to parse intersection types in phpdoc entirely, parse them as if they were union types. (#1629)
