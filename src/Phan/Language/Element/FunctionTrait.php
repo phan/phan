@@ -831,7 +831,11 @@ trait FunctionTrait
             }
         }
         // Keep the real type set of the parameter to make redundant condition detection more accurate.
-        $parameter->setUnionType($parameter->getNonVariadicUnionType()->withRealTypeSet($real_type_set));
+        $new_parameter_type = $parameter->getNonVariadicUnionType()->withRealTypeSet($real_type_set);
+        if ($real_type_set) {
+            $new_parameter_type = $new_parameter_type->asNormalizedTypes();
+        }
+        $parameter->setUnionType($new_parameter_type);
     }
 
     private static function inferNormalizedTypesOfDefault(UnionType $default_type): UnionType
@@ -1367,7 +1371,12 @@ trait FunctionTrait
                     $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
                     if ($normalized_phpdoc_return_type) {
                         // TODO: How does this currently work when there are multiple types in the union type that are compatible?
-                        $this->setUnionType($normalized_phpdoc_return_type->withRealTypeSet($real_return_type->getTypeSet()));
+                        $real_type_set = $real_return_type->getTypeSet();
+                        $new_return_type = $normalized_phpdoc_return_type->withRealTypeSet($real_type_set);
+                        if ($real_type_set) {
+                            $new_return_type = $new_return_type->asNormalizedTypes();
+                        }
+                        $this->setUnionType($new_return_type);
                     } else {
                         // This check isn't urgent to fix, and is specific to nullable casting rules,
                         // so use a different issue type.
