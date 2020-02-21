@@ -12,7 +12,7 @@ use Phan\Language\Element\Property;
  * after parsing and before analyzing.
  * @suppress PhanDeprecatedInterface
  */
-interface AnalyzePropertyCapability extends \Phan\PluginV2\AnalyzePropertyCapability
+interface AnalyzePropertyCapability
 {
     /**
      * Analyze (and modify) a property definition,

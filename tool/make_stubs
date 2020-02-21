@@ -59,7 +59,7 @@ EOT;
             self::printHelpAndExit('', 0);
         }
 
-        $code_base = require_once(dirname(__DIR__) . '/src/codebase.php');
+        $code_base = require(dirname(__DIR__) . '/src/codebase.php');
 
         $extension_name = $options['e'] ?? $options['extension'] ?? null;
         if (is_string($extension_name)) {

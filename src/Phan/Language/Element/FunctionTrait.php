@@ -389,32 +389,12 @@ trait FunctionTrait
     }
 
     /**
-     * True if this method returns a value
-     * @deprecated use hasReturn
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getHasReturn(): bool
-    {
-        return $this->hasReturn();
-    }
-
-    /**
      * @return bool
      * True if this method yields any value(i.e. it is a \Generator)
      */
     public function hasYield(): bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_YIELD);
-    }
-
-    /**
-     * True if this method yields any value(i.e. it is a \Generator)
-     * @deprecated use hasYield
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getHasYield(): bool
-    {
-        return $this->hasYield();
     }
 
     /**

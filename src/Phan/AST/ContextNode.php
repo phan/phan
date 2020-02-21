@@ -57,10 +57,6 @@ use function strcasecmp;
 use function strpos;
 use function strtolower;
 
-if (!\function_exists('spl_object_id')) {
-    require_once __DIR__ . '/../../spl_object_id.php';
-}
-
 /**
  * Methods for an AST node in context
  * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
@@ -475,21 +471,6 @@ class ContextNode
         }
 
         return (string)$name_node;
-    }
-
-    /**
-     * @return UnionType the union type of the class for this class node. (Typically has just one Type, but only for kind \ast\AST_NAME)
-     * @throws FQSENException if class union type is invalid
-     * @deprecated call UnionTypeVisitor::unionTypeFromClassNode
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function getClassUnionType(): UnionType
-    {
-        return UnionTypeVisitor::unionTypeFromClassNode(
-            $this->code_base,
-            $this->context,
-            $this->node
-        );
     }
 
     // Constants for getClassList() API

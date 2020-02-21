@@ -4,27 +4,17 @@ declare(strict_types=1);
 
 namespace Phan\Tests\Plugin\Internal;
 
-use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
-use Phan\Tests\BaseTest;
-use Phan\Tests\CodeBaseAwareTestInterface;
+use Phan\Tests\CodeBaseAwareTest;
 
 /**
  * Unit tests of fixes to issues
  */
-final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestInterface
+final class IssueFixingPluginTest extends CodeBaseAwareTest
 {
-    /** @var CodeBase|null The code base within which this unit test is operating */
-    private $code_base = null;
-
-    public function setCodeBase(CodeBase $code_base = null): void
-    {
-        $this->code_base = $code_base;
-    }
-
     private const FILE = 'fix_test.php';
 
     /**

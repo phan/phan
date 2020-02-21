@@ -48,19 +48,19 @@ use Phan\Plugin\Internal\RequireExistsPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
 use Phan\Plugin\Internal\VariableTrackerPlugin;
-use Phan\PluginV2\AfterAnalyzeFileCapability;
-use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\BeforeAnalyzeCapability;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
-use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3;
+use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
+use Phan\PluginV3\BeforeAnalyzeCapability;
+use Phan\PluginV3\BeforeAnalyzeFileCapability;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
+use Phan\PluginV3\FinalizeProcessCapability;
+use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -91,16 +91,16 @@ use const STDERR;
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
  */
 final class ConfigPluginSet extends PluginV3 implements
-    \Phan\PluginV3\AfterAnalyzeFileCapability,
-    \Phan\PluginV3\AnalyzeClassCapability,
-    \Phan\PluginV3\AnalyzeFunctionCapability,
+    AfterAnalyzeFileCapability,
+    AnalyzeClassCapability,
+    AnalyzeFunctionCapability,
     AnalyzeFunctionCallCapability,
-    \Phan\PluginV3\AnalyzeMethodCapability,
-    \Phan\PluginV3\AnalyzePropertyCapability,
-    \Phan\PluginV3\BeforeAnalyzeCapability,
+    AnalyzeMethodCapability,
+    AnalyzePropertyCapability,
+    BeforeAnalyzeCapability,
     BeforeAnalyzePhaseCapability,
-    \Phan\PluginV3\BeforeAnalyzeFileCapability,
-    \Phan\PluginV3\FinalizeProcessCapability,
+    BeforeAnalyzeFileCapability,
+    FinalizeProcessCapability,
     ReturnTypeOverrideCapability,
     SubscribeEmitIssueCapability,
     SuppressionCapability
@@ -942,7 +942,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->finalize_process_plugin_set      = self::filterByClass($plugin_set, FinalizeProcessCapability::class);
         $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
         $this->subscribe_emit_issue_plugin_set  = self::filterByClass($plugin_set, SubscribeEmitIssueCapability::class);
-        $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class, \Phan\PluginV2\SuppressionCapability::class);
+        $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class);
         $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
@@ -1008,7 +1008,7 @@ final class ConfigPluginSet extends PluginV3 implements
         PreAnalyzeNodeCapability $plugin
     ): void {
         $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
-        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class) && !\is_subclass_of($plugin_analysis_class, \Phan\PluginV2\PluginAwarePreAnalysisVisitor::class)) {
+        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
             throw new \TypeError(
                 \sprintf(
                     "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
@@ -1104,7 +1104,7 @@ final class ConfigPluginSet extends PluginV3 implements
         PostAnalyzeNodeCapability $plugin
     ): void {
         $plugin_analysis_class = $plugin->getPostAnalyzeNodeVisitorClassName();
-        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class) && !\is_subclass_of($plugin_analysis_class, \Phan\PluginV2\PluginAwarePostAnalysisVisitor::class)) {
+        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class)) {
             throw new \TypeError(
                 \sprintf(
                     "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
@@ -1171,17 +1171,14 @@ final class ConfigPluginSet extends PluginV3 implements
      * @template T
      * @param list<PluginV3> $plugin_set
      * @param class-string<T> $interface_name
-     * @param ?class-string $alternate_interface_name a legacy interface from PluginV2 accepting the same arguments
      * @return list<T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
      */
-    private static function filterByClass(array $plugin_set, string $interface_name, ?string $alternate_interface_name = null): array
+    private static function filterByClass(array $plugin_set, string $interface_name): array
     {
         $result = [];
         foreach ($plugin_set as $plugin) {
             if ($plugin instanceof $interface_name) {
-                $result[] = $plugin;
-            } elseif ($alternate_interface_name && $plugin instanceof $alternate_interface_name) {
                 $result[] = $plugin;
             }
         }

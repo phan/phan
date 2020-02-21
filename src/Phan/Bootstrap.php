@@ -26,20 +26,19 @@ if (function_exists('uopz_allow_exit') && !ini_get('uopz.disable')) {
     }
 }
 
-if (PHP_VERSION_ID < 70100) {
+if (PHP_VERSION_ID < 70200) {
     fprintf(
         STDERR,
-        "ERROR: Phan 2.x requires PHP 7.1+ to run, but PHP %s is installed." . PHP_EOL,
+        "ERROR: Phan 3.x requires PHP 7.2+ to run, but PHP %s is installed." . PHP_EOL,
         PHP_VERSION
     );
-    fwrite(STDERR, "PHP 7.0 reached its end of life in December 2018." . PHP_EOL);
+    fwrite(STDERR, "PHP 7.1 reached its end of life in December 2019." . PHP_EOL);
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
     // The version of vendor libraries this depends on will also require php 7.1
     exit(1);
 }
 
-// No Windows DLL downloads for php 7.1 and ast 1.0.5+
-const LATEST_KNOWN_PHP_AST_VERSION = PHP_VERSION_ID < 70200 ? '1.0.4' : '1.0.6';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.6';
 
 /**
  * Dump instructions on how to install php-ast
@@ -64,7 +63,7 @@ function phan_output_ast_installation_instructions(): void
                 LATEST_KNOWN_PHP_AST_VERSION,
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
                 PHP_ZTS ? 'ts' : 'nts',
-                PHP_VERSION_ID < 70200 ? 'vc14' : 'vc15',
+                'vc15',
                 PHP_INT_SIZE == 4 ? 'x86' : 'x64'
             );
             fwrite(STDERR, "(if that link doesn't work, check https://windows.php.net/downloads/pecl/releases/ast/ )" . PHP_EOL);
@@ -111,7 +110,7 @@ if (extension_loaded('ast')) {
         // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
         fprintf(
             STDERR,
-            "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
+            "ERROR: Phan 3.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
             $ast_version
         );
         phan_output_ast_installation_instructions();
@@ -120,7 +119,7 @@ if (extension_loaded('ast')) {
     } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.6+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 3.x requires php-ast 1.0.6+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
@@ -128,17 +127,12 @@ if (extension_loaded('ast')) {
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.6+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 3.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.6+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
         phan_output_ast_installation_instructions();
     }
-}
-// Load the more efficient spl_object_id polyfill before symfony/polyfill-php72 can be loaded.
-// Older releases of symfony/polyfill-php72 were buggy for 32-bit builds (https://github.com/symfony/polyfill/pull/248)
-if (!function_exists('spl_object_id')) {
-    require_once dirname(__DIR__) . '/spl_object_id.php';
 }
 
 // Use the composer autoloader
@@ -345,8 +339,4 @@ if (!class_exists(CompileError::class)) {
     class CompileError extends Error
     {
     }
-}
-
-if (!function_exists('spl_object_id')) {
-    require_once dirname(__DIR__) . '/spl_object_id.php';
 }

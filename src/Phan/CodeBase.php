@@ -1122,25 +1122,6 @@ class CodeBase
     }
 
     /**
-     * @return array<string,list<Method>>
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function getMethodsGroupedByDefiningFQSEN(): array
-    {
-        $methods_by_defining_fqsen = [];
-        foreach ($this->method_set as $method) {
-            $defining_fqsen = $method->getDefiningFQSEN()->__toString();
-            $real_defining_fqsen = $method->getRealDefiningFQSEN()->__toString();
-            $methods_by_defining_fqsen[$defining_fqsen][] = $method;
-            if ($real_defining_fqsen !== $defining_fqsen) {
-                $methods_by_defining_fqsen[$real_defining_fqsen][] = $method;
-            }
-        }
-        return $methods_by_defining_fqsen;
-    }
-
-    /**
      * @return Map<FullyQualifiedMethodName,ArrayObject<Method>>
      */
     public function getMethodsMapGroupedByDefiningFQSEN(): Map

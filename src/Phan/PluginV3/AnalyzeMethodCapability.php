@@ -11,7 +11,7 @@ use Phan\Language\Element\Method;
  * Plugins can implement this to analyze (and modify) a method definition,
  * after parsing and before analyzing.
  */
-interface AnalyzeMethodCapability extends \Phan\PluginV2\AnalyzeMethodCapability
+interface AnalyzeMethodCapability
 {
     /**
      * Analyze (and modify) a method definition, after parsing and before analyzing.

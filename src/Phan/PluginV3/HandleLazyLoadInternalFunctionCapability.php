@@ -11,7 +11,7 @@ use Phan\Language\Element\Func;
  * HandleLazyLoadInternalFunctionCapability is used when you want to modify some subset of global functions used in the program,
  * when some global functions (such as register_shutdown_function) won't be loaded until the analysis phase.
  */
-interface HandleLazyLoadInternalFunctionCapability extends \Phan\PluginV2\HandleLazyLoadInternalFunctionCapability
+interface HandleLazyLoadInternalFunctionCapability
 {
     /**
      * This method is called after Phan lazily loads a global internal function.

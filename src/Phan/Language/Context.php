@@ -309,16 +309,6 @@ class Context extends FileRef
     }
 
     /**
-     * Returns true if strict_types is set to 1 in this context. (deprecated)
-     * @deprecated use isStrictTypes
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsStrictTypes(): bool
-    {
-        return $this->isStrictTypes();
-    }
-
-    /**
      * @return Scope
      * An object describing the contents of the current
      * scope.

@@ -12,7 +12,7 @@ use Phan\Language\Context;
  * AfterAnalyzeFileCapability is used when you want to perform checks after analyzing a file
  * NOTE: This does not run on empty files.
  */
-interface AfterAnalyzeFileCapability extends \Phan\PluginV2\AfterAnalyzeFileCapability
+interface AfterAnalyzeFileCapability
 {
     /**
      * This method is called after Phan analyzes a file.

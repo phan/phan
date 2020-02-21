@@ -54,7 +54,7 @@ call_user_func(static function (): void {
         suggest_functions_to_fully_qualify_usage(1);
     }
 
-    $code_base = require_once(__DIR__ . '/../src/codebase.php');
+    $code_base = require(__DIR__ . '/../src/codebase.php');
     require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
 
     $cli_builder = new CLIBuilder();

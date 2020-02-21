@@ -46,7 +46,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
-use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
@@ -55,10 +54,6 @@ use Phan\Language\Type\VoidType;
 use Serializable;
 
 use function substr;
-
-if (!\function_exists('spl_object_id')) {
-    require_once __DIR__ . '/../../spl_object_id.php';
-}
 
 /**
  * Phan's internal representation of union types, and methods for working with union types.
@@ -223,16 +218,6 @@ class UnionType implements Serializable
 
     // __clone of $this->type_set would be a no-op due to copy on write semantics.
     // And clone isn't necessary anymore now that type_set is immutable
-
-    /**
-     * @deprecated use self::fromFullyQualifiedPHPDocString() instead.
-     * @phan-pure
-     */
-    public static function fromFullyQualifiedString(
-        string $fully_qualified_string
-    ): UnionType {
-        return self::fromFullyQualifiedPHPDocString($fully_qualified_string);
-    }
 
     /**
      * @param string $fully_qualified_string
@@ -907,8 +892,7 @@ class UnionType implements Serializable
      * A UnionType with known bool types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @suppress PhanUnreferencedPublicMethod
-     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod this is referenced dynamically in RedundantConditionCallPlugin
      */
     public function getTypesInBoolFamily(): UnionType
     {
@@ -1075,23 +1059,6 @@ class UnionType implements Serializable
     {
         foreach ($this->type_set as $type) {
             if ($type instanceof StaticType) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return bool
-     * True if this type has a type referencing the
-     * class context 'static' or 'self' at the top level.
-     * @deprecated call withStaticResolvedInContext and check if the resulting object is different instead.
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function hasStaticOrSelfType(): bool
-    {
-        foreach ($this->type_set as $type) {
-            if ($type instanceof StaticOrSelfType) {
                 return true;
             }
         }
@@ -5327,15 +5294,6 @@ class UnionType implements Serializable
     public function isDefinitelyUndefined(): bool
     {
         return false;
-    }
-
-    /**
-     * @deprecated use isPossiblyUndefined
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsPossiblyUndefined(): bool
-    {
-        return $this->isPossiblyUndefined();
     }
 
     /**

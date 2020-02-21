@@ -13,7 +13,7 @@ require_once(__DIR__ . '/requirements.php');
 // Build a code base based on PHP internally defined
 // functions, methods and classes before loading our
 // own
-$code_base = require_once(__DIR__ . '/codebase.php');
+$code_base = require(__DIR__ . '/codebase.php');
 
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 

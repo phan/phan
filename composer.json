@@ -18,11 +18,11 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "7.1.22"
+            "php": "7.2.24"
         }
     },
     "require": {
-        "php": "^7.1.0",
+        "php": "^7.2.0",
         "ext-filter": "*",
         "ext-json": "*",
         "ext-tokenizer": "*",
@@ -33,8 +33,7 @@
         "netresearch/jsonmapper": "^1.6.0|^2.0",
         "sabre/event": "^5.0",
         "symfony/console": "^2.3|^3.0|^4.0|^5.0",
-        "symfony/polyfill-mbstring": "^1.11.0",
-        "symfony/polyfill-php72": "^1.15"
+        "symfony/polyfill-mbstring": "^1.11.0"
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed, 1.0.6+ is recommended.",
@@ -45,7 +44,7 @@
     },
     "require-dev": {
         "brianium/paratest": "^4.0.0",
-        "phpunit/phpunit": "^7.5.0"
+        "phpunit/phpunit": "^8.5.0"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"}

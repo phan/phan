@@ -11,7 +11,7 @@ use Phan\Language\Element\Clazz;
  * Plugins should implement this to be called to
  * analyze (and possibly modify) a class definition, after parsing and before analyzing.
  */
-interface AnalyzeClassCapability extends \Phan\PluginV2\AnalyzeClassCapability
+interface AnalyzeClassCapability
 {
     /**
      * Analyze (and modify) a class definition, after parsing and before analyzing.

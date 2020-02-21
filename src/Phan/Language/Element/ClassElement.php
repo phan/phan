@@ -182,16 +182,6 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
-     * True if this element overrides another element (deprecated)
-     * @deprecated use isOverride
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsOverride(): bool
-    {
-        return $this->isOverride();
-    }
-
-    /**
      * Sets whether this element overrides another element
      *
      * @param bool $is_override

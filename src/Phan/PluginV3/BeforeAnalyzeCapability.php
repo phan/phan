@@ -14,7 +14,7 @@ use Phan\CodeBase;
  * @see BeforeAnalyzePhaseCapability to run plugins **after** analyzing methods.
  * (use BeforeAnalyzePhaseCapability if you're not sure)
  */
-interface BeforeAnalyzeCapability extends \Phan\PluginV2\BeforeAnalyzeCapability
+interface BeforeAnalyzeCapability
 {
     /**
      * This method is called before analyzing a project and before analyzing methods.

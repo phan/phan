@@ -193,14 +193,7 @@ final class ClosureType extends Type
      * Gets the function-like this type was created from.
      *
      * TODO: Uses of this may keep outdated data in language server mode.
-     * @deprecated use asFunctionInterfaceOrNull
-     * @suppress PhanUnreferencedPublicMethod
      */
-    public function getFunctionLikeOrNull(): ?FunctionInterface
-    {
-        return $this->func;
-    }
-
     public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context): ?FunctionInterface
     {
         return $this->func;

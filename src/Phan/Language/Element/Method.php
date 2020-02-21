@@ -190,16 +190,6 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * Returns true if this element is overridden by at least one other element
-     * @deprecated use isOverriddenByAnother
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsOverriddenByAnother(): bool
-    {
-        return $this->isOverriddenByAnother();
-    }
-
-    /**
      * Sets whether this method is overridden by another method
      *
      * @param bool $is_overridden_by_another
@@ -274,32 +264,12 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * Returns true if this is a magic method
-     * @deprecated use isMagic
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsMagic(): bool
-    {
-        return $this->isMagic();
-    }
-
-    /**
      * Returns true if this is a magic method which should have return type of void
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
     public function isMagicAndVoid(): bool
     {
         return \array_key_exists($this->name, FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
-    }
-
-    /**
-     * Returns true if this is a magic method which should have return type of void
-     * @deprecated use isMagicAndVoid
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getIsMagicAndVoid(): bool
-    {
-        return $this->isMagicAndVoid();
     }
 
     /**

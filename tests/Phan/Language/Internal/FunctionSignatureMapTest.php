@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Phan\Tests\Language\Internal;
 
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
-use Phan\Tests\CodeBaseAwareTestInterface;
+use Phan\Tests\CodeBaseAwareTest;
 
 use function is_array;
 use function is_string;
@@ -18,24 +16,13 @@ use function is_string;
  * This is a sanity check that Phan's function signature map has the correct structure
  * and can be parsed into a function signature.
  */
-final class FunctionSignatureMapTest extends BaseTest implements CodeBaseAwareTestInterface
+final class FunctionSignatureMapTest extends CodeBaseAwareTest
 {
     private const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
     private const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
 
     // Matches a union type of 0 or more parts.
     private const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
-
-    /** @var CodeBase */
-    private $code_base;
-
-    /**
-     * @suppress PhanPossiblyNullTypeMismatchProperty
-     */
-    public function setCodeBase(CodeBase $code_base = null): void
-    {
-        $this->code_base = $code_base;
-    }
 
     /**
      * @dataProvider phpVersionIdProvider

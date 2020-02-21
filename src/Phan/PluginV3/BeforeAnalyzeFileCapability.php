@@ -12,7 +12,7 @@ use Phan\Language\Context;
  * BeforeAnalyzeFileCapability is used when you want to perform checks before analyzing a file
  * NOTE: This does not run on empty files.
  */
-interface BeforeAnalyzeFileCapability extends \Phan\PluginV2\BeforeAnalyzeFileCapability
+interface BeforeAnalyzeFileCapability
 {
     /**
      * This method is called before analyzing a file.

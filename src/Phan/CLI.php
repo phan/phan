@@ -79,7 +79,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '2.7.3-dev';
+    public const PHAN_VERSION = '3.0.0-dev';
 
     /**
      * List of short flags passed to getopt
@@ -2678,7 +2678,7 @@ EOB
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
             \fprintf(
                 STDERR,
-                "ERROR: Phan 2.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
+                "ERROR: Phan 3.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
                 $ast_version
             );
             require_once __DIR__ . '/Bootstrap.php';

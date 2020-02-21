@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\Tests;
 
-use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Type;
 use Phan\Library\StringUtil;
@@ -23,20 +22,9 @@ use function strlen;
  * - a src/ folder with analyzed PHP files, and
  * - the expected/ folder of expected error (template) lines for the corresponding files.
  */
-abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
+abstract class AbstractPhanFileTest extends CodeBaseAwareTest
 {
     public const EXPECTED_SUFFIX = '.expected';
-
-    /** @var CodeBase represents the known state of the test code base we're analyzing. */
-    private $code_base;
-
-    /**
-     * @suppress PhanPossiblyNullTypeMismatchProperty
-     */
-    public function setCodeBase(CodeBase $code_base = null): void
-    {
-        $this->code_base = $code_base;
-    }
 
     /**
      * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>

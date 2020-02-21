@@ -2151,16 +2151,6 @@ class Clazz extends AddressableElement
         }
     }
 
-    /**
-     * True if this class has dynamic properties. (e.g. stdClass)
-     * @deprecated use hasDynamicProperties
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function getHasDynamicProperties(CodeBase $code_base): bool
-    {
-        return $this->hasDynamicProperties($code_base);
-    }
-
     public function setHasDynamicProperties(
         bool $has_dynamic_properties
     ): void {
@@ -2170,7 +2160,6 @@ class Clazz extends AddressableElement
             $has_dynamic_properties
         ));
     }
-
 
     /**
      * @return bool

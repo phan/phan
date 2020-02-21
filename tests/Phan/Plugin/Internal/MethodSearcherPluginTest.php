@@ -4,26 +4,15 @@ declare(strict_types=1);
 
 namespace Phan\Tests\Plugin\Internal;
 
-use Phan\CodeBase;
 use Phan\Language\UnionType;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
-use Phan\Tests\BaseTest;
-use Phan\Tests\CodeBaseAwareTestInterface;
+use Phan\Tests\CodeBaseAwareTest;
 
 /**
  * Unit tests of Context and scopes
  */
-final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTestInterface
+final class MethodSearcherPluginTest extends CodeBaseAwareTest
 {
-    /** @var CodeBase The code base within which this unit test is operating */
-    private $code_base = null;
-
-    public function setCodeBase(CodeBase $code_base = null): void
-    {
-        // @phan-suppress-next-line PhanPossiblyNullTypeMismatchProperty
-        $this->code_base = $code_base;
-    }
-
     /**
      * @dataProvider getTypeMatchingBonusProvider
      */

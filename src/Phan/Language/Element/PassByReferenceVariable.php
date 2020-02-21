@@ -137,18 +137,6 @@ class PassByReferenceVariable extends Variable
     }
 
     /**
-     * Gets the context (only set if this is a reference to an AddressableElement such as a property)
-     * @deprecated - use getElement() instead and check if the result is an AddressableElement.
-     * @throws \Error if the element is an UnaddressableElement
-     * @suppress PhanPossiblyUndeclaredMethod
-     * @suppress PhanUnreferencedPublicMethod not sure why
-     */
-    public function getContext(): Context
-    {
-        return $this->element->getContext();
-    }
-
-    /**
      * Returns the context where this reference was created.
      * This is currently only available for references to properties.
      */

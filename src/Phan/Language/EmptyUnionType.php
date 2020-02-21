@@ -217,16 +217,6 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @return bool
-     * True if this type has a type referencing the
-     * class context 'static' or 'self'.
-     */
-    public function hasStaticOrSelfType(): bool
-    {
-        return false;
-    }
-
-    /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
      * in the given context.

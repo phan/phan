@@ -158,18 +158,12 @@ Implementations such as `./phan` or the code climate integration call into this.
 
 Deprecated version of plugin system, use PluginV3 instead.
 
-### PluginV2.php
-
-TODO: Reintroduce PluginV2 and its capabilities to Phan 2.0 in terms of PluginV3 to make migration easier.
-
-This is deprecated, and should only be used if the plugin needs to continue to support Phan 1.x.
-
 ### PluginV3.php
 
 Introduced in Phan 2.0
 
 Plugins must extend this class
-(And at least one of the interfaces corresponding to plugin capabilities in PluginV3 folder)
+(And at least one of the interfaces corresponding to plugin capabilities in the PluginV3 folder)
 and return an instance of themselves.
 
 ### Prep.php

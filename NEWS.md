@@ -1,7 +1,12 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.7.3 (dev)
+??? ?? 2020, Phan 3.0.0 (dev)
 -----------------------
+
+Backwards incompatible changes:
++ Drop php 7.1 support. Official security support for php 7.1 ended in November 2019.
++ Drop PluginV2 support (which was deprecated in Phan 2) in favor of PluginV3.
++ Remove deprecated classes and helper methods.
 
 May 02 2020, Phan 2.7.2
 -----------------------
