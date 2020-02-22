@@ -405,6 +405,12 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
+## PhanCompatibleAnyReturnTypePHP56
+
+```
+In PHP 5.6, return types ({TYPE}) are not supported
+```
+
 ## PhanCompatibleAutoload
 
 ```
@@ -489,13 +495,13 @@ Nullable type '{TYPE}' is not compatible with PHP 7.0
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/expected/005_nullable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/src/005_nullable.php#L3).
 
-## PhanCompatibleNullableTypePHP71
+## PhanCompatibleObjectTypePHP71
 
 ```
 Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/expected/007_use.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/src/007_use.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/007_use.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/007_use.php#L7).
 
 ## PhanCompatiblePHP7
 
@@ -521,6 +527,12 @@ PHP4 constructors will be removed in php 8, and should not be used. __construct(
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0198_list_property.php#L7).
 
+## PhanCompatibleScalarTypePHP56
+
+```
+In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names
+```
+
 ## PhanCompatibleShortArrayAssignPHP70
 
 ```
@@ -528,6 +540,14 @@ Square bracket syntax for an array destructuring assignment is not compatible wi
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/src/003_short_array.php#L8).
+
+## PhanCompatibleStaticType
+
+```
+Cannot use static return types before php 8.0
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/013_union_type_errors.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/013_union_type_errors.php#L13).
 
 ## PhanCompatibleSyntaxNotice
 
@@ -547,6 +567,14 @@ Cannot use typed properties before php 7.4. This property group has type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/expected/011_typed_properties.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/php70_files/src/011_typed_properties.php#L3).
+
+## PhanCompatibleUnionType
+
+```
+Cannot use union types ({TYPE}) before php 8.0
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/013_union_type_errors.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/013_union_type_errors.php#L2).
 
 ## PhanCompatibleUnparenthesizedTernary
 
@@ -2008,10 +2036,18 @@ Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0639_duplicate_const_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0639_duplicate_const_prop.php#L5).
 
+## PhanRedefinedClassReference
+
+```
+Saw reference to {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0857_redefined_class_self.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0857_redefined_class_self.php#L5).
+
 ## PhanRedefinedExtendedClass
 
 ```
-{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0493_inherit_redefined.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0493_inherit_redefined.php#L12).
@@ -2588,13 +2624,13 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0
 ## PhanTypeExpectedObject
 
 ```
-Expected an object instance but saw expression with type {TYPE}
+Expected an object instance but saw expression {CODE} with type {TYPE}
 ```
 
 ## PhanTypeExpectedObjectOrClassName
 
 ```
-Expected an object instance or the name of a class but saw expression with type {TYPE}
+Expected an object instance or the name of a class but saw expression {CODE} with type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0590_crash_test.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0590_crash_test.php#L7).
@@ -2602,7 +2638,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0
 ## PhanTypeExpectedObjectPropAccess
 
 ```
-Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}
+Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0541_unset.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0541_unset.php#L11).
@@ -2610,7 +2646,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0
 ## PhanTypeExpectedObjectPropAccessButGotNull
 
 ```
-Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}
+Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0379_bad_prop_access.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0379_bad_prop_access.php#L28).
@@ -2618,7 +2654,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0
 ## PhanTypeExpectedObjectStaticPropAccess
 
 ```
-Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}
+Expected an object instance or a class name when accessing a static property, but saw an expression {CODE} with type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0379_bad_prop_access.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0379_bad_prop_access.php#L9).
@@ -2778,7 +2814,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/rasmus_files/exp
 ## PhanTypeInvalidInstanceof
 
 ```
-Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string
+Found an instanceof class name {CODE} of type {TYPE}, but class name must be a valid object or a string
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/files/expected/0346_dynamic_instanceof.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.4.4/tests/files/src/0346_dynamic_instanceof.php#L24).
@@ -3744,6 +3780,14 @@ Reference to undeclared constant {CONST}
 ```php
 $v7 = UNDECLARED_CONSTANT;
 ```
+## PhanUndeclaredConstantOfClass
+
+```
+Reference to undeclared class constant {CONST}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/015_class_const_declaration9.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/015_class_const_declaration9.php#L6).
+
 ## PhanUndeclaredExtendedClass
 
 

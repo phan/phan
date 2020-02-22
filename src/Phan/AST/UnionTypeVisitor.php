@@ -646,6 +646,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return VoidType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_FALSE:
                 return FalseType::instance(false)->asRealUnionType();
+            case \ast\flags\TYPE_STATIC:
+                return StaticType::instance(false)->asRealUnionType();
             default:
                 \Phan\Debug::printNode($node);
                 throw new AssertionError("All flags must match. Found ($node->flags) "

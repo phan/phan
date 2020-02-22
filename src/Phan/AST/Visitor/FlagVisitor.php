@@ -223,6 +223,16 @@ interface FlagVisitor
     public function visitUnionTypeNull(Node $node);
 
     /**
+     * Visit a node with flag `\ast\flags\TYPE_STATIC`
+     */
+    public function visitUnionTypeStatic(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\TYPE_FALSE`
+     */
+    public function visitUnionTypeFalse(Node $node);
+
+    /**
      * Visit a node with flag `\ast\flags\TYPE_OBJECT`
      */
     public function visitUnionTypeObject(Node $node);

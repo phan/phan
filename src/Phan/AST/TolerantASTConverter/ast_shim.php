@@ -160,6 +160,7 @@ const TYPE_OBJECT = 8;
 const TYPE_CALLABLE = 14;
 const TYPE_VOID = 18;
 const TYPE_ITERABLE = 19;
+const TYPE_STATIC = 20;
 const UNARY_BOOL_NOT = 13;
 const UNARY_BITWISE_NOT = 12;
 const UNARY_SILENCE = 260;

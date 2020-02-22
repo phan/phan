@@ -1,0 +1,15 @@
+%s:2 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:4 PhanTypeMismatchArgumentReal Argument 1 ($param) is null but \test_param13() takes int|string defined at %s:2
+%s:6 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:6 PhanUnreferencedFunction Possibly zero references to function \test_return13()
+%s:7 PhanTypeMismatchReturnReal Returning type null but test_return13() is declared to return int|string
+%s:11 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type ?int
+%s:11 PhanCompatibleUnionType Cannot use union types (int|null) before php 8.0
+%s:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \X::$prop
+%s:13 PhanCompatibleStaticType Cannot use static return types before php 8.0
+%s:17 PhanCompatibleUnionType Cannot use union types (Countable|false|null|array) before php 8.0
+%s:18 PhanCompatibleNullableTypePHP70 Nullable type 'null' is not compatible with PHP 7.0
+%s:18 PhanInvalidNode Invalid union type false in element signature
+%s:18 PhanInvalidNode Invalid union type null in element signature
+%s:22 PhanUndeclaredMethod Call to undeclared method \X::missingMethod
+%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' to property but \X::$prop is ?int

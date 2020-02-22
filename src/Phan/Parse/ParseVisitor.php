@@ -28,6 +28,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -411,11 +412,11 @@ class ParseVisitor extends ScopeVisitor
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
             // type and try to figure it out later
-            $future_union_type = null;
+            $future_union_type_node = null;
 
             $default_node = $child_node->children['default'];
 
-            $context_for_property = (clone($this->context))->withLineNumberStart($child_node->lineno ?? 0);
+            $context_for_property = (clone($this->context))->withLineNumberStart($child_node->lineno);
 
             $property_name = $child_node->children['name'];
 
@@ -442,11 +443,7 @@ class ParseVisitor extends ScopeVisitor
                     $union_type = $this->resolveDefaultPropertyNode($default_node);
                     if (!$union_type) {
                         // We'll type check this union type against the real union type when the future union type is resolved
-                        $future_union_type = new FutureUnionType(
-                            $this->code_base,
-                            $context_for_property,
-                            $default_node
-                        );
+                        $future_union_type_node = $default_node;
                         $union_type = UnionType::empty();
                     }
                 } else {
@@ -536,12 +533,22 @@ class ParseVisitor extends ScopeVisitor
                 $comment->getSuppressIssueSet()
             );
 
+            if ($future_union_type_node instanceof Node) {
+                $future_union_type = new FutureUnionType(
+                    $this->code_base,
+                    new ElementContext($property),
+                    //new ElementContext($property),
+                    $future_union_type_node
+                );
+            } else {
+                $future_union_type = null;
+            }
             // Look for any @var declarations
             if ($variable) {
                 $original_union_type = $union_type;
                 // We try to avoid resolving $future_union_type except when necessary,
                 // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
-                if ($future_union_type !== null) {
+                if ($future_union_type) {
                     try {
                         $original_union_type = $future_union_type->get()->eraseRealTypeSetRecursively();
                         if (!$variable_has_literals) {
@@ -727,10 +734,11 @@ class ParseVisitor extends ScopeVisitor
             if ($value_node instanceof Node) {
                 try {
                     self::checkIsAllowedInConstExpr($value_node);
+                    // TODO: Avoid using this when it only contains literals (nothing depending on the CodeBase),
                     $constant->setFutureUnionType(
                         new FutureUnionType(
                             $this->code_base,
-                            $this->context,
+                            new ElementContext($constant),
                             $value_node
                         )
                     );
@@ -1432,6 +1440,8 @@ class ParseVisitor extends ScopeVisitor
 
         if ($use_future_union_type) {
             if ($value instanceof Node) {
+                // TODO: Avoid using this when it only contains literals (nothing depending on the CodeBase),
+                // e.g. `['key' => 'value']`
                 $constant->setFutureUnionType(
                     new FutureUnionType(
                         $code_base,

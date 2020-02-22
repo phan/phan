@@ -515,6 +515,8 @@ class Issue
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
     public const CompatibleScalarTypePHP56          = 'PhanCompatibleScalarTypePHP56';
     public const CompatibleAnyReturnTypePHP56       = 'PhanCompatibleAnyReturnTypePHP56';
+    public const CompatibleUnionType                = 'PhanCompatibleUnionType';
+    public const CompatibleStaticType               = 'PhanCompatibleStaticType';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4424,6 +4426,22 @@ class Issue
                 "In PHP 5.6, return types ({TYPE}) are not supported",
                 self::REMEDIATION_B,
                 3025
+            ),
+            new Issue(
+                self::CompatibleUnionType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use union types ({TYPE}) before php 8.0",
+                self::REMEDIATION_B,
+                3026
+            ),
+            new Issue(
+                self::CompatibleStaticType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use static return types before php 8.0",
+                self::REMEDIATION_B,
+                3027
             ),
 
             // Issue::CATEGORY_GENERIC

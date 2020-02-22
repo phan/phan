@@ -1,5 +1,17 @@
 Phan NEWS
 
+??? ?? 2020, Phan 2.5.1 (dev)
+-----------------------
+
+New features(Analysis):
++ Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)
++ Emit `PhanCompatibleUnionType` and `PhanCompatibleStaticType` when the target php version is less than 8.0 and union types or static return types are seen. (#3419, #3634)
++ Be more consistent about warning about issues in values of class constants, global constants, and property defaults.
+
+Bug fixes:
++ Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
+  Either render it as `(Closure():T)[]` or `Closure():(T[])`
+
 Feb 20 2020, Phan 2.5.0
 -----------------------
 
@@ -23,8 +35,6 @@ New Features(Analysis):
   Phan previously used the type from Reflection.
 + Normalize phpdoc parameter and return types when there is a corresponding real type in the signature. (#3725)
   (e.g. convert `bool|false|null` to `?bool`)
-+ Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
-  Either render it as `(Closure():T)[]` or `Closure():(T[])`
 
 Plugins:
 + Add `SubscribeEmitIssueCapability` to detect or suppress issues immediately before they are emitted. (#3719)

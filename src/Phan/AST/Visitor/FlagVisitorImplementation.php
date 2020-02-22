@@ -255,6 +255,17 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    public function visitUnionTypeFalse(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitUnionTypeStatic(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+
     public function visitUnionTypeObject(Node $node)
     {
         return $this->visit($node);
