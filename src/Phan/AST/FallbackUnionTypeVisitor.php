@@ -415,7 +415,10 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
             case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_OBJECT:
+                // TODO: Handle values that are already objects
                 return Type::fromFullyQualifiedString('\stdClass')->asRealUnionType();
+            case \ast\flags\TYPE_STATIC:
+                return StaticType::instance(false)->asRealUnionType();
             default:
                 throw new NodeException(
                     $node,

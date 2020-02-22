@@ -278,6 +278,10 @@ class Element
                 return $visitor->visitUnionTypeObject($this->node);
             case flags\TYPE_STRING:
                 return $visitor->visitUnionTypeString($this->node);
+            case flags\TYPE_FALSE:
+                return $visitor->visitUnionTypeFalse($this->node);
+            case flags\TYPE_STATIC:
+                return $visitor->visitUnionTypeStatic($this->node);
             default:
                 throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }

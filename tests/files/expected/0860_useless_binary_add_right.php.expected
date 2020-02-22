@@ -1,0 +1,4 @@
+%s:3 PhanUselessBinaryAddRight Addition of array{0:2} + array{0:3} ([2] + [3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
+%s:9 PhanUselessBinaryAddRight Addition of array{0:2} + array{0:3} ([2] + [3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
+%s:17 PhanUselessBinaryAddRight Addition of array{0:2} + array{0:3} ([2] + [3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side
+%s:18 PhanUselessBinaryAddRight Addition of array{0:2} + array{0:3} ([2] + [3]) is probably unnecessary. Array fields from the left hand side will be used instead of each of the fields from the right hand side

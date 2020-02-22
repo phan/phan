@@ -937,7 +937,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     $this->warnForCast($node, $real_expr_type, 'object');
                 }
                 break;
-            // ignore other casts such as TYPE_NULL
+            // ignore other casts such as TYPE_NULL, TYPE_STATIC, TYPE_ITERABLE, TYPE_CALLABLE
         }
     }
 }

@@ -1,0 +1,4 @@
+%s:3 PhanCompatibleNullableTypePHP70 Nullable type '?false' is not compatible with PHP 7.0
+%s:3 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
+%s:3 PhanInvalidNode Unsupported union type syntax int|false
+%s:5 PhanTypeMismatchArgument Argument 1 ($invalid) is 'invalid' but \test14() takes ?false|?int defined at %s:3

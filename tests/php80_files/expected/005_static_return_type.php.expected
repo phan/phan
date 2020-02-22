@@ -1,0 +1,5 @@
+%s:2 PhanUndeclaredTypeReturnType Return type of test5() is undeclared type static
+%s:4 PhanContextNotObject Cannot access static when not in object context
+%s:21 PhanParamSignatureRealMismatchReturnType Declaration of function getInstance() : \MyInvalidSubclass should be compatible with function getInstance() : static (method returning '\MyInvalidSubclass' cannot override method returning 'static') defined in %s:8
+%s:34 PhanUndeclaredMethod Call to undeclared method \MySubclass::helper2 (Did you mean expr->helper())
+%s:35 PhanUndeclaredMethod Call to undeclared method \MyValidSubclass::helper2

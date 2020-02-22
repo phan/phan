@@ -337,6 +337,7 @@ class Debug
                 flags\TYPE_CALLABLE => 'TYPE_CALLABLE',
                 flags\TYPE_VOID => 'TYPE_VOID',
                 flags\TYPE_ITERABLE => 'TYPE_ITERABLE',
+                flags\TYPE_STATIC => 'TYPE_STATIC',
             ];
             $use_types = [
                 flags\USE_NORMAL => 'USE_NORMAL',

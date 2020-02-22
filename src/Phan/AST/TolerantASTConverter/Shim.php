@@ -39,5 +39,8 @@ class Shim
         if (!\defined('ast\flags\TYPE_FALSE')) {
             \define('ast\flags\TYPE_FALSE', 2);
         }
+        if (!\defined('ast\flags\TYPE_STATIC')) {
+            \define('ast\flags\TYPE_STATIC', \PHP_MAJOR_VERSION >= 80000 ? 15 : 20);
+        }
     }
 }

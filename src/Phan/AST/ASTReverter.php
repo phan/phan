@@ -120,8 +120,17 @@ class ASTReverter
             ast\AST_TYPE => static function (Node $node): string {
                 return PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags];
             },
+            /**
+             * @suppress PhanPartialTypeMismatchArgument
+             */
+            ast\AST_TYPE_UNION => static function (Node $node): string {
+                return implode('|', \array_map('self::toShortTypeString', $node->children));
+            },
+            /**
+             * @suppress PhanTypeMismatchArgumentNullable
+             */
             ast\AST_NULLABLE_TYPE => static function (Node $node): string {
-                return '?' . self::toShortString($node->children['type']);
+                return '?' . self::toShortTypeString($node->children['type']);
             },
             ast\AST_POST_INC => static function (Node $node): string {
                 return self::formatIncDec('%s++', $node->children['var']);
@@ -331,6 +340,23 @@ class ASTReverter
             },
         ];
     }
+
+    /**
+     * Returns the representation of an AST_TYPE, AST_NULLABLE_TYPE, AST_TYPE_UNION, or AST_NAME, as seen in an element signature
+     */
+    public static function toShortTypeString(Node $node): string
+    {
+        if ($node->kind === ast\AST_NULLABLE_TYPE) {
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+            return '?' . self::toShortTypeString($node->children['type']);
+        }
+        if ($node->kind === ast\AST_TYPE) {
+            return PostOrderAnalysisVisitor::AST_TYPE_FLAGS_LOOKUP[$node->flags];
+        }
+        // Probably AST_NAME
+        return self::toShortString($node);
+    }
+
 
     /**
      * @param Node|string|int|float $node
