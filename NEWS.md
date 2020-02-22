@@ -23,6 +23,8 @@ New Features(Analysis):
   Phan previously used the type from Reflection.
 + Normalize phpdoc parameter and return types when there is a corresponding real type in the signature. (#3725)
   (e.g. convert `bool|false|null` to `?bool`)
++ Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
+  Either render it as `(Closure():T)[]` or `Closure():(T[])`
 
 Plugins:
 + Add `SubscribeEmitIssueCapability` to detect or suppress issues immediately before they are emitted. (#3719)

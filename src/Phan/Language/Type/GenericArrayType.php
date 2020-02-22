@@ -312,7 +312,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         $string = $this->element_type->__toString();
         if ($this->key_type === self::KEY_MIXED) {
             // Disambiguation is needed for ?T[] and (?T)[] but not array<int,?T>
-            if ($string[0] === '?') {
+            if ($string[0] === '?' || $this->element_type instanceof FunctionLikeDeclarationType) {
                 $string = '(' . $string . ')';
             }
             $string = "{$string}[]";

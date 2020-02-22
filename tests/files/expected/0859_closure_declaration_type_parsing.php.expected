@@ -1,0 +1,4 @@
+%s:9 PhanTypeMismatchArgumentReal Argument 1 ($c) is array{0:1} but \test_closures() takes Closure():(string[]) (real type \Closure) defined at %s:7
+%s:9 PhanTypeMismatchArgument Argument 2 ($a) is array{0:2} but \test_closures() takes (Closure():string)[] defined at %s:7
+%s:16 PhanTypeMismatchArgumentReal Argument 1 ($c) is array{0:1} but \test_callables() takes callable():(string[]) (real type callable) defined at %s:14
+%s:16 PhanTypeMismatchArgument Argument 2 ($a) is array{0:2} but \test_callables() takes (callable():string)[] defined at %s:14
