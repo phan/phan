@@ -14967,7 +14967,7 @@ return [
 'transliterator_get_error_message' => ['string', 'obj'=>'Transliterator'],
 'transliterator_list_ids' => ['array'],
 'transliterator_transliterate' => ['string|false', 'obj'=>'Transliterator|string', 'subject'=>'string', 'start='=>'int', 'end='=>'int'],
-'trigger_error' => ['bool', 'message'=>'string', 'error_type='=>'int'],
+'trigger_error' => ['bool', 'message'=>'string', 'error_type='=>'256|512|1024|16384'],
 'trim' => ['string', 'str'=>'string', 'character_mask='=>'string'],
 'TypeError::__clone' => ['void'],
 'TypeError::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'?Throwable|?TypeError'],

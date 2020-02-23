@@ -1,0 +1,1 @@
+%s:2 PhanTypeMismatchArgumentInternal Argument 2 ($error_type) is 1 but \trigger_error() takes 256|512|1024|16384
