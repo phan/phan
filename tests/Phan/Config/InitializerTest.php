@@ -100,6 +100,12 @@ final class InitializerTest extends BaseTest
                 ['vendor/foo/bar', 'vendor/foo/bar/baz'],
                 ['vendor/foo/bar/some/loader.php', 'vendor/other/file/loader.php']
             ],
+            [
+                ['.', '../Base', 'C:\dir'],
+                ['/var/www/unrelated.php'],
+                ['vendor/foo/bar', '.', '../Base', 'C:\dir'],
+                ['lib/init.php', '/var/www/unrelated.php', 'C:\dir\some_file.php']
+            ],
         ];
     }
 }

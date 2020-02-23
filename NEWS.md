@@ -11,6 +11,7 @@ New features(Analysis):
 Bug fixes:
 + Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
   Either render it as `(Closure():T)[]` or `Closure():(T[])`
++ Don't include both `.` and `vendor/x/y/` when initializing Phan configs with settings such as `--init --init-analyze-dir=.` (#3699)
 
 Feb 20 2020, Phan 2.5.0
 -----------------------

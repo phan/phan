@@ -523,6 +523,10 @@ EOT;
     private static function createNotInDirectoryFilter(array $directory_list): Closure
     {
         $parts = \array_map(static function (string $path): string {
+            if ($path === '.') {
+                // Probably unnecessary to try to handle absolute paths and ../ in composer libraries.
+                return '((?!(/|\.\.[/\\\\]|\w:\\\\)).*)';
+            }
             return \preg_quote($path, '@');
         }, $directory_list);
         $prefix_filter = '@^(' . \implode('|', $parts) . ')[\\\\/]@';
