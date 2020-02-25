@@ -323,6 +323,7 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * This method must be called before analysis
      * begins.
+     * @suppress PhanUnreferencedPublicMethod not called directly, a future version may remove this.
      */
     public function hydrate(CodeBase $unused_code_base): void
     {

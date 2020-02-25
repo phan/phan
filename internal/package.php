@@ -43,6 +43,7 @@ foreach (glob('LICENSE*') as $license) {
     $phar->addFile($license);
 }
 foreach ($phar as $file) {
+    // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
     echo $file->getFileName() . "\n";
 }
 

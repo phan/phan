@@ -1005,7 +1005,7 @@ class UnionType implements Serializable
             }
         }
 
-        return $has_template ? UnionType::of($concrete_type_list, []) : $this;
+        return $has_template ? UnionType::of($concrete_type_list, $this->real_type_set) : $this;
     }
 
     /**

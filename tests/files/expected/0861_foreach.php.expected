@@ -1,0 +1,1 @@
+%s:15 PhanTypeMismatchReturn Returning type \ArrayObject but test() is declared to return string

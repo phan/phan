@@ -17,12 +17,13 @@ use TypeError;
  *
  * - Afterwards, remove this boilerplate overriding methods of SplObjectStorage<T,T>
  *
- * @method attach(T $object,mixed $data = null):void
- * @method detach(T $object):void
- * @method offsetExists(T $object):bool
- * @method offsetGet(T $object ):bool
- * @method offsetSet(T $object,mixed $data = null):void
- * @method offsetUnset(T $object):void
+ * @method void attach(T $object,mixed $data = null)
+ * @method void detach(T $object)
+ * @method bool offsetExists(T $object)
+ * @method bool offsetGet(T $object )
+ * @method void offsetSet(T $object,mixed $data = null)
+ * @method void offsetUnset(T $object)
+ * @method T current()
  *
  * @phan-file-suppress PhanParamSignatureMismatchInternal, PhanParamSignaturePHPDocMismatchHasParamType for these comment method overrides
  * TODO: Make suppressions in the class doc comment work for magic methods.

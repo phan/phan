@@ -7,11 +7,14 @@ New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)
 + Emit `PhanCompatibleUnionType` and `PhanCompatibleStaticType` when the target php version is less than 8.0 and union types or static return types are seen. (#3419, #3634)
 + Be more consistent about warning about issues in values of class constants, global constants, and property defaults.
++ Infer key and element types from `iterator_to_array()`
 
 Bug fixes:
 + Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
   Either render it as `(Closure():T)[]` or `Closure():(T[])`
 + Don't include both `.` and `vendor/x/y/` when initializing Phan configs with settings such as `--init --init-analyze-dir=.` (#3699)
++ Be more consistent about resolving `static` in generators and template types.
++ Infer the iterable value type for `Generator<V>`. It was previously only inferred when there were 2 or more template args in phpdoc.
 
 Feb 20 2020, Phan 2.5.0
 -----------------------

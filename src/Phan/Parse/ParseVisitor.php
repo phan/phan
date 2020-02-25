@@ -58,6 +58,8 @@ use Phan\Library\None;
  * @phan-file-suppress PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ *
+ * @method Context __invoke(Node $node)
  */
 class ParseVisitor extends ScopeVisitor
 {

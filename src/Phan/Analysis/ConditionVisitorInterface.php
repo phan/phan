@@ -14,6 +14,7 @@ use Phan\Language\Element\Variable;
  * This implements common functionality to update variables based on checks within a conditional (of an if/elseif/else/while/for/assert(), etc.)
  *
  * Classes using ConditionVisitorUtil must implement this trait.
+ * @method Context __invoke(Node $node)
  */
 interface ConditionVisitorInterface
 {

@@ -61,6 +61,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             return [];
         }
         $result = [];
+        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
         foreach ($xml->children()[2]->table->tgroup->tbody->children() as $row) {
             $entry = $row->entry;
             $alias = (string)$entry[0];
@@ -625,6 +626,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $param_name = 'arg' . $i;
             }
 
+            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
             if (((string)($part->attributes()['choice'] ?? '')) === 'opt') {
                 $param_name .= '=';
             }
@@ -955,6 +957,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             // var_export($entry);
             // echo "The extracted names are:\n";
             // var_export($name);
+            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
             if ($name->count() !== 1) {
                 fwrite(STDERR, "Failed to parse $entry\n");
                 continue;

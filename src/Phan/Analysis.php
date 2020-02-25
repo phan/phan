@@ -553,6 +553,7 @@ class Analysis
         ConfigPluginSet::instance()->beforeAnalyzeFile($code_base, $context, $file_contents, $node);
 
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($code_base);
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);

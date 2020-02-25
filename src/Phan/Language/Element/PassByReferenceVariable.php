@@ -160,6 +160,7 @@ class PassByReferenceVariable extends Variable
     /**
      * Is the variable/property this is referring to part of a PHP module?
      * (only possible for properties)
+     * @suppress PhanUnreferencedPublicMethod this may be called by plugins or Phan in the future
      */
     public function isPHPInternal(): bool
     {
