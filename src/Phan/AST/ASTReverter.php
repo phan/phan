@@ -8,9 +8,12 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\Analysis\PostOrderAnalysisVisitor;
+use Phan\AST\TolerantASTConverter\Shim;
 
 use function implode;
 use function is_string;
+
+Shim::load();
 
 /**
  * This converts a PHP AST into an approximate string representation.
