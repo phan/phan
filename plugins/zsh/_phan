@@ -2,7 +2,7 @@
 # This is a zsh completion script for Phan.
 # Author: Tyson Andre
 
-# To install this, 
+# To install this,
 # 1. Add `fpath=(/path/to/phan/plugins/zsh $fpath)` to the *start* of your ~/.zshrc (or copy the script to any appropriate path)
 #
 #    If you are not using oh-my-zsh, you should also make sure `compinit` is called in your .zshrc after the above line
@@ -89,7 +89,7 @@ _arguments \
 case $state in
 	plugins)
 		# plugin list generated with "ls .phan/plugins|grep '\.php'|sed 's,\.php,,'|xargs echo"
-		compadd AlwaysReturnPlugin AvoidableGetterPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin EmptyMethodAndFunctionPlugin EmptyStatementListPlugin FFIAnalysisPlugin HasPHPDocPlugin InlineHTMLPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin LoopVariableReusePlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin RedundantAssignmentPlugin SleepCheckerPlugin StrictComparisonPlugin SuspiciousParamOrderPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin
+		compadd AlwaysReturnPlugin AvoidableGetterPlugin DemoPlugin DollarDollarPlugin DuplicateArrayKeyPlugin DuplicateExpressionPlugin EmptyMethodAndFunctionPlugin EmptyStatementListPlugin FFIAnalysisPlugin HasPHPDocPlugin InlineHTMLPlugin InvalidVariableIssetPlugin InvokePHPNativeSyntaxCheckPlugin LoopVariableReusePlugin NoAssertPlugin NonBoolBranchPlugin NonBoolInLogicalArithPlugin NotFullyQualifiedUsagePlugin NumericalComparisonPlugin PhanSelfCheckPlugin PHPDocRedundantPlugin PHPDocToRealTypesPlugin PHPUnitAssertionPlugin PHPUnitNotDeadCodePlugin PossiblyStaticMethodPlugin PreferNamespaceUsePlugin PregRegexCheckerPlugin PrintfCheckerPlugin RedundantAssignmentPlugin SleepCheckerPlugin StrictComparisonPlugin StrictLiteralComparisonPlugin SuspiciousParamOrderPlugin UnknownClassElementAccessPlugin UnknownElementTypePlugin UnreachableCodePlugin UnusedSuppressionPlugin UseReturnValuePlugin WhitespacePlugin
 		_files
 		;;
 esac
