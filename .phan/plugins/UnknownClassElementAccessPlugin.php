@@ -77,7 +77,7 @@ class UnknownClassElementAccessVisitor extends PluginAwarePostAnalysisVisitor
             'Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}',
             [
                 ASTReverter::toShortString($node),
-                $union_type->isEmpty() ? '(no types)' : $union_type
+                $union_type->isEmpty() ? '(empty union type)' : $union_type
             ]
         );
     }

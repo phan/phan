@@ -5,8 +5,8 @@ src/163_in_array_impossible.php:19 PhanPluginPossiblyStaticClosure Closure(\stdC
 src/163_in_array_impossible.php:22 PhanImpossibleTypeComparison Impossible attempt to check if $o2 of type \stdClass is identical to elements of $other of type int
 src/163_in_array_impossible.php:23 PhanImpossibleTypeComparison Impossible attempt to check if 2.3 of type 2.3 is identical to elements of $other of type int
 src/163_in_array_impossible.php:24 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o2 of type \stdClass to elements of $other of type int
-src/163_in_array_impossible.php:26 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o2 of type \stdClass to elements of [] of type (no types)
+src/163_in_array_impossible.php:26 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o2 of type \stdClass to elements of [] of type (no types in empty array)
 src/163_in_array_impossible.php:27 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o2 of type \stdClass to elements of [$i] of type int
 src/163_in_array_impossible.php:28 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $o1 of type \stdClass to elements of [null] of type null
 src/163_in_array_impossible.php:31 PhanImpossibleTypeComparison Impossible attempt to check if false of type false is identical to elements of [$i,$o1,$o2] of type \stdClass|int
-src/163_in_array_impossible.php:34 PhanImpossibleTypeComparison Impossible attempt to check if $o2 of type \stdClass is identical to elements of [] of type (no types)
+src/163_in_array_impossible.php:34 PhanImpossibleTypeComparison Impossible attempt to check if $o2 of type \stdClass is identical to elements of [] of type (no types in empty array)

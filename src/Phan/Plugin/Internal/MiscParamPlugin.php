@@ -248,7 +248,7 @@ final class MiscParamPlugin extends PluginV3 implements
             ASTReverter::toShortString($needle_node),
             $needle,
             'elements of ' . ASTReverter::toShortString($haystack_node),
-            $haystack_string !== '' ? $haystack_string : '(no types)'
+            $haystack_string !== '' ? $haystack_string : '(no types in empty array)'
         ];
 
         if ($context->isInLoop()) {
@@ -304,7 +304,7 @@ final class MiscParamPlugin extends PluginV3 implements
             ASTReverter::toShortString($key_node),
             $key_type,
             'keys of ' . ASTReverter::toShortString($array_node),
-            $array_string !== '' ? $array_string : '(no types)'
+            $array_string !== '' ? $array_string : '(no types in empty array)'
         ];
 
         if ($context->isInLoop()) {
