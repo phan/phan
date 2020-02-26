@@ -1531,7 +1531,7 @@ $init_help
   environment and settings as those used to run Phan)
 
  --analyze-twice
-  Runs the analyze phase twice. Because phan gathers additional type information for properties, return types, etc. during analysis,
+  Runs the analyze phase twice. Because Phan gathers additional type information for properties, return types, etc. during analysis,
   this may emit a more complete list of issues.
 
   This cannot be used with --processes <int>.
