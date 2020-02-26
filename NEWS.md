@@ -12,6 +12,9 @@ New features(Analysis):
 + Be more consistent about warning about issues in values of class constants, global constants, and property defaults.
 + Infer key and element types from `iterator_to_array()`
 
+Plugins:
++ Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class a method is being called on.
+
 Bug fixes:
 + Fix bug causing phan to fail to properly recursively analyze parameters of inherited methods (#3740)
   (i.e. when the methods are called on the subclass)
