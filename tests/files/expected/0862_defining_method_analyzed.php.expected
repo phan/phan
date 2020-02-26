@@ -1,0 +1,4 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \A
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type (empty union type)
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \C

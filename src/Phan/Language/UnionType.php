@@ -5886,6 +5886,9 @@ class UnionType implements Serializable
         if ($this->real_type_set) {
             $representation .= "(real=" . $this->getRealUnionType()->__toString() . ")";
         }
+        if ($representation === '') {
+            return '(empty union type)';
+        }
         return $representation;
     }
 
