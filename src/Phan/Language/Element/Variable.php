@@ -96,6 +96,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
      * @return bool
      * This will always return false in so far as variables
      * cannot be variadic
+     * @suppress PhanUnreferencedPublicMethod this may be useful in the future.
      */
     public function isVariadic(): bool
     {

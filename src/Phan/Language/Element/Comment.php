@@ -729,7 +729,7 @@ class Comment
             $string  .= " * @var $variable\n";
         }
 
-        foreach ($this->parameter_list as $parameter) {
+        foreach (array_merge($this->parameter_map, $this->parameter_list) as $parameter) {
             $string  .= " * @param $parameter\n";
         }
 

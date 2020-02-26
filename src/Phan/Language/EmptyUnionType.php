@@ -1542,7 +1542,7 @@ final class EmptyUnionType extends UnionType
 
     public function getDebugRepresentation(): string
     {
-        return '';
+        return '(empty union type)';
     }
 
     public function canPossiblyCastToClass(CodeBase $code_base, Type $class_type): bool

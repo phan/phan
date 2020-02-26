@@ -93,7 +93,7 @@ class IssueInstance
     }
 
     /**
-     * @param list<string|int|float|bool|object> $template_parameters
+     * @param list<string|int|float|object> $template_parameters
      */
     private static function generatePlainMessage(
         Issue $issue,
@@ -113,7 +113,7 @@ class IssueInstance
         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString the template is provided by Phan/its plugins
         return \vsprintf(
             $template,
-            $template_parameters
+            self::normalizeTemplateParameters($template_parameters)
         );
     }
 
@@ -126,8 +126,26 @@ class IssueInstance
     ): string {
         $template = $issue->getTemplateRaw();
 
-        $result = Colorizing::colorizeTemplate($template, $template_parameters);
+        $result = Colorizing::colorizeTemplate($template, self::normalizeTemplateParameters($template_parameters));
         return $result;
+    }
+
+    /**
+     * @param list<string|int|float|object> $template_parameters
+     * @return list<string|int|float|object>
+     */
+    private static function normalizeTemplateParameters(array $template_parameters): array
+    {
+        foreach ($template_parameters as $i => $parameter) {
+            if ($parameter instanceof UnionType) {
+                $parameter = $parameter->__toString();
+                if ($parameter === '') {
+                    $parameter = '(empty union type)';
+                }
+                $template_parameters[$i] = $parameter;
+            }
+        }
+        return $template_parameters;
     }
 
     /**

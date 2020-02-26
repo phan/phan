@@ -111,6 +111,11 @@ class Method extends ClassElement implements FunctionInterface
         $this->checkForTemplateTypes();
     }
 
+    public function __clone()
+    {
+        $this->setInternalScope(clone($this->getInternalScope()));
+    }
+
     /**
      * Sets hasTemplateType to true if it finds any template types in the parameters or methods
      */

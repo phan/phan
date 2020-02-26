@@ -3841,6 +3841,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         FunctionInterface $method,
         array $arguments = []
     ): void {
+        $method = $this->findDefiningMethod($method);
         if (!$method->needsRecursiveAnalysis()) {
             return;
         }
@@ -3938,6 +3939,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Node $argument_list_node,
         FunctionInterface $method
     ): void {
+        $method = $this->findDefiningMethod($method);
         $original_method_scope = $method->getInternalScope();
         $method->setInternalScope(clone($original_method_scope));
         $method_context = $method->getContext();
@@ -4025,6 +4027,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } finally {
             $method->setInternalScope($original_method_scope);
         }
+    }
+
+    private function findDefiningMethod(FunctionInterface $method): FunctionInterface
+    {
+        if ($method instanceof Method) {
+            $defining_fqsen = $method->getDefiningFQSEN();
+            if ($method->getFQSEN() !== $defining_fqsen) {
+                // This should always happen, unless in the language server mode
+                if ($this->code_base->hasMethodWithFQSEN($defining_fqsen)) {
+                    return $this->code_base->getMethodByFQSEN($defining_fqsen);
+                }
+            }
+        }
+        return $method;
     }
 
     /**
@@ -4149,26 +4165,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $argument_type = $argument_type->withUnionType($argument_types[$i]);
             }
         }
-        // Then set the new type on that parameter based
-        // on the argument's type. We'll use this to
-        // retest the method with the passed in types
-        // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
+        // $argument_type = $this->filterValidArgumentTypes($argument_type, $non_variadic_parameter_type);
+        if (!$argument_type->isEmpty()) {
+            // Then set the new type on that parameter based
+            // on the argument's type. We'll use this to
+            // retest the method with the passed in types
+            // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
 
-        if ($parameter->isCloneOfVariadic()) {
-            // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
-            if ($parameter->hasEmptyNonVariadicType()) {
-                $parameter->setUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
-                );
+            if ($parameter->isCloneOfVariadic()) {
+                // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
+                if ($parameter->hasEmptyNonVariadicType()) {
+                    $parameter->setUnionType(
+                        $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    );
+                } else {
+                    $parameter->addUnionType(
+                        $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    );
+                }
             } else {
                 $parameter->addUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asListTypes()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
-        } else {
-            $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
-            );
         }
 
         // If we're passing by reference, get the variable

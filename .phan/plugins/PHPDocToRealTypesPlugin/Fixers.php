@@ -73,7 +73,6 @@ class Fixers
             return null;
         }
         // get the byte where the `)` of the argument list ends
-        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
         $last_byte_index = $close_bracket->getEndPosition();
         $file_edit = new FileEdit($last_byte_index, $last_byte_index, " : $return_type");
         return new FileEditSet([$file_edit]);
