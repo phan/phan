@@ -806,9 +806,9 @@ final class ConfigPluginSet extends PluginV3 implements
     public static function normalizePluginPath(string $plugin_file_name): string
     {
         if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
-            return self::getBuiltinPluginDirectory() . '/' . $plugin_file_name . '.php';
+            $plugin_file_name = self::getBuiltinPluginDirectory() . '/' . $plugin_file_name . '.php';
         }
-        return $plugin_file_name;
+        return Config::projectPath($plugin_file_name);
     }
 
     /**
@@ -824,8 +824,13 @@ final class ConfigPluginSet extends PluginV3 implements
         if (!is_null($this->plugin_set)) {
             return;
         }
-        $load_plugin = static function (string $plugin_file_name): PluginV3 {
+        $loaded_plugin_files = [];
+        $load_plugin = static function (string $plugin_file_name) use (&$loaded_plugin_files): ?PluginV3 {
             $plugin_file_name = self::normalizePluginPath($plugin_file_name);
+            if (isset($loaded_plugin_files[$plugin_file_name])) {
+                return null;
+            }
+            $loaded_plugin_files[$plugin_file_name] = true;
 
             try {
                 $plugin_instance = require($plugin_file_name);
@@ -846,7 +851,7 @@ final class ConfigPluginSet extends PluginV3 implements
             }
 
             if (!is_object($plugin_instance)) {
-                throw new AssertionError("Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
+                throw new AssertionError("Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not return an object.");
             }
 
             if (!($plugin_instance instanceof PluginV3)) {
@@ -856,10 +861,10 @@ final class ConfigPluginSet extends PluginV3 implements
             return $plugin_instance;
         };
         // Add user-defined plugins.
-        $plugin_set = \array_map(
+        $plugin_set = \array_values(\array_filter(\array_map(
             $load_plugin,
             Config::getValue('plugins')
-        );
+        )));
         // Add internal plugins. Can be disabled by disable_internal_return_type_plugins.
         if (Config::getValue('enable_internal_return_type_plugins')) {
             $internal_return_type_plugins = [
