@@ -142,6 +142,7 @@ class CLI
         'language-server-tcp-server:',
         'language-server-verbose',
         'load-baseline:',
+        'analyze-twice',
         'long-progress-bar',
         'markdown-issue-messages',
         'memory-limit:',
@@ -827,6 +828,9 @@ class CLI
                         throw new UsageException("--load-baseline passed file '$value' which could not be read", 1);
                     }
                     Config::setValue('baseline_path', $value);
+                    break;
+                case 'analyze-twice':
+                    Config::setValue('__analyze_twice', true);
                     break;
                 default:
                     // All of phan's long options are currently at least 2 characters long.
@@ -1521,6 +1525,12 @@ $init_help
 
   (For best results, the baseline should be generated with the same/similar
   environment and settings as those used to run Phan)
+
+ --analyze-twice
+  Runs the analyze phase twice. Because phan gathers additional type information for properties, return types, etc. during analysis,
+  this may emit a more complete list of issues.
+
+  This cannot be used with --processes <int>.
 
  -v, --version
   Print Phan's version number

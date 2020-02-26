@@ -913,6 +913,9 @@ class Config
         // E.g. this is used by `InvokePHPNativeSyntaxCheckPlugin`
         'plugin_config' => [
         ],
+
+        // This should only be set with `--analyze-twice`.
+        '__analyze_twice' => false,
     ];
 
     public const COMPLETION_VSCODE = 'vscode';
