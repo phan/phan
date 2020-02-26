@@ -1138,6 +1138,10 @@ class CLI
             \fprintf(STDERR, "Notice: Running with processes=1 instead of processes=%s - the daemon/language server assumes it will run as a single process" . PHP_EOL, (string)\json_encode($processes));
             Config::setValue('processes', 1);
         }
+        if (Config::getValue('__analyze_twice')) {
+            \fwrite(STDERR, "Notice: Running analysis phase once instead of --analyze-twice - the daemon/language server assumes it will run as a single process" . PHP_EOL);
+            Config::setValue('__analyze_twice', false);
+        }
     }
 
     /**
