@@ -787,6 +787,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
+            /** @suppress PhanPluginUnknownObjectMethodCall TODO: Infer types from ArrayAccess->offsetGet in UnionTypeVisitor->visitDim() */
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record): void {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {

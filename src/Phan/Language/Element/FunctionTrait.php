@@ -210,12 +210,12 @@ trait FunctionTrait
     private $real_return_type;
 
     /**
-     * @var Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => UnionType
+     * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>):UnionType
      */
     private $return_type_callback = null;
 
     /**
-     * @var Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => void
+     * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>, ?Node):void
      */
     private $function_call_analyzer_callback = null;
 
@@ -1009,7 +1009,7 @@ trait FunctionTrait
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType
     {
-        // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
+        // @phan-suppress-next-line PhanTypeMismatchArgument, PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
         $result = ($this->return_type_callback)($code_base, $context, $this, $args);
         if (!$result->hasRealTypeSet()) {
             $real_return_type = $this->getRealReturnType();
@@ -1045,7 +1045,7 @@ trait FunctionTrait
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null): void
     {
-        // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasFunctionCallAnalyzer
+        // @phan-suppress-next-line PhanTypePossiblyInvalidCallable, PhanTypeMismatchArgument - Callers should check hasFunctionCallAnalyzer
         ($this->function_call_analyzer_callback)($code_base, $context, $this, $args, $node);
     }
 

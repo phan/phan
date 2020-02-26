@@ -61,16 +61,20 @@ class Fixers
         return self::computeEditsForParamTypeDeclaration($contents, $declaration, $param_name, $shorter_return_type);
     }
 
+    /**
+     * @suppress PhanThrowTypeAbsentForCall
+     */
     private static function computeEditsForReturnTypeDeclaration(
         FunctionLike $declaration,
         string $shorter_return_type
     ): ?FileEditSet {
         // @phan-suppress-next-line PhanUndeclaredProperty
         $return_type_node = $declaration->returnType;
-        if (!$return_type_node) {
+        if (!$return_type_node instanceof PhpParser\Node) {
             return null;
         }
         // Generate an edit to replace the long return type with the shorter return type
+        // Long return types are always Nodes instead of Tokens.
         $file_edit = new FileEdit(
             $return_type_node->getStart(),
             $return_type_node->getEndPosition(),

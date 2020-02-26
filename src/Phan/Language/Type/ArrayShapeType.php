@@ -261,6 +261,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     continue;
                 }
                 if ($element_union_types) {
+                    '@phan-var UnionType $element_union_types';
                     $element_union_types = $element_union_types->withType($target_type->genericArrayElementType());
                 } else {
                     $element_union_types = $target_type->genericArrayElementUnionType();

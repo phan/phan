@@ -955,6 +955,10 @@ class ParameterTypesAnalyzer
         Method $method,
         Method $o_method
     ): void {
+        // The method was already from phpdoc.
+        if ($method->isFromPHPDoc()) {
+            return;
+        }
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
         $o_phpdoc_parameter_list = $o_method->getParameterList();

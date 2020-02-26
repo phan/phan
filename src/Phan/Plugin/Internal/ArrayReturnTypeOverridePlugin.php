@@ -308,7 +308,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
                 $new_types = $passed_array_type->genericArrayTypes();
-                $types = $types ? $types->withUnionType($new_types) : $new_types;
+                $types = $types instanceof UnionType ? $types->withUnionType($new_types) : $new_types;
                 $has_non_array = $has_non_array || (!$passed_array_type->hasRealTypeSet() || !$passed_array_type->asRealUnionType()->nonArrayTypes()->isEmpty());
             }
             if ($types instanceof UnionType) {
@@ -567,6 +567,36 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             $result = $values_element_type->asGenericArrayTypes($key_enum_type);
             return $result->withRealTypeSet($probably_real_assoc_array_falsey->getRealTypeSet());
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $iterator_to_array_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($false_type): UnionType {
+            if (\count($args) < 1) {
+                return $false_type->asPHPDocUnionType();
+            }
+            $iterator_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $value_type = $iterator_type->iterableValueUnionType($code_base);
+            if (\count($args) >= 2) {
+                $use_keys = !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->containsFalsey();
+            } else {
+                $use_keys = true;
+            }
+            if ($value_type->isEmpty()) {
+                // TODO: Be more accurate about whether this is definitely an array/list
+                if ($use_keys) {
+                    return UnionType::fromFullyQualifiedPHPDocAndRealString('array', 'array|false');
+                } else {
+                    return UnionType::fromFullyQualifiedPHPDocAndRealString('list', 'array|false');
+                }
+            }
+            if ($use_keys) {
+                // TODO check for ListType
+                $key_type = $iterator_type->iterableKeyUnionType($code_base);
+                $key_type_enum = GenericArrayType::keyUnionTypeFromTypeSetStrict($key_type->getTypeSet());
+                return $value_type->asGenericArrayTypes($key_type_enum);
+            }
+            return $value_type->asListTypes();
+        };
         return [
             // Gets the element types of the first
             'array_pop'   => $get_element_type_of_first_arg_check_nonempty,
@@ -621,6 +651,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'array_uintersect_uassoc'   => $get_first_array_arg_assoc,
             'array_unique'              => $get_first_array_arg_assoc_same_size,
             'array_values'              => $array_values_callback,
+            'iterator_to_array'         => $iterator_to_array_callback,
             // TODO: iterator_to_array
         ];
     }

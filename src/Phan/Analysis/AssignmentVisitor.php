@@ -1178,6 +1178,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * Modifies $this->context (if needed) to track the assignment to a property of $this within a function-like.
      * This handles conditional branches.
      * @param string $prop_name
+     * TODO: If $this->right_type is the empty union type and the property is declared, assume the phpdoc/real types instead of the empty union type.
      */
     private function handleThisPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name): void
     {

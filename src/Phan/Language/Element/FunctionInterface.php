@@ -201,7 +201,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getOutputReferenceParamNames(): array;
 
     /**
-     * @return \Generator
+     * @return \Generator<static>
      * The set of all alternates to this function
      */
     public function alternateGenerator(CodeBase $code_base): \Generator;

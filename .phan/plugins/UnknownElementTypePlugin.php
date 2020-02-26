@@ -124,7 +124,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                             return;
                         }
                         $combined_type = $inferred_types[$i] ?? null;
-                        if ($combined_type) {
+                        if ($combined_type instanceof UnionType) {
                             $combined_type = $combined_type->withUnionType($parameter_type);
                         } else {
                             $combined_type = $parameter_type;
@@ -342,7 +342,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
                             return;
                         }
                         $combined_type = $inferred_types[$i] ?? null;
-                        if ($combined_type) {
+                        if ($combined_type instanceof UnionType) {
                             $combined_type = $combined_type->withUnionType($parameter_type);
                         } else {
                             $combined_type = $parameter_type;

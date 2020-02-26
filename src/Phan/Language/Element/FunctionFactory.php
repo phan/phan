@@ -219,7 +219,7 @@ class FunctionFactory
 
             // Set the return type if one is defined
             $return_type = $map['return_type'] ?? null;
-            if ($return_type) {
+            if ($return_type instanceof UnionType) {
                 $real_return_type = $function->getRealReturnType();
                 if (!$real_return_type->isEmpty()) {
                     $return_type = UnionType::of($return_type->getTypeSet(), $real_return_type->getTypeSet());

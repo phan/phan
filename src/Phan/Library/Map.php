@@ -14,6 +14,13 @@ use SplObjectStorage;
  * @template K
  * @template V
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
+ * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignatureMismatchInternal
+ * @method void attach(K $object,V $data = null)
+ * @method void detach(K $object)
+ * @method bool offsetExists(K $object)
+ * @method V offsetGet(K $object )
+ * @method void offsetSet(K $object,V $data = null)
+ * @method void offsetUnset(K $object)
  */
 class Map extends SplObjectStorage
 {

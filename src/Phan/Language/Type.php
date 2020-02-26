@@ -2604,6 +2604,8 @@ class Type
         $template_type_list = $this->template_parameter_type_list;
         if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
             return $template_type_list[1];
+        } elseif (count($template_type_list) === 1) {
+            return $template_type_list[0];
         }
         return null;
     }
@@ -3358,9 +3360,25 @@ class Type
      * Either this or 'static' resolved in the given context.
      */
     public function withStaticResolvedInContext(
-        Context $_
+        Context $context
     ): Type {
+        if ($this->template_parameter_type_list) {
+            return $this->withStaticResolvedInContextTemplate($context);
+        }
         return $this;
+    }
+
+    private function withStaticResolvedInContextTemplate(
+        Context $context
+    ): Type {
+        $new_template_parameter_type_list = [];
+        foreach ($this->template_parameter_type_list as $t) {
+            $new_template_parameter_type_list[] = $t->withStaticResolvedInContext($context);
+        }
+        if ($new_template_parameter_type_list === $this->template_parameter_type_list) {
+            return $this;
+        }
+        return self::fromType($this, $new_template_parameter_type_list);
     }
 
     /**

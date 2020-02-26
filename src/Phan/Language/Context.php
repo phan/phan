@@ -1020,6 +1020,7 @@ class Context extends FileRef
                 return null;
             }
             if ($result) {
+                '@phan-var UnionType $result';
                 $result = $result->withUnionType($extra);
             } else {
                 $result = $extra;

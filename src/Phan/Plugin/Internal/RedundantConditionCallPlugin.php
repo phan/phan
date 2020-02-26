@@ -136,6 +136,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
 
         $make_simple_first_arg_checker = static function (string $extract_types_method, string $expected_type) use ($make_first_arg_checker): Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types_method);
+            /** @suppress PhanPluginUnknownObjectMethodCall ReflectionMethod cannot be analyzed */
             return $make_first_arg_checker(static function (UnionType $type) use ($method): int {
                 $new_real_type = $method->invoke($type)->nonNullableClone();
                 if ($new_real_type->isEmpty()) {

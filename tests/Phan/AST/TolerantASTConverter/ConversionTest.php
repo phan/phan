@@ -31,6 +31,7 @@ final class ConversionTest extends BaseTest
 {
     /**
      * @return list<string>
+     * @suppress PhanPluginUnknownObjectMethodCall
      */
     protected function scanSourceDirForPHP(string $source_dir): array
     {

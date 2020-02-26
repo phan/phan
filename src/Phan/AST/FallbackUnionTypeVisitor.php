@@ -642,7 +642,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 // NOTE: Deliberately do not use the closure for $function->hasDependentReturnType().
                 // Most plugins expect the context to have variables, which this won't provide.
                 $function_types = $function->getUnionType();
-                if ($possible_types) {
+                if ($possible_types instanceof UnionType) {
                     $possible_types = $possible_types->withUnionType($function_types);
                 } else {
                     $possible_types = $function_types;
@@ -681,7 +681,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 }
                 $method = $class->getMethodByName($this->code_base, $method_name);
                 $method_types = $method->getUnionType();
-                if ($possible_types) {
+                if ($possible_types instanceof UnionType) {
                     $possible_types = $possible_types->withUnionType($method_types);
                 } else {
                     $possible_types = $method_types;

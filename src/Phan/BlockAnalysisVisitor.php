@@ -59,6 +59,7 @@ use function rtrim;
  * @see self::visit()
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @method Context __invoke(Node $node)
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {
@@ -1394,7 +1395,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each child node and get an
             // updated context for the node
 
-            if ($previous_child_context) {
+            if ($previous_child_context instanceof Context) {
                 // The previous case statement fell through some of the time or all of the time.
                 $child_context = (new ContextMergeVisitor(
                     $previous_child_context,
@@ -1425,6 +1426,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             // Add the variable type from the above case statements, if it was possible for it to fall through
                             // TODO: Also support switch(get_class($variable))
                             $child_context = $switch_variable_condition($child_context, $case_cond_node);
+                            '@phan-var Context $child_context';
                             if ($previous_child_context !== null) {
                                 $variable = $child_context->getScope()->getVariableByNameOrNull($var_name);
                                 if ($variable) {

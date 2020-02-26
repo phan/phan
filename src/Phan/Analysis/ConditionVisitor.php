@@ -830,6 +830,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /**
              * @param list<Node|mixed> $args
+             * @suppress PhanPluginUnknownObjectMethodCall can't analye ReflectionMethod
              */
             return static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($method, $default_if_empty, $allow_undefined): void {
                 // Change the type to match the is_a relationship

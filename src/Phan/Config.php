@@ -972,6 +972,8 @@ class Config
     /**
      * @return array<string,mixed>
      * A map of configuration keys and their values
+     *
+     * @suppress PhanUnreferencedPublicMethod useful for plugins, testing, etc.
      */
     public static function toArray(): array
     {

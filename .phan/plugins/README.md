@@ -225,6 +225,12 @@ has the given value.
 - **PhanPluginRedundantAssignmentInLoop** `Assigning {TYPE} to variable ${VARIABLE} which already has that value`
 - **PhanPluginRedundantAssignmentInGlobalScope** `Assigning {TYPE} to variable ${VARIABLE} which already has that value`
 
+### UnknownClassElementAccessPlugin.php
+
+This plugin checks for accesses to unknown class elements that can't be type checked.
+
+- **PhanPluginUnknownObjectMethodCall**: `Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}`
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,
