@@ -2994,7 +2994,7 @@ class UnionType implements Serializable
             $context,
             Issue::RedefinedClassReference,
             $context->getLineNumberStart(),
-            $class_fqsen,
+            $class_fqsen->withAlternateId(0),
             $class->getContext()->getFile(),
             $class->getContext()->getLineNumberStart(),
             $other_class->getContext()->getFile(),
