@@ -227,7 +227,8 @@ has the given value.
 
 ### UnknownClassElementAccessPlugin.php
 
-This plugin checks for accesses to unknown class elements that can't be type checked.
+This plugin checks for accesses to unknown class elements that can't be type checked (which may hide potential runtime errors such as having too few parameters).
+To reduce false positives, this will suppress warnings if at least one recursive analysis could infer class/interface types for the object.
 
 - **PhanPluginUnknownObjectMethodCall**: `Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}`
 

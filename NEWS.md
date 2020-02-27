@@ -18,7 +18,7 @@ New features(Analysis):
 + Infer key and element types from `iterator_to_array()`
 
 Plugins:
-+ Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class a method is being called on.
++ Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class an instance method is being called on.
 
 Bug fixes:
 + Fix bug causing phan to fail to properly recursively analyze parameters of inherited methods (#3740)

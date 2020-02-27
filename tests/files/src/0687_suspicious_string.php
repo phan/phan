@@ -7,7 +7,7 @@ class NotStringable {
         echo $this;
     }
 }
-class Stringable {
+class Stringable {  // in a namespace, doesn't conflict with php8 stringable.
     public function test() {
         echo "$this\n";
         echo $this;

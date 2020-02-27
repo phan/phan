@@ -1,0 +1,2 @@
+src/165_dont_warn_unknown.php:2 PhanUnreferencedFunction Possibly zero references to function \test165()
+src/165_dont_warn_unknown.php:4 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $x->count() - inferred a type of (empty union type)
