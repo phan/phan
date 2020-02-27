@@ -1835,7 +1835,7 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node\QualifiedName|Token|null $type
      */
-    protected static function phpParserTypeToAstNode($type, int $line) : ?ast\Node
+    protected static function phpParserTypeToAstNode($type, int $line): ?ast\Node
     {
         if (\is_null($type)) {
             return null;

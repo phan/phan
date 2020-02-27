@@ -10,6 +10,8 @@ New features(CLI, Configs):
   Phan infers additional type information for properties, return types, etc. while analyzing,
   and this will help it detect more potential errors.
   (on the first run, it would analyze files before some of those types were inferred)
++ Add a CLI option `--analyze-all-files` to analyze all files, ignoring `exclude_analysis_file_list`.
+  This is potentially useful if third party dependencies are missing type information (also see `--analyze-twice`).
 
 New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)

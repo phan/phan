@@ -288,6 +288,11 @@ Extended help:
   Emit issues with their absolute paths instead of relative paths.
   This does not affect files mentioned within the issue.
 
+ --analyze-all-files
+  Ignore the --exclude-directory-list <dir_list> flag and `exclude_analysis_directory_list` config settings and analyze all files that were parsed.
+  This is slow, but useful when third-party files being parsed have incomplete type information.
+  Also see --analyze-twice.
+
  --constant-variable-detection
   Emit issues for variables that could be replaced with literals or constants.
   (i.e. they are declared once (as a constant expression) and never modified).

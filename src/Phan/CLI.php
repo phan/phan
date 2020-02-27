@@ -85,6 +85,7 @@ class CLI
     public const GETOPT_LONG_OPTIONS = [
         'absolute-path-issue-messages',
         'allow-polyfill-parser',
+        'analyze-all-files',
         'assume-real-types-for-internal-functions',
         'automatic-fix',
         'backward-compatibility-checks',
@@ -805,6 +806,7 @@ class CLI
                 case 'C':
                 case 'color':
                 case 'no-color':
+                case 'analyze-all-files':
                     // Handled before processing the CLI flag `--help`
                     break;
                 case 'save-baseline':
@@ -835,7 +837,6 @@ class CLI
                 default:
                     // All of phan's long options are currently at least 2 characters long.
                     $key_repr = strlen($key) >= 2 ? "--$key" : "-$key";
-                    echo "Checking $key\n";
                     if ($value === false && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
                         throw new UsageException("Missing required argument value for '$key_repr'", EXIT_FAILURE);
                     }
@@ -885,6 +886,9 @@ class CLI
                 $this->file_list_in_config,
                 array_slice($argv, 1)
             );
+        }
+        if (isset($opts['analyze-all-files'])) {
+            Config::setValue('exclude_analysis_directory_list', []);
         }
 
         $this->recomputeFileList();
@@ -1591,6 +1595,11 @@ Extended help:
  --absolute-path-issue-messages
   Emit issues with their absolute paths instead of relative paths.
   This does not affect files mentioned within the issue.
+
+ --analyze-all-files
+  Ignore the --exclude-directory-list <dir_list> flag and `exclude_analysis_directory_list` config settings and analyze all files that were parsed.
+  This is slow, but useful when third-party files being parsed have incomplete type information.
+  Also see --analyze-twice.
 
  --constant-variable-detection
   Emit issues for variables that could be replaced with literals or constants.

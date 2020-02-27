@@ -2845,7 +2845,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->checkUnionTypeCompatibility($node->children['returnType']);
     }
 
-    private function checkUnionTypeCompatibility(?Node $type) : void {
+    private function checkUnionTypeCompatibility(?Node $type): void
+    {
         if (!$type) {
             return;
         }
@@ -2882,12 +2883,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return;
         }
-        if ($inner_type->flags === ast\flags\TYPE_STATIC)  {
+        if ($inner_type->flags === ast\flags\TYPE_STATIC) {
             $this->emitIssue(
                 Issue::CompatibleStaticType,
                 $inner_type->lineno
             );
-        } elseif (\in_array($inner_type->flags, [ast\flags\TYPE_FALSE, ast\flags\TYPE_NULL], true))  {
+        } elseif (\in_array($inner_type->flags, [ast\flags\TYPE_FALSE, ast\flags\TYPE_NULL], true)) {
             $this->emitIssue(
                 Issue::InvalidNode,
                 $inner_type->lineno,

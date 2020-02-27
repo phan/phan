@@ -60,7 +60,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * @return bool true if the issue should be suppressed for the baseline.
      * @override
      */
-    public function onEmitIssue(IssueInstance $issue_instance): bool {
+    public function onEmitIssue(IssueInstance $issue_instance): bool
+    {
         return $this->shouldSuppressIssueTypeInFile(
             $issue_instance->getIssue()->getType(),
             $issue_instance->getFile()
@@ -71,7 +72,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * Check if the given issue type should be suppressed in the given file path.
      * @internal - used for testing
      */
-    public function shouldSuppressIssueTypeInFile(string $issue_type, string $file) : bool {
+    public function shouldSuppressIssueTypeInFile(string $issue_type, string $file): bool
+    {
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$file] ?? [], true);
         if ($suppressed_by_file) {
             return true;
