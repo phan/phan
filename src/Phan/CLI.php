@@ -2296,6 +2296,17 @@ EOB
         }
     }
 
+    /**
+     * Reset the long progress state to the initial state.
+     *
+     * Useful for --analyze-twice
+     */
+    public static function resetLongProgressState(): void
+    {
+        self::$current_progress_offset_long_progress = 0;
+        self::$current_progress_state_long_progress = null;
+    }
+
     private static function renderLongProgress(string $msg, float $p, float $memory, ?int $offset, ?int $count): string
     {
         $buf = '';

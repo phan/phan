@@ -35,7 +35,7 @@ _arguments \
 	'(1)*--init-analyze-file=[a relative path to a file to analyze]:file:_files' \
 	'(--save-baseline)--save-baseline=[a path to save a baseline with pre-existing issues to]:file:_files' \
 	'(--load-baseline -B)'{--load-baseline=,-B+}'[a path to a baseline with pre-existing issues to read from]:file:_files' \
-	'(--analyze-twice)'{--analyze-twice}'[run the analysis phase twice]' \
+	'(--analyze-twice)--analyze-twice[run the analysis phase twice]' \
 	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]' \
 	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]' \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \

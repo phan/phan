@@ -467,6 +467,7 @@ class Phan implements IgnoredFilesFilterInterface
                 }
 
                 if ($analyze_twice) {
+                    CLI::resetLongProgressState();
                     CLI::progress('analyze', 0.0, null, 0, $file_count);
                     foreach ($analyze_file_path_list as $i => $file_path) {
                         $analysis_worker($i, $file_path, $file_count);
