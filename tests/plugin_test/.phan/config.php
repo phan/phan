@@ -141,5 +141,6 @@ return [
         'StrictComparisonPlugin',
         'LoopVariableReusePlugin',
         'RedundantAssignmentPlugin',
+        'UnknownClassElementAccessPlugin',
     ],
 ];
