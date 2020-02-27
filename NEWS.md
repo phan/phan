@@ -28,6 +28,7 @@ Bug fixes:
 + Don't include both `.` and `vendor/x/y/` when initializing Phan configs with settings such as `--init --init-analyze-dir=.` (#3699)
 + Be more consistent about resolving `static` in generators and template types.
 + Infer the iterable value type for `Generator<V>`. It was previously only inferred when there were 2 or more template args in phpdoc.
++ Don't let less specific type signatures such as `@param object $x` override the real type signature of `MyClass $x` (#3749)
 
 Feb 20 2020, Phan 2.5.0
 -----------------------

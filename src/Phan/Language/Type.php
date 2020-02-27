@@ -3350,9 +3350,12 @@ class Type
 
         // Test to see if this (or any ancestor types) can cast to the given union type.
         $expanded_types = $this_resolved->asExpandedTypes($code_base);
-        return $expanded_types->canCastToUnionType(
-            $union_type
-        );
+        foreach ($expanded_types->getTypeSet() as $type) {
+            if ($type->isSubtypeOfAnyTypeInSet($union_type->getTypeSet())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

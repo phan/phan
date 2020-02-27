@@ -877,4 +877,10 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
         return ListType::fromElementType($this->element_type, $this->is_nullable, $this->key_type);
     }
+
+    public function isSubtypeOf(Type $type): bool
+    {
+        // TODO more specific
+        return $this->canCastToType($type);
+    }
 }
