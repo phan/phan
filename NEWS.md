@@ -3,8 +3,13 @@ Phan NEWS
 ??? ?? 2020, Phan 2.5.1 (dev)
 -----------------------
 
-New features(Analysis):
+New features(CLI, Configs):
 + Show empty union types as `(empty union type)` in issue messages instead of as an empty string.
++ Add a new CLI option `--analyze-twice` to run the analysis phase twice (#3743)
+
+  Phan infers additional type information for properties, return types, etc. while analyzing,
+  and this will help it detect more potential errors.
+  (on the first run, it would analyze files before some of those types were inferred)
 
 New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)

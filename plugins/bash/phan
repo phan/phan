@@ -95,6 +95,7 @@ _phan() {
 --save-baseline
 -B
 --load-baseline
+--analyze-twice
 -h
 --help
 -v

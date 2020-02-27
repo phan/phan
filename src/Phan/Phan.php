@@ -423,9 +423,13 @@ class Phan implements IgnoredFilesFilterInterface
             $did_fork_pool_have_error = false;
 
             CLI::progress('analyze', 0.0, null, 0, $file_count);
+            $analyze_twice = Config::getValue('__analyze_twice');
             // Check to see if we're running as multiple processes
             // or not
             if ($process_count > 1) {
+                if ($analyze_twice) {
+                    CLI::printWarningToStderr("cannot run analysis phase twice when using --processes N\n");
+                }
                 // Run analysis one file at a time, splitting the set of
                 // files up among a given number of child processes.
                 $pool = new ForkPool(
@@ -460,6 +464,13 @@ class Phan implements IgnoredFilesFilterInterface
                 // over the file list and analyze them
                 foreach ($analyze_file_path_list as $i => $file_path) {
                     $analysis_worker($i, $file_path, $file_count);
+                }
+
+                if ($analyze_twice) {
+                    CLI::progress('analyze', 0.0, null, 0, $file_count);
+                    foreach ($analyze_file_path_list as $i => $file_path) {
+                        $analysis_worker($i, $file_path, $file_count);
+                    }
                 }
 
                 // Scan through all globally accessible elements

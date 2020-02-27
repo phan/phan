@@ -808,6 +808,10 @@ final class ConfigPluginSet extends PluginV3 implements
         if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
             $plugin_file_name = self::getBuiltinPluginDirectory() . '/' . $plugin_file_name . '.php';
         }
+        if (\preg_match('@^phar://@', $plugin_file_name)) {
+            // This is a plugin, probably from phan.phar
+            return $plugin_file_name;
+        }
         return Config::projectPath($plugin_file_name);
     }
 
