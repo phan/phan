@@ -1261,6 +1261,7 @@ class Config
      *
      * @suppress PhanUnreferencedPublicMethod
      * @see FileRef::getProjectRelativePathForPath() for converting to relative paths
+     * NOTE: This deliberately does not support phar:// URLs, because those evaluate php code when the phar is first loaded.
      */
     public static function projectPath(string $relative_path): string
     {
