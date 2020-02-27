@@ -1,0 +1,6 @@
+%s:3 PhanTypeMismatchDeclaredParam Doc-block of $dom in vaguer_comment contains phpdoc param type object which is incompatible with the param type \DOMDocument declared in the signature
+%s:6 PhanUndeclaredMethod Call to undeclared method \DOMDocument::missingMethod
+%s:9 PhanTypeMismatchDeclaredParam Doc-block of $ao in base_class contains phpdoc param type \ArrayAccess which is incompatible with the param type \ArrayObject declared in the signature
+%s:12 PhanParamTooManyInternal Call with 1 arg(s) to \ArrayObject::count() which only takes 0 arg(s)
+%s:15 PhanTypeMismatchDeclaredParam Doc-block of $dom in wrong_comment contains phpdoc param type \stdClass which is incompatible with the param type \DOMDocument declared in the signature
+%s:18 PhanUndeclaredMethod Call to undeclared method \DOMDocument::missingMethod
