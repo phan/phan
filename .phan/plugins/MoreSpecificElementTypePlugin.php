@@ -110,8 +110,8 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
         if ($declared_return_type->hasTopLevelArrayShapeTypeInstances()) {
             return false;
         }
-        $real_actual_type = $actual_type->asRealUnionType();
-        if (!$real_actual_type->isEmpty() && $declared_return_type->isStrictSubtypeOf($code_base, $actual_type)) {
+        $real_actual_type = $actual_type->getRealUnionType();
+        if (!$real_actual_type->isEmpty() && $declared_return_type->isStrictSubtypeOf($code_base, $real_actual_type)) {
             // TODO: Provide a way to disable this heuristic.
             return false;
         }
