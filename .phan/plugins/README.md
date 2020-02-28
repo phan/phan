@@ -239,10 +239,8 @@ This works best when there is only one analysis process (the default, i.e. `--pr
 
 This plugin checks for return types that can be made more specific.
 **This has a large number of false positives - it can be used manually to point out comments that should be made more specific, but is not recommended as part of a build.**
-This plugin checks for accesses to unknown class elements that can't be type checked (which may hide potential runtime errors such as having too few parameters).
-To reduce false positives, this will suppress warnings if at least one recursive analysis could infer class/interface types for the object.
 
-- **PhanPluginUnknownObjectMethodCall**: `Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}`
+- **PhanPluginMoreSpecificActualReturnType**: `Phan inferred that {FUNCTION} documented to have return type {TYPE} returns the more specific type {TYPE}`
 
 It's strongly recommended to use this with a single analysis process (the default, i.e. `--processes 1`).
 
