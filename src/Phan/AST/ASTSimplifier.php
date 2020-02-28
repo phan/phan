@@ -734,8 +734,7 @@ class ASTSimplifier
     {
         $list = $catches->children;
         $new_list = array_map(
-            /** @return mixed */
-            static function (Node $node) {
+            static function (Node $node): Node {
                 return self::applyToStmts($node);
             },
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument should be impossible to be float

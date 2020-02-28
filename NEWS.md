@@ -22,6 +22,10 @@ New features(Analysis):
 
 Plugins:
 + Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class an instance method is being called on.
+  (To work correctly, this plugin requires that Phan use a single analysis process)
++ Add `MoreSpecificElementTypePlugin` to warn about functions/methods where the phpdoc/actual return type is vaguer than the types that are actually returned by a method.
+  This is a work in progress, and has a lot of false positives.
+  (To work correctly, this plugin requires that Phan use a single analysis process)
 
 Bug fixes:
 + Fix bug causing phan to fail to properly recursively analyze parameters of inherited methods (#3740)

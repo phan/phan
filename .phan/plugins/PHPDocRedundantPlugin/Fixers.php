@@ -65,7 +65,7 @@ class Fixers
         return self::computeEditSetToDeleteComment($file_contents, $comment_token);
     }
 
-    private static function computeEditSetToDeleteComment(string $file_contents, Token $comment_token): ?FileEditSet
+    private static function computeEditSetToDeleteComment(string $file_contents, Token $comment_token): FileEditSet
     {
         // get the byte where the `)` of the argument list ends
         $last_byte_index = $comment_token->getEndPosition();

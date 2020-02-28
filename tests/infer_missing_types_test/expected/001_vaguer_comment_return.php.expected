@@ -1,0 +1,4 @@
+src/001_vaguer_comment_return.php:3 PhanPluginMoreSpecificActualReturnType Phan inferred that \test1() documented to have return type mixed returns the more specific type \ArrayObject(real=\ArrayObject)
+src/001_vaguer_comment_return.php:3 PhanUnreferencedFunction Possibly zero references to function \test1()
+src/001_vaguer_comment_return.php:6 PhanPluginMoreSpecificActualReturnType Phan inferred that \test2() documented to have return type object returns the more specific type \ArrayObject(real=\ArrayObject)
+src/001_vaguer_comment_return.php:6 PhanUnreferencedFunction Possibly zero references to function \test2()

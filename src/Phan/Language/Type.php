@@ -3942,6 +3942,19 @@ class Type
     }
 
     /**
+     * Convert `\MyClass<T>` and `\MyClass<\OtherClass>` to just `\MyClass`.
+     *
+     * TODO: Override in subclasses such as generic arrays, generic iterables, and array shapes.
+     */
+    public function eraseTemplatesRecursive(): Type
+    {
+        if (!$this->template_parameter_type_list) {
+            return $this;
+        }
+        return static::fromType($this, []);
+    }
+
+    /**
      * @param array<string,UnionType> $template_parameter_type_map
      * A map from template type identifiers to concrete types
      *

@@ -259,6 +259,9 @@ Extended help:
   This is useful to verify that options such as exclude_file_regex are
   properly set up, or to run other checks on the files Phan would parse.
 
+ --dump-analyzed-file-list
+  Emit a newline-separated list of files Phan would analyze to stdout.
+
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.

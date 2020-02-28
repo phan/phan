@@ -1045,6 +1045,16 @@ class UnionType implements Serializable
     }
 
     /**
+     * Convert `\MyClass<T>` and `\MyClass<\OtherClass>` to just `\MyClass`.
+     */
+    public function eraseTemplatesRecursive(): UnionType
+    {
+        return $this->asMappedUnionType(static function (Type $type): Type {
+            return $type->eraseTemplatesRecursive();
+        });
+    }
+
+    /**
      * @return bool
      * True if this union type has any types that have generic
      * types
@@ -3979,7 +3989,7 @@ class UnionType implements Serializable
      */
     public function elementTypesToGenericArray(int $key_type): UnionType
     {
-        $parts = \array_map(static function (Type $type) use ($key_type): Type {
+        $parts = \array_map(static function (Type $type) use ($key_type): ArrayType {
             if ($type instanceof MixedType) {
                 return ArrayType::instance(false);
             }
@@ -4098,6 +4108,7 @@ class UnionType implements Serializable
     public function asListTypes(): UnionType
     {
         return $this->asMappedUnionType(
+            // TODO: Fix https://github.com/phan/phan/issues/3755 and change return type to GenericArrayType
             static function (Type $type): Type {
                 return ListType::fromElementType($type, false);
             }
@@ -4625,10 +4636,7 @@ class UnionType implements Serializable
         return \is_object($normalized) ? $normalized : $this;
     }
 
-    /**
-     * @return UnionType|true
-     */
-    private function asNormalizedTypesInner()
+    private function asNormalizedTypesInner(): UnionType
     {
         $type_set = $this->type_set;
         $real_type_set = $this->real_type_set;
@@ -5419,14 +5427,14 @@ class UnionType implements Serializable
         return $type_set->withRealTypeSet(self::intOrStringTypeSet());
     }
 
-    /** @return list<Type> */
+    /** @return list<IntType|FloatType> */
     private static function intOrFloatTypeSet(): array
     {
         static $types;
         return $types ?? ($types = [IntType::instance(false), FloatType::instance(false)]);
     }
 
-    /** @return list<Type> */
+    /** @return list<IntType|StringType> */
     private static function intOrStringTypeSet(): array
     {
         static $types;

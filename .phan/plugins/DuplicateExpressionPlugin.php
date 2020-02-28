@@ -216,7 +216,9 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return int|string|float|bool|null|Node the resolved value of $node, or $node if it could not be resolved
+     * @return bool|null|Node the resolved value of $node, or $node if it could not be resolved
+     * This could be more permissive about what constants are allowed (e.g. user-defined constants, real constants like PI, etc.),
+     * but that may cause more false positives.
      */
     private static function resolveLiteralValue(Node $node)
     {

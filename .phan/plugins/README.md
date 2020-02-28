@@ -232,6 +232,28 @@ To reduce false positives, this will suppress warnings if at least one recursive
 
 - **PhanPluginUnknownObjectMethodCall**: `Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}`
 
+This works best when there is only one analysis process (the default, i.e. `--processes 1`).
+`--analyze-twice` will reduce the number of issues this emits.
+
+### MoreSpecificElementTypePlugin.php
+
+This plugin checks for return types that can be made more specific.
+**This has a large number of false positives - it can be used manually to point out comments that should be made more specific, but is not recommended as part of a build.**
+This plugin checks for accesses to unknown class elements that can't be type checked (which may hide potential runtime errors such as having too few parameters).
+To reduce false positives, this will suppress warnings if at least one recursive analysis could infer class/interface types for the object.
+
+- **PhanPluginUnknownObjectMethodCall**: `Phan could not infer any class/interface types for the object of the method call {CODE} - inferred a type of {TYPE}`
+
+It's strongly recommended to use this with a single analysis process (the default, i.e. `--processes 1`).
+
+This uses the following heuristics to reduce the number of false positives.
+
+- Avoids warning about methods that are overrides or are overridden.
+- Avoids checking generators.
+- Flattens array shapes and literals before comparing types
+- Avoids warning when the actual return type contains multiple types and the declared return type is a single FQSEN
+  (e.g. don't warn about `Subclass1|Subclass2` being more specific than `BaseClass`)
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,

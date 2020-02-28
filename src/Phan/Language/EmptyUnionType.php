@@ -188,6 +188,12 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    /** @override */
+    public function eraseTemplatesRecursive(): UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this union type has any types that have generic

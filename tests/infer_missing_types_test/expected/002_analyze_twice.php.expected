@@ -1,0 +1,12 @@
+src/002_analyze_twice.php:3 PhanUnreferencedClass Possibly zero references to class \A2
+src/002_analyze_twice.php:4 PhanPluginUnknownPropertyType Property \A2->x has an initial type that cannot be inferred
+src/002_analyze_twice.php:6 PhanPluginUnknownMethodParamType Method \A2::setX has no declared or inferred parameter type for $obj
+src/002_analyze_twice.php:6 PhanPluginUnknownMethodReturnType Method \A2::setX() has no declared or inferred return type
+src/002_analyze_twice.php:6 PhanUnreferencedPublicMethod Possibly zero references to public method \A2::setX()
+src/002_analyze_twice.php:10 PhanPluginUnknownMethodReturnType Method \A2::test() has no declared or inferred return type
+src/002_analyze_twice.php:10 PhanUnreferencedPublicMethod Possibly zero references to public method \A2::test()
+src/002_analyze_twice.php:15 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $this->x->missingMethod() - inferred a type of (empty union type)
+src/002_analyze_twice.php:18 PhanPluginUnknownMethodReturnType Method \A2::register() has no declared or inferred return type
+src/002_analyze_twice.php:18 PhanUndeclaredTypeParameter Parameter $a has undeclared type \A (Did you mean class \A2 or array)
+src/002_analyze_twice.php:18 PhanUnreferencedPublicMethod Possibly zero references to public method \A2::register()
+src/002_analyze_twice.php:19 PhanUndeclaredClassMethod Call to method setX from undeclared class \A (Did you mean class \A2)
