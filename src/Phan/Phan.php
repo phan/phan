@@ -134,6 +134,13 @@ class Phan implements IgnoredFilesFilterInterface
             echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
             exit(EXIT_SUCCESS);
         }
+        if (Config::getValue('dump_parsed_file_list') === CLI::DUMP_ANALYZED) {
+            $file_path_list = array_filter($file_path_lister(), static function (string $file_path): bool {
+                return !self::isExcludedAnalysisFile($file_path);
+            });
+            echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
+            exit(EXIT_SUCCESS);
+        }
         if (Config::getValue('language_server_use_pcntl_fallback')) {
             // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
             // so we need to garbage collect that.

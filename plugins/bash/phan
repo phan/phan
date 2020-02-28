@@ -103,6 +103,7 @@ _phan() {
 --extended-help
 --dump-ast
 -a
+--dump-analyzed-file-list
 --dump-parsed-file-list
 --dump-signatures-file
 --automatic-fix

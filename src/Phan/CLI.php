@@ -103,6 +103,7 @@ class CLI
         'directory:',
         'disable-cache',
         'disable-plugins',
+        'dump-analyzed-file-list',
         'dump-ast',
         'dump-parsed-file-list',
         'dump-signatures-file:',
@@ -175,6 +176,11 @@ class CLI
         'use-fallback-parser',
         'version',
     ];
+
+    /**
+     * @internal
+     */
+    public const DUMP_ANALYZED = 'dump_analyzed';
 
     /**
      * @var OutputInterface used for outputting the formatted issue messages.
@@ -535,6 +541,9 @@ class CLI
                     break;
                 case 'dump-parsed-file-list':
                     Config::setValue('dump_parsed_file_list', true);
+                    break;
+                case 'dump-analyzed-file-list':
+                    Config::setValue('dump_parsed_file_list', self::DUMP_ANALYZED);
                     break;
                 case 'dump-signatures-file':
                     Config::setValue('dump_signatures_file', $value);
@@ -1566,6 +1575,9 @@ Extended help:
   Emit a newline-separated list of files Phan would parse to stdout.
   This is useful to verify that options such as exclude_file_regex are
   properly set up, or to run other checks on the files Phan would parse.
+
+ --dump-analyzed-file-list
+  Emit a newline-separated list of files Phan would analyze to stdout.
 
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.

@@ -75,6 +75,7 @@ _arguments \
 	'(--version -v)'{-v,--version}'[show version]' \
 	'(--extended-help)--extended-help[show extended help]' \
 	'(--dump-ast -a)'{--dump-ast,-a}'[dump an AST for each file rather than analyze]' \
+	'(--dump-analyzed-file-list)--dump-analyzed-file-list[emit a newline-separated list of files Phan would analyze to stdout]' \
 	'(--dump-parsed-file-list)--dump-parsed-file-list[emit a newline-separated list of files Phan would parse to stdout]' \
 	'(--dump-signatures-file)--dump-signatures-file=[emit JSON serialized signatures to the given file]:file:_files' \
 	'(--automatic-fix)--automatic-fix[automatically fix any issues that can be fixed]' \
