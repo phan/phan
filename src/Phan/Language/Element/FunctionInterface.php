@@ -149,6 +149,12 @@ interface FunctionInterface extends AddressableElementInterface
     public function setHasYield(bool $has_yield): void;
 
     /**
+     * @return bool
+     * True if this method yields any value(i.e. it is a \Generator)
+     */
+    public function hasYield(): bool;
+
+    /**
      * @return list<Parameter>
      * A list of parameters on the method
      */

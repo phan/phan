@@ -93,6 +93,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeInferMissingTypesTest)
+		cd tests/infer_missing_types_test
+		./test.sh
+		exit $?
+		;;
 	__*)
 		echo "Unknown test '$TEST_SUITE' (Tests beginning with __ are not phpunit tests)" 1>&2
 		echo 1>&2

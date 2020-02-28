@@ -987,11 +987,10 @@ class TolerantASTConverter
                 return $result;
             },
             /**
-             * @return ?ast\Node
              * @throws InvalidNodeException if the variable would be unanalyzable
              * TODO: Consider ${''} as a placeholder instead?
              */
-            'Microsoft\PhpParser\Node\Expression\Variable' => static function (PhpParser\Node\Expression\Variable $n, int $start_line): ?\ast\Node {
+            'Microsoft\PhpParser\Node\Expression\Variable' => static function (PhpParser\Node\Expression\Variable $n, int $start_line): \ast\Node {
                 $name_node = $n->name;
                 // Note: there are 2 different ways to handle an Error. 1. Add a placeholder. 2. remove all of the statements in that tree.
                 if ($name_node instanceof PhpParser\Node) {
@@ -1143,7 +1142,7 @@ class TolerantASTConverter
                 }
                 return $inner_node;
             },
-            /** @return mixed - Can return a node or a scalar, depending on the settings */
+            /** @return list<ast\Node|float|int|string> - Can return a node or a scalar, depending on the settings */
             'Microsoft\PhpParser\Node\Statement\CompoundStatementNode' => static function (PhpParser\Node\Statement\CompoundStatementNode $n, int $_) {
                 $children = [];
                 foreach ($n->statements as $parser_node) {
@@ -2824,12 +2823,11 @@ class TolerantASTConverter
     }
 
     /**
-     * @return ?ast\Node
      * @throws InvalidNodeException if the member name could not be converted
      *
      * (and various other exceptions)
      */
-    private static function phpParserMemberAccessExpressionToAstProp(PhpParser\Node\Expression\MemberAccessExpression $n, int $start_line): ?\ast\Node
+    private static function phpParserMemberAccessExpressionToAstProp(PhpParser\Node\Expression\MemberAccessExpression $n, int $start_line): \ast\Node
     {
         // TODO: Check for incomplete tokens?
         $member_name = $n->memberName;

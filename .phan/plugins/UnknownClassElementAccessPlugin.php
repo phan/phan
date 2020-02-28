@@ -21,11 +21,13 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * - E.g. `$unknown->someMethod(null)`
  *
  * This file demonstrates plugins for Phan. Plugins hook into various events.
- * UnknownClassElementAccessPlugin hooks into one event:
+ * UnknownClassElementAccessPlugin hooks into two events:
  *
  * - getPostAnalyzeNodeVisitorClassName
  *   This method returns a visitor that is called on every AST node from every
  *   file being analyzed in post-order
+ * - finalizeProcess
+ *   This is called after the other forms of analysis are finished running.
  *
  * A plugin file must
  *

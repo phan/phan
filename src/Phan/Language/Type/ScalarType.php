@@ -165,6 +165,12 @@ abstract class ScalarType extends NativeType
     {
         return false;
     }
+
+    /** @override */
+    public function eraseTemplatesRecursive(): Type
+    {
+        return $this;
+    }
 }
 \class_exists(IntType::class);
 \class_exists(StringType::class);

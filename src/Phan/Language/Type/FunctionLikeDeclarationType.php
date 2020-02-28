@@ -221,7 +221,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return false;
         }
         // TODO: Allow nullable/null to cast to void?
-        if (!$this->return_type->canCastToUnionTypeHandlingTemplates($type->return_type, $code_base)) {
+        if (!$this->return_type->asExpandedTypes($code_base)->canCastToUnionTypeHandlingTemplates($type->return_type, $code_base)) {
             return false;
         }
         foreach ($this->params as $i => $param) {
@@ -666,6 +666,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     public function setHasYield(bool $_): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function hasYield(): bool
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
