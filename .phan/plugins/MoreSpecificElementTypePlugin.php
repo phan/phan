@@ -107,6 +107,11 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
         if ($declared_return_type->isStrictSubtypeOf($code_base, $actual_type)) {
             return false;
         }
+        if (!$actual_type->asExpandedTypes($code_base)->canCastToUnionType($declared_return_type)) {
+            // Don't warn here about type mismatches such as int->string or object->array, but do warn about SubClass->BaseClass.
+            // Phan should warn elsewhere about those mismatches
+            return false;
+        }
         if ($declared_return_type->hasTopLevelArrayShapeTypeInstances()) {
             return false;
         }
