@@ -63,6 +63,9 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
     public function visitAssign(Node $node): void
     {
         $var = $node->children['var'];
+        if (!$var instanceof Node) {
+            return;
+        }
         if ($var->kind !== ast\AST_VAR) {
             return;
         }

@@ -33,7 +33,7 @@ $ast_node_shape_inner = \implode(',', [
     "true?:$ordinary_ast_node",
     "type?:?ast\Node",
     "value?:$ordinary_ast_node",
-    "var?:ast\Node",
+    "var?:$ordinary_ast_node",  // PHP can *parse* nonsense such as `2=$x;` in AST_ASSIGN
 ]);
 
 $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|int[]|string[]|float[]|null[]';

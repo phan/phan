@@ -770,16 +770,21 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
             $union_type = $union_type->withType($throwable_type);
         }
+        $var_node = $node->children['var'];
+        if (!$var_node instanceof Node) {
+            // Impossible
+            return $this->context;
+        }
 
         $variable_name = (new ContextNode(
             $this->code_base,
             $this->context,
-            $node->children['var']
+            $var_node
         ))->getVariableName();
 
         if ($variable_name !== '') {
             $variable = Variable::fromNodeInContext(
-                $node->children['var'],
+                $var_node,
                 $this->context,
                 $this->code_base,
                 false
