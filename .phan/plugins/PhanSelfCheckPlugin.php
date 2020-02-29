@@ -8,7 +8,6 @@ namespace Phan\Plugin\PhanSelfCheckPlugin;
 
 use ast\Node;
 use Closure;
-use InvalidArgumentException;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -199,9 +198,9 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
 
     private static function getIssueOrWarn(CodeBase $code_base, Context $context, FunctionInterface $function, string $issue_type): ?Issue
     {
-        try {
-            return Issue::fromType($issue_type);
-        } catch (InvalidArgumentException $_) {
+        // Calling Issue::fromType() would print a backtrace to stderr
+        $issue = Issue::issueMap()[$issue_type] ?? null;
+        if (!$issue) {
             self::emitIssue(
                 $code_base,
                 $context,
@@ -211,6 +210,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             );
             return null;
         }
+        return $issue;
     }
 
     private static function checkIssueTemplateUsage(CodeBase $code_base, Context $context, string $issue_message_template, int $issue_message_arg_count): void
