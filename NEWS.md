@@ -19,6 +19,13 @@ New features(Analysis):
 + Emit `PhanCompatibleUnionType` and `PhanCompatibleStaticType` when the target php version is less than 8.0 and union types or static return types are seen. (#3419, #3634)
 + Be more consistent about warning about issues in values of class constants, global constants, and property defaults.
 + Infer key and element types from `iterator_to_array()`
++ Infer that modification of or reading from static properties all use the same property declaration. (#3760)
+  Previously, Phan would track the static property's type separately for each subclass.
+  (static properties from traits become different instances, in each class using the trait)
++ Make assignments to properties of the declaring class affect type inference for those properties when accessed on subclasses (#3760)
+
+  Note that Phan is only guaranteed to analyze files once, so if type information is missing,
+  the only way to ensure it's available is to add it to phpdoc (`UnknownElementTypePlugin` can help) or use `--analyze-twice`.
 
 Plugins:
 + Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class an instance method is being called on.

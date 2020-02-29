@@ -2528,6 +2528,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             $union_type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
+
             // Map template types to concrete types
             if ($union_type->hasTemplateTypeRecursive()) {
                 // Get the type of the object calling the property
@@ -2542,6 +2543,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
 
                 return $union_type;
+            } elseif (!$is_static) {
+                // Inherit any new additional inferred union types from the declaring class,
+                // unless the property type has template types.
+                $defining_fqsen = $property->getDefiningFQSEN();
+                if ($property->getFQSEN() !== $defining_fqsen) {
+                    if ($this->code_base->hasPropertyWithFQSEN($defining_fqsen)) {
+                        $declaring_union_type = $this->code_base->getPropertyByFQSEN($defining_fqsen)->getUnionType();
+                        if ($declaring_union_type !== $union_type && !$declaring_union_type->hasTemplateTypeRecursive()) {
+                            $union_type = $union_type->withUnionType($declaring_union_type);
+                        }
+                    }
+                }
             }
 
             if ($union_type->isEmptyArrayShape() && $property->getPHPDocUnionType()->isEmpty()) {
