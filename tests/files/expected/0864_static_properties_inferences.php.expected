@@ -1,0 +1,3 @@
+%s:20 PhanUndeclaredMethod Call to undeclared method \ArrayObject::missingMethod
+%s:22 PhanUndeclaredMethod Call to undeclared method \SplObjectStorage::missingMethod
+%s:24 PhanUndeclaredMethod Call to undeclared method \DefiningStaticProperties\A::missingMethod

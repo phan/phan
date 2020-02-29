@@ -1,0 +1,5 @@
+src/003_inherit_property.php:10 PhanUnreferencedClass Possibly zero references to class \NS3\Z
+src/003_inherit_property.php:11 PhanPluginUnknownMethodReturnType Method \NS3\Z::test() has no declared or inferred return type
+src/003_inherit_property.php:11 PhanUnreferencedPublicMethod Possibly zero references to public method \NS3\Z::test()
+src/003_inherit_property.php:14 PhanUndeclaredMethod Call to undeclared method \ArrayObject::missingMethod
+src/003_inherit_property.php:18 PhanPluginUnknownPropertyType Property \NS3\X->val has an initial type that cannot be inferred (Types inferred after analysis: \ArrayObject)
