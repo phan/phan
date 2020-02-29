@@ -35,7 +35,7 @@ Plugins:
   (To work correctly, this plugin requires that Phan use a single analysis process)
 
 Bug fixes:
-+ Fix bug causing phan to fail to properly recursively analyze parameters of inherited methods (#3740)
++ Fix bug causing Phan to fail to properly recursively analyze parameters of inherited methods (#3740)
   (i.e. when the methods are called on the subclass)
 + Fix ambiguity in the way `Closure():T[]` and `callable():T[]` are rendered in error messages. (#3731)
   Either render it as `(Closure():T)[]` or `Closure():(T[])`
@@ -43,6 +43,8 @@ Bug fixes:
 + Be more consistent about resolving `static` in generators and template types.
 + Infer the iterable value type for `Generator<V>`. It was previously only inferred when there were 2 or more template args in phpdoc.
 + Don't let less specific type signatures such as `@param object $x` override the real type signature of `MyClass $x` (#3749)
++ Support PHP 7.4's `??=` null coalescing assignment operator in the polyfill.
++ Fix crash analyzing invalid nodes such as `2 = $x` in `RedundantAssignmentPlugin`.
 
 Feb 20 2020, Phan 2.5.0
 -----------------------

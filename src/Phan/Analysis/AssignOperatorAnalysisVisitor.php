@@ -152,6 +152,15 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     private function updateTargetDimWithType(Node $assign_op_node, Closure $get_type): Context
     {
         $node = $assign_op_node->children['var'];
+        if (!$node instanceof Node) {
+            // Should be impossible as currently called, but warn anyway.
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $assign_op_node->lineno,
+                Type::fromObject($node)
+            );
+            return $this->context;
+        }
         $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
             $this->emitIssue(
@@ -231,6 +240,14 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     private function updateTargetPropWithType(Node $assign_op_node, Closure $get_type): Context
     {
         $node = $assign_op_node->children['var'];
+        if (!($node instanceof Node)) {
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $assign_op_node->lineno,
+                Type::fromObject($node)
+            );
+            return $this->context;
+        }
         $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
             $this->emitIssue(
@@ -394,6 +411,15 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     public function visitBinaryCoalesce(Node $node): Context
     {
         $var_node = $node->children['var'];
+        if (!$var_node instanceof Node) {
+            // nonsense like `2 ??= $x`
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno,
+                "Invalid left hand side for ??="
+            );
+            return $this->context;
+        }
         $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
             'left' => $var_node,
             'right' => $node->children['expr'],

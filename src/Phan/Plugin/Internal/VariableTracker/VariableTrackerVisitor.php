@@ -921,6 +921,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     public function visitCatch(Node $node): VariableTrackingScope
     {
         $var_node = $node->children['var'];
+        if (!$var_node instanceof Node) {
+            // impossible for AST_CATCH, except with polyfill?
+            return $this->scope;
+        }
 
         $scope = $this->scope;
         if ($var_node->kind === \ast\AST_VAR) {

@@ -620,6 +620,7 @@ class TolerantASTConverter
                     TokenKind::SlashEqualsToken                     => flags\BINARY_DIV,
                     TokenKind::GreaterThanGreaterThanEqualsToken    => flags\BINARY_SHIFT_RIGHT,
                     TokenKind::LessThanLessThanEqualsToken          => flags\BINARY_SHIFT_LEFT,
+                    TokenKind::QuestionQuestionEqualsToken          => flags\BINARY_COALESCE,
                 ];
                 $kind = $n->operator->kind;
                 if ($kind === TokenKind::InstanceOfKeyword) {

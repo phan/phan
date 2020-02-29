@@ -36,6 +36,7 @@ const LATEST_KNOWN_PHP_AST_VERSION = '1.0.5';
  */
 function phan_output_ast_installation_instructions(): void
 {
+    require_once __DIR__ . '/Library/StringUtil.php';
     $ini_path = php_ini_loaded_file() ?: '(php.ini path could not be determined - try creating one at ' . dirname(PHP_BINARY) . '\\php.ini as a new empty file, or one based on php.ini.development or php.ini.production)';
     $configured_extension_dir = ini_get('extension_dir');
     $extension_dir = StringUtil::isNonZeroLengthString($configured_extension_dir) ? $configured_extension_dir : '(extension directory could not be determined)';
