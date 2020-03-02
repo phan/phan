@@ -890,7 +890,6 @@ trait ConditionVisitorUtil
      * @param Node $var_node
      * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x === 'literal')`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeIdentical(
         Node $var_node,
@@ -913,7 +912,6 @@ trait ConditionVisitorUtil
      * @param Node $var_node
      * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x == true)`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeEqual(
         Node $var_node,
@@ -937,7 +935,6 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $expr
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @return Context - Context after inferring type from a comparison expression involving a variable such as `if ($x > 0)`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeCompared(
         Node $var_node,
@@ -1011,7 +1008,6 @@ trait ConditionVisitorUtil
      * @param Node $var_node a node of type ast\AST_VAR, ast\AST_DIM (planned), or ast\AST_PROP
      * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x !== 'literal')`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeNotIdentical(
         Node $var_node,
@@ -1048,7 +1044,6 @@ trait ConditionVisitorUtil
      * @param Node $var_node
      * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      * @suppress PhanSuspiciousTruthyCondition, PhanSuspiciousTruthyString didn't implement special handling of `if ($x != [...])`
      */
     final public function updateVariableToBeNotEqual(
@@ -1218,7 +1213,6 @@ trait ConditionVisitorUtil
      *
      * @param Node|string|int|float $object_node
      * @param Node|string|int|float|bool $expr_node
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     public function analyzeClassAssertion($object_node, $expr_node): ?Context
     {
@@ -1462,7 +1456,6 @@ trait ConditionVisitorUtil
     /**
      * Returns this ConditionVisitorUtil's CodeBase.
      * This is needed by subclasses of BinaryCondition.
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function getCodeBase(): CodeBase
     {
@@ -1472,7 +1465,6 @@ trait ConditionVisitorUtil
     /**
      * Returns this ConditionVisitorUtil's Context.
      * This is needed by subclasses of BinaryCondition.
-     * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces
      */
     public function getContext(): Context
     {

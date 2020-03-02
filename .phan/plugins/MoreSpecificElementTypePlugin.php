@@ -143,7 +143,7 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
             $function_context = $function->getContext();
             // TODO: Do a better job for Traversable<MyClass> and iterable<MyClass>
             $actual_type = UnionType::merge($type_info->types->toArray())->withStaticResolvedInContext($function_context)->eraseTemplatesRecursive()->asNormalizedTypes();
-            $declared_return_type = $function->getUnionType()->withStaticResolvedInContext($function_context)->eraseTemplatesRecursive()->asNormalizedTypes();
+            $declared_return_type = $function->getOriginalReturnType()->withStaticResolvedInContext($function_context)->eraseTemplatesRecursive()->asNormalizedTypes();
             if (!self::shouldWarnAboutMoreSpecificType($code_base, $actual_type, $declared_return_type)) {
                 continue;
             }

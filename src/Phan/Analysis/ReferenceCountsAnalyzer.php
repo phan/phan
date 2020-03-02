@@ -198,7 +198,7 @@ class ReferenceCountsAnalyzer
                 throw new TypeError("Expected an iterable of ClassElement values");
             }
             // should not warn about self::class
-            if (\strcasecmp($element->getName(), 'class') === 0) {
+            if ($element instanceof ClassConstant && \strcasecmp($element->getName(), 'class') === 0) {
                 continue;
             }
             $fqsen = $element->getFQSEN();
@@ -210,7 +210,8 @@ class ReferenceCountsAnalyzer
 
             // copy references to methods, properties, and constants into the defining trait or class.
             if ($fqsen !== $defining_fqsen) {
-                if ($element->getReferenceCount($code_base) > 0) {
+                $has_references = $element->getReferenceCount($code_base) > 0;
+                if ($has_references || ($element instanceof Method && $element->isOverride())) {
                     $defining_element = null;
                     if ($defining_fqsen instanceof FullyQualifiedMethodName) {
                         if ($code_base->hasMethodWithFQSEN($defining_fqsen)) {
@@ -226,7 +227,13 @@ class ReferenceCountsAnalyzer
                         }
                     }
                     if ($defining_element !== null) {
-                        $defining_element->copyReferencesFrom($element);
+                        if ($has_references) {
+                            $defining_element->copyReferencesFrom($element);
+                        } elseif ($element instanceof Method) {
+                            foreach ($element->getOverriddenMethods($code_base) as $overridden_element) {
+                                $defining_element->copyReferencesFrom($overridden_element);
+                            }
+                        }
                     }
                 }
                 continue;

@@ -1,0 +1,2 @@
+src/004_infer_return_type.php:6 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \returns_object4() documented to have return type object (without an FQSEN) returns the more specific type \stdClass(real=\stdClass) (with an FQSEN)
+src/004_infer_return_type.php:9 PhanUndeclaredMethod Call to undeclared method \stdClass::missingMethod

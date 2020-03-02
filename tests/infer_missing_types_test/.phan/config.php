@@ -127,4 +127,10 @@ return [
     // Even when this is false, Phan will still infer return values and check parameters of internal functions
     // if Phan has the signatures.
     'ignore_undeclared_functions_with_known_signatures' => false,
+
+    // Allow adding types to vague return types such as @return object, @return ?mixed in function/method/closure union types.
+    // Normally, phan only adds inferred returned types when there is no `@return` type.
+    //
+    // Disabled by default. This is more useful with `--analyze-twice`.
+    'allow_overriding_vague_return_types' => true,
 ];

@@ -453,4 +453,11 @@ interface FunctionInterface extends AddressableElementInterface
      * Other approaches, such as analyzing loops multiple times, are possible, but not implemented.
      */
     public function getVariableTypeFallbackMap(CodeBase $code_base): array;
+
+    /**
+     * Gets the original union type of this function/method.
+     *
+     * This is populated the first time it is called.
+     */
+    public function getOriginalReturnType(): UnionType;
 }
