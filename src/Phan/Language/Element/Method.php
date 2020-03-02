@@ -629,6 +629,8 @@ class Method extends ClassElement implements FunctionInterface
             $method->setPHPDocReturnType($comment_return_union_type);
         }
         $element_context->freeElementReference();
+        // Populate the original return type.
+        $method->setOriginalReturnType();
 
         return $method;
     }

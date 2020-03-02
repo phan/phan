@@ -195,6 +195,15 @@ defined.
 
 (Default: `false`)
 
+## allow_overriding_vague_return_types
+
+Allow adding types to vague return types such as @return object, @return ?mixed in function/method/closure union types.
+Normally, Phan only adds inferred returned types when there is no `@return` type or real return type signature..
+
+Disabled by default. This is more useful with `--analyze-twice`.
+
+(Default: `false`)
+
 ## analyze_signature_compatibility
 
 If enabled, check all methods that override a

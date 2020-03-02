@@ -13,6 +13,11 @@ New features(CLI, Configs):
 + Add a CLI option `--analyze-all-files` to analyze all files, ignoring `exclude_analysis_file_list`.
   This is potentially useful if third party dependencies are missing type information (also see `--analyze-twice`).
 + Add `--dump-analyzed-file-list` to dump all files Phan would analyze to stdout.
++ Add `allow_overriding_vague_return_types` to allow Phan to add inferred return types to functions/closures/methods declared with `@return mixed` or `@return object`.
+  This is disabled by default.
+
+  Previously, Phan would only add inferred return types if there was no return type declaration.
+  (also see `--analyze-twice`)
 
 New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)

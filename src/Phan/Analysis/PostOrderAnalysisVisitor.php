@@ -1510,20 +1510,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             // Check if the return type is compatible with the declared return type.
+            $is_mismatch = false;
             if (!$method->isReturnTypeUndefined()) {
                 $resolved_expression_type = $expression_type->withStaticResolvedInContext($context);
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!$this->checkCanCastToReturnType($resolved_expression_type, $method_return_type)) {
                     $this->emitTypeMismatchReturnIssue($resolved_expression_type, $method, $method_return_type, $lineno);
+                    $is_mismatch = true;
                 } elseif (Config::get_strict_return_checking() && $resolved_expression_type->typeCount() > 1) {
-                    self::analyzeReturnStrict($code_base, $method, $resolved_expression_type, $method_return_type, $lineno);
+                    $is_mismatch = self::analyzeReturnStrict($code_base, $method, $resolved_expression_type, $method_return_type, $lineno);
                 }
             }
             // For functions that aren't syntactically Generators,
             // update the set/existence of return values.
 
-            if ($method->isReturnTypeUndefined()) {
+            if ($method->isReturnTypeModifiable() && !$is_mismatch) {
                 // Add the new type to the set of values returned by the
                 // method
                 $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
@@ -1880,7 +1882,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         UnionType $expression_type,
         UnionType $method_return_type,
         int $lineno
-    ): void {
+    ): bool {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
         if (\count($type_set) < 2) {
@@ -1924,12 +1926,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if ($mismatch_expanded_types === null) {
             // No mismatches
-            return;
+            return false;
         }
 
         // If we have TypeMismatchReturn already, then also suppress the partial mismatch warnings (e.g. PartialTypeMismatchReturn) as well.
         if ($this->context->hasSuppressIssue($code_base, Issue::TypeMismatchReturn)) {
-            return;
+            return false;
         }
         $this->emitIssue(
             self::getStrictIssueType($mismatch_type_set),
@@ -1939,6 +1941,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             (string)$method_return_type,
             $mismatch_expanded_types
         );
+        return true;
     }
 
     private static function getStrictIssueType(UnionType $union_type): string

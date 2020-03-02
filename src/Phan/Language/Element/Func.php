@@ -306,6 +306,8 @@ class Func extends AddressableElement implements FunctionInterface
         }
         $element_context->freeElementReference();
 
+        $func->setOriginalReturnType();
+
         return $func;
     }
 

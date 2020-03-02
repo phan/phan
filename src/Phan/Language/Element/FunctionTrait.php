@@ -32,6 +32,7 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
@@ -106,7 +107,6 @@ trait FunctionTrait
      * @return string
      * The name of this structural element (without namespace/class),
      * or a string for FunctionLikeDeclarationType which lacks a real FQSEN
-     * @suppress PhanUnreferencedPublicMethod bad inference?
      */
     public function getNameForIssue(): string
     {
@@ -230,6 +230,11 @@ trait FunctionTrait
     private $as_generator_template_type;
 
     /**
+     * @var ?UnionType
+     */
+    private $original_return_type;
+
+    /**
      * @return int
      * The number of optional real parameters on this function/method.
      * This may differ from getNumberOfOptionalParameters()
@@ -322,6 +327,37 @@ trait FunctionTrait
     {
         return $this->getPhanFlagsHasState(Flags::IS_RETURN_TYPE_UNDEFINED);
     }
+
+    /**
+     * @return bool
+     * True if this method had no return type defined when it was defined,
+     * or if the method had a vague enough return type that Phan would add types to it
+     * (return type is inferred from the method signature itself and the docblock).
+     */
+    public function isReturnTypeModifiable(): bool
+    {
+        if ($this->isReturnTypeUndefined()) {
+            return true;
+        }
+        if (!Config::getValue('allow_overriding_vague_return_types')) {
+            return false;
+        }
+        // Don't allow overriding method types if they have known overrides
+        if ($this instanceof Method && $this->isOverriddenByAnother()) {
+            return false;
+        }
+        $return_type = $this->getUnionType();
+        // expect that $return_type has at least one type if isReturnTypeUndefined is false.
+        foreach ($return_type->getTypeSet() as $type) {
+            // Allow adding more specific types to ObjectType or MixedType.
+            // TODO: Allow adding more specific types to Array
+            if ($type instanceof ObjectType || $type instanceof MixedType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * @param bool $is_return_type_undefined
@@ -424,7 +460,6 @@ trait FunctionTrait
      * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
      *
      * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function needsRecursiveAnalysis(): bool
     {
@@ -483,7 +518,6 @@ trait FunctionTrait
      *
      * @param int $i - offset of the parameter.
      * @return Parameter|null The real parameter type (from php signature) that the **caller** observes.
-     * @suppress PhanUnreferencedPublicMethod false positive - this is referenced in FunctionInterface.
      */
     public function getRealParameterForCaller(int $i): ?Parameter
     {
@@ -633,7 +667,6 @@ trait FunctionTrait
      * @param Parameter $parameter
      * A parameter to append to the parameter list
      * @internal
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function appendParameter(Parameter $parameter): void
     {
@@ -645,7 +678,6 @@ trait FunctionTrait
      *
      * Call this before calling appendParameter, if parameters were already added.
      * @internal
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function clearParameterList(): void
     {
@@ -863,7 +895,6 @@ trait FunctionTrait
 
     /**
      * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types. This may differ from real parameter types.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function setPHPDocParameterTypeMap(array $parameter_map): void
     {
@@ -873,7 +904,8 @@ trait FunctionTrait
     /**
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
+     * @suppress PhanUnreferencedPublicMethod
+     * @unused - TODO: Clean up this and phpdoc_output_references
      */
     public function recordOutputReferenceParamName(string $parameter_name): void
     {
@@ -882,7 +914,6 @@ trait FunctionTrait
 
     /**
      * @return list<string> list of output references. Usually empty.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getOutputReferenceParamNames(): array
     {
@@ -891,7 +922,6 @@ trait FunctionTrait
 
     /**
      * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getPHPDocParameterTypeMap(): array
     {
@@ -908,7 +938,7 @@ trait FunctionTrait
 
     /**
      * @return ?UnionType the raw phpdoc union type
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
+     * @suppress PhanUnreferencedPublicMethod this is made available for plugins or future features.
      */
     public function getPHPDocReturnType(): ?UnionType
     {
@@ -941,7 +971,6 @@ trait FunctionTrait
      * (With an equal or larger remaining recursion depth)
      *
      * @param list<Parameter> $parameter_list
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list): Context
     {
@@ -1027,7 +1056,6 @@ trait FunctionTrait
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function hasFunctionCallAnalyzer(): bool
     {
@@ -1041,7 +1069,6 @@ trait FunctionTrait
      * @param Context $context
      * @param list<Node|int|string|float> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null): void
     {
@@ -1083,9 +1110,6 @@ trait FunctionTrait
         $this->comment = $comment;
     }
 
-    /**
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
-     */
     public function getThrowsUnionType(): UnionType
     {
         $comment = $this->comment;
@@ -1186,7 +1210,6 @@ trait FunctionTrait
     /**
      * Returns a FunctionLikeDeclarationType based on phpdoc+real types.
      * The return value is used for type casting rule checking.
-     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function asFunctionLikeDeclarationType(): FunctionLikeDeclarationType
     {
@@ -1297,7 +1320,7 @@ trait FunctionTrait
         $real_return_type = $this->getRealReturnType();
         $phpdoc_return_type = $this->phpdoc_return_type;
         $context = $this->getContext();
-        // TODO: use method->getPHPDocUnionType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
+        // TODO: use method->getPHPDocReturnType() and getRealReturnType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
         // Look at each parameter to make sure their types
         // are valid
@@ -1758,7 +1781,6 @@ trait FunctionTrait
      * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
      * @return ?Closure(CodeBase, Context, array):UnionType
      * @internal
-     * @suppress PhanUnreferencedPublicMethod referenced in FunctionTrait
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure
     {
@@ -1794,7 +1816,6 @@ trait FunctionTrait
 
     /**
      * Mark this function or method as read-only
-     * @suppress PhanUnreferencedPublicMethod Phan has known issues with traits combined with interfaces
      */
     public function setIsPure(): void
     {
@@ -1803,7 +1824,6 @@ trait FunctionTrait
 
     /**
      * Check if this function or method is marked as pure (having no visible side effects)
-     * @suppress PhanUnreferencedPublicMethod phan has issues with dead code detection with traits and interfaces.
      */
     public function isPure(): bool
     {
@@ -1824,5 +1844,25 @@ trait FunctionTrait
             // @phan-suppress-next-line PhanTypeMismatchArgument no way to indicate $this always implements FunctionInterface
             return FallbackMethodTypesVisitor::inferTypes($code_base, $this);
         });
+    }
+
+    /**
+     * Gets the original union type of this function/method.
+     *
+     * This is populated the first time it is called.
+     */
+    public function getOriginalReturnType(): UnionType
+    {
+        return $this->original_return_type ?? ($this->original_return_type = $this->getUnionType());
+    }
+
+    /**
+     * Sets the original union type of this function/method to the current union type.
+     *
+     * This is populated the first time it is called.
+     */
+    public function setOriginalReturnType(): void
+    {
+        $this->original_return_type = $this->getUnionType();
     }
 }
