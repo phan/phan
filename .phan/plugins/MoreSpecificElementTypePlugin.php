@@ -123,6 +123,16 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
         return true;
     }
 
+    private static function containsObjectWithKnownFQSEN(UnionType $union_type): bool
+    {
+        foreach ($union_type->getTypesRecursively() as $type) {
+            if ($type->isObjectWithKnownFQSEN()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * After all return statements are gathered, suggest a more specific type for the various functions.
      */
@@ -137,12 +147,19 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
             if (!self::shouldWarnAboutMoreSpecificType($code_base, $actual_type, $declared_return_type)) {
                 continue;
             }
+            if (self::containsObjectWithKnownFQSEN($actual_type) && !self::containsObjectWithKnownFQSEN($declared_return_type)) {
+                $issue_type = 'PhanPluginMoreSpecificActualReturnTypeContainsFQSEN';
+                $issue_message = 'Phan inferred that {FUNCTION} documented to have return type {TYPE} (without an FQSEN) returns the more specific type {TYPE} (with an FQSEN)';
+            } else {
+                $issue_type = 'PhanPluginMoreSpecificActualReturnType';
+                $issue_message = 'Phan inferred that {FUNCTION} documented to have return type {TYPE} returns the more specific type {TYPE}';
+            }
 
             $this->emitIssue(
                 $code_base,
                 $function->getContext(),
-                'PhanPluginMoreSpecificActualReturnType',
-                'Phan inferred that {FUNCTION} documented to have return type {TYPE} returns the more specific type {TYPE}',
+                $issue_type,
+                $issue_message,
                 [
                     $function->getRepresentationForIssue(),
                     $declared_return_type,

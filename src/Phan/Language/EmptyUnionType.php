@@ -1603,4 +1603,16 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    /**
+     * @return Generator<Type> no types.
+     * @suppress PhanImpossibleCondition
+     * @suppress PhanTypeMismatchGeneratorYieldValue
+     */
+    public function getTypesRecursively(): Generator
+    {
+        if (false) {
+            yield;
+        }
+    }
 }

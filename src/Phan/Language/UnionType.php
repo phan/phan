@@ -5935,6 +5935,21 @@ class UnionType implements Serializable
     {
         return $this;
     }
+
+    /**
+     * Returns a generator that yields all types and subtypes in the phpdoc type set.
+     *
+     * For example, for the union type `MyClass[]|false`, 3 types will be generated: `MyClass[]`, `MyClass`, and `false`.
+     * This does not deduplicate types.
+     *
+     * @return Generator<Type>
+     */
+    public function getTypesRecursively(): Generator
+    {
+        foreach ($this->type_set as $type) {
+            yield from $type->getTypesRecursively();
+        }
+    }
 }
 
 UnionType::init();

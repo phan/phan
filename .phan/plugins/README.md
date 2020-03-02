@@ -241,6 +241,7 @@ This plugin checks for return types that can be made more specific.
 **This has a large number of false positives - it can be used manually to point out comments that should be made more specific, but is not recommended as part of a build.**
 
 - **PhanPluginMoreSpecificActualReturnType**: `Phan inferred that {FUNCTION} documented to have return type {TYPE} returns the more specific type {TYPE}`
+- **PhanPluginMoreSpecificActualReturnTypeContainsFQSEN**: `Phan inferred that {FUNCTION} documented to have return type {TYPE} (without an FQSEN) returns the more specific type {TYPE} (with an FQSEN)`
 
 It's strongly recommended to use this with a single analysis process (the default, i.e. `--processes 1`).
 

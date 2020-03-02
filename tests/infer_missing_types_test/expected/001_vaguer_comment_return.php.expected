@@ -1,4 +1,16 @@
-src/001_vaguer_comment_return.php:3 PhanPluginMoreSpecificActualReturnType Phan inferred that \test1() documented to have return type mixed returns the more specific type \ArrayObject(real=\ArrayObject)
-src/001_vaguer_comment_return.php:3 PhanUnreferencedFunction Possibly zero references to function \test1()
-src/001_vaguer_comment_return.php:6 PhanPluginMoreSpecificActualReturnType Phan inferred that \test2() documented to have return type object returns the more specific type \ArrayObject(real=\ArrayObject)
-src/001_vaguer_comment_return.php:6 PhanUnreferencedFunction Possibly zero references to function \test2()
+src/001_vaguer_comment_return.php:10 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\test1() documented to have return type mixed (without an FQSEN) returns the more specific type \ArrayObject(real=\ArrayObject) (with an FQSEN)
+src/001_vaguer_comment_return.php:10 PhanUnreferencedFunction Possibly zero references to function \NS1\test1()
+src/001_vaguer_comment_return.php:13 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\test2() documented to have return type object (without an FQSEN) returns the more specific type \ArrayObject(real=\ArrayObject) (with an FQSEN)
+src/001_vaguer_comment_return.php:13 PhanUnreferencedFunction Possibly zero references to function \NS1\test2()
+src/001_vaguer_comment_return.php:20 PhanPluginMoreSpecificActualReturnType Phan inferred that \NS1\test3() documented to have return type \ArrayAccess returns the more specific type \ArrayObject(real=\ArrayObject)
+src/001_vaguer_comment_return.php:20 PhanUnreferencedFunction Possibly zero references to function \NS1\test3()
+src/001_vaguer_comment_return.php:29 PhanPluginMoreSpecificActualReturnType Phan inferred that \NS1\test4() documented to have return type mixed returns the more specific type object
+src/001_vaguer_comment_return.php:29 PhanUnreferencedFunction Possibly zero references to function \NS1\test4()
+src/001_vaguer_comment_return.php:34 PhanUnreferencedClass Possibly zero references to class \NS1\Methods
+src/001_vaguer_comment_return.php:40 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\Methods::test5() documented to have return type array (without an FQSEN) returns the more specific type array<int,\stdClass>(real=array<int,\stdClass>) (with an FQSEN)
+src/001_vaguer_comment_return.php:40 PhanPluginUnknownArrayMethodReturnType Method \NS1\Methods::test5() has a return type of array, but does not specify any key types or value types
+src/001_vaguer_comment_return.php:40 PhanUnreferencedPublicMethod Possibly zero references to public method \NS1\Methods::test5()
+src/001_vaguer_comment_return.php:48 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\Methods::test6() documented to have return type object[] (without an FQSEN) returns the more specific type array<int,\stdClass>(real=array<int,\stdClass>) (with an FQSEN)
+src/001_vaguer_comment_return.php:48 PhanUnreferencedPublicMethod Possibly zero references to public method \NS1\Methods::test6()
+src/001_vaguer_comment_return.php:55 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\Methods::test7() documented to have return type iterable<object> (without an FQSEN) returns the more specific type array<int,\NS1\Methods>(real=array<int,\NS1\Methods>) (with an FQSEN)
+src/001_vaguer_comment_return.php:55 PhanUnreferencedPublicMethod Possibly zero references to public method \NS1\Methods::test7()

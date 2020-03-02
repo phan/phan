@@ -1120,4 +1120,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     {
         return $this;
     }
+
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        foreach ($this->field_types as $type) {
+            yield from $type->getTypesRecursively();
+        }
+    }
 }

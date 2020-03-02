@@ -4139,4 +4139,20 @@ class Type
     {
         return $this;
     }
+
+    /**
+     * Returns a generator that yields all types and subtypes in the phpdoc type set.
+     *
+     * For example, for the type `MyClass<T[]>`, 3 types will be generated: `MyClass<T[]>` `T[]`, and `T`.
+     * This does not deduplicate types.
+     *
+     * @return Generator<Type>
+     */
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        foreach ($this->template_parameter_type_list as $template_union_type) {
+            yield from $template_union_type->getTypesRecursively();
+        }
+    }
 }

@@ -310,6 +310,24 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         yield from $this->return_type->getReferencedClasses();
     }
 
+    /**
+     * Returns a generator that yields all types and subtypes in the phpdoc type set.
+     *
+     * For example, for the union type `MyClass[]|false`, 3 types will be generated: `MyClass[]`, `MyClass`, and `false`.
+     * This does not deduplicate types.
+     *
+     * @return Generator<Type>
+     */
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        foreach ($this->params as $param) {
+            yield from $param->getNonVariadicUnionType()->getTypesRecursively();
+        }
+
+        yield from $this->return_type->getTypesRecursively();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // Begin FunctionInterface overrides. Most of these are intentionally no-ops
     ////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
@@ -257,5 +258,12 @@ final class GenericIterableType extends IterableType
             $this->element_union_type,
             $is_nullable
         );
+    }
+
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        yield from $this->key_union_type->getTypesRecursively();
+        yield from $this->element_union_type->getTypesRecursively();
     }
 }

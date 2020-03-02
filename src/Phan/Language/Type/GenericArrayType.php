@@ -881,6 +881,25 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function isSubtypeOf(Type $type): bool
     {
         // TODO more specific
-        return $this->canCastToType($type);
+        if (!$this->canCastToType($type)) {
+            return false;
+        }
+        // TODO: Also account for iterables
+        if ($type instanceof GenericArrayType) {
+            if (!$this->element_type->isSubtypeOf($type->element_type)) {
+                return false;
+            }
+        } elseif ($type instanceof GenericIterableType) {
+            if (!$this->element_type->asPHPDocUnionType()->hasSubtypeOf($type->getElementUnionType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        yield from $this->element_type->getTypesRecursively();
     }
 }

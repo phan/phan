@@ -26,6 +26,8 @@ New features(Analysis):
 
   Note that Phan is only guaranteed to analyze files once, so if type information is missing,
   the only way to ensure it's available is to add it to phpdoc (`UnknownElementTypePlugin` can help) or use `--analyze-twice`.
++ Make internal checks if generic array types are strict subtypes of other types more accurate.
+  (e.g. `object[]` is not a strict subtype of `stdClass[]`, but `stdClass[]` is a strict subtype of `object[]`)
 
 Plugins:
 + Add `UnknownClassElementAccessPlugin` to warn about cases where Phan can't infer which class an instance method is being called on.
