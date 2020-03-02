@@ -1853,6 +1853,9 @@ trait FunctionTrait
      * Gets the original union type of this function/method.
      *
      * This is populated the first time it is called.
+     *
+     * NOTE: Phan also infers union types from the overridden methods.
+     * This doesn't attempt to account for that.
      */
     public function getOriginalReturnType(): UnionType
     {

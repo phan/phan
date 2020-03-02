@@ -89,7 +89,9 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
     private static function shouldWarnAboutMoreSpecificType(CodeBase $code_base, UnionType $actual_type, UnionType $declared_return_type): bool
     {
         if ($declared_return_type->isEmpty()) {
-            return true;
+            // There was no phpdoc type declaration, so let UnknownElementTypePlugin warn about that instead of this.
+            // This plugin warns about `@return mixed` but not the absence of a declaration because the former normally prevents phan from inferring something more specific.
+            return false;
         }
         if ($declared_return_type->containsNullable() && !$actual_type->containsNullable()) {
             // Warn about `Subclass1|Subclass2` being the real return type of `?BaseClass`
