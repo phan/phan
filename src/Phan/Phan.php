@@ -696,6 +696,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $stubs = Config::getValue('autoload_internal_extension_signatures');
         foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
+            $extension_name = (string)$extension_name;
             // Prefer using reflection info from the running extension over what's in the stub files.
             // (The originals were already added to the CodeBase)
             if (\extension_loaded($extension_name)) {

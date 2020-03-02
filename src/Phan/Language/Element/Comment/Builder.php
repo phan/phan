@@ -709,6 +709,11 @@ final class Builder
                     $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
                 }
                 return;
+            case 'phan-hardcode-return-type':
+                if ($this->checkCompatible('@phan-hardcode-return-type', Comment::FUNCTION_LIKE, $i)) {
+                    $this->comment_flags |= Flags::HARDCODED_RETURN_TYPE;
+                }
+                return;
             case 'phan-forbid-undeclared-magic-methods':
                 if ($this->checkCompatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i)) {
                     $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
@@ -859,6 +864,7 @@ final class Builder
         '@phan-file-suppress' => '',
         '@phan-forbid-undeclared-magic-methods' => '',
         '@phan-forbid-undeclared-magic-properties' => '',
+        '@phan-hardcode-return-type' => '',
         '@phan-inherits' => '',
         '@phan-method' => '',
         '@phan-mixin' => '',

@@ -309,6 +309,7 @@ class Config
 
         // Allow adding types to vague return types such as @return object, @return ?mixed in function/method/closure union types.
         // Normally, Phan only adds inferred returned types when there is no `@return` type or real return type signature..
+        // This setting can be disabled on individual methods by adding `@phan-hardcode-return-type` to the doc comment.
         //
         // Disabled by default. This is more useful with `--analyze-twice`.
         'allow_overriding_vague_return_types' => false,
@@ -1090,6 +1091,7 @@ class Config
 
     /**
      * @return mixed
+     * @phan-hardcode-return-type
      */
     public static function getValue(string $name)
     {

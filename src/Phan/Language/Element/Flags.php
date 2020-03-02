@@ -60,6 +60,8 @@ class Flags
     public const IS_OVERRIDDEN_BY_ANOTHER = (1 << 25);
     // Currently applies only to some variables (e.g. static variables)
     public const IS_CONSTANT_DEFINITION = (1 << 26);
+    // Also used for `@phan-hardcode-return-type`
+    public const HARDCODED_RETURN_TYPE = (1 << 26);
 
     // Flag to be set on fake __construct methods (e.g. for classes/interfaces without having them defined explicitly)
     // Currently for strict visibility checking, because fake constructors have public visibility by default, and Phan

@@ -16,6 +16,9 @@ New features(CLI, Configs):
 + Add `allow_overriding_vague_return_types` to allow Phan to add inferred return types to functions/closures/methods declared with `@return mixed` or `@return object`.
   This is disabled by default.
 
+  When this is enabled, it can be disabled for individual methods by adding `@phan-hardcode-return-type` to the comment of the method.
+  (if the method has any type declarations such as `@return mixed`)
+
   Previously, Phan would only add inferred return types if there was no return type declaration.
   (also see `--analyze-twice`)
 

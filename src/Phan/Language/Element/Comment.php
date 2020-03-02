@@ -488,6 +488,7 @@ class Comment
     private const FLAGS_FOR_METHOD =
         Flags::IS_NS_INTERNAL |
         Flags::IS_DEPRECATED |
+        Flags::HARDCODED_RETURN_TYPE |
         Flags::IS_SIDE_EFFECT_FREE;
 
     /**

@@ -346,6 +346,9 @@ trait FunctionTrait
         if ($this instanceof Method && $this->isOverriddenByAnother()) {
             return false;
         }
+        if ($this->getPhanFlags() & Flags::HARDCODED_RETURN_TYPE) {
+            return false;
+        }
         $return_type = $this->getUnionType();
         // expect that $return_type has at least one type if isReturnTypeUndefined is false.
         foreach ($return_type->getTypeSet() as $type) {
