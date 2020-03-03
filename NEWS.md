@@ -43,6 +43,7 @@ Plugins:
 + Add `MoreSpecificElementTypePlugin` to warn about functions/methods where the phpdoc/actual return type is vaguer than the types that are actually returned by a method.
   This is a work in progress, and has a lot of false positives.
   (To work correctly, this plugin requires that Phan use a single analysis process)
++ Fix crash in `PrintfCheckerPlugin` when analyzing code where `fprintf()` was passed an array instead of a format string.
 
 Bug fixes:
 + Fix bug causing Phan to fail to properly recursively analyze parameters of inherited methods (#3740)

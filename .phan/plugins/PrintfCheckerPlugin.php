@@ -310,7 +310,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             // TODO: Check for AST_UNPACK
             $pattern = $args[1];
             if ($pattern instanceof Node) {
-                $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPValue();
+                $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPScalarValue();
             }
             $remaining_args = \array_slice($args, 2);
             $this->analyzePrintfPattern($code_base, $context, $function, $pattern, $remaining_args);
