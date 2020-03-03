@@ -2868,7 +2868,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($type->kind === ast\AST_NULLABLE_TYPE) {
             $inner_type = $type->children['type'];
             if (!\is_object($inner_type)) {
-                throw new AssertionError("Expected non-null type in AST_NULLABLE_TYPE");
+                // The polyfill will create param type nodes for function(? $x)
+                // Phan warns elsewhere.
+                return;
             }
         } else {
             $inner_type = $type;
