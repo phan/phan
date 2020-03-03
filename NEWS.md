@@ -58,6 +58,9 @@ Bug fixes:
 + Fix false positive unreferenced method warnings for methods from traits
   when the methods were referenced in base classes or interfaces of classes using those traits.
 
+Language Server/Daemon mode:
++ Minor performance improvements for the language server/daemon when the use of pcntl is unavailable or disabled. (#3758)
+
 Feb 20 2020, Phan 2.5.0
 -----------------------
 

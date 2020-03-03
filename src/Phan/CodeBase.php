@@ -604,7 +604,20 @@ class CodeBase
         // Create a deep copy of this CodeBase
         $clone = clone($this);
         // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
-        $clone->parsed_namespace_maps = \unserialize(\serialize($clone->parsed_namespace_maps));
+        // NOTE: It is faster to *create* the clone if this used unserialize(serialize(parsed_namespace_maps).
+        // However, it is 10 times slower once you include the time needed to garbage collect the data in the copies, because strings in values are brand new copies in unserialize().
+        // It is also likely to require more memory.
+        $clone->parsed_namespace_maps = $this->parsed_namespace_maps;
+        foreach ($clone->parsed_namespace_maps as &$map_for_file) {
+            foreach ($map_for_file as &$map_for_namespace_id) {
+                foreach ($map_for_namespace_id as &$map_for_use_type) {
+                    foreach ($map_for_use_type as &$entry) {
+                        $entry = clone($entry);
+                    }
+                }
+            }
+        }
+
         /** @var list<?Closure()> */
         $callbacks = [];
         // Create callbacks to restore classes
