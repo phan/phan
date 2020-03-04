@@ -65,9 +65,10 @@ class Analysis
      * @param bool $is_php_internal_stub
      * If this is true, this function will act as though the parsed constants, functions, and classes are actually part of PHP or it's extension's internals.
      * See autoload_internal_extension_signatures.
+     * @param ?Request $request probably a \Phan\Daemon\ParseRequest during language server mode.
      * @throws InvalidArgumentException for invalid stub files
      */
-    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false): Context
+    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false, ?Request $request = null): Context
     {
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
@@ -106,7 +107,7 @@ class Analysis
             return $context;
         }
         try {
-            $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
+            $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError $_) {
             return $context;
         } catch (CompileError $_) {
@@ -335,6 +336,7 @@ class Analysis
 
     /**
      * Loads extra logic for analyzing function and method calls.
+     * @suppress PhanPluginUnknownObjectMethodCall TODO: Fix for ArrayObject<FullyQualifiedMethodName>
      */
     public static function loadMethodPlugins(CodeBase $code_base): void
     {
@@ -372,12 +374,15 @@ class Analysis
                             $method = $code_base->getMethodByFQSEN($fqsen);
                             $method->setDependentReturnTypeClosure($closure);
 
-                            $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsGroupedByDefiningFQSEN();
+                            $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                            if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
+                                continue;
+                            }
 
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
-                            foreach ($methods_by_defining_fqsen[$fqsen->__toString()] ?? [] as $child_method) {
+                            foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
                                 if ($child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {

@@ -60,7 +60,7 @@ Bug fixes:
   when the methods were referenced in base classes or interfaces of classes using those traits.
 
 Language Server/Daemon mode:
-+ Minor performance improvements for the language server/daemon when the use of pcntl is unavailable or disabled. (#3758)
++ Various performance improvements for the language server/daemon with or without pcntl (#3758, #3769, #3771)
 
 Feb 20 2020, Phan 2.5.0
 -----------------------

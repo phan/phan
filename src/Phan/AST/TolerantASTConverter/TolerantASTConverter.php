@@ -18,6 +18,7 @@ use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression;
 use Microsoft\PhpParser\Node\Expression\TernaryExpression;
+use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
@@ -222,7 +223,7 @@ class TolerantASTConverter
         try {
             return $this->phpParserToPhpast($parser_node, $version, $file_contents);
         } finally {
-            // Unlink the nodes manually to free memory - automatic cyclic garbage collection is disabled for performance in older php 7 versions.
+            // Remove object reference cycles manually to free memory - automatic cyclic garbage collection is disabled for performance in older php 7 versions.
             self::unlinkDescendantNodes($parser_node);
         }
     }
@@ -232,10 +233,15 @@ class TolerantASTConverter
      *
      * Automatic cyclic garbage collection is disabled for performance in older php 7 versions.
      */
-    public static function unlinkDescendantNodes(PhpParser\Node $root): void
+    public static function unlinkDescendantNodes(SourceFileNode $root): void
     {
+        // Avoid creating cyclic data structures.
+        // Node->getRoot() requires a valid parent node path to a SourceFileNode because it needs getDocCommentText() to work.
+        $placeholder_root = new SourceFileNode();
+        $placeholder_root->fileContents = $root->fileContents;
+
         foreach ($root->getDescendantNodes() as $descendant) {
-            $descendant->parent = null;
+            $descendant->parent = $placeholder_root;
         }
         $root->parent = null;
     }
@@ -243,7 +249,7 @@ class TolerantASTConverter
     /**
      * @param Diagnostic[] &$errors @phan-output-reference (TODO: param-out)
      */
-    public static function phpParserParse(string $file_contents, array &$errors = []): PhpParser\Node
+    public static function phpParserParse(string $file_contents, array &$errors = []): PhpParser\Node\SourceFileNode
     {
         $parser = new Parser();  // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
         $result = $parser->parseSourceFile($file_contents);
