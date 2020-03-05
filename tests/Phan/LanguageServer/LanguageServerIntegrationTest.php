@@ -239,7 +239,7 @@ EOT;
             $diagnostics = $diagnostics_response['params']['diagnostics'];
             $this->assertCount(2, $diagnostics);
             // TODO: Pass IssueInstance to the helper instead?
-            $this->assertSameDiagnostic($diagnostics[0], Issue::TypeMissingReturn, 1, 'Method \example is declared to return int but has no return value');
+            $this->assertSameDiagnostic($diagnostics[0], Issue::TypeMissingReturnReal, 1, 'Method \example is declared to return int in its real type signature but has no return value');
             $this->assertSameDiagnostic($diagnostics[1], Issue::TypeMismatchArgumentInternal, 2, 'Argument 1 ($string) is int but \strlen() takes string');
 
             $good_file_contents = <<<'EOT'
