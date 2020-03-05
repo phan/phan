@@ -44,6 +44,7 @@ Plugins:
   This is a work in progress, and has a lot of false positives.
   (To work correctly, this plugin requires that Phan use a single analysis process)
 + Fix crash in `PrintfCheckerPlugin` when analyzing code where `fprintf()` was passed an array instead of a format string.
++ Emit `PhanTypeMissingReturnReal` instead of `PhanTypeMissingReturn` when there is a real return type signature. (#3716)
 
 Bug fixes:
 + Fix bug causing Phan to fail to properly recursively analyze parameters of inherited methods (#3740)

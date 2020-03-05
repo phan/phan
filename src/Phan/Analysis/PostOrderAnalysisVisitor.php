@@ -1390,12 +1390,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
-            $this->emitIssue(
-                Issue::TypeMissingReturn,
-                $node->lineno,
-                (string)$func->getFQSEN(),
-                (string)$return_type
-            );
+            $this->warnTypeMissingReturn($func, $node);
         }
         $this->analyzeNoOp($node, Issue::NoopClosure);
         $this->checkForFunctionInterfaceIssues($node, $func);
@@ -2762,12 +2757,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
-            $this->emitIssue(
-                Issue::TypeMissingReturn,
-                $node->lineno,
-                (string)$method->getFQSEN(),
-                (string)$return_type
-            );
+            $this->warnTypeMissingReturn($method, $node);
         }
         $this->checkForFunctionInterfaceIssues($node, $method);
 
@@ -2782,6 +2772,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    private function warnTypeMissingReturn(FunctionInterface $method, Node $node): void
+    {
+        $this->emitIssue(
+            $method->getRealReturnType()->isEmpty() ? Issue::TypeMissingReturn : Issue::TypeMissingReturnReal,
+            $node->lineno,
+            $method->getFQSEN(),
+            $method->getUnionType()
+        );
+    }
     /**
      * Visit a node with kind `ast\AST_FUNC_DECL`
      *
@@ -2812,12 +2811,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
-            $this->emitIssue(
-                Issue::TypeMissingReturn,
-                $node->lineno,
-                (string)$method->getFQSEN(),
-                (string)$return_type
-            );
+            $this->warnTypeMissingReturn($method, $node);
         }
 
         $this->checkForFunctionInterfaceIssues($node, $method);

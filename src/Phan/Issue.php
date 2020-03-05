@@ -186,6 +186,7 @@ class Issue
     public const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
     public const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
     public const TypeMissingReturn         = 'PhanTypeMissingReturn';
+    public const TypeMissingReturnReal     = 'PhanTypeMissingReturnReal';
     public const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     public const TypeNonVarReturnByRef       = 'PhanTypeNonVarReturnByRef';
     public const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
@@ -1645,10 +1646,18 @@ class Issue
             new Issue(
                 self::TypeMissingReturn,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_CRITICAL,
-                "Method {METHOD} is declared to return {TYPE} but has no return value",
+                self::SEVERITY_NORMAL,
+                "Method {METHOD} is declared to return {TYPE} in phpdoc but has no return value",
                 self::REMEDIATION_B,
                 10006
+            ),
+            new Issue(
+                self::TypeMissingReturnReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Method {METHOD} is declared to return {TYPE} in its real type signature but has no return value",
+                self::REMEDIATION_B,
+                10157
             ),
             new Issue(
                 self::TypeMismatchForeach,

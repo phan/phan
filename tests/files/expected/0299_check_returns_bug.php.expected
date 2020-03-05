@@ -1,2 +1,2 @@
-%s:3 PhanTypeMissingReturn Method \Example299 is declared to return bool but has no return value
-%s:11 PhanTypeMissingReturn Method \X299::Example is declared to return bool but has no return value
+%s:3 PhanTypeMissingReturnReal Method \Example299 is declared to return bool in its real type signature but has no return value
+%s:11 PhanTypeMissingReturnReal Method \X299::Example is declared to return bool in its real type signature but has no return value

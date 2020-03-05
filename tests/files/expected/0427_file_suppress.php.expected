@@ -1,2 +1,2 @@
 %s:11 PhanUnreferencedUseConstant Possibly zero references to use statement for constant MAGIC_FUNCTION (\ast\flags\MAGIC_FUNCTION)
-%s:15 PhanTypeMissingReturn Method \test is declared to return string but has no return value
+%s:15 PhanTypeMissingReturnReal Method \test is declared to return string in its real type signature but has no return value
