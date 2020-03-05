@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan;
 
+use ArrayObject;
 use AssertionError;
 use Closure;
 use Exception;
@@ -1122,6 +1123,8 @@ class CodeBase
 
     /**
      * @return array<string,list<Method>>
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getMethodsGroupedByDefiningFQSEN(): array
     {
@@ -1132,6 +1135,33 @@ class CodeBase
             $methods_by_defining_fqsen[$defining_fqsen][] = $method;
             if ($real_defining_fqsen !== $defining_fqsen) {
                 $methods_by_defining_fqsen[$real_defining_fqsen][] = $method;
+            }
+        }
+        return $methods_by_defining_fqsen;
+    }
+
+    /**
+     * @return Map<FullyQualifiedMethodName,ArrayObject<Method>>
+     */
+    public function getMethodsMapGroupedByDefiningFQSEN(): Map
+    {
+        $methods_by_defining_fqsen = new Map();
+        '@phan-var Map<FullyQualifiedMethodName,ArrayObject<Method>> $methods_by_defining_fqsen';
+        foreach ($this->method_set as $method) {
+            $defining_fqsen = $method->getDefiningFQSEN();
+            $real_defining_fqsen = $method->getRealDefiningFQSEN();
+            // Older php versions have issues with ?? on SplObjectStorage
+            if ($methods_by_defining_fqsen->offsetExists($defining_fqsen)) {
+                $methods_by_defining_fqsen->offsetGet($defining_fqsen)->append($method);
+            } else {
+                $methods_by_defining_fqsen->offsetSet($defining_fqsen, new ArrayObject([$method]));
+            }
+            if ($real_defining_fqsen !== $defining_fqsen) {
+                if ($methods_by_defining_fqsen->offsetExists($real_defining_fqsen)) {
+                    $methods_by_defining_fqsen->offsetGet($real_defining_fqsen)->append($method);
+                } else {
+                    $methods_by_defining_fqsen->offsetSet($real_defining_fqsen, new ArrayObject([$method]));
+                }
             }
         }
         return $methods_by_defining_fqsen;

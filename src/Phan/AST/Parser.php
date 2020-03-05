@@ -10,6 +10,7 @@ use Error;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\FilePositionMap;
 use ParseError;
+use Phan\AST\TolerantASTConverter\CachingTolerantASTConverter;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\TolerantASTConverter\ParseResult;
 use Phan\AST\TolerantASTConverter\ShimFunctions;
@@ -117,9 +118,9 @@ class Parser
             }
             return self::parseCodeHandlingDeprecation($code_base, $context, $file_contents, $file_path);
         } catch (ParseError $native_parse_error) {
-            return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
+            return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error, $request);
         } catch (CompileError $native_parse_error) {
-            return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
+            return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error, $request);
         }
     }
 
@@ -181,6 +182,7 @@ class Parser
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param ParseError|CompileError $native_parse_error (can be CompileError in 7.3+, will be ParseError in most cases)
+     * @param ?Request $request used to check if caching should be enabled to save time.
      * @throws ParseError most of the time
      * @throws CompileError in PHP 7.3+
      */
@@ -190,10 +192,11 @@ class Parser
         string $file_path,
         string $file_contents,
         bool $suppress_parse_errors,
-        Error $native_parse_error
+        Error $native_parse_error,
+        ?Request $request = null
     ): Node {
         if (!$suppress_parse_errors) {
-            self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, new FileCacheEntry($file_contents), $native_parse_error);
+            self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, new FileCacheEntry($file_contents), $native_parse_error, $request);
         }
         if (!Config::getValue('use_fallback_parser')) {
             // By default, don't try to re-parse files with syntax errors.
@@ -209,7 +212,11 @@ class Parser
         }
         // But if the user would see the syntax error, go ahead and retry.
 
-        $converter = new TolerantASTConverter();
+        if ($request) {
+            $converter = new CachingTolerantASTConverter();
+        } else {
+            $converter = new TolerantASTConverter();
+        }
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $errors = [];
         try {
@@ -236,14 +243,15 @@ class Parser
         Context $context,
         string $file_path,
         FileCacheEntry $file_cache_entry,
-        Error $native_parse_error
+        Error $native_parse_error,
+        ?Request $request = null
     ): void {
         // Try to get the raw diagnostics by reference.
         // For efficiency, reuse the last result if this was called multiple times in a row.
         $line = $native_parse_error->getLine();
         $message = $native_parse_error->getMessage();
         $diagnostic_error_column = self::guessErrorColumnUsingTokens($file_cache_entry, $native_parse_error) ?:
-            self::guessErrorColumnUsingPolyfill($code_base, $context, $file_path, $file_cache_entry, $native_parse_error);
+            self::guessErrorColumnUsingPolyfill($code_base, $context, $file_path, $file_cache_entry, $native_parse_error, $request);
 
         Issue::maybeEmitWithParameters(
             $code_base,
@@ -354,7 +362,8 @@ class Parser
         Context $context,
         string $file_path,
         FileCacheEntry $file_cache_entry,
-        Error $native_parse_error
+        Error $native_parse_error,
+        ?Request $request
     ): int {
         $file_contents = $file_cache_entry->getContents();
         static $last_file_contents = null;
@@ -364,7 +373,7 @@ class Parser
             unset($errors);
             $errors = [];
             try {
-                self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, null, $errors);
+                self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, $request, $errors);
             } catch (Throwable $_) {
                 // ignore this exception
             }
@@ -535,19 +544,22 @@ class Parser
 
     private static function createConverter(string $file_path, string $file_contents, Request $request = null): TolerantASTConverter
     {
-        if ($request && $request->shouldUseMappingPolyfill($file_path)) {
-            // TODO: Rename to something better
-            $converter = new TolerantASTConverterWithNodeMapping(
-                $request->getTargetByteOffset($file_contents),
-                static function (Node $node): void {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
-                    ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
+        if ($request) {
+            if ($request->shouldUseMappingPolyfill($file_path)) {
+                // TODO: Rename to something better
+                $converter = new TolerantASTConverterWithNodeMapping(
+                    $request->getTargetByteOffset($file_contents),
+                    static function (Node $node): void {
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
+                    }
+                );
+                if ($request->shouldAddPlaceholdersForPath($file_path)) {
+                    $converter->setShouldAddPlaceholders(true);
                 }
-            );
-            if ($request->shouldAddPlaceholdersForPath($file_path)) {
-                $converter->setShouldAddPlaceholders(true);
+                return $converter;
             }
-            return $converter;
+            return new CachingTolerantASTConverter();
         }
 
         return new TolerantASTConverter();

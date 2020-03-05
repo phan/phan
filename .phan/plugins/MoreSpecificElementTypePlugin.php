@@ -9,8 +9,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
-use Phan\Library\Set;
 use Phan\Library\Map;
+use Phan\Library\Set;
 use Phan\PluginV3;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -176,7 +176,8 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
  * Represents the actual return types seen during analysis
  * (including recursive analysis)
  */
-class ElementTypeInfo {
+class ElementTypeInfo
+{
     /** @var FunctionInterface the function with the return values*/
     public $function;
     /** @var Set<UnionType> the set of observed return types */
@@ -184,7 +185,8 @@ class ElementTypeInfo {
     /**
      * @param list<UnionType> $return_types
      */
-    public function __construct(FunctionInterface $function, array $return_types) {
+    public function __construct(FunctionInterface $function, array $return_types)
+    {
         $this->function = $function;
         $this->types = new Set($return_types);
     }

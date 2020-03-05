@@ -10,6 +10,7 @@ use Exception;
 use InvalidArgumentException;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
@@ -102,6 +103,73 @@ class Phan implements IgnoredFilesFilterInterface
             $collector->collectIssue($issue);
         }
     }
+
+    /**
+     * A list of classes to preload, before forking analysis workers with pcntl.
+     * This was based on Phan's self-analysis with Phan's own settings.
+     * Other projects may have a few more classes to preload.
+     *
+     * Note that interfaces and traits would require calling interface_exists() or trait_exists() instead.
+     */
+    private const DAEMON_PRELOAD_CLASSES = [
+        \Phan\Analysis\AbstractMethodAnalyzer::class,
+        \Phan\Analysis\ArgumentType::class,
+        \Phan\Analysis\AssignmentVisitor::class,
+        \Phan\Analysis\AssignOperatorAnalysisVisitor::class,
+        \Phan\Analysis\BlockExitStatusChecker::class,
+        \Phan\Analysis\ClassInheritanceAnalyzer::class,
+        \Phan\Analysis\CompositionAnalyzer::class,
+        \Phan\Analysis\ConditionVisitor::class,
+        \Phan\Analysis\ConditionVisitor\ComparisonCondition::class,
+        \Phan\Analysis\ConditionVisitor\IdenticalCondition::class,
+        \Phan\Analysis\ConditionVisitor\NotIdenticalCondition::class,
+        \Phan\Analysis\ContextMergeVisitor::class,
+        \Phan\Analysis\DuplicateClassAnalyzer::class,
+        \Phan\Analysis\DuplicateFunctionAnalyzer::class,
+        \Phan\Analysis\FallbackMethodTypesVisitor::class,
+        \Phan\Analysis\LoopConditionVisitor::class,
+        \Phan\Analysis\NegatedConditionVisitor::class,
+        \Phan\Analysis\ParameterTypesAnalyzer::class,
+        \Phan\Analysis\ParentConstructorCalledAnalyzer::class,
+        \Phan\Analysis\PostOrderAnalysisVisitor::class,
+        \Phan\Analysis\PreOrderAnalysisVisitor::class,
+        \Phan\Analysis\PropertyTypesAnalyzer::class,
+        \Phan\Analysis\ReachabilityChecker::class,
+        \Phan\Analysis\RedundantCondition::class,
+        \Phan\Analysis\RegexAnalyzer::class,
+        \Phan\Analysis\ThrowsTypesAnalyzer::class,
+        \Phan\AST\ASTHasher::class,
+        \Phan\AST\ASTReverter::class,
+        \Phan\AST\FallbackUnionTypeVisitor::class,
+        \Phan\AST\InferPureVisitor::class,
+        \Phan\AST\InferValue::class,
+        \Phan\AST\ScopeImpactCheckingVisitor::class,
+        \Phan\BlockAnalysisVisitor::class,
+        \Phan\Daemon\ParseRequest::class,
+        \Phan\Daemon\Request::class,
+        \Phan\Daemon\Transport\StreamResponder::class,
+        \Phan\Exception\NodeException::class,
+        \Phan\Language\Element\MarkupDescription::class,
+        \Phan\Language\Scope\BranchScope::class,
+        \Phan\Language\Type\NonEmptyAssociativeArrayType::class,
+        \Phan\Language\Type\NonEmptyGenericArrayType::class,
+        \Phan\Library\Hasher\Sequential::class,
+        \Phan\Library\RegexKeyExtractor::class,
+        \Phan\Ordering::class,
+        \Phan\Output\Printer\CapturingJSONPrinter::class,
+        \Phan\Output\Printer\FilteringPrinter::class,
+        \Phan\Output\Printer\JSONPrinter::class,
+        \Phan\Plugin\Internal\RedundantConditionLoopCheck::class,
+        \Phan\Plugin\Internal\UseReturnValuePlugin\RedundantReturnVisitor::class,
+        \Phan\Plugin\Internal\VariableTracker\VariableGraph::class,
+        \Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor::class,
+        \Phan\Plugin\Internal\VariableTracker\VariableTrackingBranchScope::class,
+        \Phan\Plugin\Internal\VariableTracker\VariableTrackingLoopScope::class,
+        \Phan\Plugin\Internal\VariableTracker\VariableTrackingScope::class,
+        \Phan\PluginV3\StopParamAnalysisException::class,
+        \Phan\Suggestion::class,
+        \Symfony\Component\Console\Output\BufferedOutput::class,
+    ];
 
     /**
      * Analyze the given set of files and emit any issues
@@ -254,9 +322,14 @@ class Phan implements IgnoredFilesFilterInterface
                 throw new AssertionError("Expected undo tracking to be enabled");
             }
             if ($is_daemon_request) {
+                // Preload classes before forking daemon or language server worker processes with pcntl.
+                //
+                // Technically, this is only useful if pcntl is installed,
+                // but always doing this is easier to reason about.
                 if (is_array($language_server_config)) {
                     throw new AssertionError('cannot use language server config for daemon mode');
                 }
+                self::preloadBeforeForkingAnalysisWorkers($code_base);
                 // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
                 // TODO: check for conflicts with other config options -
                 //    incompatible with dump_ast, dump_signatures_file, output-file, etc.
@@ -301,6 +374,43 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
+    }
+
+    private static function preloadBeforeForkingAnalysisWorkers(CodeBase $code_base): void
+    {
+        if (Config::getValue('language_server_use_pcntl_fallback')) {
+            return;
+        }
+        // Preloading classes takes around 8 milliseconds
+        foreach (self::DAEMON_PRELOAD_CLASSES as $preload_class) {
+            if (!\class_exists($preload_class)) {
+                throw new AssertionError("Failed to preload $preload_class before starting daemon mode");
+            }
+        }
+        // ensureScopeInitialized takes around 40 milliseconds for Phan self-analysis
+        $preload_function_state = static function (FunctionInterface $function_or_method) use (
+            $code_base
+        ): void {
+            if ($function_or_method->isPHPInternal()) {
+                return;
+            }
+            // Phan always has to call this, to add default values to types of parameters.
+            // This is slow, which is why this is done before calling pcntl_fork(), not after.
+            // If pcntl was unavailable, ensureScopeInitialized would not be undone
+            // See https://github.com/phan/phan/issues/3771
+            $function_or_method->ensureScopeInitialized($code_base);
+        };
+        $function_map = $code_base->getFunctionMap();
+        foreach ($function_map as $function) {  // iterate, ignoring $fqsen
+            $preload_function_state($function);
+        }
+        $method_set = $code_base->getMethodSet();
+        foreach ($method_set as $method) {  // iterate, ignoring $fqsen
+            $preload_function_state($method);
+        }
+        // Calling getMethodsMapGroupedByDefiningFQSEN takes around 11 milliseconds for Phan self-analysis
+        // Preload this - it's high latency to generate the map in a forked analysis worker process.
+        $code_base->getMethodsMapGroupedByDefiningFQSEN();
     }
 
     private static function checkForOptionsConflictingWithServerModes(): void

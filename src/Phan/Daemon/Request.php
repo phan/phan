@@ -683,7 +683,7 @@ class Request
             Daemon::debugf("Parsing %s yet again", $file_path);
             try {
                 // Parse the file
-                Analysis::parseFile($code_base, $file_path, false, $file_contents_override);
+                Analysis::parseFile($code_base, $file_path, false, $file_contents_override, false, new ParseRequest());
             } catch (\Throwable $throwable) {
                 \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
