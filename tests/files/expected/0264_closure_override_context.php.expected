@@ -1,4 +1,4 @@
-%s:17 PhanTypeMissingReturn Method \NS264\TestFramework::mockA is declared to return string but has no return value
+%s:17 PhanTypeMissingReturnReal Method \NS264\TestFramework::mockA is declared to return string in its real type signature but has no return value
 %s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @phan-closure-scope'
 %s:24 PhanUnusedVariable Unused definition of variable $w
 %s:32 PhanUnusedVariable Unused definition of variable $x

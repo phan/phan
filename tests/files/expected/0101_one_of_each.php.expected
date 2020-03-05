@@ -45,7 +45,7 @@
 %s:139 PhanTypeMismatchForeach resource passed to foreach instead of array
 %s:141 PhanTypeMismatchDefault Default value for int $p can't be false
 %s:144 PhanTypeMismatchReturn Returning type string but f() is declared to return int
-%s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
+%s:147 PhanTypeMissingReturnReal Method \C9::f is declared to return int in its real type signature but has no return value
 %s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \F
 %s:155 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef
 %s:158 PhanUndeclaredTypeProperty Property \C11->p has undeclared type \Undef
