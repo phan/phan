@@ -3338,7 +3338,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.4.4/tests/php74_files/expe
 ## PhanTypeMissingReturn
 
 ```
-Method {METHOD} is declared to return {TYPE} but has no return value
+Method {METHOD} is declared to return {TYPE} in phpdoc but has no return value
 ```
 
 This issue is emitted from the following code
@@ -3346,6 +3346,14 @@ This issue is emitted from the following code
 ```php
 class H { function f() : int {} }
 ```
+
+## PhanTypeMissingReturnReal
+
+```
+Method {METHOD} is declared to return {TYPE} in its real type signature but has no return value
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0242_void_71.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0242_void_71.php#L4).
 
 ## PhanTypeNoAccessiblePropertiesForeach
 
