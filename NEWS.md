@@ -57,6 +57,7 @@ Bug fixes:
 + Don't let less specific type signatures such as `@param object $x` override the real type signature of `MyClass $x` (#3749)
 + Support PHP 7.4's `??=` null coalescing assignment operator in the polyfill.
 + Fix crash analyzing invalid nodes such as `2 = $x` in `RedundantAssignmentPlugin`.
++ Fix crash inferring type of `isset ? 2 : 3` with `--use-fallback-parser` (#3767)
 + Fix false positive unreferenced method warnings for methods from traits
   when the methods were referenced in base classes or interfaces of classes using those traits.
 

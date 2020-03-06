@@ -830,7 +830,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
         // (e.g. "0" and 0.0 and '' are false)
         if (!is_scalar($cond)) {
-            throw new TypeError('$cond must be Node or scalar');
+            // Phan should have emitted a PhanSyntaxError elsewhere
+            return null;
         }
         return (bool)$cond;
     }
