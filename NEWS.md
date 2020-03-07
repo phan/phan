@@ -47,6 +47,7 @@ Plugins:
   (To work correctly, this plugin requires that Phan use a single analysis process)
 + Fix crash in `PrintfCheckerPlugin` when analyzing code where `fprintf()` was passed an array instead of a format string.
 + Emit `PhanTypeMissingReturnReal` instead of `PhanTypeMissingReturn` when there is a real return type signature. (#3716)
++ Fix bug running `InvokePHPNativeSyntaxCheckPlugin` on Windows when PHP binary is in a path containing spaces. (#3766)
 
 Bug fixes:
 + Fix bug causing Phan to fail to properly recursively analyze parameters of inherited methods (#3740)

@@ -195,7 +195,7 @@ class InvokeExecutionPromise
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
         // I'm not sure if this is necessary.
         if (DIRECTORY_SEPARATOR === "\\") {
-            $cmd = $binary . ' --syntax-check --no-php-ini';
+            $cmd = escapeshellarg($binary) . ' --syntax-check --no-php-ini';
             $abs_path = $this->getAbsPathForFileContents($new_file_contents, $file_contents !== $new_file_contents);
             if (!is_string($abs_path)) {
                 // The helper function has set the error and done flags
@@ -212,7 +212,16 @@ class InvokeExecutionPromise
                 1 => ['pipe', 'wb'],
             ];
             $this->binary = $binary;
-            $process = proc_open($cmd, $descriptorspec, $pipes);
+            // https://superuser.com/questions/1213094/how-to-escape-in-cmd-exe-c-parameters/1213100#1213100
+            //
+            // > Otherwise, old behavior is to see if the first character is
+            // > a quote character and if so, strip the leading character and
+            // > remove the last quote character on the command line, preserving
+            // > any text after the last quote character.
+            //
+            // e.g. `""C:\php 7.4.3\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php""`
+            // gets unescaped as `"C:\php 7.4.3\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php"`
+            $process = proc_open("\"$cmd\"", $descriptorspec, $pipes);
             if (!is_resource($process)) {
                 $this->done = true;
                 $this->error = "Failed to run proc_open in " . __METHOD__;
