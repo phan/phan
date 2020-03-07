@@ -528,6 +528,7 @@ final class MiscParamPlugin extends PluginV3 implements
                             $context->getLineNumberStart(),
                             1,
                             'pieces',
+                            ASTReverter::toShortString($args[0]),
                             $arg1_type,
                             $function->getRepresentationForIssue(),
                             'string[]'
@@ -570,6 +571,7 @@ final class MiscParamPlugin extends PluginV3 implements
                             $context->getLineNumberStart(),
                             2,
                             'pieces',
+                            ASTReverter::toShortString($args[1]),
                             $arg2_type,
                             $function->getRepresentationForIssue(),
                             'string[]'

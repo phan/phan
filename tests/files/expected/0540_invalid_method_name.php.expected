@@ -4,6 +4,6 @@
 %s:7 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
 %s:8 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
 %s:9 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is array{0:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable,1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is [$o,$o] of type array{0:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable,1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
 %s:10 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject
-%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is array{0:'Closure',1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
+%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is ['Closure',$o] of type array{0:'Closure',1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable

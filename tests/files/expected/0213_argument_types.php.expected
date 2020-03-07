@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchArgumentReal Argument 1 ($a) is \C213B|\I but \f() takes \C213A defined at %s:5
+%s:6 PhanTypeMismatchArgumentReal Argument 1 ($a) is new C213B() of type \C213B|\I but \f() takes \C213A defined at %s:5

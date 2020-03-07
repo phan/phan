@@ -1,7 +1,7 @@
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $a of type int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is ($b ??= $default) of type int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $b of type int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:8 PhanUndeclaredVariable Variable $missing is undeclared
-%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array{0:2} but \strlen() takes string
-%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array{0:int,1:2} but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $missing of type array{0:2} but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $arr of type array{0:int,1:2} but \strlen() takes string
 %s:16 PhanPossiblyUndeclaredVariable Variable $otherMissing is possibly undeclared

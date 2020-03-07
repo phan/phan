@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is \C89 but \strlen() takes string
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is new C89() of type \C89 but \strlen() takes string

@@ -1,7 +1,7 @@
-%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
-%s:12 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is string but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is string but \intdiv() takes int
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<int,string> but \strlen() takes string
-%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:24 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is non-empty-list<array<int,array<int,string>>> (real type non-empty-list<mixed>) but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $_1 of type string but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is $_2 of type string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $_3 of type string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is $_4 of type string but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $_5 of type array<int,string> but \strlen() takes string
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $key of type int but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $newArray of type non-empty-list<array<int,array<int,string>>> (real type non-empty-list<mixed>) but \strlen() takes string

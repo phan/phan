@@ -1,36 +1,36 @@
-%s:8 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:9 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:10 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:11 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:13 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:14 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is int|null|string but \p364() takes \stdClass defined at %s:45
-%s:16 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:17 PhanTypeMismatchArgument Argument 1 ($x) is false|float but \p364() takes \stdClass defined at %s:45
-%s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<string,int> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<string,\stdClass> (real type ?associative-array<mixed,mixed>|?false) but \p364() takes \stdClass defined at %s:45
-%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<string,array{0:2}> (real type ?associative-array<mixed,mixed>|?false) but \p364() takes \stdClass defined at %s:45
-%s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is 5[] but \p364() takes \stdClass defined at %s:45
-%s:23 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,4.3> but \p364() takes \stdClass defined at %s:45
-%s:24 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:25 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:26 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:27 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:29 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:30 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
-%s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
-%s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is array<int,'val'>|array{0:2,1:4} (real type ?array) but \p364() takes \stdClass defined at %s:45
-%s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
-%s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<int>|list<string> but \p364() takes \stdClass defined at %s:45
-%s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is list<\stdClass> but \p364() takes \stdClass defined at %s:45
-%s:36 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:37 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:40 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:8 PhanTypeMismatchArgument Argument 1 ($x) is array_pop(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:9 PhanTypeMismatchArgument Argument 1 ($x) is array_shift(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:10 PhanTypeMismatchArgument Argument 1 ($x) is current(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:11 PhanTypeMismatchArgument Argument 1 ($x) is end(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:13 PhanTypeMismatchArgument Argument 1 ($x) is next($x) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:14 PhanTypeMismatchArgument Argument 1 ($x) is prev($x) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is key($x) of type int|null|string but \p364() takes \stdClass defined at %s:45
+%s:16 PhanTypeMismatchArgument Argument 1 ($x) is pos(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:17 PhanTypeMismatchArgument Argument 1 ($x) is reset(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_change_key_case(['X'=>3], CASE_LOWER) of type array<string,int> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_combine(['X'=>'key1'], ['value'=>new stdClass()]) of type array<string,\stdClass> (real type ?associative-array<mixed,mixed>|?false) but \p364() takes \stdClass defined at %s:45
+%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_combine(['X'=>'key1'], ['value'=>[2]]) of type array<string,array{0:2}> (real type ?associative-array<mixed,mixed>|?false) but \p364() takes \stdClass defined at %s:45
+%s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_diff(['value','test'], [2]) of type associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_fill_keys(['value'], 5) of type 5[] but \p364() takes \stdClass defined at %s:45
+%s:23 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_fill(0, 5, 4.3) of type array<int,4.3> but \p364() takes \stdClass defined at %s:45
+%s:24 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect([2.1,3.5], [2.1,4.2]) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:25 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect_assoc([2.1,3.5], [2.1,4.2]) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:26 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect_key([2.1,3.5], [2.1,4.2]) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:27 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect_key([2.1,2=>3.5], [2.1,4.2]) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect_uassoc([2.1,2=>3.5], [2.1,4.2], $compare) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:29 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_intersect_ukey([2.1,2=>3.5], [2.1,4.2], $compare) of type associative-array<int,float> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:30 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_merge([2,4], ['val','x']) of type list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_merge_recursive([2,4], ['val','x']) of type list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_pad([2,4], 10, 'val') of type array<int,'val'>|array{0:2,1:4} (real type ?array) but \p364() takes \stdClass defined at %s:45
+%s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_replace([2,4], [0=>'value']) of type list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_replace_recursive([2,4], [0=>'value']) of type list<int>|list<string> but \p364() takes \stdClass defined at %s:45
+%s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_reverse([new stdClass()]) of type list<\stdClass> but \p364() takes \stdClass defined at %s:45
+%s:36 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_udiff([new stdClass()], [2], $compare) of type associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:37 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_udiff_assoc([new stdClass()], [2], $compare) of type associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_udiff_uassoc([new stdClass()], [2], $compare, $compare) of type associative-array<int,\stdClass> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_uintersect(['x','y'], ['y','z'], $compare) of type associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:40 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_uintersect_assoc(['x','y'], ['y','z'], $compare) of type associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:41 PhanParamTypeMismatch Argument 3 is Closure(mixed,mixed):(-1|0|1) but \array_uintersect_assoc() takes array
-%s:41 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
-%s:42 PhanTypeMismatchArgumentReal Argument 1 ($x) is associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:41 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_uintersect_assoc(['x','y'], ['y','z'], $compare, $compare) of type associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
+%s:42 PhanTypeMismatchArgumentReal Argument 1 ($x) is array_unique(['x','y','x']) of type associative-array<int,string> (real type ?associative-array<mixed,mixed>) but \p364() takes \stdClass defined at %s:45
 %s:50 PhanTypeNonVarReturnByRef Only variables can be returned by reference in \get_array_by_ref364()

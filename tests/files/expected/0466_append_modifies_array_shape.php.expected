@@ -3,4 +3,4 @@
 %s:7 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
 %s:8 PhanTypeInvalidDimOffset Invalid offset "key2" of array type non-empty-list<mixed>
 %s:8 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is non-empty-list<mixed> but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type non-empty-list<mixed> but \strlen() takes string

@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 0 but \strlen() takes string
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 2 but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x['a']['b'] of type 0 but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x['a']['key2']['c'] of type 2 but \strlen() takes string

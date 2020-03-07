@@ -1,2 +1,2 @@
-%s:7 PhanTypeMismatchArgumentReal Argument 4 ($arg4) is 4 but \test() takes array defined at %s:2
-%s:8 PhanTypeMismatchArgument Argument 2 ($arg2) is 2.5 but \test() takes int defined at %s:2
+%s:7 PhanTypeMismatchArgumentReal Argument 4 ($arg4) is 4 of type 4 but \test() takes array defined at %s:2
+%s:8 PhanTypeMismatchArgument Argument 2 ($arg2) is 2.5 of type 2.5 but \test() takes int defined at %s:2

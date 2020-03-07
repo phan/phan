@@ -1,1 +1,1 @@
-%s:16 PhanTypeMismatchArgumentReal Argument 2 ($arg) is \Stringular|string but \test() takes int defined at %s:10
+%s:16 PhanTypeMismatchArgumentReal Argument 2 ($arg) is new Stringular() of type \Stringular|string but \test() takes int defined at %s:10

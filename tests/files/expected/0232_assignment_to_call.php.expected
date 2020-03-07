@@ -1,5 +1,5 @@
 %s:5 PhanTypeSuspiciousStringExpression Suspicious type bool of a variable or expression used to build a string. (Expected type to be able to cast to a string)
 %s:7 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result f()[0] for function returning array{0:42}
-%s:7 PhanTypeMismatchArgument Argument 1 ($p) is 'call' but \g() takes bool defined at %s:4
+%s:7 PhanTypeMismatchArgument Argument 1 ($p) is (f()[0] = 'call') of type 'call' but \g() takes bool defined at %s:4
 %s:8 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result new C()->f()[0] for function returning array{0:42}
-%s:8 PhanTypeMismatchArgument Argument 1 ($p) is 'method' but \g() takes bool defined at %s:4
+%s:8 PhanTypeMismatchArgument Argument 1 ($p) is (new C()->f()[0] = 'method') of type 'method' but \g() takes bool defined at %s:4

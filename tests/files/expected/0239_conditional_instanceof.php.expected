@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchArgumentReal Argument 1 ($p) is \B but \f() takes \A defined at %s:4
+%s:7 PhanTypeMismatchArgumentReal Argument 1 ($p) is $v of type \B but \f() takes \A defined at %s:4

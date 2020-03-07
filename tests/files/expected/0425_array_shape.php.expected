@@ -1,3 +1,3 @@
-%s:10 PhanTypeMismatchArgument Argument 1 ($params) is array{case:'x'} but \test() takes array{Case:string} defined at %s:7
-%s:12 PhanTypeMismatchArgument Argument 1 ($params) is array{Case:null} but \test() takes array{Case:string} defined at %s:7
-%s:15 PhanTypeMismatchArgument Argument 1 ($params) is array{Case:null} but \test() takes array{Case:string} defined at %s:7
+%s:10 PhanTypeMismatchArgument Argument 1 ($params) is ['case'=>'x'] of type array{case:'x'} but \test() takes array{Case:string} defined at %s:7
+%s:12 PhanTypeMismatchArgument Argument 1 ($params) is ['Case'=>null] of type array{Case:null} but \test() takes array{Case:string} defined at %s:7
+%s:15 PhanTypeMismatchArgument Argument 1 ($params) is $global425 of type array{Case:null} but \test() takes array{Case:string} defined at %s:7

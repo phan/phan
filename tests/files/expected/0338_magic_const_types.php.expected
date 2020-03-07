@@ -1,9 +1,9 @@
-%s:9 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'Trait338' but \expect_int338() takes int defined at %s:3
-%s:10 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'Trait338' but \expect_int338() takes int defined at %s:3
-%s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is '%s0338_magic_const_types.php' but \expect_int338() takes int defined at %s:3
-%s:17 PhanTypeMismatchArgument Argument 1 ($x) is 17 but \expect_string338() takes string defined at %s:4
-%s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'Test338' but \expect_int338() takes int defined at %s:3
-%s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is '%ssrc' but \expect_int338() takes int defined at %s:3
-%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'test' but \expect_int338() takes int defined at %s:3
-%s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'Test338::test' but \expect_int338() takes int defined at %s:3
-%s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is '' but \expect_int338() takes int defined at %s:3
+%s:9 PhanTypeMismatchArgumentReal Argument 1 ($x) is __TRAIT__ of type 'Trait338' but \expect_int338() takes int defined at %s:3
+%s:10 PhanTypeMismatchArgumentReal Argument 1 ($x) is __CLASS__ of type 'Trait338' but \expect_int338() takes int defined at %s:3
+%s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is __FILE__ of type '%s0338_magic_const_types.php' but \expect_int338() takes int defined at %s:3
+%s:17 PhanTypeMismatchArgument Argument 1 ($x) is __LINE__ of type 17 but \expect_string338() takes string defined at %s:4
+%s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is __CLASS__ of type 'Test338' but \expect_int338() takes int defined at %s:3
+%s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is __DIR__ of type '%ssrc' but \expect_int338() takes int defined at %s:3
+%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is __FUNCTION__ of type 'test' but \expect_int338() takes int defined at %s:3
+%s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is __METHOD__ of type 'Test338::test' but \expect_int338() takes int defined at %s:3
+%s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is __NAME__ of type '' but \expect_int338() takes int defined at %s:3

@@ -1,11 +1,11 @@
 %s:11 PhanUnusedVariable Unused definition of variable $z
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
-%s:23 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is null but \intdiv() takes int
-%s:27 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:33 PhanTypeMismatchArgumentNullableInternal Argument 1 ($numerator) is ?0 but \intdiv() takes int (expected type to be non-nullable)
-%s:35 PhanTypeMismatchArgumentInternal Argument 1 ($string) is non-zero-int but \strlen() takes string
-%s:44 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
-%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:53 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
-%s:54 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type int but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $y of type string but \intdiv() takes int
+%s:23 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $x of type null but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type int but \strlen() takes string
+%s:33 PhanTypeMismatchArgumentNullableInternal Argument 1 ($numerator) is $x of type ?0 but \intdiv() takes int (expected type to be non-nullable)
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type non-zero-int but \strlen() takes string
+%s:44 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x of type string but \intdiv() takes int
+%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type int but \strlen() takes string
+%s:53 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x of type string but \intdiv() takes int
+%s:54 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type int but \strlen() takes string

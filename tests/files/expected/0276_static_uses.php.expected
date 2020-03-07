@@ -1,4 +1,4 @@
-%s:27 PhanTypeMismatchArgument Argument 1 ($arg) is \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
-%s:28 PhanTypeMismatchArgument Argument 1 ($arg) is \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
+%s:27 PhanTypeMismatchArgument Argument 1 ($arg) is $foo of type \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
+%s:28 PhanTypeMismatchArgument Argument 1 ($arg) is $foo of type \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
 %s:31 PhanStaticCallToNonStatic Static call to non-static method \B276::instance() defined at %s:9
-%s:32 PhanTypeMismatchArgument Argument 1 ($arg) is \B276|\I276 but \A276::foo() takes \A276 defined at %s:15
+%s:32 PhanTypeMismatchArgument Argument 1 ($arg) is $b of type \B276|\I276 but \A276::foo() takes \A276 defined at %s:15

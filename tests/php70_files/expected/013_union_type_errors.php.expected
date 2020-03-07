@@ -1,5 +1,5 @@
 %s:2 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
-%s:4 PhanTypeMismatchArgumentReal Argument 1 ($param) is null but \test_param13() takes int|string defined at %s:2
+%s:4 PhanTypeMismatchArgumentReal Argument 1 ($param) is null of type null but \test_param13() takes int|string defined at %s:2
 %s:6 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
 %s:6 PhanUnreferencedFunction Possibly zero references to function \test_return13()
 %s:7 PhanTypeMismatchReturnReal Returning type null but test_return13() is declared to return int|string

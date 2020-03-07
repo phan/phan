@@ -1,2 +1,2 @@
-%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int[]|non-zero-int but \strlen() takes string
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $a of type int but \strlen() takes string
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $a of type int[]|non-zero-int but \strlen() takes string

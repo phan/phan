@@ -243,7 +243,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                                 // Analyze that the individual elements passed to array_filter()'s callback make sense.
                                 // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
                                 $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
-                                ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
+                                $line = $args[0]->lineno ?? $context->getLineNumberStart();
+                                ArgumentType::analyzeParameter(
+                                    $code_base,
+                                    $context,
+                                    $filter_function,
+                                    $passed_array_element_types,
+                                    $line,
+                                    0,
+                                    new Node(\ast\AST_UNPACK, 0, ['expr' => $args[0]], $line)  // dummy node for issue messages
+                                );
                                 if (!Config::get_quick_mode()) {
                                     $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
                                     $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);

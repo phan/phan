@@ -1,4 +1,4 @@
 %s:4 PhanTypeMismatchReturnReal Returning type \stdClass but f333() is declared to return int
-%s:6 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 'notanint' but Closure(int $arg) : \stdClass takes int defined at %s:4
+%s:6 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 'notanint' of type 'notanint' but Closure(int $arg) : \stdClass takes int defined at %s:4
 %s:14 PhanParamTooFew Call with 0 arg(s) to Closure(int $arg) : \stdClass which requires 1 arg(s) defined at %s:11
 %s:15 PhanTypeMismatchReturnReal Returning type \stdClass but g333() is declared to return int

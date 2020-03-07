@@ -39,8 +39,8 @@
 %s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
 %s:119 PhanNoopNew Unused result of new object creation expression in new C7() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:119 PhanTypeInstantiateInterface Instantiation of interface \C7
-%s:129 PhanTypeMismatchArgumentReal Argument 1 ($i) is 'string' but \f8() takes int defined at %s:128
-%s:132 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 42 but \strlen() takes string
+%s:129 PhanTypeMismatchArgumentReal Argument 1 ($i) is 'string' of type 'string' but \f8() takes int defined at %s:128
+%s:132 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 42 of type 42 but \strlen() takes string
 %s:138 PhanTypeMismatchForeach null passed to foreach instead of array
 %s:139 PhanTypeMismatchForeach resource passed to foreach instead of array
 %s:141 PhanTypeMismatchDefault Default value for int $p can't be false

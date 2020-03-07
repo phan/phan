@@ -1,2 +1,2 @@
 %s:3 PhanUndeclaredVariable Variable $var is undeclared
-%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is null but \intdiv() takes int
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $var of type null but \intdiv() takes int

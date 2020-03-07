@@ -1,1 +1,1 @@
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($string) is object but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $o of type object but \strlen() takes string

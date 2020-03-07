@@ -1,10 +1,10 @@
 %s:8 PhanInvalidFQSENInClasslike Possible use of a classlike '\invalid.fqsen' with an invalid FQSEN.
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 256 but \strlen() takes string
-%s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is 255 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:20 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is 1.5 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type 256 but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $x of type 255 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $i of type int but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $i of type 1.5 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:29 PhanInvalidFQSENInClasslike Possible use of a classlike '\invalid.fqsen' with an invalid FQSEN.
-%s:34 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 256 but \strlen() takes string
-%s:35 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is 255 (real type 255|256) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
-%s:41 PhanTypeMismatchArgumentInternal Argument 1 ($var) is 1.5 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:34 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type 256 but \strlen() takes string
+%s:35 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $x of type 255 (real type 255|256) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $i of type int but \strlen() takes string
+%s:41 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $i of type 1.5 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

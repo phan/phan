@@ -1,10 +1,10 @@
-src/068_binary_literal.php:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 10 but \spl_object_hash() takes object
-src/068_binary_literal.php:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 31 but \spl_object_hash() takes object
-src/068_binary_literal.php:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 2.9514790517935283E+20 but \spl_object_hash() takes object
-src/068_binary_literal.php:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 1.9676527011956854E+20 but \spl_object_hash() takes object
-src/068_binary_literal.php:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 2.906089001023216E+32 but \spl_object_hash() takes object
-src/068_binary_literal.php:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 1.0 but \spl_object_hash() takes object
-src/068_binary_literal.php:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 10.0 but \spl_object_hash() takes object
-src/068_binary_literal.php:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 300.0 but \spl_object_hash() takes object
-src/068_binary_literal.php:11 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 300.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 10 of type 10 but \spl_object_hash() takes object
+src/068_binary_literal.php:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 31 of type 31 but \spl_object_hash() takes object
+src/068_binary_literal.php:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 2.9514790517935283E+20 of type 2.9514790517935283E+20 but \spl_object_hash() takes object
+src/068_binary_literal.php:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 1.9676527011956854E+20 of type 1.9676527011956854E+20 but \spl_object_hash() takes object
+src/068_binary_literal.php:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 2.906089001023216E+32 of type 2.906089001023216E+32 but \spl_object_hash() takes object
+src/068_binary_literal.php:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 1.0 of type 1.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 10.0 of type 10.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 300.0 of type 300.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:11 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is 300.0 of type 300.0 but \spl_object_hash() takes object
 src/068_binary_literal.php:13 PhanSyntaxError syntax error, unexpected end of file

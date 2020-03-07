@@ -2,5 +2,5 @@
 %s:11 PhanImpossibleTypeComparison Impossible attempt to check if 'one' of type 'one' is identical to keys of $others of type int
 %s:13 PhanImpossibleTypeComparison Impossible attempt to check if '-1' of type '-1' is identical to keys of $others of type int
 %s:15 PhanImpossibleTypeComparison Impossible attempt to check if null of type null is identical to keys of $others of type int
-%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($key) is null but \array_key_exists() takes int|string
+%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($key) is null of type null but \array_key_exists() takes int|string
 %s:21 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to keys of DEFAULT_SETTINGS of type string

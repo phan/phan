@@ -1423,7 +1423,7 @@ class Issue
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
             ),
@@ -1431,7 +1431,7 @@ class Issue
                 self::TypeMismatchArgumentReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10140
             ),
@@ -1439,7 +1439,7 @@ class Issue
                 self::TypeMismatchArgumentNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be non-nullable)',
                 self::REMEDIATION_B,
                 10105
             ),
@@ -1447,7 +1447,7 @@ class Issue
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE}',
                 self::REMEDIATION_B,
                 10004
             ),
@@ -1455,7 +1455,7 @@ class Issue
                 self::TypeMismatchArgumentInternalReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
                 self::REMEDIATION_B,
                 10139
             ),
@@ -1463,7 +1463,7 @@ class Issue
                 self::TypeMismatchArgumentInternalProbablyReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}',
                 self::REMEDIATION_B,
                 10148
             ),
@@ -1471,7 +1471,7 @@ class Issue
                 self::TypeMismatchArgumentNullableInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} (expected type to be non-nullable)',
                 self::REMEDIATION_B,
                 10106
             ),
@@ -1519,7 +1519,7 @@ class Issue
                 self::PartialTypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10054
             ),
@@ -1527,7 +1527,7 @@ class Issue
                 self::PartialTypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10055
             ),
@@ -1535,7 +1535,7 @@ class Issue
                 self::PossiblyNullTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10056
             ),
@@ -1543,7 +1543,7 @@ class Issue
                 self::PossiblyNullTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10057
             ),
@@ -1551,7 +1551,7 @@ class Issue
                 self::PossiblyFalseTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10058
             ),
@@ -1559,7 +1559,7 @@ class Issue
                 self::PossiblyFalseTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Argument {INDEX} (${PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)',
                 self::REMEDIATION_B,
                 10059
             ),

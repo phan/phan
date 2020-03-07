@@ -1,4 +1,4 @@
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($var) is \stdClass but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:30 PhanTypeMismatchArgumentInternal Argument 1 ($var) is \stdClass but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:31 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $a of type \stdClass but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $b of type null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:30 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $a of type \stdClass but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:31 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $b of type null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

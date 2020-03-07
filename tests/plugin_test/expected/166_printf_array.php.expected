@@ -1,9 +1,9 @@
 src/166_printf_array.php:2 PhanPluginPrintfNoArguments No format string arguments are given for (unknown), consider using echo instead
 src/166_printf_array.php:2 PhanPluginPrintfVariableFormatString Code ['Test'] has a dynamic format string that could not be inferred by Phan
-src/166_printf_array.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($format) is array{0:'Test'} but \printf() takes string
+src/166_printf_array.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($format) is ['Test'] of type array{0:'Test'} but \printf() takes string
 src/166_printf_array.php:3 PhanPluginPrintfNoArguments No format string arguments are given for (unknown), consider using fwrite instead
 src/166_printf_array.php:3 PhanPluginPrintfVariableFormatString Code ['Test'] has a dynamic format string that could not be inferred by Phan
-src/166_printf_array.php:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($format) is array{0:'Test'} but \fprintf() takes string
+src/166_printf_array.php:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($format) is ['Test'] of type array{0:'Test'} but \fprintf() takes string
 src/166_printf_array.php:4 PhanPluginPrintfNoArguments No format string arguments are given for (unknown), consider using fwrite instead
 src/166_printf_array.php:4 PhanPluginPrintfVariableFormatString Code ['Test'] has a dynamic format string that could not be inferred by Phan
-src/166_printf_array.php:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($format) is array{0:'Test'} but \vfprintf() takes string
+src/166_printf_array.php:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($format) is ['Test'] of type array{0:'Test'} but \vfprintf() takes string

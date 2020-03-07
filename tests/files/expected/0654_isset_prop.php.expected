@@ -1,5 +1,5 @@
-%s:7 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
-%s:11 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
-%s:16 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
-%s:20 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
-%s:30 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is $x of type ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
+%s:11 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is $x of type ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
+%s:16 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is $nested of type ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
+%s:20 PhanTypeMismatchArgumentNullableInternal Argument 1 ($obj) is $nested of type ?\stdClass but \spl_object_hash() takes object (expected type to be non-nullable)
+%s:30 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x['field'] of type array but \strlen() takes string
