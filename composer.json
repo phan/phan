@@ -36,11 +36,11 @@
         "symfony/polyfill-mbstring": "^1.11.0"
     },
     "suggest": {
-        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed, 1.0.5+ is recommended.",
+        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed, 1.0.6+ is recommended.",
         "ext-iconv": "Either iconv or mbstring is needed to ensure issue messages are valid utf-8",
         "ext-igbinary": "Improves performance of polyfill when ext-ast is unavailable",
         "ext-mbstring": "Either iconv or mbstring is needed to ensure issue messages are valid utf-8",
-        "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
+        "ext-tokenizer": "Needed for fallback/polyfill parser support and file/line-based suppressions."
     },
     "require-dev": {
         "brianium/paratest": "^4.0.0",

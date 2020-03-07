@@ -1303,8 +1303,32 @@ class UnionType implements Serializable
     public function hasCommonType(UnionType $union_type): bool
     {
         $other_type_set = $union_type->type_set;
+        if (\count($other_type_set) > 4 && \count($this->type_set) > 4) {
+            return $this->hasCommonTypeSetCheck($other_type_set);
+        }
         foreach ($this->type_set as $type) {
             if (\in_array($type, $other_type_set, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if $this->type_set and $other_type_list have any types in common.
+     * For two union types with 10 types, this takes at most 20 operations instead of 100 operations.
+     *
+     * @param list<Type> $other_type_list
+     */
+    private function hasCommonTypeSetCheck(array $other_type_list): bool
+    {
+        $type_set = [];
+        // Avoid worst-case quadratic runtime
+        foreach ($this->type_set as $type) {
+            $type_set[\spl_object_id($type)] = true;
+        }
+        foreach ($other_type_list as $type) {
+            if (\array_key_exists(\spl_object_id($type), $type_set)) {
                 return true;
             }
         }
