@@ -1,2 +1,2 @@
-%s:11 PhanTypeMismatchArgumentReal Argument 1 ($var) is null but \B::__construct() takes \A defined at %s:6
-%s:15 PhanTypeMismatchArgumentReal Argument 1 ($var) is null but \B::__construct() takes \A defined at %s:6
+%s:11 PhanTypeMismatchArgumentReal Argument 1 ($var) is null of type null but \B::__construct() takes \A defined at %s:6
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($var) is null of type null but \B::__construct() takes \A defined at %s:6

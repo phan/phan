@@ -1,6 +1,6 @@
 src/142_phan_ignore_reference.php:20 PhanPluginPrintfVariableFormatString Code $fmt has a dynamic format string that could not be inferred by Phan
 src/142_phan_ignore_reference.php:21 PhanPluginPrintfVariableFormatString Code $fmt2 has a dynamic format string that could not be inferred by Phan
-src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 1 ($fmt) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
-src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 2 ($fmt2) is null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
+src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 1 ($fmt) is null of type null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
+src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 2 ($fmt2) is null of type null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10
 src/142_phan_ignore_reference.php:23 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \prepend_format_string()
 src/142_phan_ignore_reference.php:23 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 2 of \prepend_format_string()

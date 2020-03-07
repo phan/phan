@@ -1,2 +1,2 @@
 %s:20 PhanTemplateTypeNotUsedInFunctionReturn Template type X not used in return value of function/method test()
-%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type int but \strlen() takes string

@@ -21,6 +21,8 @@ New features(CLI, Configs):
 
   Previously, Phan would only add inferred return types if there was no return type declaration.
   (also see `--analyze-twice`)
++ Also emit the code fragment for the argument in question in the `PhanTypeMismatchArgument` family of issue messages (#3779)
++ Render a few more AST node kinds in code fragments in issue messages.
 
 New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)

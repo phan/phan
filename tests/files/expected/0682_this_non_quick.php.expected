@@ -1,2 +1,2 @@
 %s:5 PhanUndeclaredProperty Reference to undeclared property \Y682->iProp (Did you mean expr->aProp)
-%s:18 PhanTypeMismatchArgument Argument 1 ($y) is \Y682|static but \X682::acceptOtherTyped() takes \X682 defined at %s:9
+%s:18 PhanTypeMismatchArgument Argument 1 ($y) is $this of type \Y682|static but \X682::acceptOtherTyped() takes \X682 defined at %s:9

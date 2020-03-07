@@ -7,6 +7,7 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -384,7 +385,7 @@ final class ArgumentType
                 Issue::maybeEmitInstance($code_base, $context, $e->getIssueInstance());
                 continue;
             }
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i, $argument);
             if ($parameter->isPassByReference()) {
                 if ($argument instanceof Node) {
                     // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
@@ -498,7 +499,8 @@ final class ArgumentType
                 $argument,
                 true
             );
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument);
             if ($parameter->isPassByReference()) {
                 if ($argument instanceof Node) {
                     // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
@@ -557,7 +559,7 @@ final class ArgumentType
                 // Omit ContextNotObject check, this was checked for the first matching parameter
             }
 
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i, $argument);
             if ($parameter->isPassByReference()) {
                 // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
                 $argument->is_reference = true;
@@ -568,8 +570,9 @@ final class ArgumentType
     /**
      * Analyze passing the an argument of type $argument_type to the ith parameter of the (possibly variadic) method $method,
      * for a call made from the line $lineno.
+     * @param Node|string|int|float $argument_node
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i): void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, $argument_node): void
     {
         // Expand it to include all parent types up the chain
         try {
@@ -618,7 +621,7 @@ final class ArgumentType
                     }
                 }
                 if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
-                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
+                    self::analyzeParameterStrict($code_base, $context, $method, $argument_node, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }
                 return;
             }
@@ -670,15 +673,19 @@ final class ArgumentType
             }
         }
         // Check suppressions and emit the issue
-        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
     }
 
+    /**
+     * @param Node|string|int|float $argument_node
+     */
     private static function warnInvalidArgumentType(
         CodeBase $code_base,
         Context $context,
         FunctionInterface $method,
         Parameter $alternate_parameter,
         UnionType $alternate_parameter_type,
+        $argument_node,
         UnionType $argument_type,
         UnionType $argument_type_expanded,
         UnionType $argument_type_expanded_resolved,
@@ -740,6 +747,7 @@ final class ArgumentType
                     $lineno,
                     ($i + 1),
                     $alternate_parameter->getName(),
+                    ASTReverter::toShortString($argument_node),
                     $argument_type_expanded,
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                     $method->getRepresentationForIssue(),
@@ -755,6 +763,7 @@ final class ArgumentType
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
+                ASTReverter::toShortString($argument_node),
                 $argument_type_expanded,
                 $method->getRepresentationForIssue(),
                 (string)$alternate_parameter_type
@@ -776,6 +785,7 @@ final class ArgumentType
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
+                ASTReverter::toShortString($argument_node),
                 $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                 $method->getRepresentationForIssue(),
@@ -793,6 +803,7 @@ final class ArgumentType
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
+            ASTReverter::toShortString($argument_node),
             $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
             $method->getRepresentationForIssue(),
             (string)$alternate_parameter_type,
@@ -801,7 +812,10 @@ final class ArgumentType
         );
     }
 
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i): void
+    /**
+     * @param Node|string|int|float $argument_node
+     */
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, $argument_node, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i): void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
@@ -855,6 +869,7 @@ final class ArgumentType
                 $lineno,
                 ($i + 1),
                 $alternate_parameter->getName(),
+                ASTReverter::toShortString($argument_node),
                 $argument_type,
                 $method->getRepresentationForIssue(),
                 (string)$parameter_type,
@@ -869,6 +884,7 @@ final class ArgumentType
             $lineno,
             ($i + 1),
             $alternate_parameter->getName(),
+            ASTReverter::toShortString($argument_node),
             $argument_type,
             $method->getRepresentationForIssue(),
             (string)$parameter_type,

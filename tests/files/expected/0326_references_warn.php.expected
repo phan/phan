@@ -1,4 +1,4 @@
 %s:4 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \sort()
-%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($array_arg) is 2 but \sort() takes array
-%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($stack) is 'a' but \array_shift() takes array
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($array_arg) is $x of type 2 but \sort() takes array
+%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($stack) is $z of type 'a' but \array_shift() takes array
 %s:8 PhanUnusedVariable Unused definition of variable $y

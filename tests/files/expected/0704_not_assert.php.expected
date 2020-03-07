@@ -1,2 +1,2 @@
 %s:5 PhanRedundantCondition Redundant attempt to cast $this of type static to truthy
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($assertion) is static but \assert() takes bool|string
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($assertion) is $this of type static but \assert() takes bool|string

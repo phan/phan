@@ -1,3 +1,3 @@
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 2 but \strlen() takes string
-%s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is \stdClass but \strlen() takes string
-%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is null but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $this->prop of type 2 but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $this->possibly_null of type \stdClass but \strlen() takes string
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $this->possibly_null of type null but \strlen() takes string

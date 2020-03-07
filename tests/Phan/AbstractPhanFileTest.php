@@ -247,9 +247,19 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         $wanted_re = \str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
         $wanted_re = \str_replace('%c', '.', $wanted_re);
         // %f allows two points "-.0.0" but that is the best *simple* expression
+        $wanted_re_full = "/^$wanted_re\$/";
 
+        if ($_ENV['PHAN_DUMP_NEW_TEST_EXPECTATION'] ?? null) {
+            if (!\preg_match($wanted_re_full, $output)) {
+                // This assumes linux/unix output, could be patched to support Windows if needed.
+                // Then run `for file in tests/**/*.expected*.new; do mv $file ${file/\.new/}; done`
+                // to copy all of the tests
+                $suggested_re = \preg_replace('@\./tests/\S*\.php([78]\d*)?@', '%s', $output);
+                \file_put_contents($expected_file_path . '.new', $suggested_re);
+            }
+        }
         $this->assertRegExp(
-            "/^$wanted_re\$/",
+            $wanted_re_full,
             $output,
             "Unexpected output in {$test_file_list[0]}"
         );

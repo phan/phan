@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array<int,string> but \strlen() takes string
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $foo->aValue741 of type array<int,string> but \strlen() takes string

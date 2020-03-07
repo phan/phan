@@ -2,11 +2,11 @@
 %s:8 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-mixed to truthy
 %s:23 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-mixed to truthy
 %s:26 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=?''|?'0'|?0|?0.0|?array{}|?false)
-%s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is null but \strlen() takes string
-%s:31 PhanTypeMismatchArgument Argument 1 ($x) is 0 but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:34 PhanTypeMismatchArgument Argument 1 ($x) is null but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:35 PhanTypeMismatchArgument Argument 1 ($x) is false but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:36 PhanTypeMismatchArgument Argument 1 ($x) is '' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:37 PhanTypeMismatchArgument Argument 1 ($x) is '0' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:40 PhanTypeMismatchArgument Argument 1 ($x) is 0 but \expect_nullable_non_empty_mixed() takes ?non-empty-mixed defined at %s:21
-%s:41 PhanTypeMismatchArgument Argument 1 ($x) is '0' but \expect_nullable_non_empty_mixed() takes ?non-empty-mixed defined at %s:21
+%s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type null but \strlen() takes string
+%s:31 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:34 PhanTypeMismatchArgument Argument 1 ($x) is null of type null but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:35 PhanTypeMismatchArgument Argument 1 ($x) is false of type false but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:36 PhanTypeMismatchArgument Argument 1 ($x) is '' of type '' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:37 PhanTypeMismatchArgument Argument 1 ($x) is '0' of type '0' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:40 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_nullable_non_empty_mixed() takes ?non-empty-mixed defined at %s:21
+%s:41 PhanTypeMismatchArgument Argument 1 ($x) is '0' of type '0' but \expect_nullable_non_empty_mixed() takes ?non-empty-mixed defined at %s:21

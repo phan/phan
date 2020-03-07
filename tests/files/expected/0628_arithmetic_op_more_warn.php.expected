@@ -7,7 +7,7 @@
 %s:12 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of /= is \stdClass (expected number)
 %s:14 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of -= is \stdClass (expected number)
 %s:16 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of >>= is \stdClass (expected int)
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 3.666666%d but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $w of type 3.6666666666666665 but \strlen() takes string
 %s:21 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of %= is \stdClass (expected number)
 %s:26 PhanTypeInvalidRightOperandOfIntegerOp Invalid operator: right operand of << is \stdClass (expected int)
 %s:27 PhanTypeInvalidLeftOperandOfIntegerOp Invalid operator: left operand of << is \stdClass (expected int)

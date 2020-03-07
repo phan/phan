@@ -1,6 +1,6 @@
 %s:5 PhanUndeclaredProperty Reference to undeclared property \WeakReference->disallow
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is ?object but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $wr->get() of type ?object but \strlen() takes string
 %s:10 PhanUndeclaredMethod Call to undeclared method \WeakReference::missingMethod
-%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($referent) is 2 but \WeakReference::create() takes object
+%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($referent) is 2 of type 2 but \WeakReference::create() takes object
 %s:14 PhanParamTooManyInternal Call with 1 arg(s) to \WeakReference::__construct() which only takes 0 arg(s)
 %s:14 PhanUnusedVariable Unused definition of variable $wrInvalid

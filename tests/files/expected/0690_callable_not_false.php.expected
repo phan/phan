@@ -1,5 +1,5 @@
 %s:6 PhanImpossibleCondition Impossible attempt to cast $c of type callable to empty
-%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is callable-string but \intdiv() takes int
+%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $c of type callable-string but \intdiv() takes int
 %s:10 PhanImpossibleCondition Impossible attempt to cast $c of type callable-string to empty
-%s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is callable-string but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $str of type callable-string but \intdiv() takes int
 %s:16 PhanImpossibleCondition Impossible attempt to cast $str of type callable-string to empty

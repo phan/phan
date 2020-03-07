@@ -1,4 +1,4 @@
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is false|int but \strlen() takes string
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is false|string but \intdiv() takes int
-%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is int|null but \strlen() takes string
-%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is null|string but \intdiv() takes int
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type false|int but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $y2 of type false|string but \intdiv() takes int
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is key($a) of type int|null but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is key($b) of type null|string but \intdiv() takes int

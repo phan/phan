@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($message) is \Exception|\Throwable but \error_log() takes string
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($message) is $e225 of type \Exception|\Throwable but \error_log() takes string

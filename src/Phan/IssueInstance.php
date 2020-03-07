@@ -67,7 +67,12 @@ class IssueInstance
         $this->suggestion = $suggestion;
 
         if ($issue->getExpectedArgumentCount() !== \count($template_parameters)) {
-            \fprintf(\STDERR, "Unexpected argument count for %s: Expected %d args, got %d\n", $issue->getTemplate(), $issue->getExpectedArgumentCount(), \count($template_parameters));
+            CLI::printWarningToStderr(
+                \sprintf("Unexpected argument count for %s('%s'): Expected %d args, got %d\n", $issue->getType(), $issue->getTemplate(), $issue->getExpectedArgumentCount(), \count($template_parameters))
+            );
+            \ob_start();
+            \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+            \fwrite(\STDERR, (string)\ob_get_clean());
         }
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {

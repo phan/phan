@@ -1,10 +1,10 @@
-%s:26 PhanTypeMismatchArgumentReal Argument 5 ($params) is array{0:5} but \test_ints() takes int defined at %s:6
-%s:28 PhanTypeMismatchArgumentReal Argument 1 ($req) is array{0:'baz'} but \test_ints() takes string defined at %s:6
+%s:26 PhanTypeMismatchArgumentReal Argument 5 ($params) is [5] of type array{0:5} but \test_ints() takes int defined at %s:6
+%s:28 PhanTypeMismatchArgumentReal Argument 1 ($req) is ['baz'] of type array{0:'baz'} but \test_ints() takes string defined at %s:6
 %s:29 PhanParamTooFew Call with 0 arg(s) to \test_ints(string $req, int ...$params) which requires 1 arg(s) defined at %s:6
-%s:30 PhanTypeMismatchArgumentReal Argument 2 ($params) is \DateTime|\DateTimeInterface but \test_ints() takes int defined at %s:6
-%s:31 PhanTypeMismatchArgumentReal Argument 2 ($params) is array{0:2,1:3,2:4,3:5} but \test_ints() takes int defined at %s:6
-%s:35 PhanTypeMismatchArgumentReal Argument 1 ($date_time_list) is 42 but \test_vararg_within_function() takes \DateTime defined at %s:9
-%s:38 PhanTypeMismatchArgument Argument 1 ($a) is list<array>|list<int>|list<mixed> but \accept_int() takes int defined at %s:17
-%s:41 PhanTypeMismatchArgument Argument 1 ($a) is list<array>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17
-%s:42 PhanTypeMismatchArgument Argument 1 ($a) is list<array>|list<bool>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17
-%s:43 PhanTypeMismatchArgument Argument 1 ($a) is list<array>|list<bool>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17
+%s:30 PhanTypeMismatchArgumentReal Argument 2 ($params) is new DateTime() of type \DateTime|\DateTimeInterface but \test_ints() takes int defined at %s:6
+%s:31 PhanTypeMismatchArgumentReal Argument 2 ($params) is [2,3,4,5] of type array{0:2,1:3,2:4,3:5} but \test_ints() takes int defined at %s:6
+%s:35 PhanTypeMismatchArgumentReal Argument 1 ($date_time_list) is 42 of type 42 but \test_vararg_within_function() takes \DateTime defined at %s:9
+%s:38 PhanTypeMismatchArgument Argument 1 ($a) is test_misc(2, []) of type list<array>|list<int>|list<mixed> but \accept_int() takes int defined at %s:17
+%s:41 PhanTypeMismatchArgument Argument 1 ($a) is test_misc(2, $argv) of type list<array>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17
+%s:42 PhanTypeMismatchArgument Argument 1 ($a) is test_misc((rand(0, 1) > 0), $argv) of type list<array>|list<bool>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17
+%s:43 PhanTypeMismatchArgument Argument 1 ($a) is test_misc() of type list<array>|list<bool>|list<int>|list<list<string>>|list<mixed> but \accept_int() takes int defined at %s:17

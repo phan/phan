@@ -1,5 +1,5 @@
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is non-empty-array<int,2>|non-empty-array<int,\stdClass>|non-empty-array<string,string> (real type non-empty-array<int,2>|non-empty-array<int,\stdClass>|non-empty-array<mixed,mixed>) but \strlen() takes string
-%s:19 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is non-empty-array<string,string>|non-empty-list<2>|non-empty-list<\stdClass> (real type non-empty-array<mixed,mixed>|non-empty-list<2>|non-empty-list<\stdClass>) but \strlen() takes string
-%s:26 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array<int,int> but \strlen() takes string
-%s:32 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array<int,int> but \strlen() takes string
-%s:39 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is array<string,string>|list<\stdClass>|list<int> but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type non-empty-array<int,2>|non-empty-array<int,\stdClass>|non-empty-array<string,string> (real type non-empty-array<int,2>|non-empty-array<int,\stdClass>|non-empty-array<mixed,mixed>) but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type non-empty-array<string,string>|non-empty-list<2>|non-empty-list<\stdClass> (real type non-empty-array<mixed,mixed>|non-empty-list<2>|non-empty-list<\stdClass>) but \strlen() takes string
+%s:26 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type array<int,int> but \strlen() takes string
+%s:32 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type array<int,int> but \strlen() takes string
+%s:39 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type array<string,string>|list<\stdClass>|list<int> but \strlen() takes string

@@ -1,2 +1,2 @@
 src/021_binary_op.php:2 PhanSyntaxError syntax error, unexpected ')' (at column 25)
-src/021_binary_op.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is 'example ' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+src/021_binary_op.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is 'example ' of type 'example ' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

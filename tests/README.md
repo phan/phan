@@ -69,3 +69,13 @@ Language Server Tests
 There are integration tests of the language server(both with and without pcntl) in `tests/Phan/LanguageServer/LanguageServerIntegrationTest.php`
 
 `PHAN_RUN_INTEGRATION_TEST=1` must be set in your environment variables in order to run this test (Otherwise, these tests are skipped)
+
+Regenerating Test Expectations
+------------------------------
+
+A few scripts are provided for Unix/Linux to make it easier to automatically update issue expectations after making a change that
+causes many outputs to differ (E.g. changing the message format string of a frequently emitted issue).
+
+`PHAN_DUMP_NEW_TEST_EXPECTATION=1` can be used to dump the new test expectations(`*.php.expected.new`)  for many of the phpunit tests.
+
+`internal/regenerate_test_folder_expect.sh` will regenerate the test output of many non-phpunit tests (the ones invoked with `test.sh`)

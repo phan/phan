@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchArgumentReal Argument 1 ($arg) is array{0:1,1:2,2:3} but \test() takes int defined at %s:5
+%s:6 PhanTypeMismatchArgumentReal Argument 1 ($arg) is A::C1 of type array{0:1,1:2,2:3} but \test() takes int defined at %s:5

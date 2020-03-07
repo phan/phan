@@ -1,5 +1,5 @@
-%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is string (real type int|string) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is \stdClass but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $val[0] of type string (real type int|string) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $val[1] of type \stdClass but \strlen() takes string
 %s:12 PhanDebugAnnotation @phan-debug-var requested for variable $val - it has union type array{0:int|string,1:mixed}(real=array{0:int|string,1:mixed})
 %s:14 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int|string(real=int|string)
-%s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $v of type int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

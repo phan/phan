@@ -1,2 +1,2 @@
 %s:4 PhanUnusedVariable Unused definition of variable $x
-%s:13 PhanTypeMismatchArgumentNullableInternal Argument 1 ($var) is ?array{} but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (expected type to be non-nullable)
+%s:13 PhanTypeMismatchArgumentNullableInternal Argument 1 ($var) is $x of type ?array{} but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (expected type to be non-nullable)

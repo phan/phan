@@ -1,10 +1,10 @@
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is list<\stdClass> (real type array) but \spl_object_id() takes object
-%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is non-empty-list<\stdClass>|non-empty-list<bool> (real type array) but \spl_object_id() takes object
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $x of type list<\stdClass> (real type array) but \spl_object_id() takes object
+%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $y of type non-empty-list<\stdClass>|non-empty-list<bool> (real type array) but \spl_object_id() takes object
 %s:12 PhanTypeArraySuspicious Suspicious array access to \stdClass
 %s:14 PhanTypeInvalidDimOffset Invalid offset -1 of array type non-empty-list<\stdClass>|non-empty-list<bool>
 %s:14 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
-%s:17 PhanTypeMismatchArgument Argument 2 ($y) is array{} but \test692() takes non-empty-list<\stdClass>|non-empty-list<bool> defined at %s:8
-%s:19 PhanTypeMismatchArgument Argument 1 ($x) is array{0:false} but \test692() takes list<\stdClass> defined at %s:8
-%s:19 PhanTypeMismatchArgument Argument 2 ($y) is array{0:0} but \test692() takes non-empty-list<\stdClass>|non-empty-list<bool> defined at %s:8
+%s:17 PhanTypeMismatchArgument Argument 2 ($y) is [] of type array{} but \test692() takes non-empty-list<\stdClass>|non-empty-list<bool> defined at %s:8
+%s:19 PhanTypeMismatchArgument Argument 1 ($x) is [false] of type array{0:false} but \test692() takes list<\stdClass> defined at %s:8
+%s:19 PhanTypeMismatchArgument Argument 2 ($y) is [0] of type array{0:0} but \test692() takes non-empty-list<\stdClass>|non-empty-list<bool> defined at %s:8
 %s:24 PhanDebugAnnotation @phan-debug-var requested for variable $args - it has union type list<\stdClass>(real=list<\stdClass>)
 %s:26 PhanTypeMismatchReturn Returning type list<\stdClass> but test_cast() is declared to return array{1:\stdClass}

@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is float|int but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $a of type float|int but \strlen() takes string

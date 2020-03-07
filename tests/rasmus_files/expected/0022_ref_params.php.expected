@@ -1,1 +1,1 @@
-%s:15 PhanTypeMismatchArgument Argument 1 ($farg2) is 1.5 but \B::test2() takes int defined at %s:8
+%s:15 PhanTypeMismatchArgument Argument 1 ($farg2) is $arg1 of type 1.5 but \B::test2() takes int defined at %s:8

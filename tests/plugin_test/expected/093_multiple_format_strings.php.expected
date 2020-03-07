@@ -1,2 +1,2 @@
-src/093_multiple_format_strings.php:11 PhanTypeMismatchArgument Argument 1 ($x) is 'xa'|'xb' but \expect_ab() takes 'ax'|'bx' defined at src/093_multiple_format_strings.php:6
+src/093_multiple_format_strings.php:11 PhanTypeMismatchArgument Argument 1 ($x) is sprintf((rand(0, 2) ? '%sa' : '%sb'), 'x') of type 'xa'|'xb' but \expect_ab() takes 'ax'|'bx' defined at src/093_multiple_format_strings.php:6
 src/093_multiple_format_strings.php:15 PhanPluginPrintfUnusedArgument Format string "The argument is %s" does not use provided argument #2
