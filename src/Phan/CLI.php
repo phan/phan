@@ -69,7 +69,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '2.5.1-dev';
+    public const PHAN_VERSION = '2.6.0';
 
     /**
      * List of short flags passed to getopt
