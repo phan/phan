@@ -42,6 +42,7 @@ use function in_array;
 use function is_array;
 use function is_resource;
 use function is_string;
+use function strcasecmp;
 use function str_repeat;
 use function strlen;
 
@@ -105,6 +106,7 @@ class CLI
         'disable-plugins',
         'dump-analyzed-file-list',
         'dump-ast',
+        'dump-ctags:',
         'dump-parsed-file-list',
         'dump-signatures-file:',
         'find-signature:',
@@ -538,6 +540,16 @@ class CLI
                 case 'a':
                 case 'dump-ast':
                     Config::setValue('dump_ast', true);
+                    break;
+                case 'dump-ctags':
+                    if (strcasecmp($value, 'basic') !== 0) {
+                        CLI::printErrorToStderr("Unsupported value --dump-ctags='$value'. Supported values are 'basic'.\n");
+                        exit(1);
+                    }
+                    Config::setValue('plugins', \array_merge(
+                        Config::getValue('plugins'),
+                        [__DIR__ . '/Plugin/Internal/CtagsPlugin.php']
+                    ));
                     break;
                 case 'dump-parsed-file-list':
                     Config::setValue('dump_parsed_file_list', true);
@@ -1582,6 +1594,13 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --dump-ctags=basic
+  Dump a ctags file to <project root>/tags using the parsed and analyzed files
+  in the Phan config.
+  Currently, this only dumps classes/constants/functions/properties,
+  and not variable definitions.
+  This should be used with --quick, and can't be used with --processes <int>.
 
  --automatic-fix
   Automatically fix any issues Phan is capable of fixing.
