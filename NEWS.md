@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 2.6.1 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add a `--dump-ctags=basic` flag to dump a `tags` file in the project root directory. (https://linux.die.net/man/1/ctags)
+  This is different from `tool/make_ctags_for_phan_project` - it has no external dependencies.
+
 Mar 07 2020, Phan 2.6.0
 -----------------------
 

@@ -266,6 +266,13 @@ Extended help:
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
 
+ --dump-ctags=basic
+  Dump a ctags file to <project root>/tags using the parsed and analyzed files
+  in the Phan config.
+  Currently, this only dumps classes/constants/functions/properties,
+  and not variable definitions.
+  This should be used with --quick, and can't be used with --processes <int>.
+
  --automatic-fix
   Automatically fix any issues Phan is capable of fixing.
   NOTE: This is a work in progress and limited to a small subset of issues

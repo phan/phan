@@ -35,6 +35,15 @@ final class FileCache
     }
 
     /**
+     * Raise the cache size to $max_size (or the original cache size or self::MINIMUM_CACHE_SIZE if that's larger).
+     * Entries will not be removed.
+     */
+    public static function raiseMaxCacheSize(int $max_size): void
+    {
+        self::$max_size = \max($max_size, self::$max_size ?? self::MINIMUM_CACHE_SIZE);
+    }
+
+    /**
      * Adds an entry recording that $file_name has contents $file_contents,
      * overwriting any previous entries
      */
