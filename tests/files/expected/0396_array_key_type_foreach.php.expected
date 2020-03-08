@@ -1,4 +1,4 @@
 %s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $key of type int but \strlen() takes string
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $key2 of type string but \intdiv() takes int
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $key3 of type int but \strlen() takes string
-%s:18 PhanTypeMismatchArgumentInternal Argument 1 ($object) is $key of type int|string but \get_class() takes object
+%s:18 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($object) is $key of type int|string but \get_class() takes object

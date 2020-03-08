@@ -7,6 +7,10 @@ New features(CLI, Configs):
 + Add a `--dump-ctags=basic` flag to dump a `tags` file in the project root directory. (https://linux.die.net/man/1/ctags)
   This is different from `tool/make_ctags_for_phan_project` - it has no external dependencies.
 
+New features(Analysis):
++ Infer that the real type set of the key in `foreach ($arrayVar as $key => ...)` is definitely an `int|string`
+  in places where Phan previously inferred the empty union type, improving redundant condition detection. (#3789)
+
 Mar 07 2020, Phan 2.6.0
 -----------------------
 
