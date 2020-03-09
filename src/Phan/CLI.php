@@ -42,8 +42,8 @@ use function in_array;
 use function is_array;
 use function is_resource;
 use function is_string;
-use function strcasecmp;
 use function str_repeat;
+use function strcasecmp;
 use function strlen;
 
 use const DIRECTORY_SEPARATOR;

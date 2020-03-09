@@ -11,6 +11,9 @@ New features(Analysis):
 + Infer that the real type set of the key in `foreach ($arrayVar as $key => ...)` is definitely an `int|string`
   in places where Phan previously inferred the empty union type, improving redundant condition detection. (#3789)
 
+Bug fixes:
++ Fix a crash in `phan --dead-code-detection` when a trait defines a real method and phpdoc `@method` of the same name (#3796)
+
 Mar 07 2020, Phan 2.6.0
 -----------------------
 
