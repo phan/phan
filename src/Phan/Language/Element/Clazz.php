@@ -632,9 +632,6 @@ class Clazz extends AddressableElement
         $visited = [];
         for ($current = $this; $current->hasParentType(); $current = $parent) {
             $fqsen = $current->getFQSEN();
-            if (!$current->hasParentType()) {
-                return $fqsen;
-            }
 
             if (!$code_base->hasClassWithFQSEN(
                 $current->getParentClassFQSEN()
