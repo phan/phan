@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.6.1 (dev)
+Mar 13 2020, Phan 2.6.1
 -----------------------
 
 New features(CLI, Configs):
@@ -13,6 +13,9 @@ New features(Analysis):
 
 Bug fixes:
 + Fix a crash in `phan --dead-code-detection` when a trait defines a real method and phpdoc `@method` of the same name (#3796)
+
+Miscellaneous:
++ Also allow `netresearch/jsonmapper@^2.0` as a dependency when enforcing the minimum allowed version (#3801)
 
 Mar 07 2020, Phan 2.6.0
 -----------------------

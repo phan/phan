@@ -96,12 +96,14 @@ _phan() {
 -B
 --load-baseline
 --analyze-twice
+--analyze-all-files
 -h
 --help
 -v
 --version
 --extended-help
 --dump-ast
+--dump-ctags
 -a
 --dump-analyzed-file-list
 --dump-parsed-file-list
