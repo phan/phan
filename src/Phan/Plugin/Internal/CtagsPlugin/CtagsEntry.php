@@ -12,6 +12,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Library\FileCache;
+use Phan\Phan;
 
 use function is_string;
 use function strlen;
@@ -131,6 +132,36 @@ class CtagsEntry
             return "namespace:$namespace";
         }
         return null;
+    }
+
+    /**
+     * Key for ordering tags by strcmp
+     */
+    public function getOrderKey(): string
+    {
+        $isAnalyzedOrder = Phan::isExcludedAnalysisFile($this->context->getFile()) ? "1" : "0";
+        switch ($this->kind) {
+            case self::KIND_CLASS:
+                $typeOrder = "0";
+                break;
+            case self::KIND_FUNCTION:
+                if (\preg_match('/^class:/', $this->scope ?? '')) {
+                    $typeOrder = "3";
+                } else {
+                    $typeOrder = "1";
+                }
+                break;
+            case self::KIND_CONSTANT:
+                $typeOrder = "2";
+                break;
+            case self::KIND_PROPERTY:
+                $typeOrder = "4";
+                break;
+            default:
+                $typeOrder = "9";
+                break;
+        }
+        return $isAnalyzedOrder . "\0" . $typeOrder;
     }
 }
 

@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 2.6.2 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Sort output of `--dump-ctags=basic` by element type before sorting by file name (#3811)
+  (e.g. make class and global function declarations the first tag type for a tag name)
+
 Mar 13 2020, Phan 2.6.1
 -----------------------
 

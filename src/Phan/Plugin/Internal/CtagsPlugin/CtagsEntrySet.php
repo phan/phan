@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\Plugin\Internal\CtagsPlugin;
 
-use Phan\Phan;
-
 /**
  * Represents a sorted set of unique ctags entries for definitions of elements
  */
@@ -31,8 +29,7 @@ class CtagsEntrySet
         if (!$entry->isValid()) {
             return;
         }
-        $order = Phan::isExcludedAnalysisFile($entry->context->getFile()) ? "1" : "0";
-        $lookup = $entry->name . "\0" . $order . "\0" . $entry;
+        $lookup = $entry->name . "\0" . $entry->getOrderKey() . "\0" . $entry;
         $this->entries[$lookup] = $entry;
     }
 }
