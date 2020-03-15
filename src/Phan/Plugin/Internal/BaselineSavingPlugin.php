@@ -112,7 +112,7 @@ EOT;
 
     private static function getSuppressCountLabel(int $count): string
     {
-        if ($count <= 10) {
+        if ($count < 10) {
             return (string)$count;
         }
         // Round counts over 100 down to a multiple of 10, etc.
