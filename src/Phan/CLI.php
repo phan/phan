@@ -273,8 +273,16 @@ class CLI
                 $key = $parts[0];
                 $value = $parts[1] ?? '';  // php getopt() treats --processes and --processes= the same way
                 $key = \preg_replace('/^--?/', '', $key);
-                if ($value === '' && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
-                    throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
+                if ($value === '') {
+                    if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                        throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
+                    }
+                    if (strlen($key) === 1 && strlen($parts[0]) === 2) {
+                        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
+                        if (\strpos(self::GETOPT_SHORT_OPTIONS, "$key:") !== false) {
+                            throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
+                        }
+                    }
                 }
                 throw new UsageException("Unknown option '$arg'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
@@ -1825,7 +1833,7 @@ EOB
             return \preg_quote(\rtrim($option, ':'));
         }, self::GETOPT_LONG_OPTIONS)) . '))([^\w-]|$))';
         $section = \preg_replace_callback($long_flag_regex, $colorize_flag_cb, $section);
-        $short_flag_regex = '((\s|\b)(-[' . \str_replace(':', '', self::GETOPT_SHORT_OPTIONS) . '])([^\w-]))';
+        $short_flag_regex = '((\s|\b|\')(-[' . \str_replace(':', '', self::GETOPT_SHORT_OPTIONS) . '])([^\w-]))';
 
         $section = \preg_replace_callback($short_flag_regex, $colorize_flag_cb, $section);
 
