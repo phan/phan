@@ -1,0 +1,2 @@
+src/072_assign.php:1 PhanNoopNumericLiteral Unused result of a numeric literal 2 near this line
+src/072_assign.php:2 PhanSyntaxError syntax error, unexpected '=', expecting variable (T_VARIABLE) or '{' or '$' (at column 3)

@@ -113,7 +113,6 @@ class TolerantASTConverter
     public const AST_VERSION = 70;
 
     // The versions that this supports
-    // TODO: Also enable support for version 60 once there is a stable 1.0.0 release. (Issue #2038)
     public const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
 
     private const _IGNORED_STRING_TOKEN_KIND_SET = [
@@ -559,8 +558,8 @@ class TolerantASTConverter
                     return $expr;
                 }
             },
-            /** @return ?ast\Node */
-            'Microsoft\PhpParser\Node\Expression\AssignmentExpression' => static function (PhpParser\Node\Expression\AssignmentExpression $n, int $start_line): ?\ast\Node {
+            /** @return ?(ast\Node|float|int|string) */
+            'Microsoft\PhpParser\Node\Expression\AssignmentExpression' => static function (PhpParser\Node\Expression\AssignmentExpression $n, int $start_line) {
                 try {
                     $var_node = static::phpParserNodeToAstNode($n->leftOperand);
                 } catch (InvalidNodeException $_) {
