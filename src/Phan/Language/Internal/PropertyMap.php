@@ -334,6 +334,12 @@ return [
     'pdoexception' => ['code' => 'string', 'errorInfo' => 'array'],
     'pdostatement' => ['queryString' => 'string'],
     'php_user_filter' => ['filtername' => 'string', 'params' => 'mixed'],
+    'phptoken' => [
+        'id' => 'int',
+        'line' => 'int',
+        'pos' => 'int',
+        'text' => 'string',
+    ],
     'recursivearrayiterator' => ['name' => 'string'],
     'recursivecachingiterator' => ['name' => 'string'],
     'recursivedirectoryiterator' => ['name' => 'string'],

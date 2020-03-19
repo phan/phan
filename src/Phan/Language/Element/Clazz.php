@@ -299,18 +299,22 @@ class Clazz extends AddressableElement
                 $property_name
             );
 
-            $flags = 0;
             if ($class->hasProperty($property_name)) {
-                $flags = self::getASTFlagsForReflectionProperty($class->getProperty($property_name));
+                $reflection_property = $class->getProperty($property_name);
+                $flags = self::getASTFlagsForReflectionProperty($reflection_property);
+                $real_type = self::getRealTypeForReflectionProperty($reflection_property);
+            } else {
+                $flags = 0;
+                $real_type = UnionType::empty();
             }
 
             $property = new Property(
                 $property_context,
                 $property_name,
-                $property_type,
+                $property_type->withRealTypeSet($real_type->getTypeSet()),
                 $flags,
                 $property_fqsen,
-                UnionType::empty()
+                $real_type
             );
             // Record that Phan has known union types for this internal property,
             // so that analysis of assignments to the property can account for it.
@@ -336,17 +340,46 @@ class Clazz extends AddressableElement
             if ($clazz->hasPropertyWithName($code_base, $name)) {
                 continue;
             }
-            $flags = 0;
             if ($class->hasProperty($name)) {
-                $flags = self::getASTFlagsForReflectionProperty($class->getProperty($name));
+                $reflection_property = $class->getProperty($name);
+                $flags = self::getASTFlagsForReflectionProperty($reflection_property);
+                $real_type = self::getRealTypeForReflectionProperty($reflection_property);
+            } else {
+                $flags = 0;
+                $real_type = UnionType::empty();
             }
             $property = new Property(
                 $property_context,
                 $name,
-                Type::fromObject($default_value)->asPHPDocUnionType(),
+                Type::fromObject($default_value)->asPHPDocUnionType()->withRealTypeSet($real_type->getTypeSet()),
                 $flags,
                 $property_fqsen,
-                UnionType::empty()
+                $real_type
+            );
+
+            $clazz->addProperty($code_base, $property, None::instance());
+        }
+        foreach ($class->getProperties() as $reflection_property) {
+            // In PHP 7.4, it's possible for internal classes to have properties without defaults if they're uninitialized.
+            $name = $reflection_property->name;
+            if ($clazz->hasPropertyWithName($code_base, $name)) {
+                continue;
+            }
+            $property_context = $context->withScope($class_scope);
+
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $name
+            );
+
+            $real_type = self::getRealTypeForReflectionProperty($reflection_property);
+            $property = new Property(
+                $property_context,
+                $name,
+                $real_type->asRealUnionType(),
+                self::getASTFlagsForReflectionProperty($reflection_property),
+                $property_fqsen,
+                $real_type
             );
 
             $clazz->addProperty($code_base, $property, None::instance());
@@ -406,6 +439,19 @@ class Clazz extends AddressableElement
         }
 
         return $clazz;
+    }
+
+    /**
+     * @suppress PhanUndeclaredMethod
+     */
+    private static function getRealTypeForReflectionProperty(ReflectionProperty $property): UnionType
+    {
+        if (\PHP_VERSION_ID >= 70400) {
+            if ($property->hasType()) {
+                return UnionType::fromReflectionType($property->getType());
+            }
+        }
+        return UnionType::empty();
     }
 
     /**
