@@ -17,6 +17,7 @@ use TypeError;
  *
  * - Afterwards, remove this boilerplate overriding methods of SplObjectStorage<T,T>
  *
+ * @phan-file-suppress PhanParamSignaturePHPDocMismatchParamType TODO: Add a way to indicate in Phan that T is subtype of object
  * @method void attach(T $object,mixed $data = null)
  * @method void detach(T $object)
  * @method bool offsetExists(T $object)

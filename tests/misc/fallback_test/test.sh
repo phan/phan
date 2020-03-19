@@ -22,13 +22,14 @@ sed -i \
     -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
     -e "s/expecting identifier (T_STRING) or static (T_STATIC) or namespace (T_NAMESPACE)/expecting identifier (T_STRING) or namespace (T_NAMESPACE)/" \
     -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
-    -e "s/of type \\\\Countable|\\\\SimpleXMLElement|\\\\Traversable|iterable/of type \\\\SimpleXMLElement|\\\\Traversable|iterable/" \
+    -e "s/of type \\\\Countable|\\\\SimpleXMLElement/of type \\\\SimpleXMLElement/" \
     -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \
     -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
     -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \
     -e "s/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'/" \
     -e "s/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'/" \
     -e "s/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)/" \
+    -e "s/|\\\\Stringable|/|/g" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
     $ACTUAL_PATH
 
