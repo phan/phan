@@ -30,10 +30,12 @@ echo
 echo "Comparing the output:"
 
 # Normalize PHP_VERSION_ID
-# and remove php 8.0 warnings
+# and remove/replace php 8.0 warnings
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
     -e 's@src/157_polyfill_compilation_warning.php:3 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Parse error: Unterminated comment starting line 3"@src/157_polyfill_compilation_warning.php:77 PhanSyntaxCompileWarning Saw a warning while parsing: Unterminated comment starting line 3@g' \
     -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
+    -e 's/\\\(Exception\|Error\)|\\Stringable|\\Throwable/\\\1|\\Throwable/g' \
+    -e 's/strlen(): Argument #1 (\$str) must be of type string/strlen() expects parameter 1 to be string/g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

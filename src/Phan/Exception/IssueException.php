@@ -54,7 +54,7 @@ class IssueException extends Exception
     /**
      * @override
      */
-    public function __toString()
+    public function __toString(): string
     {
         return \sprintf(
             "IssueException at %s:%d: %s\n%s",

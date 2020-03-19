@@ -1,2 +1,2 @@
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is \HashContext but \intdiv() takes int
-%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is string but \intdiv() takes int
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $ctx of type \HashContext but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $result of type string but \intdiv() takes int

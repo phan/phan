@@ -23,9 +23,10 @@ echo
 echo "Comparing the output:"
 
 # Normalize PHP_VERSION_ID
-# and remove php 8.0 warnings
+# and remove/replace php 8.0 warnings
 sed -i \
     -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
+    -e 's/strlen(): Argument #1 (\$str) must be of type string/strlen() expects parameter 1 to be string/g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

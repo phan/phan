@@ -266,8 +266,9 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
             return false;
         }
     }
-    // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations
-    if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/', $errstr)) {
+    // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations.
+    // In PHP 8.0, "Unable" becomes uppercase.
+    if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/i', $errstr)) {
         // Don't execute the PHP internal error handler
         return true;
     }
