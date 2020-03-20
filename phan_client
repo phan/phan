@@ -28,7 +28,7 @@
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
- * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void
+ * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void, PhanPluginCanUseReturnType
  */
 class PhanPHPLinter
 {
@@ -191,6 +191,9 @@ class PhanPHPLinter
             $request['format'] = $opts->output_mode;
             $request['is_user_specified_format'] = true;
         }
+        if ($opts->color === null && (!$opts->output_mode || $opts->output_mode === 'text')) {
+            $opts->color = self::supportsColor(STDOUT);
+        }
         if ($opts->color) {
             $request['color'] = true;
         }
@@ -304,6 +307,47 @@ class PhanPHPLinter
         // https://github.com/neomake/neomake/issues/153
         echo implode('', $lines);
     }
+
+    /**
+     * Returns true if the output stream supports colors
+     *
+     * This is tricky on Windows, because Cygwin, Msys2 etc emulate pseudo
+     * terminals via named pipes, so we can only check the environment.
+     *
+     * Reference: Composer\XdebugHandler\Process::supportsColor
+     * https://github.com/composer/xdebug-handler
+     * (This is internal, so it was duplicated in case their API changed)
+     *
+     * This duplicates CLI::supportsColor() so that phan_client can run as a standalone file
+     *
+     * @param resource $output A valid CLI output stream
+     * @return bool
+     * @suppress PhanUndeclaredFunction
+     */
+    public static function supportsColor($output)
+    {
+        if ('Hyper' === getenv('TERM_PROGRAM')) {
+            return true;
+        }
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return (\function_exists('sapi_windows_vt100_support')
+                && \sapi_windows_vt100_support($output))
+                || false !== \getenv('ANSICON')
+                || 'ON' === \getenv('ConEmuANSI')
+                || 'xterm' === \getenv('TERM');
+        }
+
+        if (\function_exists('stream_isatty')) {
+            return \stream_isatty($output);
+        } elseif (\function_exists('posix_isatty')) {
+            return \posix_isatty($output);
+        }
+
+        $stat = \fstat($output);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
+
 }
 
 /**
@@ -330,8 +374,8 @@ class PhanPHPLinterOpts
     /** @var ?string the output mode to use. If null, use the default from the daemon */
     public $output_mode = null;
 
-    /** @var bool whether to color the output on the client */
-    public $color = false;
+    /** @var ?bool whether to color the output on the client */
+    public $color = null;
 
     /**
      * @var bool should this client print a usage text if an **unexpected** error occurred.
@@ -372,7 +416,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working directory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
 
- -m <mode>, --output-mode
+ -m, --output-mode <mode>
   Output mode from 'phan_client' (default), 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
@@ -389,6 +433,10 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
  -v, --verbose
   Whether to emit debugging output of this client.
 
+ --color, --no-color
+  Whether or not to colorize reported issues.
+  The default and text output modes are colorized by default, if the terminal supports it.
+
  -h, --help
   This help information
 
@@ -396,6 +444,23 @@ EOB;
         }
         exit($exit_code);
     }
+
+    const GETOPT_SHORT_OPTIONS = 's:p:l:t:f:m:vhd';
+
+    const GETOPT_LONG_OPTIONS = [
+        'help',
+        'daemonize-socket:',
+        'daemonize-tcp-port:',
+        'disable-usage-on-error',
+        'syntax-check:',
+        'temporary-file-map:',
+        'use-fallback-parser',
+        'flycheck-file:',
+        'output-mode:',
+        'color',
+        'no-color',
+        'verbose',
+    ];
 
     /**
      * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
@@ -407,27 +472,13 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:t:f:m:vhd";
-        $longopts = [
-            'help',
-            'daemonize-socket:',
-            'daemonize-tcp-port:',
-            'disable-usage-on-error',
-            'syntax-check:',
-            'temporary-file-map:',
-            'use-fallback-parser',
-            'flycheck-file:',
-            'output-mode:',
-            'color',
-            'verbose',
-        ];
         $getopt_reflection = new ReflectionFunction('getopt');
         if ($getopt_reflection->getNumberOfParameters() >= 3) {
             // optind support is only in php 7.1+.
             // hhvm doesn't expect a third parameter, but reports a version of php 7.1, even in the latest version.
-            $opts = getopt($shortopts, $longopts, $optind);
+            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS, $optind);
         } else {
-            $opts = getopt($shortopts, $longopts);
+            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         }
         if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
             $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
@@ -440,7 +491,10 @@ EOB;
         }
         $print_usage_on_error = true;
 
-        foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
+        if (!is_array($opts)) {
+            $opts = [];
+        }
+        foreach ($opts as $key => $value) {
             switch ($key) {
                 case 's':
                 case 'daemonize-socket':
@@ -533,6 +587,9 @@ EOB;
                 case 'color':
                     $this->color = true;
                     break;
+                case 'no-color':
+                    $this->color = false;
+                    break;
                 case 'm':
                 case 'output-mode':
                     if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'], true)) {
@@ -550,6 +607,12 @@ EOB;
                     break;
             }
         }
+        try {
+            self::checkAllArgsUsed($opts, $argv);
+        } catch (InvalidArgumentException $e) {
+            $this->usage($e->getMessage(), 1);
+        }
+
         if (count($this->file_list) === 0) {
             // Invalid invocation, always print this message
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
@@ -583,6 +646,144 @@ EOB;
         if ($this->url !== null) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         }
+    }
+
+    /**
+     * Deliberately duplicating CLI::checkAllArgsUsed()
+     *
+     * @param array<string,mixed> $opts
+     * @param list<string> $argv
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private static function checkAllArgsUsed(array $opts, array &$argv)
+    {
+        $pruneargv = [];
+        foreach ($opts as $opt => $value) {
+            foreach ($argv as $key => $chunk) {
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
+
+                if (in_array($chunk, is_array($value) ? $value : [$value], true)
+                    && $argv[$key - 1][0] === '-'
+                    || \preg_match($regex, $chunk)
+                ) {
+                    $pruneargv[] = $key;
+                }
+            }
+        }
+
+        while (count($pruneargv) > 0) {
+            $key = \array_pop($pruneargv);
+            unset($argv[$key]);
+        }
+
+        foreach ($argv as $arg) {
+            if ($arg[0] === '-') {
+                $parts = \explode('=', $arg, 2);
+                $key = $parts[0];
+                $value = isset($parts[1]) ? $parts[1] : '';  // php getopt() treats --processes and --processes= the same way
+                $key = \preg_replace('/^--?/', '', $key);
+                if ($value === '') {
+                    if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                        throw new InvalidArgumentException("Missing required value for '$arg'");
+                    }
+                    if (strlen($key) === 1 && strlen($parts[0]) === 2) {
+                        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
+                        if (\strpos(self::GETOPT_SHORT_OPTIONS, "$key:") !== false) {
+                            throw new InvalidArgumentException("Missing required value for '-$key'");
+                        }
+                    }
+                }
+                throw new InvalidArgumentException("Unknown option '$arg'" . self::getFlagSuggestionString($key), 1);
+            }
+        }
+    }
+
+    /**
+     * Finds potentially misspelled flags and returns them as a string
+     *
+     * This will use levenshtein distance, showing the first one or two flags
+     * which match with a distance of <= 5
+     *
+     * @param string $key Misspelled key to attempt to correct
+     * @return string
+     * @internal
+     */
+    public static function getFlagSuggestionString(
+        $key
+    ) {
+        /**
+         * @param string $s
+         * @return string
+         */
+        $trim = static function ($s) {
+            return \rtrim($s, ':');
+        };
+        /**
+         * @param string $suggestion
+         * @return string
+         */
+        $generate_suggestion = static function ($suggestion) {
+            return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
+        };
+        /**
+         * @param string $suggestion
+         * @param string ...$other_suggestions
+         * @return string
+         */
+        $generate_suggestion_text = static function ($suggestion, ...$other_suggestions) use ($generate_suggestion) {
+            $suggestions = \array_merge([$suggestion], $other_suggestions);
+            return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
+        };
+        $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
+        if (strlen($key) === 1) {
+            $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
+            if (in_array($alternate, $short_options, true)) {
+                return $generate_suggestion_text($alternate);
+            }
+            return '';
+        } elseif ($key === '') {
+            return '';
+        }
+        // include short options in case a typo is made like -aa instead of -a
+        $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
+
+        $known_flags = array_map($trim, $known_flags);
+
+        $similarities = [];
+
+        $key_lower = \strtolower($key);
+        foreach ($known_flags as $flag) {
+            if (strlen($flag) === 1 && \stripos($key, $flag) === false) {
+                // Skip over suggestions of flags that have no common characters
+                continue;
+            }
+            $distance = \levenshtein($key_lower, \strtolower($flag));
+            // distance > 5 is too far off to be a typo
+            // Make sure that if two flags have the same distance, ties are sorted alphabetically
+            if ($distance > 5) {
+                continue;
+            }
+            if ($key === $flag) {
+                if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                    return " (This option is probably missing the required value. Or this option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                } else {
+                    return " (This option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                }
+            }
+            $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
+        }
+
+        \asort($similarities); // retain keys and sort descending
+        $similarity_values = \array_values($similarities);
+
+        if (count($similarity_values) >= 2 && ($similarity_values[1][0] <= $similarity_values[0][0] + 1)) {
+            // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
+            return $generate_suggestion_text($similarity_values[0][2], $similarity_values[1][2]);
+        } elseif (count($similarity_values) >= 1) {
+            return $generate_suggestion_text($similarity_values[0][2]);
+        }
+        return '';
     }
 }
 PhanPHPLinter::run();
