@@ -372,7 +372,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -443,17 +443,16 @@ final class Builder
                         $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
                     }
                     return;
+                case 'deprecated':
+                    if (\preg_match('/@deprecated\b/', $line, $match)) {
+                        $this->comment_flags |= Flags::IS_DEPRECATED;
+                    }
+                    break;
                 default:
                     if (\strpos($type, 'phan-') === 0) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
                     }
                     break;
-            }
-        }
-
-        if (\strpos($line, '@deprecated') !== false) {
-            if (\preg_match('/@deprecated\b/', $line, $match)) {
-                $this->comment_flags |= Flags::IS_DEPRECATED;
             }
         }
 

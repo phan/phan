@@ -1,0 +1,1 @@
+%s:8 PhanTypeMismatchReturn Returning type array{0:string,1:int} but test866() is declared to return bool
