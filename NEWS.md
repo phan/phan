@@ -7,8 +7,14 @@ New features(CLI, Configs):
 + Sort output of `--dump-ctags=basic` by element type before sorting by file name (#3811)
   (e.g. make class and global function declarations the first tag type for a tag name)
 
+New features(Analysis):
++ Improve analysis of php 7.4 typed properties.
+  Support extracting their real union types from Reflection information.
+  Infer the existence of properties that are not in `ReflectionClass->getPropertyDefaults()`
+  due to being uninitialized by default.
+
 Miscellaneous:
-+ PHP 8.0-dev compatibility fixes.
++ PHP 8.0-dev compatibility fixes, analysis for some new functions of PHP 8.0-dev.
 
 Mar 13 2020, Phan 2.6.1
 -----------------------
