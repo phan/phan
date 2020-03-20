@@ -8,6 +8,7 @@ New features(CLI, Configs):
   (e.g. make class and global function declarations the first tag type for a tag name)
 + Colorize the output of `phan_client` by default for the default and text output modes.
   Add `phan --no-color` option to disable colors.
++ Warn about invalid CLI flags in `phan_client`
 
 New features(Analysis):
 + Improve analysis of php 7.4 typed properties.

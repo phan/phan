@@ -28,7 +28,7 @@
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
- * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void
+ * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void, PhanPluginCanUseReturnType
  */
 class PhanPHPLinter
 {
@@ -321,9 +321,10 @@ class PhanPHPLinter
      * This duplicates CLI::supportsColor() so that phan_client can run as a standalone file
      *
      * @param resource $output A valid CLI output stream
+     * @return bool
      * @suppress PhanUndeclaredFunction
      */
-    public static function supportsColor($output): bool
+    public static function supportsColor($output)
     {
         if ('Hyper' === getenv('TERM_PROGRAM')) {
             return true;
@@ -346,6 +347,7 @@ class PhanPHPLinter
         // Check if formatted mode is S_IFCHR
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
+
 }
 
 /**
@@ -443,6 +445,23 @@ EOB;
         exit($exit_code);
     }
 
+    const GETOPT_SHORT_OPTIONS = 's:p:l:t:f:m:vhd';
+
+    const GETOPT_LONG_OPTIONS = [
+        'help',
+        'daemonize-socket:',
+        'daemonize-tcp-port:',
+        'disable-usage-on-error',
+        'syntax-check:',
+        'temporary-file-map:',
+        'use-fallback-parser',
+        'flycheck-file:',
+        'output-mode:',
+        'color',
+        'no-color',
+        'verbose',
+    ];
+
     /**
      * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
      * @suppress UnusedSuppression
@@ -453,28 +472,13 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:t:f:m:vhd";
-        $longopts = [
-            'help',
-            'daemonize-socket:',
-            'daemonize-tcp-port:',
-            'disable-usage-on-error',
-            'syntax-check:',
-            'temporary-file-map:',
-            'use-fallback-parser',
-            'flycheck-file:',
-            'output-mode:',
-            'color',
-            'no-color',
-            'verbose',
-        ];
         $getopt_reflection = new ReflectionFunction('getopt');
         if ($getopt_reflection->getNumberOfParameters() >= 3) {
             // optind support is only in php 7.1+.
             // hhvm doesn't expect a third parameter, but reports a version of php 7.1, even in the latest version.
-            $opts = getopt($shortopts, $longopts, $optind);
+            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS, $optind);
         } else {
-            $opts = getopt($shortopts, $longopts);
+            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         }
         if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
             $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
@@ -487,7 +491,10 @@ EOB;
         }
         $print_usage_on_error = true;
 
-        foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
+        if (!is_array($opts)) {
+            $opts = [];
+        }
+        foreach ($opts as $key => $value) {
             switch ($key) {
                 case 's':
                 case 'daemonize-socket':
@@ -600,6 +607,12 @@ EOB;
                     break;
             }
         }
+        try {
+            self::checkAllArgsUsed($opts, $argv);
+        } catch (InvalidArgumentException $e) {
+            $this->usage($e->getMessage(), 1);
+        }
+
         if (count($this->file_list) === 0) {
             // Invalid invocation, always print this message
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
@@ -633,6 +646,144 @@ EOB;
         if ($this->url !== null) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         }
+    }
+
+    /**
+     * Deliberately duplicating CLI::checkAllArgsUsed()
+     *
+     * @param array<string,mixed> $opts
+     * @param list<string> $argv
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private static function checkAllArgsUsed(array $opts, array &$argv)
+    {
+        $pruneargv = [];
+        foreach ($opts as $opt => $value) {
+            foreach ($argv as $key => $chunk) {
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
+
+                if (in_array($chunk, is_array($value) ? $value : [$value], true)
+                    && $argv[$key - 1][0] === '-'
+                    || \preg_match($regex, $chunk)
+                ) {
+                    $pruneargv[] = $key;
+                }
+            }
+        }
+
+        while (count($pruneargv) > 0) {
+            $key = \array_pop($pruneargv);
+            unset($argv[$key]);
+        }
+
+        foreach ($argv as $arg) {
+            if ($arg[0] === '-') {
+                $parts = \explode('=', $arg, 2);
+                $key = $parts[0];
+                $value = isset($parts[1]) ? $parts[1] : '';  // php getopt() treats --processes and --processes= the same way
+                $key = \preg_replace('/^--?/', '', $key);
+                if ($value === '') {
+                    if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                        throw new InvalidArgumentException("Missing required value for '$arg'");
+                    }
+                    if (strlen($key) === 1 && strlen($parts[0]) === 2) {
+                        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
+                        if (\strpos(self::GETOPT_SHORT_OPTIONS, "$key:") !== false) {
+                            throw new InvalidArgumentException("Missing required value for '-$key'");
+                        }
+                    }
+                }
+                throw new InvalidArgumentException("Unknown option '$arg'" . self::getFlagSuggestionString($key), 1);
+            }
+        }
+    }
+
+    /**
+     * Finds potentially misspelled flags and returns them as a string
+     *
+     * This will use levenshtein distance, showing the first one or two flags
+     * which match with a distance of <= 5
+     *
+     * @param string $key Misspelled key to attempt to correct
+     * @return string
+     * @internal
+     */
+    public static function getFlagSuggestionString(
+        $key
+    ) {
+        /**
+         * @param string $s
+         * @return string
+         */
+        $trim = static function ($s) {
+            return \rtrim($s, ':');
+        };
+        /**
+         * @param string $suggestion
+         * @return string
+         */
+        $generate_suggestion = static function ($suggestion) {
+            return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
+        };
+        /**
+         * @param string $suggestion
+         * @param string ...$other_suggestions
+         * @return string
+         */
+        $generate_suggestion_text = static function ($suggestion, ...$other_suggestions) use ($generate_suggestion) {
+            $suggestions = \array_merge([$suggestion], $other_suggestions);
+            return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
+        };
+        $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
+        if (strlen($key) === 1) {
+            $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
+            if (in_array($alternate, $short_options, true)) {
+                return $generate_suggestion_text($alternate);
+            }
+            return '';
+        } elseif ($key === '') {
+            return '';
+        }
+        // include short options in case a typo is made like -aa instead of -a
+        $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
+
+        $known_flags = array_map($trim, $known_flags);
+
+        $similarities = [];
+
+        $key_lower = \strtolower($key);
+        foreach ($known_flags as $flag) {
+            if (strlen($flag) === 1 && \stripos($key, $flag) === false) {
+                // Skip over suggestions of flags that have no common characters
+                continue;
+            }
+            $distance = \levenshtein($key_lower, \strtolower($flag));
+            // distance > 5 is too far off to be a typo
+            // Make sure that if two flags have the same distance, ties are sorted alphabetically
+            if ($distance > 5) {
+                continue;
+            }
+            if ($key === $flag) {
+                if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                    return " (This option is probably missing the required value. Or this option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                } else {
+                    return " (This option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
+                }
+            }
+            $similarities[$flag] = [$distance, "x" . \strtolower($flag), $flag];
+        }
+
+        \asort($similarities); // retain keys and sort descending
+        $similarity_values = \array_values($similarities);
+
+        if (count($similarity_values) >= 2 && ($similarity_values[1][0] <= $similarity_values[0][0] + 1)) {
+            // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
+            return $generate_suggestion_text($similarity_values[0][2], $similarity_values[1][2]);
+        } elseif (count($similarity_values) >= 1) {
+            return $generate_suggestion_text($similarity_values[0][2]);
+        }
+        return '';
     }
 }
 PhanPHPLinter::run();
