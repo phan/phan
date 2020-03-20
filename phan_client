@@ -191,6 +191,9 @@ class PhanPHPLinter
             $request['format'] = $opts->output_mode;
             $request['is_user_specified_format'] = true;
         }
+        if ($opts->color === null && (!$opts->output_mode || $opts->output_mode === 'text')) {
+            $opts->color = self::supportsColor(STDOUT);
+        }
         if ($opts->color) {
             $request['color'] = true;
         }
@@ -304,6 +307,45 @@ class PhanPHPLinter
         // https://github.com/neomake/neomake/issues/153
         echo implode('', $lines);
     }
+
+    /**
+     * Returns true if the output stream supports colors
+     *
+     * This is tricky on Windows, because Cygwin, Msys2 etc emulate pseudo
+     * terminals via named pipes, so we can only check the environment.
+     *
+     * Reference: Composer\XdebugHandler\Process::supportsColor
+     * https://github.com/composer/xdebug-handler
+     * (This is internal, so it was duplicated in case their API changed)
+     *
+     * This duplicates CLI::supportsColor() so that phan_client can run as a standalone file
+     *
+     * @param resource $output A valid CLI output stream
+     * @suppress PhanUndeclaredFunction
+     */
+    public static function supportsColor($output): bool
+    {
+        if ('Hyper' === getenv('TERM_PROGRAM')) {
+            return true;
+        }
+        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return (\function_exists('sapi_windows_vt100_support')
+                && \sapi_windows_vt100_support($output))
+                || false !== \getenv('ANSICON')
+                || 'ON' === \getenv('ConEmuANSI')
+                || 'xterm' === \getenv('TERM');
+        }
+
+        if (\function_exists('stream_isatty')) {
+            return \stream_isatty($output);
+        } elseif (\function_exists('posix_isatty')) {
+            return \posix_isatty($output);
+        }
+
+        $stat = \fstat($output);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
 }
 
 /**
@@ -330,8 +372,8 @@ class PhanPHPLinterOpts
     /** @var ?string the output mode to use. If null, use the default from the daemon */
     public $output_mode = null;
 
-    /** @var bool whether to color the output on the client */
-    public $color = false;
+    /** @var ?bool whether to color the output on the client */
+    public $color = null;
 
     /**
      * @var bool should this client print a usage text if an **unexpected** error occurred.
@@ -372,7 +414,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working directory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
 
- -m <mode>, --output-mode
+ -m, --output-mode <mode>
   Output mode from 'phan_client' (default), 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
@@ -388,6 +430,10 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
 
  -v, --verbose
   Whether to emit debugging output of this client.
+
+ --color, --no-color
+  Whether or not to colorize reported issues.
+  The default and text output modes are colorized by default, if the terminal supports it.
 
  -h, --help
   This help information
@@ -419,6 +465,7 @@ EOB;
             'flycheck-file:',
             'output-mode:',
             'color',
+            'no-color',
             'verbose',
         ];
         $getopt_reflection = new ReflectionFunction('getopt');
@@ -532,6 +579,9 @@ EOB;
                     break;  // already parsed.
                 case 'color':
                     $this->color = true;
+                    break;
+                case 'no-color':
+                    $this->color = false;
                     break;
                 case 'm':
                 case 'output-mode':
