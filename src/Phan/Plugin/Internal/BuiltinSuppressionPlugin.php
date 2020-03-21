@@ -220,7 +220,6 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
             if (\strpos($comment_text, '@phan-') === false) {
                 continue;
             }
-            $comment_start_line = $token[2];
 
             // TODO: Emit UnextractableAnnotation if the string begins with phan-suppress or phan-file-suppress but nothing matched
             $match_count = \preg_match_all(
@@ -232,6 +231,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
             if (!$match_count) {
                 continue;
             }
+            $comment_start_line = $token[2];
 
             // Support multiple suppressions within a comment. (E.g. for suppressing multiple warnings about a doc comment)
             for ($i = 0; $i < $match_count; $i++) {
