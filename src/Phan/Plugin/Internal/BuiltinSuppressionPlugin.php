@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use Generator;
+use PhpToken;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -208,6 +209,46 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionComments(
         string $file_contents
     ): Generator {
+        // @phan-suppress-next-line PhanUndeclaredClassConstant
+        if (\PHP_VERSION_ID >= 80000 && \class_exists(PhpToken::class)) {
+            return self::yieldSuppressionCommentsPhpToken($file_contents);
+        }
+        return self::yieldSuppressionCommentsOld($file_contents);
+    }
+
+    /**
+     * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
+     * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
+     * (using the faster PhpToken::getAll())
+     */
+    private static function yieldSuppressionCommentsPhpToken(
+        string $file_contents
+    ): Generator {
+        // @phan-suppress-next-line PhanUndeclaredClassMethod missing in php 7
+        foreach (PhpToken::getAll($file_contents) as $token) {
+            $kind = $token->id;
+            if ($kind !== \T_COMMENT && $kind !== \T_DOC_COMMENT) {
+                continue;
+            }
+            $comment_text = $token->text;
+            if (\strpos($comment_text, '@phan-') === false) {
+                continue;
+            }
+            yield from self::yieldSuppressionCommentsFromTokenContents(
+                $comment_text,
+                $token->line
+            );
+        }
+    }
+
+    /**
+     * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
+     * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
+     * (using the slower token_get_all())
+     */
+    private static function yieldSuppressionCommentsOld(
+        string $file_contents
+    ): Generator {
         foreach (\token_get_all($file_contents) as $token) {
             if (!\is_array($token)) {
                 continue;
@@ -220,27 +261,38 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
             if (\strpos($comment_text, '@phan-') === false) {
                 continue;
             }
-
-            // TODO: Emit UnextractableAnnotation if the string begins with phan-suppress or phan-file-suppress but nothing matched
-            $match_count = \preg_match_all(
-                self::SUPPRESS_ISSUE_REGEX,
+            yield from self::yieldSuppressionCommentsFromTokenContents(
                 $comment_text,
-                $matches,
-                \PREG_OFFSET_CAPTURE
+                $token[2]
             );
-            if (!$match_count) {
-                continue;
-            }
-            $comment_start_line = $token[2];
-
-            // Support multiple suppressions within a comment. (E.g. for suppressing multiple warnings about a doc comment)
-            for ($i = 0; $i < $match_count; $i++) {
-                $comment_start_offset = $matches[0][$i][1];  // byte offset
-                $comment_name = $matches[1][$i][0];
-                $kind_list_text = $matches[3][$i][0];  // byte offset
-
-                yield [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
-            }
         }
+    }
+
+    /**
+     * @return list<array{0:string,1:int,2:int,3:string,4:string}>
+     * returns list of [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
+     */
+    private static function yieldSuppressionCommentsFromTokenContents(
+        string $comment_text,
+        int $comment_start_line
+    ) : array {
+        // TODO: Emit UnextractableAnnotation if the string begins with phan-suppress or phan-file-suppress but nothing matched
+        $match_count = \preg_match_all(
+            self::SUPPRESS_ISSUE_REGEX,
+            $comment_text,
+            $matches,
+            \PREG_OFFSET_CAPTURE
+        );
+        $result = [];
+
+        // Support multiple suppressions within a comment. (E.g. for suppressing multiple warnings about a doc comment)
+        for ($i = 0; $i < $match_count; $i++) {
+            $comment_start_offset = $matches[0][$i][1];  // byte offset
+            $comment_name = $matches[1][$i][0];
+            $kind_list_text = $matches[3][$i][0];  // byte offset
+
+            $result[] = [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
+        }
+        return $result;
     }
 }
