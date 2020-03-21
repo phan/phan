@@ -404,6 +404,7 @@ class InferPureVisitor extends AnalysisVisitor
         if (!($name_node instanceof Node && $name_node->kind === ast\AST_NAME)) {
             throw new NodeException($node);
         }
+        $this->visitArgList($node->children['args']);
         try {
             $class_list = (new ContextNode($this->code_base, $this->context, $name_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (Exception $_) {

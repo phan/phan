@@ -1,0 +1,2 @@
+src/168_pure_new.php:12 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \f168() defined at src/168_pure_new.php:3
+src/168_pure_new.php:14 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \h168() defined at src/168_pure_new.php:9
