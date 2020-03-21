@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use ast;
-use ast\flags;
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
@@ -103,14 +103,6 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private const EXEC_NODE_FLAG_NAMES = [
-        flags\EXEC_EVAL => 'eval',
-        flags\EXEC_INCLUDE => 'include',
-        flags\EXEC_INCLUDE_ONCE => 'include_once',
-        flags\EXEC_REQUIRE => 'require',
-        flags\EXEC_REQUIRE_ONCE => 'require_once',
-    ];
-
     private function getAbsolutePath(Node $node, string $relative_path): string
     {
         if (Paths::isAbsolutePath($relative_path)) {
@@ -121,7 +113,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             $this->emitIssue(
                 Issue::RelativePathUsed,
                 $node->children['exec']->lineno ?? $node->lineno,
-                self::EXEC_NODE_FLAG_NAMES[$node->flags] ?? 'unknown',
+                ASTReverter::EXEC_NODE_FLAG_NAMES[$node->flags] ?? 'unknown',
                 Paths::escapePathForIssue($relative_path)
             );
         }

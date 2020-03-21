@@ -9,6 +9,7 @@ New features(CLI, Configs):
 + Colorize the output of `phan_client` by default for the default and text output modes. (#3808)
   Add `phan --no-color` option to disable colors.
 + Warn about invalid CLI flags in `phan_client`
++ Support representing more AST node types in issue messages. (#3783)
 
 New features(Analysis):
 + Improve analysis of php 7.4 typed properties.

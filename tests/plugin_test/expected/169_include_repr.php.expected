@@ -1,0 +1,3 @@
+src/169_include_repr.php:5 PhanUnreferencedFunction Possibly zero references to function \test169()
+src/169_include_repr.php:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is [require((__DIR__ . '/000_plugins.php')),require_once((__DIR__ . '/000_plugins.php')),include((__DIR__ . '/000_plugins.php')),include_once((__DIR__ . '/000_plugins.php')),eval('echo "test";')] of type array{0:mixed,1:mixed,2:mixed,3:mixed,4:mixed} but \strlen() takes string
+src/169_include_repr.php:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is "{$i}2{$j}" of type string but \intdiv() takes int

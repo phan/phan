@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\AST;
 
 use ast;
+use ast\flags;
 use ast\Node;
 use Closure;
 use Phan\Analysis\PostOrderAnalysisVisitor;
@@ -32,6 +33,14 @@ Shim::load();
  */
 class ASTReverter
 {
+    public const EXEC_NODE_FLAG_NAMES = [
+        flags\EXEC_EVAL => 'eval',
+        flags\EXEC_INCLUDE => 'include',
+        flags\EXEC_INCLUDE_ONCE => 'include_once',
+        flags\EXEC_REQUIRE => 'require',
+        flags\EXEC_REQUIRE_ONCE => 'require_once',
+    ];
+
     /** @var associative-array<int,Closure(Node):string> this contains maps from node kinds to closures to convert node kinds to strings */
     private static $closure_map;
     /** @var Closure(Node):string this maps unknown node types to strings */
@@ -367,6 +376,24 @@ class ASTReverter
                     '...(%s)',
                     self::toShortString($node->children['expr'])
                 );
+            },
+            ast\AST_INCLUDE_OR_EVAL => static function (Node $node): string {
+                return \sprintf(
+                    '%s(%s)',
+                    self::EXEC_NODE_FLAG_NAMES[$node->flags],
+                    self::toShortString($node->children['expr'])
+                );
+            },
+            ast\AST_ENCAPS_LIST => static function (Node $node): string {
+                $parts = [];
+                foreach ($node->children as $c) {
+                    if ($c instanceof Node) {
+                        $parts[] = '{' . self::toShortString($c) . '}';
+                    } else {
+                        $parts[] = self::escapeInnerString((string)$c);
+                    }
+                }
+                return '"' . implode('', $parts) . '"';
             },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
