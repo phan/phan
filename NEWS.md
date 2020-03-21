@@ -10,7 +10,7 @@ New features(CLI, Configs):
   Add `phan --no-color` option to disable colors.
 + Warn about invalid CLI flags in `phan_client` (#3776)
 + Support representing more AST node types in issue messages. (#3783)
-+ Include code fragment for PhanTypeSuspiciousStringExpression (#3745)
++ Make some issue messages easier to read (#3745, #3636)
 + Allow using `--minimum-severity=critical` instead of `--minimum-severity=10` (#3715)
 
 New features(Analysis):

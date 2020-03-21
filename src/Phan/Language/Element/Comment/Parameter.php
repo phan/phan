@@ -145,6 +145,18 @@ class Parameter
     }
 
     /**
+     * Add types (from another comment) to this comment parameter.
+     *
+     * @param UnionType $other
+     * The type to add to the parameter (for conflicting param tags)
+     * @internal
+     */
+    public function addUnionType(UnionType $other): void
+    {
+        $this->type = $this->type->withUnionType($other);
+    }
+
+    /**
      * @return int
      * The line number of the parameter
      */
