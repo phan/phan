@@ -33,4 +33,3 @@ class CtagsEntrySet
         $this->entries[$lookup] = $entry;
     }
 }
-

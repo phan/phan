@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use Generator;
-use PhpToken;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -20,6 +19,7 @@ use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
+use PhpToken;
 
 /**
  * Implements Phan's built in suppression kinds
@@ -275,7 +275,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionCommentsFromTokenContents(
         string $comment_text,
         int $comment_start_line
-    ) : array {
+    ): array {
         // TODO: Emit UnextractableAnnotation if the string begins with phan-suppress or phan-file-suppress but nothing matched
         $match_count = \preg_match_all(
             self::SUPPRESS_ISSUE_REGEX,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Phan\Tests\Language\Internal;
 
-use ReflectionExtension;
 use Phan\Tests\BaseTest;
+use ReflectionExtension;
 
 use function array_key_exists;
 use function uksort;

@@ -104,7 +104,8 @@ class CtagsEntry
     /**
      * Escape a code fragment for the ctags file format.
      */
-    public static function escapeFragment(string $fragment): string {
+    public static function escapeFragment(string $fragment): string
+    {
         $escaped = \str_replace(['\\', '/', "\0"], ['\\\\', '\/', '\\0'], $fragment);
         return '/^' . $escaped . '$/;"';
     }
@@ -128,7 +129,7 @@ class CtagsEntry
     public static function generateScopeLabelForNamespace(string $namespace): ?string
     {
         $namespace = \ltrim($namespace, "\\");
-        if (strlen($namespace) > 0)  {
+        if (strlen($namespace) > 0) {
             return "namespace:$namespace";
         }
         return null;
@@ -164,4 +165,3 @@ class CtagsEntry
         return $isAnalyzedOrder . "\0" . $typeOrder;
     }
 }
-
