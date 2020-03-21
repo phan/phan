@@ -165,7 +165,7 @@ _phan() {
             return 0
             ;;
         --minimum-severity | -y)
-            COMPREPLY=( $(compgen -W "0 5 10" -- "${cur}" ) )
+            COMPREPLY=( $(compgen -W "0 5 10 low normal high" -- "${cur}" ) )
             return 0
             ;;
         --color-scheme)

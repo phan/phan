@@ -631,7 +631,16 @@ class CLI
                     break;
                 case 'y':
                 case 'minimum-severity':
-                    $minimum_severity = (int)$value;
+                    $minimum_severity = \strtolower($minimum_severity);
+                    if ($minimum_severity === 'low') {
+                        $minimum_severity = Issue::SEVERITY_LOW;
+                    } elseif ($minimum_severity === 'normal') {
+                        $minimum_severity = Issue::SEVERITY_NORMAL;
+                    } elseif ($minimum_severity === 'critical') {
+                        $minimum_severity = Issue::SEVERITY_CRITICAL;
+                    } else {
+                        $minimum_severity = (int)$minimum_severity;
+                    }
                     break;
                 case 'target-php-version':
                     Config::setValue('target_php_version', $value);
@@ -1443,7 +1452,7 @@ $init_help
 
  -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
-  Defaults to 0.
+  Defaults to `--minimum-severity 0` (i.e. `--minimum-severity low`)
 
  -c, --parent-constructor-required
   Comma-separated list of classes that require

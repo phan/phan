@@ -114,7 +114,7 @@ Usage: ./phan [options] [files...]
 
  -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
-  Defaults to 0.
+  Defaults to `--minimum-severity 0` (i.e. `--minimum-severity low`)
 
  -c, --parent-constructor-required
   Comma-separated list of classes that require

@@ -11,6 +11,7 @@ New features(CLI, Configs):
 + Warn about invalid CLI flags in `phan_client` (#3776)
 + Support representing more AST node types in issue messages. (#3783)
 + Include code fragment for PhanTypeSuspiciousStringExpression (#3745)
++ Allow using `--minimum-severity=critical` instead of `--minimum-severity=10` (#3715)
 
 New features(Analysis):
 + Improve analysis of php 7.4 typed properties.
