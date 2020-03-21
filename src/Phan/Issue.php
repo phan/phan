@@ -2136,7 +2136,7 @@ class Issue
                 self::TypeSuspiciousStringExpression,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious type {TYPE} of a variable or expression used to build a string. (Expected type to be able to cast to a string)",
+                "Suspicious type {TYPE} of a variable or expression {CODE} used to build a string. (Expected type to be able to cast to a string)",
                 self::REMEDIATION_B,
                 10066
             ),

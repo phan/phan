@@ -503,7 +503,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::TypeSuspiciousStringExpression,
                 $expr_node->lineno,
-                (string)$type
+                (string)$type,
+                ASTReverter::toShortString($expr_node)
             );
         }
     }
