@@ -140,28 +140,28 @@ class CtagsEntry
      */
     public function getOrderKey(): string
     {
-        $isAnalyzedOrder = Phan::isExcludedAnalysisFile($this->context->getFile()) ? "1" : "0";
+        $is_analyzed_order = Phan::isExcludedAnalysisFile($this->context->getFile()) ? "1" : "0";
         switch ($this->kind) {
             case self::KIND_CLASS:
-                $typeOrder = "0";
+                $type_order = "0";
                 break;
             case self::KIND_FUNCTION:
                 if (\preg_match('/^class:/', $this->scope ?? '')) {
-                    $typeOrder = "3";
+                    $type_order = "3";
                 } else {
-                    $typeOrder = "1";
+                    $type_order = "1";
                 }
                 break;
             case self::KIND_CONSTANT:
-                $typeOrder = "2";
+                $type_order = "2";
                 break;
             case self::KIND_PROPERTY:
-                $typeOrder = "4";
+                $type_order = "4";
                 break;
             default:
-                $typeOrder = "9";
+                $type_order = "9";
                 break;
         }
-        return $isAnalyzedOrder . "\0" . $typeOrder;
+        return $is_analyzed_order . "\0" . $type_order;
     }
 }

@@ -73,7 +73,8 @@ final class BaselineSavingPlugin extends PluginV3 implements
 
     public function finalizeProcess(CodeBase $unused_code_base): void
     {
-        CLI::printToStderr("Saving a new issue baseline to '$this->baseline_path'\nSubsequent Phan runs can read from this file with --load-baseline='$this->baseline_path' to ignore pre-existing issues.\n");
+        CLI::printToStderr("Saving a new issue baseline to '$this->baseline_path'\n" .
+            "Subsequent Phan runs can read from this file with --load-baseline='$this->baseline_path' to ignore pre-existing issues.\n");
         $contents = $this->generateAllBaselineContents();
         \file_put_contents($this->baseline_path, $contents);
     }
@@ -128,13 +129,13 @@ EOT;
     private function generateSuppressIssueSummary(): string
     {
         $entries = [];
-        foreach ($this->suppressions_by_type as $issueType => $hashes) {
+        foreach ($this->suppressions_by_type as $issue_type => $hashes) {
             $count = \count($hashes);
             $count_name = self::getSuppressCountLabel($count);
             $entries[] = [
                 -self::roundSuppressCount($count),
-                $issueType,
-                \sprintf("    // %s : %s %s\n", $issueType, $count_name, $count !== 1 ? "occurrences" : "occurrence"),
+                $issue_type,
+                \sprintf("    // %s : %s %s\n", $issue_type, $count_name, $count !== 1 ? "occurrences" : "occurrence"),
             ];
         }
         if (!$entries) {
@@ -162,10 +163,10 @@ EOT;
         $result .= "    // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
-        foreach ($this->suppressions_by_file as $fileName => $type_set) {
+        foreach ($this->suppressions_by_file as $file_name => $type_set) {
             $types = \array_map('strval', \array_keys($type_set));
             \usort($types, 'strcmp');
-            $result .= "        '$fileName' => [" . \implode(', ', \array_map(static function (string $type): string {
+            $result .= "        '$file_name' => [" . \implode(', ', \array_map(static function (string $type): string {
                     return "'" . $type . "'";
             }, $types)) . "],\n";
         }
