@@ -242,7 +242,7 @@ class Comment
                         $parameter->getLineno(),
                         $name
                     );
-                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    // @phan-suppress-next-line PhanAccessMethodInternal, PhanPluginUnknownObjectMethodCall
                     $parameter->addUnionType($this->parameter_map[$name]->getUnionType());
                 }
                 // Add it to the named map
