@@ -18,6 +18,7 @@ New features(Analysis):
   Support extracting their real union types from Reflection information.
   Infer the existence of properties that are not in `ReflectionClass->getPropertyDefaults()`
   due to being uninitialized by default.
++ Emit `PhanAbstractStaticMethodCall*` when calling an abstract static method statically. (#3799)
 
 Miscellaneous:
 + PHP 8.0-dev compatibility fixes, analysis for some new functions of PHP 8.0-dev.

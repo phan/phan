@@ -269,8 +269,11 @@ class Issue
     public const VariableUseClause         = 'PhanVariableUseClause';
 
     // Issue::CATEGORY_STATIC
-    public const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
-    public const StaticPropIsStaticType    = 'PhanStaticPropIsStaticType';
+    public const StaticCallToNonStatic            = 'PhanStaticCallToNonStatic';
+    public const StaticPropIsStaticType           = 'PhanStaticPropIsStaticType';
+    public const AbstractStaticMethodCall         = 'PhanAbstractStaticMethodCall';
+    public const AbstractStaticMethodCallInStatic = 'PhanAbstractStaticMethodCallInStatic';
+    public const AbstractStaticMethodCallInTrait  = 'PhanAbstractStaticMethodCallInTrait';
 
     // Issue::CATEGORY_CONTEXT
     public const ContextNotObject           = 'PhanContextNotObject';
@@ -2654,6 +2657,30 @@ class Issue
                 "Static property {PROPERTY} is declared to have type {TYPE}, but the only instance is shared among all subclasses (Did you mean {TYPE})",
                 self::REMEDIATION_A,
                 9001
+            ),
+            new Issue(
+                self::AbstractStaticMethodCall,
+                self::CATEGORY_STATIC,
+                self::SEVERITY_CRITICAL,
+                "Potentially calling an abstract static method {METHOD}",
+                self::REMEDIATION_B,
+                9002
+            ),
+            new Issue(
+                self::AbstractStaticMethodCallInStatic,
+                self::CATEGORY_STATIC,
+                self::SEVERITY_CRITICAL,
+                "Potentially calling an abstract static method {METHOD} with static:: (the calling static method's class scope may be an abstract class)",
+                self::REMEDIATION_B,
+                9003
+            ),
+            new Issue(
+                self::AbstractStaticMethodCallInTrait,
+                self::CATEGORY_STATIC,
+                self::SEVERITY_CRITICAL,
+                "Potentially calling an abstract static method {METHOD} on a trait, if the caller's method is called on the trait instead of a concrete class using the trait",
+                self::REMEDIATION_B,
+                9004
             ),
 
             // Issue::CATEGORY_CONTEXT

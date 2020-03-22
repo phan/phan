@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Closure;
 use Phan\AST\ASTReverter;
@@ -58,6 +59,11 @@ final class ArgumentType
         Context $context,
         CodeBase $code_base
     ): void {
+        if ($node->kind === ast\AST_STATIC_CALL && $method instanceof Method) {
+            if ($method->isAbstract() && $method->isStatic()) {
+                self::checkAbstractStaticMethodCall($method, $node, $context, $code_base);
+            }
+        }
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
@@ -132,6 +138,61 @@ final class ArgumentType
         );
     }
 
+    /**
+     * @param FunctionInterface $method
+     * The function/method we're analyzing arguments for
+     *
+     * @param Node $node
+     * The node of kind AST_STATIC_CALL holding the method call we're looking at
+     *
+     * @param Context $context
+     * The context in which we see the call
+     *
+     * @param CodeBase $code_base
+     * The global code base
+     */
+    private static function checkAbstractStaticMethodCall(
+        FunctionInterface $method,
+        Node $node,
+        Context $context,
+        CodeBase $code_base
+    ): void {
+        $class_node = $node->children['class'];
+        $issue_type = Issue::AbstractStaticMethodCall;
+        if ($class_node->kind === ast\AST_NAME) {
+            if ($context->isInMethodScope()) {
+                $caller = $context->getFunctionLikeInScope($code_base);
+                $name = $class_node->children['name'];
+                if (\is_string($name)) {
+                    switch (\strtolower($name)) {
+                        case 'static':
+                            if (!$caller->isStatic()) {
+                                return;
+                            }
+                            $issue_type = Issue::AbstractStaticMethodCallInStatic;
+                            // fallthrough
+                        case 'self':
+                            // Note: an abstract class can use a trait, so self::abstractMethod() can still be abstract within instance methods.
+                            if ($caller instanceof Method) {
+                                $class = $caller->getClass($code_base);
+                                if ($class->isTrait()) {
+                                    $issue_type = Issue::AbstractStaticMethodCallInTrait;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            $issue_type,
+            $node->lineno,
+            $method->getRepresentationForIssue()
+        );
+    }
+
     private static function emitParamTooMany(
         CodeBase $code_base,
         Context $context,
@@ -140,7 +201,7 @@ final class ArgumentType
         int $argcount
     ): void {
         $max = $method->getNumberOfParameters();
-        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
+        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === ast\AST_UNPACK;
         if ($method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
@@ -238,7 +299,7 @@ final class ArgumentType
     {
         foreach ($children as $child) {
             if ($child instanceof Node) {
-                if ($child->kind === \ast\AST_UNPACK) {
+                if ($child->kind === ast\AST_UNPACK) {
                     return true;
                 }
             }
@@ -400,10 +461,10 @@ final class ArgumentType
      * @internal
      */
     public const REFERENCE_NODE_KINDS = [
-        \ast\AST_VAR,
-        \ast\AST_DIM,
-        \ast\AST_PROP,
-        \ast\AST_STATIC_PROP,
+        ast\AST_VAR,
+        ast\AST_DIM,
+        ast\AST_PROP,
+        ast\AST_STATIC_PROP,
     ];
 
     /**
@@ -478,7 +539,7 @@ final class ArgumentType
 
                     if (Type::isSelfTypeString($variable_name)
                         && !$context->isInClassScope()
-                        && ($argument_kind === \ast\AST_STATIC_PROP || $argument_kind === \ast\AST_PROP)
+                        && ($argument_kind === ast\AST_STATIC_PROP || $argument_kind === ast\AST_PROP)
                     ) {
                         Issue::maybeEmit(
                             $code_base,
@@ -507,7 +568,7 @@ final class ArgumentType
                     $argument->is_reference = true;
                 }
             }
-            if ($argument_kind === \ast\AST_UNPACK && $argument instanceof Node) {
+            if ($argument_kind === ast\AST_UNPACK && $argument instanceof Node) {
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
             }
         }
@@ -925,10 +986,10 @@ final class ArgumentType
         if (\in_array($node_kind, self::REFERENCE_NODE_KINDS, true)) {
             return true;
         }
-        if ($node_kind === \ast\AST_UNPACK) {
+        if ($node_kind === ast\AST_UNPACK) {
             return self::isExpressionReturningReference($code_base, $context, $node->children['expr']);
         }
-        if ($node_kind === \ast\AST_CALL) {
+        if ($node_kind === ast\AST_CALL) {
             foreach ((new ContextNode(
                 $code_base,
                 $context,
@@ -938,7 +999,7 @@ final class ArgumentType
                     return true;
                 }
             }
-        } elseif ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
+        } elseif ($node_kind === ast\AST_STATIC_CALL || $node_kind === ast\AST_METHOD_CALL) {
             $method_name = $node->children['method'] ?? null;
             if (is_string($method_name)) {
                 $class_node = $node->children['class'] ?? $node->children['expr'];

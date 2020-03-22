@@ -296,6 +296,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         if (($fqsen_string[0] ?? '') === '\\') {
             return static::fromFullyQualifiedString($fqsen_string);
         }
+        // @phan-suppress-next-line PhanAbstractStaticMethodCallInStatic Do not call fromStringInContext directly on this abstract class
         $namespace_map_type = static::getNamespaceMapType();
         if ($namespace_map_type === \ast\AST_CONST && \in_array(\strtolower($fqsen_string), ['true', 'false', 'null'], true)) {
             return static::fromFullyQualifiedString($fqsen_string);
