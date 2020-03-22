@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use InvalidArgumentException;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
@@ -70,7 +72,7 @@ class Parameter extends Variable
         UnionType $type,
         int $flags
     ) {
-        if (Flags::bitVectorHasState($flags, \ast\flags\PARAM_VARIADIC)) {
+        if (Flags::bitVectorHasState($flags, ast\flags\PARAM_VARIADIC)) {
             return new VariadicParameter($context, $name, $type, $flags);
         }
         return new Parameter($context, $name, $type, $flags);
@@ -83,7 +85,7 @@ class Parameter extends Variable
      */
     public function hasDefaultValue(): bool
     {
-        return $this->default_value_type !== null;
+        return $this->default_value_type !== null || $this->default_value_future_type !== null;
     }
 
     /**
@@ -203,12 +205,12 @@ class Parameter extends Variable
         $flags = 0;
         // Check to see if it's a pass-by-reference parameter
         if ($reflection_parameter->isPassedByReference()) {
-            $flags |= \ast\flags\PARAM_REF;
+            $flags |= ast\flags\PARAM_REF;
         }
 
         // Check to see if it's variadic
         if ($reflection_parameter->isVariadic()) {
-            $flags |= \ast\flags\PARAM_VARIADIC;
+            $flags |= ast\flags\PARAM_VARIADIC;
         }
         $parameter = self::create(
             new Context(),
@@ -235,7 +237,7 @@ class Parameter extends Variable
         }
         // XXX: This could be made more precise and handle things like unary/binary ops.
         // However, this doesn't know about constants that haven't been parsed yet.
-        if ($node->kind === \ast\AST_CONST) {
+        if ($node->kind === ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
             if (\is_string($name)) {
                 switch (\strtolower($name)) {
@@ -280,7 +282,7 @@ class Parameter extends Variable
             $union_type,
             $node->flags
         );
-        if (($type_node->kind ?? null) === \ast\AST_NULLABLE_TYPE) {
+        if (($type_node->kind ?? null) === ast\AST_NULLABLE_TYPE) {
             $parameter->setIsUsingNullableSyntax();
         }
 
@@ -317,7 +319,7 @@ class Parameter extends Variable
                     throw new AssertionError("Somehow failed to infer type for the default_node - not a scalar or a Node");
                 }
 
-                if ($default_node->kind === \ast\AST_ARRAY) {
+                if ($default_node->kind === ast\AST_ARRAY) {
                     // We know the parameter default is some sort of array, but we don't know any more (e.g. key types, value types).
                     // When the future type is resolved, we'll know something more specific.
                     $default_value_union_type = ArrayType::instance(false)->asRealUnionType();
@@ -440,7 +442,7 @@ class Parameter extends Variable
      */
     public function isPassByReference(): bool
     {
-        return $this->getFlagsHasState(\ast\flags\PARAM_REF);
+        return $this->getFlagsHasState(ast\flags\PARAM_REF);
     }
 
     /**
@@ -569,12 +571,14 @@ class Parameter extends Variable
             $default_value = $this->default_value;
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
-                if ($kind === \ast\AST_NAME) {
+                if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_MAGIC_CONST], true)) {
+                    $default_repr = ASTReverter::toShortString($default_value);
+                } elseif ($kind === ast\AST_NAME) {
                     $default_repr = (string)$default_value->children['name'];
-                } elseif ($kind === \ast\AST_ARRAY) {
+                } elseif ($kind === ast\AST_ARRAY) {
                     $default_repr = '[]';
                 } else {
-                    $default_repr = 'null';
+                    $default_repr = 'default';
                 }
             } else {
                 $default_repr = StringUtil::varExportPretty($default_value);
@@ -632,12 +636,14 @@ class Parameter extends Variable
             $default_value = $this->default_value;
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
-                if ($kind === \ast\AST_NAME) {
+                if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_MAGIC_CONST], true)) {
+                    $default_repr = ASTReverter::toShortString($default_value);
+                } elseif ($kind === ast\AST_NAME) {
                     $default_repr = (string)$default_value->children['name'];
-                } elseif ($kind === \ast\AST_ARRAY) {
+                } elseif ($kind === ast\AST_ARRAY) {
                     $default_repr = '[]';
                 } else {
-                    $default_repr = 'null';
+                    $default_repr = 'default';
                 }
             } else {
                 $default_repr = StringUtil::varExportPretty($default_value);

@@ -12,6 +12,7 @@ New features(CLI, Configs):
 + Support representing more AST node types in issue messages. (#3783)
 + Make some issue messages easier to read (#3745, #3636)
 + Allow using `--minimum-severity=critical` instead of `--minimum-severity=10` (#3715)
++ Use better placeholders for parameter default types than `null` in issue messages and hover text (#3736)
 
 New features(Analysis):
 + Improve analysis of php 7.4 typed properties.

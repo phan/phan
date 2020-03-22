@@ -1,0 +1,1 @@
+%s:10 PhanParamTooFew Call with 0 arg(s) to \X::test(int $x, bool $flag = true, int $y = self::X, int $z = default) which requires 1 arg(s) defined at %s:6
