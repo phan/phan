@@ -21,6 +21,9 @@ New features(Analysis):
   due to being uninitialized by default.
 + Emit `PhanAbstractStaticMethodCall*` when calling an abstract static method statically. (#3799)
 
+Language Server/Daemon mode:
++ Catch exception seen when printing debug info about not being able to parse a file.
+
 Miscellaneous:
 + PHP 8.0-dev compatibility fixes, analysis for some new functions of PHP 8.0-dev.
 
