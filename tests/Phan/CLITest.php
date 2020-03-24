@@ -165,6 +165,12 @@ final class CLITest extends BaseTest
                 ['output-mode' => 'pylint'],
                 ['printer_class' => PylintPrinter::class],
             ],
+            // Affects MinimumSeverityFilter of the ChainedIssueFilter of the IssueCollector
+            [
+                [],
+                ['minimum-severity' => '10'],
+                [],
+            ],
             [
                 [],
                 ['output-mode' => 'csv'],
