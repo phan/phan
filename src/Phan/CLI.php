@@ -633,7 +633,7 @@ class CLI
                     break;
                 case 'y':
                 case 'minimum-severity':
-                    $minimum_severity = \strtolower($minimum_severity);
+                    $minimum_severity = \strtolower($value);
                     if ($minimum_severity === 'low') {
                         $minimum_severity = Issue::SEVERITY_LOW;
                     } elseif ($minimum_severity === 'normal') {
