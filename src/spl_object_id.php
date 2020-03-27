@@ -7,6 +7,7 @@ declare(strict_types=1);
  * This file will be included even in releases which will analyze PHP 7.2,
  * there aren't any major compatibilities preventing analysis of PHP 7.2 from running in PHP 7.1.
  */
+
 if (function_exists('spl_object_id')) {
     return;
 }
