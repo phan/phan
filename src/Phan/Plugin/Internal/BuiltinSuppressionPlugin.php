@@ -209,7 +209,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionComments(
         string $file_contents
     ): Generator {
-        // @phan-suppress-next-line PhanUndeclaredClassConstant
+        // @phan-suppress-next-line PhanUndeclaredClassReference
         if (\PHP_VERSION_ID >= 80000 && \class_exists(PhpToken::class)) {
             return self::yieldSuppressionCommentsPhpToken($file_contents);
         }

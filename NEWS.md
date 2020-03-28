@@ -20,12 +20,17 @@ New features(Analysis):
   Infer the existence of properties that are not in `ReflectionClass->getPropertyDefaults()`
   due to being uninitialized by default.
 + Emit `PhanAbstractStaticMethodCall*` when calling an abstract static method statically. (#3799)
++ Emit `PhanUndeclaredClassReference` instead of `PhanUndeclaredClassConstant` for `MissingClass::class`.
 
 Language Server/Daemon mode:
 + Catch exception seen when printing debug info about not being able to parse a file.
++ Warn when Phan's language server dependencies were installed for php 7.2+
+  but the language server gets run in php 7.1. (phpdocumentor/reflection-docblock 5.0 requires php 7.2)
 
 Miscellaneous:
 + PHP 8.0-dev compatibility fixes, analysis for some new functions of PHP 8.0-dev.
++ Add `symfony/polyfill-php72` dependency so that symfony 5 will work better in php 7.1.
+  The next Phan major release will drop support for php 7.1.
 
 Mar 13 2020, Phan 2.6.1
 -----------------------
