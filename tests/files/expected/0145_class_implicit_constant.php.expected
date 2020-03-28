@@ -1,1 +1,1 @@
-%s:7 PhanUndeclaredClassConstant Reference to constant class from undeclared class \Undef
+%s:7 PhanUndeclaredClassReference Reference to undeclared class \Undef

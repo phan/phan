@@ -2431,10 +2431,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             // We might still be in the parse phase.
             // Throw the same IssueException that would be thrown in Phan 1 and let the caller decide how to handle this.
             $new_exception = new IssueException(
-                Issue::fromType(Issue::UndeclaredClassConstant)(
+                Issue::fromType(Issue::UndeclaredClassReference)(
                     $this->context->getFile(),
                     $node->lineno,
-                    ['class', (string)$exception_fqsen],
+                    [(string)$exception_fqsen],
                     IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
             );

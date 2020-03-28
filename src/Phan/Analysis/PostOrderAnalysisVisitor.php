@@ -1355,9 +1355,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             $this->emitIssueWithSuggestion(
-                Issue::UndeclaredClassConstant,
+                Issue::UndeclaredClassReference,
                 $node->lineno,
-                ['class', (string)$exception_fqsen],
+                [(string)$exception_fqsen],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
             );
         } catch (IssueException $exception) {
