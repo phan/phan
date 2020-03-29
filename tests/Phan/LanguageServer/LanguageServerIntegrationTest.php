@@ -1349,8 +1349,8 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_hover_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri): array {
-                return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
+            $perform_hover_request = /** @return array<string,mixed> */ function (bool $is_repeated = false) use ($proc_in, $proc_out, $position, $requested_uri): array {
+                return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri, $is_repeated);
             };
             $hover_response = $perform_hover_request();
 
@@ -1380,15 +1380,16 @@ EOT
                 (string)\json_encode($cur_line),
                 (string)\substr($cur_line, $position->character, 10)
             );
-            $this->assertSame($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
+            $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 
             // This operation should be idempotent.
             // If it's repeated, it should give the same response
             // (and it shouldn't crash the server)
+            // (and it should avoid repeating the analysis step)
             $expected_hover_response['id'] = 3;
 
-            $hover_response = $perform_hover_request();
+            $hover_response = $perform_hover_request(true);
             $this->assertSame($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 
@@ -1827,7 +1828,7 @@ EOT;
      * @return array<string,mixed> the response of the server to the hover request
      * @throws InvalidArgumentException
      */
-    private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null): array
+    private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null, bool $is_repeated = false): array
     {
         $requested_uri = $requested_uri ?? self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
@@ -1839,7 +1840,7 @@ EOT;
             'position' => $position,
         ];
         $this->writeMessage($proc_in, 'textDocument/hover', $params);
-        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+        if (!$is_repeated && self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 

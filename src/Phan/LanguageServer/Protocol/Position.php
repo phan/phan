@@ -46,10 +46,6 @@ class Position
      */
     public function compare(Position $position): int
     {
-        if ($this->line === $position->line && $this->character === $position->character) {
-            return 0;
-        }
-
         if ($this->line !== $position->line) {
             return $this->line - $position->line;
         }
