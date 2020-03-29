@@ -161,12 +161,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @var ?NodeInfoRequest
      *
-     * Contains the promise for the most recent "Go to definition" request
+     * Contains the promise for the most recent "Go to definition" request.
      * If more than one such request exists, the earlier requests will be discarded.
      *
      * TODO: Will need to Resolve(null) for the older requests.
      */
     protected $most_recent_node_info_request = null;
+    /**
+     * @var ?CachedHoverResponse
+     *
+     * Contains the result of the previous hover response and information used to validate the cached information
+     */
+    protected $cached_hover_response = null;
 
     /**
      * Constructs the only instance of the language server
@@ -445,6 +451,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called analyzeURIAsync, uri=$uri, path=$path_to_analyze");
         $this->analyze_request_set[$path_to_analyze] = $uri;
+        // Clear the cached hover response - a file was probably opened, modified, or saved/closed.
+        $this->cached_hover_response = null;
         // Don't call file_path_lister immediately -
         // That has to walk the directories in .phan/config.php to see if the requested path is included and not excluded.
     }
@@ -478,19 +486,24 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * Asynchronously generates the hover text for a given URL and position.
      *
-     * @return Promise <Location|Location[]|null>
+     * @return Promise <Hover|null>
      */
     public function awaitHover(
         string $uri,
         Position $position
     ): Promise {
+        MarkupDescription::eagerlyLoadAllDescriptionMaps();
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . StringUtil::jsonEncode($position));
-        $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
+        $this->discardPreviousNodeInfoRequest();
         $this->most_recent_node_info_request = $request;
-        MarkupDescription::eagerlyLoadAllDescriptionMaps();
+        $early_response = $this->generateQuickHoverResponse($request);
+        if ($early_response) {
+            return $early_response;
+        }
+        $this->cached_hover_response = null;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -498,6 +511,29 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
         $this->analyze_request_set[$path_to_analyze] = $uri;
         return $request->getPromise();
+    }
+
+    /**
+     * Immediately generates the hover text for a given URL and position.
+     *
+     * @return ?Promise <?Hover>
+     */
+    private function generateQuickHoverResponse(GoToDefinitionRequest $request): ?Promise
+    {
+        $description = "uri={$request->getUrl()}, position=" . StringUtil::jsonEncode($request->getPosition());
+        Logger::logInfo("Looking for quick hover response for $description");
+        if (!$this->cached_hover_response) {
+            return null;
+        }
+        if (!$this->cached_hover_response->isSameRequest($request->getUrl(), $request->getPosition(), $this->file_mapping)) {
+            return null;
+        }
+        $promise = new Promise();
+        $cached_response = $this->cached_hover_response->getHoverResponse();
+        Logger::logInfo("Returning cached hover response for $description");
+
+        $promise->fulfill($cached_response);
+        return $promise;
     }
 
     /**
@@ -767,7 +803,16 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
                 $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
-                $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
+                if ($most_recent_node_info_request->isHoverRequest()) {
+                    $normalized_hover = $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
+                    // \fwrite(\STDERR, "Creating cached_hover_response\n");
+                    $this->cached_hover_response = new CachedHoverResponse(
+                        $most_recent_node_info_request->getUrl(),
+                        $most_recent_node_info_request->getPosition(),
+                        $this->file_mapping,
+                        $normalized_hover
+                    );
+                }
             } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
                 $most_recent_node_info_request->recordCompletionList($response_data['completions'] ?? null);
             }

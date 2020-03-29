@@ -362,12 +362,13 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      *
      * @param ?Hover|?array $hover
      */
-    public function setHoverResponse($hover): void
+    public function setHoverResponse($hover): ?Hover
     {
         if (is_array($hover)) {
             $hover = Hover::fromArray($hover);
         }
         $this->hover_response = $hover;
+        return $hover;
     }
 
     /**

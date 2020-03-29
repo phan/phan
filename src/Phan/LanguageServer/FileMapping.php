@@ -39,6 +39,12 @@ class FileMapping
         return $this->overrides;
     }
 
+    public function getHash(): string
+    {
+        \uksort($this->overrides, 'strcmp');
+        return \sha1(\var_export($this->overrides, true));
+    }
+
     public function addOverrideURI(string $uri, ?string $new_contents): void
     {
         $path = Utils::uriToPath($uri);

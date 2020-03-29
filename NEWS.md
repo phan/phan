@@ -26,6 +26,7 @@ Language Server/Daemon mode:
 + Catch exception seen when printing debug info about not being able to parse a file.
 + Warn when Phan's language server dependencies were installed for php 7.2+
   but the language server gets run in php 7.1. (phpdocumentor/reflection-docblock 5.0 requires php 7.2)
++ Immediately return cached hover text when the client repeats an identical hover request. (#3252)
 
 Miscellaneous:
 + PHP 8.0-dev compatibility fixes, analysis for some new functions of PHP 8.0-dev.
