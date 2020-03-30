@@ -521,12 +521,7 @@ class Parameter extends Variable
         $string .= "\${$this->getName()}";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            $default_value = $this->default_value;
-            if ($default_value instanceof Node) {
-                $string .= ' = null';
-            } else {
-                $string .= ' = ' . StringUtil::varExportPretty($default_value);
-            }
+            $string .= ' = ' . $this->generateDefaultNodeRepresentation();
         }
 
         return $string;
@@ -568,35 +563,41 @@ class Parameter extends Variable
         $string .= "\$$name";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            $default_value = $this->default_value;
-            if ($default_value instanceof Node) {
-                $kind = $default_value->kind;
-                if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_MAGIC_CONST], true)) {
-                    $default_repr = ASTReverter::toShortString($default_value);
-                } elseif ($kind === ast\AST_NAME) {
-                    $default_repr = (string)$default_value->children['name'];
-                } elseif ($kind === ast\AST_ARRAY) {
-                    $default_repr = '[]';
-                } else {
-                    $default_repr = 'default';
-                }
-            } else {
-                $default_repr = StringUtil::varExportPretty($default_value);
-            }
-            if (\strtolower($default_repr) === 'null') {
-                $default_repr = 'null';
-                // If we're certain the parameter isn't nullable,
-                // then render the default as `default`, not `null`
-                if ($is_internal) {
-                    if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
-                        $default_repr = 'default';
-                    }
-                }
-            }
-            $string .= ' = ' . $default_repr;
+            $string .= ' = ' . $this->generateDefaultNodeRepresentation($is_internal);
         }
 
         return $string;
+    }
+
+    private function generateDefaultNodeRepresentation(bool $is_internal = true): string
+    {
+        $default_value = $this->default_value;
+        if ($default_value instanceof Node) {
+            $kind = $default_value->kind;
+            if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_MAGIC_CONST], true)) {
+                $default_repr = ASTReverter::toShortString($default_value);
+            } elseif ($kind === ast\AST_NAME) {
+                $default_repr = (string)$default_value->children['name'];
+            } elseif ($kind === ast\AST_ARRAY) {
+                return '[]';
+            } else {
+                return 'default';
+            }
+        } else {
+            $default_repr = StringUtil::varExportPretty($default_value);
+        }
+        if (\strtolower($default_repr) === 'null') {
+            $default_repr = 'null';
+            // If we're certain the parameter isn't nullable,
+            // then render the default as `default`, not `null`
+            if ($is_internal) {
+                $union_type = $this->getNonVariadicUnionType();
+                if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                    return 'default';
+                }
+            }
+        }
+        return $default_repr;
     }
 
     /**

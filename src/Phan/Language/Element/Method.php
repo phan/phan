@@ -842,7 +842,9 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->name;
 
-        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', \array_map(function (Parameter $param): string {
+            return $param->toStubString($this->isPHPInternal());
+        }, $this->getParameterList())) . ')';
 
         $union_type = $this->getUnionTypeWithUnmodifiedStatic();
         if (!$union_type->isEmpty()) {
@@ -867,7 +869,9 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->name;
 
-        $string .= '(' . \implode(', ', $this->getRealParameterList()) . ')';
+        $string .= '(' . \implode(', ', \array_map(function (Parameter $param): string {
+            return $param->toStubString($this->isPHPInternal());
+        }, $this->getRealParameterList())) . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();
