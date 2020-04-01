@@ -54,6 +54,14 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
         if ($original_node === null) {
             return;
         }
+        if (!$constant->isPublic()) {
+            // For now, only optimize uses of public class constants.
+            return;
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        if (!$this->isSafeNodeToSubstitute($constant->getContext(), $original_node)) {
+            return;
+        }
         $class_fqsen = $constant->getClassFQSEN();
         if ($this->code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
             // Give up on copies of the class.
@@ -77,8 +85,20 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
         }
         // TODO: Guard against infinite recursion if AST_CLASS_CONST gets supported
         switch ($value_node->kind) {
+            /* TODO: Convert class references to fully qualified class references in the output
+            case ast\AST_CLASS_CONST:
+                $name_node = $value_node->children['name'];
+                if ($name_node instanceof Node && $name_node->kind === ast\AST_NAME) {
+                    if (!self::isSafeNodeToSubstitute($name_node)) {
+                        return false;
+                    }
+                }
+                return false;
+             */
+            case ast\AST_CONST:
+                return $this->isSafeNodeToSubstitute($context, $value_node->children['name']);
             case ast\AST_NAME:
-                // TODO: Convert to unambiguous form before substituting
+                // TODO: Support other constants, convert those to fully qualified form before substituting
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                 return \in_array(strtolower($value_node->children['name']), ['true', 'false', 'null'], true);
             case ast\AST_UNARY_OP:
