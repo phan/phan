@@ -20,9 +20,9 @@ use function preg_match;
 
 /**
  * This is a subclass of TolerantASTConverter
- * that maps the original AST to the corresponding generated ast\Node.
+ * that maps the original AST to the corresponding generated ast\Node for a single selected location.
  *
- * This is planned for use with "Go to definition" requests, completion requests, etc.
+ * This is used with "Go to definition" requests, completion requests, hover requests, etc.
  *
  * (This lets you know the byte offset of a given node and how long that node is)
  *

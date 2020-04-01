@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.6.2 (dev)
+Apr 01 2020, Phan 2.7.0
 -----------------------
 
 New features(CLI, Configs):
@@ -13,6 +13,10 @@ New features(CLI, Configs):
 + Make some issue messages easier to read (#3745, #3636)
 + Allow using `--minimum-severity=critical` instead of `--minimum-severity=10` (#3715)
 + Use better placeholders for parameter default types than `null` in issue messages and hover text (#3736)
++ Release `phantasm`, a prototype tool for assembling information about a codebase and aggressively optimizing it.
+  Currently, the only feature is replacing class constants with their values, when safe to do so.
+  More features (e.g. inlining methods, aggressively optimizing out getters/setters, etc.) are planned for the future.
+  See `tool/phantasm --help` for usage.
 
 New features(Analysis):
 + Improve analysis of php 7.4 typed properties.

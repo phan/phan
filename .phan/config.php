@@ -358,6 +358,7 @@ return [
         'plugins/codeclimate/engine',
         'tool/make_stubs',
         'tool/pdep',
+        'tool/phantasm',
         'tool/phoogle',
         'internal/dump_fallback_ast.php',
         'internal/dump_html_styles.php',

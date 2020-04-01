@@ -1,0 +1,121 @@
+#!/usr/bin/env php
+<?php
+/**
+ * phantasm is a tool to assemble information about the codebase and then aggressively optimize it.
+ * This modifies the files that would be analyzed by Phan.
+ *
+ * Currently, the only optimization step this performs is replacing class constants with simple values.
+ * (Opcache can only replace class constants within the class declaring the constant, so that helps with that)
+ *
+ * See tests/phantasm_test for examples of the output.
+ *
+ * Future plans:
+ *
+ * - Expand the supported types of expressions that can be replaced or used as replacements
+ * - Inline instance and method calls across files (e.g. methods returning constants or simple expressions)
+ * - Add option to inline getters/setters, where the real type is known and there are no subclasses (by default, assume the original won't throw a TypeError)
+ * - Add ways to integrate this with building a phar file (unsafe)
+ * - Integrate other optimizations Phan can already do, such as --automatic-fix for NotFullyQualifiedUsagePlugin.
+ * - Use Phan's signature map/documentation map information about which constants, classes, and functions/methods are internal
+ */
+
+use Phan\CLI;
+use Phan\CLIBuilder;
+use Phan\Config;
+use Phan\Phan;
+
+/**
+ * Print usage for phantasm and exit.
+ */
+function phantasm_usage(int $status) : void {
+    global $argv;
+    $program = $argv[0];
+    fwrite($status !== 0 ? STDERR : STDOUT, <<<EOT
+Usage: $program [--in-place|--output-directory <dir>]
+
+Options:
+  --in-place: Modify files in place. This may result in loss of uncommitted changes.
+  --output-directory <dir>: Save new files to a different directory.
+  -h, --help: Output this help message.
+
+EOT
+    );
+    exit($status);
+}
+call_user_func(static function () : void {
+    global $argv;
+    $options = getopt(
+        "hop:",
+        [
+            'help',
+            'in-place',
+            'progress-bar',
+            'output-directory:',
+        ],
+        $optind
+    );
+    $has_any_option = static function (string ...$arg_names) use ($options) : bool {
+        foreach ($arg_names as $arg) {
+            if (array_key_exists($arg, $options)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if ($has_any_option('h', 'help')) {
+        phantasm_usage(0);
+        return;
+    }
+    $remaining_argv = array_slice($argv, $optind);
+    if (count($remaining_argv) !== 0) {
+        fwrite(STDERR, "ERROR: unexpected arguments: " . json_encode($remaining_argv) . "\n");
+        phantasm_usage(1);
+        return;
+    }
+
+    $code_base = require_once(__DIR__ . '/../src/codebase.php');
+    require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
+
+    $cli_builder = new CLIBuilder();
+    if ($has_any_option('p', 'progress-bar')) {
+        $cli_builder->setOption('progress-bar');
+    }
+    if ($has_any_option('p', 'progress-bar')) {
+        $cli_builder->setOption('progress-bar');
+    }
+    $cli_builder->setOption('force-polyfill-parser-with-original-tokens');
+    $cli_builder->setOption('plugin', dirname(__DIR__) . '/src/Phan/Plugin/Internal/PhantasmPlugin.php');
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+    $cli = $cli_builder->build();
+    if ($has_any_option('o', 'output-directory')) {
+        $dir = $options['output-directory'] ?? $options['o'] ?? null;
+        if (!is_string($dir) || $dir === '') {
+            CLI::printErrorToStderr("Invalid --output-directory\n");
+            phantasm_usage(1);
+            return;
+        }
+        if (isset($options['in-place'])) {
+            CLI::printErrorToStderr("Cannot combine --output-directory and --in-place\n");
+            phantasm_usage(1);
+        }
+        $resolved_dir = Config::projectPath($dir);
+        if ($resolved_dir === __DIR__ || realpath($resolved_dir) === realpath(__DIR__)) {
+            fwrite(STDERR, "--output-directory cannot be the same directory as the project directory. Use --in-place to overwrite a project in place\n");
+            phantasm_usage(1);
+        }
+        fwrite(STDERR, "phantasm: Going to output new contents to '$resolved_dir'\n");
+
+        $_ENV['PHANTASM_OUTPUT_DIRECTORY'] = $resolved_dir;
+    } else if (isset($options['in-place'])) {
+        $_ENV['PHANTASM_MODIFY_IN_PLACE'] = '1';
+    } else {
+        CLI::printErrorToStderr("Must either pass --output-directory <dir> or --in-place\n");
+        phantasm_usage(1);
+    }
+
+    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+    Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($cli) : array {
+        return $cli->getFileList();
+    });
+});

@@ -816,6 +816,10 @@ class Config
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_polyfill_parser' => false,
 
+        // Keep a reference to the original tolerant-php-parser node in the generated php-ast Node.
+        // This is extremely memory intensive, and only recommended if a Phan plugin is used for code reformatting, style checks, etc.
+        '__parser_keep_original_node' => false,
+
         // Path to a Unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 

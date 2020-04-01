@@ -15,6 +15,7 @@ use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\TolerantASTConverter\ParseResult;
 use Phan\AST\TolerantASTConverter\ShimFunctions;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\AST\TolerantASTConverter\TolerantASTConverterPreservingOriginal;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\CodeBase;
 use Phan\Config;
@@ -560,6 +561,9 @@ class Parser
                 return $converter;
             }
             return new CachingTolerantASTConverter();
+        }
+        if (Config::getValue('__parser_keep_original_node')) {
+            return new TolerantASTConverterPreservingOriginal();
         }
 
         return new TolerantASTConverter();

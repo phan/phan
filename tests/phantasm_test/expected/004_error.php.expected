@@ -1,0 +1,1 @@
+src/004_error.php:4 PhanSyntaxError Fallback parser diagnostic error: ';' expected. (at column 25)
