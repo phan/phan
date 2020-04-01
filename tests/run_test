@@ -94,6 +94,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakePhantasmTest)
+		cd tests/phantasm_test
+		./test.sh
+		exit $?
+		;;
 	__FakeInferMissingTypesTest)
 		cd tests/infer_missing_types_test
 		./test.sh

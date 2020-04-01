@@ -17,6 +17,7 @@ nohup.out
 *.md.new
 .idea/
 src_copy
+out/
 phpspy.*
 .phpunit.result.cache
 errors.txt

@@ -4,7 +4,7 @@ class Beta776
     protected $some_acl = array ();
     /**
      * [checkAcl description]
-     * @param  array $set_acl array intput
+     * @param  array $set_acl array input
      * @return void
      */
     public function checkAcl(array $set_acl): void
