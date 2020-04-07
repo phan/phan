@@ -160,6 +160,7 @@ call_user_func(static function () : void {
                 break;
             case 'i':
             case 'import':
+                $cli_builder->setOption('no-progress-bar');
                 $graph_file = (string)$value;
                 break;
         }
