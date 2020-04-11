@@ -1,0 +1,8 @@
+<?php
+
+function fakephanstub_function(int $x = unknown): int {
+}
+class FakePhanStub {
+    public function __construct(string $x = unknown) {
+    }
+}

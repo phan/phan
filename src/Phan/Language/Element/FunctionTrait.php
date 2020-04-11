@@ -1812,8 +1812,8 @@ trait FunctionTrait
      */
     public function getRealParameterStubText(): string
     {
-        return \implode(', ', \array_map(static function (Parameter $parameter): string {
-            return $parameter->toStubString();
+        return \implode(', ', \array_map(function (Parameter $parameter): string {
+            return $parameter->toStubString($this->isPHPInternal());
         }, $this->getRealParameterList()));
     }
 

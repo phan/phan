@@ -1,7 +1,7 @@
 %s:14 PhanUndeclaredVariable Variable $undError is undeclared
-%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = default) which requires 2 arg(s)
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = unknown) which requires 2 arg(s)
 %s:17 PhanUndeclaredConstant Reference to undeclared constant \cons2128Error2 (Did you mean \cons2128Error)
-%s:18 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = default) which requires 2 arg(s)
+%s:18 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = unknown) which requires 2 arg(s)
 %s:18 PhanUndeclaredVariable Variable $undefVar is undeclared
 %s:20 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
 %s:25 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is cons2128 of type 'a' but \intdiv() takes int

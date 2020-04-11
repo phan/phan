@@ -271,11 +271,11 @@ class FunctionFactory
                 $parameter->enablePhanFlagBits($phan_flags);
 
                 if ($is_optional) {
+                    if (!$parameter->hasDefaultValue()) {
+                        $parameter->setDefaultValueType(NullType::instance(false)->asPHPDocUnionType());
+                    }
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
                     // I don't see any cases where this will be used for internal types, though.
-                    $parameter->setDefaultValueType(
-                        NullType::instance(false)->asPHPDocUnionType()
-                    );
                 }
 
                 // Add the parameter

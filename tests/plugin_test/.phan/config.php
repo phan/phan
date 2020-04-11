@@ -113,6 +113,10 @@ return [
         'infer_pure_methods' => true,
     ],
 
+    'autoload_internal_extension_signatures' => [
+        'fakephantest' => '.phan/internal_stubs/fakephantest.phan_php',
+    ],
+
     // A list of plugin files to execute
     // (Execute all of them.)
     // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.
