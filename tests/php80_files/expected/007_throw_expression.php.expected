@@ -1,0 +1,11 @@
+%s:8 PhanUnusedVariable Unused definition of variable $value
+%s:9 PhanTypeVoidAssignment Cannot assign void return value
+%s:9 PhanUnusedVariable Unused definition of variable $x
+%s:12 PhanUnusedVariable Unused definition of variable $value
+%s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $value of type non-empty-array<mixed,mixed> but \spl_object_hash() takes object
+%s:18 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $value of type ?array{} but \spl_object_hash() takes object
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type false(real=false)
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type non-empty-mixed(real=non-empty-mixed)
+%s:24 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
+%s:26 PhanRedundantCondition Redundant attempt to cast $condition of type non-empty-mixed to truthy
+%s:27 PhanImpossibleCondition Impossible attempt to cast $condition of type ?''|?'0'|?0|?0.0|?array{}|?false to truthy

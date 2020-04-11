@@ -8,6 +8,10 @@ New features(CLI, Configs):
   Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
   (`default` is a reserved keyword used in switch statements)
 
+New features(Analysis):
++ Support using `throw` as an expression, for PHP 8.0 (#3849)
+  (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
+
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.
 + Infer that some new functions in PHP 8.0-dev should be used in `UseReturnValuePlugin`
