@@ -29,7 +29,8 @@ if (PHP_VERSION_ID < 70100) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.5';
+// No Windows DLL downloads for php 7.1 and ast 1.0.5+
+const LATEST_KNOWN_PHP_AST_VERSION = PHP_VERSION_ID < 70200 ? '1.0.4' : '1.0.6';
 
 /**
  * Dump instructions on how to install php-ast
@@ -54,7 +55,7 @@ function phan_output_ast_installation_instructions(): void
                 LATEST_KNOWN_PHP_AST_VERSION,
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
                 PHP_ZTS ? 'ts' : 'nts',
-                PHP_VERSION_ID <= 70100 ? 'vc14' : 'vc15',
+                PHP_VERSION_ID < 70200 ? 'vc14' : 'vc15',
                 PHP_INT_SIZE == 4 ? 'x86' : 'x64'
             );
             fwrite(STDERR, "(if that link doesn't work, check https://windows.php.net/downloads/pecl/releases/ast/ )" . PHP_EOL);
@@ -110,7 +111,7 @@ if (extension_loaded('ast')) {
     } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.4+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 2.x requires php-ast 1.0.6+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
@@ -118,7 +119,7 @@ if (extension_loaded('ast')) {
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+. php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 2.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.6+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
