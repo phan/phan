@@ -1060,7 +1060,7 @@ EOT
                 <<<'EOT'
 ```php
 namespace ast;
-function parse_code(string $code, int $version, string $filename = default) : \ast\Node
+function parse_code(string $code, int $version, string $filename = unknown) : \ast\Node
 ```
 
 Parses code string and returns AST root node.
