@@ -1,10 +1,10 @@
-src/018_duplicate_switch.php:18 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:19 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:22 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(true) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:23 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(false) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:24 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(false) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:25 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(true) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:29 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('(test literal)') detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:33 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(32) detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:34 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('') detected in switch statement - the later entry will be ignored.
-src/018_duplicate_switch.php:35 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(null) detected in switch statement - the later entry will be ignored.
+src/018_duplicate_switch.php:18 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored in favor of case Y at line 17.
+src/018_duplicate_switch.php:19 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored in favor of case Z at line 18.
+src/018_duplicate_switch.php:22 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(true) detected in switch statement - the later entry will be ignored in favor of case NSwitch::TRUE at line 20.
+src/018_duplicate_switch.php:23 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(false) detected in switch statement - the later entry will be ignored in favor of case NSwitch::FALSE at line 21.
+src/018_duplicate_switch.php:24 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(false) detected in switch statement - the later entry will be ignored in favor of case B at line 23.
+src/018_duplicate_switch.php:25 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(true) detected in switch statement - the later entry will be ignored in favor of case A at line 22.
+src/018_duplicate_switch.php:29 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('(test literal)') detected in switch statement - the later entry will be ignored in favor of case '(test literal)' at line 28.
+src/018_duplicate_switch.php:33 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(32) detected in switch statement - the later entry will be ignored in favor of case __LINE__ at line 32.
+src/018_duplicate_switch.php:34 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('') detected in switch statement - the later entry will be ignored in favor of case '' at line 27.
+src/018_duplicate_switch.php:35 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(null) detected in switch statement - the later entry will be ignored in favor of case null at line 26.

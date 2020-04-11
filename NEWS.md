@@ -11,6 +11,7 @@ New features(CLI, Configs):
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.
 + Infer that some new functions in PHP 8.0-dev should be used in `UseReturnValuePlugin`
++ Emit the line and expression of the duplicated array key or switch case (#3837)
 
 Apr 01 2020, Phan 2.7.0
 -----------------------

@@ -92,8 +92,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($case_node->lineno),
                     'PhanPluginDuplicateSwitchCase',
-                    "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored.",
-                    [$normalized_case_cond],
+                    "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored in favor of case {CODE} at line {LINE}.",
+                    [$normalized_case_cond, ASTReverter::toShortString($case_constant_set[$cond_key]->children['cond']), $case_constant_set[$cond_key]->lineno],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15071
@@ -101,7 +101,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 // Add a fake value to indicate loose equality checks are redundant
                 $values_to_check[-1] = true;
             }
-            $case_constant_set[$cond_key] = $case_node->lineno;
+            $case_constant_set[$cond_key] = $case_node;
         }
         if (!isset($values_to_check[-1]) && count($values_to_check) > 1 && !self::areAllSwitchCasesTheSameType($values_to_check)) {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument array keys are integers for switch
@@ -211,10 +211,11 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             }
 
             if (isset($key_set[$key])) {
-                $this->warnAboutDuplicateArrayKey($node, $entry, $key);
+                // @phan-suppress-next-line PhanTypeMismatchDimFetchNullable
+                $this->warnAboutDuplicateArrayKey($entry, $key, $key_set[$key]);
             }
             // @phan-suppress-next-line PhanTypeMismatchDimAssignment
-            $key_set[$key] = true;
+            $key_set[$key] = $entry;
         }
         if ($has_entry_without_key && count($key_set) > 0) {
             // This is probably a typo in most codebases. (e.g. ['foo' => 'bar', 'baz'])
@@ -233,15 +234,15 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string|float|bool|null $key
      */
-    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key): void
+    private function warnAboutDuplicateArrayKey(Node $entry, $key, Node $old_entry): void
     {
         if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
             $this->emitPluginIssue(
                 $this->code_base,
-                clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+                clone($this->context)->withLineNumberStart($entry->lineno),
                 'PhanPluginDuplicateArrayKeyExpression',
-                "Duplicate dynamic array key expression ({CODE}) detected in array - the earlier entry will be ignored if the expression had the same value.",
-                [ASTReverter::toShortString($entry->children['key'])],
+                "Duplicate dynamic array key expression ({CODE}) detected in array - the earlier entry at line {LINE} will be ignored if the expression had the same value.",
+                [ASTReverter::toShortString($entry->children['key']), $old_entry->lineno],
                 Issue::SEVERITY_NORMAL,
                 Issue::REMEDIATION_A,
                 15071
@@ -251,10 +252,10 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $normalized_key = self::normalizeKey($key);
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+            clone($this->context)->withLineNumberStart($entry->lineno),
             'PhanPluginDuplicateArrayKey',
-            "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
-            [$normalized_key],
+            "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry {CODE} at line {LINE} will be ignored.",
+            [$normalized_key, ASTReverter::toShortString($old_entry->children['key']), $old_entry->lineno],
             Issue::SEVERITY_NORMAL,
             Issue::REMEDIATION_A,
             15071

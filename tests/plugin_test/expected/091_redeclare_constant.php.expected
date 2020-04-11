@@ -2,4 +2,4 @@ src/091_redeclare_constant.php:2 PhanNativePHPSyntaxCheckPlugin Saw error or not
 src/091_redeclare_constant.php:2 PhanReservedConstantName 'true' has a reserved keyword in the constant name
 src/091_redeclare_constant.php:3 PhanReservedConstantName 'foo\false' has a reserved keyword in the constant name
 src/091_redeclare_constant.php:4 PhanReservedConstantName 'NULL' has a reserved keyword in the constant name
-src/091_redeclare_constant.php:6 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
+src/091_redeclare_constant.php:6 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry true at line 6 will be ignored.
