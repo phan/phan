@@ -1,5 +1,17 @@
 Phan NEWS
 
+??? ?? 2020, Phan 2.7.1 (dev)
+-----------------------
+
+New features(CLI, Configs):
++ Improve the output of `tool/make_stubs`. Use better defaults than `null`.
+  Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
+  (`default` is a reserved keyword used in switch statements)
+
+Plugins:
++ PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.
++ Infer that some new functions in PHP 8.0-dev should be used in `UseReturnValuePlugin`
+
 Apr 01 2020, Phan 2.7.0
 -----------------------
 
