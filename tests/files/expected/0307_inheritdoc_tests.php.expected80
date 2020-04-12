@@ -1,6 +1,6 @@
 %s:18 PhanTypeMissingReturn Method \B307::offsetExists is declared to return bool in phpdoc but has no return value
 %s:22 PhanTypeMissingReturn Method \B307::offsetGet is declared to return mixed in phpdoc but has no return value
-%s:34 PhanTypeMismatchReturn Returning type 42 but serialize() is declared to return ?string
+%s:34 PhanTypeMismatchReturn Returning 42 of type 42 but serialize() is declared to return ?string
 %s:38 PhanParamSignatureRealMismatchHasNoParamTypeInternal Declaration of function unserialize($serialized) should be compatible with internal function unserialize(string $serialized) (parameter #1 with no type cannot replace original parameter with type 'string')
 %s:39 PhanUnusedVariable Unused definition of variable $x
 %s:44 PhanUnusedVariable Unused definition of variable $result

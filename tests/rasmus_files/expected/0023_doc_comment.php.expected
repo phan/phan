@@ -1,2 +1,2 @@
-%s:7 PhanTypeMismatchReturn Returning type int|string but test() is declared to return array
+%s:7 PhanTypeMismatchReturn Returning $arg of type int|string but test() is declared to return array
 %s:10 PhanTypeMismatchArgument Argument 1 ($arg) is $var of type array{0:1,1:2,2:3} but \test() takes int|string defined at %s:6

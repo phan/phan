@@ -1,2 +1,6 @@
-src/085_throw_type_mismatch.php:15 PhanThrowTypeMismatch \NS626\C::main() throws \RuntimeException, but it only has declarations of '@throws \InvalidArgumentException'
-src/085_throw_type_mismatch.php:17 PhanThrowTypeMismatchForCall \NS626\C::main() throws \TypeError because it calls \NS626\C::throw(), but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:17 PhanThrowTypeMismatch \NS626\C::main() throws new RuntimeException('odd') of type \RuntimeException here, but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:19 PhanThrowTypeMismatch \NS626\C::main() throws null of type null here, but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:19 PhanTypeInvalidThrowStatementNonThrowable \NS626\C::main() can throw null of type null here which can't cast to \Throwable
+src/085_throw_type_mismatch.php:21 PhanThrowTypeMismatch \NS626\C::main() throws new FinalClass85() of type \NS626\FinalClass85 here, but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:21 PhanTypeInvalidThrowStatementNonThrowable \NS626\C::main() can throw new FinalClass85() of type \NS626\FinalClass85 here which can't cast to \Throwable
+src/085_throw_type_mismatch.php:23 PhanThrowTypeMismatchForCall \NS626\C::main() throws \TypeError because it calls \NS626\C::throw(), but it only has declarations of '@throws \InvalidArgumentException'

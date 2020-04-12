@@ -24,4 +24,4 @@
 %s:20 PhanParamSignatureRealMismatchReturnType Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : array (method returning 'string' cannot override method returning 'array') defined in %s:30
 %s:20 PhanParamSignatureRealMismatchReturnType Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : int (method returning 'string' cannot override method returning 'int') defined in %s:26
 %s:20 PhanParamSignatureRealMismatchTooFewParameters Declaration of function foo(string $x) : string should be compatible with function foo(int $x, int $y) : string (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:16
-%s:21 PhanTypeMismatchReturn Returning type int but foo() is declared to return string
+%s:21 PhanTypeMismatchReturn Returning strlen($x) of type int but foo() is declared to return string

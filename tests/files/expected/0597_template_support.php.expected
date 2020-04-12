@@ -4,7 +4,7 @@
 %s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is goodTemplateReturnFromArray(['key'=>rand(0, 10)]) of type int but \strlen() takes string
 %s:47 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method badTemplateReturn()
 %s:66 PhanTemplateTypeNotDeclaredInFunctionParams Template type T not declared in parameters of function/method missingTemplateParams() (or Phan can't extract template types for this use case)
-%s:68 PhanTypeMismatchReturn Returning type array{0:array<string,int>} but missingTemplateParams() is declared to return T[]
+%s:68 PhanTypeMismatchReturn Returning [$x] of type array{0:array<string,int>} but missingTemplateParams() is declared to return T[]
 %s:105 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::goodTemplateReturn(new stdClass()) of type \stdClass[] but \strlen() takes string
 %s:109 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $result of type \stdClass but \strlen() takes string
 %s:110 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::goodTemplateReturnFromArray(['key'=>rand(0, 10)]) of type int but \strlen() takes string

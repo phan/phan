@@ -1,8 +1,8 @@
-%s:9 PhanTypeMismatchReturnReal Returning type null but object_test() is declared to return object
+%s:9 PhanTypeMismatchReturnReal Returning null of type null but object_test() is declared to return object
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \object_test() takes object defined at %s:3
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is [] of type array{} but \object_test() takes object defined at %s:3
 %s:14 PhanTypeMismatchArgumentReal Argument 2 ($y) is [] of type array{} but \object_test() takes ?object defined at %s:3
-%s:26 PhanTypeMismatchReturnReal Returning type 'invalid' but nullableobject_test() is declared to return ?object
+%s:26 PhanTypeMismatchReturnReal Returning 'invalid' of type 'invalid' but nullableobject_test() is declared to return ?object
 %s:29 PhanUndeclaredClassMethod Call to method __construct from undeclared class \object
 %s:30 PhanUndeclaredClassMethod Call to method __construct from undeclared class \false
 %s:31 PhanUndeclaredClassMethod Call to method __construct from undeclared class \true

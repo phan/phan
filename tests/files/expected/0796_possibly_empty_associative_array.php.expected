@@ -1,2 +1,2 @@
 %s:8 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type associative-array<int,\stdClass>(real=associative-array<int,\stdClass>)
-%s:11 PhanTypeMismatchReturn Returning type non-empty-associative-array<int,\stdClass> but test_associative_array_possibly_empty() is declared to return ?list<\stdClass>
+%s:11 PhanTypeMismatchReturn Returning $x of type non-empty-associative-array<int,\stdClass> but test_associative_array_possibly_empty() is declared to return ?list<\stdClass>

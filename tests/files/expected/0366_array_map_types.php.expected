@@ -1,4 +1,4 @@
 %s:6 PhanTypeMismatchArgument Argument 1 ($x) is ...([new stdClass(),new stdClass()]) of type \stdClass but Closure(string $x) : bool takes string defined at %s:6
-%s:6 PhanTypeMismatchReturn Returning type associative-array<int,\stdClass> but test366() is declared to return int[]
-%s:14 PhanTypeMismatchReturn Returning type non-empty-array<int,int> but test366B() is declared to return string[]
+%s:6 PhanTypeMismatchReturn Returning array_filter([new stdClass(),new stdClass()], (function)) of type associative-array<int,\stdClass> but test366() is declared to return int[]
+%s:14 PhanTypeMismatchReturn Returning array_map((function), [new stdClass(),new stdClass()]) of type non-empty-array<int,int> but test366B() is declared to return string[]
 %s:16 PhanTypeMismatchArgument Argument 1 ($x) is [new stdClass(),new stdClass()] of type \stdClass but Closure(string $x) : int takes string defined at %s:14

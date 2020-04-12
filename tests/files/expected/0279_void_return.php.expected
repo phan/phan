@@ -1,5 +1,5 @@
 %s:9 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:9 PhanSyntaxReturnExpectedValue Syntax error: Function f() with return type \DateTime must return a value (did you mean "return null" instead of "return"?)
 %s:10 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
-%s:10 PhanTypeMismatchReturn Returning type 42 but f() is declared to return \DateTime
+%s:10 PhanTypeMismatchReturn Returning unknownType() of type 42 but f() is declared to return \DateTime
 %s:15 PhanSyntaxReturnExpectedValue Syntax error: Function g() with return type int must return a value (did you mean "return null" instead of "return"?)

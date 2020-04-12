@@ -157,6 +157,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->emitIssue(
                 Issue::InvalidWriteToTemporaryExpression,
                 $assign_op_node->lineno,
+                ASTReverter::toShortString($node),
                 Type::fromObject($node)
             );
             return $this->context;
@@ -166,6 +167,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->emitIssue(
                 Issue::InvalidWriteToTemporaryExpression,
                 $node->lineno,
+                ASTReverter::toShortString($node),
                 Type::fromObject($expr_node)
             );
             return $this->context;
@@ -244,6 +246,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->emitIssue(
                 Issue::InvalidWriteToTemporaryExpression,
                 $assign_op_node->lineno,
+                ASTReverter::toShortString($node),
                 Type::fromObject($node)
             );
             return $this->context;
@@ -253,6 +256,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->emitIssue(
                 Issue::InvalidWriteToTemporaryExpression,
                 $node->lineno,
+                ASTReverter::toShortString($node),
                 Type::fromObject($expr_node)
             );
             return $this->context;

@@ -1,4 +1,4 @@
-%s:5 PhanTypeMismatchReturnReal Returning type 1 but Closure() : \Generator is declared to return \Generator
-%s:9 PhanTypeMismatchReturnReal Returning type 1 but Closure() : \Iterator is declared to return \Iterator
-%s:13 PhanTypeMismatchReturnReal Returning type 1 but Closure() : \Traversable is declared to return \Traversable
-%s:17 PhanTypeMismatchReturn Returning type \Generator but Closure() is declared to return int
+%s:5 PhanTypeMismatchReturnReal Returning 1 of type 1 but Closure() : \Generator is declared to return \Generator
+%s:9 PhanTypeMismatchReturnReal Returning 1 of type 1 but Closure() : \Iterator is declared to return \Iterator
+%s:13 PhanTypeMismatchReturnReal Returning 1 of type 1 but Closure() : \Traversable is declared to return \Traversable
+%s:17 PhanTypeMismatchReturn Returning (a Generator due to existence of yield statements) of type \Generator but Closure() is declared to return int

@@ -1,4 +1,4 @@
 %s:11 PhanUnusedProtectedMethodParameter Parameter $uid is never used
 %s:29 PhanNoopNewNoSideEffects Unused result of new object creation expression in new VerificationEmail419('method', 'extra') (this is likely free of side effects - there is no known non-empty constructor or destructor)
 %s:29 PhanParamTooMany Call with 2 arg(s) to \VerificationEmail419::__construct($method) which only takes 1 arg(s) defined at %s:4
-%s:30 PhanTypeMismatchReturn Returning type string but _getMethod() is declared to return int
+%s:30 PhanTypeMismatchReturn Returning $this->_method of type string but _getMethod() is declared to return int

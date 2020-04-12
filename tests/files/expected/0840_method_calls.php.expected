@@ -1,4 +1,4 @@
 %s:14 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $result of type string but \spl_object_hash() takes object
-%s:20 PhanTypeMismatchReturnReal Returning type string but main() is declared to return ?array
+%s:20 PhanTypeMismatchReturnReal Returning $result of type string but main() is declared to return ?array
 %s:28 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $result of type string but \spl_object_hash() takes object
-%s:34 PhanTypeMismatchReturnReal Returning type string but main2() is declared to return ?array
+%s:34 PhanTypeMismatchReturnReal Returning $result of type string but main2() is declared to return ?array

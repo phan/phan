@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchReturnReal Returning type string but test_offset() is declared to return array
+%s:7 PhanTypeMismatchReturnReal Returning $x['type'] of type string but test_offset() is declared to return array

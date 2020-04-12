@@ -1,5 +1,5 @@
 src/031_sleep.php:4 PhanUnreferencedPHPDocProperty Possibly zero references to PHPDoc @property \A31->z
-src/031_sleep.php:17 PhanTypeMismatchReturn Returning type array{0:'_x',1:'z',2:'_z',3:'A31',4:2,5:42.1,6:\stdClass} but __sleep() is declared to return string[]
+src/031_sleep.php:17 PhanTypeMismatchReturn Returning ['_x','z','_z',__CLASS__,2,42.1,new stdClass()] of type array{0:'_x',1:'z',2:'_z',3:'A31',4:2,5:42.1,6:\stdClass} but __sleep() is declared to return string[]
 src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type 2, expected string
 src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type 42.1, expected string
 src/031_sleep.php:17 SleepCheckerInvalidPropNameType __sleep is returning an array with a value of type \stdClass, expected string
@@ -9,9 +9,9 @@ src/031_sleep.php:17 SleepCheckerMagicPropName __sleep is returning an array tha
 src/031_sleep.php:19 SleepCheckerInvalidPropName __sleep is returning an array that includes _Z, which cannot be found
 src/031_sleep.php:22 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
 src/031_sleep.php:28 SleepCheckerPropertyMissingTransient Property public $_myProp that is not serialized by __sleep should be annotated with @transient or @phan-transient
-src/031_sleep.php:35 PhanTypeMismatchReturn Returning type 2 but __sleep() is declared to return string[]
+src/031_sleep.php:35 PhanTypeMismatchReturn Returning 2 of type 2 but __sleep() is declared to return string[]
 src/031_sleep.php:35 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
-src/031_sleep.php:37 PhanTypeMismatchReturn Returning type void but __sleep() is declared to return string[]
+src/031_sleep.php:37 PhanTypeMismatchReturn Returning void of type void but __sleep() is declared to return string[]
 src/031_sleep.php:37 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes _myprop, which cannot be found
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes x, which cannot be found

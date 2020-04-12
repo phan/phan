@@ -1,2 +1,2 @@
-src/159_array_unshift_convert_to_list.php:9 PhanTypeMismatchReturn Returning type non-empty-list<string> but test_unshift_converts_assoc_int_to_list() is declared to return associative-array<int,string>
-src/159_array_unshift_convert_to_list.php:18 PhanPartialTypeMismatchReturn Returning type non-empty-array<string,string>|non-empty-list<string> but test_unshift_doesnt_convert_assoc_string() is declared to return list<string> (non-empty-array<string,string> is incompatible)
+src/159_array_unshift_convert_to_list.php:9 PhanTypeMismatchReturn Returning $values of type non-empty-list<string> but test_unshift_converts_assoc_int_to_list() is declared to return associative-array<int,string>
+src/159_array_unshift_convert_to_list.php:18 PhanPartialTypeMismatchReturn Returning $values of type non-empty-array<string,string>|non-empty-list<string> but test_unshift_doesnt_convert_assoc_string() is declared to return list<string> (non-empty-array<string,string> is incompatible)

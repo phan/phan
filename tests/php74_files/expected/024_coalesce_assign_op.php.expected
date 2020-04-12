@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchReturnReal Returning type array{x:2,y:string} but test() is declared to return bool
+%s:7 PhanTypeMismatchReturnReal Returning $result of type array{x:2,y:string} but test() is declared to return bool

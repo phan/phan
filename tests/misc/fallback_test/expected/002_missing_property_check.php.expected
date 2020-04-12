@@ -1,3 +1,3 @@
 src/002_missing_property_check.php:3 PhanUnusedGlobalFunctionParameter Parameter $a is never used
 src/002_missing_property_check.php:5 PhanSyntaxError syntax error, unexpected ';', expecting identifier (T_STRING) or variable (T_VARIABLE) or '{' or '$' (at column 17)
-src/002_missing_property_check.php:6 PhanTypeMismatchReturnReal Returning type array{0:'x'} but missing_property() is declared to return int
+src/002_missing_property_check.php:6 PhanTypeMismatchReturnReal Returning $prop of type array{0:'x'} but missing_property() is declared to return int
