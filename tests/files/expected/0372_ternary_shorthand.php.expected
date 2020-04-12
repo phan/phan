@@ -1,4 +1,4 @@
 %s:21 PhanTypeMismatchArgument Argument 1 ($x) is (foo382() ?: '') of type ''|non-empty-string but \expect_int382() takes int defined at %s:17
-%s:21 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement
+%s:21 PhanTypeSuspiciousEcho Suspicious argument expect_int382((foo382() ?: '')) of type void for an echo/print statement
 %s:22 PhanTypeMismatchArgument Argument 1 ($x) is (bar382() ?: ['x']) of type array{0:'x'}|non-empty-string but \expect_int382() takes int defined at %s:17
-%s:22 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement
+%s:22 PhanTypeSuspiciousEcho Suspicious argument expect_int382((bar382() ?: ['x'])) of type void for an echo/print statement

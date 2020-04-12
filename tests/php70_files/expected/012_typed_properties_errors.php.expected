@@ -8,5 +8,5 @@
 %s:14 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS11\Foo->std
 %s:15 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \ArrayObject
 %s:15 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS11\Foo->arrayObject
-%s:20 PhanTypeMismatchPropertyReal Assigning \stdClass to property but \NS11\Foo->std is \NS11\stdClass
-%s:21 PhanTypeMismatchPropertyReal Assigning \NS11\Foo to property but \NS11\Foo->arrayObject is \ArrayObject
+%s:20 PhanTypeMismatchPropertyReal Assigning new \stdClass() of type \stdClass to property but \NS11\Foo->std is \NS11\stdClass
+%s:21 PhanTypeMismatchPropertyReal Assigning $f of type \NS11\Foo to property but \NS11\Foo->arrayObject is \ArrayObject

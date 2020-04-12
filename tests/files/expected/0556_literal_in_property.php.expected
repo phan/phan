@@ -1,6 +1,6 @@
-%s:13 PhanTypeMismatchProperty Assigning '1' to property but \Foo->x is -1|1
-%s:14 PhanTypeMismatchProperty Assigning 3 to property but \Foo->x is -1|1
-%s:15 PhanTypeMismatchProperty Assigning 'b' to property but \Foo->a is 'A'|'a'
-%s:17 PhanTypeMismatchProperty Assigning 'c' to property but \Foo->a is 'A'|'a'
-%s:18 PhanTypeMismatchProperty Assigning 1 to property but \Foo->maybeArray is 0|array
-%s:20 PhanTypeMismatchProperty Assigning 2 to property but \Foo->maybeArray is 0|array
+%s:13 PhanTypeMismatchProperty Assigning '1' of type '1' to property but \Foo->x is -1|1
+%s:14 PhanTypeMismatchProperty Assigning 3 of type 3 to property but \Foo->x is -1|1
+%s:15 PhanTypeMismatchProperty Assigning 'b' of type 'b' to property but \Foo->a is 'A'|'a'
+%s:17 PhanTypeMismatchProperty Assigning 'c' of type 'c' to property but \Foo->a is 'A'|'a'
+%s:18 PhanTypeMismatchProperty Assigning 1 of type 1 to property but \Foo->maybeArray is 0|array
+%s:20 PhanTypeMismatchProperty Assigning 2 of type 2 to property but \Foo->maybeArray is 0|array

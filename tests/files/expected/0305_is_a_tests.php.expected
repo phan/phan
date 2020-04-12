@@ -4,8 +4,8 @@
 %s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $y of type \stdClass but \intdiv() takes int
 %s:10 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN ''
 %s:11 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\'
-%s:12 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
-%s:13 PhanTypeSuspiciousEcho Suspicious argument \ArrayObject for an echo/print statement
+%s:12 PhanTypeSuspiciousEcho Suspicious argument $y of type \stdClass for an echo/print statement
+%s:13 PhanTypeSuspiciousEcho Suspicious argument $y of type \ArrayObject for an echo/print statement
 %s:14 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\\\stdClass'
 %s:17 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $z of type object but \intdiv() takes int
 %s:20 PhanParamTooFew Call with 3 arg(s) to \test305($x, $y, $z, $w, $className) which requires 5 arg(s) defined at %s:3

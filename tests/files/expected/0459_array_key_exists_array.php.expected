@@ -5,5 +5,5 @@
 %s:21 PhanParamTooFewCallable Call with 1 arg(s) to Closure($data, $str) (as a provided callable) which requires 2 arg(s) defined at %s:26
 %s:28 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $data of type array{key:string,otherKey:int} (real type non-empty-array<mixed,mixed>|object) but \strlen() takes string
 %s:30 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{key:string} but \strlen() takes string
-%s:31 PhanTypeInvalidDimOffset Invalid offset "otherKey" of array type array{key:string}
+%s:31 PhanTypeInvalidDimOffset Invalid offset "otherKey" of $data of array type array{key:string}
 %s:34 PhanTypeMismatchArgument Argument 1 ($data) is ['key'=>'string'] of type array{key:'string'} but Closure($data, $str) takes array{key:string,otherKey:int} defined at %s:26

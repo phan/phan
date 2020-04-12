@@ -1,6 +1,6 @@
 %s:4 PhanTypeMismatchDefault Default value for int $p can't be false
-%s:7 PhanTypeArraySuspicious Suspicious array access to false
-%s:10 PhanTypeMismatchProperty Assigning 'str' to property but \C->p is int
+%s:7 PhanTypeArraySuspicious Suspicious array access to $a of type false
+%s:10 PhanTypeMismatchProperty Assigning 'str' of type 'str' to property but \C->p is int
 %s:13 PhanNoopNew Unused result of new object creation expression in new D() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \D
 %s:16 PhanNoopNew Unused result of new object creation expression in new E() (this may be called for the side effects of the non-empty constructor or destructor)

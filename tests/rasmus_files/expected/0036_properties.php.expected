@@ -1,6 +1,6 @@
-%s:8 PhanTypeMismatchProperty Assigning int to property but \A->text is string
-%s:8 PhanTypeMismatchProperty Assigning string to property but \A->num is int
+%s:8 PhanTypeMismatchPropertyDefault Default value for int $\A->num can't be 'abc' of type string based on phpdoc types
+%s:8 PhanTypeMismatchPropertyDefault Default value for string $\A->text can't be 1 of type int based on phpdoc types
 %s:11 PhanUndeclaredProperty Reference to undeclared property \A->str
-%s:12 PhanTypeMismatchProperty Assigning array{} to property but \A->text is string
+%s:12 PhanTypeMismatchProperty Assigning [] of type array{} to property but \A->text is string
 %s:18 PhanAccessPropertyProtected Cannot access protected property \A->foo defined at %s:8
 %s:19 PhanUndeclaredProperty Reference to undeclared property \A->bar

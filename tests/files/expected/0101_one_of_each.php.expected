@@ -11,7 +11,7 @@
 %s:32 PhanNoopConstant Unused constant
 %s:37 PhanNoopProperty Unused property
 %s:42 PhanNoopVariable Unused variable
-%s:48 PhanParamReqAfterOpt Required argument follows optional
+%s:48 PhanParamReqAfterOpt Required parameter ($p2) follows optional (mixed $p1 = null)
 %s:51 PhanParamSpecial1 Argument 2 ($pieces) is string but \join() takes string[] when argument 1 is string
 %s:52 PhanCompatibleImplodeOrder In php 7.4, passing glue string after the array is deprecated for \join(). Should this swap the parameters of type array{} and string?
 %s:54 PhanParamSpecial2 Argument 1 ($pieces) is string but \join() takes string[] when passed only one argument
@@ -30,7 +30,7 @@
 %s:90 PhanRedefineFunctionInternal Function strlen defined at %s:90 was previously defined internally
 %s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
-%s:104 PhanTypeArraySuspicious Suspicious array access to false
+%s:104 PhanTypeArraySuspicious Suspicious array access to $v4 of type false
 %s:107 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare [1,2] of type array{0:1,1:2} to 'string' of type 'string'
 %s:107 PhanTypeComparisonFromArray array to string comparison
 %s:110 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 42 of type 42 to [1,2] of type array{0:1,1:2}

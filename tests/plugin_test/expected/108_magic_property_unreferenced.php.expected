@@ -4,4 +4,4 @@ src/108_magic_property_unreferenced.php:8 PhanWriteOnlyPHPDocProperty Possibly z
 src/108_magic_property_unreferenced.php:9 PhanReadOnlyPHPDocProperty Possibly zero write references to PHPDoc @property \Magic->both2
 src/108_magic_property_unreferenced.php:11 PhanUnreferencedPHPDocProperty Possibly zero references to PHPDoc @property \Magic->both4
 src/108_magic_property_unreferenced.php:14 PhanUnreferencedPublicProperty Possibly zero references to public property \Magic->realProp
-src/108_magic_property_unreferenced.php:26 PhanTypeMismatchProperty Assigning 2 to property but \Magic->writeA is string
+src/108_magic_property_unreferenced.php:26 PhanTypeMismatchProperty Assigning 2 of type 2 to property but \Magic->writeA is string

@@ -1,1 +1,1 @@
-%s:10 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement
+%s:10 PhanTypeSuspiciousEcho Suspicious argument $this->returnsVoid() of type void for an echo/print statement

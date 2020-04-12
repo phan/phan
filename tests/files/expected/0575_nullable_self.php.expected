@@ -1,2 +1,2 @@
-%s:16 PhanTypeMismatchProperty Assigning 2 to property but \PhanBug\Foo->parent is \PhanBug\Foo|null
-%s:23 PhanTypeMismatchProperty Assigning array{0:null} to property but \PhanBug\Foo->other is \PhanBug\Foo[]
+%s:16 PhanTypeMismatchProperty Assigning 2 of type 2 to property but \PhanBug\Foo->parent is \PhanBug\Foo|null
+%s:23 PhanTypeMismatchProperty Assigning [null] of type array{0:null} to property but \PhanBug\Foo->other is \PhanBug\Foo[]

@@ -1,2 +1,4 @@
-%s:6 PhanParamReqAfterOpt Required argument follows optional
-%s:8 PhanParamReqAfterOpt Required argument follows optional
+%s:6 PhanParamReqAfterOpt Required parameter (int $b) follows optional (\DateTime|null $a = null)
+%s:8 PhanParamReqAfterOpt Required parameter (\DateTime $d) follows optional (?int $c = null)
+%s:8 PhanParamReqAfterOpt Required parameter (\DateTime $f) follows optional (mixed $e = null)
+%s:8 PhanParamReqAfterOpt Required parameter (int $b) follows optional (?\DateTime $a = null)

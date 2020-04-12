@@ -12,4 +12,4 @@
 %s:18 PhanInvalidNode Invalid union type false in element signature
 %s:18 PhanInvalidNode Invalid union type null in element signature
 %s:22 PhanUndeclaredMethod Call to undeclared method \X::missingMethod
-%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' to property but \X::$prop is ?int
+%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' of type 'invalid' to property but \X::$prop is ?int

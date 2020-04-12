@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -466,10 +467,11 @@ class ParseVisitor extends ScopeVisitor
                 } else {
                     if (!$union_type->isStrictSubtypeOf($this->code_base, $real_union_type)) {
                         $this->emitIssue(
-                            Issue::TypeInvalidPropertyDefaultReal,
+                            Issue::TypeMismatchPropertyDefaultReal,
                             $context_for_property->getLineNumberStart(),
                             $real_union_type,
                             $property_name,
+                            ASTReverter::toShortString($default_node),
                             $union_type
                         );
                         $union_type = $real_union_type;
@@ -576,14 +578,15 @@ class ParseVisitor extends ScopeVisitor
 
                 if (!$original_union_type->isType(NullType::instance(false))
                     && !$original_union_type->canCastToUnionType($variable->getUnionType())
-                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchProperty)
+                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
                 ) {
                     $this->emitIssue(
-                        Issue::TypeMismatchProperty,
-                        $child_node->lineno ?? 0,
-                        (string)$original_union_type,
+                        Issue::TypeMismatchPropertyDefault,
+                        $child_node->lineno,
+                        (string)$variable->getUnionType(),
                         $property->asPropertyFQSENString(),
-                        (string)$variable->getUnionType()
+                        ASTReverter::toShortString($default_node),
+                        (string)$original_union_type
                     );
                 }
 

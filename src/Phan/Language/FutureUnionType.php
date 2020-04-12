@@ -82,4 +82,13 @@ class FutureUnionType
     {
         return $this->context;
     }
+
+    /**
+     * Gets the node which this is based on
+     * @return Node|string|int|bool|float
+     */
+    public function getNode()
+    {
+        return $this->node;
+    }
 }

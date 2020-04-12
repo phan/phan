@@ -1,5 +1,5 @@
-%s:3 PhanParamReqAfterOpt Required argument follows optional
-%s:7 PhanParamReqAfterOpt Required argument follows optional
+%s:3 PhanParamReqAfterOpt Required parameter ($c) follows optional (mixed $b = null)
+%s:7 PhanParamReqAfterOpt Required parameter ($c) follows optional (mixed $b = null)
 %s:10 PhanParamTooFew Call with 2 arg(s) to \incorrect736($a, $b = null, $c) which requires 3 arg(s) defined at %s:7
 %s:11 PhanParamTooFew Call with 2 arg(s) to \C736::incorrect($a = null, $b = null, $c) which requires 3 arg(s) defined at %s:3
 %s:12 PhanParamTooMany Call with 4 arg(s) to \incorrect736($a, $b = null, $c) which only takes 3 arg(s) defined at %s:7

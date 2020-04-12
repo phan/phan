@@ -1,2 +1,2 @@
-%s:6 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{4:'y'}
-%s:6 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:6 PhanTypeInvalidDimOffset Invalid offset 2 of $x of array type array{4:'y'}
+%s:6 PhanTypeSuspiciousEcho Suspicious argument $x[2] of type null for an echo/print statement

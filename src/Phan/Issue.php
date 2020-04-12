@@ -224,7 +224,8 @@ class Issue
     public const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
     public const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     public const TypeErrorInOperation = 'PhanTypeErrorInOperation';
-    public const TypeInvalidPropertyDefaultReal    = 'PhanTypeInvalidPropertyDefaultReal';
+    public const TypeMismatchPropertyDefault        = 'PhanTypeMismatchPropertyDefault';
+    public const TypeMismatchPropertyDefaultReal    = 'PhanTypeMismatchPropertyDefaultReal';
     public const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
     public const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
     public const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
@@ -1371,7 +1372,7 @@ class Issue
                 self::TypeMismatchProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
+                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10001
             ),
@@ -1379,7 +1380,7 @@ class Issue
                 self::PartialTypeMismatchProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10063
             ),
@@ -1387,7 +1388,7 @@ class Issue
                 self::PossiblyNullTypeMismatchProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10064
             ),
@@ -1395,7 +1396,7 @@ class Issue
                 self::PossiblyFalseTypeMismatchProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10065
             ),
@@ -1683,7 +1684,7 @@ class Issue
                 self::TypeArraySuspicious,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious array access to {TYPE}",
+                "Suspicious array access to {CODE} of type {TYPE}",
                 self::REMEDIATION_B,
                 10009
             ),
@@ -1691,7 +1692,7 @@ class Issue
                 self::TypeArrayUnsetSuspicious,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious attempt to unset an offset of a value of type {TYPE}",
+                "Suspicious attempt to unset an offset of a value {CODE} of type {TYPE}",
                 self::REMEDIATION_B,
                 10048
             ),
@@ -2043,7 +2044,7 @@ class Issue
                 self::TypeArraySuspiciousNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious array access to nullable {TYPE}",
+                "Suspicious array access to {CODE} of nullable type {TYPE}",
                 self::REMEDIATION_B,
                 10045
             ),
@@ -2051,7 +2052,7 @@ class Issue
                 self::TypeArraySuspiciousNull,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious array access to null",
+                "Suspicious array access to {CODE} of type null",
                 self::REMEDIATION_B,
                 10136
             ),
@@ -2059,7 +2060,7 @@ class Issue
                 self::TypeInvalidDimOffset,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid offset {SCALAR} of array type {TYPE}",
+                "Invalid offset {SCALAR} of {CODE} of array type {TYPE}",
                 self::REMEDIATION_B,
                 10046
             ),
@@ -2067,7 +2068,7 @@ class Issue
                 self::TypePossiblyInvalidDimOffset,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Possibly invalid offset {SCALAR} of array type {TYPE}",
+                "Possibly invalid offset {SCALAR} of {CODE} of array type {TYPE}",
                 self::REMEDIATION_B,
                 10154
             ),
@@ -2075,7 +2076,7 @@ class Issue
                 self::TypeInvalidDimOffsetArrayDestructuring,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignment",
+                "Invalid offset {SCALAR} of {CODE} of array type {TYPE} in an array destructuring assignment",
                 self::REMEDIATION_B,
                 10047
             ),
@@ -2091,7 +2092,7 @@ class Issue
                 self::TypeInvalidExpressionArrayDestructuring,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid value of type {TYPE} in an array destructuring assignment, expected {TYPE}",
+                "Invalid value {CODE} of type {TYPE} in an array destructuring assignment, expected {TYPE}",
                 self::REMEDIATION_B,
                 10077
             ),
@@ -2099,7 +2100,7 @@ class Issue
                 self::TypeSuspiciousEcho,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious argument {TYPE} for an echo/print statement",
+                "Suspicious argument {CODE} of type {TYPE} for an echo/print statement",
                 self::REMEDIATION_B,
                 10049
             ),
@@ -2377,18 +2378,26 @@ class Issue
                 10110
             ),
             new Issue(
-                self::TypeInvalidPropertyDefaultReal,
+                self::TypeMismatchPropertyDefaultReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Default value for {TYPE} \${PROPERTY} can't be {TYPE}",
+                "Default value for {TYPE} \${PROPERTY} can't be {CODE} of type {TYPE}",
                 self::REMEDIATION_B,
                 10108
+            ),
+            new Issue(
+                self::TypeMismatchPropertyDefault,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Default value for {TYPE} \${PROPERTY} can't be {CODE} of type {TYPE} based on phpdoc types",
+                self::REMEDIATION_B,
+                10159
             ),
             new Issue(
                 self::TypeMismatchPropertyReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
+                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10137
             ),
@@ -2396,7 +2405,7 @@ class Issue
                 self::TypeMismatchPropertyRealByRef,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
+                "{CODE} of type {TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10150
             ),
@@ -2404,7 +2413,7 @@ class Issue
                 self::TypeMismatchPropertyByRef,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "{TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
+                "{CODE} of type {TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10151
             ),
@@ -2612,7 +2621,7 @@ class Issue
                 self::DivisionByZero,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Attempting to divide a value by a divisor of {CODE} of type {TYPE}',
+                'Saw {CODE} with a divisor of type {TYPE}',
                 self::REMEDIATION_B,
                 10145
             ),
@@ -2620,7 +2629,7 @@ class Issue
                 self::ModuloByZero,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Attempting to modulo a value with a modulus of {CODE} of type {TYPE}',
+                'Saw {CODE} with modulus of type {TYPE}',
                 self::REMEDIATION_B,
                 10146
             ),
@@ -2628,7 +2637,7 @@ class Issue
                 self::PowerOfZero,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                'Attempting to exponentiate a value to a power of {CODE} of type {TYPE} (the result will always be 1)',
+                'Saw {CODE} exponentiating to a power of type {TYPE} (the result will always be 1)',
                 self::REMEDIATION_B,
                 10147
             ),
@@ -2645,7 +2654,7 @@ class Issue
                 self::VariableUseClause,
                 self::CATEGORY_VARIABLE,
                 self::SEVERITY_NORMAL,
-                "Non-variables not allowed within use clause",
+                "Non-variables ({CODE}) not allowed within use clause",
                 self::REMEDIATION_B,
                 12000
             ),
@@ -2671,7 +2680,7 @@ class Issue
                 self::AbstractStaticMethodCall,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_CRITICAL,
-                "Potentially calling an abstract static method {METHOD}",
+                "Potentially calling an abstract static method {METHOD} in {CODE}",
                 self::REMEDIATION_B,
                 9002
             ),
@@ -2679,7 +2688,7 @@ class Issue
                 self::AbstractStaticMethodCallInStatic,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_CRITICAL,
-                "Potentially calling an abstract static method {METHOD} with static:: (the calling static method's class scope may be an abstract class)",
+                "Potentially calling an abstract static method {METHOD} with static:: in {CODE} (the calling static method's class scope may be an abstract class)",
                 self::REMEDIATION_B,
                 9003
             ),
@@ -2687,7 +2696,7 @@ class Issue
                 self::AbstractStaticMethodCallInTrait,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_CRITICAL,
-                "Potentially calling an abstract static method {METHOD} on a trait, if the caller's method is called on the trait instead of a concrete class using the trait",
+                "Potentially calling an abstract static method {METHOD} on a trait in {CODE}, if the caller's method is called on the trait instead of a concrete class using the trait",
                 self::REMEDIATION_B,
                 9004
             ),
@@ -2797,7 +2806,7 @@ class Issue
                 self::ParamReqAfterOpt,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Required argument follows optional",
+                'Required parameter {PARAMETER} follows optional {PARAMETER}',
                 self::REMEDIATION_B,
                 7000
             ),
@@ -3260,7 +3269,7 @@ class Issue
                 self::NoopEmpty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of an empty(expr) check",
+                "Unused result of an empty({CODE}) check",
                 self::REMEDIATION_B,
                 6051
             ),
@@ -3268,7 +3277,7 @@ class Issue
                 self::NoopIsset,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of an isset(expr) check",
+                "Unused result of an isset({CODE}) check",
                 self::REMEDIATION_B,
                 6052
             ),
@@ -3276,7 +3285,7 @@ class Issue
                 self::NoopCast,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a ({TYPE})(expr) cast",
+                "Unused result of a ({TYPE})({CODE}) cast",
                 self::REMEDIATION_B,
                 6053
             ),
@@ -4367,11 +4376,10 @@ class Issue
                 self::REMEDIATION_B,
                 3012
             ),
-            // TODO: Increase the severity when PHP 8.0 alphas are released
             new Issue(
                 self::CompatibleAutoload,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).",
                 self::REMEDIATION_B,
                 3013

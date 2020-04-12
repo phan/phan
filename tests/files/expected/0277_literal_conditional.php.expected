@@ -1,9 +1,9 @@
 %s:9 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
 %s:10 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
 %s:11 PhanImpossibleCondition Impossible attempt to cast 0 of type 0 to truthy
-%s:11 PhanTypeArraySuspicious Suspicious array access to 3
+%s:11 PhanTypeArraySuspicious Suspicious array access to $x of type 3
 %s:12 PhanRedundantCondition Redundant attempt to cast 1 of type 1 to truthy
-%s:12 PhanTypeArraySuspicious Suspicious array access to 3
+%s:12 PhanTypeArraySuspicious Suspicious array access to $x of type 3
 %s:13 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is (true ?: $x) of type true but \intdiv() takes int
 %s:14 PhanRedundantCondition Redundant attempt to cast \true of type true to truthy

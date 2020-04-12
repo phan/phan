@@ -1,3 +1,3 @@
 %s:3 PhanUndeclaredThis Variable $this is undeclared
-%s:5 PhanTypeInvalidDimOffset Invalid offset "key" of array type non-empty-list<mixed>
-%s:5 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:5 PhanTypeInvalidDimOffset Invalid offset "key" of $x of array type non-empty-list<mixed>
+%s:5 PhanTypeSuspiciousEcho Suspicious argument $x['key'] of type null for an echo/print statement

@@ -1,2 +1,2 @@
-%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?bool|?float|?int|?list<mixed>|?string
-%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to nullable bool|float|int|list<mixed>|null|string
+%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to $content of nullable type ?bool|?float|?int|?list<mixed>|?string
+%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to $content of nullable type bool|float|int|list<mixed>|null|string

@@ -1,15 +1,15 @@
-%s:5 PhanDivisionByZero Attempting to divide a value by a divisor of 0 of type 0
-%s:6 PhanModuloByZero Attempting to modulo a value with a modulus of 0 of type 0
-%s:7 PhanModuloByZero Attempting to modulo a value with a modulus of 0.0 of type 0.0
-%s:8 PhanModuloByZero Attempting to modulo a value with a modulus of '0' of type '0'
-%s:9 PhanModuloByZero Attempting to modulo a value with a modulus of $zero of type 0
-%s:10 PhanModuloByZero Attempting to modulo a value with a modulus of (2 - 2) of type 0
-%s:11 PhanModuloByZero Attempting to modulo a value with a modulus of false of type false
+%s:5 PhanDivisionByZero Saw (1 / 0) with a divisor of type 0
+%s:6 PhanModuloByZero Saw (1 % 0) with modulus of type 0
+%s:7 PhanModuloByZero Saw (1 % 0.0) with modulus of type 0.0
+%s:8 PhanModuloByZero Saw (1 % '0') with modulus of type '0'
+%s:9 PhanModuloByZero Saw (1 % $zero) with modulus of type 0
+%s:10 PhanModuloByZero Saw (1 % (2 - 2)) with modulus of type 0
+%s:11 PhanModuloByZero Saw (1 % false) with modulus of type false
 %s:11 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of % is false (expected number)
-%s:12 PhanModuloByZero Attempting to modulo a value with a modulus of '' of type ''
+%s:12 PhanModuloByZero Saw (1 % '') with modulus of type ''
 %s:12 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of % is '' (expected number)
-%s:13 PhanModuloByZero Attempting to modulo a value with a modulus of (2 - 2) of type 0
-%s:14 PhanPowerOfZero Attempting to exponentiate a value to a power of (2 - 2) of type 0 (the result will always be 1)
-%s:17 PhanModuloByZero Attempting to modulo a value with a modulus of 0 of type 0
-%s:19 PhanDivisionByZero Attempting to divide a value by a divisor of (1 - 1) of type 0
-%s:21 PhanPowerOfZero Attempting to exponentiate a value to a power of false of type false (the result will always be 1)
+%s:13 PhanModuloByZero Saw (1 % (2 - 2)) with modulus of type 0
+%s:14 PhanPowerOfZero Saw (1 ** (2 - 2)) exponentiating to a power of type 0 (the result will always be 1)
+%s:17 PhanModuloByZero Saw 0 with modulus of type 0
+%s:19 PhanDivisionByZero Saw (1 - 1) with a divisor of type 0
+%s:21 PhanPowerOfZero Saw false exponentiating to a power of type false (the result will always be 1)

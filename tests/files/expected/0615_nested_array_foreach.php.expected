@@ -1,2 +1,2 @@
 %s:26 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $key of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:28 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:28 PhanTypeSuspiciousEcho Suspicious argument $_2 of type \stdClass for an echo/print statement
