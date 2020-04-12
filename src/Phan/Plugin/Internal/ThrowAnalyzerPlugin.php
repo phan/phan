@@ -7,6 +7,7 @@ namespace Phan\Plugin\Internal;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -184,12 +185,28 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         return $union_type;
     }
 
+    /**
+     * @param Node $node a node of kind ast\AST_THROW
+     */
     protected function warnAboutPossiblyThrownType(
         Node $node,
         FunctionInterface $analyzed_function,
         UnionType $union_type,
         FunctionInterface $call = null
     ): void {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
+            $this->emitIssue(
+                Issue::TypeInvalidThrowStatementNonThrowable,
+                $node->lineno,
+                $analyzed_function->getRepresentationForIssue(),
+                ASTReverter::toShortString($node->children['expr']),
+                (string)$union_type,
+                '\Throwable'
+            );
+        }
         foreach ($union_type->getTypeSet() as $type) {
             $expanded_type = $type->asExpandedTypes($this->code_base);
             if (!$this->shouldWarnAboutThrowType($expanded_type)) {
@@ -213,6 +230,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                         Issue::ThrowTypeAbsent,
                         $node->lineno,
                         $analyzed_function->getRepresentationForIssue(),
+                        ASTReverter::toShortString($node->children['expr']),
                         (string)$union_type
                     );
                 }
@@ -233,6 +251,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                         Issue::ThrowTypeMismatch,
                         $node->lineno,
                         $analyzed_function->getRepresentationForIssue(),
+                        ASTReverter::toShortString($node->children['expr']),
                         (string)$union_type,
                         $throws_union_type
                     );

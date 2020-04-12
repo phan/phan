@@ -1,4 +1,4 @@
-%s:17 PhanTypeMismatchReturn Returning type string but getPrivate() is declared to return int
+%s:17 PhanTypeMismatchReturn Returning "private {$fields}" of type string but getPrivate() is declared to return int
 %s:39 PhanInvalidMixin Attempting to use a mixin of invalid or missing type \Missing
 %s:39 PhanInvalidMixin Attempting to use a mixin of invalid or missing type \NSMixin\Missing2
 %s:43 PhanUndeclaredMethod Call to undeclared method \NSMixin\MyClass::getMissing

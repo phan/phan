@@ -1,2 +1,2 @@
 %s:8 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type ?true(real=?true)
-%s:10 PhanTypeMismatchReturnReal Returning type ?true but test() is declared to return array
+%s:10 PhanTypeMismatchReturnReal Returning $v of type ?true but test() is declared to return array

@@ -1,2 +1,2 @@
-%s:12 PhanTypeMismatchReturn Returning type '\'xyxy\'' but test() is declared to return 'xyz'
-%s:14 PhanTypeMismatchReturn Returning type 'xy ' but test() is declared to return 'xyz'
+%s:12 PhanTypeMismatchReturn Returning "'{$x}{$x}'" of type '\'xyxy\'' but test() is declared to return 'xyz'
+%s:14 PhanTypeMismatchReturn Returning ($x . ' ') of type 'xy ' but test() is declared to return 'xyz'

@@ -1,1 +1,1 @@
-%s:10 PhanTypeMismatchReturn Returning type 'somefile.txt' but read() is declared to return array
+%s:10 PhanTypeMismatchReturn Returning $file of type 'somefile.txt' but read() is declared to return array

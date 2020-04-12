@@ -1,4 +1,4 @@
-%s:9 PhanTypeMismatchReturn Returning type string but test744SoftCast() is declared to return bool
-%s:12 PhanTypeMismatchReturnReal Returning type null but test744SoftCast() is declared to return bool
-%s:22 PhanTypeMismatchReturnReal Returning type array<string,\stdClass> (real type array) but test744() is declared to return int
-%s:30 PhanTypeMismatchReturnReal Returning type \Subclass744 (real type \Base744) but test744Object() is declared to return \RuntimeException (real type \Exception)
+%s:9 PhanTypeMismatchReturn Returning $s of type string but test744SoftCast() is declared to return bool
+%s:12 PhanTypeMismatchReturnReal Returning null of type null but test744SoftCast() is declared to return bool
+%s:22 PhanTypeMismatchReturnReal Returning $a of type array<string,\stdClass> (real type array) but test744() is declared to return int
+%s:30 PhanTypeMismatchReturnReal Returning $a of type \Subclass744 (real type \Base744) but test744Object() is declared to return \RuntimeException (real type \Exception)

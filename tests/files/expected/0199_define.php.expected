@@ -1,2 +1,2 @@
-%s:10 PhanTypeMismatchReturn Returning type 'a' but f() is declared to return int
-%s:15 PhanTypeMismatchReturn Returning type 'b' but g() is declared to return int
+%s:10 PhanTypeMismatchReturn Returning CON1 of type 'a' but f() is declared to return int
+%s:15 PhanTypeMismatchReturn Returning CON2 of type 'b' but g() is declared to return int

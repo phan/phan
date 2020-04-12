@@ -3,4 +3,4 @@ src/068_template_typeof.php:9 PhanPluginUnknownObjectMethodCall Phan could not i
 src/068_template_typeof.php:9 PhanUndeclaredThis Variable $this is undeclared
 src/068_template_typeof.php:10 PhanNonClassMethodCall Call to method method on non-class type class-string<TTemplateType>
 src/068_template_typeof.php:10 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $x->method() - inferred a type of class-string<TTemplateType>
-src/068_template_typeof.php:11 PhanTypeMismatchReturn Returning type class-string<TTemplateType> but Closure($x) is declared to return TTemplateType
+src/068_template_typeof.php:11 PhanTypeMismatchReturn Returning $x of type class-string<TTemplateType> but Closure($x) is declared to return TTemplateType

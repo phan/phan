@@ -395,6 +395,13 @@ class ASTReverter
                 }
                 return '"' . implode('', $parts) . '"';
             },
+            // Slightly better short placeholders than (unknown)
+            ast\AST_CLOSURE => static function (Node $_): string {
+                return '(function)';
+            },
+            ast\AST_ARROW_FUNC => static function (Node $_): string {
+                return '(fn)';
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

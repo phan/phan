@@ -7,4 +7,4 @@
 %s:19 PhanTypeMismatchArgument Argument 1 ($x) is [false] of type array{0:false} but \test692() takes list<\stdClass> defined at %s:8
 %s:19 PhanTypeMismatchArgument Argument 2 ($y) is [0] of type array{0:0} but \test692() takes non-empty-list<\stdClass>|non-empty-list<bool> defined at %s:8
 %s:24 PhanDebugAnnotation @phan-debug-var requested for variable $args - it has union type list<\stdClass>(real=list<\stdClass>)
-%s:26 PhanTypeMismatchReturn Returning type list<\stdClass> but test_cast() is declared to return array{1:\stdClass}
+%s:26 PhanTypeMismatchReturn Returning $args of type list<\stdClass> but test_cast() is declared to return array{1:\stdClass}

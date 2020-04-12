@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchReturn Returning type true but test() is declared to return void
+%s:6 PhanTypeMismatchReturn Returning true of type true but test() is declared to return void

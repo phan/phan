@@ -1,1 +1,1 @@
-%s:55 PhanTypeMismatchReturnReal Returning type null but current() is declared to return \NS630\AbstractNode
+%s:55 PhanTypeMismatchReturnReal Returning null of type null but current() is declared to return \NS630\AbstractNode

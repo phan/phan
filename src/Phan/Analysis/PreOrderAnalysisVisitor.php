@@ -684,6 +684,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->emitIssue(
                     Issue::TypeMismatchReturn,
                     $node->lineno,
+                    '(a Generator due to existence of yield statements)',
                     '\\Generator',
                     $func->getNameForIssue(),
                     (string)$func_return_type

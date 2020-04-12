@@ -1,2 +1,2 @@
 %s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is ${$myRef} of type 'x' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:7 PhanTypeMismatchReturnReal Returning type 2 but Closure() : \stdClass is declared to return \stdClass
+%s:7 PhanTypeMismatchReturnReal Returning $myLongVariable of type 2 but Closure() : \stdClass is declared to return \stdClass

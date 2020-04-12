@@ -3,10 +3,11 @@ Phan NEWS
 Apr 11 2020, Phan 2.7.1
 -----------------------
 
-New features(CLI, Configs):
+New features(Analysis):
 + Improve the output of `tool/make_stubs`. Use better defaults than `null`.
   Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
   (`default` is a reserved keyword used in switch statements)
++ Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable` (#3853)
 
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.

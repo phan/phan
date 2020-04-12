@@ -139,6 +139,7 @@ class Issue
     public const TypeInvalidExpressionArrayDestructuring = 'PhanTypeInvalidExpressionArrayDestructuring';
     public const TypeInvalidThrowsNonObject             = 'PhanTypeInvalidThrowsNonObject';
     public const TypeInvalidThrowsNonThrowable          = 'PhanTypeInvalidThrowsNonThrowable';
+    public const TypeInvalidThrowStatementNonThrowable          = 'PhanTypeInvalidThrowStatementNonThrowable';
     public const TypeInvalidThrowsIsTrait               = 'PhanTypeInvalidThrowsIsTrait';
     public const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     public const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
@@ -794,7 +795,7 @@ class Issue
                 self::InvalidWriteToTemporaryExpression,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
-                "Cannot use temporary expression (of type {TYPE}) in write context",
+                "Cannot use temporary expression ({CODE} of type {TYPE}) in write context",
                 self::REMEDIATION_A,
                 17003
             ),
@@ -875,7 +876,7 @@ class Issue
                 self::SyntaxMixedKeyNoKeyArrayDestructuring,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
-                'Cannot mix keyed and unkeyed array entries in array destructuring assignments',
+                'Cannot mix keyed and unkeyed array entries in array destructuring assignments ({CODE})',
                 self::REMEDIATION_A,
                 17013
             ),
@@ -1498,7 +1499,7 @@ class Issue
                 self::TypeMismatchGeneratorYieldValue,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Yield statement has a value with type {TYPE} but {FUNCTIONLIKE} is declared to yield values of type {TYPE} in {TYPE}",
+                "Yield statement has a value {CODE} with type {TYPE} but {FUNCTIONLIKE} is declared to yield values of type {TYPE} in {TYPE}",
                 self::REMEDIATION_B,
                 10067
             ),
@@ -1506,7 +1507,7 @@ class Issue
                 self::TypeMismatchGeneratorYieldKey,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Yield statement has a key with type {TYPE} but {FUNCTIONLIKE} is declared to yield keys of type {TYPE} in {TYPE}",
+                "Yield statement has a key {CODE} with type {TYPE} but {FUNCTIONLIKE} is declared to yield keys of type {TYPE} in {TYPE}",
                 self::REMEDIATION_B,
                 10068
             ),
@@ -1514,7 +1515,7 @@ class Issue
                 self::TypeInvalidYieldFrom,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Yield from statement was passed an invalid expression of type {TYPE} (expected Traversable/array)",
+                "Yield from statement was passed an invalid expression {CODE} of type {TYPE} (expected Traversable/array)",
                 self::REMEDIATION_B,
                 10069
             ),
@@ -1570,7 +1571,7 @@ class Issue
                 self::TypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
             ),
@@ -1578,7 +1579,7 @@ class Issue
                 self::TypeMismatchReturnNullable,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (expected returned value to be non-nullable)",
                 self::REMEDIATION_B,
                 10107
             ),
@@ -1586,7 +1587,7 @@ class Issue
                 self::TypeMismatchReturnReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Returning type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS}",
+                "Returning {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS}",
                 self::REMEDIATION_B,
                 10138
             ),
@@ -1594,7 +1595,7 @@ class Issue
                 self::PartialTypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10060
             ),
@@ -1602,7 +1603,7 @@ class Issue
                 self::PossiblyNullTypeReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10061
             ),
@@ -1610,7 +1611,7 @@ class Issue
                 self::PossiblyFalseTypeReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10062
             ),
@@ -2134,6 +2135,14 @@ class Issue
                 "@throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception",
                 self::REMEDIATION_B,
                 10053
+            ),
+            new Issue(
+                self::TypeInvalidThrowStatementNonThrowable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} can throw {CODE} of type {TYPE} here which can't cast to {TYPE}",
+                self::REMEDIATION_B,
+                10158
             ),
             new Issue(
                 self::TypeSuspiciousStringExpression,
@@ -4682,7 +4691,7 @@ class Issue
                 self::ThrowTypeAbsent,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{FUNCTIONLIKE} can throw {TYPE} here, but has no '@throws' declarations for that class",
+                "{FUNCTIONLIKE} can throw {CODE} of type {TYPE} here, but has no '@throws' declarations for that class",
                 self::REMEDIATION_A,
                 16011
             ),
@@ -4698,7 +4707,7 @@ class Issue
                 self::ThrowTypeMismatch,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{FUNCTIONLIKE} throws {TYPE}, but it only has declarations of '@throws {TYPE}'",
+                "{FUNCTIONLIKE} throws {CODE} of type {TYPE} here, but it only has declarations of '@throws {TYPE}'",
                 self::REMEDIATION_A,
                 16013
             ),

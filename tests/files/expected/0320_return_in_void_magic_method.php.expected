@@ -1,13 +1,13 @@
 %s:6 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__construct, expected void return type
-%s:7 PhanTypeMismatchReturn Returning type false but __construct() is declared to return void
+%s:7 PhanTypeMismatchReturn Returning false of type false but __construct() is declared to return void
 %s:16 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__clone, expected void return type
-%s:17 PhanTypeMismatchReturn Returning type false but __clone() is declared to return void
+%s:17 PhanTypeMismatchReturn Returning false of type false but __clone() is declared to return void
 %s:31 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__destruct, expected void return type
-%s:32 PhanTypeMismatchReturn Returning type false but __destruct() is declared to return void
+%s:32 PhanTypeMismatchReturn Returning false of type false but __destruct() is declared to return void
 %s:51 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__set, expected void return type
-%s:52 PhanTypeMismatchReturn Returning type false but __set() is declared to return void
+%s:52 PhanTypeMismatchReturn Returning false of type false but __set() is declared to return void
 %s:71 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__unset, expected void return type
-%s:72 PhanTypeMismatchReturn Returning type false but __unset() is declared to return void
+%s:72 PhanTypeMismatchReturn Returning false of type false but __unset() is declared to return void
 %s:77 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__wakeup, expected void return type
-%s:78 PhanTypeMismatchReturn Returning type false but __wakeup() is declared to return void
-%s:84 PhanTypeMismatchReturn Returning type 'data' but __set_state() is declared to return object
+%s:78 PhanTypeMismatchReturn Returning false of type false but __wakeup() is declared to return void
+%s:84 PhanTypeMismatchReturn Returning 'data' of type 'data' but __set_state() is declared to return object

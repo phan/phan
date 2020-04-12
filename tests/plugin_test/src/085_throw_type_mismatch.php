@@ -6,6 +6,8 @@ use InvalidArgumentException;
 use RuntimeException;
 use TypeError;
 
+final class FinalClass85 {}
+
 class C {
     /**
      * @throws InvalidArgumentException
@@ -13,6 +15,10 @@ class C {
     public function main() {
         if (rand() % 2 > 0) {
             throw new RuntimeException("odd");
+        } elseif (rand() % 3 > 0) {
+            throw null;
+        } elseif (rand() % 4 > 0) {
+            throw new FinalClass85();
         }
         $this->throw();
     }

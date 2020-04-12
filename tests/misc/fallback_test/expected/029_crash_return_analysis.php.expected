@@ -1,2 +1,2 @@
 src/029_crash_return_analysis.php:6 PhanSyntaxError Cannot use empty array elements in arrays
-src/029_crash_return_analysis.php:6 PhanTypeMismatchReturn Returning type array{0:'value',1:array{0:2}} but testarrayreturn() is declared to return int[]
+src/029_crash_return_analysis.php:6 PhanTypeMismatchReturn Returning [,'value',[2]] of type array{0:'value',1:array{0:2}} but testarrayreturn() is declared to return int[]

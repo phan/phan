@@ -1,5 +1,5 @@
 %s:8 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $arg of type \A369 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:11 PhanTypeMismatchArgumentInternal Argument 2 ($callback) is (unknown) of type Closure(mixed):int but \array_filter() takes callable(mixed):bool|callable(mixed,mixed):bool
+%s:11 PhanTypeMismatchArgumentInternal Argument 2 ($callback) is (function) of type Closure(mixed):int but \array_filter() takes callable(mixed):bool|callable(mixed,mixed):bool
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $arg of type \A369 but \intdiv() takes int
 %s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is new stdClass() of type \stdClass but \strlen() takes string
 %s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is [] of type array{} but \strlen() takes string

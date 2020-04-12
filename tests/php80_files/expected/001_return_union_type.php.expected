@@ -1,4 +1,4 @@
-%s:7 PhanTypeMismatchReturn Returning type ?false|?object but testUnionType() is declared to return int|string
+%s:7 PhanTypeMismatchReturn Returning $b of type ?false|?object but testUnionType() is declared to return int|string
 %s:12 PhanTypeMismatchArgumentReal Argument 1 ($a) is null of type null but \testUnionType() takes int|string defined at %s:3
 %s:12 PhanTypeMismatchArgument Argument 2 ($b) is true of type true but \testUnionType() takes ?false|?object defined at %s:3
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($a) is new stdClass() of type \stdClass but \testUnionType() takes int|string defined at %s:3

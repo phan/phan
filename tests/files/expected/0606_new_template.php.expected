@@ -1,1 +1,1 @@
-%s:12 PhanTypeMismatchReturn Returning type array{0:T2,1:T1} but test_new_template() is declared to return array{0:T1,1:T2}
+%s:12 PhanTypeMismatchReturn Returning [new $s2(),new $s1()] of type array{0:T2,1:T1} but test_new_template() is declared to return array{0:T1,1:T2}

@@ -1,1 +1,1 @@
-%s:13 PhanTypeMismatchReturn Returning type array{0:'oops'} but test2() is declared to return \DateTime[]
+%s:13 PhanTypeMismatchReturn Returning ['oops'] of type array{0:'oops'} but test2() is declared to return \DateTime[]

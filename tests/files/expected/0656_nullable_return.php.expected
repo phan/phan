@@ -1,1 +1,1 @@
-%s:4 PhanTypeMismatchReturnNullable Returning type ?\stdClass but foo656() is declared to return \stdClass (expected returned value to be non-nullable)
+%s:4 PhanTypeMismatchReturnNullable Returning $x of type ?\stdClass but foo656() is declared to return \stdClass (expected returned value to be non-nullable)

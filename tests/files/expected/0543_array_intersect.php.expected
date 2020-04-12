@@ -1,1 +1,1 @@
-%s:18 PhanTypeMismatchReturn Returning type array<string,string> but test543b() is declared to return array<string,int>
+%s:18 PhanTypeMismatchReturn Returning array_intersect_key(['a'=>'aa','b'=>'bb','c'=>'cc'], ['a'=>1,'c'=>new stdClass(),'404'=>true]) of type array<string,string> but test543b() is declared to return array<string,int>

@@ -335,7 +335,8 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($bitmask === 3) {
                 $this->emitIssue(
                     Issue::SyntaxMixedKeyNoKeyArrayDestructuring,
-                    $c->lineno ?? $node->lineno
+                    $c->lineno ?? $node->lineno,
+                    ASTReverter::toShortString($node)
                 );
                 return;
             }
@@ -801,6 +802,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::InvalidWriteToTemporaryExpression,
                 $node->lineno,
+                ASTReverter::toShortString($node),
                 Type::fromObject($expr_node)
             );
             return $this->context;
