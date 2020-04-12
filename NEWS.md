@@ -8,6 +8,10 @@ New features(CLI, Configs):
   Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
   (`default` is a reserved keyword used in switch statements)
 
+Bug Fixes:
++ Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
+  The version used caused issues on 32-bit php 7.1 installations, and a slight slowdown in php 7.1.
+
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.
 + Infer that some new functions in PHP 8.0-dev should be used in `UseReturnValuePlugin`
