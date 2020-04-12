@@ -126,6 +126,12 @@ if (extension_loaded('ast')) {
         phan_output_ast_installation_instructions();
     }
 }
+// Load the more efficient spl_object_id polyfill before symfony/polyfill-php72 can be loaded.
+// Older releases of symfony/polyfill-php72 were buggy for 32-bit builds (https://github.com/symfony/polyfill/pull/248)
+if (!function_exists('spl_object_id')) {
+    require_once dirname(__DIR__) . '/spl_object_id.php';
+}
+
 // Use the composer autoloader
 $found_autoloader = false;
 foreach ([
