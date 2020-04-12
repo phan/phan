@@ -1584,6 +1584,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         Issue::TypePossiblyInvalidDimOffset,
                         $node->lineno,
                         ASTReverter::toShortString($node->children['dim']),
+                        ASTReverter::toShortString($node->children['expr']),
                         $union_type
                     );
                     if ($treat_undef_as_nullable || Config::getValue('convert_possibly_undefined_offset_to_nullable')) {
@@ -1614,6 +1615,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno,
+                    ASTReverter::toShortString($node->children['expr']),
                     (string)$union_type
                 );
             }
@@ -1671,7 +1673,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($node->flags & self::FLAG_IGNORE_NULLABLE)) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNull,
-                    $node->lineno
+                    $node->lineno,
+                    ASTReverter::toShortString($node->children['expr'])
                 );
             }
             if ($union_type->getRealUnionType()->isNull()) {
@@ -1732,6 +1735,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
                     $node->lineno,
+                    ASTReverter::toShortString($node->children['expr']),
                     (string)$union_type
                 );
                 return $element_types;
@@ -1740,6 +1744,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno,
+                    ASTReverter::toShortString($node->children['expr']),
                     (string)$union_type
                 );
             }
@@ -1791,6 +1796,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node->children['dim']->lineno ?? $node->lineno,
                 [
                     $dim_type,
+                    ASTReverter::toShortString($node->children['expr']),
                     (string)$union_type
                 ]
             )
@@ -1846,6 +1852,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $dim_node->lineno ?? $node->lineno,
                         [
                             is_scalar($dim_value) ? StringUtil::jsonEncode($dim_value) : ASTReverter::toShortString($dim_value),
+                            ASTReverter::toShortString($node->children['expr']),
                             (string)$union_type
                         ]
                     )
@@ -1874,7 +1881,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::fromType(Issue::TypeInvalidDimOffset)(
                         $this->context->getFile(),
                         $dim_node->lineno ?? $node->lineno,
-                        [StringUtil::jsonEncode($dim_value), (string)$union_type]
+                        [StringUtil::jsonEncode($dim_value), ASTReverter::toShortString($node->children['expr']), (string)$union_type]
                     )
                 );
                 if ($this->should_catch_issue_exception) {

@@ -1,1 +1,1 @@
-%s:14 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'bar' of array type array{baz:1,bar?:1}
+%s:14 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'bar' of $array of array type array{baz:1,bar?:1}

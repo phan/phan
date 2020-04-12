@@ -1,7 +1,7 @@
-%s:22 PhanTypeSuspiciousEcho Suspicious argument \BaseInterface578 for an echo/print statement
+%s:22 PhanTypeSuspiciousEcho Suspicious argument $a of type \BaseInterface578 for an echo/print statement
 %s:24 PhanRedundantCondition Redundant attempt to cast $b of type \Subclass578A to \BaseInterface578
-%s:25 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
-%s:28 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
-%s:31 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
-%s:34 PhanTypeSuspiciousEcho Suspicious argument \SubInterface578|\Subclass578A for an echo/print statement
-%s:39 PhanTypeSuspiciousEcho Suspicious argument \BaseInterface578 for an echo/print statement
+%s:25 PhanTypeSuspiciousEcho Suspicious argument $b of type \Subclass578A for an echo/print statement
+%s:28 PhanTypeSuspiciousEcho Suspicious argument $c of type \Subclass578A for an echo/print statement
+%s:31 PhanTypeSuspiciousEcho Suspicious argument $d of type \Subclass578A for an echo/print statement
+%s:34 PhanTypeSuspiciousEcho Suspicious argument $e of type \SubInterface578|\Subclass578A for an echo/print statement
+%s:39 PhanTypeSuspiciousEcho Suspicious argument $f of type \BaseInterface578 for an echo/print statement

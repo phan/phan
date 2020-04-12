@@ -1,2 +1,2 @@
-%s:34 PhanTypeSuspiciousEcho Suspicious argument \Subclass552 for an echo/print statement
-%s:38 PhanTypeSuspiciousEcho Suspicious argument \Subclass552 for an echo/print statement
+%s:34 PhanTypeSuspiciousEcho Suspicious argument $s of type \Subclass552 for an echo/print statement
+%s:38 PhanTypeSuspiciousEcho Suspicious argument $s2 of type \Subclass552 for an echo/print statement

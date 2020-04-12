@@ -1,8 +1,8 @@
-%s:3 PhanTypeInvalidDimOffset Invalid offset rand(0, 10) of array type array{}
-%s:4 PhanTypeInvalidDimOffset Invalid offset rand(0, 10) of array type array{}
-%s:5 PhanTypeInvalidDimOffset Invalid offset 0 of array type array{}
-%s:6 PhanTypeInvalidDimOffset Invalid offset 0 of array type ''
-%s:7 PhanTypeInvalidDimOffset Invalid offset int of array type ''
-%s:11 PhanTypeInvalidDimOffset Invalid offset -2 of array type '0'
-%s:12 PhanTypeInvalidDimOffset Invalid offset 1 of array type '0'
-%s:14 PhanTypeInvalidDimOffset Invalid offset 4 of array type 'test'
+%s:3 PhanTypeInvalidDimOffset Invalid offset rand(0, 10) of [] of array type array{}
+%s:4 PhanTypeInvalidDimOffset Invalid offset rand(0, 10) of $x of array type array{}
+%s:5 PhanTypeInvalidDimOffset Invalid offset 0 of $x of array type array{}
+%s:6 PhanTypeInvalidDimOffset Invalid offset 0 of '' of array type ''
+%s:7 PhanTypeInvalidDimOffset Invalid offset int of '' of array type ''
+%s:11 PhanTypeInvalidDimOffset Invalid offset -2 of '0' of array type '0'
+%s:12 PhanTypeInvalidDimOffset Invalid offset 1 of '0' of array type '0'
+%s:14 PhanTypeInvalidDimOffset Invalid offset 4 of $x of array type 'test'

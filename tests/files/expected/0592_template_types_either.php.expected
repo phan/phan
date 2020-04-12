@@ -1,5 +1,5 @@
 %s:80 PhanTypeMismatchArgument Argument 1 ($e) is $e of type \MyNS\Either|\MyNS\Either<\stdClass,\stdClass> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
-%s:92 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:92 PhanTypeSuspiciousEcho Suspicious argument $e->getLeft() of type \stdClass for an echo/print statement
 %s:100 PhanTypeMismatchArgument Argument 1 ($e) is $la of type \MyNS\Either|\MyNS\Either<T,mixed>|\MyNS\Either<\ArrayObject,mixed>|\MyNS\Left|\MyNS\Left<\ArrayObject> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
 %s:102 PhanTypeMismatchArgumentReal Argument 1 ($e) is $ra of type \MyNS\Either|\MyNS\Either<mixed,T>|\MyNS\Either<mixed,\ArrayObject>|\MyNS\Right|\MyNS\Right<\ArrayObject> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> (real type \MyNS\Left) defined at %s:90
 %s:103 PhanTypeMismatchArgumentReal Argument 1 ($e) is $rs of type \MyNS\Either|\MyNS\Either<mixed,T>|\MyNS\Either<mixed,\stdClass>|\MyNS\Right|\MyNS\Right<\stdClass> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> (real type \MyNS\Left) defined at %s:90

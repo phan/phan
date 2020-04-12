@@ -1,2 +1,2 @@
-%s:4 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of array type array{first:2,offset:'value'}
-%s:4 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:4 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of $x of array type array{first:2,offset:'value'}
+%s:4 PhanTypeSuspiciousEcho Suspicious argument $x['otherOffset'] of type null for an echo/print statement

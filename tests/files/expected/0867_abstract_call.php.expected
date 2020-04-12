@@ -1,7 +1,7 @@
-%s:7 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar()
-%s:8 PhanAbstractStaticMethodCallInStatic Potentially calling an abstract static method \NS867\Base::bar() with static:: (the calling static method's class scope may be an abstract class)
-%s:12 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar()
-%s:27 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar()
-%s:33 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\I::testMethod()
-%s:37 PhanAbstractStaticMethodCallInTrait Potentially calling an abstract static method \NS867\T::callAbstract() on a trait, if the caller's method is called on the trait instead of a concrete class using the trait
-%s:38 PhanAbstractStaticMethodCallInTrait Potentially calling an abstract static method \NS867\T::callAbstract() on a trait, if the caller's method is called on the trait instead of a concrete class using the trait
+%s:7 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar() in self::bar()
+%s:8 PhanAbstractStaticMethodCallInStatic Potentially calling an abstract static method \NS867\Base::bar() with static:: in static::bar() (the calling static method's class scope may be an abstract class)
+%s:12 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar() in self::bar()
+%s:27 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\Base::bar() in Base::bar()
+%s:33 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS867\I::testMethod() in I::testMethod()
+%s:37 PhanAbstractStaticMethodCallInTrait Potentially calling an abstract static method \NS867\T::callAbstract() on a trait in static::callAbstract(), if the caller's method is called on the trait instead of a concrete class using the trait
+%s:38 PhanAbstractStaticMethodCallInTrait Potentially calling an abstract static method \NS867\T::callAbstract() on a trait in self::callAbstract(), if the caller's method is called on the trait instead of a concrete class using the trait

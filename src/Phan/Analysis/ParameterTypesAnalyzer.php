@@ -81,7 +81,7 @@ class ParameterTypesAnalyzer
         // Look at each parameter to make sure their types
         // are valid
         $is_optional_seen = false;
-        foreach ($method->getParameterList() as $parameter) {
+        foreach ($method->getParameterList() as $i => $parameter) {
             $union_type = $parameter->getUnionType();
 
             if ($parameter->isOptional()) {
@@ -92,7 +92,9 @@ class ParameterTypesAnalyzer
                         $code_base,
                         $method->getContext(),
                         Issue::ParamReqAfterOpt,
-                        $parameter->getFileRef()->getLineNumberStart()
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        '(' . $parameter->toStubString() . ')',
+                        '(' . $method->getParameterList()[$i - 1]->toStubString() . ')'
                     );
                 }
             }

@@ -1,2 +1,2 @@
 %s:10 PhanTypeMismatchArgumentInternal Argument 2 ($haystack) is $this->haystack of type int but \in_array() takes array
-%s:14 PhanTypeSuspiciousEcho Suspicious argument bool for an echo/print statement
+%s:14 PhanTypeSuspiciousEcho Suspicious argument $storage335->find('apple') of type bool for an echo/print statement

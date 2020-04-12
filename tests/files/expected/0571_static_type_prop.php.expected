@@ -8,5 +8,5 @@
 %s:37 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $f->parent of type \Chain|\Fence|null but \strlen() takes string
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $f->parent2 of type ?\Chain|?\Fence|?bool but \strlen() takes string
 %s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $f->parent3 of type \Chain|\Fence|false but \strlen() takes string
-%s:40 PhanTypeSuspiciousEcho Suspicious argument \Chain for an echo/print statement
-%s:41 PhanTypeSuspiciousEcho Suspicious argument \Chain for an echo/print statement
+%s:40 PhanTypeSuspiciousEcho Suspicious argument Request::$static_prop_parent of type \Chain for an echo/print statement
+%s:41 PhanTypeSuspiciousEcho Suspicious argument Chain::$static_prop_parent of type \Chain for an echo/print statement

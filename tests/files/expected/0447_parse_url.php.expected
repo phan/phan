@@ -1,7 +1,7 @@
 %s:5 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x['port'] of type int but \strlen() takes string
-%s:5 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'port' of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
+%s:5 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'port' of $x of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
 %s:6 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $x['host'] of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:6 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'host' of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
-%s:7 PhanTypeInvalidDimOffset Invalid offset "Host" of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
-%s:7 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:6 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'host' of $x of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
+%s:7 PhanTypeInvalidDimOffset Invalid offset "Host" of $x of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
+%s:7 PhanTypeSuspiciousEcho Suspicious argument $x['Host'] of type null for an echo/print statement
 %s:10 PhanTypeMismatchArgumentInternal Argument 1 ($var) is parse_url('http://example.com:8080/path?key=value', PHP_URL_HOST) of type false|int|null|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

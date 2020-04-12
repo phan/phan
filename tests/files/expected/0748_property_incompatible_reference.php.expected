@@ -1,13 +1,13 @@
 %s:25 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type 'default' but \fn16b() takes a reference of type array (no real type)
 %s:25 PhanTypeMismatchArgument Argument 3 ($x) is $this->x of type 'default' but \fn16b() takes array defined at %s:13
-%s:25 PhanTypeMismatchPropertyByRef array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
+%s:25 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
 %s:31 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass->x with type string but \fn16() takes a reference of type array
-%s:31 PhanTypeMismatchPropertyByRef array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:7
+%s:31 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:7
 %s:32 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16() takes a reference of type array
-%s:32 PhanTypeMismatchPropertyByRef array{0:string,1:string} may end up assigned to property \MyClass::$phpdocString of type string by reference at %s:7
+%s:32 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass::$phpdocString of type string by reference at %s:7
 %s:34 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass->x with type string but \fn16b() takes a reference of type array
 %s:34 PhanTypeMismatchArgument Argument 3 ($x) is $m->x of type string but \fn16b() takes array defined at %s:13
-%s:34 PhanTypeMismatchPropertyByRef array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
+%s:34 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
 %s:35 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16b() takes a reference of type array
 %s:35 PhanTypeMismatchArgument Argument 3 ($x) is MyClass::$phpdocString of type string but \fn16b() takes array defined at %s:13
-%s:35 PhanTypeMismatchPropertyByRef array{0:string,1:string} may end up assigned to property \MyClass::$phpdocString of type string by reference at %s:14
+%s:35 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass::$phpdocString of type string by reference at %s:14

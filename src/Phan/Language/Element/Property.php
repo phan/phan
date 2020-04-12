@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use Closure;
+use Phan\AST\ASTReverter;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -464,10 +465,11 @@ class Property extends ClassElement
                     Issue::maybeEmit(
                         $future_union_type->getCodeBase(),
                         $future_union_type->getContext(),
-                        Issue::TypeInvalidPropertyDefaultReal,
+                        Issue::TypeMismatchPropertyDefaultReal,
                         $future_union_type->getContext()->getLineNumberStart(),
                         $this->real_union_type,
                         $this->name,
+                        ASTReverter::toShortString($future_union_type->getNode()),
                         $union_type
                     );
             }

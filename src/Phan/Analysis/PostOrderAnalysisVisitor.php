@@ -275,6 +275,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
                     $node->lineno,
+                    ASTReverter::toShortString($expr_node),
                     (string)$resolved_union_type
                 );
             }
@@ -701,6 +702,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::TypeSuspiciousEcho,
                 $expr_node->lineno ?? $node->lineno,
+                ASTReverter::toShortString($expr_node),
                 (string)$type
             );
         }
@@ -863,6 +865,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
+    /** @internal used by AssignOperatorAnalysisVisitor */
     public const ISSUE_TYPES_RIGHT_SIDE_ZERO = [
         flags\BINARY_POW => Issue::PowerOfZero,
         flags\BINARY_DIV => Issue::DivisionByZero,
@@ -886,7 +889,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 self::ISSUE_TYPES_RIGHT_SIDE_ZERO[$node->flags],
                 $node->children['right']->lineno ?? $node->lineno,
-                ASTReverter::toShortString($node->children['right']),
+                ASTReverter::toShortString($node),
                 $right
             );
         }
@@ -969,7 +972,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopEmpty,
-                $node->lineno
+                $node->lineno,
+                ASTReverter::toShortString($node->children['expr'])
             );
         }
         return $this->context;
@@ -1005,7 +1009,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node of type AST_EMPTY to parse
+     * A node of type ast\AST_CAST to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
@@ -1017,7 +1021,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::NoopCast,
                 $node->lineno,
-                self::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown'
+                self::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown',
+                ASTReverter::toShortString($node->children['expr'])
             );
         }
         if ($node->flags === flags\TYPE_NULL) {
@@ -1032,7 +1037,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node of type AST_EMPTY to parse
+     * A node of kind ast\AST_ISSET to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
@@ -1043,7 +1048,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopIsset,
-                $node->lineno
+                $node->lineno,
+                ASTReverter::toShortString($node->children['var'])
             );
         }
         return $this->context;

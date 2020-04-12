@@ -7,11 +7,16 @@ New features(Analysis):
 + Improve the output of `tool/make_stubs`. Use better defaults than `null`.
   Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
   (`default` is a reserved keyword used in switch statements)
-+ Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable` (#3853)
++ Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable`. (#3853)
++ Include the relevant expression in more issue messages for type errors. (#3844)
 
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
   The version used caused issues on 32-bit php 7.1 installations, and a slight slowdown in php 7.1.
+
+Miscellaneous:
++ Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
+  and `TypeMismatchPropertyDefaultReal` (#3068)
 
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.

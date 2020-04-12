@@ -1,3 +1,3 @@
 %s:10 PhanSuspiciousMagicConstant Suspicious reference to magic constant __METHOD__: used inside of a function/closure instead of a method
 %s:10 PhanUndeclaredMagicConstant Reference to magic constant __CLASS__ that is undeclared in the current scope: used outside of classlike
-%s:13 PhanParamReqAfterOpt Required argument follows optional
+%s:13 PhanParamReqAfterOpt Required parameter (int $b) follows optional (int $a = 2)

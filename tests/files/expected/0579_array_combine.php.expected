@@ -1,1 +1,1 @@
-%s:17 PhanTypeMismatchProperty Assigning array<int,'x'>|array<int,'y'> to property but \TestCombine->array is array<string,string>
+%s:17 PhanTypeMismatchProperty Assigning array_combine($other_keys, $values) of type array<int,'x'>|array<int,'y'> to property but \TestCombine->array is array<string,string>

@@ -1,2 +1,2 @@
-%s:15 PhanTypeMismatchPropertyReal Assigning array to property but \App\Data\Entities\Product\ProductEntity->domainExtension is ?string
-%s:35 PhanTypeMismatchPropertyReal Assigning ?object to property but \App\Data\Entities\Product\ProductEntity->domainExtension is ?string
+%s:15 PhanTypeMismatchPropertyReal Assigning $domainExtension of type array to property but \App\Data\Entities\Product\ProductEntity->domainExtension is ?string
+%s:35 PhanTypeMismatchPropertyReal Assigning $domainExtension of type ?object to property but \App\Data\Entities\Product\ProductEntity->domainExtension is ?string

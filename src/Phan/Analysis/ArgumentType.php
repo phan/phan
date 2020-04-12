@@ -189,7 +189,8 @@ final class ArgumentType
             $context,
             $issue_type,
             $node->lineno,
-            $method->getRepresentationForIssue()
+            $method->getRepresentationForIssue(),
+            ASTReverter::toShortString($node)
         );
     }
 

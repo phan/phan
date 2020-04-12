@@ -332,6 +332,7 @@ class ASTReverter
                 );
             },
             ast\AST_NEW => static function (Node $node): string {
+                // TODO: add parenthesis in case this is used as (new X())->method(), or properties, but only when necessary
                 return \sprintf(
                     'new %s%s',
                     self::toShortString($node->children['class']),

@@ -1,1 +1,1 @@
-%s:4 PhanTypeArraySuspicious Suspicious array access to \A
+%s:4 PhanTypeArraySuspicious Suspicious array access to $a of type \A
