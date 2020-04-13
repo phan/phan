@@ -1,5 +1,6 @@
 %s:3 PhanUnusedVariable Unused definition of variable $v
 %s:6 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array (iterating has no side effects)
+%s:6 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
 %s:6 PhanUnusedVariable Unused definition of variable $v
 %s:9 PhanTypeNoPropertiesForeach Class \ArrayAccess was passed to foreach, but it does not extend Traversable and doesn't have any declared properties. (This check excludes dynamic properties)
 %s:9 PhanUnusedVariable Unused definition of variable $v

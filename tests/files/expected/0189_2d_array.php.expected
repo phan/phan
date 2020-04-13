@@ -1,1 +1,2 @@
+%s:7 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
 %s:8 PhanUnusedVariable Unused definition of variable $x

@@ -1,0 +1,4 @@
+src/172_infer_pure_useless_loop.php:13 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+src/172_infer_pure_useless_loop.php:19 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
+src/172_infer_pure_useless_loop.php:24 PhanSideEffectFreeDoWhileBody Saw a do-while loop which probably has no side effects
+src/172_infer_pure_useless_loop.php:33 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects

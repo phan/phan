@@ -855,6 +855,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             if (StringUtil::isNonZeroLengthString($signature)) {
                 $fragment = "$signature $fragment";
             }
+            $fragments[] = $fragment;
         }
         $signature = static::NAME . '(' . \implode(',', $fragments) . ')';
         if (StringUtil::isNonZeroLengthString($return_type)) {

@@ -6,8 +6,10 @@
 %s:5 PhanUnusedVariable Unused definition of variable $arg
 %s:6 PhanSyntaxEmptyListArrayDestructuring Cannot use an empty list in the left hand side of an array destructuring operation
 %s:8 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array (iterating has no side effects)
+%s:8 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
 %s:8 PhanSyntaxEmptyListArrayDestructuring Cannot use an empty list in the left hand side of an array destructuring operation
 %s:10 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array (iterating has no side effects)
+%s:10 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
 %s:10 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments ([$a,'other'=>$b])
 %s:10 PhanUnusedVariable Unused definition of variable $a
 %s:10 PhanUnusedVariable Unused definition of variable $b

@@ -11,12 +11,15 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\Plugin\Internal\UseReturnValuePlugin\PureMethodGraph;
 use Phan\Plugin\Internal\UseReturnValuePlugin\UseReturnValueVisitor;
+
+use function is_string;
 
 /**
  * Used to check if a method is pure.
@@ -543,32 +546,45 @@ class InferPureVisitor extends AnalysisVisitor
 
     public function visitMethodCall(Node $node): void
     {
-        if (!$this->context->isInClassScope()) {
-            // We don't track variables in UseReturnValuePlugin
-            throw new NodeException($node, 'method call seen outside class scope');
-        }
-
         $method_name = $node->children['method'];
         if (!\is_string($method_name)) {
             throw new NodeException($node);
         }
         $expr = $node->children['expr'];
-        if (!($expr instanceof Node)) {
+        if (!$expr instanceof Node) {
             throw new NodeException($node);
         }
-        if ($expr->kind !== ast\AST_VAR) {
-            throw new NodeException($expr, 'not a var');
-        }
-        if ($expr->children['name'] !== 'this') {
-            throw new NodeException($expr, 'not $this');
-        }
-        $class = $this->context->getClassInScope($this->code_base);
+        $class = $this->getClassForVariable($expr);
         if (!$class->hasMethodWithName($this->code_base, $method_name)) {
             throw new NodeException($expr, 'does not have method');
         }
         $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method_name));
 
         $this->visitArgList($node->children['args']);
+    }
+
+    protected function getClassForVariable(Node $expr): Clazz
+    {
+        if (!$this->context->isInClassScope()) {
+            // We don't track variables in UseReturnValuePlugin
+            throw new NodeException($expr, 'method call seen outside class scope');
+        }
+        if ($expr->kind !== ast\AST_VAR) {
+            throw new NodeException($expr, 'expected simple variable');
+        }
+
+        $var_name = $expr->children['name'];
+        if (!is_string($var_name)) {
+            // TODO: Support static properties, (new X()), other expressions with inferable types
+            throw new NodeException($expr, 'variable name is not a string');
+        }
+        if ($var_name !== 'this') {
+            throw new NodeException($expr, 'not $this');
+        }
+        if (!$this->context->isInClassScope()) {
+            throw new NodeException($expr, 'Not in class scope');
+        }
+        return $this->context->getClassInScope($this->code_base);
     }
 
     /**
