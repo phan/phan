@@ -1,2 +1,3 @@
 %s:38 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare [1,2] of type array{0:1,1:2} to 'string' of type 'string'
 %s:39 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare 42 of type 42 to [1,2] of type array{0:1,1:2}
+%s:41 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects

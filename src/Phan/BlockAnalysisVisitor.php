@@ -724,10 +724,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
         }
 
+        // Check if this is side effect free with the variable types inferred by analyzing the loop body (heuristic).
         if (Config::getValue('unused_variable_detection') &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $loop_node) &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $condition_node) &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node)) {
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $loop_node) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $condition_node) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $stmts_node)) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
 
@@ -854,8 +855,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
         }
 
+        // Check if this is side effect free with the variable types inferred by analyzing the loop body (heuristic).
         if (Config::getValue('unused_variable_detection') &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node)) {
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $node)) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
 
@@ -950,6 +952,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $inner_context = $this->analyzeAndGetUpdatedContext($inner_context, $node, $stmts_node);
         }
 
+        // TODO: Also warn about object types when iterating over that class should not have side effects
+        if (Config::getValue('unused_variable_detection') &&
+            !$expression_union_type->isEmpty() && !$expression_union_type->hasPossiblyObjectTypes() &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node)) {
+            VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
+        }
+
         if ($has_at_least_one_iteration) {
             $context = $inner_context;
             $context_list = [$inner_context];
@@ -1024,9 +1033,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     [(string)$union_type],
                     Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
                 );
-            } elseif (Config::getValue('unused_variable_detection') &&
-                InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node->children['stmts'])) {
-                VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
             }
         }
     }
@@ -1237,11 +1243,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         $context = $context->withExitLoop($node);
 
+        // Check if this is side effect free with the variable types inferred by analyzing the loop body (heuristic).
         if (Config::getValue('unused_variable_detection') &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node)) {
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $node)) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
-
 
         return $this->postOrderAnalyze($context, $node);
     }

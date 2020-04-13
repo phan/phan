@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Phan\AST;
 
+use ast;
 use ast\Node;
 use Phan\CodeBase;
 use Phan\Exception\NodeException;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\Plugin\Internal\UseReturnValuePlugin\UseReturnValueVisitor;
+
+use function is_string;
 
 /**
  * Used to check if a snippet in a method is pure.
@@ -54,14 +59,12 @@ class InferPureSnippetVisitor extends InferPureVisitor
             return false;
         }
     }
-    public function visitMethod(Node $node): void
-    {
-        parent::visitMethod($node);
-    }
+
     public function visitReturn(Node $node): void
     {
         throw new NodeException($node);
     }
+
     // visitThrow throws already
 
     // TODO(optional): Bother tracking actual loop/switch depth
@@ -102,6 +105,49 @@ class InferPureSnippetVisitor extends InferPureVisitor
         throw new NodeException($node);
     }
 
+    protected function getClassForVariable(Node $expr): Clazz
+    {
+        if ($expr->kind !== ast\AST_VAR) {
+            // TODO: Support static properties, (new X()), other expressions with inferable types
+            throw new NodeException($expr, 'expected simple variable');
+        }
+        $var_name = $expr->children['name'];
+        if (!is_string($var_name)) {
+            throw new NodeException($expr, 'variable name is not a string');
+        }
+        if ($var_name !== 'this') {
+            $variable = $this->context->getScope()->getVariableByNameOrNull($var_name);
+            if (!$variable) {
+                throw new NodeException($expr, 'unknown variable');
+            }
+
+            $union_type = $variable->getUnionType()->asNormalizedTypes();
+            $known_fqsen = null;
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $fqsen = $type->asFQSEN();
+                if ($known_fqsen && $known_fqsen !== $fqsen) {
+                    throw new NodeException($expr, 'unknown class');
+                }
+                $known_fqsen = $fqsen;
+            }
+            if (!$known_fqsen instanceof FullyQualifiedClassName) {
+                throw new NodeException($expr, 'unknown class');
+            }
+            if (!$this->code_base->hasClassWithFQSEN($known_fqsen)) {
+                throw new NodeException($expr, 'unknown class');
+            }
+            return $this->code_base->getClassByFQSEN($known_fqsen);
+        }
+        if (!$this->context->isInClassScope()) {
+            throw new NodeException($expr, 'Not in class scope');
+        }
+        return $this->context->getClassInScope($this->code_base);
+    }
+
+
     /**
      * @param Node $node the node of the call, with 'args'
      * @override
@@ -110,7 +156,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
     {
         if ($method->isPure()) {
             // avoid false positives - throw when calling void methods that were marked as free of side effects.
-            if ($method->isPHPInternal() || (($method instanceof Method && $method->isAbstract()) || !$method->hasReturn() || $method->hasYield())) {
+            if ($method->isPHPInternal() || (($method instanceof Method && $method->isAbstract()) || $method->hasReturn() || $method->hasYield())) {
                 return;
             }
         }
