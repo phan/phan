@@ -401,7 +401,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node @phan-unused-param
-     * A node to parse
+     * A node of kind ast\AST_SWITCH to parse
      *
      * @return Context
      * A new or an unchanged context resulting from

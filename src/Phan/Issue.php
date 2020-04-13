@@ -363,6 +363,7 @@ class Issue
     public const NoopTernary                   = 'PhanNoopTernary';
     public const NoopNew                       = 'PhanNoopNew';
     public const NoopNewNoSideEffects          = 'PhanNoopNewNoSideEffects';
+    public const NoopSwitchCases               = 'PhanNoopSwitchCases';
     public const UnreachableCatch              = 'PhanUnreachableCatch';
     public const UnreferencedClass             = 'PhanUnreferencedClass';
     public const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -3888,6 +3889,14 @@ class Issue
                 'Empty closure',
                 self::REMEDIATION_B,
                 6078
+            ),
+            new Issue(
+                self::NoopSwitchCases,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'This switch statement only has the default case',
+                self::REMEDIATION_B,
+                6088
             ),
 
             // Issue::CATEGORY_REDEFINE

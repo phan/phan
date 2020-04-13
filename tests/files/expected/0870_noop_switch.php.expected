@@ -1,0 +1,2 @@
+%s:3 PhanNoopSwitchCases This switch statement only has the default case
+%s:5 PhanNoopSwitchCases This switch statement only has the default case

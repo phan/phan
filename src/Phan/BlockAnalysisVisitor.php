@@ -1386,6 +1386,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         } else {
             $switch_variable_cond_variable_set = [];
         }
+        $children = $node->children;
+        if (\count($children) <= 1 && !isset($children[0]->children['cond'])) {
+            $this->emitIssue(
+                Issue::NoopSwitchCases,
+                end($this->parent_node_list)->lineno ?? $node->lineno
+            );
+        }
+
         $previous_child_context = null;
         foreach ($node->children as $i => $child_node) {
             if (!$child_node instanceof Node) {

@@ -966,6 +966,14 @@ Unused result of a string literal {STRING_LITERAL} near this line
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.7.0/tests/misc/fallback_test/expected/051_invalid_function_node.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.7.0/tests/misc/fallback_test/src/051_invalid_function_node.php#L3).
 
+## PhanNoopSwitchCases
+
+```
+This switch statement only has the default case
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0870_noop_switch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0870_noop_switch.php#L3).
+
 ## PhanNoopTernary
 
 ```
