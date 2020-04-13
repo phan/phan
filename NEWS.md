@@ -11,6 +11,15 @@ New features(Analysis):
 + Include the relevant expression in more issue messages for type errors. (#3844)
 + Emit `PhanNoopSwitchCases` when a switch statement only contains the default case.
 + Warn about unreferenced private methods of the same name as methods in ancestor classes, in dead code detection.
++ Warn about useless loops, when the following conditions hold
+
+  1. Variables defined within the loop aren't used outside of the loop
+     (requires `unused_variable_detection` to be enabled)
+  2. It's likely that the statements within the loop have no side effects
+     (this is only inferred for a subset of expressions in code)
+  3. The code is in a functionlike scope.
+
+  New issue types: `PhanSideEffectFreeForeachBody`, `PhanSideEffectFreeForBody`, `PhanSideEffectFreeWhileBody`, `PhanSideEffectFreeDoWhileBody`
 
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.

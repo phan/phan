@@ -1,0 +1,131 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Phan\AST;
+
+use ast\Node;
+use Phan\CodeBase;
+use Phan\Exception\NodeException;
+use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
+use Phan\Plugin\Internal\UseReturnValuePlugin;
+use Phan\Plugin\Internal\UseReturnValuePlugin\UseReturnValueVisitor;
+
+/**
+ * Used to check if a snippet in a method is pure.
+ * Throws NodeException if it sees a node that isn't likely to be in a method that is free of side effects.
+ * (or if the snippet can jump to a location outside of the snippet)
+ *
+ * This ignores many edge cases, including:
+ * - Magic properties
+ * - The possibility of emitting notices or throwing
+ * - Whether or not referenced elements exist (Phan checks that elsewhere)
+ *
+ * @phan-file-suppress PhanThrowTypeAbsent
+ */
+class InferPureSnippetVisitor extends InferPureVisitor
+{
+    public function __construct(CodeBase $code_base, Context $context)
+    {
+        $this->code_base = $code_base;
+        $this->context = $context;
+        $function_fqsen_label = '{unknown}';
+        parent::__construct($code_base, $context, $function_fqsen_label);
+    }
+
+    /**
+     * Returns true if the snippet $node is likely free of side effects and is not going to jump to outside of the snippet
+     *
+     * TODO: Use the types of local variables as a heuristic in this subclass, e.g. $knownClass->sideEffectFreeMethod()
+     *
+     * @param Node|int|string|float|null $node
+     */
+    public static function isSideEffectFreeSnippet(CodeBase $code_base, Context $context, $node): bool
+    {
+        if (!$node instanceof Node) {
+            return true;
+        }
+        try {
+            (new self($code_base, $context))->__invoke($node);
+            return true;
+        } catch (NodeException $_) {
+            return false;
+        }
+    }
+    public function visitMethod(Node $node): void
+    {
+        parent::visitMethod($node);
+    }
+    public function visitReturn(Node $node): void
+    {
+        throw new NodeException($node);
+    }
+    // visitThrow throws already
+
+    // TODO(optional): Bother tracking actual loop/switch depth
+    public function visitBreak(Node $node): void
+    {
+        if ($node->children['depth'] > 1) {
+            throw new NodeException($node);
+        }
+    }
+
+    public function visitContinue(Node $node): void
+    {
+        if ($node->children['depth'] > 1) {
+            throw new NodeException($node);
+        }
+    }
+
+    public function visitYield(Node $node): void
+    {
+        throw new NodeException($node);
+    }
+
+    public function visitYieldFrom(Node $node): void
+    {
+        throw new NodeException($node);
+    }
+
+    // TODO(optional) track actual goto labels
+    public function visitGoto(Node $node): void
+    {
+        throw new NodeException($node);
+    }
+
+    // NOTE: Checks of assignment, increment or decrement are deferred to --unused-variable-detection
+
+    public function visitUnset(Node $node): void
+    {
+        throw new NodeException($node);
+    }
+
+    /**
+     * @param Node $node the node of the call, with 'args'
+     * @override
+     */
+    protected function checkCalledFunction(Node $node, FunctionInterface $method): void
+    {
+        if ($method->isPure()) {
+            // avoid false positives - throw when calling void methods that were marked as free of side effects.
+            if ($method->isPHPInternal() || (($method instanceof Method && $method->isAbstract()) || !$method->hasReturn() || $method->hasYield())) {
+                return;
+            }
+        }
+        $label = self::getLabelForFunction($method);
+
+        $value = (UseReturnValuePlugin::HARDCODED_FQSENS[$label] ?? false);
+        if ($value === true) {
+            return;
+        } elseif ($value === UseReturnValuePlugin::SPECIAL_CASE) {
+            if (UseReturnValueVisitor::doesSpecialCaseHaveSideEffects($label, $node)) {
+                // infer that var_export($x, true) is pure but not var_export($x)
+                throw new NodeException($node, $label);
+            }
+            return;
+        }
+        throw new NodeException($node, $label);
+    }
+}

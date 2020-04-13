@@ -23,6 +23,7 @@ use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\Suggestion;
 
+use function array_key_exists;
 use function count;
 use function is_string;
 use function strlen;
@@ -95,13 +96,101 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         try {
             VariableTrackerVisitor::$variable_graph = $variable_graph;
             $variable_tracker_visitor = new VariableTrackerVisitor($this->code_base, $this->context, $scope);
-            // TODO: Add params and use variables.
             $variable_tracker_visitor->__invoke($stmts_node);
+
+            $this->checkSideEffectFreeLoopNodes($variable_graph, $variable_tracker_visitor);
         } finally {
             // @phan-suppress-next-line PhanTypeMismatchProperty
             VariableTrackerVisitor::$variable_graph = null;
         }
         $this->warnAboutVariableGraph($node, $variable_graph, $issue_categories);
+    }
+
+    private function checkSideEffectFreeLoopNodes(
+        VariableGraph $variable_graph,
+        VariableTrackerVisitor $variable_tracker_visitor
+    ): void {
+        $loop_nodes = $variable_tracker_visitor->getSideEffectFreeLoopNodes();
+        if (!$loop_nodes) {
+            // Nothing to do
+            return;
+        }
+        $combined_def_uses = $variable_graph->computeCombinedDefUses();
+        foreach ($loop_nodes as $loop_node) {
+            if (!self::definitionInsideNodeHasUseOutsideNode($combined_def_uses, $loop_node)) {
+                $this->emitIssue(
+                    self::SIDE_EFFECT_FREE_LOOP_ISSUE[$loop_node->kind] ?? Issue::SideEffectFreeForBody,
+                    $loop_node->lineno
+                );
+            }
+        }
+    }
+
+    private const SIDE_EFFECT_FREE_LOOP_ISSUE = [
+        ast\AST_FOR      => Issue::SideEffectFreeForBody,
+        ast\AST_FOREACH  => Issue::SideEffectFreeForeachBody,
+        ast\AST_WHILE    => Issue::SideEffectFreeWhileBody,
+        ast\AST_DO_WHILE => Issue::SideEffectFreeDoWhileBody,
+    ];
+
+    /**
+     * Returns true if at least one of the variable declarations inside the loop body has a use outside of the loop body
+     *
+     * @param associative-array<int, associative-array<int, true>> $combined_def_uses
+     */
+    private static function definitionInsideNodeHasUseOutsideNode(array $combined_def_uses, Node $loop_node): bool
+    {
+        if (!$combined_def_uses) {
+            return false;
+        }
+        $id_set_in_loop = self::extractNodeIdSet($loop_node);
+        foreach ($id_set_in_loop as $possible_def_id) {
+            if (array_key_exists($possible_def_id, $combined_def_uses)) {
+                foreach ($combined_def_uses[$possible_def_id] as $use_id => $_) {
+                    if (!array_key_exists($use_id, $id_set_in_loop)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return associative-array<int, int> the node ids that occurred within the loop node, mapped to themselves
+     */
+    private static function extractNodeIdSet(Node $loop_node): array
+    {
+        $id_set = [];
+        self::extractNodeIdSetInner($loop_node, $id_set);
+        return $id_set;
+    }
+
+    /**
+     * @param Node|string|int|float|null $node
+     * @param associative-array<int, int> $id_set
+     */
+    private static function extractNodeIdSetInner($node, array &$id_set): void
+    {
+        if (!$node instanceof Node) {
+            return;
+        }
+        $id = \spl_object_id($node);
+        $id_set[$id] = $id;
+        switch ($node->kind) {
+            case ast\AST_CLASS:
+            case ast\AST_FUNC_DECL:
+            case ast\AST_ARROW_FUNC:
+                return;
+            case ast\AST_CLOSURE:
+                self::extractNodeIdSetInner($node->children['args'], $id_set);
+                return;
+            default:
+                foreach ($node->children as $child_node) {
+                    self::extractNodeIdSetInner($child_node, $id_set);
+                }
+                return;
+        }
     }
 
     /**

@@ -20,12 +20,21 @@
 %s:26 PhanUndeclaredVariable Variable $c is undeclared (Did you mean $y)
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
+%s:30 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:30 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:31 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:31 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:31 PhanUndeclaredVariable Variable $c2 is undeclared
+%s:32 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
+%s:33 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:35 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:35 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:36 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:36 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
+%s:37 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+%s:38 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:39 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared

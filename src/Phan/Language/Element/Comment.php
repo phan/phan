@@ -286,6 +286,7 @@ class Comment
                 $this->magic_method_map[$name] = $method;
             }
         }
+        // @phan-suppress-next-line PhanSideEffectFreeForeachBody applyOverride is annotated as @phan-pure due to the catch-all annotation, so phan treats this like it has no side effects.
         foreach ($phan_overrides as $key => $override_value) {
             $this->applyOverride($key, $override_value);
         }
