@@ -1058,6 +1058,39 @@ Short arrow function shadows variable ${VARIABLE} from the outer scope
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.7.0/tests/php74_files/expected/004_arrow_func_shadow.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.7.0/tests/php74_files/src/004_arrow_func_shadow.php#L7).
 
+## PhanSideEffectFreeDoWhileBody
+
+**Note that `PhanSideEffectFree...` issue types rely on `--unused-variable-detection`, and will not run in the global scope as a result.**
+
+```
+Saw a do-while loop which probably has no side effects
+```
+
+## PhanSideEffectFreeForBody
+
+**Note that `PhanSideEffectFree...` issue types rely on `--unused-variable-detection`, and will not run in the global scope as a result.**
+
+```
+Saw a for loop which probably has no side effects
+```
+
+## PhanSideEffectFreeForeachBody
+
+**Note that `PhanSideEffectFree...` issue types rely on `--unused-variable-detection`, and will not run in the global scope as a result.**
+Also, this issue will not be emitted if the expression being iterated over is possibly an object (of any class) or has an unknown real type.
+
+```
+Saw a foreach loop which probably has no side effects
+```
+
+## PhanSideEffectFreeWhileBody
+
+**Note that `PhanSideEffectFree...` issue types rely on `--unused-variable-detection`, and will not run in the global scope as a result.**
+
+```
+Saw a while loop which probably has no side effects
+```
+
 ## PhanSuspiciousBinaryAddLists
 
 ```

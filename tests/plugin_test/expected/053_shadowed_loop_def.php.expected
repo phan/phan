@@ -1,5 +1,6 @@
 src/053_shadowed_loop_def.php:2 PhanPluginPossiblyStaticClosure Closure() can be static
 src/053_shadowed_loop_def.php:3 PhanUnusedVariable Unused definition of variable $a
+src/053_shadowed_loop_def.php:4 PhanSideEffectFreeDoWhileBody Saw a do-while loop which probably has no side effects
 src/053_shadowed_loop_def.php:9 PhanPluginPossiblyStaticClosure Closure() can be static
 src/053_shadowed_loop_def.php:18 PhanPluginPossiblyStaticClosure Closure(array $data) can be static
 src/053_shadowed_loop_def.php:31 PhanPluginPossiblyStaticClosure Closure(int $n) can be static

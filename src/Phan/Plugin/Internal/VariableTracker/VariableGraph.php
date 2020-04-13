@@ -225,4 +225,23 @@ final class VariableGraph
     {
         $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | $bit);
     }
+
+    /**
+     * @return associative-array<int,associative-array<int,true>>
+     * Returns the combination of all def-use sets for all node ids.
+     */
+    public function computeCombinedDefUses(): array
+    {
+        $combined_def_use_map = [];
+        foreach ($this->def_uses as $def_use_map) {
+            foreach ($def_use_map as $def_id => $use_set) {
+                if (isset($combined_def_use_map[$def_id])) {
+                    $combined_def_use_map[$def_id] += $use_set;
+                } else {
+                    $combined_def_use_map[$def_id] = $use_set;
+                }
+            }
+        }
+        return $combined_def_use_map;
+    }
 }

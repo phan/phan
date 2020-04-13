@@ -115,6 +115,8 @@ class Debug
      *
      * @return string
      * A string representation of an AST node
+     *
+     * @phan-side-effect-free
      */
     public static function nodeToString(
         $node,

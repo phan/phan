@@ -59,6 +59,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     private $top_level_statement;
 
+    /**
+     * @var list<Node> a list of loop nodes that appeared to have no side effects.
+     * VariableTrackerPlugin should check that some of the variables defined or redefined in the loop were used outside of the loop.
+     */
+    private $side_effect_free_loop_nodes = [];
+
     public function __construct(CodeBase $code_base, Context $context, VariableTrackingScope $scope)
     {
         parent::__construct($code_base, $context);
@@ -95,6 +101,28 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $node->dynamic_var_uses = [];
         }
         $node->dynamic_var_uses[$var_name] = $var_name;
+    }
+
+    /**
+     * Record the fact that the loop body doesn't seem to have side effects
+     * (other than creating variables)
+     *
+     * @param Node $node a node that's some form of loop
+     * @suppress PhanUndeclaredProperty
+     */
+    public static function recordHasLoopBodyWithoutSideEffects(Node $node): void
+    {
+        $node->has_loop_body_without_side_effects = true;
+    }
+
+    /**
+     * @return list<Node>
+     * A list of loop nodes that appeared to have no side effects.
+     * VariableTrackerPlugin should check that some of the variables defined or redefined in the loop were used outside of the loop.
+     */
+    public function getSideEffectFreeLoopNodes(): array
+    {
+        return $this->side_effect_free_loop_nodes;
     }
 
     /**
@@ -593,6 +621,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitForeach(Node $node): VariableTrackingScope
     {
+        $this->checkIsSideEffectFreeLoopNode($node);
+
         $expr_node = $node->children['expr'];
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $expr_node);
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
@@ -626,6 +656,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitWhile(Node $node): VariableTrackingScope
     {
+        $this->checkIsSideEffectFreeLoopNode($node);
+
         $outer_scope_unbranched = $this->analyzeWhenValidNode($this->scope, $node->children['cond']);
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
@@ -649,6 +681,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitDoWhile(Node $node): VariableTrackingScope
     {
+        $this->checkIsSideEffectFreeLoopNode($node);
+
         $outer_scope_unbranched = $this->scope;
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
@@ -670,6 +704,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitFor(Node $node): VariableTrackingScope
     {
+        $this->checkIsSideEffectFreeLoopNode($node);
+
         $top_level_statement = $this->top_level_statement;
         $init_node = $node->children['init'];
         if ($init_node instanceof Node) {
@@ -936,5 +972,13 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             }
         }
         return $this->analyze($scope, $node->children['stmts']);
+    }
+
+    private function checkIsSideEffectFreeLoopNode(Node $node): void
+    {
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        if (isset($node->has_loop_body_without_side_effects)) {
+            $this->side_effect_free_loop_nodes[] = $node;
+        }
     }
 }

@@ -1,0 +1,4 @@
+%s:6 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+%s:8 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
+%s:30 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
+%s:38 PhanSideEffectFreeDoWhileBody Saw a do-while loop which probably has no side effects

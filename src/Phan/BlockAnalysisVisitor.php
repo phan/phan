@@ -20,6 +20,7 @@ use Phan\Analysis\RedundantCondition;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\AST\InferPureSnippetVisitor;
 use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
@@ -40,6 +41,7 @@ use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
+use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 
 use function array_map;
 use function count;
@@ -722,6 +724,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
         }
 
+        if (Config::getValue('unused_variable_detection') &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $loop_node) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $condition_node) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node)) {
+            VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
+        }
+
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
@@ -843,6 +852,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $context->withExitLoop($node);
         if (!$always_iterates_at_least_once) {
             $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
+        }
+
+        if (Config::getValue('unused_variable_detection') &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node)) {
+            VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
 
         // Now that we know all about our context (like what
@@ -1000,15 +1014,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 Closure::fromCallable([self::class, 'isEmptyIterable'])
             );
         }
-        if (!($node->children['stmts']->children ?? null) && self::isDefinitelyNotObject($union_type)) {
-            RedundantCondition::emitInstance(
-                $node->children['expr'],
-                $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
-                Issue::EmptyForeachBody,
-                [(string)$union_type],
-                Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
-            );
+        if (self::isDefinitelyNotObject($union_type)) {
+            if (!($node->children['stmts']->children ?? null)) {
+                RedundantCondition::emitInstance(
+                    $node->children['expr'],
+                    $this->code_base,
+                    (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                    Issue::EmptyForeachBody,
+                    [(string)$union_type],
+                    Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
+                );
+            } elseif (Config::getValue('unused_variable_detection') &&
+                InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node->children['stmts'])) {
+                VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
+            }
         }
     }
 
@@ -1217,6 +1236,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             unset($node->phan_loop_contexts);
         }
         $context = $context->withExitLoop($node);
+
+        if (Config::getValue('unused_variable_detection') &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $node)) {
+            VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
+        }
+
 
         return $this->postOrderAnalyze($context, $node);
     }

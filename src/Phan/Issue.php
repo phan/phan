@@ -419,6 +419,10 @@ class Issue
     public const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
     public const EmptyForeach                          = 'PhanEmptyForeach';
     public const EmptyForeachBody                      = 'PhanEmptyForeachBody';
+    public const SideEffectFreeForeachBody             = 'PhanSideEffectFreeForeachBody';
+    public const SideEffectFreeForBody                 = 'PhanSideEffectFreeForBody';
+    public const SideEffectFreeWhileBody               = 'PhanSideEffectFreeWhileBody';
+    public const SideEffectFreeDoWhileBody             = 'PhanSideEffectFreeDoWhileBody';
     public const EmptyYieldFrom                        = 'PhanEmptyYieldFrom';
     public const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
     public const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
@@ -3641,6 +3645,38 @@ class Issue
                 'Saw a foreach statement with empty body over array of type {TYPE} (iterating has no side effects)',
                 self::REMEDIATION_B,
                 6086
+            ),
+            new Issue(
+                self::SideEffectFreeForeachBody,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a foreach loop which probably has no side effects',
+                self::REMEDIATION_B,
+                6089
+            ),
+            new Issue(
+                self::SideEffectFreeForBody,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a for loop which probably has no side effects',
+                self::REMEDIATION_B,
+                6090
+            ),
+            new Issue(
+                self::SideEffectFreeWhileBody,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a while loop which probably has no side effects',
+                self::REMEDIATION_B,
+                6091
+            ),
+            new Issue(
+                self::SideEffectFreeDoWhileBody,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a do-while loop which probably has no side effects',
+                self::REMEDIATION_B,
+                6092
             ),
             new Issue(
                 self::EmptyYieldFrom,

@@ -352,6 +352,12 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
+    public function visitExprList(Node $node): void
+    {
+        $this->maybeInvokeAllChildNodes($node);
+    }
+
+    /** @override */
     public function visitGoto(Node $_): void
     {
     }
@@ -568,7 +574,7 @@ class InferPureVisitor extends AnalysisVisitor
     /**
      * @param Node $node the node of the call, with 'args'
      */
-    private function checkCalledFunction(Node $node, FunctionInterface $method): void
+    protected function checkCalledFunction(Node $node, FunctionInterface $method): void
     {
         if ($method->isPure()) {
             return;

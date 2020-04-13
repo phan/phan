@@ -1,2 +1,3 @@
 src/056_while_loop.php:2 PhanPluginPossiblyStaticClosure Closure(int $a) can be static
+src/056_while_loop.php:4 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 src/056_while_loop.php:6 PhanUnusedVariable Unused definition of variable $c
