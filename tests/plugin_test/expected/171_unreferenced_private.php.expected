@@ -1,0 +1,2 @@
+src/171_unreferenced_private.php:6 PhanUnreferencedPrivateMethod Possibly zero references to private method \NS171\Subclass::testStatic()
+src/171_unreferenced_private.php:9 PhanUnreferencedPrivateMethod Possibly zero references to private method \NS171\Subclass::testInstance()

@@ -202,7 +202,7 @@ class InferPureVisitor extends AnalysisVisitor
         $this->checkPureIncDec($node);
     }
 
-    private function checkPureIncDec(Node $node): void
+    protected function checkPureIncDec(Node $node): void
     {
         $var = $node->children['var'];
         if (!$var instanceof Node) {

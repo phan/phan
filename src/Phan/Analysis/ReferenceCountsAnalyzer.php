@@ -211,7 +211,7 @@ class ReferenceCountsAnalyzer
             // copy references to methods, properties, and constants into the defining trait or class.
             if ($fqsen !== $defining_fqsen) {
                 $has_references = $element->getReferenceCount($code_base) > 0;
-                if ($has_references || ($element instanceof Method && $element->isOverride())) {
+                if ($has_references || ($element instanceof Method && ($element->isOverride() && !$element->isPrivate()))) {
                     $defining_element = null;
                     if ($defining_fqsen instanceof FullyQualifiedMethodName) {
                         if ($code_base->hasMethodWithFQSEN($defining_fqsen)) {
@@ -241,7 +241,7 @@ class ReferenceCountsAnalyzer
 
             // Don't analyze elements defined in a parent class.
             // We copy references to methods, properties, and constants into the defining trait or class before this.
-            if ($element->isOverride()) {
+            if ($element->isOverride() && !$element->isPrivate()) {
                 continue;
             }
 

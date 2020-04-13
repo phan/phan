@@ -10,6 +10,7 @@ New features(Analysis):
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable`. (#3853)
 + Include the relevant expression in more issue messages for type errors. (#3844)
 + Emit `PhanNoopSwitchCases` when a switch statement only contains the default case.
++ Warn about unreferenced private methods of the same name as methods in ancestor classes, in dead code detection.
 
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
