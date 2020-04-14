@@ -47,6 +47,7 @@ use function array_map;
 use function count;
 use function end;
 use function explode;
+use function is_string;
 use function preg_match;
 use function rtrim;
 
@@ -955,7 +956,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Also warn about object types when iterating over that class should not have side effects
         if (Config::getValue('unused_variable_detection') &&
             !$expression_union_type->isEmpty() && !$expression_union_type->hasPossiblyObjectTypes() &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node)) {
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node) &&
+            self::isLoopVariableWithoutSideEffects($node->children['key']) &&
+            self::isLoopVariableWithoutSideEffects($node->children['value'])
+        ) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
 
@@ -977,6 +981,33 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $context->withExitLoop($node);
 
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * @param Node|string|int|float|null $node
+     *
+     * Returns true if this is probably a loop variable without side effects
+     * (e.g. not a reference, not modifying properties, etc)
+     */
+    private static function isLoopVariableWithoutSideEffects($node): bool
+    {
+        if (!$node instanceof Node) {
+            return true;
+        }
+        switch ($node->kind) {
+            case ast\AST_VAR:
+                return is_string($node->children['name']);
+            case ast\AST_ARRAY:
+            case ast\AST_ARRAY_ELEM:
+                foreach ($node->children as $child_node) {
+                    if (!self::isLoopVariableWithoutSideEffects($child_node)) {
+                        return false;
+                    }
+                }
+                return true;
+            default:
+                return ParseVisitor::isConstExpr($node);
+        }
     }
 
     /**
