@@ -144,19 +144,17 @@ class Context extends FileRef
         // slash
         $name_parts = \explode('\\', $name, 2);
         if (\count($name_parts) > 1) {
-            // We're looking for a namespace if there's more than one part
-            // Namespaces are case-insensitive.
-            $namespace_map_key = \strtolower($name_parts[0]);
+            $name = $name_parts[0];
+            // In php, namespaces, functions, and classes are case-insensitive.
+            // However, constants are almost always case-insensitive.
+            // The name we're looking for is a namespace(USE_NORMAL).
+            // The suffix has type $flags
             $flags = \ast\flags\USE_NORMAL;
-        } else {
-            if ($flags !== \ast\flags\USE_CONST) {
-                $namespace_map_key = \strtolower($name);
-            } else {
-                // Constants are case-sensitive, and stored in a case-sensitive manner.
-                $namespace_map_key = $name;
-            }
         }
-        return isset($this->namespace_map[$flags][$namespace_map_key]);
+        if ($flags !== \ast\flags\USE_CONST) {
+            $name = \strtolower($name);
+        }
+        return isset($this->namespace_map[$flags][$name]);
     }
 
     /**
@@ -172,28 +170,27 @@ class Context extends FileRef
         // slash
         $name_parts = \explode('\\', $name, 2);
         if (\count($name_parts) > 1) {
-            $name = \strtolower($name_parts[0]);
+            $name = $name_parts[0];
             $suffix = $name_parts[1];
             // In php, namespaces, functions, and classes are case-insensitive.
             // However, constants are almost always case-insensitive.
-            if ($flags !== \ast\flags\USE_CONST) {
-                $suffix = \strtolower($suffix);
-            }
             // The name we're looking for is a namespace(USE_NORMAL).
             // The suffix has type $flags
             $map_flags = \ast\flags\USE_NORMAL;
         } else {
             $suffix = '';
             $map_flags = $flags;
-            if ($flags !== \ast\flags\USE_CONST) {
-                $name = \strtolower($name);
-            }
+        }
+        if ($map_flags !== \ast\flags\USE_CONST) {
+            $name_key = \strtolower($name);
+        } else {
+            $name_key = $name;
         }
 
-        $namespace_map_entry = $this->namespace_map[$map_flags][$name] ?? null;
+        $namespace_map_entry = $this->namespace_map[$map_flags][$name_key] ?? null;
 
         if (!$namespace_map_entry) {
-            throw new AssertionError('No namespace defined for name');
+            throw new AssertionError("No namespace defined for name '$name_key'");
         }
         $fqsen = $namespace_map_entry->fqsen;
         $namespace_map_entry->is_used = true;
