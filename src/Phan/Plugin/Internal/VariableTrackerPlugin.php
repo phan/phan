@@ -183,7 +183,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             case ast\AST_ARROW_FUNC:
                 return;
             case ast\AST_CLOSURE:
-                self::extractNodeIdSetInner($node->children['args'], $id_set);
+                self::extractNodeIdSetInner($node->children['uses'], $id_set);
                 return;
             default:
                 foreach ($node->children as $child_node) {
