@@ -24,6 +24,7 @@ New features(Analysis):
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
   The version used caused issues on 32-bit php 7.1 installations, and a slight slowdown in php 7.1.
++ Fix bug causing FQSEN names or namespaces to be converted to lowercase even if they were never lowercase in the codebase being analyzed (#3583)
 
 Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)

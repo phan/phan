@@ -1,0 +1,2 @@
+%s:4 PhanUndeclaredTypeReturnType Return type of test() is undeclared type \Foo\B\B (Did you mean bool)
+%s:5 PhanTypeMismatchReturnReal Returning null of type null but test() is declared to return \Foo\B\B
