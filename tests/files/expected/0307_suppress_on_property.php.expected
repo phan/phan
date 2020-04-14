@@ -1,3 +1,3 @@
-%s:7 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $\Foo307->x can't be [] of type array{} based on phpdoc types
-%s:13 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $\Foo307->y can't be [] of type array{} based on phpdoc types
-%s:18 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $\Foo307->z can't be ['key'=>'value'] of type array{key:'value'} based on phpdoc types
+%s:7 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $x can't be [] of type array{} based on phpdoc types
+%s:13 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $y can't be [] of type array{} based on phpdoc types
+%s:18 PhanTypeMismatchPropertyDefault Default value for \ArrayAccess $z can't be ['key'=>'value'] of type array{key:'value'} based on phpdoc types

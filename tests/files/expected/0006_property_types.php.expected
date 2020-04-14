@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchPropertyDefault Default value for \bad $\A->property can't be ['alpha','beta','gamma'] of type array{0:'alpha',1:'beta',2:'gamma'} based on phpdoc types
+%s:6 PhanTypeMismatchPropertyDefault Default value for \bad $property can't be ['alpha','beta','gamma'] of type array{0:'alpha',1:'beta',2:'gamma'} based on phpdoc types
 %s:6 PhanUndeclaredTypeProperty Property \A->property has undeclared type \bad
