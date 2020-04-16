@@ -1287,7 +1287,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $right
      * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
-    protected function analyzeAndUpdateToBeNotEqual($left, $right): Context
+    public function analyzeAndUpdateToBeNotEqual($left, $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,

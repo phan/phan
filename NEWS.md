@@ -20,6 +20,7 @@ New features(Analysis):
   3. The code is in a functionlike scope.
 
   New issue types: `PhanSideEffectFreeForeachBody`, `PhanSideEffectFreeForBody`, `PhanSideEffectFreeWhileBody`, `PhanSideEffectFreeDoWhileBody`
++ Infer that previous conditions are negated when analyzing the cases of a switch statement (#3866)
 
 Bug Fixes:
 + Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
