@@ -1,0 +1,4 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $action - it has union type false
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $action - it has union type non-empty-string|true(real=non-empty-mixed)
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $action - it has union type false
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $action - it has union type non-empty-string|true(real=non-empty-mixed)
