@@ -166,8 +166,11 @@ class PhanPHPLinter
                 continue;
             }
             // Convert this to a relative path
-            if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
-                $real = substr($real, strlen($dirname . '/'));
+            if (in_array(substr($real, 0, strlen($dirname) + 1),
+                [$dirname . DIRECTORY_SEPARATOR, $dirname . '/'],
+                true
+            )) {
+                $real = substr($real, strlen($dirname) + 1);
                 // @phan-suppress-next-line PhanTypeArraySuspiciousNullable not able to analyze. Not using coalescing because this supports php 5.
                 $mapped_path = isset($opts->temporary_file_map[$path]) ? $opts->temporary_file_map[$path] : $path;
                 // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
