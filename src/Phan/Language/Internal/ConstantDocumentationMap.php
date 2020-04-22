@@ -1846,6 +1846,7 @@ write, or until writes_done, but it need not buffer completely or at all.',
 'MB_CASE_TITLE_SIMPLE' => 'Available since PHP 7.3.',
 'Memcached::DISTRIBUTION_CONSISTENT' => '<p>Consistent hashing key distribution algorithm (based on libketama).</p>',
 'Memcached::DISTRIBUTION_MODULA' => '<p>Modulo-based key distribution algorithm.</p>',
+'Memcached::GET_EXTENDED' => '<p>A flag that causes Memcached get operations to also return the CAS tokens for the found entries</p>',
 'Memcached::GET_PRESERVE_ORDER' => '<p>A flag for <b>Memcached::getMulti</b> and
 <b>Memcached::getMultiByKey</b> to ensure that the keys are
 returned in the same order as they were requested in. Non-existing keys
