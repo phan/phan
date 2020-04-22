@@ -571,6 +571,7 @@ a global variable called $my_var will have the int value of 8
  By default there are no variables that we want to add to the job\'s script',
 'ZipArchive::comment' => 'Comment for the archive',
 'ZipArchive::filename' => 'File name in the file system',
+'ZipArchive::lastId' => 'Index value of last added entry (file or directory). Available as of PHP 8.0.0 and PECL zip 1.18.0.',
 'ZipArchive::numFiles' => 'Number of files in archive',
 'ZipArchive::status' => 'Status of the Zip Archive',
 'ZipArchive::statusSys' => 'System status of the Zip Archive',
