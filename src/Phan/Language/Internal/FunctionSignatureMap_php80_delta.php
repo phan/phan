@@ -70,6 +70,8 @@ return [
 'proc_get_status' => ['array<string,int|string|bool>', 'process'=>'resource'],
 'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['string|false', 'confidential_message'=>'string', 'public_message'=>'string', 'nonce'=>'string', 'key'=>'string'],
 'str_contains' => ['bool', 'haystack'=>'string', 'needle'=>'string'],
+'str_ends_with' => ['bool', 'haystack'=>'string', 'needle'=>'string'],
+'str_starts_with' => ['bool', 'haystack'=>'string', 'needle'=>'string'],
 'strchr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],
 'stripos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
 'stristr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],

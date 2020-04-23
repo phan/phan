@@ -780,6 +780,8 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'strchr' => true,
     'strcmp' => true,
     'str_contains' => true,
+    'str_ends_with' => true,
+    'str_starts_with' => true,
     'strcoll' => true,
     'strcspn' => true,
     'stream_context_create' => true,
