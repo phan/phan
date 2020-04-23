@@ -31,6 +31,10 @@ Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
   and `TypeMismatchPropertyDefaultReal` (#3068)
 
+New features(Analysis):
++ Support using `throw` as an expression, for PHP 8.0 (#3849)
+  (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
+
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.
 + Infer that some new functions in PHP 8.0-dev should be used in `UseReturnValuePlugin`

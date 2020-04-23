@@ -2157,6 +2157,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context,
                 [$context, $context_with_false_left_condition, $right_context]
             ))->combineChildContextList();
+            if ($right_node->kind === ast\AST_THROW) {
+                return $this->postOrderAnalyze($context_with_false_left_condition, $node);
+            }
         }
 
         return $this->postOrderAnalyze($context, $node);
@@ -2213,6 +2216,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($right_node instanceof Node) {
+            if ($right_node->kind === ast\AST_THROW) {
+                return $this->postOrderAnalyze($context_with_true_left_condition, $node);
+            }
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
                 // If the expression on the right side does have side effects (e.g. `$cond || $x = foo()`), then we need to merge all possibilities.

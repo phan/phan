@@ -1031,10 +1031,14 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return $left_type;
         }
 
+        $right_node = $node->children['right'];
+        if ($right_node instanceof Node && $right_node->kind === ast\AST_THROW) {
+            return $left_type->nonNullableClone();
+        }
         $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right'],
+            $right_node,
             $this->should_catch_issue_exception
         );
         if ($left_type->isEmpty()) {

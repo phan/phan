@@ -854,6 +854,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node = $node->children['true'] ?? $cond_node;
+        $false_node = $node->children['false'];
 
         // Rarely, a conditional will always be true or always be false.
         if ($cond_truthiness !== null) {
@@ -916,8 +917,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $false_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $false_context,
-                    $node->children['false']
+                    $false_node
                 );
+                if ($false_node instanceof Node && $false_node->kind === ast\AST_THROW) {
+                    return $true_type->nonFalseyClone();
+                }
+
                 $true_type_is_empty = $true_type->isEmpty();
                 if (!$false_type->isEmpty()) {
                     // E.g. `foo() ?: 2` where foo is nullable or possibly false.
@@ -960,6 +965,12 @@ class UnionTypeVisitor extends AnalysisVisitor
             $false_context,
             $node->children['false']
         );
+        if ($false_node instanceof Node && $false_node->kind === ast\AST_THROW) {
+            return $true_type;
+        }
+        if ($true_node instanceof Node && $true_node->kind === ast\AST_THROW) {
+            return $false_type;
+        }
 
         // Add the type for the 'true' side to the 'false' side
         $union_type = $true_type->withUnionType($false_type);
@@ -3044,6 +3055,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $this->context->getClassFQSEN()->asType()->asRealUnionType();
+    }
+
+    /*
+     * @param Node $node
+     * A node containing a throw expression.
+     *
+     * @return UnionType
+     * `void` is as close as possible to `no-return` or `never` for types currently available in Phan.
+     */
+    public function visitThrow(Node $_) : UnionType {
+        return VoidType::instance(false)->asRealUnionType();
     }
 
     private function classTypesForNonName(Node $node): UnionType
