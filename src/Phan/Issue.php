@@ -528,6 +528,7 @@ class Issue
     public const CompatibleAnyReturnTypePHP56       = 'PhanCompatibleAnyReturnTypePHP56';
     public const CompatibleUnionType                = 'PhanCompatibleUnionType';
     public const CompatibleStaticType               = 'PhanCompatibleStaticType';
+    public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4540,6 +4541,14 @@ class Issue
                 "Cannot use static return types before php 8.0",
                 self::REMEDIATION_B,
                 3027
+            ),
+            new Issue(
+                self::CompatibleThrowExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use throw as an expression before php 8.0 in {CODE}",
+                self::REMEDIATION_B,
+                3028
             ),
 
             // Issue::CATEGORY_GENERIC

@@ -403,6 +403,18 @@ class ASTReverter
             ast\AST_ARROW_FUNC => static function (Node $_): string {
                 return '(fn)';
             },
+            ast\AST_RETURN => static function (Node $node): string {
+                return \sprintf(
+                    'return %s;',
+                    self::toShortString($node->children['expr'])
+                );
+            },
+            ast\AST_THROW => static function (Node $node): string {
+                return \sprintf(
+                    '(throw %s)',
+                    self::toShortString($node->children['expr'])
+                );
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

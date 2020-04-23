@@ -4367,6 +4367,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $parameter_type
         );
     }
+
     private function isInNoOpPosition(Node $node): bool
     {
         $parent_node = \end($this->parent_node_list);
@@ -4563,7 +4564,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A decl to check to see if it's only effect
+     * A decl to check to see if its only effect
      * is the throw an exception
      *
      * @return bool
@@ -4610,4 +4611,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
     }
+
+    /**
+     * @param Node $_
+     * A node to analyze
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitThrow(Node $_): Context
+    {
+        $parent_node = \end($this->parent_node_list);
+        if (!($parent_node instanceof Node)) {
+            return $this->context;
+        }
+        if ($parent_node->kind !== ast\AST_STMT_LIST) {
+            $this->emitIssue(
+                Issue::CompatibleThrowExpression,
+                $parent_node->lineno,
+                ASTReverter::toShortString($parent_node)
+            );
+        }
+
+        return $this->context;
+    }
+
 }

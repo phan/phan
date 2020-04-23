@@ -1,12 +1,9 @@
 Phan NEWS
 
-Apr 11 2020, Phan 2.7.1
+??? ?? 2020, Phan 2.7.2 (dev)
 -----------------------
 
 New features(Analysis):
-+ Improve the output of `tool/make_stubs`. Use better defaults than `null`.
-  Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
-  (`default` is a reserved keyword used in switch statements)
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable`. (#3853)
 + Include the relevant expression in more issue messages for type errors. (#3844)
 + Emit `PhanNoopSwitchCases` when a switch statement only contains the default case.
@@ -21,19 +18,28 @@ New features(Analysis):
 
   New issue types: `PhanSideEffectFreeForeachBody`, `PhanSideEffectFreeForBody`, `PhanSideEffectFreeWhileBody`, `PhanSideEffectFreeDoWhileBody`
 + Infer that previous conditions are negated when analyzing the cases of a switch statement (#3866)
++ Support using `throw` as an expression, for PHP 8.0 (#3849)
+  (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
+  Emit `PhanCompatibleThrowException` when `throw` is used as an expression instead of a statement.
 
 Bug Fixes:
-+ Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
-  The version used caused issues on 32-bit php 7.1 installations, and a slight slowdown in php 7.1.
 + Fix bug causing FQSEN names or namespaces to be converted to lowercase even if they were never lowercase in the codebase being analyzed (#3583)
 
 Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
   and `TypeMismatchPropertyDefaultReal` (#3068)
 
-New features(Analysis):
-+ Support using `throw` as an expression, for PHP 8.0 (#3849)
-  (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
+Apr 11 2020, Phan 2.7.1
+-----------------------
+
+New features(CLI, Configs):
++ Improve the output of `tool/make_stubs`. Use better defaults than `null`.
+  Render `unknown` for unknown defaults in `tool/make_stubs` and Phan's issue messages.
+  (`default` is a reserved keyword used in switch statements)
+
+Bug Fixes:
++ Work around unintentionally using `symfony/polyfill-72` for `spl_object_id` instead of Phan's polyfill.
+  The version used caused issues on 32-bit php 7.1 installations, and a slight slowdown in php 7.1.
 
 Plugins:
 + PHP 8.0-dev compatibility fixes for `InvokePHPNativeSyntaxCheckPlugin` on Windows.

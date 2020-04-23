@@ -28,4 +28,7 @@ function test_throw_expression(?string $nullableValue, bool $falsableValue, bool
     if (rand(0, 1)) {
         throw throw new Exception();
     }
+    for ($i = 0; $i < 10; throw new Exception("loop")) {
+    }
 }
+$closure = fn() => throw new RuntimeException("unimplemented");
