@@ -22,6 +22,7 @@ final class ASTHasherTest extends BaseTest
 
     /**
      * @suppress PhanPossiblyFalseTypeArgument
+     * @suppress PhanTypeMismatchArgument this is emitted on 32-bit platforms because $key becomes a float
      */
     public function testHash(): void
     {
