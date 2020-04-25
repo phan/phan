@@ -206,6 +206,9 @@ class ASTReverter
                         return (string)$result;
                 }
             },
+            ast\AST_NAME_LIST => static function (Node $node): string {
+                return implode('|', \array_map('self::toShortString', $node->children));
+            },
             ast\AST_ARRAY => static function (Node $node): string {
                 $parts = [];
                 foreach ($node->children as $elem) {

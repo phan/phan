@@ -384,6 +384,9 @@ that are likely to be a bug. (e.g. `expr1 == expr`)
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
 - **PhanPluginBothLiteralsBinaryOp**: `Suspicious usage of a binary operator where both operands are literals. Expression: {CODE} {OPERATOR} {CODE} (result is {CODE})` (e.g. warns about `null == 'a literal` in `$x ?? null == 'a literal'`)
 - **PhanPluginDuplicateConditionalUnnecessary**: `"X ? Y : Y" results in the same expression Y no matter what X evaluates to. Y was {CODE}`
+- **PhanPluginDuplicateCatchStatementBody**: `The implementation of catch({CODE}) and catch({CODE}) are identical, and can be combined if the application only needs to supports php 7.1 and newer`
+
+  Note that equivalent catch statements may be deliberate or a coding style choice, and this plugin does not check for TODOs.
 
 #### WhitespacePlugin.php
 

@@ -1387,16 +1387,7 @@ class ParseVisitor extends ScopeVisitor
                     $context
                 );
             }
-        } catch (InvalidArgumentException $_) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::InvalidConstantFQSEN,
-                $lineno,
-                $name
-            );
-            return;
-        } catch (FQSENException $_) {
+        } catch (InvalidArgumentException|FQSENException $_) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

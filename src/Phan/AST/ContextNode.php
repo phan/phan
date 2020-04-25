@@ -1628,6 +1628,7 @@ class ContextNode
 
             // For instance properties, ignore it,
             // because we'll create our own property
+            // @phan-suppress-next-line PhanPluginDuplicateCatchStatementBody
         } catch (UnanalyzableException $exception) {
             if ($is_static) {
                 throw $exception;

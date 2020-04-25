@@ -6,8 +6,11 @@ namespace Phan\Config;
 
 use ast\Node;
 use Closure;
+use CompileError;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
+use ParseError;
+use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Parser;
 use Phan\CLI;
 use Phan\CodeBase;
@@ -587,11 +590,7 @@ EOT;
                 return true;
             }
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
-        } catch (\ParseError $_) {
-            return false;
-        } catch (\CompileError $_) {
-            return false;
-        } catch (\Phan\AST\TolerantASTConverter\ParseException $_) {
+        } catch (ParseError|CompileError|ParseException $_) {
             return false;
         }
     }

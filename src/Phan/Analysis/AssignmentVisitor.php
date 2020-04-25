@@ -511,9 +511,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Set the element type on each element of
                 // the list
                 $this->analyzeSetUnionType($property, $element_type, $value_node);
-            } catch (UnanalyzableException $_) {
-                // Ignore it. There's nothing we can do.
-            } catch (NodeException $_) {
+            } catch (UnanalyzableException|NodeException $_) {
                 // Ignore it. There's nothing we can do.
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -743,9 +741,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Set the element type on each element of
                     // the list
                     $this->analyzeSetUnionType($property, $element_type, $value_node);
-                } catch (UnanalyzableException $_) {
-                    // Ignore it. There's nothing we can do.
-                } catch (NodeException $_) {
+                } catch (UnanalyzableException|NodeException $_) {
                     // Ignore it. There's nothing we can do.
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -960,14 +956,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['expr']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT, Issue::TypeExpectedObjectPropAccess);
-        } catch (CodeBaseException $_) {
-            // This really shouldn't happen since the code
-            // parsed cleanly. This should fatal.
-            // throw $exception;
-            return $this->context;
         } catch (\Exception $_) {
             // If we can't figure out what kind of a class
-            // this is, don't worry about it
+            // this is, don't worry about it.
+            //
+            // Note that CodeBaseException is one possible exception due to invalid code created by the fallback parser, etc.
             return $this->context;
         }
 
@@ -1483,14 +1476,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
-        } catch (CodeBaseException $_) {
-            // This really shouldn't happen since the code
-            // parsed cleanly. This should fatal.
-            // throw $exception;
-            return $this->context;
         } catch (\Exception $_) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
+            //
+            // Note that CodeBaseException is one possible exception due to invalid code created by the fallback parser, etc.
             return $this->context;
         }
 
@@ -1686,9 +1676,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $this->code_base,
                             $this->context
                         );
-                    } catch (IssueException $_) {
-                        // Hopefully caught elsewhere
-                    } catch (NodeException $_) {
+                    } catch (IssueException|NodeException $_) {
                         // Hopefully caught elsewhere
                     }
                 }

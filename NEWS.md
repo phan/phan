@@ -22,6 +22,9 @@ New features(Analysis):
   (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
   Emit `PhanCompatibleThrowException` when `throw` is used as an expression instead of a statement.
 
+Plugins
++ Emit `PhanPluginDuplicateCatchStatementBody` when a catch statement has the same body and variable name as an adjacent catch statement.
+
 Bug Fixes:
 + Fix bug causing FQSEN names or namespaces to be converted to lowercase even if they were never lowercase in the codebase being analyzed (#3583)
 

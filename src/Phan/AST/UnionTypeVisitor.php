@@ -1738,8 +1738,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return $element_types;
                     }
                 }
-            } catch (CodeBaseException $_) {
-            } catch (RecursionDepthException $_) {
+            } catch (CodeBaseException|RecursionDepthException $_) {
+                // ignore
             }
 
             if (!$union_type->hasArrayLike() && !$union_type->hasMixedType()) {
@@ -2609,10 +2609,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ["{$exception_fqsen}->{$property_name}"],
                 $suggestion
             );
-        } catch (UnanalyzableException $_) {
-            // Swallow it. There are some constructs that we
-            // just can't figure out.
-        } catch (NodeException $_) {
+        } catch (UnanalyzableException|NodeException $_) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }

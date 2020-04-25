@@ -8,6 +8,7 @@ use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\InferValue;
+use Phan\Config;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
@@ -421,6 +422,41 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
                     'PhanPluginDuplicateIfStatements',
                     'The statements of the else duplicate the statements of the previous if/elseif statement with condition {CODE}',
                     [ASTReverter::toShortString($children[$N - 2]->children['cond'])]
+                );
+            }
+        }
+    }
+
+    /**
+     * Visit a node of kind ast\AST_TRY, to check for adjacent catch blocks
+     *
+     * @override
+     * @suppress PhanPossiblyUndeclaredProperty
+     */
+    public function visitTry(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 70100) {
+            return;
+        }
+        $catches = $node->children['catches']->children ?? [];
+        $n = count($catches);
+        if ($n <= 1) {
+            // There can't be any duplicates.
+            return;
+        }
+        $prev_hash = ASTHasher::hash($catches[0]->children['stmts']) . ASTHasher::hash($catches[0]->children['var']);
+        for ($i = 1; $i < $n; $prev_hash = $cur_hash, $i++) {
+            $cur_hash = ASTHasher::hash($catches[$i]->children['stmts']) . ASTHasher::hash($catches[$i]->children['var']);
+            if ($prev_hash === $cur_hash) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($catches[$i]->lineno),
+                    'PhanPluginDuplicateCatchStatementBody',
+                    'The implementation of catch({CODE}) and catch({CODE}) are identical, and can be combined if the application only needs to supports php 7.1 and newer',
+                    [
+                        ASTReverter::toShortString($catches[$i - 1]->children['class']),
+                        ASTReverter::toShortString($catches[$i]->children['class']),
+                    ]
                 );
             }
         }

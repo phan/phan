@@ -498,9 +498,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return;
                     }
                 }
-            } catch (CodeBaseException $_) {
-                // Swallow "Cannot find class", go on to emit issue
-            } catch (RecursionDepthException $_) {
+            } catch (CodeBaseException|RecursionDepthException $_) {
+                // Swallow "Cannot find class" or recursion exceptions, go on to emit issue
             }
             $this->emitIssue(
                 Issue::TypeSuspiciousStringExpression,
@@ -1153,9 +1152,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             try {
                 $variable = (new ContextNode($this->code_base, $this->context, $var))->getVariableStrict();
-            } catch (IssueException $_) {
-                return $this->context;
-            } catch (NodeException $_) {
+            } catch (IssueException|NodeException $_) {
                 return $this->context;
             }
             $variable = clone($variable);
@@ -3281,8 +3278,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function analyzeProp(Node $node, bool $is_static): Context
     {
         $exception_or_null = null;
-        // TODO fix #2985
-        $property = null;
 
         try {
             $property = (new ContextNode(
@@ -3299,8 +3294,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             // We'll check out some reasons it might not exist
             // before logging the issue
-            $exception_or_null = $exception;
-        } catch (NodeException $exception) {
             $exception_or_null = $exception;
         } catch (Exception $_) {
             // Swallow any exceptions. We'll catch it later.
@@ -4284,9 +4277,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument
                 ))->getProperty($argument->kind === ast\AST_STATIC_PROP);
-            } catch (IssueException $_) {
-                // Hopefully caught elsewhere
-            } catch (NodeException $_) {
+            } catch (IssueException|NodeException $_) {
                 // Hopefully caught elsewhere
             }
         }
