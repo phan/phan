@@ -31,6 +31,7 @@ Bug Fixes:
 Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
   and `TypeMismatchPropertyDefaultReal` (#3068)
++ Speed up ASTHasher for floats and integers (affects code such as `DuplicateExpressionPlugin`)
 
 Apr 11 2020, Phan 2.7.1
 -----------------------
