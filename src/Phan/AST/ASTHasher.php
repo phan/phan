@@ -29,7 +29,11 @@ class ASTHasher
         if (is_string($node)) {
             return md5($node, true);
         } elseif (is_int($node)) {
-            return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
+            if (\PHP_INT_SIZE >= 8) {
+                return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
+            } else {
+                return "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $node);
+            }
         }
         // This is not a valid array key, give up
         return md5((string) $node, true);
@@ -46,7 +50,12 @@ class ASTHasher
             if (is_string($node)) {
                 return md5($node, true);
             } elseif (is_int($node)) {
-                return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
+                if (\PHP_INT_SIZE >= 8) {
+                    return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
+                } else {
+                    return "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $node);
+                }
+
             } elseif (is_float($node)) {
                 return "\0\0\0\0\0\0\0\1" . \pack('d', $node);
             } elseif (is_null($node)) {

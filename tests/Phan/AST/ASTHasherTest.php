@@ -31,6 +31,24 @@ final class ASTHasherTest extends BaseTest
 
             $this->assertSameBinaryString($expected, ASTHasher::hashKey($key));
             $this->assertSameBinaryString($expected, ASTHasher::hash($key));
+
+            $key = -1;
+            $expected = "\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff";
+
+            $this->assertSameBinaryString($expected, ASTHasher::hashKey($key));
+            $this->assertSameBinaryString($expected, ASTHasher::hash($key));
+        } else {
+            $expected = "\0\0\0\0\0\0\0\0\0\0\0\0\x01\x23\x45\x67";
+            $key = 0x01234567;
+
+            $this->assertSameBinaryString($expected, ASTHasher::hashKey($key));
+            $this->assertSameBinaryString($expected, ASTHasher::hash($key));
+
+            $key = -1;
+            $expected = "\0\0\0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff";
+
+            $this->assertSameBinaryString($expected, ASTHasher::hashKey($key));
+            $this->assertSameBinaryString($expected, ASTHasher::hash($key));
         }
         $this->assertSameBinaryString("\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0", ASTHasher::hash(null));
         $expected1 = hex2bin('3c6e0b8a9c15224a8228b9a98ca1531d');
@@ -40,5 +58,8 @@ final class ASTHasherTest extends BaseTest
         $expected2 = hex2bin('d41d8cd98f00b204e9800998ecf8427e');
         $this->assertSameBinaryString($expected2, ASTHasher::hashKey(''));
         $this->assertSameBinaryString($expected2, ASTHasher::hash(''));
+
+        $expected2 = hex2bin('0000000000000001000000000000f83f');
+        $this->assertSameBinaryString($expected2, ASTHasher::hash(1.5));
     }
 }
