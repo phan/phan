@@ -1738,7 +1738,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return $element_types;
                     }
                 }
-            } catch (CodeBaseException|RecursionDepthException $_) {
+            } catch (CodeBaseException | RecursionDepthException $_) {
                 // ignore
             }
 
@@ -2609,7 +2609,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ["{$exception_fqsen}->{$property_name}"],
                 $suggestion
             );
-        } catch (UnanalyzableException|NodeException $_) {
+        } catch (UnanalyzableException | NodeException $_) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }
@@ -3061,7 +3061,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * `void` is as close as possible to `no-return` or `never` for types currently available in Phan.
      */
-    public function visitThrow(Node $_) : UnionType {
+    public function visitThrow(Node $_): UnionType
+    {
         return VoidType::instance(false)->asRealUnionType();
     }
 

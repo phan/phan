@@ -6,8 +6,10 @@ namespace Phan\Tests\AST;
 
 use Phan\AST\ASTHasher;
 use Phan\Tests\BaseTest;
+
 use function bin2hex;
 use function hex2bin;
+
 use const PHP_INT_SIZE;
 
 /**
@@ -16,7 +18,8 @@ use const PHP_INT_SIZE;
  */
 final class ASTHasherTest extends BaseTest
 {
-    private function assertSameBinaryString(string $expected, string $actual): void {
+    private function assertSameBinaryString(string $expected, string $actual): void
+    {
         $this->assertSame(bin2hex($expected), bin2hex($actual), "expected the same binary data");
     }
 

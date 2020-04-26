@@ -108,7 +108,7 @@ class Analysis
         }
         try {
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (ParseError|CompileError|ParseException $_) {
+        } catch (ParseError | CompileError | ParseException $_) {
             return $context;
         }
 
@@ -529,7 +529,7 @@ class Analysis
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
-        } catch (ParseException|ParseError|CompileError $_) {
+        } catch (ParseException | ParseError | CompileError $_) {
             // Issue::SyntaxError was already emitted.
             return $context;
         }

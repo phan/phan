@@ -8,8 +8,8 @@ use ast\Node;
 
 use function is_float;
 use function is_int;
-use function is_object;
 use function is_null;
+use function is_object;
 use function is_string;
 use function md5;
 
@@ -55,7 +55,6 @@ class ASTHasher
                 } else {
                     return "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $node);
                 }
-
             } elseif (is_float($node)) {
                 return "\0\0\0\0\0\0\0\1" . \pack('d', $node);
             } elseif (is_null($node)) {

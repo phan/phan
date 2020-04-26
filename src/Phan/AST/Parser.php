@@ -118,7 +118,7 @@ class Parser
                 return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $request);
             }
             return self::parseCodeHandlingDeprecation($code_base, $context, $file_contents, $file_path);
-        } catch (CompileError|ParseError $native_parse_error) {
+        } catch (CompileError | ParseError $native_parse_error) {
             return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error, $request);
         }
     }

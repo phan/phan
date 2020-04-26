@@ -511,7 +511,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Set the element type on each element of
                 // the list
                 $this->analyzeSetUnionType($property, $element_type, $value_node);
-            } catch (UnanalyzableException|NodeException $_) {
+            } catch (UnanalyzableException | NodeException $_) {
                 // Ignore it. There's nothing we can do.
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -741,7 +741,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Set the element type on each element of
                     // the list
                     $this->analyzeSetUnionType($property, $element_type, $value_node);
-                } catch (UnanalyzableException|NodeException $_) {
+                } catch (UnanalyzableException | NodeException $_) {
                     // Ignore it. There's nothing we can do.
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -1676,7 +1676,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $this->code_base,
                             $this->context
                         );
-                    } catch (IssueException|NodeException $_) {
+                    } catch (IssueException | NodeException $_) {
                         // Hopefully caught elsewhere
                     }
                 }

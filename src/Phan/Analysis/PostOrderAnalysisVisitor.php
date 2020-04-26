@@ -498,7 +498,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return;
                     }
                 }
-            } catch (CodeBaseException|RecursionDepthException $_) {
+            } catch (CodeBaseException | RecursionDepthException $_) {
                 // Swallow "Cannot find class" or recursion exceptions, go on to emit issue
             }
             $this->emitIssue(
@@ -1152,7 +1152,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             try {
                 $variable = (new ContextNode($this->code_base, $this->context, $var))->getVariableStrict();
-            } catch (IssueException|NodeException $_) {
+            } catch (IssueException | NodeException $_) {
                 return $this->context;
             }
             $variable = clone($variable);
@@ -4277,7 +4277,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument
                 ))->getProperty($argument->kind === ast\AST_STATIC_PROP);
-            } catch (IssueException|NodeException $_) {
+            } catch (IssueException | NodeException $_) {
                 // Hopefully caught elsewhere
             }
         }
@@ -4627,5 +4627,4 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         return $this->context;
     }
-
 }

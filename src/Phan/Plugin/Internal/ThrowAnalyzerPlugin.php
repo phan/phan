@@ -353,7 +353,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $context,
                 $node
             ))->getMethod($method_name, false, true);
-        } catch (IssueException|NodeException $_) {
+        } catch (IssueException | NodeException $_) {
             // do nothing, PostOrderAnalysisVisitor should catch this
             return;
         }
