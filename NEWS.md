@@ -3,6 +3,13 @@ Phan NEWS
 ??? ?? 2020, Phan 2.7.2 (dev)
 -----------------------
 
+New features(CLI, Config):
++ Add a `--native-syntax-check=/path/to/php` option to enable `InvokePHPNativeSyntaxCheckPlugin`
+  and add that php binary to the `php_native_syntax_check_binaries` array of `plugin_config`
+  (treated here as initially being the empty array if not configured).
+
+  This CLI flag can be repeated to run PHP's native syntax checks with multiple php binaries.
+
 New features(Analysis):
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable`. (#3853)
 + Include the relevant expression in more issue messages for type errors. (#3844)
