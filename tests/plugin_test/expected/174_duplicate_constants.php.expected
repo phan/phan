@@ -1,0 +1,7 @@
+src/174_duplicate_constants.php:3 PhanUnreferencedConstant Possibly zero references to global constant \S174
+src/174_duplicate_constants.php:4 PhanUnreferencedConstant Possibly zero references to global constant \T174
+src/174_duplicate_constants.php:5 PhanUnreferencedConstant Possibly zero references to global constant \U174
+src/174_duplicate_constants.php:5 PhanUnreferencedConstant Possibly zero references to global constant \V174
+src/174_duplicate_constants.php:6 PhanPluginDuplicateConstant Constant S174 was previously declared at line 3 - the previous declaration will be used instead
+src/174_duplicate_constants.php:7 PhanPluginDuplicateConstant Constant T174 was previously declared at line 4 - the previous declaration will be used instead
+src/174_duplicate_constants.php:8 PhanPluginDuplicateConstant Constant V174 was previously declared at line 5 - the previous declaration will be used instead

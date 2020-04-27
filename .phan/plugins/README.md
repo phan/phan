@@ -514,6 +514,12 @@ Emitted issue types:
 - **PhanPluginCompatibilityArgumentUnpacking**: `Argument unpacking ({CODE}) requires support for php 5.6+`
 - **PhanPluginCompatibilityVariadicParam**: `Variadic functions ({CODE}) require support for php 5.6+`
 
+#### DuplicateConstantPlugin.php
+
+Checks for duplicate constant names for calls to `define()` or `const X =` within the same statement list.
+
+- **PhanPluginDuplicateConstant**: `Constant {CONST} was previously declared at line {LINE} - the previous declaration will be used instead`
+
 #### AvoidableGetterPlugin.php
 
 This plugin checks for uses of getters on `$this` that can be avoided inside of a class.
