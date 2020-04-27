@@ -236,6 +236,11 @@ class Config
         // [php7cc (no longer maintained)](https://github.com/sstalle/php7cc)
         // and [php7mar](https://github.com/Alexia/php7mar),
         // which have different backwards compatibility checks.
+        //
+        // If you are still using versions of php older than 5.6,
+        // `PHP53CompatibilityPlugin` may be worth looking into if you are not running
+        // syntax checks for php 5.3 through another method such as
+        // `InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
         'backward_compatibility_checks' => true,
 
         // A set of fully qualified class-names for which
