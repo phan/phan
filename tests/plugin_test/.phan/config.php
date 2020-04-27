@@ -146,5 +146,6 @@ return [
         'LoopVariableReusePlugin',
         'RedundantAssignmentPlugin',
         'UnknownClassElementAccessPlugin',
+        'DuplicateConstantPlugin',
     ],
 ];
