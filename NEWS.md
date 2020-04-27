@@ -32,6 +32,9 @@ Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
   and `TypeMismatchPropertyDefaultReal` (#3068)
 + Speed up ASTHasher for floats and integers (affects code such as `DuplicateExpressionPlugin`)
++ Call `uopz_allow_exit(true)` if uopz is enabled when initializing Phan. (#3880)
+  Do not run Phan with `uopz` unless debugging Phan itself, because `uopz` causes unpredictable behavior.
+  Use stubs or internal stubs instead.
 
 Apr 11 2020, Phan 2.7.1
 -----------------------

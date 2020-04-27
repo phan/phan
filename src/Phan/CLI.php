@@ -364,6 +364,7 @@ class CLI
             \printf("Phan %s\n", self::PHAN_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
+        self::restartWithoutProblematicExtensions();
         $this->warnSuspiciousShortOptions($argv);
 
         // Determine the root directory of the project from which
@@ -897,7 +898,6 @@ class CLI
             }
         }
         self::ensureASTParserExists();
-        self::restartWithoutProblematicExtensions();
         self::checkPluginsExist();
         self::checkValidFileConfig();
         if (\is_null($progress_bar)) {
@@ -2659,11 +2659,18 @@ EOT
             }
         }
         if (self::shouldRestartToExclude('uopz')) {
+            // NOTE: uopz seems to cause instability when used and switched from enabled to disabled.
+            //
+            // TODO create and link to stubs if https://github.com/krakjoe/uopz/issues/123 is completed.
             $extensions_to_disable[] = 'uopz';
             fwrite(
                 STDERR,
-                "[info] Restarting with uopz disabled, it can cause unpredictable behavior." . PHP_EOL .
-                "[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz." . PHP_EOL
+                <<<EOT
+[info] Restarting with uopz disabled, it can cause unpredictable behavior.
+[info] Set the environment variable PHAN_ALLOW_UOPZ to 1 to disable this message and to allow uopz.
+[info] If you are not using uopz to debug Phan, removing uopz from php.ini or setting the ini setting uopz.disable=1 is recommended before running Phan.
+
+EOT
             );
         }
         if (self::shouldRestartToExclude('grpc') && self::willUseMultipleProcesses()) {

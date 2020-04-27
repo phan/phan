@@ -17,6 +17,15 @@ ini_set("memory_limit", '-1');
 define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
+if (function_exists('uopz_allow_exit') && !ini_get('uopz.disable')) {
+    // This is safe to do in the uopz PECL module, it toggles a global variable.
+    try {
+        uopz_allow_exit(true); // @phan-suppress-current-line PhanUndeclaredFunction
+    } catch (Throwable $e) {
+        fprintf(STDERR, "uopz_allow_exit failed: %s" . PHP_EOL, $e->getMessage());
+    }
+}
+
 if (PHP_VERSION_ID < 70100) {
     fprintf(
         STDERR,
