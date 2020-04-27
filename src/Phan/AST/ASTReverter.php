@@ -159,6 +159,25 @@ class ASTReverter
             ast\AST_ARG_LIST => static function (Node $node): string {
                 return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
             },
+            ast\AST_PARAM_LIST => static function (Node $node): string {
+                return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
+            },
+            ast\AST_PARAM => static function (Node $node): string {
+                $str = '$' . $node->children['name'];
+                if ($node->flags & ast\flags\PARAM_VARIADIC) {
+                    $str = "...$str";
+                }
+                if ($node->flags & ast\flags\PARAM_REF) {
+                    $str = "&$str";
+                }
+                if (isset($node->children['type'])) {
+                    $str = ASTReverter::toShortString($node->children['type']) . ' ' . $str;
+                }
+                if (isset($node->children['default'])) {
+                    $str .= ' = ' . ASTReverter::toShortString($node->children['default']);
+                }
+                return $str;
+            },
             ast\AST_EXPR_LIST => static function (Node $node): string {
                 return implode(', ', \array_map('self::toShortString', $node->children));
             },

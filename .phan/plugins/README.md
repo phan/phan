@@ -499,6 +499,21 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
 
 - **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
 
+#### PHP53CompatibilityPlugin.php
+
+Catches common incompatibilities from PHP 5.3 to 5.6.
+**This plugin does not aim to be comprehensive - read the guides on https://www.php.net/manual/en/appendices.php if you need to migrate from php versions older than 5.6**
+
+`InvokePHPNativeSyntaxCheckPlugin` with `'php_native_syntax_check_binaries' => [PHP_BINARY, '/path/to/php53']` in the `'plugin_config'` is a better but slower way to check that syntax used does not cause errors in PHP 5.3.
+
+`backward_compatibility_checks` should also be enabled if migrating a project from php 5 to php 7.
+
+Emitted issue types:
+
+- **PhanPluginCompatibilityShortArray**: `Short arrays ({CODE}) require support for php 5.4+`
+- **PhanPluginCompatibilityArgumentUnpacking**: `Argument unpacking ({CODE}) requires support for php 5.6+`
+- **PhanPluginCompatibilityVariadicParam**: `Variadic functions ({CODE}) require support for php 5.6+`
+
 #### AvoidableGetterPlugin.php
 
 This plugin checks for uses of getters on `$this` that can be avoided inside of a class.
