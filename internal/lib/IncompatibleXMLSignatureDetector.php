@@ -270,7 +270,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 }
                 $results = $xml->xpath('//a:classsynopsisinfo/a:ooclass/a:classname');
                 if (is_array($results) && count($results) === 1) {
-                    echo "Returning $results[0]\n";
+                    // echo "Returning $results[0]\n";
                     return (string)$results[0];
                 }
                 break;
@@ -963,12 +963,12 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 continue;
             }
             $name = (string)$name[0];
-            $description_paragraphs = $entry->listitem->simpara;
+            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall Phan can't infer that listitem is SimpleXMLElement
+            $description_paragraphs = iterator_to_array($entry->listitem->children(), false);
             if (count($description_paragraphs) === 0) {
-                // fwrite(STDERR, "Failed to extract description for $entry\n");
+                fwrite(STDERR, "Failed to extract description for $entry\n");
                 continue;
             }
-            $description_paragraphs = iterator_to_array($description_paragraphs, false);
             $text = self::extractDescriptionFromParagraphElements($description_paragraphs);
             if (!$text) {
                 continue;

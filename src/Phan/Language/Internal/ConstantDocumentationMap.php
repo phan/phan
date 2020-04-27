@@ -711,13 +711,13 @@ and used as a lower bound for that statement.',
 'E_COMPILE_WARNING' => 'Error reporting constant',
 'E_CORE_ERROR' => 'Error reporting constant',
 'E_CORE_WARNING' => 'Error reporting constant',
-'E_DEPRECATED' => 'Error reporting constant. Available since PHP 5.3.0',
+'E_DEPRECATED' => 'Error reporting constant.',
 'E_ERROR' => 'Error reporting constant',
 'E_NOTICE' => 'Error reporting constant',
 'E_PARSE' => 'Error reporting constant',
-'E_RECOVERABLE_ERROR' => 'Error reporting constant. Available since PHP 5.2.0',
+'E_RECOVERABLE_ERROR' => 'Error reporting constant.',
 'E_STRICT' => 'Error reporting constant',
-'E_USER_DEPRECATED' => 'Error reporting constant. Available since PHP 5.3.0',
+'E_USER_DEPRECATED' => 'Error reporting constant.',
 'E_USER_ERROR' => 'Error reporting constant',
 'E_USER_NOTICE' => 'Error reporting constant',
 'E_USER_WARNING' => 'Error reporting constant',
@@ -875,8 +875,10 @@ callback will be called), and will return after one iteration of the loop.',
 'FANN_TRAIN_RPROP' => 'A more advanced batch training algorithm which achieves good results for many problems. The RPROP training algorithm is adaptive, and does therefore not use the learning_rate. Some other parameters can however be set to change the way the RPROP algorithm works, but it is only recommended for users with insight in how the RPROP training algorithm works. The RPROP training algorithm is described by [Riedmiller and Braun, 1993], but the actual learning algorithm used here is the iRPROP- training algorithm which is described by [Igel and Husken, 2000] which is an variety of the standard RPROP training algorithm.',
 'FANN_TRAIN_SARPROP' => 'Even more advance training algorithm. Only for version 2.2',
 'FILE_APPEND' => 'Append content to existing file.',
+'FILE_BINARY' => 'Binary mode (since PHP 5.2.7). This constant has no effect, and is only available for `forward compatibility`.',
 'FILE_IGNORE_NEW_LINES' => 'Strip EOL characters.',
 'FILE_SKIP_EMPTY_LINES' => 'Skip empty lines.',
+'FILE_TEXT' => 'Text mode (since PHP 5.2.7). This constant has no effect, and is only available for `forward compatibility`.',
 'FILE_USE_INCLUDE_PATH' => 'Search for filename in include_path.',
 'FILEINFO_COMPRESS' => 'Decompress compressed files.
 
@@ -889,12 +891,8 @@ For types that commonly have multiple file extensions, such as `JPEG` images, th
 
 Available since PHP 7.2.0.',
 'FILEINFO_MIME' => 'Return the mime type and mime encoding as defined by RFC 2045.',
-'FILEINFO_MIME_ENCODING' => 'Return the mime encoding of the file.
-
-Available since PHP 5.3.0.',
-'FILEINFO_MIME_TYPE' => 'Return the mime type.
-
-Available since PHP 5.3.0.',
+'FILEINFO_MIME_ENCODING' => 'Return the mime encoding of the file.',
+'FILEINFO_MIME_TYPE' => 'Return the mime type.',
 'FILEINFO_NONE' => 'No special handling.',
 'FILEINFO_PRESERVE_ATIME' => 'If possible preserve the original access time.',
 'FILEINFO_RAW' => 'Don\'t translate unprintable characters to a `\ooo` octal representation.',
@@ -968,6 +966,15 @@ Available since PHP 5.3.0.',
 'FT_INTERNAL' => 'The return string is in internal format, will not canonicalize to CRLF.',
 'FT_PEEK' => 'Do not set the \Seen flag if not already set',
 'FT_UID' => 'The parameter is a UID',
+'FTP_AUTORESUME' => 'Automatically determine resume position and start position for GET and PUT requests (only works if FTP_AUTOSEEK is enabled)',
+'FTP_AUTOSEEK' => 'See `ftp_set_option` for information.',
+'FTP_FAILED' => 'Asynchronous transfer has failed',
+'FTP_FINISHED' => 'Asynchronous transfer has finished',
+'FTP_IMAGE' => 'Alias of `FTP_BINARY`.',
+'FTP_MOREDATA' => 'Asynchronous transfer is still active',
+'FTP_TEXT' => 'Alias of `FTP_ASCII`.',
+'FTP_TIMEOUT_SEC' => 'See `ftp_set_option` for information.',
+'FTP_USEPASVADDRESS' => 'See `ftp_set_option` for information. Available as of PHP 5.6.0.',
 'GD_BUNDLED' => 'When the bundled version of GD is used this is 1 otherwise its set to 0.',
 'GD_EXTRA_VERSION' => 'The GD "extra" version (beta/rc..) PHP was compiled against. (Available as of PHP 5.2.4)',
 'GD_MAJOR_VERSION' => 'The GD major version PHP was compiled against. (Available as of PHP 5.2.4)',
@@ -1658,8 +1665,10 @@ write, or until writes_done, but it need not buffer completely or at all.',
 'IMAP_GC_ELT' => 'Garbage collector, clear message cache elements.',
 'IMAP_GC_ENV' => 'Garbage collector, clear envelopes and bodies.',
 'IMAP_GC_TEXTS' => 'Garbage collector, clear texts.',
+'IMG_ARC_ROUNDED' => 'This constant has the same value as `IMG_ARC_PIE`',
 'IMG_FILTER_PIXELATE' => '(Available as of PHP 5.3.0)',
 'IMG_FILTER_SCATTER' => '(Available as of PHP 7.4.0)',
+'IMG_JPEG' => 'This constant has the same value as `IMG_JPG`',
 'IMG_WEBP' => 'Available as of PHP 5.6.25 and PHP 7.0.10, respectively.',
 'IN_ACCESS' => 'File was accessed (read) (*)',
 'IN_ALL_EVENTS' => 'Bitmask of all the above constants',
@@ -1724,25 +1733,25 @@ write, or until writes_done, but it need not buffer completely or at all.',
 'INTL_IDNA_VARIANT_UTS46' => 'Use UTS #46 algorithm in `idn_to_utf8` and `idn_to_ascii`. Available as of ICU 4.6.',
 'INTL_MAX_LOCALE_LEN' => 'Limit on locale length, set to 80 in PHP code. Locale names longer than this limit will not be accepted.',
 'JSON_BIGINT_AS_STRING' => 'Decodes large integers as their original string value. Available since PHP 5.4.0.',
-'JSON_ERROR_CTRL_CHAR' => 'Control character error, possibly incorrectly encoded. Available since PHP 5.3.0.',
-'JSON_ERROR_DEPTH' => 'The maximum stack depth has been exceeded. Available since PHP 5.3.0.',
+'JSON_ERROR_CTRL_CHAR' => 'Control character error, possibly incorrectly encoded.',
+'JSON_ERROR_DEPTH' => 'The maximum stack depth has been exceeded.',
 'JSON_ERROR_INF_OR_NAN' => 'The value passed to `json_encode` includes either `NAN` or `INF`. If the `JSON_PARTIAL_OUTPUT_ON_ERROR` option was given, `0` will be encoded in the place of these special numbers. Available since PHP 5.5.0.',
 'JSON_ERROR_INVALID_PROPERTY_NAME' => 'A key starting with \u0000 character was in the string passed to `json_decode` when decoding a JSON object into a PHP object. Available since PHP 7.0.0.',
-'JSON_ERROR_NONE' => 'No error has occurred. Available since PHP 5.3.0.',
+'JSON_ERROR_NONE' => 'No error has occurred.',
 'JSON_ERROR_RECURSION' => 'The object or array passed to `json_encode` include recursive references and cannot be encoded. If the `JSON_PARTIAL_OUTPUT_ON_ERROR` option was given, `null` will be encoded in the place of the recursive reference. Available since PHP 5.5.0.',
-'JSON_ERROR_STATE_MISMATCH' => 'Occurs with underflow or with the modes mismatch. Available since PHP 5.3.0.',
-'JSON_ERROR_SYNTAX' => 'Syntax error. Available since PHP 5.3.0.',
+'JSON_ERROR_STATE_MISMATCH' => 'Occurs with underflow or with the modes mismatch.',
+'JSON_ERROR_SYNTAX' => 'Syntax error.',
 'JSON_ERROR_UNSUPPORTED_TYPE' => 'A value of an unsupported type was given to `json_encode`, such as a `resource`. If the `JSON_PARTIAL_OUTPUT_ON_ERROR` option was given, `null` will be encoded in the place of the unsupported value. Available since PHP 5.5.0.',
 'JSON_ERROR_UTF16' => 'Single unpaired UTF-16 surrogate in unicode escape contained in the JSON string passed to `json_encode`. Available since PHP 7.0.0.',
-'JSON_ERROR_UTF8' => 'Malformed UTF-8 characters, possibly incorrectly encoded. Available since PHP 5.3.3.',
-'JSON_FORCE_OBJECT' => 'Outputs an object rather than an array when a non-associative array is used. Especially useful when the recipient of the output is expecting an object and the array is empty. Available since PHP 5.3.0.',
-'JSON_HEX_AMP' => 'All &amp;s are converted to \u0026. Available since PHP 5.3.0.',
-'JSON_HEX_APOS' => 'All \' are converted to \u0027. Available since PHP 5.3.0.',
-'JSON_HEX_QUOT' => 'All " are converted to \u0022. Available since PHP 5.3.0.',
-'JSON_HEX_TAG' => 'All &lt; and &gt; are converted to \u003C and \u003E. Available since PHP 5.3.0.',
+'JSON_ERROR_UTF8' => 'Malformed UTF-8 characters, possibly incorrectly encoded.',
+'JSON_FORCE_OBJECT' => 'Outputs an object rather than an array when a non-associative array is used. Especially useful when the recipient of the output is expecting an object and the array is empty.',
+'JSON_HEX_AMP' => 'All &amp;s are converted to \u0026.',
+'JSON_HEX_APOS' => 'All \' are converted to \u0027.',
+'JSON_HEX_QUOT' => 'All " are converted to \u0022.',
+'JSON_HEX_TAG' => 'All &lt; and &gt; are converted to \u003C and \u003E.',
 'JSON_INVALID_UTF8_IGNORE' => 'Ignore invalid UTF-8 characters. Available as of PHP 7.2.0.',
 'JSON_INVALID_UTF8_SUBSTITUTE' => 'Convert invalid UTF-8 characters to \0xfffd (Unicode Character \'REPLACEMENT CHARACTER\') Available as of PHP 7.2.0.',
-'JSON_NUMERIC_CHECK' => 'Encodes numeric strings as numbers. Available since PHP 5.3.3.',
+'JSON_NUMERIC_CHECK' => 'Encodes numeric strings as numbers.',
 'JSON_OBJECT_AS_ARRAY' => 'Decodes JSON objects as PHP array. This option can be added automatically by calling `json_decode` with the second parameter equal to `true`. Available since PHP 5.4.0.',
 'JSON_PARTIAL_OUTPUT_ON_ERROR' => 'Substitute some unencodable values instead of failing. Available since PHP 5.5.0.',
 'JSON_PRESERVE_ZERO_FRACTION' => 'Ensures that `float` values are always encoded as a float value. Available since PHP 5.6.6.',
@@ -1834,6 +1843,9 @@ write, or until writes_done, but it need not buffer completely or at all.',
 'LDAP_OPT_REFERRALS' => 'Specifies whether to automatically follow referrals returned by the LDAP server.',
 'LDAP_OPT_RESTART' => 'Determines whether or not the connection should be implicitly restarted.',
 'LDAP_OPT_SERVER_CONTROLS' => 'Specifies a default list of server controls to be sent with each request.',
+'LDAP_OPT_SIZELIMIT' => 'Specifies the maximum number of entries that can be returned on a search operation.
+
+The actual size limit for operations is also bounded by the server\'s configured maximum number of return entries. The lesser of these two settings is the actual size limit.',
 'LDAP_OPT_TIMELIMIT' => 'Specifies the number of seconds to wait for search results.',
 'LDAP_OPT_X_KEEPALIVE_IDLE' => 'Specifies the number of seconds a connection needs to remain idle before TCP starts sending keepalive probes.',
 'LDAP_OPT_X_KEEPALIVE_INTERVAL' => 'Specifies the interval in seconds between individual keepalive probes.',
@@ -1890,7 +1902,7 @@ write, or until writes_done, but it need not buffer completely or at all.',
 'MB_ONIGURUMA_VERSION' => 'The Oniguruma version, e.g. `6.9.4`. Available as of PHP 7.4.',
 'Memcached::DISTRIBUTION_CONSISTENT' => '<p>Consistent hashing key distribution algorithm (based on libketama).</p>',
 'Memcached::DISTRIBUTION_MODULA' => '<p>Modulo-based key distribution algorithm.</p>',
-'Memcached::GET_EXTENDED' => '<p>A flag that causes Memcached get operations to also return the CAS tokens for the found entries</p>',
+'Memcached::GET_EXTENDED' => 'A flag for `Memcached::get`, `Memcached::getMulti` and `Memcached::getMultiByKey` to ensure that the CAS token values are returned as well.',
 'Memcached::GET_PRESERVE_ORDER' => '<p>A flag for <b>Memcached::getMulti</b> and
 <b>Memcached::getMultiByKey</b> to ensure that the keys are
 returned in the same order as they were requested in. Non-existing keys
@@ -1904,10 +1916,11 @@ get a default value of NULL.</p>',
 'Memcached::HASH_HSIEH' => '<p>Hsieh item key hashing algorithm.</p>',
 'Memcached::HASH_MD5' => '<p>MD5 item key hashing algorithm.</p>',
 'Memcached::HASH_MURMUR' => '<p>Murmur item key hashing algorithm.</p>',
-'Memcached::HAVE_IGBINARY' => '<p>Indicates whether igbinary serializer support is available.</p>
-<p>Type: boolean.</p>',
-'Memcached::HAVE_JSON' => '<p>Indicates whether JSON serializer support is available.</p>
-<p>Type: boolean.</p>',
+'Memcached::HAVE_IGBINARY' => 'Indicates whether igbinary serializer support is available.',
+'Memcached::HAVE_JSON' => 'Indicates whether JSON serializer support is available.',
+'Memcached::HAVE_MSGPACK' => 'Indicates whether msgpack serializer support is available.',
+'Memcached::HAVE_SASL' => 'Whether SASL is available for authentication',
+'Memcached::HAVE_SESSION' => 'Whether memcached can be used for storing session data',
 'Memcached::OPT_BINARY_PROTOCOL' => '<p>Enable the use of the binary protocol. Please note that you cannot
 toggle this option on an open connection.</p>
 <p>Type: boolean, default: <b>FALSE</b>.</p>',
@@ -1993,16 +2006,21 @@ configuration.</p>',
 'Memcached::OPT_TCP_NODELAY' => '<p>Enables or disables the no-delay feature for connecting sockets (may
 be faster in some environments).</p>
 <p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::RES_AUTH_CONTINUE' => 'Available as of Memcached 3.0.0.',
+'Memcached::RES_AUTH_FAILURE' => 'Available as of Memcached 3.0.0.',
+'Memcached::RES_AUTH_PROBLEM' => 'Available as of Memcached 3.0.0.',
 'Memcached::RES_BAD_KEY_PROVIDED' => '<p>Bad key.</p>',
 'Memcached::RES_BUFFERED' => '<p>The operation was buffered.</p>',
 'Memcached::RES_CLIENT_ERROR' => '<p>Error on the client side.</p>',
 'Memcached::RES_CONNECTION_SOCKET_CREATE_FAILURE' => '<p>Failed to create network socket.</p>',
 'Memcached::RES_DATA_EXISTS' => '<p>Failed to do compare-and-swap: item you are trying to store has been
 modified since you last fetched it.</p>',
+'Memcached::RES_E2BIG' => 'Available as of Memcached 3.0.0.',
 'Memcached::RES_END' => '<p>End of result set.</p>',
 'Memcached::RES_ERRNO' => '<p>System error.</p>',
 'Memcached::RES_FAILURE' => '<p>The operation failed in some fashion.</p>',
 'Memcached::RES_HOST_LOOKUP_FAILURE' => '<p>DNS lookup failed.</p>',
+'Memcached::RES_KEY_TOO_BIG' => 'Available as of Memcached 3.0.0.',
 'Memcached::RES_NO_SERVERS' => '<p>Server list is empty.</p>',
 'Memcached::RES_NOTFOUND' => '<p>Item with this key was not found (with "get" operation or "case"
 operations).</p>',
@@ -2013,6 +2031,8 @@ wasn\'t met, or that the item is in a delete queue.</p>',
 'Memcached::RES_PAYLOAD_FAILURE' => '<p>Payload failure: could not compress/decompress or serialize/unserialize the value.</p>',
 'Memcached::RES_PROTOCOL_ERROR' => '<p>Bad command in memcached protocol.</p>',
 'Memcached::RES_SERVER_ERROR' => '<p>Error on the server side.</p>',
+'Memcached::RES_SERVER_MEMORY_ALLOCATION_FAILURE' => 'Available as of Memcached 3.0.0.',
+'Memcached::RES_SERVER_TEMPORARILY_DISABLED' => 'Available as of Memcached 3.0.0.',
 'Memcached::RES_SOME_ERRORS' => '<p>Some errors occurred during multi-get.</p>',
 'Memcached::RES_SUCCESS' => '<p>The operation was successful.</p>',
 'Memcached::RES_TIMEOUT' => '<p>The operation timed out.</p>',
@@ -2051,6 +2071,89 @@ Generated at 2017-08-24 16:06:54',
 'MSSQL_ASSOC' => 'Return an associative array. Used on `mssql_fetch_array`\'s `result_type` parameter.',
 'MSSQL_BOTH' => 'Return an array with both numeric keys and keys with their field name. This is the default value for `mssql_fetch_array`\'s `result_type` parameter.',
 'MSSQL_NUM' => 'Return an array with numeric keys. Used on `mssql_fetch_array`\'s `result_type` parameter.',
+'MYSQLI_ASSOC' => 'Columns are returned into the array having the fieldname as the array index.',
+'MYSQLI_AUTO_INCREMENT_FLAG' => 'Field is defined as `AUTO_INCREMENT`',
+'MYSQLI_BINARY_FLAG' => 'Field is defined as `BINARY`.',
+'MYSQLI_BLOB_FLAG' => 'Field is defined as `BLOB`',
+'MYSQLI_BOTH' => 'Columns are returned into the array having both a numerical index and the fieldname as the associative index.',
+'MYSQLI_CLIENT_COMPRESS' => 'Use compression protocol',
+'MYSQLI_CLIENT_IGNORE_SPACE' => 'Allow spaces after function names. Makes all functions names reserved words.',
+'MYSQLI_CLIENT_INTERACTIVE' => 'Allow `interactive_timeout` seconds (instead of `wait_timeout` seconds) of inactivity before closing the connection. The client\'s session `wait_timeout` variable will be set to the value of the session `interactive_timeout` variable.',
+'MYSQLI_CLIENT_MULTI_QUERIES' => 'Allows multiple semicolon-delimited queries in a single `mysqli_query` call.',
+'MYSQLI_CLIENT_NO_SCHEMA' => 'Don\'t allow the `db_name.tbl_name.col_name` syntax.',
+'MYSQLI_CLIENT_SSL' => 'Use SSL (encrypted protocol). This option should not be set by application programs; it is set internally in the MySQL client library',
+'MYSQLI_DATA_TRUNCATED' => 'Data truncation occurred. Available since PHP 5.1.0 and MySQL 5.0.5.',
+'MYSQLI_DEBUG_TRACE_ENABLED' => 'Is set to 1 if `mysqli_debug` functionality is enabled.',
+'MYSQLI_ENUM_FLAG' => 'Field is defined as `ENUM`.',
+'MYSQLI_GROUP_FLAG' => 'Field is part of `GROUP BY`',
+'MYSQLI_INIT_COMMAND' => 'Command to execute when connecting to MySQL server. Will automatically be re-executed when reconnecting.',
+'MYSQLI_MULTIPLE_KEY_FLAG' => 'Field is part of an index.',
+'MYSQLI_NEED_DATA' => 'More data available for bind variable',
+'MYSQLI_NO_DATA' => 'No more data available for bind variable',
+'MYSQLI_NOT_NULL_FLAG' => 'Indicates that a field is defined as `NOT NULL`',
+'MYSQLI_NUM' => 'Columns are returned into the array having an enumerated index.',
+'MYSQLI_NUM_FLAG' => 'Field is defined as `NUMERIC`',
+'MYSQLI_OPT_CONNECT_TIMEOUT' => 'Connect timeout in seconds',
+'MYSQLI_OPT_LOCAL_INFILE' => 'Enables command `LOAD LOCAL INFILE`',
+'MYSQLI_PART_KEY_FLAG' => 'Field is part of an multi-index',
+'MYSQLI_PRI_KEY_FLAG' => 'Field is part of a primary index',
+'MYSQLI_READ_DEFAULT_FILE' => 'Read options from the named option file instead of from my.cnf',
+'MYSQLI_READ_DEFAULT_GROUP' => 'Read options from the named group from my.cnf or the file specified with `MYSQLI_READ_DEFAULT_FILE`',
+'MYSQLI_REFRESH_GRANT' => 'Refreshes the grant tables.',
+'MYSQLI_REFRESH_HOSTS' => 'Flushes the host cache, like executing the `FLUSH HOSTS` SQL statement.',
+'MYSQLI_REFRESH_LOG' => 'Flushes the logs, like executing the `FLUSH LOGS` SQL statement.',
+'MYSQLI_REFRESH_MASTER' => 'On a master replication server: removes the binary log files listed in the binary log index, and truncates the index file. Like executing the `RESET MASTER` SQL statement.',
+'MYSQLI_REFRESH_SLAVE' => 'On a slave replication server: resets the master server information, and restarts the slave. Like executing the `RESET SLAVE` SQL statement.',
+'MYSQLI_REFRESH_STATUS' => 'Reset the status variables, like executing the `FLUSH STATUS` SQL statement.',
+'MYSQLI_REFRESH_TABLES' => 'Flushes the table cache, like executing the `FLUSH TABLES` SQL statement.',
+'MYSQLI_REFRESH_THREADS' => 'Flushes the thread cache.',
+'MYSQLI_REPORT_ALL' => 'Set all options on (report all).',
+'MYSQLI_REPORT_ERROR' => 'Report errors from mysqli function calls.',
+'MYSQLI_REPORT_INDEX' => 'Report if no index or bad index was used in a query.',
+'MYSQLI_REPORT_OFF' => 'Turns reporting off.',
+'MYSQLI_REPORT_STRICT' => 'Throw a `mysqli_sql_exception` for errors instead of warnings.',
+'MYSQLI_SET_FLAG' => 'Field is defined as `SET`',
+'MYSQLI_STORE_RESULT' => 'For using buffered resultsets',
+'MYSQLI_TIMESTAMP_FLAG' => 'Field is defined as `TIMESTAMP`',
+'MYSQLI_TRANS_COR_AND_CHAIN' => 'Appends "AND CHAIN" to `mysqli_commit` or `mysqli_rollback`.',
+'MYSQLI_TRANS_COR_AND_NO_CHAIN' => 'Appends "AND NO CHAIN" to `mysqli_commit` or `mysqli_rollback`.',
+'MYSQLI_TRANS_COR_NO_RELEASE' => 'Appends "NO RELEASE" to `mysqli_commit` or `mysqli_rollback`.',
+'MYSQLI_TRANS_COR_RELEASE' => 'Appends "RELEASE" to `mysqli_commit` or `mysqli_rollback`.',
+'MYSQLI_TRANS_START_CONSISTENT_SNAPSHOT' => 'Start the transaction as "START TRANSACTION WITH CONSISTENT SNAPSHOT" with `mysqli_begin_transaction`.',
+'MYSQLI_TRANS_START_READ_ONLY' => 'Start the transaction as "START TRANSACTION READ ONLY" with `mysqli_begin_transaction`.',
+'MYSQLI_TRANS_START_READ_WRITE' => 'Start the transaction as "START TRANSACTION READ WRITE" with `mysqli_begin_transaction`.',
+'MYSQLI_TYPE_BIT' => 'Field is defined as `BIT` (MySQL 5.0.3 and up)',
+'MYSQLI_TYPE_BLOB' => 'Field is defined as `BLOB`',
+'MYSQLI_TYPE_CHAR' => 'Field is defined as `TINYINT`. For `CHAR`, see `MYSQLI_TYPE_STRING`',
+'MYSQLI_TYPE_DATE' => 'Field is defined as `DATE`',
+'MYSQLI_TYPE_DATETIME' => 'Field is defined as `DATETIME`',
+'MYSQLI_TYPE_DECIMAL' => 'Field is defined as `DECIMAL`',
+'MYSQLI_TYPE_DOUBLE' => 'Field is defined as `DOUBLE`',
+'MYSQLI_TYPE_ENUM' => 'Field is defined as `ENUM`',
+'MYSQLI_TYPE_FLOAT' => 'Field is defined as `FLOAT`',
+'MYSQLI_TYPE_GEOMETRY' => 'Field is defined as `GEOMETRY`',
+'MYSQLI_TYPE_INT24' => 'Field is defined as `MEDIUMINT`',
+'MYSQLI_TYPE_INTERVAL' => 'Field is defined as `INTERVAL`',
+'MYSQLI_TYPE_LONG' => 'Field is defined as `INT`',
+'MYSQLI_TYPE_LONG_BLOB' => 'Field is defined as `LONGBLOB`',
+'MYSQLI_TYPE_LONGLONG' => 'Field is defined as `BIGINT`',
+'MYSQLI_TYPE_MEDIUM_BLOB' => 'Field is defined as `MEDIUMBLOB`',
+'MYSQLI_TYPE_NEWDATE' => 'Field is defined as `DATE`',
+'MYSQLI_TYPE_NEWDECIMAL' => 'Precision math `DECIMAL` or `NUMERIC` field (MySQL 5.0.3 and up)',
+'MYSQLI_TYPE_NULL' => 'Field is defined as `DEFAULT NULL`',
+'MYSQLI_TYPE_SET' => 'Field is defined as `SET`',
+'MYSQLI_TYPE_SHORT' => 'Field is defined as `SMALLINT`',
+'MYSQLI_TYPE_STRING' => 'Field is defined as `CHAR` or `BINARY`',
+'MYSQLI_TYPE_TIME' => 'Field is defined as `TIME`',
+'MYSQLI_TYPE_TIMESTAMP' => 'Field is defined as `TIMESTAMP`',
+'MYSQLI_TYPE_TINY' => 'Field is defined as `TINYINT`',
+'MYSQLI_TYPE_TINY_BLOB' => 'Field is defined as `TINYBLOB`',
+'MYSQLI_TYPE_VAR_STRING' => 'Field is defined as `VARCHAR`',
+'MYSQLI_TYPE_YEAR' => 'Field is defined as `YEAR`',
+'MYSQLI_UNIQUE_KEY_FLAG' => 'Field is part of a unique index.',
+'MYSQLI_UNSIGNED_FLAG' => 'Field is defined as `UNSIGNED`',
+'MYSQLI_USE_RESULT' => 'For using unbuffered resultsets',
+'MYSQLI_ZEROFILL_FLAG' => 'Field is defined as `ZEROFILL`',
 'MYSQLND_MEMCACHE_DEFAULT_REGEXP' => 'Default regular expression (PCRE style) used for matching `SELECT` statements that will be mapped into a MySQL Memcache Plugin access point, if possible.
 
 It is also possible to use `mysqlnd_memcache_set`, but the default approach is using this regular expression for pattern matching.',
@@ -2171,16 +2274,25 @@ Use of this feature outside of PECL/mysqlnd_ms is not recommended.',
 'MYSQLND_UH_SERVER_OPTION_SET_CLIENT_IP' => 'TODO',
 'MYSQLND_UH_VERSION' => 'Plugin version string, for example, 1.0.0-alpha.',
 'MYSQLND_UH_VERSION_ID' => 'Plugin version number, for example, 10000.',
+'OAUTH_AUTH_TYPE_AUTHORIZATION' => 'This constant represents putting OAuth parameters in the `Authorization` header.',
+'OAUTH_AUTH_TYPE_FORM' => 'This constant represents putting OAuth parameters as part of the HTTP POST body.',
+'OAUTH_AUTH_TYPE_NONE' => 'This constant indicates a NoAuth OAuth request.',
+'OAUTH_AUTH_TYPE_URI' => 'This constant represents putting OAuth parameters in the request URI.',
 'OAUTH_BAD_NONCE' => 'The *oauth_nonce* value was used in a previous request, therefore it cannot be used now.',
 'OAUTH_BAD_TIMESTAMP' => 'The *oauth_timestamp* value was not accepted by the service provider. In this case, the response should also contain the *oauth_acceptable_timestamps* parameter.',
 'OAUTH_CONSUMER_KEY_REFUSED' => 'The consumer key was refused.',
 'OAUTH_CONSUMER_KEY_UNKNOWN' => 'The *oauth_consumer_key* is temporarily unacceptable to the service provider. For example, the service provider may be throttling the consumer.',
 'OAUTH_HTTP_METHOD_DELETE' => 'Use the *DELETE* method for the OAuth request.',
+'OAUTH_HTTP_METHOD_GET' => 'Use the *GET* method for the OAuth request.',
+'OAUTH_HTTP_METHOD_HEAD' => 'Use the *HEAD* method for the OAuth request.',
+'OAUTH_HTTP_METHOD_POST' => 'Use the *POST* method for the OAuth request.',
+'OAUTH_HTTP_METHOD_PUT' => 'Use the *PUT* method for the OAuth request.',
 'OAUTH_INVALID_SIGNATURE' => 'The *oauth_signature* is invalid, as it does not match the signature computed by the service provider.',
 'OAUTH_OK' => 'Life is good.',
 'OAUTH_PARAMETER_ABSENT' => 'A required parameter was not received. In this case, the response should also contain the *oauth_parameters_absent* parameter.',
 'OAUTH_REQENGINE_CURL' => 'Used by `OAuth::setRequestEngine` to set the engine to Curl, as opposed to `OAUTH_REQENGINE_STREAMS` for PHP streams.',
 'OAUTH_REQENGINE_STREAMS' => 'Used by `OAuth::setRequestEngine` to set the engine to PHP streams, as opposed to `OAUTH_REQENGINE_CURL` for Curl.',
+'OAUTH_SIG_METHOD_HMACSHA1' => 'OAuth *HMAC-SHA1* signature method.',
 'OAUTH_SIG_METHOD_HMACSHA256' => 'OAuth *HMAC-SHA256* signature method.',
 'OAUTH_SIG_METHOD_RSASHA1' => 'OAuth *RSA-SHA1* signature method.',
 'OAUTH_SIGNATURE_METHOD_REJECTED' => 'The *oauth_signature_method* was not accepted by service provider.',
@@ -2372,6 +2484,39 @@ Use of this feature outside of PECL/mysqlnd_ms is not recommended.',
 'PARSEKIT_ZEND_USER_CLASS' => 'Class Type',
 'PARSEKIT_ZEND_USER_FUNCTION' => 'Function Type',
 'PARSEKIT_ZEND_VERIFY_ABSTRACT_CLASS' => 'Opcode',
+'PASSWORD_ARGON2_DEFAULT_MEMORY_COST' => 'Default amount of memory in bytes that Argon2lib will use while trying to compute a hash.
+
+Available as of PHP 7.2.0.',
+'PASSWORD_ARGON2_DEFAULT_THREADS' => 'Default number of threads that Argon2lib will use.
+
+Available as of PHP 7.2.0.',
+'PASSWORD_ARGON2_DEFAULT_TIME_COST' => 'Default amount of time that Argon2lib will spend trying to compute a hash.
+
+Available as of PHP 7.2.0.',
+'PASSWORD_ARGON2I' => '`PASSWORD_ARGON2I` is used to create new password hashes using the Argon2i algorithm.
+
+Supported Options:
+
+`memory_cost` (`integer`) - Maximum memory (in bytes) that may be used to compute the Argon2 hash. Defaults to `PASSWORD_ARGON2_DEFAULT_MEMORY_COST`. `time_cost` (`integer`) - Maximum amount of time it may take to compute the Argon2 hash. Defaults to `PASSWORD_ARGON2_DEFAULT_TIME_COST`. `threads` (`integer`) - Number of threads to use for computing the Argon2 hash. Defaults to `PASSWORD_ARGON2_DEFAULT_THREADS`.
+
+Available as of PHP 7.2.0.',
+'PASSWORD_ARGON2ID' => '`PASSWORD_ARGON2ID` is used to create new password hashes using the Argon2id algorithm. It supports the same options as `PASSWORD_ARGON2I`.
+
+Available as of PHP 7.3.0.',
+'PASSWORD_BCRYPT' => '`PASSWORD_BCRYPT` is used to create new password hashes using the `CRYPT_BLOWFISH` algorithm.
+
+This will always result in a hash using the "$2y$" crypt format, which is always 60 characters wide.
+
+Supported Options:
+
+`salt` (`string`) - to manually provide a salt to use when hashing the password. Note that this will override and prevent a salt from being automatically generated. If omitted, a random salt will be generated by `password_hash` for each password hashed. This is the intended mode of operation and as of PHP 7.0.0 the salt option has been deprecated. `cost` (`integer`) - which denotes the algorithmic cost that should be used. Examples of these values can be found on the `crypt` page. If omitted, a default value of `10` will be used. This is a good baseline cost, but you may want to consider increasing it depending on your hardware.',
+'PASSWORD_DEFAULT' => 'The default algorithm to use for hashing if no algorithm is provided. This may change in newer PHP releases when newer, stronger hashing algorithms are supported.
+
+It is worth noting that over time this constant can (and likely will) change. Therefore you should be aware that the length of the resulting hash can change. Therefore, if you use `PASSWORD_DEFAULT` you should store the resulting hash in a way that can store more than 60 characters (255 is the recommended width).
+
+Values for this constant:
+
+PHP 5.5.0 - `PASSWORD_BCRYPT`',
 'PATH_SEPARATOR' => 'Semicolon on Windows, colon otherwise.',
 'PATHINFO_FILENAME' => 'Since PHP 5.2.0.',
 'PDO::ATTR_AUTOCOMMIT' => 'If this value is `false`, PDO attempts to disable autocommit so that the connection begins a transaction.',
@@ -2406,6 +2551,9 @@ Available since PHP 7.2.0.',
 'PDO::ERRMODE_EXCEPTION' => 'Throw a `PDOException` if an error occurs. See Errors and error handling for more information about this attribute.',
 'PDO::ERRMODE_SILENT' => 'Do not raise an error or exception if an error occurs. The developer is expected to explicitly check for errors. This is the default mode. See Errors and error handling for more information about this attribute.',
 'PDO::ERRMODE_WARNING' => 'Issue a PHP `E_WARNING` message if an error occurs. See Errors and error handling for more information about this attribute.',
+'PDO::FB_ATTR_DATE_FORMAT' => 'Sets the date format.',
+'PDO::FB_ATTR_TIME_FORMAT' => 'Sets the time format.',
+'PDO::FB_ATTR_TIMESTAMP_FORMAT' => 'Sets the timestamp format.',
 'PDO::FETCH_ASSOC' => 'Specifies that the fetch method shall return each row as an array indexed by column name as returned in the corresponding result set. If the result set contains multiple columns with the same name, `PDO::FETCH_ASSOC` returns only a single value per column name.',
 'PDO::FETCH_BOTH' => 'Specifies that the fetch method shall return each row as an array indexed by both column name and number as returned in the corresponding result set, starting at column 0.',
 'PDO::FETCH_BOUND' => 'Specifies that the fetch method shall return TRUE and assign the values of the columns in the result set to the PHP variables to which they were bound with the `PDOStatement::bindParam` or `PDOStatement::bindColumn` methods.',
@@ -2415,7 +2563,7 @@ Available since PHP 7.2.0.',
 'PDO::FETCH_FUNC' => 'Allows completely customize the way data is treated on the fly (only valid inside `PDOStatement::fetchAll`).',
 'PDO::FETCH_GROUP' => 'Group return by values. Usually combined with `PDO::FETCH_COLUMN` or `PDO::FETCH_KEY_PAIR`.',
 'PDO::FETCH_INTO' => 'Specifies that the fetch method shall update an existing instance of the requested class, mapping the columns to named properties in the class.',
-'PDO::FETCH_KEY_PAIR' => 'Fetch a two-column result into an array where the first column is a key and the second column is the value. Available since PHP 5.2.3.',
+'PDO::FETCH_KEY_PAIR' => 'Fetch a two-column result into an array where the first column is a key and the second column is the value.',
 'PDO::FETCH_LAZY' => 'Specifies that the fetch method shall return each row as an object with variable names that correspond to the column names returned in the result set. `PDO::FETCH_LAZY` creates the object variable names as they are accessed. Not valid inside `PDOStatement::fetchAll`.',
 'PDO::FETCH_NAMED' => 'Specifies that the fetch method shall return each row as an array indexed by column name as returned in the corresponding result set. If the result set contains multiple columns with the same name, `PDO::FETCH_NAMED` returns an array of values per column name.',
 'PDO::FETCH_NUM' => 'Specifies that the fetch method shall return each row as an array indexed by column number as returned in the corresponding result set, starting at column 0.',
@@ -2426,10 +2574,58 @@ Available since PHP 7.2.0.',
 'PDO::FETCH_ORI_NEXT' => 'Fetch the next row in the result set. Valid only for scrollable cursors.',
 'PDO::FETCH_ORI_PRIOR' => 'Fetch the previous row in the result set. Valid only for scrollable cursors.',
 'PDO::FETCH_ORI_REL' => 'Fetch the requested row by relative position from the current position of the cursor in the result set. Valid only for scrollable cursors.',
-'PDO::FETCH_PROPS_LATE' => 'Call the constructor before setting properties. Available since PHP 5.2.0.',
-'PDO::FETCH_SERIALIZE' => 'As `PDO::FETCH_INTO` but object is provided as a serialized string. Available since PHP 5.1.0. Since PHP 5.3.0 the class constructor is never called if this flag is set.',
+'PDO::FETCH_PROPS_LATE' => 'Call the constructor before setting properties.',
+'PDO::FETCH_SERIALIZE' => 'As `PDO::FETCH_INTO` but object is provided as a serialized string.',
 'PDO::FETCH_UNIQUE' => 'Fetch only the unique values.',
+'PDO::MYSQL_ATTR_COMPRESS' => 'Enable network communication compression. This is also supported when compiled against mysqlnd as of PHP 5.3.11.',
+'PDO::MYSQL_ATTR_DIRECT_QUERY' => 'Perform direct queries, don\'t use prepared statements.',
+'PDO::MYSQL_ATTR_FOUND_ROWS' => 'Return the number of found (matched) rows, not the number of changed rows.',
+'PDO::MYSQL_ATTR_IGNORE_SPACE' => 'Permit spaces after function names. Makes all functions names reserved words.',
+'PDO::MYSQL_ATTR_INIT_COMMAND' => 'Command to execute when connecting to the MySQL server. Will automatically be re-executed when reconnecting.
+
+Note, this constant can only be used in the driver_options array when constructing a new database handle.',
+'PDO::MYSQL_ATTR_LOCAL_INFILE' => 'Enable `LOAD LOCAL INFILE`.
+
+Note, this constant can only be used in the driver_options array when constructing a new database handle.',
+'PDO::MYSQL_ATTR_MAX_BUFFER_SIZE' => 'Maximum buffer size. Defaults to 1 MiB. This constant is not supported when compiled against mysqlnd.',
+'PDO::MYSQL_ATTR_MULTI_STATEMENTS' => 'Disables multi query execution in both `PDO::prepare` and `PDO::query` when set to `false`.
+
+Note, this constant can only be used in the driver_options array when constructing a new database handle.
+
+`version.exists.asof` 5.5.21 and PHP 5.6.5.',
+'PDO::MYSQL_ATTR_READ_DEFAULT_FILE' => 'Read options from the named option file instead of from my.cnf. This option is not available if mysqlnd is used, because mysqlnd does not read the mysql configuration files.',
+'PDO::MYSQL_ATTR_READ_DEFAULT_GROUP' => 'Read options from the named group from my.cnf or the file specified with `MYSQL_READ_DEFAULT_FILE`. This option is not available if mysqlnd is used, because mysqlnd does not read the mysql configuration files.',
+'PDO::MYSQL_ATTR_SSL_CA' => 'The file path to the SSL certificate authority.
+
+`version.exists.asof` 5.3.7.',
+'PDO::MYSQL_ATTR_SSL_CAPATH' => 'The file path to the directory that contains the trusted SSL CA certificates, which are stored in PEM format.
+
+`version.exists.asof` 5.3.7.',
+'PDO::MYSQL_ATTR_SSL_CERT' => 'The file path to the SSL certificate.
+
+`version.exists.asof` 5.3.7.',
+'PDO::MYSQL_ATTR_SSL_CIPHER' => 'A list of one or more permissible ciphers to use for SSL encryption, in a format understood by OpenSSL. For example: `DHE-RSA-AES256-SHA:AES128-SHA`
+
+`version.exists.asof` 5.3.7.',
+'PDO::MYSQL_ATTR_SSL_KEY' => 'The file path to the SSL key.
+
+`version.exists.asof` 5.3.7.',
+'PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT' => 'Provides a way to disable verification of the server SSL certificate.
+
+`version.exists.asof` 7.0.18 and PHP 7.1.4.',
 'PDO::MYSQL_ATTR_USE_BUFFERED_QUERY' => 'If this attribute is set to `true` on a `PDOStatement`, the MySQL driver will use the buffered versions of the MySQL API. If you\'re writing portable code, you should use `PDOStatement::fetchAll` instead.',
+'PDO::OCI_ATTR_ACTION' => 'Provides a way to specify the action on the database session.
+
+`version.exists.asof` 7.2.16 and 7.3.3',
+'PDO::OCI_ATTR_CLIENT_IDENTIFIER' => 'Provides a way to specify the client identifier on the database session.
+
+`version.exists.asof` 7.2.16 and 7.3.3',
+'PDO::OCI_ATTR_CLIENT_INFO' => 'Provides a way to specify the client info on the database session.
+
+`version.exists.asof` 7.2.16 and 7.3.3',
+'PDO::OCI_ATTR_MODULE' => 'Provides a way to specify the module on the database session.
+
+`version.exists.asof` 7.2.16 and 7.3.3',
 'PDO::PARAM_BOOL' => 'Represents a boolean data type.',
 'PDO::PARAM_EVT_ALLOC' => 'Allocation event',
 'PDO::PARAM_EVT_EXEC_POST' => 'Event triggered subsequent to execution of a prepared statement.',
@@ -2524,26 +2720,57 @@ Available since PHP 7.2.0',
 'PHP_BINARY' => 'Specifies the PHP binary path during script execution. Available since PHP 5.4.',
 'PHP_BINDIR' => 'Specifies where the binaries were installed into.',
 'PHP_DEBUG' => 'Available since PHP 5.2.7.',
-'PHP_EOL' => 'The correct \'End Of Line\' symbol for this platform. Available since PHP 5.0.2',
-'PHP_EXTRA_VERSION' => 'The current PHP "extra" version as a string (e.g., \'-extra\' from version "5.2.7-extra"). Often used by distribution vendors to indicate a package version. Available since PHP 5.2.7.',
+'PHP_EOL' => 'The correct \'End Of Line\' symbol for this platform.',
+'PHP_EXTRA_VERSION' => 'The current PHP "extra" version as a string (e.g., \'-extra\' from version "5.2.7-extra"). Often used by distribution vendors to indicate a package version.',
 'PHP_FD_SETSIZE' => 'The maximum number of file descriptors for select system calls. Available as of PHP 7.1.0.',
 'PHP_FLOAT_DIG' => 'Number of decimal digits that can be rounded into a float and back without precision loss. Available as of PHP 7.2.0.',
 'PHP_FLOAT_EPSILON' => 'Smallest representable positive number x, so that `x + 1.0 != 1.0`. Available as of PHP 7.2.0.',
 'PHP_FLOAT_MAX' => 'Largest representable floating point number. Available as of PHP 7.2.0.',
 'PHP_FLOAT_MIN' => 'Smallest representable floating point number. Available as of PHP 7.2.0.',
-'PHP_INT_MAX' => 'The largest integer supported in this build of PHP. Usually int(2147483647) in 32 bit systems and int(9223372036854775807) in 64 bit systems. Available since PHP 5.0.5',
+'PHP_INT_MAX' => 'The largest integer supported in this build of PHP. Usually int(2147483647) in 32 bit systems and int(9223372036854775807) in 64 bit systems.',
 'PHP_INT_MIN' => 'The smallest integer supported in this build of PHP. Usually int(-2147483648) in 32 bit systems and int(-9223372036854775808) in 64 bit systems. Available since PHP 7.0.0. Usually, PHP_INT_MIN === ~PHP_INT_MAX.',
-'PHP_INT_SIZE' => 'The size of an integer in bytes in this build of PHP. Available since PHP 5.0.5',
-'PHP_MAJOR_VERSION' => 'The current PHP "major" version as an integer (e.g., int(5) from version "5.2.7-extra"). Available since PHP 5.2.7.',
-'PHP_MANDIR' => 'Specifies where the manpages were installed into. Available since PHP 5.3.7.',
-'PHP_MAXPATHLEN' => 'The maximum length of filenames (including path) supported by this build of PHP. Available since PHP 5.3.0.',
-'PHP_MINOR_VERSION' => 'The current PHP "minor" version as an integer (e.g., int(2) from version "5.2.7-extra"). Available since PHP 5.2.7.',
+'PHP_INT_SIZE' => 'The size of an integer in bytes in this build of PHP.',
+'PHP_MAJOR_VERSION' => 'The current PHP "major" version as an integer (e.g., int(5) from version "5.2.7-extra").',
+'PHP_MANDIR' => 'Specifies where the manpages were installed into.',
+'PHP_MAXPATHLEN' => 'The maximum length of filenames (including path) supported by this build of PHP.',
+'PHP_MINOR_VERSION' => 'The current PHP "minor" version as an integer (e.g., int(2) from version "5.2.7-extra").',
 'PHP_OS' => 'The operating system PHP was built for.',
 'PHP_OS_FAMILY' => 'The operating system family PHP was built for. Either of `\'Windows\'`, `\'BSD\'`, `\'Darwin\'`, `\'Solaris\'`, `\'Linux\'` or `\'Unknown\'`. Available as of PHP 7.2.0.',
+'PHP_OUTPUT_HANDLER_CLEAN' => 'Indicates that the output buffer has been cleaned.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_CLEANABLE' => 'Controls whether an output buffer created by `ob_start` can be cleaned.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_CONT' => 'Indicates that the buffer has been flushed, but output buffering will continue.
+
+As of PHP 5.4, this is an alias for `PHP_OUTPUT_HANDLER_WRITE`.',
+'PHP_OUTPUT_HANDLER_END' => 'Indicates that output buffering has ended.
+
+As of PHP 5.4, this is an alias for `PHP_OUTPUT_HANDLER_FINAL`.',
+'PHP_OUTPUT_HANDLER_FINAL' => 'Indicates that this is the final output buffering operation.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_FLUSH' => 'Indicates that the buffer has been flushed.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_FLUSHABLE' => 'Controls whether an output buffer created by `ob_start` can be flushed.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_REMOVABLE' => 'Controls whether an output buffer created by `ob_start` can be removed before the end of the script.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_START' => 'Indicates that output buffering has begun.',
+'PHP_OUTPUT_HANDLER_STDFLAGS' => 'The default set of output buffer flags; currently equivalent to `PHP_OUTPUT_HANDLER_CLEANABLE` | `PHP_OUTPUT_HANDLER_FLUSHABLE` | `PHP_OUTPUT_HANDLER_REMOVABLE`.
+
+Available since PHP 5.4.',
+'PHP_OUTPUT_HANDLER_WRITE' => 'Indicates that the output buffer is being flushed, and had data to output.
+
+Available since PHP 5.4.',
 'PHP_PREFIX' => 'The value "--prefix" was set to at configure.',
 'PHP_QUERY_RFC1738' => 'Encoding is performed per RFC 1738 and the `application/x-www-form-urlencoded` media type, which implies that spaces are encoded as plus (`+`) signs.',
 'PHP_QUERY_RFC3986' => 'Encoding is performed according to RFC 3986, and spaces will be percent encoded (`%20`).',
-'PHP_RELEASE_VERSION' => 'The current PHP "release" version as an integer (e.g., int(7) from version "5.2.7-extra"). Available since PHP 5.2.7.',
+'PHP_RELEASE_VERSION' => 'The current PHP "release" version as an integer (e.g., int(7) from version "5.2.7-extra").',
 'PHP_SAPI' => 'The Server API for this build of PHP. See also `php_sapi_name`.',
 'PHP_SESSION_ACTIVE' => 'Since PHP 5.4.0. Return value of `session_status` if sessions are enabled, and a session exists.',
 'PHP_SESSION_DISABLED' => 'Since PHP 5.4.0. Return value of `session_status` if sessions are disabled.',
@@ -2558,7 +2785,7 @@ Available since PHP 7.2.0',
 'PHP_URL_QUERY' => 'Outputs the query string of the URL parsed.',
 'PHP_URL_USER' => 'Outputs the user of the URL parsed.',
 'PHP_VERSION' => 'The current PHP version as a string in "major.minor.release[extra]" notation.',
-'PHP_VERSION_ID' => 'The current PHP version as an integer, useful for version comparisons (e.g., int(50207) from version "5.2.7-extra"). Available since PHP 5.2.7.',
+'PHP_VERSION_ID' => 'The current PHP version as an integer, useful for version comparisons (e.g., int(50207) from version "5.2.7-extra").',
 'PHP_WINDOWS_EVENT_CTRL_BREAK' => 'A Windows `CTRL+BREAK` event. Available as of PHP 7.4.0 (Windows only).',
 'PHP_WINDOWS_EVENT_CTRL_C' => 'A Windows `CTRL+C` event. Available as of PHP 7.4.0 (Windows only).',
 'PHP_ZTS' => 'Available since PHP 5.2.7.',
@@ -2609,7 +2836,96 @@ See also `set_time_limit`.',
 'PTHREADS_INHERIT_INCLUDES' => 'Inherit included file information when new Threads are started',
 'PTHREADS_INHERIT_INI' => 'Inherit INI entries when new Threads are started',
 'PTHREADS_INHERIT_NONE' => 'Do not inherit anything when new Threads are started',
+'RADIUS_ACCESS_ACCEPT' => 'An Access-Accept response to an Access-Request indicating that the RADIUS server authenticated the user successfully.',
+'RADIUS_ACCESS_CHALLENGE' => 'An Access-Challenge response to an Access-Request indicating that the RADIUS server requires further information in another Access-Request before authenticating the user.',
+'RADIUS_ACCESS_REJECT' => 'An Access-Reject response to an Access-Request indicating that the RADIUS server could not authenticate the user.',
+'RADIUS_ACCESS_REQUEST' => 'An Access-Request, used to authenticate a user against a RADIUS server. Access request packets must include a `RADIUS_NAS_IP_ADDRESS` or a `RADIUS_NAS_IDENTIFIER` attribute, must also include a `RADIUS_USER_PASSWORD`, `RADIUS_CHAP_PASSWORD` or a `RADIUS_STATE` attribute, and should include a `RADIUS_USER_NAME` attribute.',
+'RADIUS_ACCOUNTING_REQUEST' => 'An Accounting-Request, used to convey accounting information for a service to the RADIUS server.',
+'RADIUS_ACCOUNTING_RESPONSE' => 'An Accounting-Response response to an Accounting-Request.',
+'RADIUS_ACCT_AUTHENTIC' => 'Accounting authentic, one of: `RADIUS_AUTH_RADIUS` `RADIUS_AUTH_LOCAL` `RADIUS_AUTH_REMOTE`',
+'RADIUS_ACCT_DELAY_TIME' => 'Accounting delay time',
+'RADIUS_ACCT_INPUT_OCTETS' => 'Accounting input bytes',
+'RADIUS_ACCT_INPUT_PACKETS' => 'Accounting input packets',
+'RADIUS_ACCT_LINK_COUNT' => 'Accounting link count',
+'RADIUS_ACCT_MULTI_SESSION_ID' => 'Accounting multi session ID',
+'RADIUS_ACCT_OUTPUT_OCTETS' => 'Accounting output bytes',
+'RADIUS_ACCT_OUTPUT_PACKETS' => 'Accounting output packets',
+'RADIUS_ACCT_SESSION_ID' => 'Accounting session ID',
+'RADIUS_ACCT_SESSION_TIME' => 'Accounting session time',
+'RADIUS_ACCT_STATUS_TYPE' => 'Accounting status type, one of: `RADIUS_START` `RADIUS_STOP` `RADIUS_ACCOUNTING_ON` `RADIUS_ACCOUNTING_OFF`',
+'RADIUS_ACCT_TERMINATE_CAUSE' => 'Accounting terminate cause, one of: `RADIUS_TERM_USER_REQUEST` `RADIUS_TERM_LOST_CARRIER` `RADIUS_TERM_LOST_SERVICE` `RADIUS_TERM_IDLE_TIMEOUT` `RADIUS_TERM_SESSION_TIMEOUT` `RADIUS_TERM_ADMIN_RESET` `RADIUS_TERM_ADMIN_REBOOT` `RADIUS_TERM_PORT_ERROR` `RADIUS_TERM_NAS_ERROR` `RADIUS_TERM_NAS_REQUEST` `RADIUS_TERM_NAS_REBOOT` `RADIUS_TERM_PORT_UNNEEDED` `RADIUS_TERM_PORT_PREEMPTED` `RADIUS_TERM_PORT_SUSPENDED` `RADIUS_TERM_SERVICE_UNAVAILABLE` `RADIUS_TERM_CALLBACK` `RADIUS_TERM_USER_ERROR` `RADIUS_TERM_HOST_REQUEST`',
+'RADIUS_CALLBACK_ID' => 'The Callback-Id attribute. The attribute value is a `string` containing an implementation-specific name of the place to be called.',
+'RADIUS_CALLBACK_NUMBER' => 'The Callback-Number attribute. The attribute value is a `string` containing the dialing string to use for callback.',
+'RADIUS_CALLED_STATION_ID' => 'Called Station Id',
+'RADIUS_CALLING_STATION_ID' => 'Calling Station Id',
+'RADIUS_CHAP_CHALLENGE' => 'Challenge',
+'RADIUS_CHAP_PASSWORD' => 'The Chap-Password attribute. The attribute value is expected to be a `string` with the first byte containing the CHAP identifier, and the subsequent 16 bytes containing the MD5 hash of the CHAP identifier, the plaintext password and the CHAP challenge value concatenated together. Note that the CHAP challenge value should also be sent separately in a `RADIUS_CHAP_CHALLENGE` attribute.
+
+Using CHAP passwords',
+'RADIUS_CLASS' => 'The Class attribute. The attribute value is an arbitrary `string` included in an Access-Accept message that should then be sent to the accounting server in Accounting-Request messages, and can be set using `radius_put_attr`.',
+'RADIUS_COA_ACK' => 'A CoA-ACK, sent to the RADIUS server to indicate that the user authorisations have been updated.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_COA_NAK' => 'A CoA-NAK, sent to the RADIUS server to indicate that the user authorisations could not be updated.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_COA_REQUEST' => 'A CoA-Request, sent from the RADIUS server to indicate that the authorisations within the user session have changed. A response must be sent in the form of a CoA-ACK or a CoA-NAK.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_CONNECT_INFO' => 'Connect info',
+'RADIUS_DISCONNECT_ACK' => 'A Disconnect-ACK, sent to the RADIUS server to indicate that the user session has been terminated.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_DISCONNECT_NAK' => 'A Disconnect-NAK, sent to the RADIUS server to indicate that the user session could not be terminated.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_DISCONNECT_REQUEST' => 'A Disconnect-Request, sent from the RADIUS server to indicate that the user session must be terminated.
+
+This constant is available in PECL radius 1.3.0 and later.',
+'RADIUS_FILTER_ID' => 'The Filter-ID attribute. The attribute value is expected to be an implementation-specific, human-readable `string` of filters, which can be set using `radius_put_attr`.',
+'RADIUS_FRAMED_APPLETALK_LINK' => 'Framed Appletalk Link',
+'RADIUS_FRAMED_APPLETALK_NETWORK' => 'Framed Appletalk Network',
+'RADIUS_FRAMED_APPLETALK_ZONE' => 'Framed Appletalk Zone',
+'RADIUS_FRAMED_COMPRESSION' => 'The Framed-Compression attribute. The attribute value is expected to be an `integer` indicating the compression protocol to be used, and can be set using `radius_put_int`. Possible values include these constants: `RADIUS_COMP_NONE`: No compression `RADIUS_COMP_VJ`: VJ TCP/IP header compression `RADIUS_COMP_IPXHDR`: IPX header compression `RADIUS_COMP_STAC_LZS`: Stac-LZS compression (added in PECL radius 1.3.0b2)',
+'RADIUS_FRAMED_IP_ADDRESS' => 'The Framed-IP-Address attribute. The attribute value is expected to be the address of the user\'s network encoded as an `integer`, which can be set using `radius_put_addr` and retrieved using `radius_cvt_addr`.',
+'RADIUS_FRAMED_IP_NETMASK' => 'The Framed-IP-Netmask attribute. The attribute value is expected to be the netmask of the user\'s network encoded as an `integer`, which can be set using `radius_put_addr` and retrieved using `radius_cvt_addr`.',
+'RADIUS_FRAMED_IPX_NETWORK' => 'The Framed-IPX-Network attribute. The attribute value is an `integer` containing the IPX network to be configured for the user, or `0xFFFFFFFE` to indicate that the RADIUS client should select the network, and can be accessed via `radius_cvt_int`.',
+'RADIUS_FRAMED_MTU' => 'The Framed-MTU attribute. The attribute value is expected to be an `integer` indicating the MTU to be configured for the user, and can be set using `radius_put_int`.',
+'RADIUS_FRAMED_PROTOCOL' => 'The Framed-Protocol attribute. The attribute value is expected to be an `integer` indicating the framing to be used for framed access, and can be set using `radius_put_int`. The possible attribute values include these constants: `RADIUS_PPP` `RADIUS_SLIP` `RADIUS_ARAP` `RADIUS_GANDALF` `RADIUS_XYLOGICS`',
+'RADIUS_FRAMED_ROUTE' => 'The Framed-Route attribute. The attribute value is a `string` containing an implementation-specific set of routes to be configured for the user.',
+'RADIUS_FRAMED_ROUTING' => 'The Framed-Routing attribute. The attribute value is expected to be an `integer` indicating the routing method for the user, which can be set using `radius_put_int`.
+
+Possible values include: `0`: No routing `1`: Send routing packets `2`: Listen for routing packets `3`: Send and listen',
+'RADIUS_IDLE_TIMEOUT' => 'Idle timeout',
+'RADIUS_LOGIN_IP_HOST' => 'The Login-IP-Host attribute. The attribute value is expected to the IP address to connect the user to, encoded as an `integer`, which can be set using `radius_put_addr`.',
+'RADIUS_LOGIN_LAT_GROUP' => 'Login LAT Group',
+'RADIUS_LOGIN_LAT_NODE' => 'Login LAT Node',
+'RADIUS_LOGIN_LAT_PORT' => 'Login LAT Port',
+'RADIUS_LOGIN_LAT_SERVICE' => 'Login LAT Service',
+'RADIUS_LOGIN_SERVICE' => 'The Login-Service attribute. The attribute value is an `integer` indicating the service to connect the user to on the login host. The value can be converted to a PHP integer via `radius_cvt_int`.',
+'RADIUS_LOGIN_TCP_PORT' => 'The Login-TCP-Port attribute. The attribute value is an `integer` indicating the port to connect the user to on the login host. The value can be converted to a PHP integer via `radius_cvt_int`.',
 'RADIUS_MPPE_KEY_LEN' => 'The maximum length of MPPE keys.',
+'RADIUS_NAS_IDENTIFIER' => 'NAS ID',
+'RADIUS_NAS_IP_ADDRESS' => 'The NAS-IP-Address attribute. The attribute value is expected to the IP address of the RADIUS client encoded as an `integer`, which can be set using `radius_put_addr`.',
+'RADIUS_NAS_PORT' => 'The NAS-Port attribute. The attribute value is expected to be the physical port of the user on the RADIUS client encoded as an `integer`, which can be set using `radius_put_int`.',
+'RADIUS_NAS_PORT_TYPE' => 'NAS port type, one of: `RADIUS_ASYNC` `RADIUS_SYNC` `RADIUS_ISDN_SYNC` `RADIUS_ISDN_ASYNC_V120` `RADIUS_ISDN_ASYNC_V110` `RADIUS_VIRTUAL` `RADIUS_PIAFS` `RADIUS_HDLC_CLEAR_CHANNEL` `RADIUS_X_25` `RADIUS_X_75` `RADIUS_G_3_FAX` `RADIUS_SDSL` `RADIUS_ADSL_CAP` `RADIUS_ADSL_DMT` `RADIUS_IDSL` `RADIUS_ETHERNET` `RADIUS_XDSL` `RADIUS_CABLE` `RADIUS_WIRELESS_OTHER` `RADIUS_WIRELESS_IEEE_802_11`',
+'RADIUS_OPTION_SALT' => 'When set, this option will result in the attribute value being salt-encrypted.',
+'RADIUS_OPTION_TAGGED' => 'When set, this option will result in the attribute value being tagged with the value of the tag parameter.',
+'RADIUS_PORT_LIMIT' => 'Port Limit',
+'RADIUS_PROXY_STATE' => 'Proxy State',
+'RADIUS_REPLY_MESSAGE' => 'The Reply-Message attribute. The attribute value is a `string` containing text that may be displayed to the user in response to an access request.',
+'RADIUS_SERVICE_TYPE' => 'The Service-Type attribute. The attribute value indicates the service type the user is requesting, and is expected to be an `integer`, which can be set using `radius_put_int`.
+
+A number of constants are provided to represent the possible values of this attribute. They include: `RADIUS_LOGIN` `RADIUS_FRAMED` `RADIUS_CALLBACK_LOGIN` `RADIUS_CALLBACK_FRAMED` `RADIUS_OUTBOUND` `RADIUS_ADMINISTRATIVE` `RADIUS_NAS_PROMPT` `RADIUS_AUTHENTICATE_ONLY` `RADIUS_CALLBACK_NAS_PROMPT`',
+'RADIUS_SESSION_TIMEOUT' => 'Session timeout',
+'RADIUS_STATE' => 'The State attribute. The attribute value is an implementation-defined `string` included in an Access-Challenge from a server that must be included in the subsequent Access-Request, and can be set using `radius_put_attr`.',
+'RADIUS_TERMINATION_ACTION' => 'Termination action',
+'RADIUS_USER_NAME' => 'The User-Name attribute. The attribute value is expected to be a `string` containing the name of the user being authenticated, and can be set using `radius_put_attr`.',
+'RADIUS_USER_PASSWORD' => 'The User-Password attribute. The attribute value is expected to be a `string` containing the user\'s password, and can be set using `radius_put_attr`. This value will be obfuscated on transmission as described in section 5.2 of RFC 2865.',
+'RADIUS_VENDOR_MICROSOFT' => 'Microsoft specific vendor attributes (RFC 2548), one of: `RADIUS_MICROSOFT_MS_CHAP_RESPONSE` `RADIUS_MICROSOFT_MS_CHAP_ERROR` `RADIUS_MICROSOFT_MS_CHAP_PW_1` `RADIUS_MICROSOFT_MS_CHAP_PW_2` `RADIUS_MICROSOFT_MS_CHAP_LM_ENC_PW` `RADIUS_MICROSOFT_MS_CHAP_NT_ENC_PW` `RADIUS_MICROSOFT_MS_MPPE_ENCRYPTION_POLICY` `RADIUS_MICROSOFT_MS_MPPE_ENCRYPTION_TYPES` `RADIUS_MICROSOFT_MS_RAS_VENDOR` `RADIUS_MICROSOFT_MS_CHAP_DOMAIN` `RADIUS_MICROSOFT_MS_CHAP_CHALLENGE` `RADIUS_MICROSOFT_MS_CHAP_MPPE_KEYS` `RADIUS_MICROSOFT_MS_BAP_USAGE` `RADIUS_MICROSOFT_MS_LINK_UTILIZATION_THRESHOLD` `RADIUS_MICROSOFT_MS_LINK_DROP_TIME_LIMIT` `RADIUS_MICROSOFT_MS_MPPE_SEND_KEY` `RADIUS_MICROSOFT_MS_MPPE_RECV_KEY` `RADIUS_MICROSOFT_MS_RAS_VERSION` `RADIUS_MICROSOFT_MS_OLD_ARAP_PASSWORD` `RADIUS_MICROSOFT_MS_NEW_ARAP_PASSWORD` `RADIUS_MICROSOFT_MS_ARAP_PASSWORD_CHANGE_REASON` `RADIUS_MICROSOFT_MS_FILTER` `RADIUS_MICROSOFT_MS_ACCT_AUTH_TYPE` `RADIUS_MICROSOFT_MS_ACCT_EAP_TYPE` `RADIUS_MICROSOFT_MS_CHAP2_RESPONSE` `RADIUS_MICROSOFT_MS_CHAP2_SUCCESS` `RADIUS_MICROSOFT_MS_CHAP2_PW` `RADIUS_MICROSOFT_MS_PRIMARY_DNS_SERVER` `RADIUS_MICROSOFT_MS_SECONDARY_DNS_SERVER` `RADIUS_MICROSOFT_MS_PRIMARY_NBNS_SERVER` `RADIUS_MICROSOFT_MS_SECONDARY_NBNS_SERVER` `RADIUS_MICROSOFT_MS_ARAP_CHALLENGE`',
+'RADIUS_VENDOR_SPECIFIC' => 'The Vendor-Specific attribute. In general, vendor attribute values should be set using `radius_put_vendor_addr`, `radius_put_vendor_attr`, `radius_put_vendor_int` and `radius_put_vendor_string`, rather than directly.
+
+This constant is mostly useful when interpreting vendor specific attributes in responses from a RADIUS server; when a vendor specific attribute is received, the `radius_get_vendor_attr` function should be used to access the vendor ID, attribute type and attribute value.',
 'RAR_HOST_BEOS' => 'Use `RarEntry::HOST_BEOS` instead.',
 'RAR_HOST_MSDOS' => 'Use `RarEntry::HOST_MSDOS` instead.',
 'RAR_HOST_OS2' => 'Use `RarEntry::HOST_OS2` instead.',
