@@ -391,6 +391,14 @@ Extended help:
   This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
   Defaults to 0. (no delay)
 
+ --native-syntax-check </path/to/php_binary>
+  If php_binary (e.g. `php72`, `/usr/bin/php`) can be found in `$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
+  and adds `php_binary` (resolved using `$PATH`) to the `php_native_syntax_check_binaries` array of `plugin_config`
+  (treated here as initially being the empty array)
+  Phan exits if any php binary could not be found.
+
+  This can be repeated to run native syntax checks with multiple php versions.
+
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
 

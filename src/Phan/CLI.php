@@ -36,17 +36,24 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
 
 use function array_map;
+use function array_merge;
 use function array_slice;
+use function array_unique;
+use function array_values;
 use function count;
+use function escapeshellarg;
 use function fwrite;
 use function getenv;
 use function in_array;
 use function is_array;
+use function is_executable;
 use function is_resource;
 use function is_string;
+use function shell_exec;
 use function str_repeat;
 use function strcasecmp;
 use function strlen;
+use function trim;
 
 use const DIRECTORY_SEPARATOR;
 use const EXIT_FAILURE;
@@ -154,6 +161,7 @@ class CLI
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
+        'native-syntax-check:',
         'no-color',
         'no-progress-bar',
         'output:',
@@ -671,6 +679,15 @@ class CLI
                 case 'language-server-min-diagnostics-delay-ms':
                     Config::setValue('language_server_min_diagnostics_delay_ms', (float)$value);
                     break;
+                case 'native-syntax-check':
+                    if ($value === '') {
+                        throw new UsageException(\sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                    self::addPHPBinariesForSyntaxCheck($value);
+                    break;
                 case 'disable-cache':
                     Config::setValue('cache_polyfill_asts', false);
                     break;
@@ -683,10 +700,7 @@ class CLI
                     if (!is_array($value)) {
                         $value = [$value];
                     }
-                    Config::setValue(
-                        'plugins',
-                        \array_unique(\array_merge(Config::getValue('plugins'), $value))
-                    );
+                    self::addPlugins($value);
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
@@ -949,6 +963,50 @@ class CLI
         }
         self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();
+    }
+
+    /**
+     * @param list<string> $plugins plugins to add to the plugin list
+     */
+    private static function addPlugins(array $plugins): void
+    {
+        Config::setValue(
+            'plugins',
+            \array_unique(\array_merge(Config::getValue('plugins'), $plugins))
+        );
+    }
+
+    /**
+     * @param list<string> $binaries - various binaries, such as 'php72' and '/usr/bin/php'
+     * @throws UsageException
+     */
+    private static function addPHPBinariesForSyntaxCheck(array $binaries): void
+    {
+        $resolved_binaries = [];
+        foreach ($binaries as $binary) {
+            if ($binary === '') {
+                throw new UsageException(\sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($binaries)), EXIT_FAILURE);
+            }
+            if (DIRECTORY_SEPARATOR === '\\') {
+                $cmd = 'where ' . escapeshellarg($binary);
+            } else {
+                $cmd = 'command -v ' . escapeshellarg($binary);
+            }
+            $resolved = (string) trim((string) shell_exec($cmd));
+            if ($resolved === '') {
+                throw new UsageException(\sprintf("Could not find PHP binary for --native-syntax-check: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
+            }
+            if (!is_executable($resolved)) {
+                throw new UsageException(\sprintf("PHP binary for --native-syntax-check is not executable: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
+            }
+            $resolved_binaries[] = $resolved;
+        }
+        self::addPlugins(['InvokePHPNativeSyntaxCheckPlugin']);
+        $plugin_config = Config::getValue('plugin_config') ?: [];
+        $old_resolved_binaries = $plugin_config['php_native_syntax_check_binaries'] ?? [];
+        $resolved_binaries = array_values(array_unique(array_merge($old_resolved_binaries, $resolved_binaries)));
+        $plugin_config['php_native_syntax_check_binaries'] = $resolved_binaries;
+        Config::setValue('plugin_config', $plugin_config);
     }
 
     /**
@@ -1743,6 +1801,14 @@ Extended help:
   Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
   This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
   Defaults to 0. (no delay)
+
+ --native-syntax-check </path/to/php_binary>
+  If php_binary (e.g. `php72`, `/usr/bin/php`) can be found in `\$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
+  and adds `php_binary` (resolved using `\$PATH`) to the `php_native_syntax_check_binaries` array of `plugin_config`
+  (treated here as initially being the empty array)
+  Phan exits if any php binary could not be found.
+
+  This can be repeated to run native syntax checks with multiple php versions.
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
