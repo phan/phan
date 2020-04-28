@@ -8,6 +8,7 @@ declare(strict_types=1);
  *
  * Potentially useful for issue types that don't have an automatic fixer
  * but correspond to a single line of code that can be deleted.
+ * (in pylint or plaintext output formats)
  */
 class LineDeleter
 {
@@ -28,6 +29,13 @@ EOT
         );
     }
 
+    // Deliberately duplicates StringUtil to work as a standalone script.
+    private static function jsonEncode(string $value): string
+    {
+        $result = json_encode($value, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
+        return is_string($result) ? $result : '(invalid data)';
+    }
+
     /**
      * Gets the set of lines to delete from various files.
      * @return array<string, array<int, int>>
@@ -43,15 +51,16 @@ EOT
             // Assume files start with '<file>:<line> ' and file paths don't have whitespace as a sanity check for bad inputs
             if (!preg_match('/^(\S+):([0-9]+)\s/', $line, $matches)) {
                 // Give up if the
-                throw new InvalidArgumentException("Refusing to delete files: Saw unexpected line " . json_encode($line));
+                throw new InvalidArgumentException("Refusing to delete files: Saw unexpected line " . self::jsonEncode($line));
             }
             $affected_path = $matches[1];
             $lineno = (int)$matches[2];
-            $paths[$affected_path][$lineno] = $lineno;
+            // Use realpath in case multiple symlinks to the same path exist.
+            $paths[realpath($affected_path)][$lineno] = $lineno;
         }
         foreach ($paths as $affected_path => $_) {
             if (!file_exists((string)$affected_path)) {
-                throw new InvalidArgumentException("Refusing to delete files: Saw missing file " . json_encode($affected_path));
+                throw new InvalidArgumentException("Refusing to delete files: Saw missing file " . self::jsonEncode($affected_path));
             }
         }
         return $paths;
@@ -65,7 +74,7 @@ EOT
     {
         $file_contents = file_get_contents($affected_file_path);
         if (!is_string($file_contents)) {
-            fprintf(STDERR, "Could not read %s, skipping\n", (string) json_encode($affected_file_path));
+            fprintf(STDERR, "Could not read %s, skipping\n", self::jsonEncode($affected_file_path));
             return;
         }
         $lines = explode("\n", $file_contents);
@@ -76,7 +85,7 @@ EOT
             }
             unset($lines[$lineno - 1]);
         }
-        fprintf(STDERR, "Saving line deletions to %s\n", (string)json_encode($affected_file_path));
+        fprintf(STDERR, "Saving line deletions to %s\n", self::jsonEncode($affected_file_path));
         file_put_contents($affected_file_path, implode("\n", $lines));
     }
 
@@ -104,13 +113,13 @@ EOT
         }
         $file_path = $argv[1];
         if (!is_file($file_path)) {
-            fprintf(STDERR, "Could not find text file %s\n", (string)json_encode($file_path));
+            fprintf(STDERR, "Could not find text file %s\n", self::jsonEncode($file_path));
             self::printUsage();
             exit(1);
         }
         $file_contents = file_get_contents($file_path);
         if (!is_string($file_contents)) {
-            fprintf(STDERR, "Could not read text file %s\n", (string)json_encode($file_path));
+            fprintf(STDERR, "Could not read text file %s\n", self::jsonEncode($file_path));
             self::printUsage();
             exit(1);
         }
