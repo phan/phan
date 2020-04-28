@@ -364,6 +364,7 @@ return [
         'internal/dump_html_styles.php',
         'internal/extract_arg_info.php',
         'internal/internalsignatures.php',
+        'internal/line_deleter.php',
         'internal/package.php',
         'internal/reflection_completeness_check.php',
         'internal/sanitycheck.php',
