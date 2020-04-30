@@ -398,6 +398,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'get_class' => true,
     'getcwd' => true,
     'getdate' => true,
+    'get_debug_type' => true,
     'get_declared_classes' => true,
     'get_declared_interfaces' => true,
     'get_declared_traits' => true,
