@@ -151,6 +151,10 @@ Configuration settings can be added to `.phan/config.php`:
 If you wish to make sure that analyzed files would be accepted by those PHP versions
 (Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
+As of Phan 2.7.2, it is also possible to locally configure the PHP binary (or binaries) to run syntax checks with.
+e.g. `phan --native-syntax-check php --native-syntax-check /usr/bin/php7.4` would run checks both with `php` (resolved with `$PATH`)
+and the absolute path `/usr/bin/php7.4`. (see `phan --extended-help`)
+
 #### UseReturnValuePlugin.php
 
 This plugin warns when code fails to use the return value of internal functions/methods such as `sprintf` or `array_merge` or `Exception->getCode()`.

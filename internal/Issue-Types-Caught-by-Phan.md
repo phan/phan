@@ -560,6 +560,12 @@ Saw a parse notice: {DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/2.7.0/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/2.7.0/tests/php74_files/src/012_real_cast.php#L2).
 
+## PhanCompatibleThrowExpression
+
+```
+Cannot use throw as an expression before php 8.0 in {CODE}
+```
+
 ## PhanCompatibleTypedProperty
 
 ```
@@ -1061,18 +1067,22 @@ e.g. [this issue](https://github.com/phan/phan/tree/2.7.0/tests/php74_files/expe
 ## PhanSideEffectFreeDoWhileBody
 
 **Note that `PhanSideEffectFree...` issue types rely on `--unused-variable-detection`, and will not run in the global scope as a result.**
-Also note that the `plugin_config` setting `infer_pure_methods` of the plugin `UseReturnValuePlugin` should be enabled,
+Also note that the plugin `UseReturnValuePlugin` and its `plugin_config` setting `infer_pure_methods` should be enabled,
 for this to warn about loops containing function and method calls.
 
 ```
 Saw a do-while loop which probably has no side effects
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/172_infer_pure_useless_loop.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/172_infer_pure_useless_loop.php#L24).
+
 ## PhanSideEffectFreeForBody
 
 ```
 Saw a for loop which probably has no side effects
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/119_increment_decrement_unused.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/119_increment_decrement_unused.php#L22).
 
 ## PhanSideEffectFreeForeachBody
 
@@ -1082,11 +1092,15 @@ Also, this issue will not be emitted if the expression being iterated over is po
 Saw a foreach loop which probably has no side effects
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0189_2d_array.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0189_2d_array.php#L7).
+
 ## PhanSideEffectFreeWhileBody
 
 ```
 Saw a while loop which probably has no side effects
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/056_while_loop.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/056_while_loop.php#L4).
 
 ## PhanSuspiciousBinaryAddLists
 
