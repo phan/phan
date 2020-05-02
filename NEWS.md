@@ -1,5 +1,12 @@
 Phan NEWS
 
+??? ?? 2020, Phan 3.0.0 (dev)
+-----------------------
+
+New features(CLI, Config):
++ Support `PHAN_COLOR_PROGRESS_BAR` as an environment variable to set the color of the progress bar.
+  Ansi color names (e.g. `light_blue`) or color codes (e.g. `94`) can be used. (See src/Phan/Output/Colorizing.php)
+
 May 02 2020, Phan 3.0.0-RC2
 -----------------------
 
