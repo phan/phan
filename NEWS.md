@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.7.2 (dev)
+May 02 2020, Phan 2.7.2
 -----------------------
 
 New features(CLI, Config):
@@ -13,14 +13,16 @@ New features(CLI, Config):
 New features(Analysis):
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` when throwing expressions that can't cast to `\Throwable`. (#3853)
 + Include the relevant expression in more issue messages for type errors. (#3844)
-+ Emit `PhanNoopSwitchCases` when a switch statement only contains the default case.
++ Emit `PhanNoopSwitchCases` when a switch statement contains only the default case.
 + Warn about unreferenced private methods of the same name as methods in ancestor classes, in dead code detection.
-+ Warn about useless loops, when the following conditions hold
++ Warn about useless loops. Phan considers loops useless when the following conditions hold:
 
   1. Variables defined within the loop aren't used outside of the loop
-     (requires `unused_variable_detection` to be enabled)
+     (requires `unused_variable_detection` to be enabled whether or not there are actually variables)
   2. It's likely that the statements within the loop have no side effects
      (this is only inferred for a subset of expressions in code)
+
+     (Enabling the plugin `UseReturnValuePlugin` (and optionally `'plugin_config' => ['infer_pure_methods' = true]`) helps detect if function calls are useless)
   3. The code is in a functionlike scope.
 
   New issue types: `PhanSideEffectFreeForeachBody`, `PhanSideEffectFreeForBody`, `PhanSideEffectFreeWhileBody`, `PhanSideEffectFreeDoWhileBody`
@@ -30,20 +32,22 @@ New features(Analysis):
   Emit `PhanCompatibleThrowException` when `throw` is used as an expression instead of a statement.
 
 Plugins
-+ Emit `PhanPluginDuplicateCatchStatementBody` when a catch statement has the same body and variable name as an adjacent catch statement.
++ Emit `PhanPluginDuplicateCatchStatementBody` in `DuplicateExpressionPlugin` when a catch statement has the same body and variable name as an adjacent catch statement.
+  (This should be suppressed in projects that support php 7.0 or older)
 + Add `PHP53CompatibilityPlugin` as a demo plugin to catch common incompatibilities with PHP 5.3. (#915)
   New issue types: `PhanPluginCompatibilityArgumentUnpacking`, `PhanPluginCompatibilityArgumentUnpacking`, `PhanPluginCompatibilityArgumentUnpacking`
 + Add `DuplicateConstantPlugin` to warn about duplicate constant names (`define('X', value)` or `const X = value`) in the same statement list.
+  This is only recommended in projects with files with too many global constants to track manually.
 
 Bug Fixes:
-+ Fix bug causing FQSEN names or namespaces to be converted to lowercase even if they were never lowercase in the codebase being analyzed (#3583)
++ Fix a bug causing FQSEN names or namespaces to be converted to lowercase even if they were never lowercase in the codebase being analyzed (#3583)
 
 Miscellaneous:
 + Replace `PhanTypeInvalidPropertyDefaultReal` with `TypeMismatchPropertyDefault` (emitted instead of `TypeMismatchProperty`)
   and `TypeMismatchPropertyDefaultReal` (#3068)
-+ Speed up ASTHasher for floats and integers (affects code such as `DuplicateExpressionPlugin`)
++ Speed up `ASTHasher` for floats and integers (affects code such as `DuplicateExpressionPlugin`)
 + Call `uopz_allow_exit(true)` if uopz is enabled when initializing Phan. (#3880)
-  Do not run Phan with `uopz` unless debugging Phan itself, because `uopz` causes unpredictable behavior.
+  Running Phan with `uopz` is recommended against (unless debugging Phan itself), because `uopz` causes unpredictable behavior.
   Use stubs or internal stubs instead.
 
 Apr 11 2020, Phan 2.7.1

@@ -199,6 +199,7 @@ defined.
 
 Allow adding types to vague return types such as @return object, @return ?mixed in function/method/closure union types.
 Normally, Phan only adds inferred returned types when there is no `@return` type or real return type signature..
+This setting can be disabled on individual methods by adding `@phan-hardcode-return-type` to the doc comment.
 
 Disabled by default. This is more useful with `--analyze-twice`.
 
@@ -252,6 +253,11 @@ you should also look into using
 [php7cc (no longer maintained)](https://github.com/sstalle/php7cc)
 and [php7mar](https://github.com/Alexia/php7mar),
 which have different backwards compatibility checks.
+
+If you are still using versions of php older than 5.6,
+`PHP53CompatibilityPlugin` may be worth looking into if you are not running
+syntax checks for php 5.3 through another method such as
+`InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
 
 (Default: `true`)
 
