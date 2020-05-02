@@ -49,6 +49,7 @@ use function is_array;
 use function is_executable;
 use function is_resource;
 use function is_string;
+use function min;
 use function shell_exec;
 use function str_repeat;
 use function strcasecmp;
@@ -79,7 +80,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '3.0.0-RC2';
+    public const PHAN_VERSION = '3.0.0-dev';
 
     /**
      * List of short flags passed to getopt
@@ -2434,7 +2435,20 @@ EOB
         } else {
             $progress_bar .= str_repeat("\u{2591}", $rest);
         }
-        return $progress_bar;
+        return self::colorizeProgressBarSegment($progress_bar);
+    }
+
+    private static function colorizeProgressBarSegment(string $segment): string
+    {
+        if ($segment === '') {
+            return '';
+        }
+        $progress_bar_color = $_ENV['PHAN_COLOR_PROGRESS_BAR'] ?? '';
+        if ($progress_bar_color !== '' && CLI::supportsColor(STDERR)) {
+            $progress_bar_color = Colorizing::STYLES[\strtolower($progress_bar_color)] ?? $progress_bar_color;
+            return Colorizing::colorizeTextWithColorCode($progress_bar_color, $segment);
+        }
+        return $segment;
     }
 
     /**
@@ -2486,14 +2500,22 @@ EOB
             self::$current_progress_state_long_progress = $msg;
             self::$current_progress_offset_long_progress = 0;
         }
+        if (self::doesTerminalSupportUtf8()) {
+            $chr = "\u{2591}";
+        } else {
+            $chr = ".";
+        }
         if (in_array($msg, ['analyze', 'parse'], true)) {
             while (self::$current_progress_offset_long_progress < $offset) {
-                self::$current_progress_offset_long_progress++;
-                if (self::doesTerminalSupportUtf8()) {
-                    $buf .= "\u{2591}";
-                } else {
-                    $buf .= ".";
+                $old_mod = self::$current_progress_offset_long_progress % self::PROGRESS_WIDTH;
+                $len = (int) min($offset - self::$current_progress_offset_long_progress, self::PROGRESS_WIDTH - $old_mod);
+                if (!$len) {
+                    // impossible
+                    break;
                 }
+
+                $buf .= self::colorizeProgressBarSegment(str_repeat($chr, $len));
+                self::$current_progress_offset_long_progress += $len;
                 $mod = self::$current_progress_offset_long_progress % self::PROGRESS_WIDTH;
                 if ($mod === 0 || self::$current_progress_offset_long_progress === $count) {
                     if ($mod) {
@@ -2511,19 +2533,11 @@ EOB
             }
         } else {
             $offset = (int)($p * self::PROGRESS_WIDTH);
-            while (self::$current_progress_offset_long_progress < $offset) {
-                self::$current_progress_offset_long_progress++;
-                if (self::doesTerminalSupportUtf8()) {
-                    $buf .= "\u{2591}";
-                } else {
-                    $buf .= ".";
-                }
-                $mod = self::$current_progress_offset_long_progress % self::PROGRESS_WIDTH;
-                if ($mod === 0 || self::$current_progress_offset_long_progress === $count) {
-                    if ($mod) {
-                        $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
-                    }
-                    $buf .= " " . \sprintf("%.0fMB" . PHP_EOL, $memory);
+            if (self::$current_progress_offset_long_progress < $offset) {
+                $buf .= self::colorizeProgressBarSegment(str_repeat($chr, $offset - self::$current_progress_offset_long_progress));
+                self::$current_progress_offset_long_progress = $offset;
+                if (self::$current_progress_offset_long_progress === self::PROGRESS_WIDTH) {
+                    $buf .= ' ' . \sprintf("%.0fMB" . PHP_EOL, $memory);
                 }
             }
         }
