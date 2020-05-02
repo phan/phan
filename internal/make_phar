@@ -5,4 +5,5 @@ composer.phar install --classmap-authoritative --prefer-dist --no-dev
 rm -rf build
 mkdir build
 php -d phar.readonly=0 internal/package.php
+chmod a+x build/phan.phar
 php build/phan.phar --version
