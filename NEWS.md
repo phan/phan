@@ -1,5 +1,10 @@
 Phan NEWS
 
+May 02 2020, Phan 3.0.0-RC2
+-----------------------
+
+Fix published GitHub release tag (used `master` instead of `v3`).
+
 May 02 2020, Phan 3.0.0-RC1
 -----------------------
 
