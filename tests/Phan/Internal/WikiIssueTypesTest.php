@@ -1,37 +1,41 @@
-#!/usr/bin/env php
 <?php
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-require_once __DIR__ . '/lib/WikiWriter.php';
+namespace Phan\Tests\Internal;
+
+use InvalidArgumentException;
+use Phan\Tests\BaseTest;
+
+use function array_key_exists;
+use function array_merge;
+use function dirname;
+use function file_put_contents;
+use function fwrite;
+use function glob;
+use function krsort;
+use function preg_match;
+use function preg_replace;
+use function preg_replace_callback;
+use function realpath;
+use function rtrim;
+use function strcmp;
+use function strlen;
+use function strnatcmp;
+use function uasort;
+use function usort;
+
+use const STDERR;
 
 use Phan\Issue;
 
 /**
  * Parts of this are based on https://github.com/phan/phan/issues/445#issue-195541058 by algo13
  */
-class WikiIssueTypeUpdater
+class WikiIssueTypesTest extends BaseTest
 {
-    /**
-     * @var bool whether to print debugging messages to stderr
-     */
-    private static $verbose = false;
-
     /** @var array<string,array>|null an example for a subset of the issue types */
     private static $examples;
-
-    private static function printUsageAndExit(int $exit_code = 1): void
-    {
-        global $argv;
-        $program = $argv[0];
-        $help = <<<EOT
-Usage: $program [-v/--verbose]
-
-EOT;
-        fwrite(STDERR, $help);
-        exit($exit_code);
-    }
 
     /**
      * @return array<string,Issue>
@@ -49,58 +53,16 @@ EOT;
     }
 
     /**
-     * @return array<string,string> maps section header to the contents for that section header
-     */
-    private static function extractOldTextForSections(string $wiki_filename): array
-    {
-        if (!file_exists($wiki_filename)) {
-            fwrite(STDERR, "Failed to locate '$wiki_filename'\n");
-            exit(1);
-        }
-        $contents = file_get_contents($wiki_filename);
-        if (!is_string($contents)) {
-            fwrite(STDERR, "Failed to read '$wiki_filename'\n");
-            exit(1);
-        }
-        $wiki_lines = explode("\n", $contents);
-        $text_for_section = [];
-        $title = 'global';
-        $text_for_section[$title] = '';
-        // Skip heading titles
-        foreach ($wiki_lines as $line) {
-            if (strpos($line, '#') === 0) {
-                // TODO: If before md has Severity, delete it.
-                // TODO: $title = preg_replace('/\\\\\[.*\\\\\]\s*/', '', $line);
-                $title = $line;
-                $text_for_section[$title] = '';
-            } else {
-                $text_for_section[$title] .= $line . "\n";
-            }
-        }
-        return $text_for_section;
-    }
-
-    /**
      * Updates the markdown document of issue types with minimal documentation of missing issue types.
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */
-    public static function main(): void
+    public function testMarkdownDocumentUpToDate(): void
     {
-        global $argv;
-        if (count($argv) !== 1) {
-            if (count($argv) === 2 && in_array($argv[1], ['-v', '--verbose'], true)) {
-                self::$verbose = true;
-            } else {
-                self::printUsageAndExit();
-            }
-        }
-        error_reporting(E_ALL);
+        $wiki_filename = dirname(__DIR__, 3) . '/internal/Issue-Types-Caught-by-Phan.md';
 
-        $wiki_filename = __DIR__ . '/Issue-Types-Caught-by-Phan.md';
+        [$original_contents, $old_text_for_section] = WikiWriter::extractOldTextForSections($wiki_filename);
 
-        $old_text_for_section = self::extractOldTextForSections($wiki_filename);
-
-        $writer = new WikiWriter(true);
+        $writer = new WikiWriter(false);
         $writer->append($old_text_for_section['global']);
 
         $map = self::getSortedIssueMap();
@@ -117,10 +79,12 @@ EOT;
 
         // Get the new file contents, and normalize the whitespace at the end of the file.
         $contents = rtrim($writer->getContents()) . "\n";
-
         $wiki_filename_new = $wiki_filename . '.new';
-        self::debugLog(str_repeat('-', 80) . "\nSaving to '$wiki_filename_new'\n");
-        file_put_contents($wiki_filename_new, $contents);
+        if ($contents !== $original_contents) {
+            fwrite(STDERR, "Saving expected contents to '$wiki_filename_new'\n");
+            file_put_contents($wiki_filename_new, $contents);
+        }
+        $this->assertSame($contents, $original_contents, "Unexpected contents (can be solved by copying $wiki_filename_new to $wiki_filename if referenced files are tracked in git)");
     }
 
     /**
@@ -179,14 +143,6 @@ EOT;
         }
     }
 
-    private static function debugLog(string $message): void
-    {
-        // Uncomment the below line to enable debugging
-        if (self::$verbose) {
-            fwrite(STDERR, $message);
-        }
-    }
-
     /**
      * Returns the section with an updated issue template string (if there already was an issue template)
      */
@@ -197,7 +153,7 @@ EOT;
         $issue = $issue_map[$issue_name] ?? null;
 
         if ($issue instanceof Issue) {
-            self::debugLog("Found $issue_name\n");
+            // fwrite(STDERR, "Found $issue_name\n");
             /** @param list<string> $unused_match */
             $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function (array $unused_match) use ($issue): string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
@@ -206,8 +162,8 @@ EOT;
                 $example = self::findExamples()[$issue->getType()] ?? null;
                 if ($example) {
                     $text = rtrim($text, "\n") . "\n\n" . self::textForExample($example);
-                } else {
-                    fwrite(STDERR, "Failed to find text for {$issue->getType()}\n");
+                    // } else {
+                    // fwrite(STDERR, "Failed to find text for {$issue->getType()}\n");
                 }
             }
         }
@@ -244,7 +200,7 @@ EOT;
     private static function calculateExamples(): array
     {
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $base = dirname(realpath(__DIR__));
+        $base = dirname(realpath(__DIR__), 3);
         $files = array_merge(
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
@@ -265,11 +221,9 @@ EOT;
         $records = [];
         foreach ($files as $expected_filename) {
             $src_filename = preg_replace('@/expected/(.*\.php)\.expected$@', '/src/\1', $expected_filename);
-            try {
-                $records[] = new UnitTestRecord($src_filename, $expected_filename);
-            } catch (RuntimeException $e) {
-                fwrite(STDERR, $e->getMessage());
-            }
+            // try {
+            $records[] = new UnitTestRecord($src_filename, $expected_filename);
+            // } catch (RuntimeException $e) { fwrite(STDERR, $e->getMessage()); }
         }
         // Put the longest files first, we overwrite issue names even if they were seen already
         usort($records, static function (UnitTestRecord $a, UnitTestRecord $b): int {
@@ -291,59 +245,3 @@ EOT;
         return $examples;
     }
 }
-
-/**
- * This represents a record of a unit test with a single source file and a single expectation file.
- */
-class UnitTestRecord
-{
-    /** @var string the file name of the source of the unit test */
-    public $src_filename;
-    /** @var string the file name of the expected errors of the unit test */
-    public $expected_filename;
-    /** @var string the contents of the source of the unit test */
-    public $src_contents;
-    /** @var string the expected text errors of that unit test */
-    public $expected_contents;
-
-    public function __construct(string $src_filename, string $expected_filename)
-    {
-        $this->src_filename = $src_filename;
-        $this->expected_filename = $expected_filename;
-        $this->src_contents = self::getContents($src_filename);
-        $this->expected_contents = self::getContents($expected_filename);
-    }
-
-    /**
-     * @return array<int, array{0:string,1:string,2:string}> the issues parsed from this file.
-     * Contains the file name, issue type, and issue description.
-     * The array keys start with 1 (the line number of the expected file)
-     */
-    public function getIssues(): array
-    {
-        $issues = [];
-        foreach (explode("\n", $this->expected_contents) as $i => $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
-            }
-            $lineno = $i + 1;
-            $details = explode(' ', $line, 3);
-            if (count($details) !== 3) {
-                continue;
-            }
-            $issues[$lineno] = $details;
-        }
-        return $issues;
-    }
-
-    private static function getContents(string $filename): string
-    {
-        $contents = file_get_contents($filename);
-        if (!is_string($contents)) {
-            throw new RuntimeException("Failed to read $filename");
-        }
-        return $contents;
-    }
-}
-WikiIssueTypeUpdater::main();
