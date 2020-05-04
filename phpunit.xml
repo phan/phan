@@ -57,6 +57,7 @@
             <directory>tests/Phan/Analysis</directory>
             <directory>tests/Phan/AST</directory>
             <directory>tests/Phan/Exception</directory>
+            <directory>tests/Phan/Internal</directory>
             <directory>tests/Phan/LanguageServer</directory>
             <directory>tests/Phan/Library</directory>
             <directory>tests/Phan/Output</directory>

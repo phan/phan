@@ -1,2 +1,2 @@
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is array{0:string} but \strlen() takes string
-%s:18 PhanTypeMismatchArgumentInternal Argument 1 ($string) is string[] but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $matches of type array{0:string} but \strlen() takes string
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $matches of type string[] but \strlen() takes string
