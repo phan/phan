@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 2.7.3 (dev)
 -----------------------
 
+Bug fixes:
++ Fix handling of windows path separators in `phan_client`
+
 May 02 2020, Phan 2.7.2
 -----------------------
 
