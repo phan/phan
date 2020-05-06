@@ -110,7 +110,7 @@ Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/2
 
 # Usage
 
-Phan needs to be configured with details on where to find code to analyze and how to analyze it. The
+After [installing Phan](#getting-started), Phan needs to be configured with details on where to find code to analyze and how to analyze it. The
 easiest way to tell Phan where to find source code is to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file).
 A simple `.phan/config.php` file might look something like the following.
 
