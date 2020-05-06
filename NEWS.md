@@ -23,6 +23,12 @@ Backwards incompatible changes:
 + Drop PluginV2 support (which was deprecated in Phan 2) in favor of PluginV3.
 + Remove deprecated classes and helper methods.
 
+??? ?? 2020, Phan 2.7.3 (dev)
+-----------------------
+
+Bug fixes:
++ Fix handling of windows path separators in `phan_client`
+
 May 02 2020, Phan 2.7.2
 -----------------------
 
