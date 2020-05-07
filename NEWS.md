@@ -5,6 +5,7 @@ Phan NEWS
 
 Bug fixes:
 + Fix handling of windows path separators in `phan_client`
++ Fix a crash when emitting `CompatibleAnyReturnTypePHP56` for methods with no parameters.
 
 May 02 2020, Phan 2.7.2
 -----------------------
