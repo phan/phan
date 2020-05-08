@@ -2477,7 +2477,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 false
             );
         }
-        if (\is_string($name) && \strcasecmp($name, 'static') === 0 && (!$class || !$class->isFinal())) {
+        if (\is_string($name) && \strcasecmp($name, 'static') === 0 && (!isset($class) || !$class->isFinal())) {
             return UnionType::of($types, [ClassStringType::instance(false)]);
         }
         return UnionType::of($types, $types);

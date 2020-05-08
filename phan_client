@@ -130,6 +130,11 @@ class PhanPHPLinter
             exit($failure_code);
         }
 
+        if (!isset($path)) {
+            self::debugError("Unexpectedly parsed no files\n");
+            exit($failure_code);
+        }
+
         // TODO: Check that everything in $this->file_list is in the same path.
         // $path = reset($opts->file_list);
         $real = realpath($path);

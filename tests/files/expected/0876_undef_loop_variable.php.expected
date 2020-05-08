@@ -1,0 +1,2 @@
+%s:7 PhanPossiblyUndeclaredVariable Variable $i is possibly undeclared
+%s:7 PhanPossiblyUndeclaredVariable Variable $x is possibly undeclared

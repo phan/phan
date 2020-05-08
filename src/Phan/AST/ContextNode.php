@@ -1522,7 +1522,7 @@ class ContextNode
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
             $suggestion = null;
-            if ($class) {
+            if (isset($class)) {
                 $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $this->context, $class, $property_name, $is_static);
             }
 

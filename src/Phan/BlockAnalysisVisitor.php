@@ -917,14 +917,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $expr_node);
         }
 
-        $context = $context->withEnterLoop($node);
-
-        // Add types of the key and value expressions,
-        // and check for errors in the foreach expression
-        $context = $this->analyzeForeachIteration($context, $expression_union_type, $node);
-
-        // PreOrderAnalysisVisitor is not used, to avoid issues analyzing edge cases such as `foreach ($x->method() as $x)`
-
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
@@ -933,12 +925,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
+        // PreOrderAnalysisVisitor is not used, to avoid issues analyzing edge cases such as `foreach ($x->method() as $x)`
+
         // Analyze the context inside the loop. The keys/values would not get created in the outer scope if the iterable expression was empty.
         if ($has_at_least_one_iteration) {
-            $inner_context = $context;
+            $context_inside_loop_start = $context;
         } else {
-            $inner_context = $context->withScope(new BranchScope($context->getScope()));
+            $context_inside_loop_start = $context->withScope(new BranchScope($context->getScope()));
         }
+
+        // withEnterLoop and withExitLoop must get called on the same Scope,
+        // so that the deferred callbacks get called.
+        $context_inside_loop_start = $context_inside_loop_start->withEnterLoop($node);
+
+        // Add types of the key and value expressions,
+        // and check for errors in the foreach expression
+        $inner_context = $this->analyzeForeachIteration($context_inside_loop_start, $expression_union_type, $node);
 
         $value_node = $node->children['value'];
         if ($value_node instanceof Node) {
@@ -956,7 +958,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Also warn about object types when iterating over that class should not have side effects
         if (Config::getValue('unused_variable_detection') &&
             !$expression_union_type->isEmpty() && !$expression_union_type->hasPossiblyObjectTypes() &&
-            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $stmts_node) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $inner_context, $stmts_node) &&
             self::isLoopVariableWithoutSideEffects($node->children['key']) &&
             self::isLoopVariableWithoutSideEffects($node->children['value'])
         ) {
@@ -966,19 +968,37 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($has_at_least_one_iteration) {
             $context = $inner_context;
             $context_list = [$inner_context];
-        } else {
-            $context_list = [$context, $inner_context];
-        }
-        if (isset($node->phan_loop_contexts)) {
-            $context_list = \array_merge($context_list, $node->phan_loop_contexts);
-            // Combine contexts from continue/break statements within this foreach loop
-            unset($node->phan_loop_contexts);
-        }
+            if (isset($node->phan_loop_contexts)) {
+                $context_list = \array_merge($context_list, $node->phan_loop_contexts);
+                // Combine contexts from continue/break statements within this foreach loop
+                unset($node->phan_loop_contexts);
+            }
 
-        if (\count($context_list) >= 2) {
+            if (\count($context_list) >= 2) {
+                $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
+            }
+            // Perform deferred checks about the inside of the loop.
+            $context = $context->withExitLoop($node);
+
+            // This is the context after performing at least one iteration of the foreach loop.
+        } else {
+            $inner_context_list = [$context_inside_loop_start, $inner_context];
+
+            if (isset($node->phan_loop_contexts)) {
+                $inner_context_list = \array_merge($inner_context_list, $node->phan_loop_contexts);
+                // Combine contexts from continue/break statements within this foreach loop
+                unset($node->phan_loop_contexts);
+            }
+            // Perform deferred checks about the inside of the loop.
+            // Here, this combines the states of the inner loop (but not the outer loop) to avoid some types of false positives
+            // such as undeclared variable warnings. (imperfect heuristic but works well for most uses)
+            $context_inside_loop_start = (new ContextMergeVisitor($context_inside_loop_start, $inner_context_list))->combineChildContextList();
+            $context_inside_loop_start = $context_inside_loop_start->withExitLoop($node);
+
+            // Combine the outer scope with the inner scope
+            $context_list = [$context, $context_inside_loop_start];
             $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
         }
-        $context = $context->withExitLoop($node);
 
         return $this->postOrderAnalyze($context, $node);
     }

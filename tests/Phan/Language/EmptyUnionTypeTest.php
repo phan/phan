@@ -145,7 +145,7 @@ final class EmptyUnionTypeTest extends BaseTest
             $list_of_arg_list = $new_list_of_arg_list;
         }
         if (count($list_of_arg_list) === 0) {
-            throw new RuntimeException("Failed to generate 1 or more candidate arguments lists for $param");
+            throw new RuntimeException("Failed to generate 1 or more candidate arguments lists for $method");
         }
         return $list_of_arg_list;
     }
