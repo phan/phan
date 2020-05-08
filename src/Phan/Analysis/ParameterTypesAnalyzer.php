@@ -306,7 +306,7 @@ class ParameterTypesAnalyzer
                             $code_base,
                             $method->getContext(),
                             Issue::CompatibleScalarTypePHP56,
-                            $real_parameter->getFileRef()->getLineNumberStart(),
+                            $method->getFileRef()->getLineNumberStart(),
                             (string)$type
                         );
                     }
