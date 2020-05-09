@@ -9,6 +9,8 @@ New features(CLI, Config):
 
 New features(Analysis):
 + Infer that `foreach` keys and values of possibly empty iterables are possibly undefined after the end of a loop. (#3898)
++ Allow using the polyfill parser to parse internal stubs. (#3902)
+  (To support newer syntax such as union types, trailing commas in parameter lists, etc.)
 
 May 02 2020, Phan 3.0.0-RC2
 -----------------------

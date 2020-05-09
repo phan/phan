@@ -194,12 +194,14 @@ class Parser
         Error $native_parse_error,
         ?Request $request = null
     ): Node {
-        if (!$suppress_parse_errors) {
-            self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, new FileCacheEntry($file_contents), $native_parse_error, $request);
-        }
-        if (!Config::getValue('use_fallback_parser')) {
-            // By default, don't try to re-parse files with syntax errors.
-            throw $native_parse_error;
+        if ($file_path !== 'internal') {
+            if (!$suppress_parse_errors) {
+                self::emitSyntaxErrorForNativeParseError($code_base, $context, $file_path, new FileCacheEntry($file_contents), $native_parse_error, $request);
+            }
+            if (!Config::getValue('use_fallback_parser')) {
+                // By default, don't try to re-parse files with syntax errors.
+                throw $native_parse_error;
+            }
         }
 
         // If there's a parse error in a file that's excluded from analysis, give up on parsing it.
