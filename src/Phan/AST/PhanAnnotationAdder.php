@@ -193,7 +193,7 @@ class PhanAnnotationAdder
     {
         if ($node instanceof Node) {
             $closure = self::$closures_for_kind[$node->kind] ?? null;
-            if ($closure !== null) {
+            if (\is_object($closure)) {
                 $closure($node);
             }
             foreach ($node->children as $inner) {

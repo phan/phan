@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2020, Phan 3.0.1 (dev)
+-----------------------
+
+Miscellaneous:
++ Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
+
 May 09 2020, Phan 3.0.0
 -----------------------
 

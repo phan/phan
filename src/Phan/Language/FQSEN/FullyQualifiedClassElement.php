@@ -75,7 +75,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     ) {
         $name = static::canonicalName($name);
 
-        $key = $fully_qualified_class_name . '::' . $name . ',' . $alternate_id .
+        $key = $fully_qualified_class_name->__toString() . '::' . $name . ',' . $alternate_id .
                '|' . static::class;
 
         static $cache = [];

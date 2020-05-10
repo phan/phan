@@ -195,7 +195,7 @@ class Analysis
         if ($kind === ast\AST_DECLARE) {
             // Check for class declarations, etc. within the statements of a declare directive.
             $child_node = $node->children['stmts'];
-            if ($child_node !== null) {
+            if (\is_object($child_node)) {
                 // Step into each child node and get an
                 // updated context for the node
                 return self::parseNodeInContext($code_base, $inner_context, $child_node);
@@ -214,25 +214,23 @@ class Analysis
             }
         }
 
-        // For closed context elements (that have an inner scope)
-        // return the outer context instead of their inner context
-        // after we finish parsing their children.
-        if (\in_array($kind, [
-            ast\AST_CLASS,
-            ast\AST_METHOD,
-            ast\AST_FUNC_DECL,
-            ast\AST_ARROW_FUNC,
-            ast\AST_CLOSURE,
-        ], true)) {
-            return $context;
+        switch ($kind) {
+            case ast\AST_CLASS:
+            case ast\AST_METHOD:
+            case ast\AST_FUNC_DECL:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLOSURE:
+                // For closed context elements (that have an inner scope)
+                // return the outer context instead of their inner context
+                // after we finish parsing their children.
+                return $context;
+            case ast\AST_STMT_LIST:
+                // Workaround that ensures that the context from namespace blocks gets passed to the caller.
+                return $child_context;
+            default:
+                // Pass the context back up to our parent
+                return $inner_context;
         }
-        if ($kind === ast\AST_STMT_LIST) {
-            // Workaround that ensures that the context from namespace blocks gets passed to the caller.
-            return $child_context;
-        }
-
-        // Pass the context back up to our parent
-        return $inner_context;
     }
 
     /**

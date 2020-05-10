@@ -529,7 +529,7 @@ trait FunctionTrait
     public function setParameterList(array $parameter_list): void
     {
         $this->parameter_list = $parameter_list;
-        if ($this->parameter_list_hash === null) {
+        if (\is_null($this->parameter_list_hash)) {
             $this->initParameterListInfo();
         }
     }
@@ -1767,7 +1767,7 @@ trait FunctionTrait
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure
     {
-        if (!$this->comment) {
+        if (!\is_object($this->comment)) {
             return null;
         }
         $param_assertion_map = $this->comment->getParamAssertionMap();

@@ -80,7 +80,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '3.0.0';
+    public const PHAN_VERSION = '3.0.1-dev';
 
     /**
      * List of short flags passed to getopt
@@ -1969,6 +1969,9 @@ EOB
             }
             return '';
         } elseif ($key === '') {
+            return '';
+        } elseif (strlen($key) > 255) {
+            // levenshtein refuses to compute for longer strings
             return '';
         }
         // include short options in case a typo is made like -aa instead of -a

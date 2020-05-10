@@ -290,7 +290,7 @@ final class ConfigPluginSet extends PluginV3 implements
         array $parent_node_list = []
     ): void {
         $plugin_callback = $this->post_analyze_node_plugin_set[$node->kind] ?? null;
-        if ($plugin_callback !== null) {
+        if (\is_object($plugin_callback)) {
             $plugin_callback(
                 $code_base,
                 $context,

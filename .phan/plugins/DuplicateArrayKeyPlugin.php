@@ -199,11 +199,11 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             }
             $key = $entry->children['key'] ?? null;
             // Skip array entries without literal keys. (Do it before resolving the key value)
-            if ($key === null) {
+            if (is_null($key)) {
                 $has_entry_without_key = true;
                 continue;
             }
-            if (!is_scalar($key)) {
+            if (is_object($key)) {
                 $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNullOrSelf();
                 if (is_object($key)) {
                     $key = self::HASH_PREFIX . ASTHasher::hash($entry->children['key']);

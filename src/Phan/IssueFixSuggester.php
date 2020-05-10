@@ -45,6 +45,9 @@ use function uksort;
  */
 class IssueFixSuggester
 {
+    /** @see https://www.php.net/levenshtein - levenshtein warns and returns -1 for longer strings */
+    private const MAX_SUGGESTION_NAME_LENGTH = 255;
+
     /**
      * @param Closure(Clazz):bool $class_closure
      * @return Closure(FullyQualifiedClassName):bool
@@ -680,6 +683,9 @@ class IssueFixSuggester
         }
         $search_name = strtolower($target);
         $target_length = strlen($search_name);
+        if ($target_length > self::MAX_SUGGESTION_NAME_LENGTH) {
+            return [];
+        }
         $max_levenshtein_distance = (int)(1 + strlen($search_name) / 6);
         $best_matches = [];
         $min_found_distance = $max_levenshtein_distance;
@@ -691,7 +697,7 @@ class IssueFixSuggester
                 // (included with single-character edits)
                 $distance = $target_length !== strlen($name) ? 1 : 0;
             } elseif ($target_length >= 1) {
-                if (\abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
+                if (strlen($name) > self::MAX_SUGGESTION_NAME_LENGTH || \abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
                     continue;
                 }
                 $distance = \levenshtein(strtolower($name), $search_name);

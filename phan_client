@@ -752,6 +752,9 @@ EOB;
             return '';
         } elseif ($key === '') {
             return '';
+        } elseif (strlen($key) > 255) {
+            // levenshtein refuses to run for longer keys
+            return '';
         }
         // include short options in case a typo is made like -aa instead of -a
         $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
