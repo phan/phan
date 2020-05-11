@@ -415,6 +415,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'get_object_vars' => true,
     'get_parent_class' => true,
     'getrandmax' => true,
+    'get_resource_id' => true,
     'get_resource_type' => true,
     'gettext' => true,
     'gettype' => true,
