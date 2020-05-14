@@ -6,11 +6,11 @@ namespace Phan\Tests\Internal;
 
 use RuntimeException;
 
-use function explode;
-use function trim;
 use function count;
-use function is_string;
+use function explode;
 use function file_get_contents;
+use function is_string;
+use function trim;
 
 /**
  * This represents a record of a unit test with a single source file and a single expectation file.

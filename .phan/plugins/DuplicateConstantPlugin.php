@@ -92,7 +92,6 @@ class DuplicateConstantVisitor extends PluginAwarePostAnalysisVisitor
                             $declarations[$name] = $expr;
                         }
                     }
-
                 }
             }
         }

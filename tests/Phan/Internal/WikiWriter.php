@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\Internal;
 
 use AssertionError;
+
 use function explode;
 use function file_exists;
 use function file_get_contents;

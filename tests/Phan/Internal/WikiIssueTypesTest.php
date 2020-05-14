@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\Internal;
 
 use InvalidArgumentException;
+use Phan\Issue;
 use Phan\Tests\BaseTest;
 
 use function array_key_exists;
@@ -26,8 +27,6 @@ use function uasort;
 use function usort;
 
 use const STDERR;
-
-use Phan\Issue;
 
 /**
  * Parts of this are based on https://github.com/phan/phan/issues/445#issue-195541058 by algo13

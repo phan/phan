@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Phan\Tests\Internal;
 
 use InvalidArgumentException;
-use Phan\Tests\BaseTest;
 use Phan\Config\Initializer;
+use Phan\Tests\BaseTest;
 
-use function dirname;
-use function rtrim;
 use function array_key_exists;
+use function dirname;
 use function file_put_contents;
 use function fwrite;
+use function rtrim;
 use function strcasecmp;
 use function uasort;
 
