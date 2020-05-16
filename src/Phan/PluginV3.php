@@ -118,6 +118,12 @@ use Phan\PluginV3\IssueEmitter;
  *     and to avoid interfering with baselines.
  *
  *     (implement \Phan\PluginV3\SubscribeEmitIssueCapability)
+ * 18. public function analyzeStringLiteralStatement(CodeBase $code_base, Context $context, string $statement): bool
+ *
+ *     This method is called when phan finds a string literal statement.
+ *     Returns true if the statement was consumed (e.g. to infer types, or emit debug info).
+ *
+ *     (implement \Phan\PluginV3\AnalyzeLiteralStatementCapability)
  */
 abstract class PluginV3
 {
