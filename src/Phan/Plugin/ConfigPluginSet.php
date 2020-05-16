@@ -53,6 +53,7 @@ use Phan\PluginV3\AfterAnalyzeFileCapability;
 use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
+use Phan\PluginV3\AnalyzeLiteralStatementCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
@@ -95,6 +96,7 @@ final class ConfigPluginSet extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeFunctionCallCapability,
+    AnalyzeLiteralStatementCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability,
     BeforeAnalyzeCapability,
@@ -147,6 +149,9 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /** @var list<AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
     private $analyze_function_plugin_set;
+
+    /** @var list<AnalyzeLiteralStatementCapability>|null - plugins to analyze no-op string literals. */
+    private $analyze_literal_statement_plugin_set;
 
     /** @var list<AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
     private $analyze_property_plugin_set;
@@ -523,6 +528,25 @@ final class ConfigPluginSet extends PluginV3 implements
                 $function
             );
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function analyzeStringLiteralStatement(
+        CodeBase $code_base,
+        Context $context,
+        string $statement
+    ): bool {
+        $consumed = false;
+        foreach ($this->analyze_literal_statement_plugin_set as $plugin) {
+            $consumed = $consumed || $plugin->analyzeStringLiteralStatement(
+                $code_base,
+                $context,
+                $statement
+            );
+        }
+        return $consumed;
     }
 
     /**
@@ -929,21 +953,22 @@ final class ConfigPluginSet extends PluginV3 implements
         // Register the entire set.
         $this->plugin_set = $plugin_set;
 
-        $this->pre_analyze_node_plugin_set      = self::filterPreAnalysisPlugins($plugin_set);
-        $this->post_analyze_node_plugin_set     = self::filterPostAnalysisPlugins($plugin_set);
-        $this->before_analyze_plugin_set        = self::filterByClass($plugin_set, BeforeAnalyzeCapability::class);
-        $this->before_analyze_phase_plugin_set  = self::filterByClass($plugin_set, BeforeAnalyzePhaseCapability::class);
-        $this->before_analyze_file_plugin_set   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
-        $this->after_analyze_file_plugin_set    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
-        $this->analyze_method_plugin_set        = self::filterByClass($plugin_set, AnalyzeMethodCapability::class);
-        $this->analyze_function_plugin_set      = self::filterByClass($plugin_set, AnalyzeFunctionCapability::class);
-        $this->analyze_property_plugin_set      = self::filterByClass($plugin_set, AnalyzePropertyCapability::class);
-        $this->analyze_class_plugin_set         = self::filterByClass($plugin_set, AnalyzeClassCapability::class);
-        $this->finalize_process_plugin_set      = self::filterByClass($plugin_set, FinalizeProcessCapability::class);
-        $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
-        $this->subscribe_emit_issue_plugin_set  = self::filterByClass($plugin_set, SubscribeEmitIssueCapability::class);
-        $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class);
-        $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->pre_analyze_node_plugin_set          = self::filterPreAnalysisPlugins($plugin_set);
+        $this->post_analyze_node_plugin_set         = self::filterPostAnalysisPlugins($plugin_set);
+        $this->before_analyze_plugin_set            = self::filterByClass($plugin_set, BeforeAnalyzeCapability::class);
+        $this->before_analyze_phase_plugin_set      = self::filterByClass($plugin_set, BeforeAnalyzePhaseCapability::class);
+        $this->before_analyze_file_plugin_set       = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
+        $this->after_analyze_file_plugin_set        = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
+        $this->analyze_method_plugin_set            = self::filterByClass($plugin_set, AnalyzeMethodCapability::class);
+        $this->analyze_function_plugin_set          = self::filterByClass($plugin_set, AnalyzeFunctionCapability::class);
+        $this->analyze_literal_statement_plugin_set = self::filterByClass($plugin_set, AnalyzeLiteralStatementCapability::class);
+        $this->analyze_property_plugin_set          = self::filterByClass($plugin_set, AnalyzePropertyCapability::class);
+        $this->analyze_class_plugin_set             = self::filterByClass($plugin_set, AnalyzeClassCapability::class);
+        $this->finalize_process_plugin_set          = self::filterByClass($plugin_set, FinalizeProcessCapability::class);
+        $this->return_type_override_plugin_set      = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->subscribe_emit_issue_plugin_set      = self::filterByClass($plugin_set, SubscribeEmitIssueCapability::class);
+        $this->suppression_plugin_set               = self::filterByClass($plugin_set, SuppressionCapability::class);
+        $this->analyze_function_call_plugin_set     = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
         self::registerIssueFixerClosures($plugin_set);

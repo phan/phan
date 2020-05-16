@@ -6,6 +6,9 @@ Phan NEWS
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
 
+Plugins:
++ Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
+
 May 09 2020, Phan 3.0.0
 -----------------------
 
