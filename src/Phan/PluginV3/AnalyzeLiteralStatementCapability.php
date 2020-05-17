@@ -13,8 +13,7 @@ use Phan\Language\Context;
 interface AnalyzeLiteralStatementCapability
 {
     /**
-     * Analyze a string literal statement,
-     * after parsing and before analyzing.
+     * Analyze a string literal statement during Phan's analysis phase.
      *
      * @param CodeBase $code_base
      *
@@ -24,7 +23,7 @@ interface AnalyzeLiteralStatementCapability
      * The no-op literal statement
      *
      * @return bool
-     * Whether the statement was consumed in any way (i.e. it wasn't no-op)
+     * Whether the statement was consumed in any way (i.e. it wasn't a no-op)
      */
     public function analyzeStringLiteralStatement(
         CodeBase $code_base,

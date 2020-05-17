@@ -531,7 +531,19 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @inheritDoc
+     * Analyze a string literal statement,
+     * after parsing and before analyzing.
+     *
+     * @param CodeBase $code_base
+     *
+     * @param Context $context
+     *
+     * @param string $statement
+     * The no-op literal statement
+     *
+     * @return bool
+     * Whether the statement was consumed in any way (i.e. it wasn't no-op)
+     * @override
      */
     public function analyzeStringLiteralStatement(
         CodeBase $code_base,
@@ -540,11 +552,11 @@ final class ConfigPluginSet extends PluginV3 implements
     ): bool {
         $consumed = false;
         foreach ($this->analyze_literal_statement_plugin_set as $plugin) {
-            $consumed = $consumed || $plugin->analyzeStringLiteralStatement(
+            $consumed = $plugin->analyzeStringLiteralStatement(
                 $code_base,
                 $context,
                 $statement
-            );
+            ) || $consumed;
         }
         return $consumed;
     }

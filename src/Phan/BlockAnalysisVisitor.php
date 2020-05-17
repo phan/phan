@@ -346,10 +346,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $consumed = false;
             if (\strpos($child_node, '@phan-') !== false) {
                 // Add @phan-var and @phan-suppress annotations in string literals to the local scope
-                $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node); // TODO Move to an internal plugin?
+                $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
                 $consumed = true;
             }
-            $consumed = $consumed || ConfigPluginSet::instance()->analyzeStringLiteralStatement($this->code_base, $context, $child_node);
+            $consumed = ConfigPluginSet::instance()->analyzeStringLiteralStatement($this->code_base, $context, $child_node) || $consumed;
             if (!$consumed) {
                 Issue::maybeEmit(
                     $this->code_base,
