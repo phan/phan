@@ -841,7 +841,7 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public static function normalizePluginPath(string $plugin_file_name): string
     {
-        if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
+        if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@S', $plugin_file_name) > 0) {
             $plugin_file_name = self::getBuiltinPluginDirectory() . '/' . $plugin_file_name . '.php';
         }
         if (\preg_match('@^phar://@', $plugin_file_name)) {

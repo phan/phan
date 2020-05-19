@@ -18,11 +18,11 @@ use function is_string;
  */
 final class FunctionSignatureMapTest extends CodeBaseAwareTest
 {
-    private const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
-    private const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
+    private const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/iS';
+    private const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/iS';
 
     // Matches a union type of 0 or more parts.
-    private const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/';
+    private const ONLY_UNION_TYPE_REGEX = '/^(' . UnionType::union_type_regex . ')?$/S';
 
     /**
      * @dataProvider phpVersionIdProvider

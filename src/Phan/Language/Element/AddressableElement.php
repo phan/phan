@@ -328,7 +328,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             if (!\preg_match('/@deprecated\b/', $this->doc_comment, $matches, \PREG_OFFSET_CAPTURE)) {
                 return '';
             }
-            $doc_comment = \preg_replace('@(^/\*)|(\*/$)@', '', $this->doc_comment);
+            $doc_comment = \preg_replace('@(^/\*)|(\*/$)@S', '', $this->doc_comment);
             $lines = \explode("\n", $doc_comment);
             foreach ($lines as $i => $line) {
                 $line = MarkupDescription::trimLine($line);

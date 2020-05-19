@@ -77,7 +77,7 @@ return [
         foreach (explode("\n", $raw_contents) as $line_contents) {
             $new_byte_offset = $byte_offset + strlen($line_contents) + 1;
             $line_contents = rtrim($line_contents, "\r");
-            if (preg_match('/\s+$/', $line_contents, $matches)) {
+            if (preg_match('/\s+$/S', $line_contents, $matches)) {
                 $len = strlen($matches[0]);
                 $offset = $byte_offset + strlen($line_contents) - $len;
                 // Remove 1 or more bytes of trailing whitespace from each line

@@ -8,6 +8,8 @@ Miscellaneous:
 
 Plugins:
 + Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
++ In `PregRegexCheckerPlugin`, warn if `$` allows an optional newline before the end of the string
+  when configuration includes `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3915)
 
 May 09 2020, Phan 3.0.0
 -----------------------
@@ -75,7 +77,7 @@ New features(Analysis):
   (e.g. `is_string($arg) || throw new InvalidArgumentException()`)
   Emit `PhanCompatibleThrowException` when `throw` is used as an expression instead of a statement.
 
-Plugins
+Plugins:
 + Emit `PhanPluginDuplicateCatchStatementBody` in `DuplicateExpressionPlugin` when a catch statement has the same body and variable name as an adjacent catch statement.
   (This should be suppressed in projects that support php 7.0 or older)
 + Add `PHP53CompatibilityPlugin` as a demo plugin to catch common incompatibilities with PHP 5.3. (#915)

@@ -81,7 +81,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
             \scandir($source_dir) ?: [],
             static function (string $filename): bool {
                 // Ignore directories and hidden files.
-                return !in_array($filename, ['.', '..'], true) && \substr($filename, 0, 1) !== '.' && \preg_match('@\.php$@', $filename);
+                return !in_array($filename, ['.', '..'], true) && \substr($filename, 0, 1) !== '.' && \preg_match('@\.php$@S', $filename);
             }
         );
 
