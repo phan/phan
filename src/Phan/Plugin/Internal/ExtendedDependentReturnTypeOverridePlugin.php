@@ -142,6 +142,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             'strlen'       => $wrap('strlen', 1, 3),
             'join'         => $wrap('join', 1),
             'ltrim'        => $wrap('ltrim', 1, 2),
+            'preg_quote'   => $wrap('preg_quote', 1, 2),
             'rtrim'        => $wrap('rtrim', 1, 2),
             'str_ireplace' => $wrap('str_ireplace', 3, 4),
             'str_replace'  => $wrap('str_replace', 3, 4),
