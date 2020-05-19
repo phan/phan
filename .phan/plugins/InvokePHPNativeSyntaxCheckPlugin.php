@@ -36,7 +36,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
     BeforeAnalyzeFileCapability,
     FinalizeProcessCapability
 {
-    private const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@";
+    private const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@S";
     private const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
 
     /**

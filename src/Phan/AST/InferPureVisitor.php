@@ -397,7 +397,7 @@ class InferPureVisitor extends AnalysisVisitor
         } elseif ($var->kind === ast\AST_PROP) {
             // Functions that assign to properties aren't pure,
             // unless assigning to $this->prop in a constructor.
-            if (\preg_match('/::__construct$/i', $this->function_fqsen_label)) {
+            if (\preg_match('/::__construct$/iS', $this->function_fqsen_label)) {
                 $name = $var->children['expr'];
                 if ($name instanceof Node && $name->kind === ast\AST_VAR && $name->children['name'] === 'this') {
                     return;

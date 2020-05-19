@@ -46,7 +46,7 @@ class WhitespacePlugin extends PluginV3 implements
         string $file_contents,
         Node $node
     ): void {
-        if (!preg_match('/[\r\t]|[ \t]\r?$/m', $file_contents)) {
+        if (!preg_match('/[\r\t]|[ \t]\r?$/mS', $file_contents)) {
             // Typical case: no errors
             return;
         }
@@ -68,7 +68,7 @@ class WhitespacePlugin extends PluginV3 implements
                 'The first occurrence of a tab was seen here. Running "expand" can fix that.'
             );
         }
-        if (preg_match('/[ \t]\r?$/m', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
+        if (preg_match('/[ \t]\r?$/mS', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
             self::emitIssue(
                 $code_base,
                 clone($context)->withLineNumberStart(self::calculateLine($file_contents, $match[0][1])),

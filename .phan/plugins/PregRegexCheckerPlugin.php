@@ -6,6 +6,7 @@ use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\IterableType;
@@ -67,6 +68,96 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                 [(string)$function->getFQSEN(), StringUtil::encodeValue($pattern), \preg_replace('@^preg_replace\(\): @', '', $err['message'] ?? 'unknown error')]
             );
             return;
+        }
+        if (strpos($pattern, '$') !== false && (Config::getValue('plugin_config')['regex_warn_if_newline_allowed_at_end'] ?? false)) {
+            foreach (self::checkForSuspiciousRegexPatterns($pattern) as [$issue_type, $issue_template]) {
+                self::emitIssue(
+                    $code_base,
+                    $context,
+                    $issue_type,
+                    $issue_template,
+                    [$function->getFQSEN(), StringUtil::encodeValue($pattern)]
+                );
+            }
+        }
+    }
+
+    /**
+     * @return Generator<array{0:string, 1:string}>
+     */
+    private static function checkForSuspiciousRegexPatterns(string $pattern): Generator
+    {
+        $pattern = \trim($pattern);
+
+        $start_chr = $pattern[0] ?? '/';
+        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
+        $i = \strpos('({[', $start_chr);
+        if ($i !== false) {
+            $end_chr = ')}]'[$i];
+        } else {
+            $end_chr = $start_chr;
+        }
+        // TODO: Reject characters that preg_match would reject
+        $end_pos = \strrpos($pattern, $end_chr);
+        if ($end_pos === false) {
+            return;
+        }
+
+        $inner = (string)\substr($pattern, 1, $end_pos - 1);
+        if ($i !== false) {
+            // Unescape '/x\/y/' as 'x/y'
+            $inner = \str_replace('\\' . $start_chr, $start_chr, $inner);
+        }
+        foreach (self::tokenizeRegexParts($inner) as $part) {
+            // If special handling of newlines is given, don't warn.
+            // If PCRE_EXTENDED is given, this was likely a false positive (E.g. # can be a comment)
+            if ($part === '$' && !preg_match('/[mSx]/', (string) substr($pattern, $end_pos + 1))) {
+                yield ['PhanPluginPregRegexDollarAllowsNewline', 'Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add S to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate'];
+            }
+        }
+    }
+
+    /**
+     * Tokenize the regex, using imperfect heuristics to split up the parts of a regular expression.
+     */
+    private static function tokenizeRegexParts(string $inner): Generator
+    {
+        $inner_len = strlen($inner);
+        for ($j = 0; $j < $inner_len;) {
+            switch ($c = $inner[$j]) {
+                case '\\':
+                    // TODO: https://www.php.net/manual/en/regexp.reference.escape.php for alphanumeric characters
+                    yield substr($inner, $j, $j + 2);
+                    $j += 2;
+                    break;
+                case '[':
+                    // TODO: Handle escaped ]. This is a heuristic that is usually good enough.
+                    $end = strpos($inner, ']', $j + 1);
+                    if ($end === false) {
+                        yield substr($inner, $j);
+                        return;
+                    }
+                    yield substr($inner, $j, $end);
+                    $j = $end;
+                    break;
+                case '{':
+                    $end = strpos($inner, '}', $j + 1);
+                    if ($end === false) {
+                        yield substr($inner, $j);
+                        return;
+                    }
+                    yield substr($inner, $j, $end);
+                    $j = $end;
+                    break;
+                // case '(':
+                // case '}':
+                // case ')':
+                // case ']':
+                default:
+                    yield $c;
+                    $j++;
+                    break;
+            }
         }
     }
 

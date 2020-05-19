@@ -200,7 +200,7 @@ class ConfigEntry
     {
         $result = '';
         foreach ($this->lines as $line) {
-            $line = preg_replace('@^//( |$)@', '', trim($line));
+            $line = preg_replace('@^//( |$)@S', '', trim($line));
             $result .= $line . "\n";
         }
         $result = preg_replace_callback(
