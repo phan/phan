@@ -11,6 +11,10 @@ Plugins:
 + In `PregRegexCheckerPlugin`, warn if `$` allows an optional newline before the end of the string
   when configuration includes `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3915)
 
+Bug fixes:
++ Fix false positive `PhanTypeMismatchPropertyDefault` involving php 7.4 typed properties with no default
+  and generic comments (#3917)
+
 May 09 2020, Phan 3.0.0
 -----------------------
 
