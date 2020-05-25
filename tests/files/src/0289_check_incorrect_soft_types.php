@@ -14,6 +14,6 @@ function realResource289() {
 function readObject289(object $x) {
 }
 
-// Should warn because this uses an undeclared class with name mixed
+// Should warn for php before 8.0
 function readMixed289(mixed $x) {
 }

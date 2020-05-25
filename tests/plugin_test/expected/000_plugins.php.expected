@@ -1,5 +1,5 @@
 src/000_plugins.php:4 PhanPluginInstanceOfObject Cannot call instanceof against `object`
-src/000_plugins.php:4 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \object
+src/000_plugins.php:4 PhanTypeInvalidInstanceof Found an instanceof class name object of type object, but class name must be a valid object or a string
 src/000_plugins.php:9 PhanUnusedGlobalFunctionParameter Parameter $a is never used
 src/000_plugins.php:10 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry '0' at line 17 will be ignored.
@@ -33,3 +33,5 @@ src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 ($string) is
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`
 src/000_plugins.php:139 DemoPluginPropertyName Property \TestDemoPlugin::property should not be called `property`
 src/000_plugins.php:139 PhanReadOnlyPublicProperty Possibly zero write references to public property \TestDemoPlugin->property
+src/000_plugins.php:145 PhanTypeInvalidInstanceof Found an instanceof class name mixed of type mixed, but class name must be a valid object or a string
+src/000_plugins.php:149 PhanTypeInvalidInstanceof Found an instanceof class name string of type string, but class name must be a valid object or a string

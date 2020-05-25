@@ -320,6 +320,14 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or mixed.
+     */
+    public function containsNullableOrMixed(): bool
+    {
+        return false;
+    }
+
+    /**
      * @return bool - True if empty or at least one type is NullType or nullable.
      */
     public function containsNullableOrIsEmpty(): bool
@@ -482,6 +490,15 @@ final class EmptyUnionType extends UnionType
      * True if this Union has no types
      */
     public function isEmpty(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     * True if this Union has no types or is the mixed type
+     */
+    public function isEmptyOrMixed(): bool
     {
         return true;
     }

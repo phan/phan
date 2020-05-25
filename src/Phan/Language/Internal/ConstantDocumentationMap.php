@@ -241,6 +241,7 @@ return [
 'ast\flags\TYPE_CALLABLE' => 'Marks an `ast\AST_TYPE` as being `callable`',
 'ast\flags\TYPE_DOUBLE' => 'Marks an `ast\AST_TYPE` as being `float`',
 'ast\flags\TYPE_FALSE' => 'Marks an `ast\AST_TYPE` as being `false` (for union types)',
+'ast\flags\TYPE_MIXED' => 'Marks an `ast\AST_TYPE` as being `mixed`',
 'ast\flags\TYPE_ITERABLE' => 'Marks an `ast\AST_TYPE` as being `iterable`',
 'ast\flags\TYPE_LONG' => 'Marks an `ast\AST_TYPE` as being `int`',
 'ast\flags\TYPE_NULL' => 'Marks an `ast\AST_TYPE` as being `null` (for union types)',

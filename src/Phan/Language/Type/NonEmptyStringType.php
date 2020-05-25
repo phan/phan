@@ -85,7 +85,7 @@ final class NonEmptyStringType extends StringType
             }
             return !$context->isStrictTypes();
         }
-        return $type instanceof CallableType;
+        return $type instanceof CallableType || $type instanceof MixedType;
     }
 
     /**

@@ -510,9 +510,11 @@ class Issue
     public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
     public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
     public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
+    public const CompatibleMixedType                = 'PhanCompatibleMixedType';
     public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
     public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
     public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
+    public const CompatibleUseMixed                 = 'PhanCompatibleUseMixed';
     public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
     public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
@@ -4383,6 +4385,14 @@ class Issue
                 3007
             ),
             new Issue(
+                self::CompatibleMixedType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Type '{TYPE}' refers to any value starting in PHP 8.0. In PHP 7.4 and earlier, it refers to a class/interface with the name 'mixed'",
+                self::REMEDIATION_B,
+                3029
+            ),
+            new Issue(
                 self::CompatibleUseVoidPHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -4405,6 +4415,14 @@ class Issue
                 "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
                 self::REMEDIATION_B,
                 3010
+            ),
+            new Issue(
+                self::CompatibleUseMixed,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).",
+                self::REMEDIATION_B,
+                3030
             ),
             new Issue(
                 self::CompatibleMultiExceptionCatchPHP70,

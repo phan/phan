@@ -471,6 +471,14 @@ Using array keys in an array destructuring assignment is not compatible with PHP
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/expected/003_short_array.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/src/003_short_array.php#L21).
 
+## PhanCompatibleMixedType
+
+```
+Type '{TYPE}' refers to any value starting in PHP 8.0. In PHP 7.4 and earlier, it refers to a class/interface with the name 'mixed'
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0289_check_incorrect_soft_types.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0289_check_incorrect_soft_types.php#L18).
+
 ## PhanCompatibleMultiExceptionCatchPHP70
 
 ```
@@ -605,6 +613,14 @@ Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/expected/007_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/src/007_use.php#L4).
+
+## PhanCompatibleUseMixed
+
+```
+Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php70_files/expected/007_use.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php70_files/src/007_use.php#L6).
 
 ## PhanCompatibleUseObjectPHP71
 

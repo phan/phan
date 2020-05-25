@@ -35,6 +35,6 @@ final class ResourceType extends NativeType
     public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         // Allow casting resources to other resources.
-        return $other instanceof ResourceType;
+        return $other instanceof ResourceType || $other instanceof MixedType;
     }
 }

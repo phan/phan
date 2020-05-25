@@ -577,7 +577,15 @@ class ContextNode
 
         // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
         if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
-            if (!$union_type->hasTypeMatchingCallback(static function (Type $type) use ($expected_type_categories): bool {
+            if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories): bool {
+                if ($this->node instanceof Node) {
+                    if ($this->node->kind === ast\AST_NAME) {
+                        return $type->isObjectWithKnownFQSEN();
+                    }
+                    if ($this->node->kind === ast\AST_TYPE) {
+                        return $this->node->flags !== ast\flags\TYPE_STATIC;
+                    }
+                }
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
             })) {
                 if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {

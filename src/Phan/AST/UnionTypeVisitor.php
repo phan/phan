@@ -1514,16 +1514,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             $class_node
         );
         // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
-        if (!$type->isEmpty() && !$type->hasObjectTypes()) {
-            if ($class_node->kind !== \ast\AST_NAME &&
-                    !$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())
-            ) {
+        if (!$type->isEmpty() && $type->objectTypesWithKnownFQSENs()->isEmpty()) {
+            if ($class_node->kind === \ast\AST_NAME || !$type->hasStringType()) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
                     Issue::TypeInvalidInstanceof,
                     $context->getLineNumberStart(),
-                    ASTReverter::toShortString($node),
+                    ASTReverter::toShortString($class_node),
                     (string)$type
                 );
             }

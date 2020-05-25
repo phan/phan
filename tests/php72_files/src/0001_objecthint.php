@@ -29,3 +29,4 @@ function nullableobject_test(?object $y) : ?object {
 $c = new object();  // wrong
 $a = new false();  // wrong
 $a = new true();  // wrong
+$a = new mixed();  // wrong
