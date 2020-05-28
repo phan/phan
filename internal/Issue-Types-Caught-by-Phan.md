@@ -2235,6 +2235,14 @@ Using non-null {CODE} of type {TYPE} as the left hand side of a null coalescing 
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/files/expected/0708_loop_issue_examples.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/files/src/0708_loop_issue_examples.php#L17).
 
+## PhanCoalescingNeverUndefined
+
+```
+Using {CODE} ?? null seems unnecessary - the expression appears to always be defined
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0266_nullable_guards.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0266_nullable_guards.php#L9).
+
 ## PhanDivisionByZero
 
 ```

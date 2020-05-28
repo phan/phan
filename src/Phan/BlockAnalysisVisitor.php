@@ -2304,11 +2304,49 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Returns true if $node represents an expression that can't be undefined
+     */
+    private static function isAlwaysDefined(Context $context, Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_VAR:
+                $var_name = $node->children['name'];
+                if (is_string($var_name) && !$context->isInLoop() && $context->isInFunctionLikeScope() && !Variable::isSuperglobalVariableWithName($var_name)) {
+                    $variable = $context->getScope()->getVariableByNameOrNull($var_name);
+                    return $variable && !$variable->getUnionType()->isPossiblyUndefined();
+                }
+                return false;
+            case ast\AST_BINARY_OP:
+                if ($node->flags === ast\flags\BINARY_COALESCE) {
+                    $right_node = $node->children['right'];
+                    return !($right_node instanceof Node) || self::isAlwaysDefined($context, $right_node);
+                }
+                return true;
+            case ast\AST_PROP:
+            case ast\AST_DIM:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    /**
      * Checks if the left hand side of a null coalescing operator is never null or always null
      */
     private function analyzeBinaryCoalesceForRedundantCondition(Context $context, Node $node): void
     {
         $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal, PhanPossiblyUndeclaredProperty
+        if ($right_node instanceof Node && $right_node->kind === ast\AST_CONST && \strcasecmp($right_node->children['name']->children['name'] ?? '', 'null') === 0) {
+            if ($left_node instanceof Node && self::isAlwaysDefined($context, $left_node)) {
+                $this->emitIssue(
+                    Issue::CoalescingNeverUndefined,
+                    $node->lineno,
+                    ASTReverter::toShortString($left_node)
+                );
+            }
+        }
         $left = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $left_node);
         if (!$left->hasRealTypeSet()) {
             return;
@@ -2332,6 +2370,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 },
                 self::canNodeKindBeNull($left_node)
             );
+            return;
         } elseif ($left->isNull()) {
             RedundantCondition::emitInstance(
                 $left_node,
@@ -2346,6 +2385,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     return $type->isNull();
                 }
             );
+            return;
         }
     }
 

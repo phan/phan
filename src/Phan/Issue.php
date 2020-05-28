@@ -254,6 +254,7 @@ class Issue
     public const CoalescingAlwaysNull              = 'PhanCoalescingAlwaysNull';
     public const CoalescingAlwaysNullInLoop        = 'PhanCoalescingAlwaysNullInLoop';
     public const CoalescingAlwaysNullInGlobalScope = 'PhanCoalescingAlwaysNullInGlobalScope';
+    public const CoalescingNeverUndefined          = 'PhanCoalescingNeverUndefined';
     public const TypeMismatchArgumentPropertyReference = 'PhanTypeMismatchArgumentPropertyReference';
     public const TypeMismatchArgumentPropertyReferenceReal = 'PhanTypeMismatchArgumentPropertyReferenceReal';
     public const DivisionByZero = 'PhanDivisionByZero';
@@ -2624,6 +2625,14 @@ class Issue
                 "Using {CODE} of type {TYPE} as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in the global scope - this is likely a false positive)",
                 self::REMEDIATION_B,
                 10127
+            ),
+            new Issue(
+                self::CoalescingNeverUndefined,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Using {CODE} ?? null seems unnecessary - the expression appears to always be defined',
+                self::REMEDIATION_B,
+                10160
             ),
             new Issue(
                 self::DivisionByZero,

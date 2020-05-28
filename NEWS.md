@@ -9,6 +9,8 @@ New features(Analysis):
 + Treat `static` and `false` like real types and emit more severe issues in all php versions.
 + Improve type inferences from negated type assertions (#3923)
   (analyze more expression kinds, infer real types in more places)
++ Warn about unnecessary use of `expr ?? null`. (#3925)
+  New issue types: `PhanCoalescingNeverUndefined`.
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
