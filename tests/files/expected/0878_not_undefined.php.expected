@@ -1,0 +1,4 @@
+%s:7 PhanCoalescingNeverUndefined Using $a ?? null seems unnecessary - the expression appears to always be defined
+%s:8 PhanCoalescingNeverUndefined Using ($a ?? $b) ?? null seems unnecessary - the expression appears to always be defined
+%s:9 PhanPossiblyUndeclaredVariable Variable $possiblyUndef is possibly undeclared
+%s:12 PhanCoalescingNeverUndefined Using test(2, null) ?? null seems unnecessary - the expression appears to always be defined

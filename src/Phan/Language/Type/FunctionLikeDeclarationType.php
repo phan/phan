@@ -182,7 +182,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return false;
         }
         foreach ($this->params as $i => $param) {
-            $other_param = $type->getClosureParameterForArgument($i) ?? null;
+            $other_param = $type->getClosureParameterForArgument($i);
             if (!$other_param) {
                 break;
             }
@@ -225,7 +225,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return false;
         }
         foreach ($this->params as $i => $param) {
-            $other_param = $type->getClosureParameterForArgument($i) ?? null;
+            $other_param = $type->getClosureParameterForArgument($i);
             if (!$other_param) {
                 break;
             }
