@@ -1393,19 +1393,6 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param array<mixed,?(Node|string|int|float)> $args
-     */
-    final protected static function isArgumentListWithVarAsFirstArgument(array $args): bool
-    {
-        if (\count($args) >= 1) {
-            $arg = $args[0];
-            // Phan also supports `if (!is_array($x['field']))` and `if (!is_array($this->propName))`
-            return ($arg instanceof Node) && (\in_array($arg->kind, [ast\AST_VAR, ast\AST_DIM, ast\AST_PROP], true));
-        }
-        return false;
-    }
-
-    /**
      * Fetches the function name. Does not check for function uses or namespaces.
      * @param Node $node a node of kind ast\AST_CALL
      * @return ?string (null if function name could not be found)

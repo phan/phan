@@ -1,0 +1,2 @@
+%s:7 PhanTypeMismatchReturnReal Returning $c of type int but test_not_null() is declared to return ?string
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $c of type null but \strlen() takes string
