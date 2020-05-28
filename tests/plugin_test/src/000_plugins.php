@@ -141,3 +141,11 @@ class TestDemoPlugin {
 $tdp = new TestDemoPlugin();
 var_dump($tdp->property);
 var_dump($tdp->function());
+function testInstanceofMixed($x) {
+    var_dump($x instanceof mixed);
+}
+testInstanceofMixed(new stdClass());
+function testInstanceofString($x) {
+    var_dump($x instanceof string);
+}
+testInstanceofString(new stdClass());

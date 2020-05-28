@@ -4,6 +4,8 @@
 %s:4 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace iterable (\NS\iterable)
 %s:5 PhanCompatibleUseObjectPHP71 Using '\My\Framework\object' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).
 %s:5 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace object (\My\Framework\object)
+%s:6 PhanCompatibleUseMixed Using '\stdClass' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).
+%s:6 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace mixed (\stdClass)
 %s:7 PhanCompatibleIterableTypePHP70 Return type 'iterable' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'
 %s:7 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 %s:7 PhanCompatibleVoidTypePHP70 Return type 'void' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'

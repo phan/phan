@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.1 (dev)
 -----------------------
 
+New features(Analysis):
++ Support analysis of php 8.0's `mixed` type (#3899)
+  New issue types: `PhanCompatibleMixedType`, `PhanCompatibleUseMixed`.
++ Treat `static` and `false` like real types and emit more severe issues in all php versions.
+
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
 

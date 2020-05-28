@@ -1372,6 +1372,19 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or mixed.
+     */
+    public function containsNullableOrMixed(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->isNullable() || $type instanceof MixedType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      */
     public function containsNullableOrUndefined(): bool
@@ -2007,6 +2020,20 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool
+     * True if this Union has no types or is the mixed type
+     */
+    public function isEmptyOrMixed(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!$type instanceof MixedType) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @param UnionType $target
      * The type we'd like to see if this type can cast
      * to
@@ -2630,7 +2657,7 @@ class UnionType implements Serializable
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, UnionType $other): bool
     {
         if ($this->isNull()) {
-            return $other->containsNullable();
+            return $other->containsNullableOrMixed();
         }
         $other_type_set = $other->getTypeSet();
         if (!$other_type_set) {

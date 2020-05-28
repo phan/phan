@@ -300,7 +300,7 @@ class ArrayType extends IterableType
 
     public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
-        if ($other instanceof IterableType) {
+        if ($other instanceof IterableType || $other instanceof MixedType) {
             return true;
         }
         if ($this->isDefiniteNonCallableType()) {

@@ -287,6 +287,10 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler.
         return true;
     }
+    if ($errno === E_DEPRECATED && preg_match('/^Method ReflectionParameter::getClass/', $errstr)) {
+        // Suppress deprecation notices running `vendor/bin/paratest` in php 8
+        return true;
+    }
     if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
         static $did_warn = false;
         if (!$did_warn) {

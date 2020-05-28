@@ -213,6 +213,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
         );
     }
 
+    private const USE_ERRORS = [
+        'iterable' => Issue::CompatibleUseIterablePHP71,
+        'object' => Issue::CompatibleUseObjectPHP71,
+        'mixed' => Issue::CompatibleUseMixed,
+    ];
+
     private function analyzeUseElemCompatibility(
         string $alias,
         FQSEN $target,
@@ -232,11 +238,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 return;
             }
         }
-        if ($alias_lower === 'iterable' || $alias === 'object') {
+        $issue_name = self::USE_ERRORS[$alias_lower] ?? null;
+        if ($issue_name) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
-                $alias_lower === 'iterable' ? Issue::CompatibleUseIterablePHP71 : Issue::CompatibleUseObjectPHP71,
+                $issue_name,
                 $lineno,
                 $target
             );

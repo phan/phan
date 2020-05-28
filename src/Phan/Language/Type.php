@@ -265,9 +265,6 @@ class Type
      * (numeric not supported yet)
      */
     public const _soft_internal_type_set = [
-        'false'     => true,
-        'mixed'     => true,
-        'object'    => true,
         'resource'  => true,
         'scalar'    => true,
         'true'      => true,
