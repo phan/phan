@@ -7,6 +7,8 @@ New features(Analysis):
 + Support analysis of php 8.0's `mixed` type (#3899)
   New issue types: `PhanCompatibleMixedType`, `PhanCompatibleUseMixed`.
 + Treat `static` and `false` like real types and emit more severe issues in all php versions.
++ Improve type inferences from negated type assertions (#3923)
+  (analyze more expression kinds, infer real types in more places)
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).

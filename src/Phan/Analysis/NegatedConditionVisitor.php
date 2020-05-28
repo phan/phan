@@ -284,36 +284,52 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
         $args = $node->children['args']->children;
 
-        $context = $this->context;
         $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
-        if (self::isArgumentListWithVarAsFirstArgument($args)) {
-            if (\count($args) !== 1) {
-                /*if (\strcasecmp($function_name, 'is_a') === 0) {
-                    return $this->analyzeNegationOfVariableIsA($args, $context);
-                }*/
-                return $context;
-            }
-            static $map;
-            if ($map === null) {
-                $map = self::createNegationCallbackMap();
-            }
-            // TODO: Make this generic to all type assertions? E.g. if (!is_string($x)) removes 'string' from type, makes '?string' (nullable) into 'null'.
-            // This may be redundant in some places if AST canonicalization is used, but still useful in some places
-            // TODO: Make this generic so that it can be used in the 'else' branches?
-            $callback = $map[$function_name] ?? null;
-            if ($callback === null) {
-                return $context;
-            }
-            return $callback(
-                $this,
-                $args[0],  // @phan-suppress-current-line PhanTypeMismatchArgumentNullable
-                $context
-            );
-        }
         if ($function_name === 'array_key_exists') {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             return $this->analyzeArrayKeyExistsNegation($args);
         }
+        static $map;
+        if ($map === null) {
+            $map = self::createNegationCallbackMap();
+        }
+        $type_modification_callback = $map[$function_name] ?? null;
+        if ($type_modification_callback === null) {
+            return $this->context;
+        }
+        $first_arg = $args[0] ?? null;
+        if (!($first_arg instanceof Node && $first_arg->kind === ast\AST_VAR)) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
+            return $this->modifyComplexExpression($first_arg, $type_modification_callback, $this->context, $args);
+        }
+
+        $context = $this->context;
+
+        try {
+            // Get the variable we're operating on
+            $variable = $this->getVariableFromScope($first_arg, $context);
+
+            if (\is_null($variable)) {
+                return $context;
+            }
+
+            // Make a copy of the variable
+            $variable = clone($variable);
+
+            // Modify the types of that variable.
+            $type_modification_callback($this->code_base, $context, $variable, $args);
+
+            // Overwrite the variable with its new type in this
+            // scope without overwriting other scopes
+            $context = $context->withScopeVariable(
+                $variable
+            );
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+        } catch (\Exception $_) {
+            // Swallow it (E.g. IssueException for undefined variable)
+        }
+
         return $context;
     }
 
@@ -494,93 +510,66 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * @return array<string,Closure> (NegatedConditionVisitor $cv, Node $var_node, Context $context) -> Context
-     * @phan-return array<string,Closure(NegatedConditionVisitor,Node|int|string|float,Context):Context>
+     * @phan-return array<string,Closure(CodeBase, Context, Variable, array):void>
      */
     private static function createNegationCallbackMap(): array
     {
-        $remove_null_cb = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
-            return $cv->removeNullFromVariable($var_node, $context, false);
+        /** @param list<Node|mixed> $unused_args */
+        $remove_null_cb = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->nonNullableClone());
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
         $make_basic_negated_assertion_callback = static function (string $base_class_name): Closure {
-            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name): Context {
-                return $cv->updateVariableWithConditionalFilter(
-                    $var_node,
-                    $context,
-                    static function (UnionType $union_type) use ($base_class_name): bool {
-                        foreach ($union_type->getTypeSet() as $type) {
-                            if ($type instanceof $base_class_name) {
-                                return true;
-                            }
+            /**
+             * @param list<Node|mixed> $unused_args
+             */
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args) use ($base_class_name): void {
+                $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) use ($base_class_name): array {
+                    if ($type instanceof $base_class_name) {
+                        // This is the type we don't want
+                        if ($type->isNullable()) {
+                            static $null_type_set;
+                            return $null_type_set ?? ($null_type_set = UnionType::typeSetFromString('null'));
                         }
-                        foreach ($union_type->getRealTypeSet() as $type) {
-                            if ($type instanceof $base_class_name) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    },
-                    static function (UnionType $union_type) use ($base_class_name): UnionType {
-                        $new_type_builder = new UnionTypeBuilder();
-                        $has_null = false;
-                        $has_other_nullable_types = false;
-                        // Add types which are not instances of $base_class_name
-                        foreach ($union_type->getTypeSet() as $type) {
-                            if ($type instanceof $base_class_name) {
-                                $has_null = $has_null || $type->isNullable();
-                                continue;
-                            }
-                            $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
-                            $new_type_builder->addType($type);
-                        }
-                        // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                        if ($has_null && !$has_other_nullable_types) {
-                            $new_type_builder->addType(NullType::instance(false));
-                        }
-                        return $new_type_builder->getPHPDocUnionType();
-                    },
-                    false,
-                    false
-                );
+                        return [];
+                    }
+                    return [$type];
+                })->asNormalizedTypes());
             };
         };
         $remove_float_callback = $make_basic_negated_assertion_callback(FloatType::class);
         $remove_int_callback = $make_basic_negated_assertion_callback(IntType::class);
         /**
          * @param Closure(Type):bool $type_filter
-         * @return Closure(NegatedConditionVisitor,Node,Context):Context
+         * @return Closure(CodeBase, Context, Variable, array):void
          */
         $remove_conditional_function_callback = static function (Closure $type_filter): Closure {
-            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($type_filter): Context {
-                return $cv->updateVariableWithConditionalFilter(
-                    $var_node,
-                    $context,
-                    static function (UnionType $union_type) use ($type_filter): bool {
-                        return $union_type->hasTypeMatchingCallback($type_filter);
-                    },
-                    static function (UnionType $union_type) use ($type_filter): UnionType {
-                        $new_type_builder = new UnionTypeBuilder();
-                        $has_null = false;
-                        $has_other_nullable_types = false;
-                        // Add types which are not scalars
-                        foreach ($union_type->getTypeSet() as $type) {
-                            if ($type_filter($type)) {
-                                $has_null = $has_null || $type->isNullable();
-                                continue;
-                            }
-                            $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
-                            $new_type_builder->addType($type);
-                        }
-                        // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                        if ($has_null && !$has_other_nullable_types) {
-                            $new_type_builder->addType(NullType::instance(false));
-                        }
-                        return $new_type_builder->getPHPDocUnionType();
-                    },
-                    false,
-                    false
-                );
+            /**
+             * @param list<Node|mixed> $unused_args
+             */
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args) use ($type_filter): void {
+                $union_type = $variable->getUnionType();
+                if (!$union_type->hasTypeMatchingCallback($type_filter)) {
+                    return;
+                }
+                $new_type_builder = new UnionTypeBuilder();
+                $has_null = false;
+                $has_other_nullable_types = false;
+                // Add types which are not scalars
+                foreach ($union_type->getTypeSet() as $type) {
+                    if ($type_filter($type)) {
+                        $has_null = $has_null || $type->isNullable();
+                        continue;
+                    }
+                    $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
+                    $new_type_builder->addType($type);
+                }
+                // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                if ($has_null && !$has_other_nullable_types) {
+                    $new_type_builder->addType(NullType::instance(false));
+                }
+                $variable->setUnionType($new_type_builder->getPHPDocUnionType());
             };
         };
         $remove_scalar_callback = $remove_conditional_function_callback(static function (Type $type): bool {
@@ -592,141 +581,58 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         $remove_bool_callback = $remove_conditional_function_callback(static function (Type $type): bool {
             return $type->isInBoolFamily();
         });
-        $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_callable($x)) removes non-callable/closure types from $x.
-                // TODO: Could check for __invoke()
-                static function (UnionType $union_type): bool {
-                    return $union_type->hasTypeMatchingCallback(static function (Type $type): bool {
-                        return $type->isCallable();
-                    });
-                },
-                static function (UnionType $union_type): UnionType {
-                    $new_type_builder = new UnionTypeBuilder();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not callable
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type->isCallable()) {
-                            $has_null = $has_null || $type->isNullable();
-                            continue;
-                        }
-                        $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
-                        $new_type_builder->addType($type);
+        /** @param list<Node|mixed> $unused_args */
+        $remove_callable_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type): array {
+                if ($type->isCallable()) {
+                    if ($type->isNullable()) {
+                        static $null_type_set;
+                        return $null_type_set ?? ($null_type_set = UnionType::typeSetFromString('null'));
                     }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type_builder->addType(NullType::instance(false));
-                    }
-                    // FIXME: Could try to track real types here and elsewhere
-                    return $new_type_builder->getPHPDocUnionType();
-                },
-                false,
-                false
-            );
+                    return [];
+                }
+                return [$type];
+            })->asNormalizedTypes());
         };
-        $remove_countable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
-            $code_base = $cv->getCodeBase();
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_countable($x)) removes non-array/Countable types from $x.
-                static function (UnionType $union_type) use ($code_base): bool {
-                    return $union_type->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
-                        return $type->isCountable($code_base);
-                    });
-                },
-                static function (UnionType $union_type) use ($code_base): UnionType {
-                    $new_type_builder = new UnionTypeBuilder();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not Countable
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type->isCountable($code_base)) {
-                            $has_null = $has_null || $type->isNullable();
-                            continue;
-                        }
-                        $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
-                        $new_type_builder->addType($type);
+        // TODO: Would withStaticResolvedInContext make sense for ruling out self in Countable?
+        /** @param list<Node|mixed> $unused_args */
+        $remove_countable_callback = static function (CodeBase $code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) use ($code_base): array {
+                if ($type->isCountable($code_base)) {
+                    if ($type->isNullable()) {
+                        static $null_type_set;
+                        return $null_type_set ?? ($null_type_set = UnionType::typeSetFromString('null'));
                     }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type_builder->addType(NullType::instance(false));
-                    }
-                    // FIXME: Could try to track real types here and elsewhere
-                    return $new_type_builder->getPHPDocUnionType();
-                },
-                false,
-                false
-            );
+                    return [];
+                }
+                return [$type];
+            })->asNormalizedTypes());
         };
-        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_callable($x)) removes non-callable/closure types from $x.
-                // TODO: Could check for __invoke()
-                static function (UnionType $union_type): bool {
-                    if ($union_type->hasIterable()) {
-                        return true;
-                    }
-                    // We also want to filter real types(if they are known) to avoid false positives in real condition detection
-                    foreach ($union_type->getRealTypeSet() as $type) {
-                        if ($type->isIterable()) {
-                            return true;
-                        }
-                    }
-                    return false;
-                },
-                static function (UnionType $union_type): UnionType {
-                    return UnionType::of(
-                        self::filterNonArrayTypes($union_type->getTypeSet()),
-                        self::filterNonArrayTypes($union_type->getRealTypeSet())
-                    );
-                },
-                false,
-                false
-            );
+        /** @param list<Node|mixed> $unused_args */
+        $remove_array_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $union_type = $variable->getUnionType();
+            $variable->setUnionType(UnionType::of(
+                self::filterNonArrayTypes($union_type->getTypeSet()),
+                self::filterNonArrayTypes($union_type->getRealTypeSet())
+            ));
         };
-        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context): Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_callable($x)) removes non-callable/closure types from $x.
-                // TODO: Could check for __invoke()
-                static function (UnionType $union_type): bool {
-                    return $union_type->hasPossiblyObjectTypes();
-                },
-                static function (UnionType $union_type): UnionType {
-                    $new_type_builder = new UnionTypeBuilder();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not callable
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type->isObject()) {
-                            $has_null = $has_null || $type->isNullable();
-                            continue;
-                        }
-                        $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
+        /** @param list<Node|mixed> $unused_args */
+        $remove_object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type): array {
+                if ($type->isObject()) {
+                    if ($type->isNullable()) {
+                        static $null_type_set;
+                        return $null_type_set ?? ($null_type_set = UnionType::typeSetFromString('null'));
+                    }
+                    return [];
+                }
 
-                        if (\get_class($type) === IterableType::class) {
-                            // An iterable that is not an array must be a Traversable
-                            $new_type_builder->addType(ArrayType::instance($type->isNullable()));
-                            continue;
-                        }
-                        $new_type_builder->addType($type);
-                    }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type_builder->addType(NullType::instance(false));
-                    }
-                    return $new_type_builder->getPHPDocUnionType();
-                },
-                false,
-                false
-            );
+                if (\get_class($type) === IterableType::class) {
+                    // An iterable that is not an array must be a Traversable
+                    return [ArrayType::instance($type->isNullable())];
+                }
+                return [$type];
+            })->asNormalizedTypes());
         };
 
         return [
