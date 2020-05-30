@@ -69,6 +69,7 @@ final class CompactPlugin extends PluginV3 implements
             };
             foreach ($args as $arg) {
                 if (\is_string($arg)) {
+                    // The argument is the variable name.
                     $check_variable_usage($arg);
                     // NOTE: compact is **not** aware of superglobals
                     continue;

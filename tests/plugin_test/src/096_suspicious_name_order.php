@@ -36,7 +36,7 @@ function test_no_false_positive() {
     $third = 1;
     // Don't emit this suggestion if the fix wouldn't work
     some_check($secondValue, $objFirst);
-    some_check_chain($secondValue, $third, $objFirst);
+    some_check_chain($secondValue, $third, $objFirst);  // Should warn about passing second argument $third with the exact same name as the third parameter of some_check_chain
 }
 
 function my_strpos(string $message, string $needle, string $haystack) {
@@ -44,3 +44,24 @@ function my_strpos(string $message, string $needle, string $haystack) {
     return strpos($needle, $haystack);  // this is wrong, the haystack should go first
 }
 var_export(my_strpos('debug msg', '.', 'foo.bar'));
+
+function has_optional($first = false, $second = true, $third = false) {
+    var_export([$first, $second, $third]);
+}
+
+class Test96 {
+    /** @var bool */
+    public static $third = true;
+    /** @var bool */
+    public $SECOND = false;
+
+    public function invoke_has_optional($first, $second, $third) {
+        has_optional($first);
+        has_optional($second);
+        has_optional($third);
+        has_optional($first, $third);
+        has_optional($third, $first);
+        has_optional(self::$third, false, $this->SECOND);
+    }
+}
+(new Test96)->invoke_has_optional(false, true, true);
