@@ -19,6 +19,9 @@ Plugins:
 + Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
 + In `PregRegexCheckerPlugin`, warn if `$` allows an optional newline before the end of the string
   when configuration includes `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3915)
++ In `SuspiciousParamOrderPlugin`, warn if an argument has a near-exact name match for a parameter at a different position (#3929)
+  E.g. warn about calling `foo($b)` or `foo(true, $this->A)` for `function foo($a = false, $b = false)`.
+  New issue types: `PhanPluginSuspiciousParamPosition`, `PhanPluginSuspiciousParamPositionInternal`
 
 Bug fixes:
 + Fix false positive `PhanTypeMismatchPropertyDefault` involving php 7.4 typed properties with no default

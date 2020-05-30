@@ -36,6 +36,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     // this is deliberate for issue names
     private const SuspiciousParamOrderInternal = 'PhanPluginSuspiciousParamOrderInternal';
     private const SuspiciousParamOrder = 'PhanPluginSuspiciousParamOrder';
+    private const SuspiciousParamPosition = 'PhanPluginSuspiciousParamPosition';
+    private const SuspiciousParamPositionInternal = 'PhanPluginSuspiciousParamPositionInternal';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
@@ -45,8 +47,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     public function visitCall(Node $node): void
     {
         $args = $node->children['args']->children;
-        if (count($args) < 2) {
-            // Can't have a suspicious param order if there are less than 2 params
+        if (count($args) < 1) {
+            // Can't have a suspicious param order/position if there are no params
             return;
         }
         $expression = $node->children['expr'];
@@ -113,7 +115,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param list<Node|string|int|float|null> $args
+     * @param list<Node|string|int|float> $args
      */
     private function checkCall(FunctionInterface $function, array $args, Node $node): void
     {
@@ -121,11 +123,14 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($args as $i => $arg_node) {
             $name = self::extractName($arg_node);
             if (!is_string($name)) {
-                return;
+                continue;
             }
             $arg_names[$i] = strtolower($name);
         }
         if (count($arg_names) < 2) {
+            if (count($arg_names) === 1) {
+                $this->checkMovedArg($function, $args, $node, $arg_names);
+            }
             return;
         }
         $parameters = $function->getParameterList();
@@ -138,6 +143,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             $parameter_names[$i] = strtolower($parameters[$i]->getName());
         }
         if (count($arg_names) < 2) {
+            // $arg_names and $parameter_names have the same keys
+            $this->checkMovedArg($function, $args, $node, $arg_names);
             return;
         }
         $best_destination_map = [];
@@ -166,8 +173,10 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         if (count($best_destination_map) < 2) {
+            $this->checkMovedArg($function, $args, $node, $arg_names);
             return;
         }
+        $places_set = [];
         foreach (self::findCycles($best_destination_map) as $cycle) {
             // To reduce false positives, don't warn unless we know the parameter $j would be compatible with what was used at $i
             foreach ($cycle as $array_index => $i) {
@@ -177,6 +186,9 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 if (!$type->asExpandedTypes($this->code_base)->canCastToUnionType($parameters[$j]->getUnionType())) {
                     continue 2;
                 }
+            }
+            foreach ($cycle as $i) {
+                $places_set[$i] = true;
             }
             $arg_details = implode(' and ', array_map(static function (int $i) use ($args): string {
                 return self::extractName($args[$i]) ?? 'unknown';
@@ -203,6 +215,72 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                     clone($this->context)->withLineNumberStart($node->lineno),
                     self::SuspiciousParamOrder,
                     'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}',
+                    [
+                        $arg_details,
+                        $param_details,
+                        $function->getRepresentationForIssue(true),
+                        $function->getContext()->getFile(),
+                        $function->getContext()->getLineNumberStart(),
+                    ]
+                );
+            }
+        }
+        $this->checkMovedArg($function, $args, $node, $arg_names, $places_set);
+    }
+
+    /**
+     * @param FunctionInterface $function the function being called
+     * @param list<Node|string|int|float> $args
+     * @param Node $node
+     * @param associative-array<int,string> $arg_names
+     * @param associative-array<int,true> $places_set the places that were already warned about being transposed.
+     */
+    private function checkMovedArg(FunctionInterface $function, array $args, Node $node, array $arg_names, array $places_set = []): void
+    {
+        $parameters = $function->getParameterList();
+        /** @var associative-array<string,?int> maps lowercase param names to their unique index, or null */
+        $parameter_names = [];
+        foreach ($parameters as $i => $param) {
+            if (isset($places_set[$i])) {
+                continue;
+            }
+            $name_key = str_replace('_', '', strtolower($param->getName()));
+            if (array_key_exists($name_key, $parameter_names)) {
+                $parameter_names[$name_key] = null;
+            } else {
+                $parameter_names[$name_key] = $i;
+            }
+        }
+        foreach ($arg_names as $i => $name) {
+            $other_i = $parameter_names[str_replace('_', '', strtolower($name))] ?? null;
+            if ($other_i === null || $other_i === $i) {
+                continue;
+            }
+            $param = $parameters[$other_i];
+            if ($param->isVariadic())  {
+                // Skip warning about signatures such as var_dump($var, ...$args)
+                continue;
+            }
+            $param_details = '#' . ($other_i + 1) . ' (' . trim($param->getUnionType() . ' $' . $param->getName()) . ')';
+            $arg_details = self::extractName($args[$i]) ?? 'unknown';
+            if ($function->isPHPInternal()) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
+                    self::SuspiciousParamPositionInternal,
+                    'Suspicious order for argument {DETAILS} - This is getting passed to parameter {DETAILS} of {FUNCTION}',
+                    [
+                        $arg_details,
+                        $param_details,
+                        $function->getRepresentationForIssue(true),
+                    ]
+                );
+            } else {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
+                    self::SuspiciousParamPosition,
+                    'Suspicious order for argument {DETAILS} - This is getting passed to parameter {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}',
                     [
                         $arg_details,
                         $param_details,
@@ -272,8 +350,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     public function visitMethodCall(Node $node): void
     {
         $args = $node->children['args']->children;
-        if (count($args) < 2) {
-            // Can't have a suspicious param order if there are less than 2 params
+        if (count($args) < 1) {
+            // Can't have a suspicious param order/position if there are no params
             return;
         }
 
@@ -302,8 +380,8 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     public function visitStaticCall(Node $node): void
     {
         $args = $node->children['args']->children;
-        if (count($args) < 2) {
-            // Can't have a suspicious param order if there are less than 2 params
+        if (count($args) < 1) {
+            // Can't have a suspicious param order/position if there are no params
             return;
         }
 
