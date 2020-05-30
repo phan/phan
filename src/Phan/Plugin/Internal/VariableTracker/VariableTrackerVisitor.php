@@ -958,7 +958,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $var_node = $node->children['var'];
         if (!$var_node instanceof Node) {
-            // impossible for AST_CATCH, except with polyfill?
+            // This is a non-capturing catch. Or it could be an invalid node from the polyfill.
             return $this->scope;
         }
 

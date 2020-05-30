@@ -744,6 +744,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->context,
             $node->children['class']
         );
+        if (!isset($node->children['var'])) {
+            $this->emitIssue(
+                Issue::CompatibleNonCapturingCatch,
+                $node->lineno,
+                ASTReverter::toShortString($node->children['class'])
+            );
+        }
 
         try {
             $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));

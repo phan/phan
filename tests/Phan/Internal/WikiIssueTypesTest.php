@@ -204,6 +204,7 @@ EOT;
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php80_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php73_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php72_files/expected/*.php.expected') ?: [],

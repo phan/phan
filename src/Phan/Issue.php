@@ -517,6 +517,7 @@ class Issue
     public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
     public const CompatibleUseMixed                 = 'PhanCompatibleUseMixed';
     public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
+    public const CompatibleNonCapturingCatch        = 'PhanCompatibleNonCapturingCatch';
     public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
@@ -4440,6 +4441,14 @@ class Issue
                 "Catching multiple exceptions is not supported before PHP 7.1",
                 self::REMEDIATION_B,
                 3011
+            ),
+            new Issue(
+                self::CompatibleNonCapturingCatch,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Catching exceptions without a variable is not supported before PHP 8.0 in catch ({CLASS})",
+                self::REMEDIATION_B,
+                3031
             ),
             new Issue(
                 self::CompatibleNegativeStringOffset,

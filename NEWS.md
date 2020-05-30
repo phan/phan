@@ -11,6 +11,8 @@ New features(Analysis):
   (analyze more expression kinds, infer real types in more places)
 + Warn about unnecessary use of `expr ?? null`. (#3925)
   New issue types: `PhanCoalescingNeverUndefined`.
++ Support PHP 8.0 non-capturing catches (#3907)
+  New issue types: `PhanCompatibleNonCapturingCatch`.
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).

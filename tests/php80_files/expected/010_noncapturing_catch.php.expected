@@ -1,0 +1,6 @@
+%s:4 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch (RuntimeException)
+%s:6 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch (UnknownException)
+%s:6 PhanUndeclaredClassCatch Catching undeclared class \UnknownException
+%s:12 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch (RuntimeException)
+%s:14 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch (UnknownException)
+%s:14 PhanUndeclaredClassCatch Catching undeclared class \UnknownException

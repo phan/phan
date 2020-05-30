@@ -495,6 +495,14 @@ Using negative string offsets is not supported before PHP 7.1 (emits an 'Uniniti
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/expected/009_negative_string_offset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/php70_files/src/009_negative_string_offset.php#L5).
 
+## PhanCompatibleNonCapturingCatch
+
+```
+Catching exceptions without a variable is not supported before PHP 8.0 in catch ({CLASS})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/010_noncapturing_catch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/010_noncapturing_catch.php#L4).
+
 ## PhanCompatibleNullableTypePHP70
 
 ```
@@ -573,6 +581,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/php74_files/expe
 ```
 Cannot use throw as an expression before php 8.0 in {CODE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/007_throw_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/007_throw_expression.php#L8).
 
 ## PhanCompatibleTypedProperty
 
