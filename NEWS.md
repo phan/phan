@@ -15,6 +15,9 @@ New features(Analysis):
   New issue types: `PhanCompatibleNonCapturingCatch`.
 + Infer type of `$x->magicProp` from the signature of `__get`
 + Treat functions/methods that are only called by themselves as unreferenced during dead code detection.
++ Warn about `each()` being deprecated when the `target_php_version` is php 7.2+. (#2746)
+  This is special cased because PHP does not flag the function itself as deprecated in `ReflectionFunction`.
+  (PHP only emits the deprecation notice for `each()` once at runtime)
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).

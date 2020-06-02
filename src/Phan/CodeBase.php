@@ -1487,7 +1487,8 @@ class CodeBase
             ) as $function) {
                 if ($found) {
                     $reflection_function = new \ReflectionFunction($name);
-                    $function->setIsDeprecated($reflection_function->isDeprecated());
+                    $is_deprecated = $reflection_function->isDeprecated() || ($name === 'each' && Config::get_closest_target_php_version_id() >= 70200);
+                    $function->setIsDeprecated($is_deprecated);
                     $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
                     if (Config::getValue('assume_real_types_for_internal_functions')) {
                         // @phan-suppress-next-line PhanAccessMethodInternal
