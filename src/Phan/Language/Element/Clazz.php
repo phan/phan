@@ -609,6 +609,7 @@ class Clazz extends AddressableElement
      *
      * @deprecated This may lead to infinite recursion when analyzing invalid code. asExpandedTypes should be used instead.
      * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanDeprecatedFunction
      */
     public function isSubclassOf(CodeBase $code_base, Clazz $other): bool
     {
