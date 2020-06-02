@@ -13,6 +13,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\GenericArrayType;
@@ -1034,5 +1035,25 @@ class Method extends ClassElement implements FunctionInterface
             $result->reference_list = &$this->reference_list;
         }
         return $result;
+    }
+
+    /**
+     * @override
+     */
+    public function addReference(FileRef $file_ref): void
+    {
+        if (Config::get_track_references()) {
+            // Currently, we don't need to track references to PHP-internal methods/functions/constants
+            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
+            // This may change in the future.
+            if ($this->isPHPInternal()) {
+                return;
+            }
+            if ($file_ref instanceof Context && $file_ref->isInFunctionLikeScope() && $file_ref->getFunctionLikeFQSEN() === $this->fqsen) {
+                // Don't track methods calling themselves
+                return;
+            }
+            $this->reference_list[$file_ref->__toString()] = $file_ref;
+        }
     }
 }

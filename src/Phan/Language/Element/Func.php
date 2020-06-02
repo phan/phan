@@ -10,10 +10,12 @@ use ast\flags;
 use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
@@ -492,5 +494,25 @@ class Func extends AddressableElement implements FunctionInterface
             return $this->getStubForClosure();
         }
         return $this->name . '()';
+    }
+
+    /**
+     * @override
+     */
+    public function addReference(FileRef $file_ref): void
+    {
+        if (Config::get_track_references()) {
+            // Currently, we don't need to track references to PHP-internal methods/functions/constants
+            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
+            // This may change in the future.
+            if ($this->isPHPInternal()) {
+                return;
+            }
+            if ($file_ref instanceof Context && $file_ref->isInFunctionLikeScope() && $file_ref->getFunctionLikeFQSEN() === $this->fqsen) {
+                // Don't track functions calling themselves
+                return;
+            }
+            $this->reference_list[$file_ref->__toString()] = $file_ref;
+        }
     }
 }

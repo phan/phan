@@ -606,6 +606,9 @@ class Clazz extends AddressableElement
      * It should not be used for traits or interfaces.
      *
      * This returns false if $this === $other
+     *
+     * @deprecated This may lead to infinite recursion when analyzing invalid code. asExpandedTypes should be used instead.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isSubclassOf(CodeBase $code_base, Clazz $other): bool
     {

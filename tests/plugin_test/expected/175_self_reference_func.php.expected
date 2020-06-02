@@ -1,0 +1,2 @@
+src/175_self_reference_func.php:2 PhanUnreferencedFunction Possibly zero references to function \fib()
+src/175_self_reference_func.php:6 PhanUnreferencedPublicMethod Possibly zero references to public method \MyFib::fib()

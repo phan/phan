@@ -14,6 +14,7 @@ New features(Analysis):
 + Support PHP 8.0 non-capturing catches (#3907)
   New issue types: `PhanCompatibleNonCapturingCatch`.
 + Infer type of `$x->magicProp` from the signature of `__get`
++ Treat functions/methods that are only called by themselves as unreferenced during dead code detection.
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
