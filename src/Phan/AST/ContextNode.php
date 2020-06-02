@@ -19,6 +19,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
+use Phan\Exception\UnanalyzableMagicPropertyException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -1384,8 +1385,10 @@ class ContextNode
                 // bets are off. However, @phan-forbid-undeclared-magic-properties
                 // will make this method analyze the code as if all properties were declared or had @property annotations.
                 if (!$is_static && $class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
-                    throw new UnanalyzableException(
+                    throw new UnanalyzableMagicPropertyException(
                         $node,
+                        $class,
+                        $property_name,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"
                     );
                 }

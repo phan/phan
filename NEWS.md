@@ -13,6 +13,7 @@ New features(Analysis):
   New issue types: `PhanCoalescingNeverUndefined`.
 + Support PHP 8.0 non-capturing catches (#3907)
   New issue types: `PhanCompatibleNonCapturingCatch`.
++ Infer type of `$x->magicProp` from the signature of `__get`
 
 Miscellaneous:
 + Check for keys that are too long when computing levenshtein distances (when Phan suggests alternatives).
