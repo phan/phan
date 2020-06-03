@@ -7373,7 +7373,7 @@ return [
 'memcache_get_stats' => ['void'],
 'memcache_get_version' => ['void'],
 'memcache_increment' => ['void'],
-'memcache_pconnect' => ['Memcache', 'host'=>'', 'port='=>'null', 'timeout='=>'int'],
+'memcache_pconnect' => ['Memcache', 'host'=>'string', 'port='=>'?int', 'timeout='=>'int'],
 'memcache_prepend' => ['void'],
 'memcache_replace' => ['void'],
 'memcache_set' => ['void'],
