@@ -466,6 +466,9 @@ class Config
         // as variables (like `$class->$property` or
         // `$class->$method()`) in ways that we're unable
         // to make sense of.
+        //
+        // To more aggressively detect dead code,
+        // you may want to set `dead_code_detection_prefer_false_negative` to `false`.
         'dead_code_detection' => false,
 
         // Set to true in order to attempt to detect unused variables.
