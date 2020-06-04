@@ -33,6 +33,7 @@ Plugins:
 Bug fixes:
 + Fix false positive `PhanTypeMismatchPropertyDefault` involving php 7.4 typed properties with no default
   and generic comments (#3917)
++ Don't remove leading directory separator when attempting to convert a file outside the project to a relative path.
 
 May 09 2020, Phan 3.0.0
 -----------------------
