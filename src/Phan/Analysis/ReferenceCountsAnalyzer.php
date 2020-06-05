@@ -189,7 +189,9 @@ class ReferenceCountsAnalyzer
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i) / $total_count, $element);
             // Don't worry about internal elements
-            if ($element->isPHPInternal()) {
+            if ($element->isPHPInternal() || $element->getContext()->isPHPInternal()) {
+                // The extra check of the context is necessary for code in internal_stubs
+                // which aren't exactly internal to PHP.
                 continue;
             }
             // Currently, deferred analysis is only needed for class elements, which can be inherited

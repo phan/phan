@@ -8,6 +8,10 @@ New features(CLI, Configs):
   erring on the side of reporting potentially dead code even when it is possibly not dead.
   (e.g. when methods of unknown objects are invoked, don't mark all methods with the same name as potentially used)
 
+Bug fixes:
++ Don't report unreferenced class properties of internal stub files during dead code detection
+  (i.e. files in `autoload_internal_extension_signatures`).
+
 Jun 04 2020, Phan 3.0.1
 -----------------------
 
