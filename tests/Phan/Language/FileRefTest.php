@@ -26,6 +26,8 @@ final class FileRefTest extends BaseTest
         $this->expectProjectRelativePath('src/Phan/CLI.php', '../phan/src/Phan/CLI.php');
         // TODO: could normalize on Windows?
         $this->assertSame('../other/path.txt', FileRef::getProjectRelativePathForPath('../other/path.txt'));
+        // Projects starting with the same folder prefix (phan) should be properly normalized
+        $this->assertSame('../phantastic-project/path.txt', FileRef::getProjectRelativePathForPath('../phantastic-project/path.txt'));
         $this->assertSame(\dirname($root_dir) . '/other.php', FileRef::getProjectRelativePathForPath(\dirname($root_dir) . '/other.php'));
     }
 }

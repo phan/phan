@@ -82,9 +82,9 @@ class FileRef implements \Serializable
         if (\strncmp($path, $root_directory, $n) === 0) {
             if (\in_array($path[$n] ?? '', [\DIRECTORY_SEPARATOR, '/'], true)) {
                 $path = (string)\substr($path, $n + 1);
+                // Strip any extra beginning directory separators
+                $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
             }
-            // Strip any extra beginning directory separators
-            $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
         }
 
         return $path;
