@@ -108,6 +108,7 @@ class CLI
         'daemonize-tcp-host:',
         'daemonize-tcp-port:',
         'dead-code-detection',
+        'dead-code-detection-prefer-false-positive',
         'debug',
         'debug-emitted-issues:',
         'debug-signal-handler',
@@ -811,6 +812,10 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
+                    break;
+                case 'dead-code-detection-prefer-false-positive':
+                    Config::setValue('dead_code_detection', true);
+                    Config::setValue('dead_code_detection_prefer_false_negative', false);
                     break;
                 case 'u':
                 case 'unused-variable-detection':
@@ -1729,6 +1734,11 @@ Extended help:
   (i.e. they are declared once (as a constant expression) and never modified).
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
+
+ --dead-code-detection-prefer-false-positive
+  When performing dead code detection, prefer emitting false positives
+  (reporting dead code that is not actually dead) over false negatives
+  (failing to report dead code). This implies `--dead-code-detection`.
 
  --debug-emitted-issues={basic,verbose}
   Print backtraces of emitted issues which weren't suppressed to stderr.

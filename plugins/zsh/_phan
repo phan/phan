@@ -53,6 +53,7 @@ _arguments \
 	'(--minimum-severity -y)'{--minimum-severity=,-y+}'[minimum severity level to report (low=0,normal=5,critical=10)]:severity:(0 5 10 low normal critical)' \
 	'(--parent-constructor-required -c)'{--parent-constructor-required,-c}'[list of classes requiring parent::__construct to be called]' \
 	'(--dead-code-detection -x)'{--dead-code-detection,-x}'[emit issues for elements that are probably never referenced]' \
+	'(--dead-code-detection-prefer-false-positive)'--dead-code-detection-prefer-false-positive'[emit issues for elements that are probably never referenced (preferring false positives)]' \
 	'(--unused-variable-detection -u)'{--unused-variable-detection,-u}'[emit issues for unused variables, parameters, and closure use variables]' \
 	'(--redundant-condition-detection -t)'{--redundant-condition-detection,-t}'[emit issues for impossible/redundant conditions]' \
 	'(--processes -j)'{--processes=,-j+}'[the number of parallel processes to run during analysis]' \

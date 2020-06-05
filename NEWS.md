@@ -3,6 +3,11 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.2 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add `--dead-code-detection-prefer-false-positive` to run dead code detection,
+  erring on the side of reporting potentially dead code even when it is possibly not dead.
+  (e.g. when methods of unknown objects are invoked, don't mark all methods with the same name as potentially used)
+
 Jun 04 2020, Phan 3.0.1
 -----------------------
 
