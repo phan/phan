@@ -326,7 +326,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if ($variable_name === 'this') {
                 continue;
             }
-            if (\preg_match('/^(_$|(unused|raii))/iS', $variable_name) > 0) {
+            if (\preg_match('/^(_$|(unused|raii))/iD', $variable_name) > 0) {
                 // Skip over $_, $unused*, and $raii*
                 continue;
             }

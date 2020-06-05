@@ -19,7 +19,7 @@ final class PluginV3Test extends BaseTest
 
         $capabilities = [];
         foreach (\scandir(\dirname(__DIR__, 2) . '/src/Phan/PluginV3') as $file) {
-            if (!\preg_match('/^(\w+Capability)\.php$/S', $file, $matches)) {
+            if (!\preg_match('/^(\w+Capability)\.php$/D', $file, $matches)) {
                 continue;
             }
             $capabilities[] = $matches[1];

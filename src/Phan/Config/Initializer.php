@@ -485,7 +485,7 @@ EOT;
                 }
                 $composer_lib_relative_path = \trim(\str_replace(\DIRECTORY_SEPARATOR, '/', $composer_lib_relative_path), '/');
 
-                $composer_lib_relative_path = \preg_replace('@(/+\.)+$@S', '', $composer_lib_relative_path);
+                $composer_lib_relative_path = \preg_replace('@(/+\.)+$@D', '', $composer_lib_relative_path);
                 if (\is_dir($composer_lib_absolute_path)) {
                     $directory_list[] = \trim($composer_lib_relative_path, '/');
                 } elseif (\is_file($composer_lib_relative_path)) {

@@ -8,6 +8,12 @@ New features(CLI, Configs):
   erring on the side of reporting potentially dead code even when it is possibly not dead.
   (e.g. when methods of unknown objects are invoked, don't mark all methods with the same name as potentially used)
 
+Plugins:
++ Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
++ Fix incorrect check and suggestion for `PregRegexCheckerPlugin`'s warning if
+  `$` allows an optional newline before the end of the string when the configuration includes
+  `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3938)
+
 Bug fixes:
 + Don't report unreferenced class properties of internal stub files during dead code detection
   (i.e. files in `autoload_internal_extension_signatures`).

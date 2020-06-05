@@ -155,7 +155,7 @@ final class Builder
                 if ($is_var && $variable_name === '' && $this->comment_type === Comment::ON_PROPERTY) {
                     $end_offset = (int)\strpos($line, $match[0]) + \strlen($match[0]);
                     $char_at_end_offset = $line[$end_offset] ?? ' ';
-                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@S', (string)\substr($line, $end_offset))) {  // Not a control character or space
+                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', (string)\substr($line, $end_offset))) {  // Not a control character or space
                         $this->emitIssue(
                             Issue::UnextractableAnnotationSuffix,
                             $this->guessActualLineLocation($i),
@@ -234,7 +234,7 @@ final class Builder
             $raw_match = $match[0];
             $end_offset = (int)\strpos($line, $raw_match) + \strlen($raw_match);
             $char_at_end_offset = $line[$end_offset] ?? ' ';
-            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@S', (string)\substr($line, $end_offset))) {  // Not a control character or space
+            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', (string)\substr($line, $end_offset))) {  // Not a control character or space
                 $this->emitIssue(
                     Issue::UnextractableAnnotationSuffix,
                     $this->guessActualLineLocation($i),
@@ -372,7 +372,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/S', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 

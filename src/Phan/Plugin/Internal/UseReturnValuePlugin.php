@@ -136,7 +136,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
             if ($unused_count > 0 && $used_percentage >= $threshold_percentage) {
                 $percentage_string = \number_format($used_percentage, 2);
                 foreach ($counter->unused_locations as $key => $context) {
-                    if (!\preg_match('/:(\d+)$/S', $key, $matches)) {
+                    if (!\preg_match('/:(\d+)$/D', $key, $matches)) {
                         \fprintf(\STDERR, "Failed to extract line number from %s\n", $key);
                         continue;
                     }

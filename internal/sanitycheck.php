@@ -202,7 +202,7 @@ function check_fields(string $function_name, array $fields, array $signatures): 
     }
 
     $original_function_name = $function_name;
-    $function_name = preg_replace("/'\\d+$/S", "", $function_name);
+    $function_name = preg_replace("/'\\d+$/D", "", $function_name);
     // echo $function_name . "\n";
     try {
         $function = load_internal_function($function_name);

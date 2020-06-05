@@ -271,13 +271,13 @@ class MarkupDescription
         //
         // We leave in the second `*` of `/**` so that every single non-empty line
         // of a typical doc comment will begin with a `*`
-        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@S', '', $doc_comment);
+        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@D', '', $doc_comment);
 
         $results = [];
         $lines = \explode("\n", $doc_comment);
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
-            if (\preg_match('/^\s*@param(\s|$)/S', $line) > 0) {
+            if (\preg_match('/^\s*@param(\s|$)/D', $line) > 0) {
                 // Extract all of the (at)param annotations.
                 $param_tag_summary = self::extractTagSummary($lines, $i);
                 if (\end($param_tag_summary) === '') {
@@ -324,7 +324,7 @@ class MarkupDescription
         //
         // We leave in the second `*` of `/**` so that every single non-empty line
         // of a typical doc comment will begin with a `*`
-        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@S', '', $doc_comment);
+        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@D', '', $doc_comment);
 
         $lines = \explode("\n", $doc_comment);
         $lines = \array_map('trim', $lines);
@@ -351,7 +351,7 @@ class MarkupDescription
         //
         // We leave in the second `*` of `/**` so that every single non-empty line
         // of a typical doc comment will begin with a `*`
-        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@S', '', $doc_comment);
+        $doc_comment = \preg_replace('@(^/\*)|(\*/$)@D', '', $doc_comment);
 
         $results = [];
         $lines = \explode("\n", $doc_comment);
@@ -379,7 +379,7 @@ class MarkupDescription
                     } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE, true)) {
                         // Treat `@return T description of return value` as a valid single-line comment of closures, functions, and methods.
                         // Variables don't currently have associated comments
-                        if (\preg_match('/^\s*@return(\s|$)/S', $line) > 0) {
+                        if (\preg_match('/^\s*@return(\s|$)/D', $line) > 0) {
                             $new_lines = self::extractTagSummary($lines, $i);
                             if (isset($new_lines[0])) {
                                 // @phan-suppress-next-line PhanAccessClassConstantInternal

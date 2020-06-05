@@ -1065,7 +1065,7 @@ class TolerantASTConverter
                     '@phan-var Token $part';
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
-                        if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@iS', $imploded_parts) > 0) {
+                        if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@iD', $imploded_parts) > 0) {
                             return new ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
@@ -1110,7 +1110,7 @@ class TolerantASTConverter
                     if ($as_int !== false) {
                         return $as_int;
                     }
-                    if (\preg_match('/^0[0-7]+$/S', $text)) {
+                    if (\preg_match('/^0[0-7]+$/D', $text)) {
                         // this is octal - FILTER_VALIDATE_FLOAT would treat it like decimal
                         return \intval($text, 8);
                     }

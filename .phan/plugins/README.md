@@ -82,7 +82,7 @@ This plugin is able to resolve literals, global constants, and class constants a
 
 - **PhanPluginInvalidPregRegex**: The provided regex is invalid, according to PHP.
 - **PhanPluginInvalidPregRegexReplacement**: The replacement string template of `preg_replace` refers to a match group that doesn't exist. (e.g. `preg_replace('/x(a)/', 'y$2', $strVal)`)
-- **PhanPluginRegexDollarAllowsNewline**: `Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add S to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate`
+- **PhanPluginRegexDollarAllowsNewline**: `Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add D to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate`
   (This issue type is specific to coding style, and only checked for when configuration includes `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`)
 
 #### PrintfCheckerPlugin

@@ -220,7 +220,7 @@ EOT;
         );
         $records = [];
         foreach ($files as $expected_filename) {
-            $src_filename = preg_replace('@/expected/(.*\.php)\.expected$@S', '/src/\1', $expected_filename);
+            $src_filename = preg_replace('@/expected/(.*\.php)\.expected$@D', '/src/\1', $expected_filename);
             // try {
             $records[] = new UnitTestRecord($src_filename, $expected_filename);
             // } catch (RuntimeException $e) { fwrite(STDERR, $e->getMessage()); }
@@ -236,7 +236,7 @@ EOT;
             $issues = $record->getIssues();
             krsort($issues);
             foreach ($issues as $expected_file_lineno => [$ref, $issue_name, $unused_description]) {
-                if (preg_match('/[0-9]+$/S', $ref, $matches)) {
+                if (preg_match('/[0-9]+$/D', $ref, $matches)) {
                     $src_file_lineno = (int)$matches[0];
                     $examples[$issue_name] = [$record, $src_file_lineno, $expected_file_lineno];
                 }

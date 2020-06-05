@@ -280,7 +280,7 @@ class Parser
         $message = $native_parse_error->getMessage();
         if (!\preg_match("/ unexpected '(.+)' \((T_\w+)\)/", $message, $matches)) {
             if (!\preg_match("/ unexpected '(.+)', expecting/", $message, $matches)) {
-                if (!\preg_match("/ unexpected '(.+)'$/S", $message, $matches)) {
+                if (!\preg_match("/ unexpected '(.+)'$/D", $message, $matches)) {
                     return 0;
                 }
             }

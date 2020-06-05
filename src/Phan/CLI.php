@@ -853,7 +853,7 @@ class CLI
                     Config::setValue('__parser_keep_original_node', true);
                     break;
                 case 'memory-limit':
-                    if (\preg_match('@^([1-9][0-9]*)([KMG])?$@S', $value, $match)) {
+                    if (\preg_match('@^([1-9][0-9]*)([KMG])?$@D', $value, $match)) {
                         \ini_set('memory_limit', $value);
                     } else {
                         fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
@@ -1025,7 +1025,7 @@ class CLI
             $opt_set['-' . \rtrim($opt, ':')] = true;
         }
         foreach (array_slice($argv, 1) as $arg) {
-            $arg = \preg_replace('/=.*$/S', '', $arg);
+            $arg = \preg_replace('/=.*$/D', '', $arg);
             if (\array_key_exists($arg, $opt_set)) {
                 self::printHelpSection(
                     "WARNING: Saw suspicious CLI arg '$arg' (did you mean '-$arg')\n",

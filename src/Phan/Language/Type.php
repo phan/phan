@@ -944,7 +944,7 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
-        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/S', $type_name)) {
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/D', $type_name)) {
             return self::fromEscapedLiteralScalar($type_name);
         }
         if (\is_array($shape_components)) {
@@ -1337,7 +1337,7 @@ class Type
         $shape_components = $tuple->_4;
 
 
-        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/S', $type_name)) {
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/D', $type_name)) {
             return self::fromEscapedLiteralScalar($type_name);
         }
 
@@ -2005,7 +2005,7 @@ class Type
     ): bool {
         // Note: While 'self' and 'parent' are case-insensitive, '$this' is case-sensitive
         // Not sure if that should extend to phpdoc.
-        return \preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/S', $type_string) > 0;
+        return \preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/D', $type_string) > 0;
     }
 
     /**
@@ -2023,7 +2023,7 @@ class Type
     ): bool {
         // Note: While 'self' and 'parent' are case-insensitive, '$this' is case-sensitive
         // Not sure if that should extend to phpdoc.
-        return \preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/S', $type_string) > 0;
+        return \preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/D', $type_string) > 0;
     }
 
     /**
@@ -3485,7 +3485,7 @@ class Type
         $result = [];
         foreach (self::extractNameList($shape_component_string) as $shape_component) {
             // Because these can be nested, there may be more than one ':'. Only consider the first.
-            if (preg_match('/^(' . self::shape_key_regex . ')\s*:\s*(.*)$/S', $shape_component, $parts)) {
+            if (preg_match('/^(' . self::shape_key_regex . ')\s*:\s*(.*)$/D', $shape_component, $parts)) {
                 $field_name = $parts[1];
                 $field_value = \trim($parts[2]);
                 if ($field_value === '') {

@@ -111,8 +111,8 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         foreach (self::tokenizeRegexParts($inner) as $part) {
             // If special handling of newlines is given, don't warn.
             // If PCRE_EXTENDED is given, this was likely a false positive (E.g. # can be a comment)
-            if ($part === '$' && !preg_match('/[mSx]/', (string) substr($pattern, $end_pos + 1))) {
-                yield ['PhanPluginPregRegexDollarAllowsNewline', 'Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add S to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate'];
+            if ($part === '$' && !preg_match('/[mDx]/', (string) substr($pattern, $end_pos + 1))) {
+                yield ['PhanPluginPregRegexDollarAllowsNewline', 'Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add D to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate'];
             }
         }
     }

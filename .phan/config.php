@@ -513,7 +513,7 @@ return [
         // Automatically infer which methods are pure (i.e. should have no side effects) in UseReturnValuePlugin.
         'infer_pure_methods' => true,
 
-        // Warn if newline is allowed before end of string for `$` (the default unless the `S` modifier (`PCRE_DOLLAR_ENDONLY`) is passed in).
+        // Warn if newline is allowed before end of string for `$` (the default unless the `D` modifier (`PCRE_DOLLAR_ENDONLY`) is passed in).
         // This is specific to coding styles.
         'regex_warn_if_newline_allowed_at_end' => true,
     ],
@@ -526,7 +526,7 @@ return [
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
         'DuplicateArrayKeyPlugin',
-        'PregRegexCheckerPlugin',
+        '.phan/plugins/PregRegexCheckerPlugin.php',
         'PrintfCheckerPlugin',
         'PHPUnitAssertionPlugin',  // analyze assertSame/assertInstanceof/assertTrue/assertFalse
         'UseReturnValuePlugin',

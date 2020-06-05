@@ -220,7 +220,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                         $remaining_folders[] = $path;
                         continue;
                     }
-                    if (!preg_match('/\.xml$/S', $basename)) {
+                    if (!preg_match('/\.xml$/D', $basename)) {
                         continue;
                     }
                     $contents = (string)$this->fileGetContents($path);

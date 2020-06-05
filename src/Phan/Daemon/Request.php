@@ -241,7 +241,7 @@ class Request
             // $len = strlen($line ?? ''); fwrite(STDERR, "Looking at $line : $position of $len\n");
             if (is_string($line) && strlen($line) === $position->character + 1 && $position->character > 0) {
                 // fwrite(STDERR, "cursor at the end of the line\n");
-                if (\preg_match('/(::|->)$/S', $line, $matches)) {
+                if (\preg_match('/(::|->)$/D', $line, $matches)) {
                     // fwrite(STDERR, "Updating the file\n");
                     if ($matches[1] === '::') {
                         $addition = TolerantASTConverter::INCOMPLETE_CLASS_CONST;
