@@ -632,6 +632,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno
         );
 
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
         $init_node = $node->children['init'];
         if ($init_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
