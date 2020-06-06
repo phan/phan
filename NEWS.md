@@ -13,10 +13,10 @@ New features(Analysis):
   Also, properly emit `PhanAbstractStaticMethodCall` for a variable containing a string class name.
 
 Plugins:
-+ Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
 + Fix incorrect check and suggestion for `PregRegexCheckerPlugin`'s warning if
   `$` allows an optional newline before the end of the string when the configuration includes
   `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3938)
++ Add `BeforeLoopBodyAnalysisCapability` for plugins to analyze loop conditions before the body (#3936)
 
 Bug fixes:
 + Don't report unreferenced class properties of internal stub files during dead code detection

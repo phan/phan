@@ -7,6 +7,7 @@ namespace Phan\Plugin;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Phan\AST\Parser;
 use Phan\AST\Visitor\Element;
 use Phan\CLI;
 use Phan\CodeBase;
@@ -60,6 +61,8 @@ use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\BeforeAnalyzeCapability;
 use Phan\PluginV3\BeforeAnalyzeFileCapability;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
+use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
+use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -120,6 +123,11 @@ final class ConfigPluginSet extends PluginV3 implements
      * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float,list<Node>):void> - plugins to analyze nodes in post-order
      */
     private $post_analyze_node_plugin_set;
+
+    /**
+     * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float):void> - plugins to analyze loop conditions before body
+     */
+    private $before_loop_body_analysis_plugin_set;
 
     /**
      * @var list<BeforeAnalyzeFileCapability> - plugins to analyze files before Phan's analysis of that file is completed.
@@ -301,6 +309,33 @@ final class ConfigPluginSet extends PluginV3 implements
                 $context,
                 $node,
                 $parent_node_list
+            );
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the node exists
+     *
+     * @param Context $context
+     * The context in which the node exits. This is
+     * the context inside the given node rather than
+     * the context outside of the given node
+     *
+     * @param Node $node
+     * The php-ast Node being analyzed.
+     */
+    public function analyzeLoopBeforeBody(
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ): void {
+        $plugin_callback = $this->before_loop_body_analysis_plugin_set[$node->kind] ?? null;
+        if ($plugin_callback !== null) {
+            $plugin_callback(
+                $code_base,
+                $context,
+                $node
             );
         }
     }
@@ -967,6 +1002,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
         $this->pre_analyze_node_plugin_set          = self::filterPreAnalysisPlugins($plugin_set);
         $this->post_analyze_node_plugin_set         = self::filterPostAnalysisPlugins($plugin_set);
+        $this->before_loop_body_analysis_plugin_set = self::filterBeforeLoopBodyAnalysisPlugins($plugin_set);
         $this->before_analyze_plugin_set            = self::filterByClass($plugin_set, BeforeAnalyzeCapability::class);
         $this->before_analyze_phase_plugin_set      = self::filterByClass($plugin_set, BeforeAnalyzePhaseCapability::class);
         $this->before_analyze_file_plugin_set       = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
@@ -1194,6 +1230,117 @@ final class ConfigPluginSet extends PluginV3 implements
              * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
              *
              * @phan-closure-scope PluginAwarePostAnalysisVisitor
+             * @param list<Node> $unused_parent_node_list
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []): void {
+                $visitor = new static($code_base, $context);
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        }
+    }
+
+    /**
+     * @param list<PluginV3> $plugin_set
+     * @return associative-array<int, \Closure>
+     *   Shape: [Node kind => function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
+     */
+    private static function filterBeforeLoopBodyAnalysisPlugins(array $plugin_set): array
+    {
+        $closures_for_kind = new ClosuresForKind();
+        foreach ($plugin_set as $plugin) {
+            if ($plugin instanceof BeforeLoopBodyAnalysisCapability) {
+                self::addClosuresForBeforeLoopBodyAnalysisCapability($closures_for_kind, $plugin);
+            }
+        }
+        /**
+         * @param list<Closure> $closure_list
+         */
+        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list): Closure {
+            /**
+             * @param list<Node> $parent_node_list
+             */
+            return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list): void {
+                foreach ($closure_list as $closure) {
+                    $closure($code_base, $context, $node, $parent_node_list);
+                }
+            };
+        });
+    }
+
+    /**
+     * @throws \TypeError if the returned getBeforeLoopBodyAnalysisVisitorClassName() is invalid
+     */
+    private static function addClosuresForBeforeLoopBodyAnalysisCapability(
+        ClosuresForKind $closures_for_kind,
+        BeforeLoopBodyAnalysisCapability $plugin
+    ): void {
+        $plugin_analysis_class = $plugin->getBeforeLoopBodyAnalysisVisitorClassName();
+        if (!\is_subclass_of($plugin_analysis_class, BeforeLoopBodyAnalysisVisitor::class)) {
+            throw new \TypeError(
+                \sprintf(
+                    "Result of %s::getBeforeLoopBodyAnalysisVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
+                    \get_class($plugin),
+                    BeforeLoopBodyAnalysisVisitor::class,
+                    $plugin_analysis_class
+                )
+            );
+        }
+
+        // @see BeforeLoopBodyAnalysisCapability (magic to create parent_node_list)
+        $closure = self::getGenericClosureForBeforeLoopBodyAnalysisVisitor($plugin_analysis_class);
+
+        $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
+        if (\count($handled_node_kinds) === 0) {
+            \fprintf(
+                STDERR,
+                "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                \get_class($plugin),
+                $plugin_analysis_class,
+                BeforeLoopBodyAnalysisVisitor::class
+            );
+        } else {
+            $expected_kinds = [ \ast\AST_FOR, \ast\AST_FOREACH, \ast\AST_WHILE ];
+            $additional_kinds = array_diff($handled_node_kinds, $expected_kinds);
+            if ($additional_kinds) {
+                throw new AssertionError(
+                    \sprintf(
+                        "The following node kinds cannot be used in %s: %s",
+                        $plugin_analysis_class,
+                        implode(', ', array_map([Parser::class, 'getKindName'], $additional_kinds))
+                    )
+                );
+            }
+        }
+        $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+    }
+
+    /**
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind
+     *
+     * @return Closure(CodeBase,Context,Node,array=)
+     */
+    private static function getGenericClosureForBeforeLoopBodyAnalysisVisitor(string $plugin_analysis_class): Closure
+    {
+        if (property_exists($plugin_analysis_class, 'parent_node_list')) {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope BeforeLoopBodyAnalysisVisitor
+             * @param list<Node> $parent_node_list
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []): void {
+                $visitor = new static($code_base, $context);
+                // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
+                $visitor->parent_node_list = $parent_node_list;
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        } else {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope BeforeLoopBodyAnalysisVisitor
              * @param list<Node> $unused_parent_node_list
              */
             return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []): void {

@@ -124,6 +124,10 @@ use Phan\PluginV3\IssueEmitter;
  *     Returns true if the statement was consumed (e.g. to infer types, or emit debug info).
  *
  *     (implement \Phan\PluginV3\AnalyzeLiteralStatementCapability)
+ * 19. public static function getBeforeLoopBodyAnalysisVisitorClassName() : string
+ *     Returns the name of a class extending BeforeLoopBodyAnalysisVisitor, which will be used to analyze loop conditions
+ *     before analyzing the body.
+ *     (implement \Phan\PluginV3\BeforeLoopBodyAnalysisCapability)
  */
 abstract class PluginV3
 {
