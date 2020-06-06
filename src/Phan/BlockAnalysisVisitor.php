@@ -749,6 +749,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // 'self' means), we can analyze statements like
         // assignments and method calls.
 
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $this->code_base,
+            $context,
+            $node
+        );
+
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
@@ -877,6 +884,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
+
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $this->code_base,
+            $context,
+            $node
+        );
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
@@ -1011,6 +1025,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context_list = [$context, $context_inside_loop_start];
             $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
         }
+
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $code_base,
+            $context,
+            $node
+        );
 
         return $this->postOrderAnalyze($context, $node);
     }
@@ -1311,6 +1332,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $node)) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
+
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $this->code_base,
+            $context,
+            $node
+        );
 
         return $this->postOrderAnalyze($context, $node);
     }
