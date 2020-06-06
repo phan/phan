@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
-use ast\Node;
-use BadMethodCallException;
-
 /**
  * For plugins that want to analyze loop conditions before the body.
  *
