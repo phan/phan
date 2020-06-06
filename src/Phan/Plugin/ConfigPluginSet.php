@@ -124,7 +124,7 @@ final class ConfigPluginSet extends PluginV3 implements
     private $post_analyze_node_plugin_set;
 
     /**
-     * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float,list<Node>):void> - plugins to analyze loop conditions before body
+     * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float):void> - plugins to analyze loop conditions before body
      */
     private $before_loop_body_analysis_plugin_set;
 
@@ -1241,7 +1241,8 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /**
      * @param list<PluginV3> $plugin_set
-     * @return associative-array<int, \Closure> - [Node kind => function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
+     * @return associative-array<int, \Closure>
+     *   Shape: [Node kind => function(CodeBase $code_base, Context $context, Node $node, list<Node> $parent_node_list = []): void]
      */
     private static function filterBeforeLoopBodyAnalysisPlugins(array $plugin_set): array
     {

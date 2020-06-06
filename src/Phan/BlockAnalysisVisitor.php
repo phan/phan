@@ -709,6 +709,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
             ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
         }
+
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $this->code_base,
+            $context,
+            $node
+        );
+
         $context = $this->analyzeAndGetUpdatedContext(
             $context->withScope(
                 new BranchScope($context->getScope())
@@ -748,13 +756,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-
-        // Give plugins a chance to analyze the loop condition now
-        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
-            $this->code_base,
-            $context,
-            $node
-        );
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
@@ -856,6 +857,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             ))->checkRedundantOrImpossibleTruthyCondition($condition_node, $context, null, false);
         }
 
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $this->code_base,
+            $context,
+            $node
+        );
+
         $context = $this->analyzeAndGetUpdatedContext(
             $context->withScope(
                 new BranchScope($context->getScope())
@@ -884,13 +892,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-
-        // Give plugins a chance to analyze the loop condition now
-        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
-            $this->code_base,
-            $context,
-            $node
-        );
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
@@ -976,6 +977,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($key_node instanceof Node) {
             $inner_context = $this->analyzeAndGetUpdatedContext($inner_context, $node, $key_node);
         }
+
+        // Give plugins a chance to analyze the loop condition now
+        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
+            $code_base,
+            $context,
+            $node
+        );
+
         $stmts_node = $node->children['stmts'];
         if ($stmts_node instanceof Node) {
             $inner_context = $this->analyzeAndGetUpdatedContext($inner_context, $node, $stmts_node);
@@ -1025,13 +1034,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context_list = [$context, $context_inside_loop_start];
             $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
         }
-
-        // Give plugins a chance to analyze the loop condition now
-        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
-            $code_base,
-            $context,
-            $node
-        );
 
         return $this->postOrderAnalyze($context, $node);
     }
@@ -1332,13 +1334,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $context, $node)) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
-
-        // Give plugins a chance to analyze the loop condition now
-        ConfigPluginSet::instance()->analyzeLoopBeforeBody(
-            $this->code_base,
-            $context,
-            $node
-        );
 
         return $this->postOrderAnalyze($context, $node);
     }

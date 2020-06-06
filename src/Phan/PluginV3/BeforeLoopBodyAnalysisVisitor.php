@@ -12,12 +12,13 @@ use BadMethodCallException;
  *
  * Public APIs for use by plugins:
  *
- * - visitForeach(...), visitFor(...), visitWhile(...), visitDoWhile(...) (Override these methods)
+ * - visitForeach(...), visitFor(...), visitWhile(...) (Override these methods)
  * - emitPluginIssue(CodeBase $code_base, Config $config, ...) (Call these methods)
  * - emit(...)
  * - Public methods from Phan\AST\AnalysisVisitor
  *
  * TODO Parent interface is too broad
+ * @phan-file-suppress PhanUnusedPublicFinalMethodParameter
  */
 abstract class BeforeLoopBodyAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
@@ -144,6 +145,11 @@ abstract class BeforeLoopBodyAnalysisVisitor extends PluginAwareBaseAnalysisVisi
     }
 
     final public function visitDim(Node $node)
+    {
+        throw new BadMethodCallException(static::class . ' not expected to use this method');
+    }
+
+    final public function visitDoWhile(Node $node)
     {
         throw new BadMethodCallException(static::class . ' not expected to use this method');
     }
