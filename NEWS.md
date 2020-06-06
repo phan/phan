@@ -8,6 +8,9 @@ New features(CLI, Configs):
   erring on the side of reporting potentially dead code even when it is possibly not dead.
   (e.g. when methods of unknown objects are invoked, don't mark all methods with the same name as potentially used)
 
+Plugins:
++ Add `BeforeLoopBodyAnalysisCapability` for plugins to analyze loop conditions before the body (#3936)
+
 Jun 04 2020, Phan 3.0.1
 -----------------------
 
