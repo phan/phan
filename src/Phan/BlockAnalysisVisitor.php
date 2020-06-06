@@ -981,7 +981,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Give plugins a chance to analyze the loop condition now
         ConfigPluginSet::instance()->analyzeLoopBeforeBody(
             $code_base,
-            $context,
+            $inner_context,
             $node
         );
 
