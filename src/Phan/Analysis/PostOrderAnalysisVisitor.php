@@ -3318,7 +3318,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $expr_or_class_node
-                ))->getClassList(true);
+                ))->getClassList(
+                    true,
+                    $is_static ? ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : ContextNode::CLASS_LIST_ACCEPT_OBJECT,
+                    null,
+                    false
+                );
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $this->code_base,

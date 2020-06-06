@@ -8,6 +8,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Exception;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -182,6 +183,19 @@ final class ArgumentType
                             break;
                     }
                 }
+            }
+        } else {
+            try {
+                $class_type = UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $class_node
+                );
+            } catch (Exception $_) {
+                return;
+            }
+            if ($class_type->isEmpty() || $class_type->hasPossiblyObjectTypes()) {
+                return;
             }
         }
         Issue::maybeEmit(

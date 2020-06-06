@@ -8,6 +8,10 @@ New features(CLI, Configs):
   erring on the side of reporting potentially dead code even when it is possibly not dead.
   (e.g. when methods of unknown objects are invoked, don't mark all methods with the same name as potentially used)
 
+New features(Analysis):
++ Fix false positive `PhanAbstractStaticMethodCall` (#3935)
+  Also, properly emit `PhanAbstractStaticMethodCall` for a variable containing a string class name.
+
 Plugins:
 + Add `AnalyzeLiteralStatementCapability` for plugins to analyze no-op string literals (#3911)
 + Fix incorrect check and suggestion for `PregRegexCheckerPlugin`'s warning if

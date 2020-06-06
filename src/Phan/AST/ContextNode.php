@@ -548,9 +548,8 @@ class ContextNode
      * exceptions will be inhibited
      *
      * @param int $expected_type_categories
-     * Does not affect the returned classes, but will cause phan to emit issues. Does not emit by default.
      * If set to CLASS_LIST_ACCEPT_ANY, this will not warn.
-     * If set to CLASS_LIST_ACCEPT_OBJECT, this will warn if the inferred type is exclusively non-object types.
+     * If set to CLASS_LIST_ACCEPT_OBJECT, this will warn if the inferred type is exclusively non-object types. This will not add classes based on LiteralStringType
      * If set to CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, this will warn if the inferred type is exclusively non-object and non-string types.
      *
      * @param ?string $custom_issue_type
@@ -569,7 +568,7 @@ class ContextNode
      * An exception is thrown if fetching the requested class name
      * would trigger an issue (e.g. Issue::ContextNotObject)
      */
-    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null): array
+    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null, bool $warn_if_wrong_type = true): array
     {
         [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
@@ -577,7 +576,7 @@ class ContextNode
         }
 
         // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
-        if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
+        if (\count($class_list) === 0) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories): bool {
                 if ($this->node instanceof Node) {
                     if ($this->node->kind === ast\AST_NAME) {
@@ -587,20 +586,22 @@ class ContextNode
                         return $this->node->flags !== ast\flags\TYPE_STATIC;
                     }
                 }
-                return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
+                return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT && $type instanceof StringType);
             })) {
-                if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
-                    if ($union_type->isType(NullType::instance(false))) {
-                        $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                if ($warn_if_wrong_type) {
+                    if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
+                        if ($union_type->isType(NullType::instance(false))) {
+                            $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                        }
                     }
+                    $this->emitIssue(
+                        $custom_issue_type ?? ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
+                        $this->node->lineno ?? $this->context->getLineNumberStart(),
+                        ASTReverter::toShortString($this->node),
+                        (string)$union_type->asNonLiteralType()
+                    );
                 }
-                $this->emitIssue(
-                    $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
-                    $this->node->lineno ?? $this->context->getLineNumberStart(),
-                    ASTReverter::toShortString($this->node),
-                    (string)$union_type->asNonLiteralType()
-                );
-            } elseif ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME) {
+            } elseif ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($type instanceof LiteralStringType) {
                         $type_value = $type->getValue();
@@ -608,7 +609,7 @@ class ContextNode
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type_value);
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
-                            } else {
+                            } elseif ($warn_if_wrong_type) {
                                 $this->emitIssue(
                                     Issue::UndeclaredClass,
                                     $this->node->lineno ?? $this->context->getLineNumberStart(),
@@ -616,11 +617,13 @@ class ContextNode
                                 );
                             }
                         } catch (FQSENException $e) {
-                            $this->emitIssue(
-                                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                                $this->node->lineno ?? $this->context->getLineNumberStart(),
-                                $e->getFQSEN()
-                            );
+                            if ($warn_if_wrong_type) {
+                                $this->emitIssue(
+                                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                                    $this->node->lineno ?? $this->context->getLineNumberStart(),
+                                    $e->getFQSEN()
+                                );
+                            }
                         }
                     }
                 }
@@ -702,7 +705,12 @@ class ContextNode
                 $this->context,
                 $node->children['expr']
                     ?? $node->children['class']
-            ))->getClassList(false, $is_new_expression ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_ANY);
+            ))->getClassList(
+                false,
+                $is_static || $is_new_expression ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT,
+                null,
+                $is_new_expression  // emit warnings about the class if this is for `new $className`
+            );
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             throw new IssueException(

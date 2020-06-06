@@ -1,0 +1,2 @@
+%s:23 PhanAbstractStaticMethodCall Potentially calling an abstract static method \AbstractStaticTest\GiftBackend::create() in $backendClass::create()
+%s:28 PhanNonClassMethodCall Call to method create on non-class type 'AbstractStaticTest\\GiftBackend'
