@@ -7,6 +7,7 @@ namespace Phan\Plugin;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Phan\AST\Parser;
 use Phan\AST\Visitor\Element;
 use Phan\CLI;
 use Phan\CodeBase;
@@ -1256,9 +1257,12 @@ final class ConfigPluginSet extends PluginV3 implements
          * @param list<Closure> $closure_list
          */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list): Closure {
-            return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list): void {
+            /**
+             * @param list<Node> $parent_node_list
+             */
+            return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list): void {
                 foreach ($closure_list as $closure) {
-                    $closure($code_base, $context, $node);
+                    $closure($code_base, $context, $node, $parent_node_list);
                 }
             };
         });
@@ -1295,6 +1299,18 @@ final class ConfigPluginSet extends PluginV3 implements
                 $plugin_analysis_class,
                 BeforeLoopBodyAnalysisVisitor::class
             );
+        } else {
+            $expected_kinds = [ \ast\AST_FOR, \ast\AST_FOREACH, \ast\AST_WHILE ];
+            $additional_kinds = array_diff($handled_node_kinds, $expected_kinds);
+            if ($additional_kinds) {
+                throw new AssertionError(
+                    \sprintf(
+                        "The following node kinds cannot be used in %s: %s",
+                        $plugin_analysis_class,
+                        implode(', ', array_map([Parser::class, 'getKindName'], $additional_kinds))
+                    )
+                );
+            }
         }
         $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
     }
