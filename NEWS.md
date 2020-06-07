@@ -17,6 +17,7 @@ Plugins:
   `$` allows an optional newline before the end of the string when the configuration includes
   `['plugin_config' => ['regex_warn_if_newline_allowed_at_end' => true]]`) (#3938)
 + Add `BeforeLoopBodyAnalysisCapability` for plugins to analyze loop conditions before the body (#3936)
++ Warn about suspicious param order for `str_contains`, `str_ends_with`, and `str_starts_with` in `SuspiciousParamOrderPlugin` (#3934)
 
 Bug fixes:
 + Don't report unreferenced class properties of internal stub files during dead code detection
