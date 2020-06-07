@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.0.2 (dev)
+Jun 07 2020, Phan 3.0.2
 -----------------------
 
 New features(CLI, Configs):
@@ -22,7 +22,7 @@ Plugins:
 Bug fixes:
 + Don't report unreferenced class properties of internal stub files during dead code detection
   (i.e. files in `autoload_internal_extension_signatures`).
-+ Don't remove leading directory separator when attempting to convert a file outside the project to a relative path.
++ Don't remove the leading directory separator when attempting to convert a file outside the project to a relative path.
   (in cases where the directory is different but has the project's name as a prefix)
 
 Jun 04 2020, Phan 3.0.1
