@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.3 (dev)
 -----------------------
 
+Bug fixes:
++ Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)
+
 Jun 07 2020, Phan 3.0.2
 -----------------------
 

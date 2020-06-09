@@ -425,7 +425,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if (\preg_match_all(self::PHAN_DEBUG_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
             foreach ($matches as $group) {
-                foreach (array_map('trim', explode(',', $group[1])) as $var_name) {
+                foreach (explode(',', $group[1]) as $var_name) {
+                    $var_name = \ltrim(\trim($var_name), '$');
                     if ($context->getScope()->hasVariableWithName($var_name)) {
                         $union_type_string = $context->getScope()->getVariableByName($var_name)->getUnionType()->getDebugRepresentation();
                     } else {
