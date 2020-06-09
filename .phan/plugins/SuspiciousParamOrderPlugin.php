@@ -257,7 +257,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             $param = $parameters[$other_i];
-            if ($param->isVariadic())  {
+            if ($param->isVariadic()) {
                 // Skip warning about signatures such as var_dump($var, ...$args)
                 continue;
             }

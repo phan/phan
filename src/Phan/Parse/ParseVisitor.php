@@ -577,10 +577,10 @@ class ParseVisitor extends ScopeVisitor
                 }
 
                 if ($default_node !== null &&
-                    !$original_union_type->isType(NullType::instance(false))
-                    && !$variable->getUnionType()->asExpandedTypes($this->code_base)->canCastToUnionType($original_union_type)
-                    && !$original_union_type->asExpandedTypes($this->code_base)->canCastToUnionType($variable->getUnionType())
-                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+                    !$original_union_type->isType(NullType::instance(false)) &&
+                    !$variable->getUnionType()->asExpandedTypes($this->code_base)->canCastToUnionType($original_union_type) &&
+                    !$original_union_type->asExpandedTypes($this->code_base)->canCastToUnionType($variable->getUnionType()) &&
+                    !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
                 ) {
                     $this->emitIssue(
                         Issue::TypeMismatchPropertyDefault,

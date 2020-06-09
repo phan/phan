@@ -21,5 +21,5 @@ interface BeforeLoopBodyAnalysisCapability
      *
      * @return class-string - The name of a class extending BeforeLoopBodyAnalysisVisitor
      */
-    public static function getBeforeLoopBodyAnalysisVisitorClassName() : string;
+    public static function getBeforeLoopBodyAnalysisVisitorClassName(): string;
 }
