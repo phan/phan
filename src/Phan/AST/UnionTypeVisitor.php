@@ -2876,17 +2876,18 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitUnaryOp(Node $node): UnionType
     {
-        // Shortcut some easy operators
-        $flags = $node->flags;
-        if ($flags === \ast\flags\UNARY_BOOL_NOT) {
-            return BoolType::instance(false)->asRealUnionType();
-        }
-
         $result = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr']
         );
+
+        // Shortcut some easy operators
+        $flags = $node->flags;
+        if ($flags === \ast\flags\UNARY_BOOL_NOT) {
+            return $result->applyUnaryNotOperator();
+        }
+
         if ($flags === \ast\flags\UNARY_MINUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,

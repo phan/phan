@@ -1393,6 +1393,11 @@ final class EmptyUnionType extends UnionType
         return UnionType::fromFullyQualifiedRealString('int|float');
     }
 
+    public function applyUnaryNotOperator(): UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('bool');
+    }
+
     /** @return null */
     public function asSingleScalarValueOrNull()
     {

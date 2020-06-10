@@ -5490,6 +5490,44 @@ class UnionType implements Serializable
         return $type_set->withRealTypeSet(self::intOrStringTypeSet());
     }
 
+    /**
+     * Returns the boolean negation of this type.
+     */
+    public function applyUnaryNotOperator(): UnionType
+    {
+        return UnionType::of(
+            self::applyUnaryNotOperatorToList($this->type_set),
+            self::applyUnaryNotOperatorToList($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @return list<Type>
+     */
+    private static function applyUnaryNotOperatorToList(array $type_set): array
+    {
+        $contains_falsey = false;
+        $contains_truthy = false;
+        foreach ($type_set as $type) {
+            if ($type->isPossiblyFalsey()) {
+                $contains_falsey = true;
+            }
+            if ($type->isPossiblyTruthy()) {
+                $contains_truthy = true;
+            }
+            if ($contains_falsey && $contains_truthy) {
+                return UnionType::typeSetFromString('bool');
+            }
+        }
+        if ($contains_truthy) {
+            return UnionType::typeSetFromString('false');
+        } elseif ($contains_falsey) {
+            return UnionType::typeSetFromString('true');
+        }
+        return UnionType::typeSetFromString('bool');
+    }
+
     /** @return list<IntType|FloatType> */
     private static function intOrFloatTypeSet(): array
     {

@@ -823,7 +823,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $node,
                 $condition_node
             );
-            $always_iterates_at_least_once = UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_node);
+            if (!$this->context->isInGlobalScope() && !$this->context->isInLoop()) {
+                $condition_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $condition_node);
+                $always_iterates_at_least_once = !$condition_type->containsFalsey() && !$condition_type->isEmpty();
+            } else {
+                $always_iterates_at_least_once = UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_node);
+            }
         } else {
             $always_iterates_at_least_once = (bool)$condition_node;
         }
