@@ -1,0 +1,1 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $setting - it has union type array{RELATION:'OR',IDS:'OR'|string}|non-empty-array<mixed,mixed>(real=non-empty-mixed)

@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.3 (dev)
 -----------------------
 
+New features(Analysis):
++ Include the most generic types when conditions such as `is_string()` to union types containing `mixed` (#3947)
+
 Bug fixes:
 + Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)
 
