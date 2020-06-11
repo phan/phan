@@ -671,7 +671,24 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             } finally {
                 \array_pop($this->parent_node_list);
             }
-            $always_iterates_at_least_once = $condition_subnode instanceof Node ? UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_subnode) : (bool) $condition_subnode;
+            if ($condition_subnode instanceof Node) {
+                // Analyze the cond expression for its side effects and the code it contains,
+                // not the effect of the condition.
+                // e.g. `while ($x = foo())`
+                $context = $this->analyzeAndGetUpdatedContext(
+                    $context->withLineNumberStart($condition_subnode->lineno),
+                    $node,
+                    $condition_subnode
+                );
+                if (!$this->context->isInGlobalScope() && !$this->context->isInLoop()) {
+                    $condition_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $condition_subnode);
+                    $always_iterates_at_least_once = !$condition_type->containsFalsey() && !$condition_type->isEmpty();
+                } else {
+                    $always_iterates_at_least_once = UnionTypeVisitor::checkCondUnconditionalTruthiness($condition_subnode);
+                }
+            } else {
+                $always_iterates_at_least_once = (bool)$condition_subnode;
+            }
         } else {
             $always_iterates_at_least_once = true;
         }
