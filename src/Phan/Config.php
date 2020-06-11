@@ -532,9 +532,9 @@ class Config
         // E.g. rewrites `if ($a = value() && $a > 0) {...}`
         // into `$a = value(); if ($a) { if ($a > 0) {...}}`
         //
-        // Defaults to false as of Phan 2.2.13-dev.
-        // Phan's analysis has improved enough that this should no longer be necessary.
-        'simplify_ast' => false,
+        // Defaults to true as of Phan 3.0.3-dev.
+        // This still helps with some edge cases such as assignments in compound conditions.
+        'simplify_ast' => true,
 
         // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
         //

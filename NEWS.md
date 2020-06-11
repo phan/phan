@@ -7,6 +7,7 @@ New features(Analysis):
 + Include the most generic types when conditions such as `is_string()` to union types containing `mixed` (#3947)
 + More aggressively infer that `while` and `for` loop bodies are executed at least once in functions outside of other loops (#3948)
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
++ Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
 
 Bug fixes:
 + Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)

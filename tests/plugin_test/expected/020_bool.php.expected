@@ -6,5 +6,5 @@ src/020_bool.php:21 PhanPluginNonBoolBranch Non bool value of type null evaluate
 src/020_bool.php:22 PhanPluginNonBoolBranch Non bool value of type ?bool evaluated in if clause
 src/020_bool.php:23 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement
 src/020_bool.php:23 PhanPluginNonBoolBranch Non bool value of type array|bool evaluated in if clause
-src/020_bool.php:26 PhanPluginNonBoolInLogicalArith Non bool value of type ?bool in logical arithmetic
-src/020_bool.php:30 PhanPluginNonBoolInLogicalArith Non bool value of type array|bool in logical arithmetic
+src/020_bool.php:26 PhanPluginNonBoolBranch Non bool value of type ?bool evaluated in if clause
+src/020_bool.php:30 PhanPluginNonBoolBranch Non bool value of type array|bool evaluated in if clause

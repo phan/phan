@@ -1,0 +1,3 @@
+%s:2 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $devState - it has union type (empty union type)
+%s:6 PhanUnusedVariable Unused definition of variable $someVar

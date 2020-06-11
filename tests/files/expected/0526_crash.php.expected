@@ -1,1 +1,1 @@
-%s:2 PhanSuspiciousValueComparisonInGlobalScope Suspicious attempt to compare (1 + 1) of type 2 to ($var = 1) of type 1 with operator '>' in the global scope (likely a false positive)
+%s:2 PhanSuspiciousValueComparisonInGlobalScope Suspicious attempt to compare (1 + 1) of type 2 to $var of type 1 with operator '>' in the global scope (likely a false positive)
