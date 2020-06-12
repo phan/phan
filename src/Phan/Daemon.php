@@ -188,18 +188,18 @@ class Daemon
      */
     private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request): void
     {
-        $restore_point = $code_base->createRestorePoint();
-
         // Stop tracking undo operations, now that the parse phase is done.
         // TODO: Save and reset $code_base in place
         $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-        $code_base->disableUndoTracking();
         Phan::setPrinter($request->getPrinter());
         if (\count($analyze_file_path_list) === 0) {
             // Nothing to do, don't start analysis
             $request->respondWithNoFilesToAnalyze();  // respond and exit.
             return;
         }
+        $restore_point = $code_base->createRestorePoint();
+        $code_base->disableUndoTracking();
+
         $temporary_file_mapping = $request->getTemporaryFileMapping();
 
         try {

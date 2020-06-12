@@ -9,6 +9,10 @@ New features(Analysis):
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
 + Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
 
+Language Server/Daemon mode:
++ Fix bug where the Phan daemon would crash on the next request after analyzing a file outside of the project being analyzed,
+  when pcntl was disabled or unavailable (#3954)
+
 Bug fixes:
 + Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)
 
