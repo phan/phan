@@ -23,7 +23,9 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\Scope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\LanguageServer\CompletionRequest;
@@ -65,6 +67,7 @@ use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\MergeVariableInfoCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -189,6 +192,14 @@ final class ConfigPluginSet extends PluginV3 implements
      * @var bool
      */
     private $did_analyze_phase_start = false;
+
+    /**
+     * @var ?(Closure(Variable, Scope[], bool):void)
+     * A closure to call on variables when merging data in ContextMergeVisitor. This is stored in a
+     * static property here for performance.
+     * @internal For use by ContextMergeVisitor only
+     */
+    public static $mergeVariableInfoClosure;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -1020,6 +1031,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
         self::registerIssueFixerClosures($plugin_set);
+        self::registerMergeVariableInfoClosure($plugin_set);
     }
 
     /**
@@ -1038,6 +1050,37 @@ final class ConfigPluginSet extends PluginV3 implements
                 IssueFixer::registerFixerClosure($issue_type, $closure);
             }
         }
+    }
+
+    /**
+     * @param list<PluginV3> $plugin_set
+     */
+    private static function registerMergeVariableInfoClosure(array $plugin_set): void
+    {
+        foreach(self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
+            $closure = $plugin->getMergeVariableInfoClosure();
+            self::$mergeVariableInfoClosure = self::mergeMergeVariableInfoClosures($closure, self::$mergeVariableInfoClosure);
+        }
+    }
+
+    /**
+     * @param Closure(Variable,Scope[],bool):void $a
+     * @param ?Closure(Variable,Scope[],bool):void $b
+     * @return Closure(Variable,Scope[],bool):void
+     */
+    private static function mergeMergeVariableInfoClosures(Closure $a, Closure $b = null): Closure
+    {
+        if (!$b) {
+            return $a;
+        }
+
+        /**
+         * @param list<Scope> $child_scopes
+         */
+        return static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($a, $b): void {
+            $a($variable, $child_scopes, $var_exists_in_all_branches);
+            $b($variable, $child_scopes, $var_exists_in_all_branches);
+        };
     }
 
     private static function requiresPluginBasedBuiltinSuppressions(): bool

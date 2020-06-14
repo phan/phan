@@ -14,6 +14,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * This will merge inferred variable types from multiple contexts in branched control structures
@@ -296,6 +297,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Returns a new scope which combines the parent scope with a list of 2 or more child scopes
      * (one of those scopes is permitted to be the parent scope)
      * @param list<Scope> $scope_list
+     * @suppress PhanAccessPropertyInternal Repeatedly using ConfigPluginSet::$mergeVariableInfoClosure
      */
     public function combineScopeList(array $scope_list): Context
     {
@@ -410,6 +412,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
                 $variable = clone($variable);
                 $variable->setUnionType($union_type($name)->nullableClone()->withIsPossiblyUndefined(true));
+                if (ConfigPluginSet::$mergeVariableInfoClosure) {
+                    // @phan-suppress-next-line PhanTypePossiblyInvalidCallable
+                    (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, false);
+                }
                 $scope->addVariable($variable);
                 continue;
             }
@@ -421,6 +427,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $variable->setUnionType(
                 $union_type($name)
             );
+            if (ConfigPluginSet::$mergeVariableInfoClosure) {
+                // @phan-suppress-next-line PhanTypePossiblyInvalidCallable
+                (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, true);
+            }
 
             // Add the variable to the outgoing scope
             $scope->addVariable($variable);
