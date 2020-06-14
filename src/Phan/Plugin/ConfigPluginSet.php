@@ -1074,6 +1074,9 @@ final class ConfigPluginSet extends PluginV3 implements
             return $a;
         }
 
+        /**
+         * @param list<Scope> $child_scopes
+         */
         return static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($a, $b): void {
             $a($variable, $child_scopes, $var_exists_in_all_branches);
             $b($variable, $child_scopes, $var_exists_in_all_branches);
