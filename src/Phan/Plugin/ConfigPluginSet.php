@@ -194,7 +194,7 @@ final class ConfigPluginSet extends PluginV3 implements
     private $did_analyze_phase_start = false;
 
     /**
-     * @var Closure
+     * @var ?(Closure(Variable, Scope[], bool):void)
      * A closure to call on variables when merging data in ContextMergeVisitor. This is stored in a
      * static property here for performance.
      * @internal For use by ContextMergeVisitor only
