@@ -23,7 +23,9 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\Scope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\LanguageServer\CompletionRequest;
@@ -1057,8 +1059,25 @@ final class ConfigPluginSet extends PluginV3 implements
     {
         foreach(self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
             $closure = $plugin->getMergeVariableInfoClosure();
-            self::$mergeVariableInfoClosure = self::mergeAnalyzeFunctionCallClosures($closure, self::$mergeVariableInfoClosure);
+            self::$mergeVariableInfoClosure = self::mergeMergeVariableInfoClosures($closure, self::$mergeVariableInfoClosure);
         }
+    }
+
+    /**
+     * @param Closure(Variable,Scope[],bool):void $a
+     * @param ?Closure(Variable,Scope[],bool):void $b
+     * @return Closure(Variable,Scope[],bool):void
+     */
+    private static function mergeMergeVariableInfoClosures(Closure $a, Closure $b = null): Closure
+    {
+        if (!$b) {
+            return $a;
+        }
+
+        return static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($a, $b): void {
+            $a($variable, $child_scopes, $var_exists_in_all_branches);
+            $b($variable, $child_scopes, $var_exists_in_all_branches);
+        };
     }
 
     private static function requiresPluginBasedBuiltinSuppressions(): bool

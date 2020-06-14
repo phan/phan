@@ -297,6 +297,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Returns a new scope which combines the parent scope with a list of 2 or more child scopes
      * (one of those scopes is permitted to be the parent scope)
      * @param list<Scope> $scope_list
+     * @suppress PhanAccessPropertyInternal Repeatedly using ConfigPluginSet::$mergeVariableInfoClosure
      */
     public function combineScopeList(array $scope_list): Context
     {
@@ -404,9 +405,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     });
                     $variable = clone($variable);
                     $variable->setUnionType($type);
-                    if (ConfigPluginSet::$mergeVariableInfoClosure) {
-                        (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, false);
-                    }
                     $scope->addVariable($variable);
                     // there are no overrides for $this on at least one branch.
                     // TODO: Could try to combine local overrides with the defaults.
@@ -414,6 +412,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
                 $variable = clone($variable);
                 $variable->setUnionType($union_type($name)->nullableClone()->withIsPossiblyUndefined(true));
+                if (ConfigPluginSet::$mergeVariableInfoClosure) {
+                    (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, false);
+                }
                 $scope->addVariable($variable);
                 continue;
             }
