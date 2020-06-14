@@ -2493,22 +2493,22 @@ EOB
         if ($msg !== self::$current_progress_state_long_progress) {
             switch ($msg) {
                 case 'parse':
-                    $buf .= "Parsing files..." . PHP_EOL;
+                    $buf = "Parsing files..." . PHP_EOL;
                     break;
                 case 'function':
-                    $buf .= "Analyzing functions..." . PHP_EOL;
+                    $buf = "Analyzing functions..." . PHP_EOL;
                     break;
                 case 'method':
-                    $buf .= "Analyzing methods..." . PHP_EOL;
+                    $buf = "Analyzing methods..." . PHP_EOL;
                     break;
                 case 'analyze':
-                    $buf .= "Analyzing files..." . PHP_EOL;
+                    $buf = "Analyzing files..." . PHP_EOL;
                     break;
                 case 'dead code':
-                    $buf .= "Checking for dead code..." . PHP_EOL;
+                    $buf = "Checking for dead code..." . PHP_EOL;
                     break;
                 default:
-                    $buf .= "In '$msg' phase\n";
+                    $buf = "In '$msg' phase\n";
             }
             self::$current_progress_state_long_progress = $msg;
             self::$current_progress_offset_long_progress = 0;

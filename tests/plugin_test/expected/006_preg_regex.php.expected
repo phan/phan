@@ -22,5 +22,7 @@ src/006_preg_regex.php:22 PhanPluginInvalidPregRegex Call to \preg_replace_callb
 src/006_preg_regex.php:22 PhanPluginPossiblyStaticClosure Closure($x) can be static
 src/006_preg_regex.php:22 PhanTypeMismatchArgumentInternal Argument 1 ($pattern) is [false=>(function)] of type array{0:Closure(mixed):'i'} but \preg_replace_callback_array() takes array<string,callable(array):string>
 src/006_preg_regex.php:22 PhanUnusedClosureParameter Parameter $x is never used
+src/006_preg_regex.php:26 PhanPluginConstantVariableScalar Variable $str is probably constant with a value of 'arg'
 src/006_preg_regex.php:26 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '/^(a/': Compilation failed: missing ) at offset 3
+src/006_preg_regex.php:29 PhanPluginConstantVariableScalar Variable $str is probably constant with a value of 'arg'
 src/006_preg_regex.php:29 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '/^(a/': Compilation failed: missing ) at offset 3

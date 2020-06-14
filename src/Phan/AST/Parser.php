@@ -371,8 +371,9 @@ class Parser
         static $errors = [];
 
         if ($last_file_contents !== $file_contents) {
-            unset($errors);
-            $errors = [];
+            // Create a brand new reference group
+            $new_errors = [];
+            $errors =& $new_errors;
             try {
                 self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, $request, $errors);
             } catch (Throwable $_) {

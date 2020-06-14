@@ -2,5 +2,8 @@ src/162_redundant_assignment.php:5 PhanPluginRedundantAssignment Assigning false
 src/162_redundant_assignment.php:9 PhanPluginRedundantAssignment Assigning true to variable $y which already has that value
 src/162_redundant_assignment.php:13 PhanPluginRedundantAssignment Assigning null to variable $z which already has that value
 src/162_redundant_assignment.php:17 PhanPluginRedundantAssignment Assigning array{0:'first',1:'second'} to variable $a which already has that value
+src/162_redundant_assignment.php:19 PhanPluginConstantVariableBool Variable $x is probably constant with a value of false
+src/162_redundant_assignment.php:19 PhanPluginConstantVariableBool Variable $y is probably constant with a value of true
+src/162_redundant_assignment.php:19 PhanPluginConstantVariableNull Variable $z is probably constant with a value of null
 src/162_redundant_assignment.php:21 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test_redundant_assignments() defined at src/162_redundant_assignment.php:2
 src/162_redundant_assignment.php:22 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test_redundant_assignments() defined at src/162_redundant_assignment.php:2

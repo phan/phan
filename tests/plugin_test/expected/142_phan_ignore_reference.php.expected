@@ -1,3 +1,5 @@
+src/142_phan_ignore_reference.php:19 PhanPluginConstantVariableScalar Variable $fmt is probably constant with a value of 'Hello\x2c %s!'
+src/142_phan_ignore_reference.php:19 PhanPluginConstantVariableScalar Variable $fmt2 is probably constant with a value of 'Bye\x2c %s!'
 src/142_phan_ignore_reference.php:20 PhanPluginPrintfVariableFormatString Code $fmt has a dynamic format string that could not be inferred by Phan
 src/142_phan_ignore_reference.php:21 PhanPluginPrintfVariableFormatString Code $fmt2 has a dynamic format string that could not be inferred by Phan
 src/142_phan_ignore_reference.php:23 PhanTypeMismatchArgumentReal Argument 1 ($fmt) is null of type null but \prepend_format_string() takes string defined at src/142_phan_ignore_reference.php:10

@@ -7,14 +7,20 @@ src/096_suspicious_name_order.php:16 PhanPluginUnknownObjectMethodCall Phan coul
 src/096_suspicious_name_order.php:16 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $o->getSecond() - inferred a type of object
 src/096_suspicious_name_order.php:16 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $o->getThird() - inferred a type of object
 src/096_suspicious_name_order.php:26 PhanUnreferencedFunction Possibly zero references to function \test_no_false_positive()
+src/096_suspicious_name_order.php:31 PhanPluginConstantVariableBool Variable $secondValue is probably constant with a value of false
 src/096_suspicious_name_order.php:31 PhanPluginSuspiciousParamOrder Suspicious order for arguments named secondValue and objFirst - These are being passed to parameters #1 (\stdClass $first) and #2 (bool $second) of \some_check(\stdClass $first, bool $second) defined at src/096_suspicious_name_order.php:19
 src/096_suspicious_name_order.php:31 PhanTypeMismatchArgumentReal Argument 1 ($first) is $secondValue of type false but \some_check() takes \stdClass defined at src/096_suspicious_name_order.php:19
 src/096_suspicious_name_order.php:31 PhanTypeMismatchArgumentReal Argument 2 ($second) is $objFirst of type \stdClass but \some_check() takes bool defined at src/096_suspicious_name_order.php:19
+src/096_suspicious_name_order.php:32 PhanPluginConstantVariableBool Variable $secondValue is probably constant with a value of false
+src/096_suspicious_name_order.php:32 PhanPluginConstantVariableScalar Variable $third is probably constant with a value of 1
 src/096_suspicious_name_order.php:32 PhanPluginSuspiciousParamOrder Suspicious order for arguments named secondValue and third and objFirst - These are being passed to parameters #1 (\stdClass $first) and #2 (bool $second) and #3 (int $third) of \some_check_chain(\stdClass $first, bool $second, int $third) defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgumentReal Argument 1 ($first) is $secondValue of type false but \some_check_chain() takes \stdClass defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgumentReal Argument 3 ($third) is $objFirst of type \stdClass but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:32 PhanTypeMismatchArgument Argument 2 ($second) is $third of type 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:36 PhanPluginRedundantAssignment Assigning 1 to variable $third which already has that value
+src/096_suspicious_name_order.php:38 PhanPluginConstantVariableBool Variable $objFirst is probably constant with a value of false
+src/096_suspicious_name_order.php:39 PhanPluginConstantVariableBool Variable $objFirst is probably constant with a value of false
+src/096_suspicious_name_order.php:39 PhanPluginConstantVariableScalar Variable $third is probably constant with a value of 1
 src/096_suspicious_name_order.php:39 PhanPluginSuspiciousParamPosition Suspicious order for argument third - This is getting passed to parameter #3 (int $third) of \some_check_chain(\stdClass $first, bool $second, int $third) defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 2 ($second) is $third of type 1 but \some_check_chain() takes bool defined at src/096_suspicious_name_order.php:22
 src/096_suspicious_name_order.php:39 PhanTypeMismatchArgument Argument 3 ($third) is $objFirst of type false but \some_check_chain() takes int defined at src/096_suspicious_name_order.php:22

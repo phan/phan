@@ -520,7 +520,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
 
         $context = $this->context;
         $code_base = $this->code_base;
-        $issue_name = Issue::SuspiciousValueComparison;
         $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, \reset($unique_results));
         if ($check_as_if_in_loop_scope) {
             ['left' => $left_node, 'right' => $right_node] = $node->children;
@@ -535,7 +534,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 };
 
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_name, $issue_args, $context): void {
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_args, $context): void {
                     // Give up in any of these cases, for the left or right types
                     // 1. We don't know how to fetch the new type after the loop.
                     // 2. We don't know the real value of the new type after the loop.
@@ -551,7 +550,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $issue_name),
+                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, Issue::SuspiciousValueComparison),
                         $node->lineno,
                         ...$issue_args
                     );
@@ -570,7 +569,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         Issue::maybeEmit(
             $code_base,
             $context,
-            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $issue_context, $issue_name),
+            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $issue_context, Issue::SuspiciousValueComparison),
             $node->lineno,
             ...$issue_args
         );

@@ -124,6 +124,16 @@ class PhanAnnotationAdder
          * @param Node $node
          * @return void
          */
+        $initializes_handler = static function (Node $node): void {
+            $inner_node = $node->children['var'];
+            if ($inner_node instanceof Node) {
+                self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF | self::FLAG_INITIALIZES);
+            }
+        };
+        /**
+         * @param Node $node
+         * @return void
+         */
         $dim_handler = static function (Node $node): void {
             if ($node->flags & self::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
                 $inner_node = $node->children['expr'];
@@ -179,8 +189,8 @@ class PhanAnnotationAdder
             ast\AST_EMPTY => $ignore_nullable_and_undef_expr_handler,
             ast\AST_ISSET => $ignore_nullable_and_undef_handler,
             ast\AST_UNSET => $ignore_nullable_and_undef_handler,
-            ast\AST_ASSIGN => $ignore_nullable_and_undef_handler,
-            ast\AST_ASSIGN_REF => $ignore_nullable_and_undef_handler,
+            ast\AST_ASSIGN => $initializes_handler,
+            ast\AST_ASSIGN_REF => $initializes_handler,
             // Skip over AST_ARRAY
             ast\AST_ARRAY_ELEM => $ast_array_elem_handler,
         ];

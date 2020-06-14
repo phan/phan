@@ -1987,7 +1987,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
-                yield $return_lineno => [VoidType::instance(false)->asRealUnionType(), $node];
+                yield $return_lineno => [VoidType::instance(false)->asRealUnionType(), null];
                 return;
             }
             yield $return_lineno => [

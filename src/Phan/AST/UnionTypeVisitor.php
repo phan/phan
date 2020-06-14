@@ -170,7 +170,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $union_type = (new self(
                     $code_base,
                     $context,
-                    $should_catch_issue_exception
+                    true
                 ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'visit'}($node);
                 $context->setCachedUnionTypeOfNode($node_id, $union_type, true);
                 return $union_type;
@@ -187,7 +187,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $union_type = (new self(
             $code_base,
             $context,
-            $should_catch_issue_exception
+            false
         ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'visit'}($node);
 
         $context->setCachedUnionTypeOfNode($node_id, $union_type, false);
@@ -3286,7 +3286,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return;
         }
         if ($class_name === '\\') {
-            throw new EmptyFQSENException("empty fqsen", $class_name);
+            throw new EmptyFQSENException("empty fqsen", '\\');
         } else {
             throw new InvalidFQSENException("invalid fqsen", $class_name);
         }

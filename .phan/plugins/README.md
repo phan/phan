@@ -540,6 +540,16 @@ or hurt the readability of code.
 
 This will also remove runtime type checks that were enforced by the getter's return type.
 
+#### ConstantVariablePlugin.php
+
+This plugin warns about using variables when they probably have only one possible scalar value (or the only inferred type is `null`).
+This may catch some logic errors such as `echo($result === null ? json_encode($result) : 'default')`, or indicate places where it may or may not be clearer to use the constant itself.
+Most of the reported issues will likely not be worth fixing, or be false positives due to references/loops.
+
+- **PhanPluginConstantVariableBool**: `Variable ${VARIABLE} is probably constant with a value of {TYPE}`
+- **PhanPluginConstantVariableNull**: `Variable ${VARIABLE} is probably constant with a value of {TYPE}`
+- **PhanPluginConstantVariableScalar**: `Variable ${VARIABLE} is probably constant with a value of {TYPE}`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.

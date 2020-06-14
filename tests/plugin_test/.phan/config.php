@@ -147,5 +147,6 @@ return [
         'RedundantAssignmentPlugin',
         'UnknownClassElementAccessPlugin',
         'DuplicateConstantPlugin',
+        'ConstantVariablePlugin',
     ],
 ];

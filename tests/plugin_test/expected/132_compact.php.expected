@@ -1,1 +1,2 @@
 src/132_compact.php:2 PhanUnusedGlobalFunctionParameter Parameter $myUnusedVar is never used
+src/132_compact.php:4 PhanPluginConstantVariableScalar Variable $nameToReturn is probably constant with a value of 'myOtherVar'

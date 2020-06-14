@@ -11,6 +11,9 @@ New features(Analysis):
 + Avoid false positives in `--constant-variable-detection` for `++`/`--`
 
 Plugins:
++ Add `ConstantVariablePlugin` to point out places where variables are read when they have only one possible scalar value. (#3953)
+  This may help detect logic errors such as `$x === null ? json_encode($x) : 'default'` or code that could be simplified,
+  but most issues it emits wouldn't be worth fixing due to hurting readability or being false positives.
 + Add `MergeVariableInfoCapability` for plugins to hook into ContextMergeVisitor and update data for a variable
   when merging the outcome of different scopes. (#3956)
 

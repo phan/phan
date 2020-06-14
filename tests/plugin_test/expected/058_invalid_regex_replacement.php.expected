@@ -6,4 +6,5 @@ src/058_invalid_regex_replacement.php:11 PhanPluginInvalidPregRegexReplacement C
 src/058_invalid_regex_replacement.php:12 PhanPluginInvalidPregRegex Call to \preg_replace was passed an invalid regex '/missingenddelimiter': No ending delimiter '/' found
 src/058_invalid_regex_replacement.php:14 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$2' to pattern '/(c|h)at/'
 src/058_invalid_regex_replacement.php:15 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\2' to pattern '/(c|h)at/'
+src/058_invalid_regex_replacement.php:18 PhanPluginConstantVariableScalar Variable $value is probably constant with a value of 'a hat'
 src/058_invalid_regex_replacement.php:18 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\2' to pattern '/(b)at/i' or '/(c|h)at/'
