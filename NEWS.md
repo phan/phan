@@ -8,6 +8,7 @@ New features(Analysis):
 + More aggressively infer that `while` and `for` loop bodies are executed at least once in functions outside of other loops (#3948)
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
 + Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
++ Avoid false positives in `--constant-variable-detection` for `++`/`--`
 
 Plugins:
 + Add `MergeVariableInfoCapability` for plugins to hook into ContextMergeVisitor and update data for a variable

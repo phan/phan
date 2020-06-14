@@ -7,17 +7,83 @@
     "content-hash": "cda82293e9dcb09f61f47cbc64999051",
     "packages": [
         {
-            "name": "phpstan/phpdoc-parser",
-            "version": "0.4.3",
+            "name": "dealerdirect/phpcodesniffer-composer-installer",
+            "version": "v0.6.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "928179efc5368145a8b03cb20d58cb3f3136afae"
+                "url": "https://github.com/Dealerdirect/phpcodesniffer-composer-installer.git",
+                "reference": "8001af8eb107fbfcedc31a8b51e20b07d85b457a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/928179efc5368145a8b03cb20d58cb3f3136afae",
-                "reference": "928179efc5368145a8b03cb20d58cb3f3136afae",
+                "url": "https://api.github.com/repos/Dealerdirect/phpcodesniffer-composer-installer/zipball/8001af8eb107fbfcedc31a8b51e20b07d85b457a",
+                "reference": "8001af8eb107fbfcedc31a8b51e20b07d85b457a",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0",
+                "php": "^5.3|^7",
+                "squizlabs/php_codesniffer": "^2|^3"
+            },
+            "require-dev": {
+                "composer/composer": "*",
+                "phpcompatibility/php-compatibility": "^9.0",
+                "sensiolabs/security-checker": "^4.1.0"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Franck Nijhof",
+                    "email": "franck.nijhof@dealerdirect.com",
+                    "homepage": "http://www.frenck.nl",
+                    "role": "Developer / IT Manager"
+                }
+            ],
+            "description": "PHP_CodeSniffer Standards Composer Installer Plugin",
+            "homepage": "http://www.dealerdirect.com",
+            "keywords": [
+                "PHPCodeSniffer",
+                "PHP_CodeSniffer",
+                "code quality",
+                "codesniffer",
+                "composer",
+                "installer",
+                "phpcs",
+                "plugin",
+                "qa",
+                "quality",
+                "standard",
+                "standards",
+                "style guide",
+                "stylecheck",
+                "tests"
+            ],
+            "time": "2020-01-29T20:22:20+00:00"
+        },
+        {
+            "name": "phpstan/phpdoc-parser",
+            "version": "0.4.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpdoc-parser.git",
+                "reference": "1948aa842a94170b408963a9768a102f19cbf1b7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/1948aa842a94170b408963a9768a102f19cbf1b7",
+                "reference": "1948aa842a94170b408963a9768a102f19cbf1b7",
                 "shasum": ""
             },
             "require": {
@@ -29,7 +95,7 @@
                 "jakub-onderka/php-parallel-lint": "^0.9.2",
                 "phing/phing": "^2.16.0",
                 "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "^0.12",
+                "phpstan/phpstan": "^0.12.26",
                 "phpstan/phpstan-strict-rules": "^0.12",
                 "phpunit/phpunit": "^6.3",
                 "slevomat/coding-standard": "^4.7.2",
@@ -53,7 +119,7 @@
                 "MIT"
             ],
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
-            "time": "2020-01-25T20:42:48+00:00"
+            "time": "2020-06-10T05:04:41+00:00"
         },
         {
             "name": "slevomat/coding-standard",
@@ -61,27 +127,28 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "d6d032a2da97bedfe57bbcaaed756dc7321cb54d"
+                "reference": "36bed54725877cceb31f23f6eda015b7d0927544"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/d6d032a2da97bedfe57bbcaaed756dc7321cb54d",
-                "reference": "d6d032a2da97bedfe57bbcaaed756dc7321cb54d",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/36bed54725877cceb31f23f6eda015b7d0927544",
+                "reference": "36bed54725877cceb31f23f6eda015b7d0927544",
                 "shasum": ""
             },
             "require": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.6.2",
                 "php": "^7.1",
-                "phpstan/phpdoc-parser": "0.4.0 - 0.4.3",
-                "squizlabs/php_codesniffer": "^3.5.4"
+                "phpstan/phpdoc-parser": "0.4.5 - 0.4.8",
+                "squizlabs/php_codesniffer": "^3.5.5"
             },
             "require-dev": {
-                "dealerdirect/phpcodesniffer-composer-installer": "0.6.2",
                 "phing/phing": "2.16.3",
-                "php-parallel-lint/php-parallel-lint": "1.1.0",
-                "phpstan/phpstan": "0.12.18",
-                "phpstan/phpstan-phpunit": "0.12.6",
+                "php-parallel-lint/php-parallel-lint": "1.2.0",
+                "phpstan/phpstan": "0.12.27",
+                "phpstan/phpstan-deprecation-rules": "0.12.4",
+                "phpstan/phpstan-phpunit": "0.12.11",
                 "phpstan/phpstan-strict-rules": "0.12.2",
-                "phpunit/phpunit": "7.5.20|8.5.2|9.0.1"
+                "phpunit/phpunit": "7.5.20|8.5.2|9.2.2"
             },
             "type": "phpcodesniffer-standard",
             "extra": {
@@ -109,7 +176,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-27T07:57:15+00:00"
+            "time": "2020-06-10T06:18:24+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -117,12 +184,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe"
+                "reference": "75ff420b23c0866c99c350099381a93b8602ebe6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe",
-                "reference": "7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/75ff420b23c0866c99c350099381a93b8602ebe6",
+                "reference": "75ff420b23c0866c99c350099381a93b8602ebe6",
                 "shasum": ""
             },
             "require": {
@@ -160,7 +227,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2020-03-26T03:48:01+00:00"
+            "time": "2020-05-21T06:41:29+00:00"
         }
     ],
     "packages-dev": [],

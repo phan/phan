@@ -291,6 +291,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                     // To reduce false positives, treat `;$x++;` as a redefinition, but not `foo($x++)`
                     self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
                     $this->scope->recordDefinition($name, $node);
+                } else {
+                    self::$variable_graph->recordVariableModification($name);
                 }
                 return $this->scope;
             }

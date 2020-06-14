@@ -34,10 +34,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
 {
     public function __construct(CodeBase $code_base, Context $context)
     {
-        $this->code_base = $code_base;
-        $this->context = $context;
-        $function_fqsen_label = '{unknown}';
-        parent::__construct($code_base, $context, $function_fqsen_label);
+        parent::__construct($code_base, $context, '{unknown}');
     }
 
     /**
