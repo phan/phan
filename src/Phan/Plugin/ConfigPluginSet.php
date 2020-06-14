@@ -1057,7 +1057,7 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     private static function registerMergeVariableInfoClosure(array $plugin_set): void
     {
-        foreach(self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
+        foreach (self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
             $closure = $plugin->getMergeVariableInfoClosure();
             self::$mergeVariableInfoClosure = self::mergeMergeVariableInfoClosures($closure, self::$mergeVariableInfoClosure);
         }
