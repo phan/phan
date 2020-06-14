@@ -14,6 +14,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * This will merge inferred variable types from multiple contexts in branched control structures
@@ -403,6 +404,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     });
                     $variable = clone($variable);
                     $variable->setUnionType($type);
+                    if (ConfigPluginSet::$mergeVariableInfoClosure) {
+                        (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, false);
+                    }
                     $scope->addVariable($variable);
                     // there are no overrides for $this on at least one branch.
                     // TODO: Could try to combine local overrides with the defaults.
@@ -421,6 +425,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $variable->setUnionType(
                 $union_type($name)
             );
+            if (ConfigPluginSet::$mergeVariableInfoClosure) {
+                (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, true);
+            }
 
             // Add the variable to the outgoing scope
             $scope->addVariable($variable);

@@ -9,6 +9,10 @@ New features(Analysis):
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
 + Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
 
+Plugins:
++ Add `MergeVariableInfoCapability` for plugins to hook into ContextMergeVisitor and update data for a variable
+  when merging the outcome of different scopes. (#3956)
+
 Language Server/Daemon mode:
 + Fix bug where the Phan daemon would crash on the next request after analyzing a file outside of the project being analyzed,
   when pcntl was disabled or unavailable (#3954)

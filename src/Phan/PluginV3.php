@@ -128,6 +128,9 @@ use Phan\PluginV3\IssueEmitter;
  *     Returns the name of a class extending BeforeLoopBodyAnalysisVisitor, which will be used to analyze loop conditions
  *     before analyzing the body.
  *     (implement \Phan\PluginV3\BeforeLoopBodyAnalysisCapability)
+ * 20. public function getMergeVariableInfoClosure(): Closure
+ *     Returns a closure used in ContextMergeVisitor to merge data about a variable from different branches.
+ *     (implement \Phan\PluginV3\MergeVariableInfoCapability)
  */
 abstract class PluginV3
 {

@@ -65,6 +65,7 @@ use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\MergeVariableInfoCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -189,6 +190,14 @@ final class ConfigPluginSet extends PluginV3 implements
      * @var bool
      */
     private $did_analyze_phase_start = false;
+
+    /**
+     * @var Closure
+     * A closure to call on variables when merging data in ContextMergeVisitor. This is stored in a
+     * static property here for performance.
+     * @internal For use by ContextMergeVisitor only
+     */
+    public static $mergeVariableInfoClosure;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -1020,6 +1029,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
         self::registerIssueFixerClosures($plugin_set);
+        self::registerMergeVariableInfoClosure($plugin_set);
     }
 
     /**
@@ -1037,6 +1047,17 @@ final class ConfigPluginSet extends PluginV3 implements
             foreach ($fixer->getAutomaticFixers() as $issue_type => $closure) {
                 IssueFixer::registerFixerClosure($issue_type, $closure);
             }
+        }
+    }
+
+    /**
+     * @param list<PluginV3> $plugin_set
+     */
+    private static function registerMergeVariableInfoClosure(array $plugin_set): void
+    {
+        foreach(self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
+            $closure = $plugin->getMergeVariableInfoClosure();
+            self::$mergeVariableInfoClosure = self::mergeAnalyzeFunctionCallClosures($closure, self::$mergeVariableInfoClosure);
         }
     }
 
