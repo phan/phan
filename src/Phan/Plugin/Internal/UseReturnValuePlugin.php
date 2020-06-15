@@ -621,7 +621,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'pdo::getattribute' => true,
     'pdo::prepare' => true,
     'pdo::quote' => true,
-    'pdostatement::execute' => true,
+    'pdostatement::execute' => false,  // Callers may check the return value of fetch() or configure the pdo to throw on exceptions
     'pdostatement::fetchall' => true,
     'pdostatement::fetchcolumn' => true,
     'pdostatement::fetch' => true,
