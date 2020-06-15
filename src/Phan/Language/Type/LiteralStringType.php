@@ -430,6 +430,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     {
         return $this->value ? $this->withIsNullable(false) : NonEmptyStringType::instance(false);
     }
+
+    public function asNonTruthyType(): Type
+    {
+        return $this->value ? NullType::instance(false) : $this;
+    }
 }
 
 LiteralStringType::init();

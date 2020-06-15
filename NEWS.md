@@ -9,6 +9,7 @@ New features(Analysis):
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
 + Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
 + Avoid false positives in `--constant-variable-detection` for `++`/`--`
++ Make `if (!$nullableValue) { }` removes truthy literal scalar values such as `'value'` and `1` and `1.0` when they're nullable
 
 Plugins:
 + Add `ConstantVariablePlugin` to point out places where variables are read when they have only one possible scalar value. (#3953)
@@ -16,6 +17,8 @@ Plugins:
   but most issues it emits wouldn't be worth fixing due to hurting readability or being false positives.
 + Add `MergeVariableInfoCapability` for plugins to hook into ContextMergeVisitor and update data for a variable
   when merging the outcome of different scopes. (#3956)
++ Make `UseReturnValuePlugin` check if a method is declared as pure before using the dynamic checks based on percentage of
+  calls where the return value is used, if that option is enabled.
 
 Language Server/Daemon mode:
 + Fix bug where the Phan daemon would crash on the next request after analyzing a file outside of the project being analyzed,

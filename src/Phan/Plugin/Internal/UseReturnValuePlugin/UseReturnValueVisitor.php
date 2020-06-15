@@ -269,8 +269,10 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
+        if ($this->quickWarn($method, $fqsen, $node)) {
+            return;
+        }
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($method, $fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -360,17 +362,20 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null) !== true;
     }
 
-    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node): void
+    /**
+     * @return bool true if there is no need to perform dynamic checks later
+     */
+    private function quickWarn(FunctionInterface $method, string $fqsen, Node $node): bool
     {
         if (!$method->isPure()) {
             $fqsen_key = \strtolower(\ltrim($fqsen, "\\"));
-            $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
+            $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null;
             if (!$result) {
-                return;
+                return $result ?? true;
             }
             if ($result === UseReturnValuePlugin::SPECIAL_CASE) {
                 if ($this->shouldNotWarnForSpecialCase($fqsen_key, $node)) {
-                    return;
+                    return false;
                 }
             }
         }
@@ -382,10 +387,10 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 'Expected to use the return value of the internal function/method {FUNCTION}',
                 [$fqsen]
             );
-            return;
+            return true;
         }
         if ($method->getUnionType()->isNull() || !($method->hasReturn() || $method->isFromPHPDoc())) {
-            return;
+            return false;
         }
         $this->emitPluginIssue(
             $this->code_base,
@@ -394,6 +399,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             'Expected to use the return value of the user-defined function/method {FUNCTION} defined at {FILE}:{LINE}',
             [$method->getRepresentationForIssue(), $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()]
         );
+        return true;
     }
 }
 

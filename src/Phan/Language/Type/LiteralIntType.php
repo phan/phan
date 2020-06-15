@@ -288,6 +288,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     {
         return $this->value ? $this->withIsNullable(false) : NonZeroIntType::instance(false);
     }
+
+    public function asNonTruthyType(): Type
+    {
+        return $this->value ? NullType::instance(false) : $this;
+    }
 }
 
 LiteralIntType::init();

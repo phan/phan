@@ -279,6 +279,11 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
         }
         return parent::canCastToDeclaredType($code_base, $context, $other);
     }
+
+    public function asNonTruthyType(): Type
+    {
+        return $this->value ? NullType::instance(false) : $this;
+    }
 }
 
 LiteralFloatType::init();
