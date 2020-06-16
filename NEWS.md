@@ -28,6 +28,9 @@ Language Server/Daemon mode:
 Bug fixes:
 + Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)
 
+Miscellaneous:
++ Update function signature stubs for the `memcache` PECL (#3841)
+
 Jun 07 2020, Phan 3.0.2
 -----------------------
 
