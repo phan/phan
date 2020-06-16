@@ -3594,6 +3594,14 @@ Suspicious type {TYPE} of a variable or expression {CODE} used to build a string
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/files/expected/0581_concat_non_string.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/files/src/0581_concat_non_string.php#L5).
 
+## PhanTypeVoidArgument
+
+```
+Cannot use void return value {CODE} as a function argument
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0753_void_to_null.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0753_void_to_null.php#L8).
+
 ## PhanTypeVoidAssignment
 
 This is triggered by assigning the return value of a function or method that returns void.

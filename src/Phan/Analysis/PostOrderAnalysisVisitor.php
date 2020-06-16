@@ -142,7 +142,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        if ($right_type->isType(VoidType::instance(false))) {
+        if ($right_type->isVoidType()) {
             $this->emitIssue(
                 Issue::TypeVoidAssignment,
                 $node->lineno

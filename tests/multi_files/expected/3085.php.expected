@@ -1,1 +1,3 @@
+%s:12 PhanTypeVoidArgument Cannot use void return value test_void_real() as a function argument
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is test_void_real() of type void but \expects_array_not_void() takes array defined at %s:6
+%s:13 PhanTypeVoidArgument Cannot use void return value test_void_real() as a function argument

@@ -1,2 +1,3 @@
 %s:5 PhanSuspiciousValueComparison Suspicious attempt to compare void_753() of type void to null of type null with operator '==='
 %s:8 PhanRedundantCondition Redundant attempt to cast void_753() of type void to null
+%s:8 PhanTypeVoidArgument Cannot use void return value void_753() as a function argument

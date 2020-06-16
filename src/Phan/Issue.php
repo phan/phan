@@ -194,6 +194,7 @@ class Issue
     public const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
     public const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
     public const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
+    public const TypeVoidArgument          = 'PhanTypeVoidArgument';
     public const TypePossiblyInvalidCallable = 'PhanTypePossiblyInvalidCallable';
     public const TypeInvalidCallable = 'PhanTypeInvalidCallable';
     public const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
@@ -1897,6 +1898,14 @@ class Issue
                 "Cannot assign void return value",
                 self::REMEDIATION_B,
                 10000
+            ),
+            new Issue(
+                self::TypeVoidArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Cannot use void return value {CODE} as a function argument",
+                self::REMEDIATION_B,
+                10161
             ),
             new Issue(
                 self::TypeSuspiciousIndirectVariable,

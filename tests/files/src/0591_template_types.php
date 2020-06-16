@@ -4,7 +4,8 @@
  * @template T
  * @property T $value
  * @property string $details
- * @method hasValueMagic(T):bool
+ * @method bool hasValueMagic(T)
+ * @method voidMagic(T) implicitly a void
  */
 class SingletonList {
     private $_value;
@@ -69,8 +70,8 @@ call_user_func(function () {
     var_export($l->hasValue(new ArrayObject()));  // does warn
     var_export($l->hasValueMagic($o));  // does not warn
     var_export($l->hasValueMagic(new ArrayObject()));  // should warn
-    // Phan recursively changes the template types to real types, as seen in the error message
-    echo strlen($l->toArray());
+    var_export($l->voidMagic($o));  // should warn about using the return value
+    echo strlen($l->toArray()); // Phan recursively changes the template types to real types, as seen in the error message
     echo strlen($l2->toArray());
 
     $n = new NodeSingletonList();

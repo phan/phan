@@ -1,0 +1,1 @@
+%s:2 PhanTypeVoidArgument Cannot use void return value debug_print_backtrace() as a function argument

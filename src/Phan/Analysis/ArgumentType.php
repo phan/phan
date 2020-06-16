@@ -524,6 +524,9 @@ final class ArgumentType
                     $argument,
                     true
                 );
+                if ($argument_type->isVoidType()) {
+                    self::warnVoidTypeArgument($code_base, $context, $argument, $node);
+                }
                 continue;
             }
 
@@ -560,7 +563,7 @@ final class ArgumentType
                             $code_base,
                             $context,
                             Issue::ContextNotObject,
-                            $argument->lineno ?? $node->lineno ?? 0,
+                            $argument->lineno ?? $node->lineno,
                             "$variable_name"
                         );
                     }
@@ -575,6 +578,10 @@ final class ArgumentType
                 $argument,
                 true
             );
+            if ($argument_type->isVoidType()) {
+                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                self::warnVoidTypeArgument($code_base, $context, $argument, $node);
+            }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument);
             if ($parameter->isPassByReference()) {
@@ -587,6 +594,25 @@ final class ArgumentType
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
             }
         }
+    }
+
+    /**
+     * @param Node|string|int|float $argument
+     */
+    private static function warnVoidTypeArgument(
+        CodeBase $code_base,
+        Context $context,
+        $argument,
+        Node $node
+    ): void {
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::TypeVoidArgument,
+            $argument->lineno ?? $node->lineno,
+            ASTReverter::toShortString($argument)
+        );
+
     }
 
     private static function analyzeRemainingParametersForVariadic(

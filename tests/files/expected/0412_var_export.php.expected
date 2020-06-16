@@ -1,5 +1,7 @@
 %s:3 PhanTypeMismatchArgument Argument 1 ($value) is var_export(['key']) of type void but \expect_int412() takes int defined at %s:2
+%s:3 PhanTypeVoidArgument Cannot use void return value var_export(['key']) as a function argument
 %s:4 PhanTypeMismatchArgument Argument 1 ($value) is var_export(['key'], false) of type void but \expect_int412() takes int defined at %s:2
+%s:4 PhanTypeVoidArgument Cannot use void return value var_export(['key'], false) as a function argument
 %s:5 PhanTypeMismatchArgument Argument 1 ($value) is var_export(['key'], true) of type string but \expect_int412() takes int defined at %s:2
 %s:6 PhanTypeMismatchArgument Argument 1 ($value) is var_export(['key'], ((rand() % 2) > 0)) of type ?string but \expect_int412() takes int defined at %s:2
 %s:9 PhanTypeMismatchArgument Argument 1 ($value) is print_r(['key']) of type true but \expect_int412() takes int defined at %s:2
@@ -9,3 +11,4 @@
 %s:14 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 1 of type 1 but \var_export() takes bool
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is var_export(['key'], 0) of type void but \strlen() takes string
 %s:15 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 0 of type 0 but \var_export() takes bool
+%s:15 PhanTypeVoidArgument Cannot use void return value var_export(['key'], 0) as a function argument
