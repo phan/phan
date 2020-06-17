@@ -3,7 +3,7 @@
 function maybeModifyReferenceType(int &$arg): void {
     if ( rand() ) {
         $arg = [];
-    } elseif ( rand() ) { // @phan-suppress-current-line PhanPluginDuplicateIfCondition
+    } elseif ( rand() ) {
         $arg = true;
     }
 }
