@@ -1,6 +1,6 @@
 <?php
 
-function maybeModifyReferenceType(int &$arg): void {
+function maybeModifyReferenceType(&$arg): void {
     if ( rand() ) {
         $arg = [];
     } elseif ( rand() ) {
@@ -8,7 +8,7 @@ function maybeModifyReferenceType(int &$arg): void {
     }
 }
 
-function alwaysModifyReferenceType(int &$arg): void {
+function alwaysModifyReferenceType(&$arg): void {
     if ( rand() ) {
         $arg = [];
     } else {
@@ -16,7 +16,7 @@ function alwaysModifyReferenceType(int &$arg): void {
     }
 }
 
-function neverModifyReferenceType(int &$arg) {
+function neverModifyReferenceType(&$arg) {
     if ( rand() ) {
         $foo = true;
     } else {
