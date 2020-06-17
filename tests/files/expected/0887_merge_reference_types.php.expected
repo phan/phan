@@ -1,0 +1,3 @@
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 42|array{}|true
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{}|true
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 42
