@@ -11,6 +11,7 @@ New features(Analysis):
 + Avoid false positives in `--constant-variable-detection` for `++`/`--`
 + Make `if (!$nullableValue) { }` removes truthy literal scalar values such as `'value'` and `1` and `1.0` when they're nullable
 + Emit `PhanTypeVoidArgument` when passing a void return value as a function argument (#3961)
++ Correctly merge the possible union types of pass-by-reference variables (#3959)
 
 Plugins:
 + Add `ConstantVariablePlugin` to point out places where variables are read when they have only one possible scalar value. (#3953)

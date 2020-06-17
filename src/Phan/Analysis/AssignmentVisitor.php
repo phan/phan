@@ -1580,15 +1580,9 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         // Check to see if the variable already exists
         if ($variable) {
-            // If the variable isn't a pass-by-reference parameter
-            // we clone it so as to not disturb its previous types
+            // We clone the variable so as to not disturb its previous types
             // as we replace it.
-            // TODO: Do a better job of analyzing references
-            if ($variable instanceof Parameter) {
-                $variable = clone($variable);
-            } elseif (!($variable instanceof PassByReferenceVariable)) {
-                $variable = clone($variable);
-            }
+            $variable = clone($variable);
 
             // If we're assigning to an array element then we don't
             // know what the array structure of the parameter is
