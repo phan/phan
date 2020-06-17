@@ -401,8 +401,8 @@ return [
     'streamwrapper' => ['context' => 'resource'],
     'tidy' => ['errorBuffer' => 'string'],
     'tidynode' => [
-        'attribute' => 'array',
-        'child' => 'array',
+        'attribute' => '?array<string,string>',
+        'child' => '?non-empty-list<tidyNode>',
         'column' => 'int',
         'id' => 'int',
         'line' => 'int',
