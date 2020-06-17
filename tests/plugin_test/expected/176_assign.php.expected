@@ -1,0 +1,2 @@
+src/176_assign.php:2 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+src/176_assign.php:3 PhanPluginNonBoolBranch Non bool value of type null evaluated in if clause
