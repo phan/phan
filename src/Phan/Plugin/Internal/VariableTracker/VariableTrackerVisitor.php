@@ -540,7 +540,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 continue;
             }
 
-            if ($closure_use->flags & ast\flags\PARAM_REF) {
+            if ($closure_use->flags & ast\flags\CLOSURE_USE_REF) {
                 self::$variable_graph->recordVariableDefinition($name, $closure_use, $this->scope, null);
                 self::$variable_graph->markAsReference($name);
             } else {

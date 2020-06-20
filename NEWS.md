@@ -28,6 +28,7 @@ Language Server/Daemon mode:
 
 Bug fixes:
 + Fix `PhanDebugAnnotation` output for variables after the first one in `@phan-debug-var $a, $b` (#3943)
++ Use the correct constant to check if closure use variables are references in php 8.0+
 
 Miscellaneous:
 + Update function signature stubs for the `memcache` PECL (#3841)

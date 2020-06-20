@@ -484,7 +484,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 )) {
                     // If this is not pass-by-reference variable we
                     // have a problem
-                    if (!($use->flags & ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\CLOSURE_USE_REF)) {
                         Issue::maybeEmitWithParameters(
                             $this->code_base,
                             $context,
@@ -515,7 +515,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this isn't a pass-by-reference variable, we
                     // clone the variable so state within this scope
                     // doesn't update the outer scope
-                    if (!($use->flags & ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\CLOSURE_USE_REF)) {
                         $variable = clone($variable);
                     } else {
                         $union_type = $variable->getUnionType();
@@ -609,7 +609,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 // If this isn't a pass-by-reference variable, we
                 // clone the variable so state within this scope
                 // doesn't update the outer scope
-                if (!($use->flags & ast\flags\PARAM_REF)) {
+                if (!($use->flags & ast\flags\CLOSURE_USE_REF)) {
                     $variable = clone($variable);
                 }
                 // Pass the variable into a new scope
