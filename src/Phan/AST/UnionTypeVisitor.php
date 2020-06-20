@@ -993,6 +993,33 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_MATCH`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     * @suppress PhanPossiblyUndeclaredProperty
+     */
+    public function visitMatch(Node $node): UnionType
+    {
+        // TODO: Support inferring the type from the conditional
+        $union_types = [];
+        foreach ($node->children['stmts']->children as $arm_node) {
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($arm_node)) {
+                $union_types[] = UnionTypeVisitor::unionTypeFromNode($this->code_base, clone($this->context), $arm_node->children['expr']);
+            }
+        }
+        if (!$union_types) {
+            return VoidType::instance(false)->asRealUnionType();
+        }
+        return UnionType::merge($union_types);
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_ARRAY`
      *
      * @param Node $node
@@ -3902,5 +3929,23 @@ class UnionTypeVisitor extends AnalysisVisitor
             Issue::CompatibleNegativeStringOffset,
             $node->children['dim']->lineno ?? $node->lineno
         );
+    }
+
+    /**
+     * Returns the union of all union types of expressions in this expression list (ast\AST_EXPR_LIST).
+     *
+     * This is useful for match arm conditions.
+     *
+     * For other use cases, get the union type of the last node (if one exists) instead.
+     *
+     * @override
+     */
+    public function visitExprList(Node $node): UnionType
+    {
+        $types = [];
+        foreach ($node->children as $child_node) {
+            $types[] = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $child_node);
+        }
+        return UnionType::merge($types);
     }
 }

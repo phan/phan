@@ -322,6 +322,85 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return ($status & ~self::STATUS_PROCEED) | $next_status;
     }
 
+    /**
+     * @return int the corresponding status code
+     * @suppress PhanTypeMismatchArgumentNullable
+     */
+    public function visitMatch(Node $node): int
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $cond_status = $this->check($node->children['cond']);
+        if (($cond_status & self::STATUS_PROCEED) === 0) {
+            return $cond_status;
+        }
+        return $this->visitMatchArmList($node->children['stmts']) | ($cond_status & ~self::STATUS_PROCEED);
+    }
+
+    /**
+     * @return int the corresponding status code for the match arm list
+     */
+    public function visitMatchArmList(Node $node): int
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfMatchArmList($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    /**
+     * @return int the corresponding status code
+     * @suppress PhanTypeMismatchArgumentNullable
+     */
+    public function visitMatchArm(Node $node): int
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeMatchArmStatus($node);
+        $node->flags |= $status;
+        return $status;
+    }
+
+    private function computeMatchArmStatus(Node $node): int
+    {
+        ['cond' => $cond, 'expr' => $expr] = $node->children;
+        $cond_status = 0;
+        foreach ($cond->children ?? [] as $cond_expr) {
+            if (!$cond_expr instanceof Node) {
+                $cond_status |= self::STATUS_PROCEED;
+                continue;
+            }
+            $cond_status |= $this->check($cond_expr);
+            if (($cond_status & self::STATUS_PROCEED) === 0) {
+                return $cond_status;
+            }
+        }
+        return ($cond_status & ~self::STATUS_PROCEED) | ($expr instanceof Node ? $this->check($expr) : self::STATUS_PROCEED);
+    }
+
+    private function computeStatusOfMatchArmList(Node $node): int
+    {
+        $default_status = self::STATUS_THROW;  // UnhandledMatchError if no default node exists
+        $combined_status = 0;
+        foreach ($node->children as $arm_node) {
+            // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+            $arm_cond = $arm_node->children['cond'];
+            if ($arm_cond === null) {
+                $default_status = $this->visitMatchArm($arm_node);
+                continue;
+            }
+            $combined_status |= $this->visitMatchArm($arm_node);
+        }
+        return $default_status | $combined_status;
+    }
+
     public const UNEXITABLE_LOOP_INNER_STATUS = self::STATUS_PROCEED | self::STATUS_CONTINUE;
 
     public const STATUS_CONTINUE_OR_BREAK = self::STATUS_CONTINUE | self::STATUS_BREAK;

@@ -1,0 +1,8 @@
+%s:6 PhanTypeMismatchReturnReal Returning match (true) { default => strlen($x), is_string($x) => count($x) } of type int but test20() is declared to return string
+%s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
+%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
+%s:16 PhanImpossibleCondition Impossible attempt to cast $x of type null to int
+%s:21 PhanImpossibleCondition Impossible attempt to cast $x of type null to string
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string(real=string)
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=null)

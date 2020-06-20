@@ -945,6 +945,22 @@ Unused result of an isset({CODE}) check
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/expected/011_isset_intrinsic_expression5.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/src/011_isset_intrinsic_expression5.php#L2).
 
+## PhanNoopMatchArms
+
+```
+This match expression only has the default arm in {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/014_match.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/014_match.php#L3).
+
+## PhanNoopMatchExpression
+
+```
+The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/016_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/016_match.php#L3).
+
 ## PhanNoopNew
 
 NOTE: by adding `@phan-constructor-used-for-side-effects` to the doc comment of the class-like being used, `PhanNoopNew` can be suppressed on uses of that class.

@@ -72,6 +72,18 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
+     * @return ?bool this gives up on analyzing matches, except for the condition
+     */
+    public function visitMatch(Node $node): ?bool
+    {
+        $cond = $node->children['cond'];
+        if ($cond instanceof Node) {
+            return $this->__invoke($cond);
+        }
+        return null;
+    }
+
+    /**
      * @return ?bool this gives up on analyzing for loops, except for the initializer and condition
      */
     public function visitFor(Node $node): ?bool

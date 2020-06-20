@@ -345,6 +345,21 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitMatch(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitMatchArm(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitMatchArmList(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitType(Node $node)
     {
         return $this->visit($node);

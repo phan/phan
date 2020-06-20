@@ -314,6 +314,21 @@ interface KindVisitor
     public function visitSwitchList(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_MATCH`
+     */
+    public function visitMatch(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_MATCH_ARM`
+     */
+    public function visitMatchArm(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_MATCH_ARM_LIST`
+     */
+    public function visitMatchArmList(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_TYPE`
      */
     public function visitType(Node $node);

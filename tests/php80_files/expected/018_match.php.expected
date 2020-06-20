@@ -1,0 +1,13 @@
+%s:3 PhanTypeMismatchReturnReal Returning match ($x) { 1, 2 => (throw new Exception()), 3 => 'invalid' } of type 'invalid' but test15() is declared to return ?int
+%s:4 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in 1, 2 => (throw new Exception())
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 1 of type 1 with operator '==='
+%s:11 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 2 of type 2 with operator '==='
+%s:12 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 3 of type 3 with operator '==='
+%s:17 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to 1 of type 1
+%s:18 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to null of type null
+%s:23 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 23.
+%s:24 PhanImpossibleTypeComparison Impossible attempt to check if $key of type int is identical to '1' of type '1'
+%s:26 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 23.
+%s:28 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression($other) detected in match expression - the later entry will be ignored in favor of expression $other at line 27.
+%s:29 PhanImpossibleTypeComparison Impossible attempt to check if $key of type int is identical to null of type null
+%s:29 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(null) detected in match expression - the later entry will be ignored in favor of expression null at line 29.
