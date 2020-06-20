@@ -551,12 +551,25 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 } else {
                     $key_type = $int_or_string;
                 }
-                $array_shape_type = ArrayShapeType::fromFieldTypes([$key_type, $element_types], false);
-
+                $array_shape_type = ArrayShapeType::fromFieldTypes([
+                    0       => $key_type,
+                    'key'   => $key_type,
+                    1       => $element_types,
+                    'value' => $element_types,
+                ], false);
+                $real_value_type = $mixed_type->asRealUnionType();
                 return new UnionType(
                     [$array_shape_type, $false_type],
                     true,
-                    [ArrayShapeType::fromFieldTypes([$int_or_string, MixedType::instance(false)->asRealUnionType()], false), $false_type]
+                    [
+                        ArrayShapeType::fromFieldTypes([
+                            0       => $int_or_string,
+                            'key'   => $int_or_string,
+                            1       => $real_value_type,
+                            'value' => $real_value_type,
+                        ], false),
+                        $false_type,
+                    ]
                 );
             }
             return $mixed_type->asPHPDocUnionType();

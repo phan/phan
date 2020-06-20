@@ -1094,7 +1094,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $right
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x !== false)`
      */
-    protected function analyzeAndUpdateToBeIdentical($left, $right): Context
+    public function analyzeAndUpdateToBeIdentical($left, $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1122,7 +1122,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $right
      * @return Context - Context after inferring type from an expression such as `if ($x !== false)`
      */
-    protected function analyzeAndUpdateToBeNotIdentical($left, $right): Context
+    public function analyzeAndUpdateToBeNotIdentical($left, $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,

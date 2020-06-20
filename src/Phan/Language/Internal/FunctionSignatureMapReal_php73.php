@@ -220,7 +220,7 @@ return [
 'dns_get_mx' => '?bool',
 'dns_get_record' => '?list<array>|?false',
 'doubleval' => '?float',
-'each' => '?array{0:int|string,1:mixed}|?false',
+'each' => '?array{0:int|string,key:int|string,1:mixed,value:mixed}|?false',
 'error_log' => '?bool',
 'error_reporting' => '?int',
 'escapeshellarg' => '?string',

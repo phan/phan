@@ -1,0 +1,5 @@
+src/177_switch.php:8 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored in favor of case 1 at line 6.
+src/177_switch.php:10 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(true) detected in switch statement - the later entry will be ignored in favor of case true at line 4.
+src/177_switch.php:14 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case([]) detected in switch statement - the later entry will be ignored in favor of case [] at line 12.
+src/177_switch.php:20 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(null) detected in switch statement - the later entry will be ignored in favor of case null at line 18.
+src/177_switch.php:23 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case($y) detected in switch statement - the later entry will be ignored in favor of case $y at line 22.

@@ -2486,7 +2486,7 @@ return [
 'Ds\Vector::sum' => ['int|float'],
 'Ds\Vector::toArray' => ['array'],
 'Ds\Vector::unshift' => ['void', '...values='=>'mixed'],
-'each' => ['array', '&r_arr'=>'array'],
+'each' => ['array{0:int|string,key:int|string,1:mixed,value:mixed}', '&r_arr'=>'array'],
 'easter_date' => ['int', 'year='=>'int'],
 'easter_days' => ['int', 'year='=>'int', 'method='=>'int'],
 'echo' => ['void', 'arg1'=>'string', '...args='=>'string'],

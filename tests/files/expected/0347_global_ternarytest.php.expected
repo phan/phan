@@ -2,5 +2,6 @@
 %s:17 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($divisor) is $c of type null but \intdiv() takes int
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $e of type \A347 but \intdiv() takes int
 %s:22 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $e of type null but \intdiv() takes int
+%s:26 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seem to have side effects
 %s:27 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $c of type ?\A347 but \intdiv() takes int
 %s:28 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is $c of type ?\A347 but \intdiv() takes int

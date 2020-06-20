@@ -68,10 +68,10 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             }
             // Skip array entries without literal keys. (Do it before resolving the key value)
             if (!is_scalar($case_cond)) {
+                $original_case_cond = $case_cond;
                 $case_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $case_cond)->asSingleScalarValueOrNullOrSelf();
                 if (is_object($case_cond)) {
-                    // Skip non-literal keys.
-                    continue;
+                    $case_cond = $original_case_cond;
                 }
             }
             if (is_string($case_cond)) {
@@ -80,14 +80,18 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             } elseif (is_int($case_cond)) {
                 $cond_key = $case_cond;
                 $values_to_check[$i] = $case_cond;
+            } elseif (is_bool($case_cond)) {
+                $cond_key = $case_cond ? "T" : "F";
+                $values_to_check[$i] = $case_cond;
             } else {
-                $cond_key = json_encode($case_cond);
-                if (is_scalar($case_cond)) {
+                // could be literal null?
+                $cond_key = ASTHasher::hash($case_cond);
+                if (!is_object($case_cond)) {
                     $values_to_check[$i] = $case_cond;
                 }
             }
             if (isset($case_constant_set[$cond_key])) {
-                $normalized_case_cond = self::normalizeSwitchKey($case_cond);
+                $normalized_case_cond = is_object($case_cond) ? ASTReverter::toShortString($case_cond) : self::normalizeSwitchKey($case_cond);
                 $this->emitPluginIssue(
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($case_node->lineno),

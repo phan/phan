@@ -1,7 +1,13 @@
 %s:4 PhanNoopBinaryOperator Unused result of a binary '|' operator
 %s:5 PhanNoopBinaryOperator Unused result of a binary '^' operator
+%s:6 PhanNoopBinaryOperator Unused result of a binary '&&' operator
+%s:7 PhanNoopBinaryOperator Unused result of a binary '&&' operator
 %s:8 PhanNoopBinaryOperator Unused result of a binary 'xor' operator
+%s:9 PhanNoopBinaryOperator Unused result of a binary '||' operator
+%s:10 PhanNoopBinaryOperator Unused result of a binary '||' operator
+%s:11 PhanNoopTernary Unused result of a ternary expression where the true/false results don't seem to have side effects
 %s:12 PhanCoalescingNeverNull Using non-null $left of type 0|int|non-zero-int as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
+%s:12 PhanNoopBinaryOperator Unused result of a binary '??' operator
 %s:13 PhanNoopBinaryOperator Unused result of a binary '.' operator
 %s:14 PhanNoopBinaryOperator Unused result of a binary '*' operator
 %s:15 PhanNoopBinaryOperator Unused result of a binary '%' operator

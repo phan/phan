@@ -1677,6 +1677,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     private const NOOP_SWITCH_COND_ANALYZER = [null, null, null];
+
     /**
      * @param Node|int|string|float $switch_case_node
      * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}

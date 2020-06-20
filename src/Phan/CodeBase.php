@@ -1485,10 +1485,14 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
+                if ($name === 'each' && Config::get_closest_target_php_version_id() >= 70200) {
+                    $function->setIsDeprecated(true);
+                }
                 if ($found) {
                     $reflection_function = new \ReflectionFunction($name);
-                    $is_deprecated = $reflection_function->isDeprecated() || ($name === 'each' && Config::get_closest_target_php_version_id() >= 70200);
-                    $function->setIsDeprecated($is_deprecated);
+                    if ($reflection_function->isDeprecated()) {
+                        $function->setIsDeprecated(true);
+                    }
                     $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
                     if (Config::getValue('assume_real_types_for_internal_functions')) {
                         // @phan-suppress-next-line PhanAccessMethodInternal

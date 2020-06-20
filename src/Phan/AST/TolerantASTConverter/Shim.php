@@ -18,6 +18,7 @@ class Shim
             // Fix for https://github.com/phan/phan/issues/2287
             require_once __DIR__ . '/ast_shim.php';
         }
+        // Define node kinds that may be absent
         if (!\defined('ast\AST_PROP_GROUP')) {
             \define('ast\AST_PROP_GROUP', 545);
         }
@@ -30,6 +31,15 @@ class Shim
         if (!\defined('ast\AST_TYPE_UNION')) {
             \define('ast\AST_TYPE_UNION', 254);
         }
+        if (!\defined('ast\AST_ATTRIBUTE_LIST')) {
+            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
+            \define('ast\AST_ATTRIBUTE_LIST', 253);
+        }
+        if (!\defined('ast\AST_ATTRIBUTE')) {
+            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
+            \define('ast\AST_ATTRIBUTE', 0x2fb);
+        }
+        // Define flags
         if (!\defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {
             \define('ast\flags\DIM_ALTERNATIVE_SYNTAX', 1 << 1);
         }

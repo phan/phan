@@ -151,7 +151,7 @@ return [
 'date_time_set' => ['DateTime|false', 'object'=>'DateTime', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microseconds='=>'int'],
 'date_timestamp_set' => ['DateTime|false', 'object'=>'DateTime', 'unixtimestamp'=>'int'],
 'date_timezone_set' => ['DateTime|false', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
-'each' => ['array', '&r_arr'=>'array'],
+'each' => ['array{0:int|string,key:int|string,1:mixed,value:mixed}', '&r_arr'=>'array'],
 'gmdate' => ['string|false', 'format'=>'string', 'timestamp='=>'int'],
 'gmmktime' => ['int|false', 'hour='=>'int', 'min='=>'int', 'sec='=>'int', 'mon='=>'int', 'day='=>'int', 'year='=>'int'],
 'gmp_random' => ['GMP', 'limiter='=>'int'],

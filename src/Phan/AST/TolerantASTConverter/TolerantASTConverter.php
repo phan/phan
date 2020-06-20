@@ -2375,7 +2375,7 @@ class TolerantASTConverter
             if (!($case instanceof PhpParser\Node\CaseStatementNode)) {
                 continue;
             }
-            $case_line = static::getEndLine($case);
+            $case_line = static::getStartLine($case);
             $stmts[] = new ast\Node(
                 ast\AST_SWITCH_CASE,
                 0,
@@ -2807,7 +2807,7 @@ class TolerantASTConverter
                 ], self::getStartLine($item));
                 continue;
             }
-            $flags = $item->byRef ? flags\PARAM_REF : 0;
+            $flags = $item->byRef ? flags\ARRAY_ELEM_REF : 0;
             $element_key = $item->elementKey;
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, $flags, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),

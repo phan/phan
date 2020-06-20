@@ -10,6 +10,7 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
+use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\AST\Visitor\Element;
@@ -920,7 +921,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $false_context,
                     $false_node
                 );
-                if ($false_node instanceof Node && $false_node->kind === ast\AST_THROW) {
+                if ($false_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($false_node)) {
                     return $true_type->nonFalseyClone();
                 }
 

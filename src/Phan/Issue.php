@@ -3888,7 +3888,7 @@ class Issue
                 self::NoopTernary,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a ternary expression where the true/false results don't seen to have side effects",
+                "Unused result of a ternary expression where the true/false results don't seem to have side effects",
                 self::REMEDIATION_B,
                 6073
             ),

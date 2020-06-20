@@ -12,9 +12,9 @@ use Closure;
 use Exception;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTReverter;
-use Phan\AST\ASTSimplifier;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
+use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -807,7 +807,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($this->isInNoOpPosition($node)) {
             if (\in_array($flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE], true)) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                if (ASTSimplifier::isExpressionWithoutSideEffects($node->children['right'])) {
+                if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['right'])) {
                     $this->emitIssue(
                         Issue::NoopBinaryOperator,
                         $node->lineno,
@@ -3114,7 +3114,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitConditional(Node $node): Context
     {
         if ($this->isInNoOpPosition($node)) {
-            if (ASTSimplifier::isExpressionWithoutSideEffects($node->children['true']) && ASTSimplifier::isExpressionWithoutSideEffects($node->children['false'])) {
+            if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['true']) &&
+                !ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['false'])) {
                 $this->emitIssue(
                     Issue::NoopTernary,
                     $node->lineno
@@ -4374,7 +4375,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_STMT_LIST:
                 return true;
             case ast\AST_EXPR_LIST:
-                return $node !== \end($parent_node->children) || $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
+                if ($node !== \end($parent_node->children)) {
+                    return true;
+                }
+                // This is an expression list, but it's in the condition
+                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+                return $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
         }
         return false;
     }

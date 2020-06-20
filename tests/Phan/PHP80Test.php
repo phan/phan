@@ -18,7 +18,11 @@ final class PHP80Test extends AbstractPhanFileTest
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
         'target_php_version' => '8.0',
-        'plugins' => ['UseReturnValuePlugin'],
+        'plugins' => [
+            'UseReturnValuePlugin',
+            'UnreachableCodePlugin',
+            'DuplicateArrayKeyPlugin',
+        ],
         'plugin_config' => ['infer_pure_methods' => true],
     ];
 

@@ -12,6 +12,8 @@ New features(Analysis):
 + Make `if (!$nullableValue) { }` removes truthy literal scalar values such as `'value'` and `1` and `1.0` when they're nullable
 + Emit `PhanTypeVoidArgument` when passing a void return value as a function argument (#3961)
 + Correctly merge the possible union types of pass-by-reference variables (#3959)
++ Improve php 8.0-dev shim support. Fix checking for array references and closure use references in php 8.0+.
++ More aggressively check if expression results should be used for conditionals and binary operators.
 
 Plugins:
 + Add `ConstantVariablePlugin` to point out places where variables are read when they have only one possible scalar value. (#3953)
@@ -21,6 +23,7 @@ Plugins:
   when merging the outcome of different scopes. (#3956)
 + Make `UseReturnValuePlugin` check if a method is declared as pure before using the dynamic checks based on percentage of
   calls where the return value is used, if that option is enabled.
++ In `DuplicateArrayKeyPlugin`, properly check for duplicate non-scalar cases.
 
 Language Server/Daemon mode:
 + Fix bug where the Phan daemon would crash on the next request after analyzing a file outside of the project being analyzed,

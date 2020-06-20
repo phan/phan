@@ -3,6 +3,6 @@ src/141_empty_statement_switch.php:4 PhanPluginEmptyStatementSwitch No side effe
 src/141_empty_statement_switch.php:6 PhanNoopSwitchCases This switch statement only has the default case
 src/141_empty_statement_switch.php:6 PhanPluginEmptyStatementSwitch No side effects seen for any cases of this switch statement
 src/141_empty_statement_switch.php:10 PhanPluginEmptyStatementSwitch No side effects seen for any cases of this switch statement
-src/141_empty_statement_switch.php:12 PhanNoopStringLiteral Unused result of a string literal "not a statement" near this line
+src/141_empty_statement_switch.php:11 PhanNoopStringLiteral Unused result of a string literal "not a statement" near this line
 src/141_empty_statement_switch.php:16 PhanPluginEmptyStatementSwitch No side effects seen for any cases of this switch statement
 src/141_empty_statement_switch.php:18 PhanContinueTargetingSwitch "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?

@@ -1009,7 +1009,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/files/expected/0
 ## PhanNoopTernary
 
 ```
-Unused result of a ternary expression where the true/false results don't seen to have side effects
+Unused result of a ternary expression where the true/false results don't seem to have side effects
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.0/tests/files/expected/0740_noop_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.0/tests/files/src/0740_noop_ternary.php#L3).

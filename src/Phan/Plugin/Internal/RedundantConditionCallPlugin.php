@@ -453,7 +453,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $right = $right->getRealUnionType()->withStaticResolvedInContext($this->context);
         // $left_non_literal = $left->asNonLiteralType();
         // $right_non_literal = $right->asNonLiteralType();
-        if ($this->checkUselessScalarComparison($node, $left->getRealUnionType(), $right->getRealUnionType())) {
+        if ($this->checkUselessScalarComparison($node, $left, $right, $node->children['left'], $node->children['right'], $node->flags)) {
             return;
         }
         if (!$left->hasAnyTypeOverlap($code_base, $right) &&
@@ -477,10 +477,19 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node|string|int|float $left_node
+     * @param Node|string|int|float $right_node
+     * @param int $flags a valid flags value for ast\AST_BINARY_OP
      * @suppress PhanAccessMethodInternal
      */
-    private function checkUselessScalarComparison(Node $node, UnionType $left, UnionType $right): bool
-    {
+    private function checkUselessScalarComparison(
+        Node $node,
+        UnionType $left,
+        UnionType $right,
+        $left_node,
+        $right_node,
+        int $flags
+    ): bool {
         // Give up if any of the sides aren't constant
         $left_values = $left->asScalarValues(true);
         if (!$left_values) {
@@ -491,12 +500,12 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             return false;
         }
         $issue_args = [
-            ASTReverter::toShortString($node->children['left']),
+            ASTReverter::toShortString($left_node),
             $left,
-            ASTReverter::toShortString($node->children['right']),
+            ASTReverter::toShortString($right_node),
             $right,
             // @phan-suppress-next-line PhanAccessClassConstantInternal
-            PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+            PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$flags],
         ];
         $left_count = count($left_values);
         $right_count = count($right_values);
@@ -507,7 +516,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         try {
             foreach ($left_values as $left_value) {
                 foreach ($right_values as $right_value) {
-                    $value = InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
+                    $value = InferValue::computeBinaryOpResult($left_value, $right_value, $flags);
+
                     $unique_results[\serialize($value)] = $value;
                     if (count($unique_results) > 1) {
                         return false;
@@ -605,14 +615,25 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @param Node $node a node of kind AST_BINARY_OP
      * @param Closure(UnionType,UnionType):bool $is_still_issue
+     * @param Node|string|int|float|null $left_node null to use the node of the binary op
+     * @param Node|string|int|float|null $right_node null to use the node of the binary op
      * @suppress PhanAccessMethodInternal
      */
-    public function emitIssueForBinaryOp(Node $node, UnionType $left, UnionType $right, string $issue_name, Closure $is_still_issue): void
-    {
+    public function emitIssueForBinaryOp(
+        Node $node,
+        UnionType $left,
+        UnionType $right,
+        string $issue_name,
+        Closure $is_still_issue,
+        $left_node = null,
+        $right_node = null
+    ): void {
+        $left_node = $left_node ?? $node->children['left'];
+        $right_node = $right_node ?? $node->children['right'];
         $issue_args = [
-            ASTReverter::toShortString($node->children['left']),
+            ASTReverter::toShortString($left_node),
             $left,
-            ASTReverter::toShortString($node->children['right']),
+            ASTReverter::toShortString($right_node),
             $right,
         ];
         $code_base = $this->code_base;
@@ -621,7 +642,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         // TODO: check $this->shouldCheckScalarAsIfInLoopScope($node) in internal uses.
         // e.g. should have some way to warn about `$x = []; while (!is_array($x)) { $x = null; }`
         if ($this->context->isInLoop()) {
-            ['left' => $left_node, 'right' => $right_node] = $node->children;
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {

@@ -236,7 +236,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitSwitch(Node $node): int
     {
-        return $this->visitSwitchList($node->children['stmts']);
+        $cond_status = $this->check($node->children['cond']);
+        if (($cond_status & self::STATUS_PROCEED) === 0) {
+            // handle throw expressions, switch(exit()), etc.
+            return $cond_status;
+        }
+        return $this->visitSwitchList($node->children['stmts']) | ($cond_status & ~self::STATUS_PROCEED);
     }
 
     /**
@@ -325,7 +330,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         // We assume foreach loops are over a finite sequence, and that it's possible for that sequence to have at least one element.
         $inner_status = $this->check($node->children['stmts']);
-
 
         // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
         // 2. We assume that it's possible that any given loop can have 0 iterations.
