@@ -99,7 +99,9 @@ test_script:
 - cmd: php phan --plugin InvokePHPNativeSyntaxCheckPlugin
 # Run phpunit tests in parallel on all available processors (2 on appveyor).
 # If running this step with Wine or symlinks, then use paratest --phpunit vendor/phpunit/phpunit/phpunit --verbose instead.
-- cmd: .\vendor\bin\paratest.bat --processes 2 --phpunit .\vendor\phpunit\phpunit\phpunit
+# Debug paratest failure in appveyor
+# - cmd: .\vendor\bin\paratest.bat --processes 2 --phpunit .\vendor\phpunit\phpunit\phpunit
+- cmd: .\vendor\bin\phpunit
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
 - cmd: php -d phar.readonly=0 internal/package.php
