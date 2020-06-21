@@ -292,6 +292,10 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Constants such as ENCHANT can be deprecated when calling constant()
         return true;
     }
+    if ($errno === E_NOTICE && preg_match('/^(iconv_strlen)/', $errstr)) {
+        // Suppress deprecation notices in symfony/polyfill-mbstring
+        return true;
+    }
     if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
         static $did_warn = false;
         if (!$did_warn) {
