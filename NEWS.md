@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.0.3 (dev)
+Jun 21 2020, Phan 3.0.3
 -----------------------
 
 New features(Analysis):
@@ -9,7 +9,7 @@ New features(Analysis):
 + Infer the union type of `!$expr` from the type of `$expr` (#3948)
 + Re-enable `simplify_ast` by default in `.phan/config.php` (#3944, #3945)
 + Avoid false positives in `--constant-variable-detection` for `++`/`--`
-+ Make `if (!$nullableValue) { }` removes truthy literal scalar values such as `'value'` and `1` and `1.0` when they're nullable
++ Make `if (!$nullableValue) { }` remove truthy literal scalar values such as `'value'` and `1` and `1.0` when they're nullable
 + Emit `PhanTypeVoidArgument` when passing a void return value as a function argument (#3961)
 + Correctly merge the possible union types of pass-by-reference variables (#3959)
 + Improve php 8.0-dev shim support. Fix checking for array references and closure use references in php 8.0+.
