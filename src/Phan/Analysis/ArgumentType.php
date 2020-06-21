@@ -612,7 +612,6 @@ final class ArgumentType
             $argument->lineno ?? $node->lineno,
             ASTReverter::toShortString($argument)
         );
-
     }
 
     private static function analyzeRemainingParametersForVariadic(

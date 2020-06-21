@@ -74,6 +74,9 @@
         <testsuite name="PHP74Test">
             <file>tests/Phan/PHP74Test.php</file>
         </testsuite>
+        <testsuite name="PHP80Test">
+            <file>tests/Phan/PHP80Test.php</file>
+        </testsuite>
         <testsuite name="All">
             <directory>tests/Phan</directory>
         </testsuite>
