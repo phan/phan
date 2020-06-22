@@ -636,7 +636,7 @@ When this is true, this slows down analysis slightly.
 E.g. rewrites `if ($a = value() && $a > 0) {...}`
 into `$a = value(); if ($a) { if ($a > 0) {...}}`
 
-Defaults to true as of Phan 3.0.3-dev.
+Defaults to true as of Phan 3.0.3.
 This still helps with some edge cases such as assignments in compound conditions.
 
 (Default: `true`)
