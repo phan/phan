@@ -3615,6 +3615,14 @@ class A { /** @return void */ function v() {} }
 $a = (new A)->v();
 ```
 
+## PhanTypeVoidExpression
+
+```
+Suspicious use of void return value {CODE} where a value is expected
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0888_void_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0888_void_expression.php#L5).
+
 # UndefError
 
 This category of issue comes up when there are references to undefined things. These are a big source of false-positives in Phan given that code bases often take liberties with calling methods on sub-classes of the class defined to be returned by a function and things like that.

@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.4 (dev)
 -----------------------
 
+New features(Analysis):
++ Emit `PhanTypeVoidExpression` when using an expression returning `void` in places such as array keys/values.
+
 Jun 21 2020, Phan 3.0.3
 -----------------------
 

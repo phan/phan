@@ -5528,6 +5528,44 @@ class UnionType implements Serializable
         return UnionType::typeSetFromString('bool');
     }
 
+    /**
+     * Returns the boolean cast of this type
+     */
+    public function applyBoolCast(): UnionType
+    {
+        return UnionType::of(
+            self::applyBoolCastToList($this->type_set),
+            self::applyBoolCastToList($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @return list<Type>
+     */
+    private static function applyBoolCastToList(array $type_set): array
+    {
+        $contains_falsey = false;
+        $contains_truthy = false;
+        foreach ($type_set as $type) {
+            if ($type->isPossiblyFalsey()) {
+                $contains_falsey = true;
+            }
+            if ($type->isPossiblyTruthy()) {
+                $contains_truthy = true;
+            }
+            if ($contains_falsey && $contains_truthy) {
+                return UnionType::typeSetFromString('bool');
+            }
+        }
+        if ($contains_truthy) {
+            return UnionType::typeSetFromString('true');
+        } elseif ($contains_falsey) {
+            return UnionType::typeSetFromString('false');
+        }
+        return UnionType::typeSetFromString('bool');
+    }
+
     /** @return list<IntType|FloatType> */
     private static function intOrFloatTypeSet(): array
     {

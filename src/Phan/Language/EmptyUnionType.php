@@ -1398,6 +1398,11 @@ final class EmptyUnionType extends UnionType
         return UnionType::fromFullyQualifiedRealString('bool');
     }
 
+    public function applyBoolCast(): UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('bool');
+    }
+
     /** @return null */
     public function asSingleScalarValueOrNull()
     {

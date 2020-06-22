@@ -8,11 +8,13 @@ use ast\Node;
 use Closure;
 use Generator;
 use InvalidArgumentException;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
@@ -639,12 +641,22 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Don't bother recursing more than one level to iterate over possible types.
             $key_node = $child->children['key'];
             if ($key_node instanceof Node) {
-                $key_type_enum |= self::keyTypeFromUnionTypeValues(UnionTypeVisitor::unionTypeFromNode(
+                $key_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,
                     $key_node,
                     $should_catch_issue_exception
-                ));
+                );
+                if ($key_type->isVoidType()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeVoidExpression,
+                        $node->lineno,
+                        ASTReverter::toShortString($key_node)
+                    );
+                }
+                $key_type_enum |= self::keyTypeFromUnionTypeValues($key_type);
             } elseif ($key_node !== null) {
                 if (\is_string($key_node)) {
                     $key_type_enum |= GenericArrayType::KEY_STRING;

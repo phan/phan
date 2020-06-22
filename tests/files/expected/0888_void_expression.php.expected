@@ -1,0 +1,3 @@
+%s:5 PhanTypeVoidExpression Suspicious use of void return value do_echo(1) where a value is expected
+%s:5 PhanTypeVoidExpression Suspicious use of void return value do_echo(2) where a value is expected
+%s:6 PhanTypeVoidExpression Suspicious use of void return value do_echo(3) where a value is expected

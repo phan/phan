@@ -195,6 +195,7 @@ class Issue
     public const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
     public const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
     public const TypeVoidArgument          = 'PhanTypeVoidArgument';
+    public const TypeVoidExpression        = 'PhanTypeVoidExpression';
     public const TypePossiblyInvalidCallable = 'PhanTypePossiblyInvalidCallable';
     public const TypeInvalidCallable = 'PhanTypeInvalidCallable';
     public const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
@@ -1906,6 +1907,14 @@ class Issue
                 "Cannot use void return value {CODE} as a function argument",
                 self::REMEDIATION_B,
                 10161
+            ),
+            new Issue(
+                self::TypeVoidExpression,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Suspicious use of void return value {CODE} where a value is expected",
+                self::REMEDIATION_B,
+                10162
             ),
             new Issue(
                 self::TypeSuspiciousIndirectVariable,

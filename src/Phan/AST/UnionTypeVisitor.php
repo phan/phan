@@ -1060,6 +1060,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $value_types_builder->addType(MixedType::instance(false));
                         $real_value_types_builder = null;
                     } else {
+                        if ($element_value_type->isVoidType()) {
+                            $this->emitIssue(
+                                Issue::TypeVoidExpression,
+                                $node->lineno,
+                                ASTReverter::toShortString($value)
+                            );
+                        }
                         $value_types_builder->addUnionType($element_value_type);
                         $record_real_union_type($element_value_type);
                     }
@@ -1331,11 +1338,21 @@ class UnionTypeVisitor extends AnalysisVisitor
         // TODO: Check if the cast would throw an error at runtime, based on the type (e.g. casting object to string/int)
 
         // RedundantConditionCallPlugin contains unrelated checks of whether this is redundant.
+        $expr = $node->children['expr'];
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
+        if ($expr_type->isVoidType()) {
+            $this->emitIssue(
+                Issue::TypeVoidExpression,
+                $expr->lineno ?? $node->lineno,
+                ASTReverter::toShortString($expr)
+            );
+        }
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
                 return NullType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_BOOL:
-                return BoolType::instance(false)->asRealUnionType();
+                return $expr_type->applyBoolCast();
+                // TODO: Warn about invalid casts (#2806)
             case \ast\flags\TYPE_LONG:
                 return IntType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_DOUBLE:
@@ -1345,7 +1362,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_OBJECT:
-                return $this->typeAfterCastToObject($node->children['expr']);
+                return $this->typeAfterCastToObject($expr_type);
             default:
                 throw new NodeException(
                     $node,
@@ -1355,16 +1372,14 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node|string|int|float $expr
      * @suppress PhanThrowTypeAbsentForCall
      */
-    private function typeAfterCastToObject($expr): UnionType
+    private static function typeAfterCastToObject(UnionType $expr_type): UnionType
     {
         static $stdclass;
         if ($stdclass === null) {
             $stdclass = Type::fromFullyQualifiedString('\stdClass');
         }
-        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
         $has_array = $expr_type->hasArray();
         if ($has_array) {
             if ($expr_type->isExclusivelyArray()) {
