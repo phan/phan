@@ -1443,6 +1443,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
+        // Mark the method as returning something (even if void)
+        if (null !== $node->children['expr']) {
+            $method->setHasReturn(true);
+        }
+
         if ($method->returnsRef()) {
             $this->analyzeReturnsReference($method, $node);
         }
@@ -1529,11 +1534,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Add the new type to the set of values returned by the
                 // method
                 $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
-            }
-
-            // Mark the method as returning something (even if void)
-            if (null !== $node->children['expr']) {
-                $method->setHasReturn(true);
             }
         }
 
@@ -3877,11 +3877,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param list<Node|mixed> $arguments
      * An array of arguments to the callable, to analyze references.
+     *
+     * @param bool $erase_old_return_type
+     * Whether $method's old return type should be erased
+     * to use the newly inferred type based on $argument_types.
+     * (useful for array_map, etc)
      */
     public function analyzeCallableWithArgumentTypes(
         array $argument_types,
         FunctionInterface $method,
-        array $arguments = []
+        array $arguments = [],
+        bool $erase_old_return_type = false
     ): void {
         $method = $this->findDefiningMethod($method);
         if (!$method->needsRecursiveAnalysis()) {
@@ -3956,6 +3962,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Now that we know something about the parameters used
             // to call the method, we can reanalyze the method with
             // the types of the parameter
+            if ($erase_old_return_type)  {
+                $method->setUnionType($method->getOriginalReturnType());
+            }
             $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
         } finally {
             $method->setInternalScope($original_method_scope);
@@ -4227,7 +4236,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             } else {
                 $parameter->addUnionType(
-                    $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
+                    ($method instanceof Func && $method->isClosure() ? $argument_type : $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances())->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
         }

@@ -1,0 +1,1 @@
+src/178_dependent_array_map.php:5 PhanTypeMismatchReturn Returning $result of type non-empty-array<int,string> but test178() is declared to return array<string,mixed>

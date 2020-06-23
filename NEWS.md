@@ -5,6 +5,8 @@ Phan NEWS
 
 New features(Analysis):
 + Emit `PhanTypeVoidExpression` when using an expression returning `void` in places such as array keys/values.
++ More accurately infer unspecified types when closures are used with `array_map` (#3973)
++ Don't flatten array shapes and literal values passed to closures when analyzing closures. (Continue flattening for methods and global functions)
 
 Jun 21 2020, Phan 3.0.3
 -----------------------

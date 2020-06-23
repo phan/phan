@@ -341,11 +341,10 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $array_map_callback = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $array_map_function,
             array $args
         ) use (
             $nullable_array_type_set,
-            $probably_real_array,
             $real_nullable_array
 ): UnionType {
             // TODO: Handle non-empty-array in these methods and convert to non-empty-array.
@@ -354,10 +353,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
-                return $probably_real_array;
+                return $array_map_function->getUnionType();
             }
             $arguments = \array_slice($args, 1);
-            $possible_return_types = UnionType::empty();
             $cache_outer = [];
             /**
              * @param Node|int|string|float|null $argument
@@ -389,20 +387,18 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $cache[$i] = $argument_type;
                 return $argument_type;
             };
-            foreach ($function_like_list as $map_function) {
+            foreach ($function_like_list as $mapping_function) {
                 ArgumentType::analyzeForCallback(
-                    $map_function,
+                    $mapping_function,
                     $arguments,
                     $context,
                     $code_base,
                     $get_argument_type_for_array_map
                 );
-                // TODO: fix https://github.com/phan/phan/issues/2554
-                $possible_return_types = $possible_return_types->withUnionType($map_function->getUnionType());
             }
             if (Config::get_track_references()) {
-                foreach ($function_like_list as $map_function) {
-                    $map_function->addReference($context);
+                foreach ($function_like_list as $mapping_function) {
+                    $mapping_function->addReference($context);
                 }
             }
             if (!Config::get_quick_mode()) {
@@ -410,13 +406,42 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 foreach ($arguments as $i => $node) {
                     $argument_types[] = $get_argument_type_for_array_map($node, $i);
                 }
-                foreach ($function_like_list as $map_function) {
+                foreach ($function_like_list as $mapping_function) {
                     $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
-                    $analyzer->analyzeCallableWithArgumentTypes($argument_types, $map_function);
+                    $erase_old_types = $mapping_function instanceof Func && $mapping_function->isClosure();
+                    $analyzer->analyzeCallableWithArgumentTypes($argument_types, $mapping_function, [], $erase_old_types);
                 }
             }
-            if ($possible_return_types->isEmpty()) {
-                return $probably_real_array;
+
+            // NOTE: Get the union type of the function or closure *after* analyzing that closure with the given argument types.
+            // Analyzing a function will add the return types that were observed during analysis.
+            $possible_return_types = null;
+            foreach ($function_like_list as $mapping_function) {
+                // TODO: Fix https://github.com/phan/phan/issues/2554
+                /*
+                if ($mapping_function->hasDependentReturnType() && count($args) === 2 && ($args[1]->kind ?? null) !== \ast\AST_UNPACK) {
+                    $fake_node_line = $args[1]->lineno ?? $context->getLineNumberStart();
+                    $fake_node = new Node(\ast\AST_DIM, 0, [
+                        'expr' => $args[1],
+                        'dim' => new Node(\ast\AST_CALL, 0, [
+                            'expr' => new Node(\ast\AST_NAME, \ast\flags\NAME_FQ, ['name' => 'rand'], $fake_node_line),
+                            'args' => new Node(\ast\AST_ARG_LIST, 0, [0, 1], $fake_node_line),
+                        ], $fake_node_line)
+                    ], $fake_node_line);
+                    $new_element_types = $mapping_function->getDependentReturnType($code_base, $context, [$fake_node]);
+                } else
+                 */
+                $new_element_types = $mapping_function->getUnionType();
+
+                if ($possible_return_types instanceof UnionType) {
+                    $possible_return_types = $possible_return_types->withUnionType($new_element_types);
+                } else {
+                    $possible_return_types = $new_element_types;
+                }
+            }
+            if (!$possible_return_types || $possible_return_types->isEmpty()) {
+                // This will always be a real array in php 8.0+
+                return $array_map_function->getUnionType();
             }
             if (count($arguments) >= 2) {
                 // There were two or more arrays passed to the closure

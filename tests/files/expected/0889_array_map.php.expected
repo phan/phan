@@ -1,0 +1,4 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{newName:int,newId:string}[](real=?array)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $names - it has union type (empty union type)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $names - it has union type array{name:string,id:int}
+%s:19 PhanTypeMismatchReturn Returning $x of type array{newName:int,newId:string}[] but transformNames() is declared to return array{newName:string,newId:int}[]
