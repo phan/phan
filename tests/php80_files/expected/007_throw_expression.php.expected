@@ -6,9 +6,9 @@
 %s:12 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($falsableValue ?: (throw new InvalidArgumentException()))
 %s:12 PhanUnusedVariable Unused definition of variable $value
 %s:15 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($array ? $array : (throw new InvalidArgumentException()))
-%s:16 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $value of type non-empty-array<mixed,mixed> but \spl_object_hash() takes object
+%s:16 PhanTypeMismatchArgumentInternalReal Argument 1 ($obj) is $value of type non-empty-array<mixed,mixed> but \spl_object_hash() takes object
 %s:17 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($array ? (throw new InvalidArgumentException()) : $array)
-%s:18 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($obj) is $value of type ?array{} but \spl_object_hash() takes object
+%s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($obj) is $value of type ?array{} but \spl_object_hash() takes object
 %s:22 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($condition && (throw new Exception()))
 %s:22 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type false(real=false)
 %s:24 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type non-empty-mixed(real=non-empty-mixed)

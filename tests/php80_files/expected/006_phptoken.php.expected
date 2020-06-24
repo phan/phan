@@ -1,2 +1,2 @@
 %s:4 PhanUndeclaredProperty Reference to undeclared property \PhpToken->lineno (Did you mean expr->line)
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is [$token->id,$token->text,$token->line,$token->pos] of type array{0:int,1:string,2:int,3:int} but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($numerator) is [$token->id,$token->text,$token->line,$token->pos] of type array{0:int,1:string,2:int,3:int} but \intdiv() takes int

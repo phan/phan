@@ -9,6 +9,8 @@ New features(Analysis):
 + Don't flatten array shapes and literal values passed to closures when analyzing closures. (Continue flattening for methods and global functions)
 + Link to documentation for internal stubs as a suggestion for undeclared class issues when Phan has type information related to the class in its signature files.
   See https://github.com/phan/phan/wiki/Frequently-Asked-Questions#undeclared_element
++ Properly render the default values if available(`ReflectionParameter->isDefaultValueAvailable()`) in php 8.0+.
++ Properly set the real union types based on reflection information for functions/methods in more edge cases.
 
 Jun 21 2020, Phan 3.0.3
 -----------------------

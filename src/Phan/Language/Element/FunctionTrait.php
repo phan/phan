@@ -608,6 +608,33 @@ trait FunctionTrait
     }
 
     /**
+     * @internal - moves real parameter defaults to the inferred phpdoc parameters
+     */
+    public function inheritRealParameterDefaults(): void
+    {
+        foreach ($this->real_parameter_list as $i => $real_parameter) {
+            $parameter = $this->parameter_list[$i] ?? null;
+            if (!$parameter || $parameter->isVariadic() || $real_parameter->isVariadic()) {
+                // No more parameters
+                // TODO: Properly inherit variadic real types
+                return;
+            }
+            $real_type = $real_parameter->getUnionType();
+            if (!$real_type->isEmpty()) {
+                $parameter->setUnionType($parameter->getUnionType()->withRealTypeSet($real_type->getTypeSet()));
+            }
+            if (!$real_parameter->hasDefaultValue()) {
+                continue;
+            }
+
+            if (!$parameter->isOptional() || $parameter->isVariadic()) {
+                continue;
+            }
+            $parameter->copyDefaultValueFrom($real_parameter);
+        }
+    }
+
+    /**
      * @param list<Parameter> $parameter_list
      */
     protected static function computeNumberOfRequiredParametersForList(array $parameter_list): int

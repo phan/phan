@@ -72,6 +72,12 @@ class Parameter extends Variable
     private $default_value_constant_name = null;
 
     /**
+     * @var bool
+     * True if the default value was inferred from reflection
+     */
+    private $default_value_from_reflection = false;
+
+    /**
      * @return static
      */
     public static function create(
@@ -235,6 +241,7 @@ class Parameter extends Variable
                 if ($reflection_parameter->isDefaultValueConstant()) {
                     $parameter->default_value_constant_name = $reflection_parameter->getDefaultValueConstantName();
                 }
+                $parameter->default_value_from_reflection = true;
             } else {
                 if (!$parameter_type->isEmpty() && !$parameter_type->containsNullable()) {
                     $default_type = $parameter_type;
@@ -616,7 +623,7 @@ class Parameter extends Variable
             // then render the default as `default`, not `null`
             if ($is_internal) {
                 $union_type = $this->getNonVariadicUnionType();
-                if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                if (!$this->default_value_from_reflection && !$union_type->isEmpty() && !$union_type->containsNullable()) {
                     return 'unknown';
                 }
             }
@@ -682,7 +689,7 @@ class Parameter extends Variable
                 // then render the default as `unknown`, not `null`
                 if ($is_internal) {
                     $union_type = $this->getNonVariadicUnionType();
-                    if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                    if (!$this->default_value_from_reflection && !$union_type->isEmpty() && !$union_type->containsNullable()) {
                         $default_repr = 'unknown';
                     }
                 }
@@ -765,5 +772,16 @@ class Parameter extends Variable
     public function hasEmptyNonVariadicType(): bool
     {
         return self::getUnionType()->isEmpty();
+    }
+
+    /**
+     * Copy the information about default values from $other
+     */
+    public function copyDefaultValueFrom(Parameter $other): void {
+        $this->default_value = $other->default_value;
+        $this->default_value_type = $other->default_value_type;
+        if ($other->default_value_from_reflection)  {
+            $this->default_value_from_reflection = true;
+        }
     }
 }

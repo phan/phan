@@ -174,6 +174,7 @@ class FunctionFactory
         if ($class_name !== 'ServerResponse') {
             $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
             $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
+            $method->inheritRealParameterDefaults();
         }
 
         return self::functionListFromFunction($method);
@@ -269,13 +270,11 @@ class FunctionFactory
                     $flags
                 );
                 $parameter->enablePhanFlagBits($phan_flags);
-
                 if ($is_optional) {
                     if (!$parameter->hasDefaultValue()) {
+                        // Placeholder value. PHP 8.0+ is better at actually providing real parameter defaults.
                         $parameter->setDefaultValueType(NullType::instance(false)->asPHPDocUnionType());
                     }
-                    // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
-                    // I don't see any cases where this will be used for internal types, though.
                 }
 
                 // Add the parameter

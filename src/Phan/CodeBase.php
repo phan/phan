@@ -1507,7 +1507,10 @@ class CodeBase
                         $function->setUnionType(UnionType::of($function->getUnionType()->getTypeSet() ?: $real_type_set, $real_type_set));
                     }
 
-                    $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
+                    $real_parameter_list = Parameter::listFromReflectionParameterList($reflection_function->getParameters());
+                    $function->setRealParameterList($real_parameter_list);
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $function->inheritRealParameterDefaults();
                 }
                 $this->addFunction($function);
                 $this->updatePluginsOnLazyLoadInternalFunction($function);
