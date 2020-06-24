@@ -9,6 +9,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
@@ -17,10 +18,13 @@ use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\UnionType;
 
 use function count;
+use function is_array;
 use function is_string;
 use function strlen;
+use function strpos;
 use function strtolower;
 use function uksort;
 
@@ -167,6 +171,8 @@ class IssueFixSuggester
         if ($filter) {
             $suggested_fqsens = \array_filter($suggested_fqsens, $filter);
         }
+        $suggested_fqsens = \array_merge(self::suggestStubForClass($class_fqsen), $suggested_fqsens);
+
         if (count($suggested_fqsens) === 0) {
             return null;
         }
@@ -175,7 +181,7 @@ class IssueFixSuggester
          * @param FullyQualifiedClassName|string $fqsen
          */
         $generate_type_representation = static function ($fqsen) use ($code_base): string {
-            if (\is_string($fqsen)) {
+            if (is_string($fqsen)) {
                 return $fqsen;  // Not a class name, e.g. 'int', 'callable', etc.
             }
             $category = 'classlike';
@@ -194,6 +200,39 @@ class IssueFixSuggester
         $suggestion_text = $prefix . ' ' . \implode(' or ', \array_map($generate_type_representation, $suggested_fqsens));
 
         return Suggestion::fromString($suggestion_text);
+    }
+
+    /**
+     * @return array{0?:string} an optional suggestion to enable internal stubs to load that class
+     */
+    public static function suggestStubForClass(FullyQualifiedClassName $fqsen): array
+    {
+        $class_key = \strtolower(\ltrim($fqsen->__toString(), '\\'));
+        if (\array_key_exists($class_key, self::getKnownClasses())) {
+            // Did you mean to configure
+            return ["to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class"];
+        }
+        return [];
+    }
+
+    /**
+     * @return array<string, string|true> fetches an incomplete list of classes Phan has known signatures/documentation for
+     */
+    private static function getKnownClasses(): array
+    {
+        static $known_classes = null;
+        if (!is_array($known_classes)) {
+            $known_classes = MarkupDescription::loadClassDescriptionMap();
+            foreach (UnionType::internalFunctionSignatureMap(Config::get_closest_target_php_version_id()) as $fqsen => $_) {
+                $i = strpos($fqsen, '::');
+                if ($i === false) {
+                    continue;
+                }
+                $fqsen = strtolower(\substr($fqsen, 0, $i));
+                $known_classes[$fqsen] = true;
+            }
+        }
+        return $known_classes;
     }
 
     /**

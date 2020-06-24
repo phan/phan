@@ -109,8 +109,7 @@ class ThrowsTypesAnalyzer
         if ($exception_class->isTrait() || $exception_class->isInterface()) {
             $maybe_emit_for_method(
                 $exception_class->isTrait() ? Issue::TypeInvalidThrowsIsTrait : Issue::TypeInvalidThrowsIsInterface,
-                [$method->getName(), $type],
-                self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
+                [$method->getName(), $type]
             );
             return $exception_class->isInterface();
         }

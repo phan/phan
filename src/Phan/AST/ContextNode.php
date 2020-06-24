@@ -1353,7 +1353,8 @@ class ContextNode
                     Issue::fromType($is_static ? Issue::UndeclaredClassStaticProperty : Issue::UndeclaredClassProperty)(
                         $this->context->getFile(),
                         $node->lineno,
-                        [ $property_name, $exception_fqsen ]
+                        [ $property_name, $exception_fqsen ],
+                        IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                     )
                 );
             }

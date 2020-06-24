@@ -38,6 +38,7 @@ namespace Phan\Language\Internal;
  *   and what makes sense for Phan may not make sense for those projects, and vice versa.
  */
 return [
+'__PhanMissingTestClass' => 'Missing class name used by Phan for unit tests',
 'AMQPBasicProperties' => 'stub class representing AMQPBasicProperties from pecl-amqp',
 'AMQPChannel' => 'stub class representing AMQPChannel from pecl-amqp',
 'AMQPChannelException' => 'stub class representing AMQPChannelException from pecl-amqp',

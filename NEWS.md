@@ -7,6 +7,8 @@ New features(Analysis):
 + Emit `PhanTypeVoidExpression` when using an expression returning `void` in places such as array keys/values.
 + More accurately infer unspecified types when closures are used with `array_map` (#3973)
 + Don't flatten array shapes and literal values passed to closures when analyzing closures. (Continue flattening for methods and global functions)
++ Link to documentation for internal stubs as a suggestion for undeclared class issues when Phan has type information related to the class in its signature files.
+  See https://github.com/phan/phan/wiki/Frequently-Asked-Questions#undeclared_element
 
 Jun 21 2020, Phan 3.0.3
 -----------------------

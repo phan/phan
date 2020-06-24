@@ -96,7 +96,6 @@ class MarkupDescription
 
     /**
      * @return array<string,string> mapping class FQSENs to short summaries.
-     * @internal - The data format may change
      */
     public static function loadClassDescriptionMap(): array
     {
