@@ -12,6 +12,10 @@ New features(Analysis):
 + Properly render the default values if available(`ReflectionParameter->isDefaultValueAvailable()`) in php 8.0+.
 + Properly set the real union types based on reflection information for functions/methods in more edge cases.
 
+Bug fixes:
++ Treat `@method static foo()` as an instance method returning the union type `static` (#3981)
+  Previously, Phan treated it like a static method with type `void` based on an earlier phpdoc spec.
+
 Jun 21 2020, Phan 3.0.3
 -----------------------
 

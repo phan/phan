@@ -15,6 +15,7 @@ use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
 use Phan\Language\Scope\TemplateScope;
 use Phan\Language\Type;
+use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -1184,7 +1185,13 @@ final class Builder
             } else {
                 // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
-                $return_union_type = VoidType::instance(false)->asPHPDocUnionType();
+                if ($is_static) {
+                    // > `static` on its own would mean that the method returns an instance of the child class which the method is called on.
+                    $return_union_type = StaticType::instance(false)->asPHPDocUnionType();
+                    $is_static = false;
+                } else {
+                    $return_union_type = VoidType::instance(false)->asPHPDocUnionType();
+                }
             }
             $method_name = $match[22];
 

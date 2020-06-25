@@ -23,7 +23,7 @@ class PhanTestNew extends PhanTestCommon
             static function (array $data): bool {
                 $expected_file = \basename($data[1]);
                 // Run everything except 0000-0699 (including tests starting with punctuation/letters if needed)
-                return !(\strcmp($expected_file, '0000') >= 0 && \strcmp($expected_file, '0700') < 0);
+                return !(\strcmp($expected_file, '0000') >= 0 && \strcmp($expected_file, '0800') < 0);
             }
         );
     }

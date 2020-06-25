@@ -1,0 +1,4 @@
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $value->myMethod() of type \Magic891 but \intdiv() takes int
+%s:23 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is $other->myMethod() of type \Inherited891|\Magic891 but \intdiv() takes int
+%s:26 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is Inherited891::myStaticMethod() of type \Inherited891|\Magic891 but \intdiv() takes int
+%s:26 PhanTypeMismatchArgumentInternal Argument 2 ($divisor) is Inherited891::actuallyStatic() of type \Inherited891|\Magic891 but \intdiv() takes int
