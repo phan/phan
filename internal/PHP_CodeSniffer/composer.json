@@ -10,7 +10,7 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "7.1.14"
+            "php": "7.2.31"
         }
     },
     "require": {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cda82293e9dcb09f61f47cbc64999051",
+    "content-hash": "892532e22607b686c6b92dccd52fe0f0",
     "packages": [
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -127,12 +127,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "36bed54725877cceb31f23f6eda015b7d0927544"
+                "reference": "e47a24f410dea65e0990bd3bdfb64900751c2e25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/36bed54725877cceb31f23f6eda015b7d0927544",
-                "reference": "36bed54725877cceb31f23f6eda015b7d0927544",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/e47a24f410dea65e0990bd3bdfb64900751c2e25",
+                "reference": "e47a24f410dea65e0990bd3bdfb64900751c2e25",
                 "shasum": ""
             },
             "require": {
@@ -176,7 +176,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-10T06:18:24+00:00"
+            "time": "2020-06-22T11:04:04+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -184,12 +184,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "75ff420b23c0866c99c350099381a93b8602ebe6"
+                "reference": "a957a73e3533353451eb9fd62ee58bd0aba2773c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/75ff420b23c0866c99c350099381a93b8602ebe6",
-                "reference": "75ff420b23c0866c99c350099381a93b8602ebe6",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/a957a73e3533353451eb9fd62ee58bd0aba2773c",
+                "reference": "a957a73e3533353451eb9fd62ee58bd0aba2773c",
                 "shasum": ""
             },
             "require": {
@@ -227,7 +227,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2020-05-21T06:41:29+00:00"
+            "time": "2020-06-22T05:29:29+00:00"
         }
     ],
     "packages-dev": [],
@@ -242,7 +242,7 @@
     "platform": [],
     "platform-dev": [],
     "platform-overrides": {
-        "php": "7.1.14"
+        "php": "7.2.31"
     },
     "plugin-api-version": "1.1.0"
 }

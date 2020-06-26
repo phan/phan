@@ -51,6 +51,7 @@
     <!-- conflicts with PSR2.ControlStructures.ControlStructureSpacing, the automatic fixes have strange space  -->
     <exclude name="PSR12.ControlStructures.ControlStructureSpacing" />
   </rule>
+  <rule ref="Generic.Arrays.DisallowLongArraySyntax.Found" />
   <!-- Arbitrary increase of the line length limit -->
   <rule ref="Generic.Files.LineLength">
     <properties>
