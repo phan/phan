@@ -204,19 +204,19 @@ class StubCollection
 
     public function addClazz(Clazz $class) : void
     {
-        list($namespace, $name) = $class->toStubInfo($this->code_base);
+        [$namespace, $name] = $class->toStubInfo($this->code_base);
         $this->class_stubs[$namespace][(string)$class->getFQSEN()] = $name;
     }
 
     public function addGlobalConstant(GlobalConstant $global_constant) : void
     {
-        list($namespace, $name) = $global_constant->toStubInfo();
+        [$namespace, $name] = $global_constant->toStubInfo();
         $this->global_constant_stubs[$namespace][(string)$global_constant->getFQSEN()] = $name;
     }
 
     public function addFunc(Func $function) : void
     {
-        list($namespace, $name) = $function->toStubInfo();
+        [$namespace, $name] = $function->toStubInfo();
         $this->function_stubs[$namespace][(string)$function->getFQSEN()] = $name;
     }
 

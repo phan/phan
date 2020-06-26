@@ -1,0 +1,2 @@
+src/179_long_array_warning.php:2 PhanPluginShortArray Should use [] instead of array()
+src/179_long_array_warning.php:3 PhanPluginShortArrayList Should use [] instead of list()

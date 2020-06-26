@@ -550,6 +550,13 @@ Most of the reported issues will likely not be worth fixing, or be false positiv
 - **PhanPluginConstantVariableNull**: `Variable ${VARIABLE} is probably constant with a value of {TYPE}`
 - **PhanPluginConstantVariableScalar**: `Variable ${VARIABLE} is probably constant with a value of {TYPE}`
 
+#### ShortArrayPlugin.php
+
+This suggests using shorter array syntaxes if supported by the `target_php_version`.
+
+- **PhanPluginLongArray**: `Should use [] instead of array()`
+- **PhanPluginLongArrayList**: `Should use [] instead of list()`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
