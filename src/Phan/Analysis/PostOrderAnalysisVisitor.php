@@ -3962,7 +3962,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Now that we know something about the parameters used
             // to call the method, we can reanalyze the method with
             // the types of the parameter
-            if ($erase_old_return_type)  {
+            if ($erase_old_return_type) {
                 $method->setUnionType($method->getOriginalReturnType());
             }
             $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);

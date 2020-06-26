@@ -777,10 +777,11 @@ class Parameter extends Variable
     /**
      * Copy the information about default values from $other
      */
-    public function copyDefaultValueFrom(Parameter $other): void {
+    public function copyDefaultValueFrom(Parameter $other): void
+    {
         $this->default_value = $other->default_value;
         $this->default_value_type = $other->default_value_type;
-        if ($other->default_value_from_reflection)  {
+        if ($other->default_value_from_reflection) {
             $this->default_value_from_reflection = true;
         }
     }
