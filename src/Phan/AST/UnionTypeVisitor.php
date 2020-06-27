@@ -861,7 +861,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Rarely, a conditional will always be true or always be false.
         if ($cond_truthiness !== null) {
             // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
-            if ($cond_truthiness === true) {
+            if ($cond_truthiness) {
                 // The condition is unconditionally true
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,

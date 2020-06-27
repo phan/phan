@@ -5322,7 +5322,7 @@ class UnionType implements Serializable
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined): UnionType
     {
-        if ($is_possibly_undefined === false) {
+        if (!$is_possibly_undefined) {
             return $this;
         }
         $result = new AnnotatedUnionType($this->type_set, true, $this->real_type_set);

@@ -566,6 +566,7 @@ return [
         // Warn about `$var == SOME_INT_OR_STRING_CONST` due to unintuitive behavior such as `0 == 'a'`
         '.phan/plugins/StrictLiteralComparisonPlugin.php',
         '.phan/plugins/ShortArrayPlugin.php',
+        '.phan/plugins/SimplifyExpressionPlugin.php',
         // 'UnknownClassElementAccessPlugin' is more useful with batch analysis than in an editor.
         // It's used in tests/run_test __FakeSelfFallbackTest
 

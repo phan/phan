@@ -1,0 +1,9 @@
+src/180_simplify_expression.php:3 PhanPluginSimplifyExpressionBool (($x === 'a') ? true : false) can probably be simplified to ($x === 'a')
+src/180_simplify_expression.php:6 PhanPluginSimplifyExpressionBool (($x > 0) ? false : true) can probably be simplified to !(($x > 0))
+src/180_simplify_expression.php:9 PhanPluginSimplifyExpressionBool (($x > 0) ?: false) can probably be simplified to ($x > 0)
+src/180_simplify_expression.php:12 PhanPluginNonBoolInLogicalArith Non bool value of type  in logical arithmetic
+src/180_simplify_expression.php:12 PhanPluginNonBoolInLogicalArith Non bool value of type int in logical arithmetic
+src/180_simplify_expression.php:12 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/180_simplify_expression.php:12 PhanPluginSimplifyExpressionBool (!$x xor false) can probably be simplified to !$x
+src/180_simplify_expression.php:12 PhanPluginSimplifyExpressionBool (empty($x) !== false) can probably be simplified to empty($x)
+src/180_simplify_expression.php:12 PhanPluginSimplifyExpressionBool (isset($x) == true) can probably be simplified to isset($x)

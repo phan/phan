@@ -16,6 +16,7 @@ Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`
 + Emit `PhanPluginDuplicateExpressionAssignmentOperation` if `X = X op Y` is seen and it can be converted to `X op= Y` (#3985)
   (excluding `??=` for now)
++ Add `SimplifyExpressionPlugin`, to suggest shortening expressions such as `$realBool ? true : false` or `$realBool === false`
 
 Bug fixes:
 + Treat `@method static foo()` as an instance method returning the union type `static` (#3981)
