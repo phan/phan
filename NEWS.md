@@ -14,6 +14,8 @@ New features(Analysis):
 
 Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`
++ Emit `PhanPluginDuplicateExpressionAssignmentOperation` if `X = X op Y` is seen and it can be converted to `X op= Y` (#3985)
+  (excluding `??=` for now)
 
 Bug fixes:
 + Treat `@method static foo()` as an instance method returning the union type `static` (#3981)

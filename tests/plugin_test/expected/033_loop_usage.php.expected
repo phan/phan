@@ -1,3 +1,4 @@
 src/033_loop_usage.php:4 PhanUnusedVariable Unused definition of variable $b
+src/033_loop_usage.php:9 PhanPluginDuplicateExpressionAssignmentOperation Can simplify this assignment to $a += $x
 src/033_loop_usage.php:10 PhanUnusedVariable Unused definition of variable $b
 src/033_loop_usage.php:15 PhanUnusedVariable Unused definition of variable $a

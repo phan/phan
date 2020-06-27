@@ -192,6 +192,22 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         $this->visitAssign($node);
     }
 
+    private const ASSIGN_OP_FLAGS = [
+        flags\BINARY_BITWISE_OR => '|',
+        flags\BINARY_BITWISE_AND => '&',
+        flags\BINARY_BITWISE_XOR => '^',
+        flags\BINARY_CONCAT => '.',
+        flags\BINARY_ADD => '+',
+        flags\BINARY_SUB => '-',
+        flags\BINARY_MUL => '*',
+        flags\BINARY_DIV => '/',
+        flags\BINARY_MOD => '%',
+        flags\BINARY_POW => '**',
+        flags\BINARY_SHIFT_LEFT => '<<',
+        flags\BINARY_SHIFT_RIGHT => '>>',
+        // flags\BINARY_COALESCE => '??',  // TODO: Support a minimum_php_version config.
+    ];
+
     /**
      * @param Node $node
      * An assignment operation node to analyze
@@ -199,8 +215,41 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitAssign(Node $node): void
     {
-        $var = $node->children['var'];
         $expr = $node->children['expr'];
+        if (!$expr instanceof Node) {
+            // Guaranteed not to contain duplicate expressions in valid php assignments.
+            return;
+        }
+        $var = $node->children['var'];
+        if ($expr->kind === ast\AST_BINARY_OP) {
+            $op_str = self::ASSIGN_OP_FLAGS[$expr->flags] ?? null;
+            if (is_string($op_str) && ASTHasher::hash($var) === ASTHasher::hash($expr->children['left'])) {
+                $message = 'Can simplify this assignment to {CODE} {OPERATOR} {CODE}';
+                /*
+                if ($expr->flags === ast\flags\BINARY_COALESCE) {
+                    if (Config::get_closest_target_php_version_id() < 70400) {
+                        return;
+                    }
+                    $message .= ' (requires php version 7.4 or newer)';
+                }
+                 */
+
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    $this->context,
+                    'PhanPluginDuplicateExpressionAssignmentOperation',
+                    $message,
+                    [
+                        ASTReverter::toShortString($var),
+                        $op_str . '=',
+                        ASTReverter::toShortString($expr->children['right']),
+                    ]
+                );
+
+
+            }
+            return;
+        }
         if (ASTHasher::hash($var) === ASTHasher::hash($expr)) {
             $this->emitPluginIssue(
                 $this->code_base,
