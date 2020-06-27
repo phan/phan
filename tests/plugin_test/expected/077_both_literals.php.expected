@@ -16,4 +16,3 @@ src/077_both_literals.php:15 PhanPluginBothLiteralsBinaryOp Suspicious usage of 
 src/077_both_literals.php:15 PhanPluginNonBoolInLogicalArith Non bool value of type 'aString' in logical arithmetic
 src/077_both_literals.php:16 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true || false (result is true)
 src/077_both_literals.php:17 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true xor false (result is true)
-src/077_both_literals.php:17 PhanPluginSimplifyExpressionBool (true xor false) can probably be simplified to !(false)

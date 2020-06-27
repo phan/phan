@@ -6,6 +6,7 @@ use ast\flags;
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\ASTReverter;
+use Phan\Language\Type\BoolType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -69,6 +70,14 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($real_type_set as $type) {
             if (!$type->isInBoolFamily() || $type->isNullable()) {
                 return false;
+            }
+            if (count($real_type_set) === 1) {
+                // If the expression is `true` or `false`, assume that ExtendedDependentReturnPlugin or some other plugin
+                // inferred a literal value instead of the expression being guaranteed to be a boolean.
+                // (e.g. `strpos(SOME_CONST, 'val') === false`)
+                //
+                // TODO: Could check if the expression is a call and what the getRealReturnType is for that function.
+                return $type instanceof BoolType;
             }
         }
         return true;
