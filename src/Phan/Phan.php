@@ -193,6 +193,8 @@ class Phan implements IgnoredFilesFilterInterface
      * @see \Phan\CodeBase
      *
      * @throws Exception if analysis fails unrecoverably or in an unexpected way
+     *
+     * @suppress PhanPluginRemoveDebugAny
      */
     public static function analyzeFileList(
         CodeBase $code_base,
@@ -442,6 +444,7 @@ class Phan implements IgnoredFilesFilterInterface
     private static function checkForOptionsConflictingWithServerModes(): void
     {
         if (Config::isIssueFixingPluginEnabled()) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             fwrite(STDERR, "Cannot use --automatic-fix in daemon mode or with the language server\n");
             exit(EXIT_FAILURE);
         }
@@ -766,6 +769,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $encoded_signatures = json_encode($code_base->exportFunctionAndMethodSet(), JSON_PRETTY_PRINT);
         if (!file_put_contents($filename, $encoded_signatures)) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             fprintf(STDERR, "Could not save contents to path '%s'\n", $filename);
             return EXIT_FAILURE;
         }
@@ -776,6 +780,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $memory = memory_get_usage() / 1024 / 1024;
         $peak   = memory_get_peak_usage() / 1024 / 1024;
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall
         fwrite(STDERR, sprintf("Memory usage after analysis completed: %.02dMB/%.02dMB\n", $memory, $peak));
     }
 
@@ -820,6 +825,7 @@ class Phan implements IgnoredFilesFilterInterface
         }
         // We warn about Xdebug in src/codebase.php, so skip that check here.
         if ($warned) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             fwrite(STDERR, "(The above warning(s) about slow PHP settings can be disabled by setting 'skip_slow_php_options_warning' to true in .phan/config.php)\n");
         }
     }

@@ -19,6 +19,8 @@ use const JSON_UNESCAPED_SLASHES;
 
 /**
  * Information that can be inferred about the config name from the source code and other data
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class ConfigEntry
 {

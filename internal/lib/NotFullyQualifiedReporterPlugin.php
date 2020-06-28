@@ -11,6 +11,8 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This warns if references to global functions or global constants are not fully qualified.
+ * This is not used by Phan itself, but may be useful to generate a file with namespaced wrapper functions
+ * as a quick and dirty way to see the most commonly invoked un-namespaced functions.
  *
  * This Plugin hooks into two events:
  *
@@ -18,6 +20,8 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  * - finalize
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny this dumps the stub to stdout
  */
 class NotFullyQualifiedReporterPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability,

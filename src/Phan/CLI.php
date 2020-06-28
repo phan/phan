@@ -74,6 +74,7 @@ use const STR_PAD_LEFT;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class CLI
 {

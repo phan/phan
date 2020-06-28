@@ -1,6 +1,10 @@
 #!/usr/bin/env php
 <?php
-/** phoogle is a tool to locate functions based on their signatures. */
+/**
+ * phoogle is a tool to locate functions based on their signatures.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
+ */
 
 use Phan\CLIBuilder;
 use Phan\Phan;

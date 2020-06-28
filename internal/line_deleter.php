@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+// @phan-file-suppress PhanPluginRemoveDebugEcho
+
 declare(strict_types=1);
 
 /**
@@ -9,6 +11,8 @@ declare(strict_types=1);
  * Potentially useful for issue types that don't have an automatic fixer
  * but correspond to a single line of code that can be deleted.
  * (in pylint or plaintext output formats)
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class LineDeleter
 {

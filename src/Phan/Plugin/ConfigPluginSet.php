@@ -780,6 +780,7 @@ final class ConfigPluginSet extends PluginV3 implements
     public function prepareNodeSelectionPluginForNode(Node $node): void
     {
         if (!$this->node_selection_plugin) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fwrite(STDERR, "Error: " . __METHOD__ . " called before node selection plugin was created\n");
             return;
         }
@@ -983,7 +984,9 @@ final class ConfigPluginSet extends PluginV3 implements
             if (\function_exists('token_get_all')) {
                 $plugin_set[] = new BuiltinSuppressionPlugin();
             } else {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, "(This warning can be disabled by setting skip_missing_tokenizer_warning in the project's config)" . PHP_EOL);
             }
         }
@@ -1004,6 +1007,7 @@ final class ConfigPluginSet extends PluginV3 implements
             if (\is_readable($load_baseline_path)) {
                 $plugin_set[] = new BaselineLoadingPlugin($load_baseline_path);
             } else {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, CLI::colorizeHelpSectionIfSupported("WARNING: ") . "Could not load baseline from file '$load_baseline_path'" . PHP_EOL);
             }
         }
@@ -1138,6 +1142,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $closure = self::getGenericClosureForPluginAwarePreAnalysisVisitor($plugin_analysis_class);
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,
                 "Plugin %s has a preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
@@ -1236,6 +1241,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,
                 "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
@@ -1335,6 +1341,7 @@ final class ConfigPluginSet extends PluginV3 implements
 
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,
                 "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
@@ -1344,6 +1351,8 @@ final class ConfigPluginSet extends PluginV3 implements
             );
         } else {
             $expected_kinds = [ \ast\AST_FOR, \ast\AST_FOREACH, \ast\AST_WHILE ];
+            // TODO(tyson) figure out why Phan isn't warning about this example not being fully qualified outside of the language server.
+            // --disable-plugins --quick --plugin NotFullyQualifiedUsagePlugin properly warns.
             $additional_kinds = array_diff($handled_node_kinds, $expected_kinds);
             if ($additional_kinds) {
                 throw new AssertionError(

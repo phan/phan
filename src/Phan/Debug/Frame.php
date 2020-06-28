@@ -67,6 +67,7 @@ class Frame
         if (!is_array($value)) {
             if (is_resource($value)) {
                 \ob_start();
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \var_dump($value);
                 return \trim(\ob_get_clean() ?: 'resource');
             }

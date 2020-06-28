@@ -24,6 +24,8 @@ use Phan\PluginV3\FinalizeProcessCapability;
  * This file dumps Phan's inferred signatures and markup descriptions as markdown.
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugEcho outputting is deliberate
  */
 final class DumpPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,

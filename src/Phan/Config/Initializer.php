@@ -33,6 +33,7 @@ use const FILTER_VALIDATE_INT;
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginRemoveDebugEcho, PhanPluginRemoveDebugCall
  */
 class Initializer
 {

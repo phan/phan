@@ -357,6 +357,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $address = $options['tcp'];
             $socket = \stream_socket_client('tcp://' . $address, $errno, $errstr);
             if ($socket === false) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, "Could not connect to language client. Error $errno\n$errstr");
                 exit(1);
             }
@@ -373,14 +374,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $address = $options['tcp-server'];
             $tcpServer = \stream_socket_server('tcp://' . $address, $errno, $errstr);
             if ($tcpServer === false) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, "Could not listen on $address. Error $errno\n$errstr");
                 exit(1);
             }
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall stdout is deliberate
             \fwrite(STDOUT, "Server listening on $address\n");
             if (!\extension_loaded('pcntl')) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(STDERR, "PCNTL is not available. Only a single connection will be accepted\n");
             }
             while ($socket = \stream_socket_accept($tcpServer, -1)) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall stdout is deliberate
                 \fwrite(STDOUT, "Connection accepted\n");
                 \stream_set_blocking($socket, false);
                 /**if (false && extension_loaded('pcntl')) {  // FIXME re-enable, this was disabled to simplify testing

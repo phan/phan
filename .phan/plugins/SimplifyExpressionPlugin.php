@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use ast\flags;
 use ast\Node;
-use Phan\AST\UnionTypeVisitor;
 use Phan\AST\ASTReverter;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Type\BoolType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
@@ -62,7 +62,8 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Returns true if all types are strictly subtypes of `bool`
      */
-    protected static function isDefinitelyBool(UnionType $union_type): bool {
+    protected static function isDefinitelyBool(UnionType $union_type): bool
+    {
         $real_type_set = $union_type->getRealTypeSet();
         if (!$real_type_set) {
             return false;
@@ -87,7 +88,8 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $node
      * @return ?bool if this is the name of a boolean, the value. Otherwise, returns null.
      */
-    private static function getBoolConst($node): ?bool {
+    private static function getBoolConst($node): ?bool
+    {
         if (!$node instanceof Node) {
             return null;
         }
@@ -127,7 +129,8 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|string|int|float $inner_expr
      */
-    private function suggestBoolSimplification(Node $node, $inner_expr, bool $negate): void {
+    private function suggestBoolSimplification(Node $node, $inner_expr, bool $negate): void
+    {
         if (!self::isDefinitelyBool(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $inner_expr))) {
             return;
         }

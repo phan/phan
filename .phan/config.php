@@ -570,6 +570,9 @@ return [
         // 'UnknownClassElementAccessPlugin' is more useful with batch analysis than in an editor.
         // It's used in tests/run_test __FakeSelfFallbackTest
 
+        // This checks that there are no accidental echos/printfs left inside Phan's code.
+        '.phan/plugins/RemoveDebugStatementPlugin.php',
+
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////

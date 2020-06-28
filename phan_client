@@ -29,6 +29,7 @@
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
  * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void, PhanPluginCanUseReturnType
+ * @phan-file-suppress PhanPluginRemoveDebugEcho
  */
 class PhanPHPLinter
 {

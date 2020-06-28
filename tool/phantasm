@@ -17,6 +17,8 @@
  * - Add ways to integrate this with building a phar file (unsafe)
  * - Integrate other optimizations Phan can already do, such as --automatic-fix for NotFullyQualifiedUsagePlugin.
  * - Use Phan's signature map/documentation map information about which constants, classes, and functions/methods are internal
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 
 use Phan\CLI;

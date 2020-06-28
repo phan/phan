@@ -14,6 +14,7 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
  * This can be used when creating a union type to figure out the causes of unexpected error messages.
  *
  * Not used as part of normal phan operations.
+ * @phan-file-suppress PhanPluginRemoveDebugCall
  */
 class DebugUnionType extends UnionType
 {

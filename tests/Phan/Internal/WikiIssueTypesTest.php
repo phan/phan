@@ -30,6 +30,8 @@ use const STDERR;
 
 /**
  * Parts of this are based on https://github.com/phan/phan/issues/445#issue-195541058 by algo13
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class WikiIssueTypesTest extends BaseTest
 {

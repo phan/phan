@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types = 1);
 
+// @phan-file-suppress PhanPluginRemoveDebugAny
 require_once(__DIR__ . '/../../src/requirements.php');
 
 $code_base = require(__DIR__ . '/../../src/codebase.php');

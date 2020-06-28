@@ -25,6 +25,8 @@ declare(strict_types=1);
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugEcho
  */
 
 // @phan-file-suppress PhanMissingRequireFile this depends on where Phan is installed

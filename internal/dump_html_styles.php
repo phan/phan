@@ -9,6 +9,8 @@ use Phan\Output\Colorizing;
 
 /**
  * A utility to dump the terminal color codes as HTML styles
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugEcho
  */
 class DumpHTMLStyles
 {

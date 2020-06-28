@@ -10,6 +10,7 @@ require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase
  * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
  * Method names must use '::' to separate the class and method names.
  * @throws ReflectionException
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 function load_internal_function(string $function_name): ReflectionFunctionAbstract
 {

@@ -22,6 +22,7 @@ define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/
  * TODO: Fix zookeeperconfig in phpdoc-en svn repo
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginRemoveDebugAny only used internally
  */
 abstract class IncompatibleSignatureDetectorBase
 {

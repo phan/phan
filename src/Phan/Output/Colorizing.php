@@ -253,6 +253,7 @@ class Colorizing
             if ($data) {
                 self::$color_scheme = $data;
             } else {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(\STDERR, "Unknown PHAN_COLOR_SCHEME $env_color_scheme. Supported values: " . \implode(',', \array_keys(self::COLOR_SCHEMES)) . "\n");
             }
         }

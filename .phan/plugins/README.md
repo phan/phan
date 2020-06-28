@@ -557,6 +557,16 @@ This suggests using shorter array syntaxes if supported by the `target_php_versi
 - **PhanPluginLongArray**: `Should use [] instead of array()`
 - **PhanPluginLongArrayList**: `Should use [] instead of list()`
 
+#### RemoveDebugStatementPlugin.php
+
+This suggests removing debugging output statements such as `echo`, `print`, `printf`, fwrite(STDERR)`, `var_export()`, inline html, etc.
+This is only useful in applications or libraries that print output in only a few places, as a sanity check that debugging statements are not accidentally left in code.
+
+- **PhanPluginRemoveDebugEcho**: `Saw output expression/statement in {CODE}`
+- **PhanPluginRemoveDebugCall**: `Saw call to {FUNCTION} for debugging`
+
+Suppression comments can use the issue name `PhanPluginRemoveDebugAny` to suppress all issue types emitted by this plugin.
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.

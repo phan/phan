@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 // pdep is a tool to help explore dependencies of classes.
+// @phan-file-suppress PhanPluginRemoveDebugEcho
 
 use Phan\CLIBuilder;
 use Phan\Phan;

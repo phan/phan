@@ -28,6 +28,7 @@ use function strlen;
  * Note: This test file is not enabled in CI because they may hang indefinitely.
  * (integration test timeouts weren't implemented or tested yet).
  * @phan-file-suppress PhanPluginPossiblyStaticPrivateMethod there are a lot of methods
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 final class LanguageServerIntegrationTest extends BaseTest
 {
@@ -2018,6 +2019,7 @@ EOT;
 
     /**
      * @suppress PhanImpossibleCondition DEBUG_ENABLED is manually changed if needed.
+     * @suppress PhanPluginRemoveDebugEcho
      */
     private static function debugLog(string $message): void
     {

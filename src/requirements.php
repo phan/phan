@@ -2,15 +2,8 @@
 
 declare(strict_types=1);
 
-if ((int)phpversion()[0] < 7) {
-    fwrite(
-        STDERR,
-        'Phan requires PHP version 7 or greater. See https://github.com/phan/phan#getting-started for more details.'
-    );
-    exit(1);
-}
-
 if (!(file_exists(__DIR__ . '/../vendor/autoload.php') || file_exists(__DIR__ . '/../../../autoload.php'))) {
+    // @phan-suppress-next-line PhanPluginRemoveDebugCall
     fwrite(
         STDERR,
         'Autoloader not found. Make sure you run `composer install` before running Phan. See https://github.com/phan/phan#getting-started for more details.'

@@ -22,6 +22,8 @@ use Throwable;
 /**
  * This plugin only works correctly with Phan -j1
  * see tool/pdep for an intelligent wrapper for it
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny outputting is deliberate
  */
 class DependencyGraphPlugin extends PluginV3 implements
     AnalyzeClassCapability,

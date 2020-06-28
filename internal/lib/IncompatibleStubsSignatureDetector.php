@@ -25,6 +25,10 @@ require_once __DIR__ . '/IncompatibleSignatureDetectorBase.php';
 /**
  * This reads from a folder containing PHP stub files documenting internal extensions (e.g. those from PHPStorm)
  * to check if Phan's function signature map are up to date.
+ *
+ * `php-ast` does not differentiate between echo statements and inline html.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBase
 {

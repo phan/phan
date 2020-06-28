@@ -22,6 +22,7 @@ class StderrLogger implements LoggerInterface
      */
     public function log($level, $message, array $unused_context = []): void
     {
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall
         \fprintf(\STDERR, "[%s] %s\n", $level, $message);
     }
 }

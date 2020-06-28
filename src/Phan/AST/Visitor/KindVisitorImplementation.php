@@ -37,6 +37,7 @@ abstract class KindVisitorImplementation implements KindVisitor
 
     /**
      * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanPluginRemoveDebugAny deliberate warning for unhandled node kind
      */
     public function handleMissingNodeKind(Node $node)
     {

@@ -23,6 +23,7 @@ Shim::load();
  *
  * Configured stubs can be used in IDEs, analysis, etc. where extensions aren't installed or enabled (e.g. Xdebug)
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod, PhanPluginNoCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class StubsGenerator
 {

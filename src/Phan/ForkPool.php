@@ -326,6 +326,7 @@ class ForkPool
         foreach ($this->readers as $reader) {
             $errors = $reader->computeErrorsAfterRead();
             if (StringUtil::isNonZeroLengthString($errors)) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(\STDERR, "Saw errors for an analysis worker:\n" . $errors);
                 $saw_errors = true;
             }

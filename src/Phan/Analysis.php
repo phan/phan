@@ -106,6 +106,7 @@ class Analysis
 
             return $context;
         }
+        // TODO: Figure out why Phan doesn't suggest combining these catches except in language server mode
         try {
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError | CompileError | ParseException $_) {
@@ -113,6 +114,7 @@ class Analysis
         }
 
         if (Config::getValue('dump_ast')) {
+            // @phan-file-suppress PhanPluginRemoveDebugEcho
             echo $file_path . "\n"
                 . \str_repeat("\u{00AF}", strlen($file_path))
                 . "\n";
@@ -342,6 +344,7 @@ class Analysis
                 try {
                     $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
                 } catch (FQSENException | InvalidArgumentException $e) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall
                     \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
                     continue;
                 }
@@ -397,6 +400,7 @@ class Analysis
                     }
                 }
             } catch (FQSENException | InvalidArgumentException $e) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
             }
         }
@@ -425,6 +429,7 @@ class Analysis
                     }
                 }
             } catch (FQSENException $e) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s\n", $e->getFQSEN());
             }
         }

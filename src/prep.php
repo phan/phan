@@ -8,6 +8,7 @@ declare(strict_types=1);
 gc_disable();
 
 // Check the environment to make sure Phan can run successfully
+// @phan-file-suppress PhanPluginRemoveDebugEcho
 require_once __DIR__ . '/requirements.php';
 require_once __DIR__ . '/Phan/Bootstrap.php';
 

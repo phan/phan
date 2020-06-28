@@ -35,6 +35,7 @@ class WikiWriter
 
     /**
      * Append $text to the buffer of text to save.
+     * @suppress PhanPluginRemoveDebugEcho
      */
     public function append(string $text): void
     {

@@ -245,8 +245,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
                         ASTReverter::toShortString($expr->children['right']),
                     ]
                 );
-
-
             }
             return;
         }

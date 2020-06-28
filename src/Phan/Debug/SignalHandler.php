@@ -38,6 +38,7 @@ class SignalHandler
                 return;
             }
             $print_variables = $signo === \SIGUSR2;
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 \STDERR,
                 "Phan was interrupted with %s, printing debug information then continuing\n",

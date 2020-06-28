@@ -63,6 +63,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         if (!$code_base->hasClassWithFQSEN(self::$phpunit_test_case_fqsen)) {
             if (!self::$did_warn_missing_class) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", self::class);
                 self::$did_warn_missing_class = true;
             }

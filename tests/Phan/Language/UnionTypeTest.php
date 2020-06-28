@@ -167,14 +167,10 @@ final class UnionTypeTest extends BaseTest
 
     public function testString(): void
     {
-        try {
-            $this->assertUnionTypeStringEqual(
-                '"a string"',
-                "'a string'"
-            );
-        } catch (\Exception $exception) {
-            print((string)$exception);
-        }
+        $this->assertUnionTypeStringEqual(
+            '"a string"',
+            "'a string'"
+        );
     }
 
     public function testArrayUniform(): void

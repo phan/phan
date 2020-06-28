@@ -65,6 +65,7 @@ class DiskCache implements Cache
         }
         if ($this->use_igbinary) {
             if (\strncmp($contents, "\x00\x00\x00\x02", 4) !== 0) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fwrite(\STDERR, "Saw invalid igbinary serialized data at $path: wrong header\n");
                 return null;
             }
@@ -80,6 +81,7 @@ class DiskCache implements Cache
             $this->directory_exists = false;
             if (!\is_dir($this->directory)) {
                 if (!\mkdir($this->directory, 0755, true)) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall
                     \fwrite(\STDERR, "Failed to create AST cache directory $this->directory\n");
                     return false;
                 }

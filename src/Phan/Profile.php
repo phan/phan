@@ -94,6 +94,7 @@ trait Profile
 
             // Print it all out
             foreach ($label_metric_map as $label => $metrics) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugEcho
                 print $label
                     . "\t"
                     . \implode("\t", \array_map(static function (float $v): string {

@@ -49,6 +49,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
+     * @suppress PhanPluginRemoveDebugCall
      */
     public function collectIssue(IssueInstance $issue): void
     {

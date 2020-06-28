@@ -395,6 +395,9 @@ class ASTReverter
                     self::toShortString($node->children['expr'])
                 );
             },
+            ast\AST_ECHO => static function (Node $node): string {
+                return 'echo ' . ASTReverter::toShortString($node->children['expr']) . ';';
+            },
             ast\AST_UNPACK => static function (Node $node): string {
                 return sprintf(
                     '...(%s)',

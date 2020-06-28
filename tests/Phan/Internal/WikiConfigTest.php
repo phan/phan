@@ -76,6 +76,7 @@ class WikiConfigTest extends BaseTest
 
         $wiki_filename_new = $wiki_filename . '.new';
         if ($contents !== $original_contents) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall deliberate
             fwrite(STDERR, "Saving expected contents to '$wiki_filename_new'\n");
             file_put_contents($wiki_filename_new, $contents);
         }

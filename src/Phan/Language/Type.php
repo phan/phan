@@ -361,7 +361,10 @@ class Type
     // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
     //  which saves and restores some static properties)
 
-    /** @throws Error this should not be called accidentally */
+    /**
+     * @throws Error this should not be called accidentally
+     * @suppress PhanPluginRemoveDebugCall deliberate output before uncatchable Error
+     */
     public function __wakeup()
     {
         \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);

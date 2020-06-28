@@ -5,6 +5,14 @@ declare(strict_types=1);
 namespace Phan\Debug;
 
 /**
+ * A debugger used by the original Phan maintainers for debugging Phan.
+ * (By manually inserting require_once '.../Breakpoint.php' into the code to be debugged?)
+ * Currently unused.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
+ */
+
+/**
  * @return list<string>
  */
 

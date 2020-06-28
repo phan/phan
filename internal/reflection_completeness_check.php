@@ -8,6 +8,7 @@ declare(strict_types=1);
  * TODO: Expand to checking classes (methods, and properties)
  * TODO: Refactor the scripts in internal/ to reuse more code.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';

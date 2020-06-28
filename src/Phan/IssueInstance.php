@@ -51,6 +51,7 @@ class IssueInstance
      * @param list<string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      * @param ?Suggestion $suggestion
      * @param int $column
+     * @suppress PhanPluginRemoveDebugAny
      */
     public function __construct(
         Issue $issue,

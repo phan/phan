@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * Generates a phar file to be published with releases
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugEcho
+ */
+
 // add all files in the project
 $dir = dirname(__DIR__);
 chdir($dir);

@@ -5070,6 +5070,7 @@ class Issue
 
     /**
      * @throws InvalidArgumentException
+     * @suppress PhanPluginRemoveDebugCall this is deliberate
      */
     public static function fromType(string $type): Issue
     {

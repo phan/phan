@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * Set up error handlers, exception handlers, autoloaders, etc. Check that all dependencies are met for running Phan or its utilities.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny this has a lot of warnings to stderr
+ */
+
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;

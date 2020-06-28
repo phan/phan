@@ -159,6 +159,7 @@ class NodeDumper
      * @param string $padding (to be echoed before the current node
      * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanPluginRemoveDebugEcho
      */
     public function dumpTree($ast_node, string $key = '', string $padding = ''): void
     {

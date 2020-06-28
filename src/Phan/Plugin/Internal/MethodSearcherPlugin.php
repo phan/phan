@@ -26,6 +26,8 @@ use function count;
  *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
+ * @phan-file-suppress PhanPluginRemoveDebugAny outputting is deliberate
+ *
  * @internal
  */
 final class MethodSearcherPlugin extends PluginV3 implements

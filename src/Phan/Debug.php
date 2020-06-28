@@ -20,6 +20,8 @@ Shim::load();
  *
  * Mostly utilities for printing representations of AST nodes.
  * Also see `Debug/`
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class Debug
 {

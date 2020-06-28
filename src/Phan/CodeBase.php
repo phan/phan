@@ -410,6 +410,7 @@ class CodeBase
         foreach ($const_name_list as $const_name) {
             // #1015 workaround for empty constant names ('' and '0').
             if (!\is_string($const_name)) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall
                 \fprintf(STDERR, "Saw constant with non-string name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
                 continue;
             }
@@ -432,6 +433,7 @@ class CodeBase
         if (\strncmp($const_name, "\x00apc_", 5) === 0) {
             return;
         }
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall
         \fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", \var_export($const_name, true), $e->getMessage());
     }
 

@@ -125,6 +125,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
             $used_percentage = $used_count / $total_count * 100;
             if ($total_count >= 5) {
                 if (self::$debug) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall
                     \fprintf(\STDERR, "%09.4f %% used: (%4d uses): %s (%s)\n", $used_percentage, $total_count, $fqsen, $counter->is_internal ? 'internal' : 'user-defined');
                 }
             }
@@ -137,6 +138,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
                 $percentage_string = \number_format($used_percentage, 2);
                 foreach ($counter->unused_locations as $key => $context) {
                     if (!\preg_match('/:(\d+)$/D', $key, $matches)) {
+                        // @phan-suppress-next-line PhanPluginRemoveDebugCall
                         \fprintf(\STDERR, "Failed to extract line number from %s\n", $key);
                         continue;
                     }

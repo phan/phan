@@ -333,6 +333,7 @@ class IssueFixer
      */
     public static function error(string $message): void
     {
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall
         \fwrite(\STDERR, $message);
     }
 
@@ -342,6 +343,7 @@ class IssueFixer
     public static function debug(string $message): void
     {
         if (\getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fwrite(\STDERR, $message);
         }
     }

@@ -76,7 +76,7 @@ class ASTHasher
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {
             // added in PhanAnnotationAdder
-            if ($key === 'phan_nf') {
+            if (\is_string($key) && \strncmp($key, 'phan', 4) === 0) {
                 continue;
             }
             $str .= self::hashKey($key);

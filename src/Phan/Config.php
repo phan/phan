@@ -1522,6 +1522,7 @@ class Config
     {
         $errors = self::getConfigErrors(self::$configuration);
         foreach ($errors as $error) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fwrite(STDERR, $error . PHP_EOL);
         }
     }

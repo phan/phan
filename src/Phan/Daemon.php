@@ -224,6 +224,7 @@ class Daemon
         } else {
             throw new InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall this is deliberate output.
         \printf(
             "Listening for Phan analysis requests at %s\nAwaiting analysis requests for directory %s\n",
             $listen_url,
@@ -253,6 +254,7 @@ class Daemon
             } else {
                 $message = $format;
             }
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall printing to stderr is deliberate
             \fwrite(\STDERR, $message . "\n");
         }
     }
