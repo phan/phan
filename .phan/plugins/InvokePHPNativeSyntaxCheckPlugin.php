@@ -7,6 +7,7 @@ use Phan\AST\Parser;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
@@ -151,7 +152,8 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
                 $binary === PHP_BINARY ? 'php' : $binary,
                 json_encode($check_error_message),
 
-            ]
+            ],
+            Issue::SEVERITY_CRITICAL
         );
     }
 }
