@@ -1,0 +1,2 @@
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{}|non-empty-list<'test'>(real=array{}|non-empty-list<'test'>)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type list<'test'>(real=list<'test'>)

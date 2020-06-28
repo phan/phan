@@ -42,6 +42,7 @@ use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NonEmptyArrayInterface;
+use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NullType;
@@ -5123,9 +5124,23 @@ class UnionType implements Serializable
                 }
             }
         }
-        if ($empty_array_shape_type && !$has_other_array_type) {
-            $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
+        if ($empty_array_shape_type) {
+            $is_nullable = $empty_array_shape_type->isNullable();
+            if (!$has_other_array_type) {
+                $result[] = ArrayType::instance($is_nullable);
+            } else {
+                foreach ($result as $i => $type) {
+                    if ($type instanceof NonEmptyListType) {
+                        $type = $type->asPossiblyEmptyArrayType();
+                        $result[$i] = $type;
+                    }
+                    if ($is_nullable) {
+                        $result[$i] = $type->withIsNullable(true);
+                    }
+                }
+            }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn phan cannot infer that the assignments do not make the result associative-array.
         return $result;
     }
 

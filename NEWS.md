@@ -11,6 +11,7 @@ New features(Analysis):
   See https://github.com/phan/phan/wiki/Frequently-Asked-Questions#undeclared_element
 + Properly render the default values if available(`ReflectionParameter->isDefaultValueAvailable()`) in php 8.0+.
 + Properly set the real union types based on reflection information for functions/methods in more edge cases.
++ Properly infer that union types containing the empty array shape are possibly empty after sorting (#3980)
 
 Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`
