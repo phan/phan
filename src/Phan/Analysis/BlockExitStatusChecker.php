@@ -166,7 +166,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             // TODO: Could emit an issue as a side effect
             // Having any sort of status in a finally statement is
             // likely to have unintuitive behavior.
-            if ($finally_status & (~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+            if (($finally_status & (~self::STATUS_THROW_OR_RETURN_BITMASK)) === 0) {
                 return $finally_status;
             }
         } else {
