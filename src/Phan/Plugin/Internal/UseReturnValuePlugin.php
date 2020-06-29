@@ -579,6 +579,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'mb_convert_case' => true,
     'mb_convert_encoding' => true,
     'mb_detect_encoding' => true,
+    'mb_list_encodings' => true,
     'mb_strlen' => true,
     'mb_strpos' => true,
     'mb_strtolower' => true,
