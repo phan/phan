@@ -1,0 +1,6 @@
+%s:3 PhanSuspiciousValueComparison Suspicious attempt to compare +1 of type 1 to 0 of type 0 with operator '==='
+%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare -1 of type -1 to 0 of type 0 with operator '==='
+%s:5 PhanSuspiciousValueComparison Suspicious attempt to compare ~1 of type -2 to 0 of type 0 with operator '==='
+%s:6 PhanSuspiciousValueComparison Suspicious attempt to compare ~1.0E+100 of type -1 to 0 of type 0 with operator '==='
+%s:15 PhanSuspiciousValueComparison Suspicious attempt to compare ~'1' of type '�' to 0 of type 0 with operator '==='
+%s:16 PhanSuspiciousValueComparison Suspicious attempt to compare ~(~'0') of type '0' to 0 of type 0 with operator '==='

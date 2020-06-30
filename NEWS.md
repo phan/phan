@@ -12,6 +12,7 @@ New features(Analysis):
 + Properly render the default values if available(`ReflectionParameter->isDefaultValueAvailable()`) in php 8.0+.
 + Properly set the real union types based on reflection information for functions/methods in more edge cases.
 + Properly infer that union types containing the empty array shape are possibly empty after sorting (#3980)
++ Infer a more accurate real type set from `~`, `+`, and `-` (#3991)
 
 Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`
@@ -24,6 +25,7 @@ Plugins:
 Bug fixes:
 + Treat `@method static foo()` as an instance method returning the union type `static` (#3981)
   Previously, Phan treated it like a static method with type `void` based on an earlier phpdoc spec.
++ Fix the way that Phan inferred the `finally` block's exit status affected the `try` block. (#3987)
 
 Jun 21 2020, Phan 3.0.3
 -----------------------
