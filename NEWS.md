@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.0.4 (dev)
+Jul 01 2020, Phan 3.0.4
 -----------------------
 
 New features(Analysis):
@@ -307,7 +307,7 @@ New features(CLI, Configs):
 New features(Analysis):
 + Support parsing php 8.0 union types (and the static return type) in the polyfill. (#3419, #3634)
 + Emit `PhanCompatibleUnionType` and `PhanCompatibleStaticType` when the target php version is less than 8.0 and union types or static return types are seen. (#3419, #3634)
-+ Be more consistent about warning about issues in values of class constants, global constants, and property defaults.
++ Be more consistent when warning about issues in values of class constants, global constants, and property defaults.
 + Infer key and element types from `iterator_to_array()`
 + Infer that modification of or reading from static properties all use the same property declaration. (#3760)
   Previously, Phan would track the static property's type separately for each subclass.
