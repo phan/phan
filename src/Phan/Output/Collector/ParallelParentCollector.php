@@ -101,7 +101,7 @@ class ParallelParentCollector implements IssueCollectorInterface
 
             // Receive the message, populating $message by
             // reference
-            if (false !== \msg_receive(
+            if (\msg_receive(
                 $this->message_queue_resource,
                 self::MESSAGE_TYPE_ISSUE,
                 $message_type,

@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.5 (dev)
 -----------------------
 
+Bug fixes:
++ Fix false positives in php 8.0+ type checking against the real `mixed` type. (#3994)
+
 Jul 01 2020, Phan 3.0.4
 -----------------------
 

@@ -96,7 +96,9 @@ final class FalseType extends ScalarType
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $other->isInBoolFamily() || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
+        return $other->isInBoolFamily() ||
+            \get_class($other) === MixedType::class ||
+            (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 
 
