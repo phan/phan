@@ -1837,20 +1837,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // But we want to let BlockAnalysisVisitor modify the context for cases such as the below:
                 //
                 // $result = !($x instanceof User) || $x->meetsCondition()
+                [$child_context, $fallthrough_context] = $this->preAnalyzeIfElemCondition($child_node, $fallthrough_context);
                 $condition_node = $child_node->children['cond'];
-                if ($condition_node instanceof Node) {
-                    $fallthrough_context = $this->analyzeAndGetUpdatedContext(
-                        $fallthrough_context->withLineNumberStart($condition_node->lineno),
-                        $child_node,
-                        $condition_node
-                    );
-                } elseif (Config::getValue('redundant_condition_detection')) {
-                    (new ConditionVisitor($this->code_base, $fallthrough_context))->checkRedundantOrImpossibleTruthyCondition($condition_node, $fallthrough_context, null, false);
-                }
-
-                $child_context = $fallthrough_context->withClonedScope();
-
-                $child_context = $this->preOrderAnalyze($child_context, $child_node);
 
                 $stmts_node = $child_node->children['stmts'];
                 if (!$stmts_node instanceof Node) {
@@ -1952,6 +1940,96 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Returns contexts in which the condition was true and which the condition was false.
+     *
+     * This has special cases for handling `if (A && (B = C)) {}`
+     *
+     * @param Node $if_elem_node a node of kind ast\AST_IF_ELEM
+     * @return array{0:Context,1:Context} [$child_context, new value of $fallthrough_context]
+     */
+    private function preAnalyzeIfElemCondition(Node $if_elem_node, Context $fallthrough_context): array
+    {
+        $condition_node = $if_elem_node->children['cond'];
+        if ($condition_node instanceof Node) {
+            if ($condition_node->kind === ast\AST_BINARY_OP) {
+                // TODO: Support BINARY_BOOL_OR for fallthrough_context.
+                // This will be inconvenient with needing to check for initially false/initially true condition nodes in loops.
+                if ($condition_node->flags === ast\flags\BINARY_BOOL_AND) {
+                    $child_context = $this->analyzeAndGetUpdatedContextAndAssertTruthy(
+                        $fallthrough_context,
+                        $if_elem_node,
+                        $condition_node
+                    );
+                    $fallthrough_context = $this->analyzeAndGetUpdatedContext(
+                        $fallthrough_context->withLineNumberStart($condition_node->lineno),
+                        $if_elem_node,
+                        $condition_node
+                    );
+                    return [$child_context, $fallthrough_context];
+                }
+            }
+            $fallthrough_context = $this->analyzeAndGetUpdatedContext(
+                $fallthrough_context->withLineNumberStart($condition_node->lineno),
+                $if_elem_node,
+                $condition_node
+            );
+        } elseif (Config::getValue('redundant_condition_detection')) {
+            (new ConditionVisitor($this->code_base, $fallthrough_context))->checkRedundantOrImpossibleTruthyCondition($condition_node, $fallthrough_context, null, false);
+        }
+
+        $child_context = $fallthrough_context->withClonedScope();
+        $child_context = $this->preOrderAnalyze($child_context, $if_elem_node);
+
+        return [$child_context, $fallthrough_context];
+    }
+
+    /**
+     * @param Node|string|int|float $condition_node
+     */
+    private function analyzeAndGetUpdatedContextAndAssertTruthy(
+        Context $context,
+        Node $parent_node,
+        $condition_node
+    ): Context
+    {
+        if (!$condition_node instanceof Node) {
+            return $context;
+        }
+        if ($condition_node->kind === ast\AST_BINARY_OP) {
+            if ($condition_node->flags === ast\flags\BINARY_BOOL_AND) {
+                return $this->analyzeAndGetUpdatedContextAndAssertTruthy(
+                    $this->analyzeAndGetUpdatedContextAndAssertTruthy(
+                        $context,
+                        $condition_node,
+                        $condition_node->children['left']
+                    ),
+                    $condition_node,
+                    $condition_node->children['right']
+                );
+            }
+        }
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        // This may run multiple times on the same node due to need to analyze conditions and their negation.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $condition_node
+        );
+        // Infer the side effects of a generic node kind
+        $context = $this->analyzeAndGetUpdatedContext(
+            $context->withLineNumberStart($condition_node->lineno),
+            $parent_node,
+            $condition_node
+        );
+        // Assert the generic node kind is truthy
+        return (new ConditionVisitor(
+            $this->code_base,
+            $context
+        ))->__invoke($condition_node);
     }
 
     /**

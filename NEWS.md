@@ -13,6 +13,7 @@ New features(Analysis):
 + Properly set the real union types based on reflection information for functions/methods in more edge cases.
 + Properly infer that union types containing the empty array shape are possibly empty after sorting (#3980)
 + Infer a more accurate real type set from `~`, `+`, and `-` (#3991)
++ Improve ability to infer assignments within true branch of complex expressions in conditions such as `if (A && complex_expression) { } else { }` (#3992)
 
 Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`

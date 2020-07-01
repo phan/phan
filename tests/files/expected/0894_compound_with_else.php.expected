@@ -1,0 +1,1 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array
