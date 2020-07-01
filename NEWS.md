@@ -23,7 +23,7 @@ Plugins:
 + In `DuplicateExpressionPlugin`, emit `PhanPluginDuplicateExpressionAssignmentOperation` if `X = X op Y` is seen and it can be converted to `X op= Y` (#3985)
   (excluding `??=` for now)
 + Add `SimplifyExpressionPlugin`, to suggest shortening expressions such as `$realBool ? true : false` or `$realBool === false`
-+ Add `RemoveDebugStatementPlugin`, to suggest removing debugging output statements such as `echo`, `print`, `printf`, fwrite(STDERR, ...)`, `var_export(...)`, inline html, etc.
++ Add `RemoveDebugStatementPlugin`, to suggest removing debugging output statements such as `echo`, `print`, `printf`, `fwrite(STDERR, ...)`, `var_export(...)`, inline html, etc.
   This is only useful in applications or libraries that print output in only a few places, as a sanity check that debugging statements are not accidentally left in code.
 
 Bug fixes:
