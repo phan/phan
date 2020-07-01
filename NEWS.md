@@ -1,5 +1,8 @@
 Phan NEWS
 
+??? ?? 2020, Phan 3.0.5 (dev)
+-----------------------
+
 Jul 01 2020, Phan 3.0.4
 -----------------------
 
@@ -12,15 +15,15 @@ New features(Analysis):
 + Properly render the default values if available(`ReflectionParameter->isDefaultValueAvailable()`) in php 8.0+.
 + Properly set the real union types based on reflection information for functions/methods in more edge cases.
 + Properly infer that union types containing the empty array shape are possibly empty after sorting (#3980)
-+ Infer a more accurate real type set from `~`, `+`, and `-` (#3991)
++ Infer a more accurate real type set from unary ops `~`, `+`, and `-` (#3991)
 + Improve ability to infer assignments within true branch of complex expressions in conditions such as `if (A && complex_expression) { } else { }` (#3992)
 
 Plugins:
 + Add `ShortArrayPlugin`, to suggest using `[]` instead of `array()` or `list()`
-+ Emit `PhanPluginDuplicateExpressionAssignmentOperation` if `X = X op Y` is seen and it can be converted to `X op= Y` (#3985)
++ In `DuplicateExpressionPlugin`, emit `PhanPluginDuplicateExpressionAssignmentOperation` if `X = X op Y` is seen and it can be converted to `X op= Y` (#3985)
   (excluding `??=` for now)
 + Add `SimplifyExpressionPlugin`, to suggest shortening expressions such as `$realBool ? true : false` or `$realBool === false`
-+ Add `RemoveDebugStatementPlugin`, to suggest removing debugging output statements such as `echo`, `print`, `printf`, fwrite(STDERR)`, `var_export()`, inline html, etc.
++ Add `RemoveDebugStatementPlugin`, to suggest removing debugging output statements such as `echo`, `print`, `printf`, fwrite(STDERR, ...)`, `var_export(...)`, inline html, etc.
   This is only useful in applications or libraries that print output in only a few places, as a sanity check that debugging statements are not accidentally left in code.
 
 Bug fixes:
