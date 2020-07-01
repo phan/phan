@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.5 (dev)
 -----------------------
 
+New features(Analysis):
++ Emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and `PhanTypeInvalidRightOperandOfBitwiseOp` for argument types to bitwise operations other than `int|string`.
+  (affects `^`, `|`, `&`, `^=`, `|=`, `&=`)
+
 Bug fixes:
 + Fix false positives in php 8.0+ type checking against the real `mixed` type. (#3994)
 

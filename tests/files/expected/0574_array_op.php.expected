@@ -1,5 +1,7 @@
 %s:8 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of /= is array{0:4} (expected number)
 %s:8 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of /= is array{0:2} (expected number)
 %s:9 PhanTypeArrayOperator Invalid array operand provided to operator '^' between types int and array{0:2}
+%s:9 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of ^= is array{0:4} (expected int|string)
+%s:9 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of ^= is array{0:2} (expected int|string)
 %s:10 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of / is array{0:4} (expected number)
 %s:10 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of / is array{0:2} (expected number)

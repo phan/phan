@@ -835,6 +835,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case flags\BINARY_SHIFT_RIGHT:
                 $this->analyzeBinaryShift($node);
                 break;
+            case flags\BINARY_BITWISE_OR:
+            case flags\BINARY_BITWISE_AND:
+            case flags\BINARY_BITWISE_XOR:
+                $this->analyzeBinaryBitwiseOp($node);
+                break;
         }
         return $this->context;
     }
@@ -861,6 +866,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $right,
             Issue::TypeInvalidLeftOperandOfIntegerOp,
             Issue::TypeInvalidRightOperandOfIntegerOp
+        );
+    }
+
+    private function analyzeBinaryBitwiseOp(Node $node): void
+    {
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left']
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right']
+        );
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type): bool {
+                return ($type instanceof IntType || $type instanceof StringType) && !$type->isNullable();
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfBitwiseOp,
+            Issue::TypeInvalidRightOperandOfBitwiseOp
         );
     }
 

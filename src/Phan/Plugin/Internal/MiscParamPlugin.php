@@ -974,7 +974,7 @@ final class MiscParamPlugin extends PluginV3 implements
                 // TODO: Ignore superglobals
 
                 // Some parts of this are probably wrong - EXTR_OVERWRITE and EXTR_SKIP are probably the most common?
-                switch ($flags & ~\EXTR_REFS) {
+                switch (($flags ?? 0) & ~\EXTR_REFS) {
                     default:
                     case \EXTR_OVERWRITE:
                         $add_variable($field_name);

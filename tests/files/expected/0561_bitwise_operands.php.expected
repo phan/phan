@@ -1,10 +1,19 @@
 %s:3 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and iterable
+%s:3 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is iterable (expected int|string)
 %s:4 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types array and iterable
+%s:4 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of | is array (expected int|string)
+%s:4 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is iterable (expected int|string)
 %s:5 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and array
+%s:5 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is array (expected int|string)
 %s:6 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and array{}
+%s:6 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is array{} (expected int|string)
 %s:7 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and resource
+%s:7 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is resource (expected int|string)
 %s:8 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and 2.3
+%s:8 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is 2.3 (expected int|string)
 %s:9 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types int and \stdClass
+%s:9 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is \stdClass (expected int|string)
+%s:10 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is false (expected int|string)
 %s:11 PhanTypeMismatchBitwiseBinaryOperands Unexpected mix of int and string operands provided to operator '|' between types int and string (expected one type but not both)
 %s:12 PhanTypeMismatchBitwiseBinaryOperands Unexpected mix of int and string operands provided to operator '^' between types int and string (expected one type but not both)
 %s:13 PhanTypeMismatchBitwiseBinaryOperands Unexpected mix of int and string operands provided to operator '&' between types int and string (expected one type but not both)

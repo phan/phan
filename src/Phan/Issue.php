@@ -128,6 +128,8 @@ class Issue
     public const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
     public const TypeInvalidLeftOperandOfIntegerOp = 'PhanTypeInvalidLeftOperandOfIntegerOp';
     public const TypeInvalidRightOperandOfIntegerOp = 'PhanTypeInvalidRightOperandOfIntegerOp';
+    public const TypeInvalidLeftOperandOfBitwiseOp = 'PhanTypeInvalidLeftOperandOfBitwiseOp';
+    public const TypeInvalidRightOperandOfBitwiseOp = 'PhanTypeInvalidRightOperandOfBitwiseOp';
     public const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
     public const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
     public const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
@@ -1845,6 +1847,22 @@ class Issue
                 10101
             ),
             new Issue(
+                self::TypeInvalidRightOperandOfBitwiseOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int|string)",
+                self::REMEDIATION_B,
+                10163
+            ),
+            new Issue(
+                self::TypeInvalidLeftOperandOfBitwiseOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int|string)",
+                self::REMEDIATION_B,
+                10164
+            ),
+            new Issue(
                 self::TypeInvalidUnaryOperandNumeric,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -2293,6 +2311,7 @@ class Issue
                 self::REMEDIATION_B,
                 10090
             ),
+            // TODO: Deprecate and remove this issue?
             new Issue(
                 self::TypeInvalidBitwiseBinaryOperator,
                 self::CATEGORY_TYPE,

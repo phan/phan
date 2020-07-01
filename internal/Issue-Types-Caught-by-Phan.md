@@ -2944,6 +2944,14 @@ Invalid operator: left operand of {OPERATOR} is {TYPE} (expected array or number
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0580_numeric_string.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0580_numeric_string.php#L23).
 
+## PhanTypeInvalidLeftOperandOfBitwiseOp
+
+```
+Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int|string)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
+
 ## PhanTypeInvalidLeftOperandOfIntegerOp
 
 ```
@@ -2999,6 +3007,14 @@ Invalid operator: right operand of {OPERATOR} is {TYPE} (expected array or numbe
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0012_closures.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0012_closures.php#L15).
+
+## PhanTypeInvalidRightOperandOfBitwiseOp
+
+```
+Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int|string)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
 
 ## PhanTypeInvalidRightOperandOfIntegerOp
 

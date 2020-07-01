@@ -7,6 +7,7 @@
 %s:14 PhanTypeMismatchArgument Argument 1 ($x) is $strVar++ of type string but \expect_int_300() takes int defined at %s:4
 %s:19 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got 42
 %s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is (clone(new stdClass())) of type \stdClass but \expect_string_300() takes string defined at %s:3
+%s:21 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of &= is null (expected int|string)
 %s:21 PhanTypeMismatchArgument Argument 1 ($x) is ($undefIntVar &= $intVar) of type int but \expect_string_300() takes string defined at %s:3
 %s:21 PhanUndeclaredVariableAssignOp Variable $undefIntVar was undeclared, but it is being used as the left-hand side of an assignment operation
 %s:21 PhanUnusedVariable Unused definition of variable $undefIntVar
