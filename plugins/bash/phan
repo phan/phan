@@ -66,8 +66,9 @@ _phan() {
 --parent-constructor-required
 -c
 --dead-code-detection
---dead-code-detection-prefer-false-positive
 -x
+--dead-code-detection-prefer-false-positive
+-X
 --unused-variable-detection
 -u
 --redundant-condition-detection

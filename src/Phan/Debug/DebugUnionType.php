@@ -15,6 +15,7 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
  *
  * Not used as part of normal phan operations.
  * @phan-file-suppress PhanPluginRemoveDebugCall
+ * @suppress PhanUnreferencedClass
  */
 class DebugUnionType extends UnionType
 {

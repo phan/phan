@@ -318,7 +318,7 @@ Extended help:
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
 
- --dead-code-detection-prefer-false-positive
+ -X, --dead-code-detection-prefer-false-positive
   When performing dead code detection, prefer emitting false positives
   (reporting dead code that is not actually dead) over false negatives
   (failing to report dead code). This implies `--dead-code-detection`.

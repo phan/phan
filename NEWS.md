@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.5 (dev)
 -----------------------
 
+New features(CLI, Configs):
++ Add `-X` as an alias of `--dead-code-detection-prefer-false-positive`.
+
 New features(Analysis):
 + Emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and `PhanTypeInvalidRightOperandOfBitwiseOp` for argument types to bitwise operations other than `int|string`.
   (affects `^`, `|`, `&`, `^=`, `|=`, `&=`)

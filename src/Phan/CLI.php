@@ -88,7 +88,7 @@ class CLI
      * still available: g,n,w
      * @internal
      */
-    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxj:zhvs:SCP:I:DB:';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxXj:zhvs:SCP:I:DB:';
 
     /**
      * List of long flags passed to getopt
@@ -814,6 +814,7 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'X':
                 case 'dead-code-detection-prefer-false-positive':
                     Config::setValue('dead_code_detection', true);
                     Config::setValue('dead_code_detection_prefer_false_negative', false);
@@ -1736,7 +1737,7 @@ Extended help:
   This is almost entirely false positives for most coding styles.
   Implies --unused-variable-detection
 
- --dead-code-detection-prefer-false-positive
+ -X, --dead-code-detection-prefer-false-positive
   When performing dead code detection, prefer emitting false positives
   (reporting dead code that is not actually dead) over false negatives
   (failing to report dead code). This implies `--dead-code-detection`.
