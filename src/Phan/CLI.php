@@ -79,7 +79,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '2.7.3-dev';
+    public const PHAN_VERSION = '2.7.3';
 
     /**
      * List of short flags passed to getopt
@@ -370,6 +370,10 @@ class CLI
         }
         if (\array_key_exists('v', $opts) || \array_key_exists('version', $opts)) {
             \printf("Phan %s\n", self::PHAN_VERSION);
+
+            if (\PHP_VERSION_ID >= 70200 && !\getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                fwrite(STDERR, "(Consider upgrading to Phan 3, which has the latest features and bug fixes (supports execution with PHP 7.2+))\n");
+            }
             throw new ExitException('', EXIT_SUCCESS);
         }
         self::restartWithoutProblematicExtensions();
@@ -960,6 +964,9 @@ class CLI
         if (Config::getValue('processes') !== 1
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
+        }
+        if (\PHP_VERSION_ID >= 70200 && !\getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+            fwrite(STDERR, "(Consider upgrading to Phan 3, which has the latest features and bug fixes (supports execution with PHP 7.2+). This notice can be disabled with PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1)\n");
         }
         self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();
@@ -1823,6 +1830,11 @@ EOB
         }
         if ($exit_code === null) {
             return;
+        }
+        if (\PHP_VERSION_ID >= 70200) {
+            if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                \fprintf(STDERR, "\nPhan %s is installed (supporting execution with PHP 7.1+), but Phan 3 (supporting execution with PHP 7.2+) has the latest features and bug fixes.\n", CLI::PHAN_VERSION);
+            }
         }
         exit($exit_code);
     }

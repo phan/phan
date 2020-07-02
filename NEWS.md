@@ -1,7 +1,16 @@
 Phan NEWS
 
-??? ?? 2020, Phan 2.7.3 (dev)
+Jul 01 2020, Phan 2.7.3
 -----------------------
+
+Phan 3 is out (requires PHP 7.2+ to run),
+and that release line will contain all of Phan's new features, bug fixes, and crash fixes.
+
+Maintenance:
++ Mention that Phan 3 has been released in `--help`, `--version`, and crash reports. (#3903)
+  The environment variable `PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1` can be set to disable this notice.
++ Warn if attempting to execute Phan 2.x with PHP 8.0-dev or newer (A future release of Phan 3 will fully support 8.0)
++ Recommend using Phan 3 when `--target-php-version` or `target_php_version` is 7.2 or newer.
 
 Bug fixes:
 + Fix handling of windows path separators in `phan_client`

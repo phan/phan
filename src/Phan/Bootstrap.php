@@ -36,6 +36,23 @@ if (PHP_VERSION_ID < 70100) {
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
     // The version of vendor libraries this depends on will also require php 7.1
     exit(1);
+} elseif (PHP_VERSION_ID >= 80000) {
+    if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+        fprintf(
+            STDERR,
+            "Phan %s does not support PHP 8.0+ (PHP %s is installed)" . PHP_EOL,
+            CLI::PHAN_VERSION,
+            PHP_VERSION
+        );
+        fwrite(
+            STDERR,
+            "Phan 3 or newer is required to properly parse and analyze PHP code when Phan is executed with PHP 8.0+." . PHP_EOL
+        );
+        fwrite(
+            STDERR,
+            "Executing anyway (Phan may crash)." . PHP_EOL
+        );
+    }
 }
 
 // No Windows DLL downloads for php 7.1 and ast 1.0.5+
@@ -141,6 +158,12 @@ if (!function_exists('spl_object_id')) {
     require_once dirname(__DIR__) . '/spl_object_id.php';
 }
 
+// Load the more efficient spl_object_id polyfill before symfony/polyfill-php72 can be loaded.
+// Older releases of symfony/polyfill-php72 were buggy for 32-bit builds (https://github.com/symfony/polyfill/pull/248)
+if (!function_exists('spl_object_id')) {
+    require_once dirname(__DIR__) . '/spl_object_id.php';
+}
+
 // Use the composer autoloader
 $found_autoloader = false;
 foreach ([
@@ -191,6 +214,7 @@ set_exception_handler(static function (Throwable $throwable): void {
             fprintf(STDERR, "(Phan %s crashed due to an uncaught Throwable)\n", CLI::PHAN_VERSION);
         }
     }
+    fwrite(STDERR, "This bug may have been fixed in Phan 3, which has the latest features and bug fixes (supports execution with PHP 7.2+)\n");
     exit(EXIT_FAILURE);
 });
 
@@ -326,6 +350,7 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     }
 
     phan_print_backtrace(true);
+    fwrite(STDERR, "This bug may have been fixed in Phan 3, which has the latest features and bug fixes (supports execution with PHP 7.2+)\n");
 
     exit(EXIT_FAILURE);
 }
