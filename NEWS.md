@@ -12,6 +12,8 @@ New features(Analysis):
 
 Bug fixes:
 + Fix false positives in php 8.0+ type checking against the real `mixed` type. (#3994)
++ Fix unintentionally enabling GC when the `pcntl` extension is not enabled. (#4000)
+  It should only be enabled when running in daemon mode or as a language server.
 
 Jul 01 2020, Phan 3.0.4
 -----------------------
