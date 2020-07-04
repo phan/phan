@@ -1993,8 +1993,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         Context $context,
         Node $parent_node,
         $condition_node
-    ): Context
-    {
+    ): Context {
         if (!$condition_node instanceof Node) {
             return $context;
         }
