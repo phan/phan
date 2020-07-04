@@ -75,6 +75,7 @@ use Phan\PluginV3\PreAnalyzeNodeCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 use Phan\PluginV3\SubscribeEmitIssueCapability;
 use Phan\PluginV3\SuppressionCapability;
+use Phan\PluginV3\UnloadablePluginException;
 use Phan\Suggestion;
 use Throwable;
 use UnusedSuppressionPlugin;
@@ -921,6 +922,9 @@ final class ConfigPluginSet extends PluginV3 implements
 
             try {
                 $plugin_instance = require($plugin_file_name);
+            } catch (UnloadablePluginException $e) {
+                CLI::printErrorToStderr("Could not load plugin '$plugin_file_name', proceeding without it: " . $e->getMessage() . PHP_EOL);
+                return null;
             } catch (Throwable $e) {
                 // An unexpected error.
                 // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
