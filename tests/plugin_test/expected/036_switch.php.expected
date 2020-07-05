@@ -1,2 +1,4 @@
-src/036_switch.php:4 PhanUnusedVariable Unused definition of variable $x
-src/036_switch.php:10 PhanPluginConstantVariableScalar Variable $y is probably constant with a value of 'hello'
+src/036_switch.php:8 PhanPluginConstantVariableScalar Variable $x is probably constant with a value of 0
+src/036_switch.php:12 PhanPluginConstantVariableScalar Variable $x is probably constant with a value of 2
+src/036_switch.php:13 PhanPluginConstantVariableScalar Variable $y is probably constant with a value of 'hello'
+src/036_switch.php:16 PhanPluginConstantVariableScalar Variable $x is probably constant with a value of 2

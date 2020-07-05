@@ -1544,37 +1544,39 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each child node and get an
             // updated context for the node
 
-            if ($previous_child_context instanceof Context) {
-                // The previous case statement fell through some of the time or all of the time.
-                $child_context = (new ContextMergeVisitor(
-                    $previous_child_context,
-                    [$previous_child_context, $fallthrough_context]
-                ))->combineScopeList([$previous_child_context->getScope(), $fallthrough_context->getScope()]);
-            } else {
-                // The previous case statement did not fall through, or does not exist.
-                $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
-            }
-            $child_context->withLineNumberStart($child_node->lineno);
             try {
                 $this->parent_node_list[] = $node;
+                $fallthrough_context->withLineNumberStart($child_node->lineno);
                 ConfigPluginSet::instance()->preAnalyzeNode(
                     $this->code_base,
                     $fallthrough_context,
                     $child_node
                 );
+                // Statements such as `case $x = 2;` should affect both the body of that case statements and following case statements.
+                // Modify the $fallthrough_context.
+                if ($case_cond_node instanceof Node) {
+                    $fallthrough_context = $this->analyzeAndGetUpdatedContext($fallthrough_context, $child_node, $case_cond_node);
+                }
+                if ($previous_child_context instanceof Context) {
+                    // The previous case statement fell through some of the time or all of the time.
+                    $child_context = (new ContextMergeVisitor(
+                        $previous_child_context,
+                        [$previous_child_context, $fallthrough_context]
+                    ))->combineScopeList([$previous_child_context->getScope(), $fallthrough_context->getScope()]);
+                } else {
+                    // The previous case statement did not fall through, or does not exist.
+                    $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
+                }
                 if ($case_cond_node !== null) {
-                    if ($case_cond_node instanceof Node) {
-                        $child_context = $this->analyzeAndGetUpdatedContext($child_context, $child_node, $case_cond_node);
-                    }
                     if ($switch_variable_condition) {
                         // e.g. make sure to handle $x from `switch (true) { case $x instanceof stdClass: }` or `switch ($x)`
                         // Note that this won't properly combine types from `case $x = expr: case $x = expr2:` (latter would override former),
                         // but I don't expect to see that in reasonable code.
                         $variables_to_check = $switch_variable_cond_variable_set + RedundantCondition::getVariableSet($case_cond_node);
+                        // Add the variable type from the above case statements, if it was possible for it to fall through
+                        // TODO: Also support switch(get_class($variable))
+                        $child_context = $switch_variable_condition($child_context, $case_cond_node);
                         foreach ($variables_to_check as $var_name) {
-                            // Add the variable type from the above case statements, if it was possible for it to fall through
-                            // TODO: Also support switch(get_class($variable))
-                            $child_context = $switch_variable_condition($child_context, $case_cond_node);
                             if ($previous_child_context !== null) {
                                 $variable = $child_context->getScope()->getVariableByNameOrNull($var_name);
                                 if ($variable) {
@@ -1648,10 +1650,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // Skip over case statements that only ever throw or return
                 if (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
                     // and skip over empty statement lists, unless they're the last in a long line of empty statement lists
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
                     $child_context_list[] = $child_context;
                 }
 
                 if ($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED) {
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
                     $previous_child_context = $child_context;
                 }
             }
@@ -1674,6 +1678,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable Phan cannot infer child_context_list was non-empty due to finally block
         return $this->postOrderAnalyze($context, $node);
     }
 
@@ -1751,6 +1756,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                      * @param Node|string|int|float $cond_node
                      */
                     function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                        // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
+                        while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
+                            $cond_node = $cond_node->children['var'];
+                        }
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeEqual($switch_case_node, $cond_node);
                     },
@@ -1758,6 +1767,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                      * @param Node|string|int|float $cond_node
                      */
                     function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                        // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
+                        while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
+                            $cond_node = $cond_node->children['var'];
+                        }
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeNotEqual($switch_case_node, $cond_node);
                     },
