@@ -87,8 +87,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Check if a match arm contains a comparison against an impossible value
-     * @param Node $node a node of kind ast\AST_MATCH
      * @param Node|string|int|float $cond_node
+     * @param UnionType $cond_type the initial union type of $cond_node
      * @param Node $arm_node a kind of ast\AST_MATCH_ARM
      */
     public function checkImpossibleMatchArm(
