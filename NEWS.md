@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.0.6 (dev)
 -----------------------
 
+New features (Analysis):
++ Don't emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and other binary operation warnings for `mixed`
+
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)
 + Support throwing `\Phan\PluginV3\UnloadablePluginException` instead of returning a plugin object in plugin files.

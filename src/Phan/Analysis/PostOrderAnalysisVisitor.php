@@ -860,7 +860,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                return $type instanceof IntType && !$type->isNullable();
+                return ($type instanceof IntType || $type instanceof MixedType) &&
+                    !$type->isNullable();
             },
             $left,
             $right,
@@ -885,7 +886,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                return ($type instanceof IntType || $type instanceof StringType) && !$type->isNullable();
+                return ($type instanceof IntType || $type instanceof StringType || $type instanceof MixedType) &&
+                    !$type->isNullable();
             },
             $left,
             $right,

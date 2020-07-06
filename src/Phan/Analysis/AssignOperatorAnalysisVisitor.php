@@ -574,7 +574,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->warnAboutInvalidUnionType(
                 $node,
                 static function (Type $type): bool {
-                    return ($type instanceof IntType || $type instanceof StringType) && !$type->isNullable();
+                    return ($type instanceof IntType || $type instanceof StringType || $type instanceof MixedType) && !$type->isNullable();
                 },
                 $left_type,
                 $right_type,
@@ -720,7 +720,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                return $type instanceof IntType && !$type->isNullable();
+                return ($type instanceof IntType || $type instanceof MixedType) && !$type->isNullable();
             },
             $left,
             $right,
