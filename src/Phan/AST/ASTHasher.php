@@ -56,7 +56,7 @@ class ASTHasher
                     return "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $node);
                 }
             } elseif (is_float($node)) {
-                return "\0\0\0\0\0\0\0\1" . \pack('d', $node);
+                return "\0\0\0\0\0\0\0\1" . \pack('e', $node);
             } elseif (is_null($node)) {
                 return "\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0";
             }
