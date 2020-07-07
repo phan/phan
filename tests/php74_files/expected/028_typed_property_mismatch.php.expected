@@ -1,0 +1,6 @@
+%s:4 PhanIncompatibleCompositionProp \B28 and \A28 define the same property (prop) in the composition of \B28. However, the definition differs and is considered incompatible. Class was composed in %s on line 17
+%s:4 PhanIncompatibleRealPropertyType Declaration of \B28::prop of real type \stdClass is incompatible with inherited property \A28::prop of real type \A28 defined at %s:11
+%s:5 PhanIncompatibleRealPropertyType Declaration of \B28::t of real type \Traversable is incompatible with inherited property \A28::t of real type iterable defined at %s:12
+%s:6 PhanIncompatibleCompositionProp \B28 and \A28 define the same property (a) in the composition of \B28. However, the definition differs and is considered incompatible. Class was composed in %s on line 17
+%s:6 PhanIncompatibleRealPropertyType Declaration of \B28::a of real type ?\ArrayObject is incompatible with inherited property \A28::a of real type \ArrayObject defined at %s:13
+%s:7 PhanIncompatibleRealPropertyType Declaration of \B28::base of real type \B28 is incompatible with inherited property \A28::base of real type \A28 defined at %s:14

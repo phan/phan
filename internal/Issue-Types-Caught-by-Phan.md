@@ -2306,6 +2306,14 @@ Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of t
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0865_array_key_int_or_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0865_array_key_int_or_string.php#L6).
 
+## PhanIncompatibleRealPropertyType
+
+```
+Declaration of {PROPERTY} of real type {TYPE} is incompatible with inherited property {PROPERTY} of real type {TYPE} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/027_typed_property_mismatch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/027_typed_property_mismatch.php#L6).
+
 ## PhanInfiniteLoop
 
 ```

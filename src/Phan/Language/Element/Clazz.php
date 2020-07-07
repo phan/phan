@@ -1698,6 +1698,9 @@ class Clazz extends AddressableElement
                 self::markMethodAsOverridden($code_base, $existing_method_defining_fqsen);
             }
 
+            if ($existing_method->getRealDefiningFQSEN() === $method->getRealDefiningFQSEN()) {
+                return;
+            }
             if ($existing_method->getRealDefiningFQSEN() === $method_fqsen || $method->isAbstract() || !$existing_method->isAbstract() || $existing_method->isNewConstructor()) {
                 // TODO: What if both of these are abstract, and those get combined into an abstract class?
                 //       Should phan check compatibility of the abstract methods it inherits?

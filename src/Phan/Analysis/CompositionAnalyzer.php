@@ -10,10 +10,9 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\UnionType;
 
-use function count;
-
 /**
  * This analyzer checks if the signatures of inherited properties match
+ * and for type mismatches for php 7.4 typed properties.
  */
 class CompositionAnalyzer
 {
@@ -29,9 +28,8 @@ class CompositionAnalyzer
         $inherited_class_list =
             $class->getAncestorClassList($code_base);
 
-        // No chance of failed composition if we don't inherit from
-        // lots of stuff.
-        if (count($inherited_class_list) < 2) {
+        // No chance of failed composition if we don't inherit from anything.
+        if (!$inherited_class_list) {
             return;
         }
 
@@ -41,6 +39,7 @@ class CompositionAnalyzer
 
         // For each property, find out every inherited class that defines it
         // and check to see if the types line up.
+        // (This must be done after hydration, because some properties are loaded from traits)
         foreach ($class->getPropertyMap($code_base) as $property) {
             try {
                 $property_union_type = $property->getUnionType();
@@ -51,6 +50,8 @@ class CompositionAnalyzer
             // Check for that property on each inherited
             // class/trait/interface
             foreach ($inherited_class_list as $inherited_class) {
+                $inherited_class->hydrate($code_base);
+
                 // Skip any classes/traits/interfaces not defining that
                 // property
                 if (!$inherited_class->hasPropertyWithName($code_base, $property->getName())) {
@@ -70,6 +71,10 @@ class CompositionAnalyzer
                 $inherited_property =
                     $inherited_property_map[$property->getName()];
 
+                if ($inherited_property->getDefiningFQSEN() === $property->getDefiningFQSEN()) {
+                    continue;
+                }
+
                 // Figure out if this property type can cast to the
                 // inherited definition's type.
                 try {
@@ -77,6 +82,25 @@ class CompositionAnalyzer
                 } catch (IssueException $_) {
                     $inherited_property_union_type = UnionType::empty();
                 }
+                if (!$property->isDynamicOrFromPHPDoc() && !$inherited_property->isDynamicOrFromPHPDoc()) {
+                    $real_property_type = $property->getRealUnionType()->asNormalizedTypes();
+                    $real_inherited_property_type = $inherited_property->getRealUnionType()->asNormalizedTypes();
+                    if (!$real_property_type->isEqualTo($real_inherited_property_type)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $property->getContext(),
+                            Issue::IncompatibleRealPropertyType,
+                            $property->getFileRef()->getLineNumberStart(),
+                            $property->getFQSEN(),
+                            $real_property_type,
+                            $inherited_property->getFQSEN(),
+                            $real_inherited_property_type,
+                            $inherited_property->getFileRef()->getFile(),
+                            $inherited_property->getFileRef()->getLineNumberStart()
+                        );
+                    }
+                }
+
                 $can_cast =
                     $property_union_type->canCastToExpandedUnionType(
                         $inherited_property_union_type,

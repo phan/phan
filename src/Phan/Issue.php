@@ -265,6 +265,7 @@ class Issue
     public const ModuloByZero = 'PhanModuloByZero';
     public const PowerOfZero = 'PhanPowerOfZero';
     public const InvalidMixin = 'PhanInvalidMixin';
+    public const IncompatibleRealPropertyType = 'PhanIncompatibleRealPropertyType';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -2703,6 +2704,14 @@ class Issue
                 'Attempting to use a mixin of invalid or missing type {TYPE}',
                 self::REMEDIATION_B,
                 10152
+            ),
+            new Issue(
+                self::IncompatibleRealPropertyType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Declaration of {PROPERTY} of real type {TYPE} is incompatible with inherited property {PROPERTY} of real type {TYPE} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                10165
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

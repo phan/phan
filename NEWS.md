@@ -5,6 +5,7 @@ Phan NEWS
 
 New features (Analysis):
 + Don't emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and other binary operation warnings for `mixed`
++ Emit `PhanIncompatibleRealPropertyType` when real property types are incompatible (#4016)
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)

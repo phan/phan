@@ -139,7 +139,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     ): void {
 
         // Ignore methods inherited by subclasses
-        if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {
+        if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
 
@@ -173,6 +173,9 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         CodeBase $unused_code_base,
         Property $property
     ): void {
+        if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
+            return;
+        }
         $this->elements_for_postponed_analysis[] = $property;
     }
 
