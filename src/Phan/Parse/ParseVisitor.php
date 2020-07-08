@@ -451,15 +451,12 @@ class ParseVisitor extends ScopeVisitor
                     }
                 } else {
                     // Get the type of the default (not a literal)
-                    if ($variable_has_literals) {
-                        $union_type = Type::fromObject($default_node)->asPHPDocUnionType();
-                    } else {
-                        $union_type = Type::nonLiteralFromObject($default_node)->asPHPDocUnionType();
-                    }
+                    // The literal value needs to be known to warn about incompatible composition of traits
+                    $union_type = Type::fromObject($default_node)->asPHPDocUnionType();
                 }
                 $default_type = $union_type;
                 // Erase the corresponding real type set to avoid false positives such as `$x->prop['field'] === null` is redundant/impossible.
-                $union_type = $union_type->eraseRealTypeSetRecursively();
+                $union_type = $union_type->asNonLiteralType()->eraseRealTypeSetRecursively();
                 if ($real_union_type->isEmpty()) {
                     if ($union_type->isType(NullType::instance(false))) {
                         $union_type = UnionType::empty();

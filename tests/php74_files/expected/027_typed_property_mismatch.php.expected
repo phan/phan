@@ -1,3 +1,2 @@
 %s:6 PhanIncompatibleRealPropertyType Declaration of \B::x of real type int is incompatible with inherited property \A::x of real type (empty union type) defined at %s:3
-%s:9 PhanIncompatibleCompositionProp \C and \B define the same property (x) in the composition of \C. However, the definition differs and is considered incompatible. Class was composed in %s on line 8
 %s:9 PhanIncompatibleRealPropertyType Declaration of \C::x of real type string is incompatible with inherited property \B::x of real type int defined at %s:6

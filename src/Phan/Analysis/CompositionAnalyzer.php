@@ -42,7 +42,7 @@ class CompositionAnalyzer
         // (This must be done after hydration, because some properties are loaded from traits)
         foreach ($class->getPropertyMap($code_base) as $property) {
             try {
-                $property_union_type = $property->getUnionType();
+                $property_union_type = $property->getDefaultType() ?? UnionType::empty();
             } catch (IssueException $_) {
                 $property_union_type = UnionType::empty();
             }
@@ -71,18 +71,23 @@ class CompositionAnalyzer
                 $inherited_property =
                     $inherited_property_map[$property->getName()];
 
-                if ($inherited_property->getDefiningFQSEN() === $property->getDefiningFQSEN()) {
+                if ($inherited_property->isDynamicOrFromPHPDoc()) {
+                    continue;
+                }
+                if ($inherited_property->getRealDefiningFQSEN() === $property->getRealDefiningFQSEN()) {
                     continue;
                 }
 
                 // Figure out if this property type can cast to the
                 // inherited definition's type.
+                // Use the phpdoc comment or real type declaration instead of the inferred
+                // types from the default to perform this check.
                 try {
-                    $inherited_property_union_type = $inherited_property->getUnionType();
+                    $inherited_property_union_type = $inherited_property->getDefaultType() ?? UnionType::empty();
                 } catch (IssueException $_) {
                     $inherited_property_union_type = UnionType::empty();
                 }
-                if (!$property->isDynamicOrFromPHPDoc() && !$inherited_property->isDynamicOrFromPHPDoc()) {
+                if (!$property->isDynamicOrFromPHPDoc()) {
                     $real_property_type = $property->getRealUnionType()->asNormalizedTypes();
                     $real_inherited_property_type = $inherited_property->getRealUnionType()->asNormalizedTypes();
                     if (!$real_property_type->isEqualTo($real_inherited_property_type)) {
@@ -101,6 +106,10 @@ class CompositionAnalyzer
                     }
                 }
 
+                if ($property->getFQSEN() === $property->getRealDefiningFQSEN()) {
+                    // No need to warn about incompatible composition of trait with another ancestor if the property's default was overridden
+                    continue;
+                }
                 $can_cast =
                     $property_union_type->canCastToExpandedUnionType(
                         $inherited_property_union_type,
@@ -126,6 +135,8 @@ class CompositionAnalyzer
                     (string)$inherited_class->getFQSEN(),
                     $property->getName(),
                     (string)$class->getFQSEN(),
+                    $property_union_type,
+                    $inherited_property_union_type,
                     $class->getFileRef()->getFile(),
                     $class->getFileRef()->getLineNumberStart()
                 );
