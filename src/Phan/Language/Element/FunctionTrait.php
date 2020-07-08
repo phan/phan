@@ -44,6 +44,7 @@ use Phan\Plugin\ConfigPluginSet;
 use function count;
 use function end;
 use function is_int;
+use function spl_object_id;
 
 /**
  * This contains functionality common to global functions, closures, and methods
@@ -226,6 +227,11 @@ trait FunctionTrait
      * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>, ?Node):void
      */
     private $function_call_analyzer_callback = null;
+
+    /**
+     * @var array<int,true>
+     */
+    private $function_call_analyzer_callback_set = [];
 
     /**
      * @var FunctionLikeDeclarationType|null (Lazily generated representation of this as a closure type)
@@ -1107,6 +1113,10 @@ trait FunctionTrait
      */
     public function setFunctionCallAnalyzer(Closure $closure): void
     {
+        $closure_id = spl_object_id($closure);
+        $this->function_call_analyzer_callback_set = [
+            $closure_id => true
+        ];
         $this->function_call_analyzer_callback = $closure;
     }
 
@@ -1115,6 +1125,11 @@ trait FunctionTrait
      */
     public function addFunctionCallAnalyzer(Closure $closure): void
     {
+        $closure_id = spl_object_id($closure);
+        if (isset($this->function_call_analyzer_callback_set[$closure_id])) {
+            return;
+        }
+        $this->function_call_analyzer_callback_set[$closure_id] = true;
         $old_closure = $this->function_call_analyzer_callback;
         if ($old_closure) {
             $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($old_closure, $closure);

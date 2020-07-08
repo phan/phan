@@ -43,13 +43,8 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
             return [];
         }
         $result = [];
-        foreach ($code_base->getMethodSet() as $method) {
-            $method_fqsen = $method->getDefiningFQSEN();
-            $class_fqsen = $method_fqsen->getFullyQualifiedClassName();
-            if ($class_fqsen !== $assert_class_fqsen) {
-                continue;
-            }
-            $closure = $this->createClosureForMethod($code_base, $method, $method_fqsen->getName());
+        foreach ($code_base->getClassByFQSEN($assert_class_fqsen)->getMethodMap($code_base) as $method) {
+            $closure = $this->createClosureForMethod($code_base, $method, $method->getName());
             if (!$closure) {
                 continue;
             }

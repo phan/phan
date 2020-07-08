@@ -418,7 +418,17 @@ class Analysis
                     // Note: This is used because it will create methods such as __construct if they do not exist.
                     if ($class->hasMethodWithName($code_base, $method_name, false)) {
                         $method = $class->getMethodByName($code_base, $method_name);
-                        $method->setFunctionCallAnalyzer($closure);
+                        $method->addFunctionCallAnalyzer($closure);
+
+                        $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                        $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                        if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
+                            continue;
+                        }
+
+                        foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
+                            $child_method->addFunctionCallAnalyzer($closure);
+                        }
                     }
                 } else {
                     // This is an override of a function.
@@ -428,9 +438,9 @@ class Analysis
                         $function->setFunctionCallAnalyzer($closure);
                     }
                 }
-            } catch (FQSENException $e) {
+            } catch (FQSENException | InvalidArgumentException $e) {
                 // @phan-suppress-next-line PhanPluginRemoveDebugCall
-                \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s\n", $e->getFQSEN());
+                \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
             }
         }
     }
