@@ -405,25 +405,7 @@ class Analysis
             }
         }
 
-        $analyze_function_call_closures = $plugin_set->getAnalyzeFunctionCallClosures($code_base);
-        $analyze_function_call_fqsen_strings = [];
-        foreach ($analyze_function_call_closures as $fqsen_string => $unused_closure) {
-            if (\strpos($fqsen_string, '::') !== false) {
-                try {
-                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                } catch (FQSENException | InvalidArgumentException $e) {
-                    // @phan-suppress-next-line PhanPluginRemoveDebugCall
-                    \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
-                    continue;
-                }
-
-                // The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
-                // Thus, we use $fqsen->__toString() rather than $fqsen_string.
-                $analyze_function_call_fqsen_strings[$fqsen->__toString()] = true;
-            }
-        }
-
-        foreach ($analyze_function_call_closures as $fqsen_string => $closure) {
+        foreach ($plugin_set->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
             try {
                 if (\strpos($fqsen_string, '::') !== false) {
                     // This is an override of a method.
