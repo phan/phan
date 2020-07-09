@@ -1,8 +1,8 @@
-src/181_provide_unused_param.php:5 PhanProvidingUnusedParameter Providing an unused optional parameter $unused to \test181()
+src/181_provide_unused_param.php:5 PhanProvidingUnusedParameter Providing an unused optional parameter $unused to \test181() defined at src/181_provide_unused_param.php:2
 src/181_provide_unused_param.php:6 PhanPluginPossiblyStaticClosure Closure($unusedParam1, $unusedParam2 = 'default') can be static
-src/181_provide_unused_param.php:8 PhanProvidingUnusedParameterOfClosure Providing an unused optional parameter $unusedParam2 to Closure($unusedParam1, $unusedParam2 = 'default')
+src/181_provide_unused_param.php:8 PhanProvidingUnusedParameterOfClosure Providing an unused optional parameter $unusedParam2 to Closure($unusedParam1, $unusedParam2 = 'default') defined at src/181_provide_unused_param.php:6
 src/181_provide_unused_param.php:8 PhanTypeMismatchArgument Argument 2 ($unusedParam2) is 2 of type 2 but Closure($unusedParam1, $unusedParam2 = 'default') takes string defined at src/181_provide_unused_param.php:6
 src/181_provide_unused_param.php:12 PhanParamReqAfterOpt Required parameter (string $required) follows optional (?int $unused_x = null)
 src/181_provide_unused_param.php:18 PhanUnreferencedClass Possibly zero references to class \Override181
-src/181_provide_unused_param.php:23 PhanProvidingUnusedParameter Providing an unused optional parameter $unusedVar to \Example181::__construct()
-src/181_provide_unused_param.php:24 PhanProvidingUnusedParameter Providing an unused optional parameter $_ to \Example181::dump()
+src/181_provide_unused_param.php:23 PhanProvidingUnusedParameter Providing an unused optional parameter $unusedVar to \Example181::__construct() defined at src/181_provide_unused_param.php:10
+src/181_provide_unused_param.php:24 PhanProvidingUnusedParameter Providing an unused optional parameter $_ to \Example181::dump() defined at src/181_provide_unused_param.php:12

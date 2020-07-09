@@ -796,6 +796,10 @@ final class ArgumentType
             // handle required parameter after optional
             return;
         }
+        if ($method->isPHPInternal()) {
+            // not supported for stubs
+            return;
+        }
         $fqsen = $method->getFQSEN();
         if ($fqsen->getAlternateId() > 0) {
             return;
@@ -816,7 +820,9 @@ final class ArgumentType
             $issue_type,
             $lineno,
             $parameter->getName(),
-            $method->getRepresentationForIssue()
+            $method->getRepresentationForIssue(true),
+            $method->getFileRef()->getFile(),
+            $method->getFileRef()->getLineNumberStart()
         );
     }
 

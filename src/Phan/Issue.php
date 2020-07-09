@@ -3999,7 +3999,7 @@ class Issue
                 self::ProvidingUnusedParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}',
+                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 6093
             ),
@@ -4007,7 +4007,7 @@ class Issue
                 self::ProvidingUnusedParameterOfClosure,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}',
+                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 6094
             ),
