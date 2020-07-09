@@ -2349,7 +2349,8 @@ EOB
         }
 
         // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
-        $msg = $left_side .
+        $msg = "\r" .
+               $left_side .
                $progress_bar .
                $right_side .
                "\r";
