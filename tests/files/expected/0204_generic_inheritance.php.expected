@@ -1,4 +1,4 @@
-%s:28 PhanTypeMismatchArgument Argument 1 ($p) is 'string' of type 'string' but \C2::__construct() takes int defined at %s:23
+%s:28 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p) is 'string' of type 'string' but \C2::__construct() takes int (no real type) defined at %s:23 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:28 PhanTypeMismatchArgument Argument 1 ($p) is new C2('string')->p of type int but \f() takes bool defined at %s:3
 %s:36 PhanTypeMismatchArgument Argument 1 ($p) is new C3(false)->p of type T1 but \f() takes bool defined at %s:3
 %s:49 PhanTypeMismatchArgument Argument 1 ($p) is new C4('string')->p of type 'string' but \f() takes bool defined at %s:3

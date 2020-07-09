@@ -1,6 +1,6 @@
-%s:7 PhanTypeMismatchArgument Argument 2 ($b) is 'string' of type 'string' but \f() takes float defined at %s:5
-%s:14 PhanTypeMismatchArgument Argument 2 ($b) is 'string' of type 'string' but \g() takes \Traversable|float|int defined at %s:12
+%s:7 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is 'string' of type 'string' but \f() takes float (no real type) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:14 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is 'string' of type 'string' but \g() takes \Traversable|float|int (no real type) defined at %s:12 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:17 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int': after int, did not see an element name (will guess based on comment order)
 %s:18 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param string': after string, did not see an element name (will guess based on comment order)
-%s:21 PhanTypeMismatchArgument Argument 1 ($a) is 'string' of type 'string' but \h() takes int defined at %s:20
+%s:21 PhanTypeMismatchArgumentProbablyReal Argument 1 ($a) is 'string' of type 'string' but \h() takes int (no real type) defined at %s:20 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:21 PhanTypeMismatchArgument Argument 2 ($b) is 42 of type 42 but \h() takes string defined at %s:20

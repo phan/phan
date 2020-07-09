@@ -1,5 +1,5 @@
+%s:25 PhanTypeMismatchArgumentProbablyReal Argument 3 ($x) is $this->x of type 'default' but \fn16b() takes array (no real type) defined at %s:13 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:25 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type 'default' but \fn16b() takes a reference of type array (no real type)
-%s:25 PhanTypeMismatchArgument Argument 3 ($x) is $this->x of type 'default' but \fn16b() takes array defined at %s:13
 %s:25 PhanTypeMismatchPropertyRealByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
 %s:31 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type string but \fn16() takes a reference of type array (no real type)
 %s:31 PhanTypeMismatchPropertyRealByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:7
@@ -7,11 +7,11 @@
 %s:32 PhanTypeMismatchPropertyRealByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass::$typedX of type string by reference at %s:7
 %s:33 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16() takes a reference of type array
 %s:33 PhanTypeMismatchPropertyByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass::$phpdocString of type string by reference at %s:7
+%s:35 PhanTypeMismatchArgumentProbablyReal Argument 3 ($x) is $m->x of type string but \fn16b() takes array (no real type) defined at %s:13 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:35 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass->x with type string but \fn16b() takes a reference of type array (no real type)
-%s:35 PhanTypeMismatchArgument Argument 3 ($x) is $m->x of type string but \fn16b() takes array defined at %s:13
 %s:35 PhanTypeMismatchPropertyRealByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass->x of type string by reference at %s:14
+%s:36 PhanTypeMismatchArgumentProbablyReal Argument 3 ($x) is MyClass::$typedX of type string but \fn16b() takes array (no real type) defined at %s:13 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:36 PhanTypeMismatchArgumentPropertyReferenceReal Argument 2 is property \MyClass::$typedX with type string but \fn16b() takes a reference of type array (no real type)
-%s:36 PhanTypeMismatchArgument Argument 3 ($x) is MyClass::$typedX of type string but \fn16b() takes array defined at %s:13
 %s:36 PhanTypeMismatchPropertyRealByRef [$a,$b] of type array{0:string,1:string} may end up assigned to property \MyClass::$typedX of type string by reference at %s:14
 %s:37 PhanTypeMismatchArgumentPropertyReference Argument 2 is property \MyClass::$phpdocString with type string but \fn16b() takes a reference of type array
 %s:37 PhanTypeMismatchArgument Argument 3 ($x) is MyClass::$phpdocString of type string but \fn16b() takes array defined at %s:13

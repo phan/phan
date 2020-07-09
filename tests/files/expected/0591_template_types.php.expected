@@ -1,9 +1,9 @@
 %s:65 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $l->details with type string
 %s:66 PhanTypeSuspiciousEcho Suspicious argument $l->value of type \stdClass for an echo/print statement
 %s:67 PhanTypeSuspiciousEcho Suspicious argument $l2->value of type \ArrayObject for an echo/print statement
-%s:70 PhanTypeMismatchArgument Argument 1 ($v) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValue() takes \stdClass defined at %s:38
-%s:72 PhanTypeMismatchArgument Argument 1 ($p1) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValueMagic() takes \stdClass defined at %s:7
+%s:70 PhanTypeMismatchArgumentProbablyReal Argument 1 ($v) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValue() takes \stdClass (no real type) defined at %s:38 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:72 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p1) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \SingletonList::hasValueMagic() takes \stdClass (no real type) defined at %s:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:73 PhanTypeVoidArgument Cannot use void return value $l->voidMagic($o) as a function argument
 %s:74 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $l->toArray() of type array<int,\stdClass> (real type array) but \strlen() takes string
 %s:75 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $l2->toArray() of type array<int,\ArrayAccess>|array<int,\ArrayObject>|array<int,\Countable>|array<int,\IteratorAggregate>|array<int,\Serializable>|array<int,\Traversable>|array<int,iterable> (real type array) but \strlen() takes string
-%s:78 PhanTypeMismatchArgument Argument 1 ($v) is $o of type \stdClass but \NodeSingletonList::hasValue() takes \ast\Node defined at %s:38
+%s:78 PhanTypeMismatchArgumentProbablyReal Argument 1 ($v) is $o of type \stdClass but \NodeSingletonList::hasValue() takes \ast\Node (no real type) defined at %s:38 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

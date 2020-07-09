@@ -1045,10 +1045,18 @@ or the naming of `$unused...` or `$_` is not used to indicate unused parameters 
 This can also be suppressed on the functionlike's declaration.
 
 ```
-Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}
+Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L5).
+
+## PhanProvidingUnusedParameterOfClosure
+
+```
+Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L8).
 
 ## PhanReadOnlyPHPDocProperty
 
@@ -1950,6 +1958,14 @@ Call with {COUNT} arg(s) to {FUNCTIONLIKE} (as a provided callable) which requir
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/expected/033_closure_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/src/033_closure_crash.php#L2).
+
+## PhanParamTooFewInPHPDoc
+
+```
+Call with {COUNT} arg(s) to {FUNCTIONLIKE} which has phpdoc indicating it requires {COUNT} arg(s) (${PARAMETER} is mandatory) defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/182_provide_mandatory_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/182_provide_mandatory_param.php#L10).
 
 ## PhanParamTooFewInternal
 
@@ -3229,6 +3245,14 @@ Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} take
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0152_closure_casts_callable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0152_closure_casts_callable.php#L4).
+
+## PhanTypeMismatchArgumentProbablyReal
+
+```
+Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE} (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0023_doc_comment.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0023_doc_comment.php#L10).
 
 ## PhanTypeMismatchArgumentPropertyReference
 

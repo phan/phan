@@ -875,7 +875,6 @@ final class ArgumentType
             }
             if ($issue_type === Issue::TypeMismatchArgumentInternal) {
                 if ($argument_type->hasRealTypeSet() &&
-                    !$alternate_parameter_type->hasRealTypeSet() &&
                     !$argument_type->getRealUnionType()->canCastToDeclaredType($code_base, $context, $alternate_parameter_type)) {
                     // PHP 7.x doesn't have reflection types for many methods and global functions and won't throw,
                     // but will emit a warning and fail the call.
@@ -945,6 +944,35 @@ final class ArgumentType
                 $method->getFileRef()->getLineNumberStart()
             );
             return;
+        }
+        if ($context->hasSuppressIssue($code_base, Issue::TypeMismatchArgumentProbablyReal)) {
+            // Suppressing ProbablyReal also suppresses the less severe version.
+            return;
+        }
+        if ($issue_type === Issue::TypeMismatchArgument) {
+            if ($argument_type->hasRealTypeSet() &&
+                !$argument_type->getRealUnionType()->canCastToDeclaredType($code_base, $context, $alternate_parameter_type)) {
+                // The argument's real type is completely incompatible with the documented phpdoc type.
+                //
+                // Either the phpdoc type is wrong or the argument is likely wrong.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchArgumentProbablyReal,
+                    $lineno,
+                    ($i + 1),
+                    $alternate_parameter->getName(),
+                    ASTReverter::toShortString($argument_node),
+                    $argument_type_expanded,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
+                    $method->getRepresentationForIssue(),
+                    (string)$alternate_parameter_type,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart()
+                );
+                return;
+            }
         }
         Issue::maybeEmit(
             $code_base,

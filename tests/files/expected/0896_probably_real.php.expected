@@ -1,0 +1,3 @@
+%s:8 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is null of type null but \test896() takes array (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:9 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is new stdClass() of type \stdClass but \test896() takes array (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:10 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 1 of type 1 but \test896() takes array (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

@@ -13,6 +13,10 @@ New features (Analysis):
   This is limited to functions with no overrides.
 + Emit `PhanParamTooFewInPHPDoc` when a parameter that is marked with `@phan-mandatory-param` is not passed in. (#4026)
   This is useful when needing to preserve method signature compatibility in a method override, or when a parameter will become mandatory in a future backwards incompatible release of a project.
++ Emit `PhanTypeMismatchArgumentProbablyReal` instead of `PhanTypeMismatchArgument` when the inferred real type of an argument has nothing in common with the phpdoc type of a user-defined function/method.
+  This is usually a stronger indicator that the phpdoc parameter type is inaccurate/incomplete or the argument is incorrect.
++ Emit `PhanTypeMismatchArgumentInternalProbablyReal` instead of `PhanTypeMismatchArgumentInternal` in a few more cases.
++ Be stricter about checking if callables/closures have anything in common with other types.
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)

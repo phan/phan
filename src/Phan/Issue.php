@@ -146,6 +146,7 @@ class Issue
     public const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     public const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
     public const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    public const TypeMismatchArgumentProbablyReal       = 'PhanTypeMismatchArgumentProbablyReal';
     public const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
     public const TypeMismatchArgumentNullable           = 'PhanTypeMismatchArgumentNullable';
     public const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
@@ -1449,6 +1450,14 @@ class Issue
                 'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10003
+            ),
+            new Issue(
+                self::TypeMismatchArgumentProbablyReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE} (the inferred real argument type has nothing in common with the parameter\'s phpdoc type)',
+                self::REMEDIATION_B,
+                10166
             ),
             new Issue(
                 self::TypeMismatchArgumentReal,

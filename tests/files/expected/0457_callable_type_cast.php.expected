@@ -1,10 +1,10 @@
 %s:8 PhanTypeSuspiciousEcho Suspicious argument $fn of type callable(int):void for an echo/print statement
-%s:9 PhanTypeMismatchArgument Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int):void takes int defined at %s:6
+%s:9 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int):void takes int (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:10 PhanParamTooFew Call with 0 arg(s) to callable(int):void which requires 1 arg(s) defined at %s:6
 %s:15 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_int_param() takes callable(int):void defined at %s:6
 %s:17 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int&):void but \expects_cb_int_param() takes callable(int):void defined at %s:6
-%s:24 PhanTypeMismatchArgument Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int=):void takes int defined at %s:22
-%s:26 PhanTypeMismatchArgument Argument 1 ($p0) is null of type null but callable(int=):void takes int defined at %s:22
+%s:24 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int=):void takes int (no real type) defined at %s:22 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:26 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is null of type null but callable(int=):void takes int (no real type) defined at %s:22 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:28 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
 %s:31 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
 %s:32 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure():void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
@@ -21,6 +21,6 @@
 %s:65 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(mixed):void but \expects_cb_void() takes callable():void defined at %s:54
 %s:66 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure():int but \expects_cb_void() takes callable():void defined at %s:54
 %s:67 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_void() takes callable():void defined at %s:54
-%s:75 PhanTypeMismatchArgument Argument 1 ($p0) is ['arg'] of type array{0:'arg'} but callable(string...):void takes string defined at %s:71
+%s:75 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is ['arg'] of type array{0:'arg'} but callable(string...):void takes string (no real type) defined at %s:71 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:78 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int...):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71
 %s:80 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(string):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71

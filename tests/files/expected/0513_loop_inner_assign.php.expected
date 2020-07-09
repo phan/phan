@@ -1,4 +1,4 @@
-%s:12 PhanTypeMismatchArgument Argument 1 ($arg) is $x of type true but \x516() takes array defined at %s:6
-%s:17 PhanTypeMismatchArgument Argument 1 ($arg) is $y of type 1 but \x516() takes array defined at %s:6
-%s:24 PhanTypeMismatchArgument Argument 1 ($arg) is $x of type false but \x516() takes array defined at %s:6
-%s:29 PhanTypeMismatchArgument Argument 1 ($arg) is $y of type 0 but \x516() takes array defined at %s:6
+%s:12 PhanTypeMismatchArgumentProbablyReal Argument 1 ($arg) is $x of type true but \x516() takes array (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:17 PhanTypeMismatchArgumentProbablyReal Argument 1 ($arg) is $y of type 1 but \x516() takes array (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:24 PhanTypeMismatchArgumentProbablyReal Argument 1 ($arg) is $x of type false but \x516() takes array (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:29 PhanTypeMismatchArgumentProbablyReal Argument 1 ($arg) is $y of type 0 but \x516() takes array (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

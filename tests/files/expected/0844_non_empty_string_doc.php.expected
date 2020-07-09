@@ -2,8 +2,8 @@
 %s:8 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to truthy
 %s:20 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to truthy
 %s:24 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is $x of type ?non-empty-string but \strlen() takes string (expected type to be non-nullable)
-%s:28 PhanTypeMismatchArgument Argument 1 ($x) is '' of type '' but \expect_non_empty_string() takes non-empty-string defined at %s:5
-%s:29 PhanTypeMismatchArgument Argument 1 ($x) is '0' of type '0' but \expect_non_empty_string() takes non-empty-string defined at %s:5
+%s:28 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '' of type '' but \expect_non_empty_string() takes non-empty-string (real type string) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:29 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '0' of type '0' but \expect_non_empty_string() takes non-empty-string (real type string) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \expect_non_empty_string() takes non-empty-string (real type string) defined at %s:5
-%s:33 PhanTypeMismatchArgument Argument 1 ($x) is '' of type '' but \expect_nullable_non_empty_string() takes ?non-empty-string defined at %s:18
-%s:34 PhanTypeMismatchArgument Argument 1 ($x) is '0' of type '0' but \expect_nullable_non_empty_string() takes ?non-empty-string defined at %s:18
+%s:33 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '' of type '' but \expect_nullable_non_empty_string() takes ?non-empty-string (real type ?string) defined at %s:18 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:34 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '0' of type '0' but \expect_nullable_non_empty_string() takes ?non-empty-string (real type ?string) defined at %s:18 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

@@ -1,2 +1,2 @@
-%s:30 PhanTypeMismatchArgument Argument 1 ($p0) is 'key' of type 'key' but Closure(string[]):\stdClass takes string[] defined at %s:10
+%s:30 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is 'key' of type 'key' but Closure(string[]):\stdClass takes string[] (no real type) defined at %s:10 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:59 PhanTypeMismatchArgument Argument 1 ($p0) is [new stdClass()] of type array{0:\stdClass} but Closure(array<int,string>):string takes array<int,string> defined at %s:47

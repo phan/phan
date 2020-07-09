@@ -4,7 +4,7 @@
 %s:23 PhanRedundantCondition Redundant attempt to cast $x of type non-zero-int to truthy
 %s:26 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=?0)
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type null but \strlen() takes string
-%s:31 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_non_zero_int() takes non-zero-int defined at %s:5
+%s:31 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 0 of type 0 but \expect_non_zero_int() takes non-zero-int (real type int) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \expect_non_zero_int() takes non-zero-int (real type int) defined at %s:5
-%s:36 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_nullable_non_zero_int() takes ?non-zero-int defined at %s:21
+%s:36 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 0 of type 0 but \expect_nullable_non_zero_int() takes ?non-zero-int (real type ?int) defined at %s:21 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:45 PhanImpossibleCondition Impossible attempt to cast $x of type non-zero-int to falsey

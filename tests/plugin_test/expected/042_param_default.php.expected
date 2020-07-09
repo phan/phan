@@ -1,1 +1,1 @@
-src/042_param_default.php:12 PhanTypeMismatchArgument Argument 1 ($x) is new stdClass() of type \stdClass but \Example42::test() takes string defined at src/042_param_default.php:5
+src/042_param_default.php:12 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is new stdClass() of type \stdClass but \Example42::test() takes string (no real type) defined at src/042_param_default.php:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

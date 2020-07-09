@@ -1,2 +1,2 @@
-%s:42 PhanTypeMismatchArgument Argument 3 ($arguments) is [2] of type array{0:2} but \VariadicBug::foo() takes int|string defined at %s:16
-%s:44 PhanTypeMismatchArgument Argument 3 ($arguments) is [2] of type array{0:2} but \variadic_bug_260() takes int|string defined at %s:31
+%s:42 PhanTypeMismatchArgumentProbablyReal Argument 3 ($arguments) is [2] of type array{0:2} but \VariadicBug::foo() takes int|string (no real type) defined at %s:16 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:44 PhanTypeMismatchArgumentProbablyReal Argument 3 ($arguments) is [2] of type array{0:2} but \variadic_bug_260() takes int|string (no real type) defined at %s:31 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

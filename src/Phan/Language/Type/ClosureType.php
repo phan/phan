@@ -198,4 +198,15 @@ final class ClosureType extends Type
     {
         return $this->func;
     }
+
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    {
+        if (!$other->isPossiblyObject()) {
+            return false;
+        }
+        if ($other->isObjectWithKnownFQSEN()) {
+            return $other instanceof FunctionLikeDeclarationType || $other instanceof ClosureType || $other->asFQSEN()->__toString() === '\Closure';
+        }
+        return true;
+    }
 }

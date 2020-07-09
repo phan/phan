@@ -1,5 +1,5 @@
-%s:7 PhanTypeMismatchArgument Argument 1 ($var) is $var of type array but \f() takes resource defined at %s:3
-%s:7 PhanTypeMismatchArgument Argument 1 ($var) is $var of type array<int,string> but \f() takes resource defined at %s:3
-%s:9 PhanTypeMismatchArgument Argument 1 ($var) is $var of type bool but \f() takes resource defined at %s:3
+%s:7 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type array but \f() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:7 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type array<int,string> (real type array) but \f() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:9 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type bool but \f() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:12 PhanTypeMismatchReturn Returning $var of type array<int,string>|bool but g() is declared to return resource
 %s:12 PhanTypeMismatchReturn Returning $var of type array|bool but g() is declared to return resource

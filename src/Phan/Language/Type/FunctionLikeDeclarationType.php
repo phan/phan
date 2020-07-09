@@ -989,6 +989,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
     }
 
+    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    {
+        return !$other->isDefiniteNonCallableType();
+    }
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

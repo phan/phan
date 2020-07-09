@@ -1,2 +1,2 @@
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is $c2 of type \C2|\T but \C1::handleSelf() takes \C1 defined at %s:12
-%s:36 PhanTypeMismatchArgument Argument 1 ($x) is $c2 of type \C2|\T but \C1::handleStatic() takes \C1 defined at %s:23
+%s:36 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is $c2 of type \C2|\T but \C1::handleStatic() takes \C1 (no real type) defined at %s:23 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

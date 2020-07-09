@@ -5,7 +5,7 @@
 %s:38 PhanUnusedVariable Unused definition of variable $b
 %s:40 PhanParamTooMany Call with 1 arg(s) to \A281::fooWithReturnType() which only takes 0 arg(s) defined at %s:5
 %s:41 PhanTypeMismatchArgument Argument 1 ($x) is $a->fooWithReturnType() of type int but \expects_a281() takes \A281 defined at %s:30
-%s:45 PhanTypeMismatchArgument Argument 2 ($b) is null of type null but \A281::fooWithOptionalSecondParam() takes int defined at %s:6
+%s:45 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is null of type null but \A281::fooWithOptionalSecondParam() takes int (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:46 PhanParamTooFew Call with 0 arg(s) to \A281::fooWithOptionalSecondParam(int $p1, int $b = null) which requires 1 arg(s) defined at %s:6
 %s:47 PhanStaticCallToNonStatic Static call to non-static method \A281::fooWithOptionalSecondParam() defined at %s:6
 %s:52 PhanTypeMismatchArgument Argument 1 ($x) is 42 of type 42 but \A281::fooWithOptionalNullableParam() takes ?string defined at %s:7
@@ -16,15 +16,15 @@
 %s:57 PhanTypeMismatchArgument Argument 1 ($x) is A281::static_foo_with_return_type_of_static() of type \A281 but \expects_int281() takes int defined at %s:33
 %s:58 PhanParamTooMany Call with 1 arg(s) to \A281::static_foo_with_return_type_of_static() which only takes 0 arg(s) defined at %s:12
 %s:61 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithParams(int $x) which requires 1 arg(s) defined at %s:13
-%s:62 PhanTypeMismatchArgument Argument 1 ($x) is 'string' of type 'string' but \A281::myMethodWithParams() takes int defined at %s:13
+%s:62 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 'string' of type 'string' but \A281::myMethodWithParams() takes int (no real type) defined at %s:13 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:65 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithUntypedParams($x) which requires 1 arg(s) defined at %s:14
-%s:68 PhanTypeMismatchArgument Argument 1 ($x) is 'str' of type 'str' but \A281::myMethodWithPHPDocParams() takes float defined at %s:15
-%s:68 PhanTypeMismatchArgument Argument 2 ($y) is null of type null but \A281::myMethodWithPHPDocParams() takes object defined at %s:15
+%s:68 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 'str' of type 'str' but \A281::myMethodWithPHPDocParams() takes float (no real type) defined at %s:15 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:68 PhanTypeMismatchArgumentProbablyReal Argument 2 ($y) is null of type null but \A281::myMethodWithPHPDocParams() takes object (no real type) defined at %s:15 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:70 PhanTypeMismatchArgument Argument 4 ($x) is 4.2 of type 4.2 but \A281::myMethodWithVariadicParams() takes int|string defined at %s:17
 %s:72 PhanTypeMismatchArgument Argument 1 ($x) is $v of type int|string but \expects_a281() takes \A281 defined at %s:30
-%s:74 PhanTypeMismatchArgument Argument 2 ($b) is 3 of type 3 but \A281::fooWithOptionalArrayParam() takes array defined at %s:8
-%s:75 PhanTypeMismatchArgument Argument 2 ($b) is 3 of type 3 but \A281::fooWithOptionalArrayParam2() takes array defined at %s:9
-%s:75 PhanTypeMismatchArgument Argument 3 ($c) is 'x' of type 'x' but \A281::fooWithOptionalArrayParam2() takes int defined at %s:9
+%s:74 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is 3 of type 3 but \A281::fooWithOptionalArrayParam() takes array (no real type) defined at %s:8 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:75 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is 3 of type 3 but \A281::fooWithOptionalArrayParam2() takes array (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:75 PhanTypeMismatchArgumentProbablyReal Argument 3 ($c) is 'x' of type 'x' but \A281::fooWithOptionalArrayParam2() takes int (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:80 PhanUndeclaredMethod Call to undeclared method \C281::undeclaredMagicMethod
 %s:81 PhanTypeVoidAssignment Cannot assign void return value
 %s:81 PhanUnusedVariable Unused definition of variable $d
