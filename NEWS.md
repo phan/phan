@@ -11,6 +11,8 @@ New features (Analysis):
 + Emit `PhanProvidingUnusedParameter` when passing an argument to a function with an optional parameter named `$unused*` or `$_`. (#4026)
   This can also be suppressed on the functionlike's declaration, and should be suppressed if this does not match the project's parameter naming.
   This is limited to functions with no overrides.
++ Emit `PhanParamTooFewInPHPDoc` when a parameter that is marked with `@phan-mandatory-param` is not passed in. (#4026)
+  This is useful when needing to preserve method signature compatibility in a method override, or when a parameter will become mandatory in a future backwards incompatible release of a project.
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)

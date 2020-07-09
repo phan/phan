@@ -1,0 +1,4 @@
+src/182_provide_mandatory_param.php:10 PhanParamTooFewInPHPDoc Call with 0 arg(s) to \test182(bool $foo = false, string $bar = '') which has phpdoc indicating it requires 2 arg(s) ($bar is mandatory) defined at src/182_provide_mandatory_param.php:7
+src/182_provide_mandatory_param.php:11 PhanParamTooFewInPHPDoc Call with 1 arg(s) to \test182(bool $foo = false, string $bar = '') which has phpdoc indicating it requires 2 arg(s) ($bar is mandatory) defined at src/182_provide_mandatory_param.php:7
+src/182_provide_mandatory_param.php:20 PhanCommentParamOutOfOrder Expected @param annotation for $field to be before the @param annotation for $secondField
+src/182_provide_mandatory_param.php:28 PhanParamTooFewInPHPDoc Call with 0 arg(s) to \Other182::process(string $field = null, string $secondField = null) which has phpdoc indicating it requires 2 arg(s) ($secondField is mandatory) defined at src/182_provide_mandatory_param.php:23

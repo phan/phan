@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor;
@@ -41,6 +42,8 @@ use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
 
 use function count;
+use function end;
+use function is_int;
 
 /**
  * This contains functionality common to global functions, closures, and methods
@@ -61,6 +64,11 @@ trait FunctionTrait
      * @var bool This is set to true immediately after scope initialization is finished.
      */
     protected $is_inner_scope_initialized  = false;
+
+    /**
+     * @var ?int set by (at)phan-mandatory-param comments
+     */
+    protected $last_mandatory_phpdoc_param_offset  = null;
 
     /** @return int flags from \Phan\Language\Element\Flags */
     abstract public function getPhanFlags(): int;
@@ -785,19 +793,26 @@ trait FunctionTrait
         }
         $real_type_set = $parameter->getNonVariadicUnionType()->getRealTypeSet();
         $parameter_name = $parameter->getName();
+        if ($comment->hasParameterWithNameOrOffset(
+            $parameter_name,
+            $parameter_offset
+        )) {
+            $comment_param = $comment->getParameterWithNameOrOffset(
+                $parameter_name,
+                $parameter_offset
+            );
+            if ($comment_param->isMandatoryInPHPDoc()) {
+                $function->recordHasMandatoryPHPDocParamAtOffset($parameter_offset);
+            }
+        } else {
+            $comment_param = null;
+        }
         if ($parameter->getNonVariadicUnionType()->isEmpty()) {
             // If there is no type specified in PHP, check
             // for a docComment with @param declarations. We
             // assume order in the docComment matches the
             // parameter order in the code
-            if ($comment->hasParameterWithNameOrOffset(
-                $parameter_name,
-                $parameter_offset
-            )) {
-                $comment_param = $comment->getParameterWithNameOrOffset(
-                    $parameter_name,
-                    $parameter_offset
-                );
+            if ($comment_param) {
                 $comment_param_type = $comment_param->getUnionType();
                 if ($parameter->isVariadic() !== $comment_param->isVariadic()) {
                     Issue::maybeEmit(
@@ -1629,12 +1644,12 @@ trait FunctionTrait
      * This adds closures the same way getAnalyzeFunctionCallClosures in a plugin would.
      *
      * @param array<string, Assertion> $param_assertion_map
-     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @param ?Closure(CodeBase, Context, FunctionInterface, list<Node|string|float|int>):void $closure the previous closures to combine param assertions with
+     * @return ?Closure(CodeBase, Context, FunctionInterface, list<Node|string|float|int>):void
      * @internal
      */
-    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map): ?Closure
+    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map, ?Closure $closure): ?Closure
     {
-        $closure = null;
         foreach ($param_assertion_map as $param_name => $assertion) {
             $i = $this->getParamIndexForName($param_name);
             if ($i === null) {
@@ -1650,6 +1665,7 @@ trait FunctionTrait
             }
             $new_closure = $this->createClosureForAssertion($code_base, $assertion, $i);
             if ($new_closure) {
+                // @phan-suppress-next-line PhanTypeMismatchArgument
                 $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($new_closure, $closure);
             }
         }
@@ -1789,7 +1805,7 @@ trait FunctionTrait
     /**
      * Create any plugins that exist due to doc comment annotations.
      * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
-     * @return ?Closure(CodeBase, Context, array):UnionType
+     * @return ?Closure(CodeBase, Context, FunctionInterface, list<Node|string|int|float>):UnionType
      * @internal
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure
@@ -1797,11 +1813,42 @@ trait FunctionTrait
         if (!\is_object($this->comment)) {
             return null;
         }
+        $last_mandatory_phpdoc_param_offset = $this->last_mandatory_phpdoc_param_offset;
+        $closure = null;
+        if (is_int($last_mandatory_phpdoc_param_offset)) {
+            $param = $this->parameter_list[$last_mandatory_phpdoc_param_offset] ?? null;;
+            if ($param) {
+                /**
+                 * @param list<Node|int|string|float> $array
+                 */
+                $closure = static function(CodeBase $code_base, Context $context, FunctionInterface $function, array $array) use ($param, $last_mandatory_phpdoc_param_offset): void {
+                    if (count($array) > $last_mandatory_phpdoc_param_offset) {
+                        return;
+                    }
+                    $last_arg = end($array);
+                    if ($last_arg instanceof Node && $last_arg->kind === ast\AST_UNPACK) {
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ParamTooFewInPHPDoc,
+                        $context->getLineNumberStart(),
+                        count($array),
+                        $function->getRepresentationForIssue(true),
+                        $last_mandatory_phpdoc_param_offset + 1,
+                        $param->getName(),
+                        $function->getContext()->getFile(),
+                        $function->getContext()->getLineNumberStart()
+                    );
+                };
+            }
+        }
         $param_assertion_map = $this->comment->getParamAssertionMap();
         if ($param_assertion_map) {
-            return $this->getPluginForParamAssertionMap($code_base, $param_assertion_map);
+            return $this->getPluginForParamAssertionMap($code_base, $param_assertion_map, $closure);
         }
-        return null;
+        return $closure;
     }
 
     /**
@@ -1877,5 +1924,13 @@ trait FunctionTrait
     public function setOriginalReturnType(): void
     {
         $this->original_return_type = $this->getUnionType();
+    }
+
+    public function recordHasMandatoryPHPDocParamAtOffset(int $parameter_offset): void
+    {
+        if (isset($this->last_mandatory_phpdoc_param_offset) && $parameter_offset <= $this->last_mandatory_phpdoc_param_offset) {
+            return;
+        }
+        $this->last_mandatory_phpdoc_param_offset = $parameter_offset;
     }
 }

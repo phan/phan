@@ -49,6 +49,12 @@ class Parameter
     private $has_default_value;
 
     /**
+     * @var bool
+     * Whether or not the parameter is marked as mandatory in phpdoc
+     */
+    private $is_mandatory_in_phpdoc;
+
+    /**
      * @var int one of the REFERENCE_* constants.
      */
     private $reference_type;
@@ -67,13 +73,15 @@ class Parameter
         bool $is_variadic = false,
         bool $has_default_value = false,
         bool $is_output_reference = false,
-        bool $is_ignored_reference = false
+        bool $is_ignored_reference = false,
+        bool $is_mandatory_in_phpdoc = false
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->lineno = $lineno;
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
+        $this->is_mandatory_in_phpdoc = $is_mandatory_in_phpdoc;
         if ($is_ignored_reference) {
             $this->reference_type = self::REFERENCE_IGNORED;
         } elseif ($is_output_reference) {
@@ -207,6 +215,15 @@ class Parameter
     public function isOptional(): bool
     {
         return $this->has_default_value || $this->is_variadic;
+    }
+
+    /**
+     * @return bool
+     * Whether or not the parameter is marked as mandatory in phpdoc
+     */
+    public function isMandatoryInPHPDoc(): bool
+    {
+        return $this->is_mandatory_in_phpdoc;
     }
 
     public function __toString(): string

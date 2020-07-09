@@ -187,6 +187,7 @@ final class Builder
             }
             $is_output_parameter = \strpos($line, '@phan-output-reference') !== false;
             $is_ignored_parameter = \strpos($line, '@phan-ignore-reference') !== false;
+            $is_mandatory_in_phpdoc = \strpos($line, '@phan-mandatory-param') !== false;
 
             return new Parameter(
                 $variable_name,
@@ -195,7 +196,8 @@ final class Builder
                 $is_variadic,
                 false,  // has_default_value
                 $is_output_parameter,
-                $is_ignored_parameter
+                $is_ignored_parameter,
+                $is_mandatory_in_phpdoc
             );
         }
 
@@ -509,8 +511,8 @@ final class Builder
         if (!$this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i)) {
             return;
         }
-        $this->parameter_list[] =
-            self::parameterFromCommentLine($line, false, $i);
+        $param = self::parameterFromCommentLine($line, false, $i);
+        $this->parameter_list[] = $param;
     }
 
     private function maybeParseVarLine(int $i, string $line): void

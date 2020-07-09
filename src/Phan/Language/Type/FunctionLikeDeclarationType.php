@@ -985,6 +985,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return [];
     }
 
+    public function recordHasMandatoryPHPDocParamAtOffset(int $unused_parameter_offset): void
+    {
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

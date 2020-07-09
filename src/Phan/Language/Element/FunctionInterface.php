@@ -439,7 +439,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * Create any plugins that exist due to doc comment annotations.
      * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
-     * @return ?Closure(CodeBase, Context, array):UnionType
+     * @return ?Closure(CodeBase, Context, FunctionInterface, list<Node|string|int|float>):UnionType
      * @internal
      */
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure;
@@ -460,4 +460,9 @@ interface FunctionInterface extends AddressableElementInterface
      * This is populated the first time it is called.
      */
     public function getOriginalReturnType(): UnionType;
+
+    /**
+     * Record the existence of a parameter with an `(at)phan-mandatory-param` comment at $offset
+     */
+    public function recordHasMandatoryPHPDocParamAtOffset(int $parameter_offset): void;
 }
