@@ -8,6 +8,9 @@ New features (Analysis):
 + Emit `PhanIncompatibleRealPropertyType` when real property types are incompatible (#4016)
 + Change the way `PhanIncompatibleCompositionProp` is checked for. (#4024)
   Only emit it when the property was redeclared in an inherited trait.
++ Emit `PhanProvidingUnusedParameter` when passing an argument to a function with an optional parameter named `$unused*` or `$_`. (#4026)
+  This can also be suppressed on the functionlike's declaration, and should be suppressed if this does not match the project's parameter naming.
+  This is limited to functions with no overrides.
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)

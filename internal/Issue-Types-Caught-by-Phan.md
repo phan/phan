@@ -1037,6 +1037,19 @@ $a = 42;
 $a;
 ```
 
+## PhanProvidingUnusedParameter
+
+Note that this issue should be suppressed if there are too many false positives in your project,
+or the naming of `$unused...` or `$_` is not used to indicate unused parameters in your project.
+
+This can also be suppressed on the functionlike's declaration.
+
+```
+Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L5).
+
 ## PhanReadOnlyPHPDocProperty
 
 ```

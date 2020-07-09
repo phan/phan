@@ -447,6 +447,8 @@ class Issue
     public const VariableDefinitionCouldBeConstantTrue = 'PhanVariableDefinitionCouldBeConstantTrue';
     public const VariableDefinitionCouldBeConstantFalse = 'PhanVariableDefinitionCouldBeConstantFalse';
     public const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
+    public const ProvidingUnusedParameter              = 'PhanProvidingUnusedParameter';
+    public const ProvidingUnusedParameterOfClosure     = 'PhanProvidingUnusedParameterOfClosure';
 
     // Issue::CATEGORY_REDEFINE
     public const RedefineClass             = 'PhanRedefineClass';
@@ -3992,6 +3994,22 @@ class Issue
                 'This switch statement only has the default case',
                 self::REMEDIATION_B,
                 6088
+            ),
+            new Issue(
+                self::ProvidingUnusedParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                6093
+            ),
+            new Issue(
+                self::ProvidingUnusedParameterOfClosure,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                6094
             ),
 
             // Issue::CATEGORY_REDEFINE
