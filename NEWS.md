@@ -30,6 +30,9 @@ Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)
 + Support throwing `\Phan\PluginV3\UnloadablePluginException` instead of returning a plugin object in plugin files.
 
+Bug Fixes:
++ Make suppressions on trait methods/properties consistently apply to the inherited definitions from classes/traits using those traits.
+
 Jul 03 2020, Phan 3.0.5
 -----------------------
 

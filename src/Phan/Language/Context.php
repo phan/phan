@@ -10,11 +10,13 @@ use Closure;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
+use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -732,14 +734,24 @@ class Context extends FileRef
             return false;
         }
 
-        $has_suppress_issue =
-            $this->getElementInScope($code_base)->hasSuppressIssue(
-                $issue_name
-            );
+        $element = $this->getElementInScope($code_base);
+        if ($element instanceof ClassElement) {
+            $defining_fqsen = $element->getRealDefiningFQSEN();
+            if ($defining_fqsen !== $element->getFQSEN()) {
+                if ($defining_fqsen instanceof FullyQualifiedMethodName) {
+                    $element = $code_base->getMethodByFQSEN($defining_fqsen);
+                } else if ($defining_fqsen instanceof FullyQualifiedPropertyName) {
+                    $element = $code_base->getPropertyByFQSEN($defining_fqsen);
+                } else if ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
+                    $element = $code_base->getClassConstantByFQSEN($defining_fqsen);
+                }
+            }
+        }
+        $has_suppress_issue = $element->hasSuppressIssue($issue_name);
 
         // Increment the suppression use count
         if ($has_suppress_issue) {
-            $this->getElementInScope($code_base)->incrementSuppressIssueCount($issue_name);
+            $element->incrementSuppressIssueCount($issue_name);
         }
 
         return $has_suppress_issue;
