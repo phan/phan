@@ -29,6 +29,7 @@ New features (Analysis):
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)
 + Support throwing `\Phan\PluginV3\UnloadablePluginException` instead of returning a plugin object in plugin files.
++ When a plugin registers for a method definition with `AnalyzeFunctionCallCapability`, automatically register the same closure for all classlikes using the same inherited definition of that method. (#4021)
 
 Bug Fixes:
 + Make suppressions on trait methods/properties consistently apply to the inherited definitions from classes/traits using those traits.
