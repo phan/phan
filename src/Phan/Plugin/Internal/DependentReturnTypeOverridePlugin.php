@@ -360,6 +360,27 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $is_php8 ? 'non-empty-list<string>' : '?non-empty-list<string>'
             );
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         */
+        $one_or_two_string_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ): UnionType {
+            if (Config::get_closest_target_php_version_id() >= 80000) {
+                return StringType::instance(false)->asRealUnionType();
+            }
+            if (count($args) >= 1 && count($args) <= 2) {
+                if (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->getRealUnionType()->isNonNullStringType()) {
+                    if (!isset($args[1]) || is_string($args[1]) || UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->getRealUnionType()->isNonNullStringType()) {
+                        return StringType::instance(false)->asRealUnionType();
+                    }
+                }
+            }
+            return $function->getUnionType();
+        };
 
         // TODO: Handle flags of preg_split.
         return [
@@ -384,6 +405,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'basename'                    => self::makeStringFunctionHandler('basename'),
             'bcdiv'                       => $bcdiv_callback,
             'explode'                     => $explode_handler,
+            'trim'                        => $one_or_two_string_handler,
+            'ltrim'                       => $one_or_two_string_handler,
+            'rtrim'                       => $one_or_two_string_handler,
         ];
     }
 

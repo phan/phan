@@ -721,7 +721,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         foreach ($old_type->getRealTypeSet() as $type) {
             if ($type instanceof MixedType) {
                 // MixedType can cast to other types
-                return $asserted_object_type;
+                return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             if (!$type->isObject()) {
                 // ignore non-object types

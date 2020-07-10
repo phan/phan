@@ -17,6 +17,7 @@ New features (Analysis):
   This is usually a stronger indicator that the phpdoc parameter type is inaccurate/incomplete or the argument is incorrect.
 + Emit `PhanTypeMismatchArgumentInternalProbablyReal` instead of `PhanTypeMismatchArgumentInternal` in a few more cases.
 + Be stricter about checking if callables/closures have anything in common with other types.
++ Preserve more specific phpdoc types when the php 8.0 `mixed` type is part of the real type set.
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)

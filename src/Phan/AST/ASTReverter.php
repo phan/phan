@@ -417,7 +417,7 @@ class ASTReverter
                     if ($c instanceof Node) {
                         $parts[] = '{' . self::toShortString($c) . '}';
                     } else {
-                        $parts[] = self::escapeInnerString((string)$c);
+                        $parts[] = self::escapeInnerString((string)$c, '"');
                     }
                 }
                 return '"' . implode('', $parts) . '"';

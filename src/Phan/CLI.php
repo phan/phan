@@ -1000,7 +1000,7 @@ class CLI
             } else {
                 $cmd = 'command -v ' . escapeshellarg($binary);
             }
-            $resolved = (string) trim((string) shell_exec($cmd));
+            $resolved = trim((string) shell_exec($cmd));
             if ($resolved === '') {
                 throw new UsageException(\sprintf("Could not find PHP binary for --native-syntax-check: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
             }
