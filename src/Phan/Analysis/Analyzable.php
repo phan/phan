@@ -72,7 +72,7 @@ trait Analyzable
 
     /**
      * Clears the node so that it won't be used for analysis.
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanTypeMismatchPropertyProbablyReal
      */
     protected function clearNode(): void
     {

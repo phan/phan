@@ -68,7 +68,7 @@ final class UnionTypeTest extends BaseTest
 
     public static function tearDownAfterClass(): void
     {
-        // @phan-suppress-next-line PhanTypeMismatchProperty
+        // @phan-suppress-next-line PhanTypeMismatchPropertyProbablyReal
         self::$code_base = null;
     }
 

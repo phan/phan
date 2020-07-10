@@ -1101,13 +1101,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 )) {
                     // echo "Emitting warning for $new_types\n";
                     // TODO: Don't emit if array shape type is compatible with the original value of $property_union_type
-                    $this->emitIssue(
-                        self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type) ? Issue::TypeMismatchPropertyReal : Issue::TypeMismatchProperty,
-                        $node->lineno,
-                        $this->getAssignedExpressionString(),
-                        (string)$new_types,
-                        $property->getRepresentationForIssue(),
-                        (string)$property_union_type
+                    $this->emitTypeMismatchPropertyIssue(
+                        $node,
+                        $property,
+                        $resolved_right_type,
+                        $new_types,
+                        $property_union_type
                     );
                 } else {
                     if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
@@ -1149,14 +1148,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     );
                 } else {
                     // echo "Emitting warning for {$resolved_right_type->asExpandedTypes($this->code_base)} to {$property_union_type->asExpandedTypes($this->code_base)}\n";
-                    $this->emitIssue(
-                        self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type) ? Issue::TypeMismatchPropertyReal : Issue::TypeMismatchProperty,
-                        $node->lineno,
-                        $this->getAssignedExpressionString(),
-                        (string)$this->right_type->withUnionType($resolved_right_type),
-                        $property->getRepresentationForIssue(),
-                        (string)$property_union_type
-                    );
+                    $this->emitTypeMismatchPropertyIssue($node, $property, $resolved_right_type, $this->right_type->withUnionType($resolved_right_type), $property_union_type);
                 }
                 return $this->context;
             }
@@ -1170,6 +1162,60 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->addTypesToProperty($property, $node);
 
         return $this->context;
+    }
+
+    /**
+     * @param UnionType $resolved_right_type the type of the expression to use when checking for real type mismatches
+     * @param UnionType $warn_type the type to use in issue messages
+     */
+    private function emitTypeMismatchPropertyIssue(
+        Node $node,
+        Property $property,
+        UnionType $resolved_right_type,
+        UnionType $warn_type,
+        UnionType $property_union_type
+    ): void {
+        if ($this->context->hasSuppressIssue($this->code_base, Issue::TypeMismatchPropertyReal)) {
+            return;
+        }
+        if (self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type)) {
+            $this->emitIssue(
+                Issue::TypeMismatchPropertyReal,
+                $node->lineno,
+                $this->getAssignedExpressionString(),
+                $warn_type,
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($warn_type),
+                $property->getRepresentationForIssue(),
+                $property_union_type,
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($property_union_type)
+            );
+            return;
+        }
+        if ($this->context->hasSuppressIssue($this->code_base, Issue::TypeMismatchPropertyProbablyReal)) {
+            return;
+        }
+        if ($resolved_right_type->hasRealTypeSet() &&
+            !$resolved_right_type->getRealUnionType()->canCastToDeclaredType($this->code_base, $this->context, $property_union_type)) {
+            $this->emitIssue(
+                Issue::TypeMismatchPropertyProbablyReal,
+                $node->lineno,
+                $this->getAssignedExpressionString(),
+                $warn_type,
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($warn_type),
+                $property->getRepresentationForIssue(),
+                $property_union_type,
+                PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($property_union_type)
+            );
+            return;
+        }
+        $this->emitIssue(
+            Issue::TypeMismatchProperty,
+            $node->lineno,
+            $this->getAssignedExpressionString(),
+            $warn_type,
+            $property->getRepresentationForIssue(),
+            $property_union_type
+        );
     }
 
     private function getAssignedExpressionString(): string
@@ -1288,7 +1334,10 @@ class AssignmentVisitor extends AnalysisVisitor
             // No mismatches
             return;
         }
-        if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
+        if ($this->shouldSuppressIssue(Issue::TypeMismatchPropertyReal, $node->lineno) ||
+            $this->shouldSuppressIssue(Issue::TypeMismatchPropertyProbablyReal, $node->lineno) ||
+            $this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)
+        ) {
             // TypeMismatchProperty also suppresses PhanPossiblyNullTypeMismatchProperty, etc.
             return;
         }

@@ -1,6 +1,6 @@
 %s:8 PhanTypeMismatchPropertyDefault Default value for int $num can't be 'abc' of type string based on phpdoc types
 %s:8 PhanTypeMismatchPropertyDefault Default value for string $text can't be 1 of type int based on phpdoc types
 %s:11 PhanUndeclaredProperty Reference to undeclared property \A->str
-%s:12 PhanTypeMismatchProperty Assigning [] of type array{} to property but \A->text is string
+%s:12 PhanTypeMismatchPropertyProbablyReal Assigning [] of type array{} to property but \A->text is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
 %s:18 PhanAccessPropertyProtected Cannot access protected property \A->foo defined at %s:8
 %s:19 PhanUndeclaredProperty Reference to undeclared property \A->bar

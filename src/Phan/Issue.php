@@ -232,6 +232,7 @@ class Issue
     public const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     public const TypeMismatchPropertyDefault        = 'PhanTypeMismatchPropertyDefault';
     public const TypeMismatchPropertyDefaultReal    = 'PhanTypeMismatchPropertyDefaultReal';
+    public const TypeMismatchPropertyProbablyReal  = 'PhanTypeMismatchPropertyProbablyReal';
     public const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
     public const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
     public const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
@@ -2466,9 +2467,17 @@ class Issue
                 self::TypeMismatchPropertyReal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE}",
+                "Assigning {CODE} of type {TYPE}{DETAILS} to property but {PROPERTY} is {TYPE}{DETAILS}",
                 self::REMEDIATION_B,
                 10137
+            ),
+            new Issue(
+                self::TypeMismatchPropertyProbablyReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {CODE} of type {TYPE}{DETAILS} to property but {PROPERTY} is {TYPE}{DETAILS} (the inferred real assigned type has nothing in common with the declared phpdoc property type)",
+                self::REMEDIATION_B,
+                10168
             ),
             new Issue(
                 self::TypeMismatchPropertyRealByRef,

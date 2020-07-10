@@ -1,6 +1,6 @@
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->foo of type string but \intdiv() takes int
 %s:10 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
-%s:10 PhanTypeMismatchProperty Assigning ('x' as a field) of type non-empty-array<int,string> to property but \A354->foo is string
+%s:10 PhanTypeMismatchPropertyProbablyReal Assigning ('x' as a field) of type non-empty-array<int,string> to property but \A354->foo is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $x of type 'aaa'|non-empty-string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:14 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type 'aaa'|non-empty-string, but expected the index to exist and be of type int
 %s:16 PhanTypeMismatchDimAssignment When appending to a value of type 'aaa', found an array access index of type 'offset', but expected the index to be of type int

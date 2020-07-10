@@ -1,2 +1,2 @@
-%s:10 PhanTypeMismatchProperty Assigning $this of type \A236|static to property but \A236->badDoc is string
-%s:12 PhanTypeMismatchProperty Assigning $this of type \A236|static to property but \A236->badDoc is string
+%s:10 PhanTypeMismatchPropertyProbablyReal Assigning $this of type \A236|static to property but \A236->badDoc is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:12 PhanTypeMismatchPropertyProbablyReal Assigning $this of type \A236|static to property but \A236->badDoc is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

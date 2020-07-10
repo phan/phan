@@ -3442,10 +3442,18 @@ Default value for {TYPE} ${PROPERTY} can't be {CODE} of type {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php74_files/expected/014_real_type_mismatch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php74_files/src/014_real_type_mismatch.php#L6).
 
+## PhanTypeMismatchPropertyProbablyReal
+
+```
+Assigning {CODE} of type {TYPE}{DETAILS} to property but {PROPERTY} is {TYPE}{DETAILS} (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0236_assign_ref_analyzed.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0236_assign_ref_analyzed.php#L10).
+
 ## PhanTypeMismatchPropertyReal
 
 ```
-Assigning {CODE} of type {TYPE} to property but {PROPERTY} is {TYPE}
+Assigning {CODE} of type {TYPE}{DETAILS} to property but {PROPERTY} is {TYPE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php80_files/expected/002_property_union_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php80_files/src/002_property_union_type.php#L9).

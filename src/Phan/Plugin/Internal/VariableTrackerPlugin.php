@@ -100,7 +100,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 
             $this->checkSideEffectFreeLoopNodes($variable_graph, $variable_tracker_visitor);
         } finally {
-            // @phan-suppress-next-line PhanTypeMismatchProperty
+            // @phan-suppress-next-line PhanTypeMismatchPropertyProbablyReal
             VariableTrackerVisitor::$variable_graph = null;
         }
         $this->warnAboutVariableGraph($node, $variable_graph, $issue_categories);

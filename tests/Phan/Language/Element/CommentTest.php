@@ -44,7 +44,7 @@ final class CommentTest extends BaseTest
     }
 
     /**
-     * @suppress PhanTypeMismatchProperty
+     * @suppress PhanTypeMismatchPropertyProbablyReal
      */
     protected function tearDown(): void
     {

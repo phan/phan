@@ -1,2 +1,2 @@
-%s:16 PhanTypeMismatchProperty Assigning 2 of type 2 to property but \PhanBug\Foo->parent is \PhanBug\Foo|null
+%s:16 PhanTypeMismatchPropertyProbablyReal Assigning 2 of type 2 to property but \PhanBug\Foo->parent is \PhanBug\Foo|null (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
 %s:23 PhanTypeMismatchProperty Assigning [null] of type array{0:null} to property but \PhanBug\Foo->other is \PhanBug\Foo[]

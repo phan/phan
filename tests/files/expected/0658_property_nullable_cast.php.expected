@@ -1,2 +1,2 @@
 %s:22 PhanPossiblyNullTypeMismatchProperty Assigning O::$nonnull_var of type ?\NS658\Subclass to property but \NS658\O::$nonnull_var is \NS658\Base (null is incompatible)
-%s:23 PhanTypeMismatchProperty Assigning null of type null to property but \NS658\O::$nonnull_var is \NS658\Base
+%s:23 PhanTypeMismatchPropertyProbablyReal Assigning null of type null to property but \NS658\O::$nonnull_var is \NS658\Base (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

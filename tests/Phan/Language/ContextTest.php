@@ -35,7 +35,7 @@ final class ContextTest extends BaseTest
     protected function tearDown(): void
     {
         // Deliberately not calling parent::tearDown()
-        // @phan-suppress-next-line PhanTypeMismatchProperty
+        // @phan-suppress-next-line PhanTypeMismatchPropertyProbablyReal
         $this->code_base = null;
     }
 
