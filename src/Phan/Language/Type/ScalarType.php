@@ -136,7 +136,7 @@ abstract class ScalarType extends NativeType
         if ($other instanceof ScalarType) {
             return !($other instanceof NullType);
         }
-        return $other instanceof MixedType;
+        return $other instanceof MixedType || $other instanceof TemplateType;
     }
 
     /**

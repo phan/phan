@@ -36,7 +36,7 @@ class IntType extends ScalarType
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // always allow int -> float or int -> int
-        if ($other instanceof IntType || $other instanceof FloatType || $other instanceof MixedType) {
+        if ($other instanceof IntType || $other instanceof FloatType || $other instanceof MixedType || $other instanceof TemplateType) {
             return true;
         }
         if ($context->isStrictTypes()) {

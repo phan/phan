@@ -1,2 +1,2 @@
-%s:7 PhanTypeMismatchReturn Returning 42 of type 42 but f1() is declared to return null
-%s:16 PhanTypeMismatchReturn Returning 42 of type 42 but g1() is declared to return void
+%s:7 PhanTypeMismatchReturnProbablyReal Returning 42 of type 42 but f1() is declared to return null (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:16 PhanTypeMismatchReturnProbablyReal Returning 42 of type 42 but g1() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

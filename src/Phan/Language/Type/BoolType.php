@@ -49,6 +49,7 @@ final class BoolType extends ScalarType
     {
         return $other->isInBoolFamily() ||
             $other instanceof MixedType ||
+            $other instanceof TemplateType ||
             (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 

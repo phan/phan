@@ -1,2 +1,2 @@
 %s:10 PhanTypeMismatchReturn Returning CON1 of type 'a' but f() is declared to return int
-%s:15 PhanTypeMismatchReturn Returning CON2 of type 'b' but g() is declared to return int
+%s:15 PhanTypeMismatchReturnProbablyReal Returning CON2 of type 'b' but g() is declared to return int (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

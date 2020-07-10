@@ -3478,6 +3478,14 @@ Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} 
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0656_nullable_return.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0656_nullable_return.php#L4).
 
+## PhanTypeMismatchReturnProbablyReal
+
+```
+Returning {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS} (the inferred real return type has nothing in common with the declared phpdoc return type)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0027_void.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0027_void.php#L6).
+
 ## PhanTypeMismatchReturnReal
 
 This is a more severe version of `PhanTypeMismatchReturn` for code that Phan infers is likely to throw an Error at runtime.

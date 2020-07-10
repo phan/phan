@@ -1,1 +1,1 @@
-%s:8 PhanTypeMismatchReturn Returning [$first,$other] of type array{0:string,1:int} but test866() is declared to return bool
+%s:8 PhanTypeMismatchReturnProbablyReal Returning [$first,$other] of type array{0:string,1:int} but test866() is declared to return bool (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

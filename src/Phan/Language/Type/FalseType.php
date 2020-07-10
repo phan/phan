@@ -98,6 +98,7 @@ final class FalseType extends ScalarType
     {
         return $other->isInBoolFamily() ||
             \get_class($other) === MixedType::class ||
+            $other instanceof TemplateType ||
             (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }
 

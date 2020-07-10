@@ -1632,6 +1632,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             }
         }
+        if ($this->context->hasSuppressIssue($this->code_base, Issue::TypeMismatchArgumentProbablyReal)) {
+            // Suppressing ProbablyReal also suppresses the less severe version.
+            return;
+        }
+        if ($issue_type === Issue::TypeMismatchReturn) {
+            if ($expression_type->hasRealTypeSet() &&
+                !$expression_type->getRealUnionType()->canCastToDeclaredType($this->code_base, $this->context, $method_return_type)) {
+                // The argument's real type is completely incompatible with the documented phpdoc type.
+                //
+                // Either the phpdoc type is wrong or the argument is likely wrong.
+                $this->emitIssue(
+                    Issue::TypeMismatchReturnProbablyReal,
+                    $lineno,
+                    self::returnExpressionToShortString($inner_node),
+                    $expression_type,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($expression_type),
+                    $method->getNameForIssue(),
+                    $method_return_type,
+                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($method_return_type)
+                );
+                return;
+            }
+        }
         $this->emitIssue(
             $issue_type,
             $lineno,

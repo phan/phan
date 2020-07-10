@@ -1817,7 +1817,7 @@ class Type
      */
     public function isPossiblyFalse(): bool
     {
-        return $this->is_nullable;
+        return false;
     }
 
     /**

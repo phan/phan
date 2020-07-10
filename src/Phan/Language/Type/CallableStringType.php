@@ -134,6 +134,7 @@ final class CallableStringType extends StringType implements CallableInterface
     {
         return $other instanceof StringType ||
             $other instanceof MixedType ||
+            $other instanceof TemplateType ||
             $other instanceof CallableType;
     }
 }

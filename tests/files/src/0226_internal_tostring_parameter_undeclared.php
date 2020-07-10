@@ -2,7 +2,7 @@
 
 /**
  * @return urlstring
- * @suppress PhanTypeMismatchReturn
+ * @suppress PhanTypeMismatchReturnProbablyReal
  */
 function foo() {return 'a';}
 

@@ -1,4 +1,4 @@
 %s:3 PhanParamTooFewCallable Call with 0 arg(s) to Closure($x, $y) (as a provided callable) which requires 2 arg(s) defined at %s:9
 %s:5 PhanCommentParamOutOfOrder Expected @param annotation for $x to be before the @param annotation for $y
 %s:10 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $y of type int|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:10 PhanTypeMismatchReturn Returning (count($y) + $x) of type int but Closure($x, $y) is declared to return array|object
+%s:10 PhanTypeMismatchReturnProbablyReal Returning (count($y) + $x) of type int (real type float|int) but Closure($x, $y) is declared to return array|object (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

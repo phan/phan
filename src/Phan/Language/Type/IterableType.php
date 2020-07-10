@@ -27,7 +27,9 @@ class IterableType extends NativeType
     public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
         // TODO: Check if $other is final and non-iterable
-        return $other instanceof IterableType || $other instanceof CallableDeclarationType || $other->isPossiblyObject();
+        return $other instanceof IterableType ||
+            $other instanceof CallableDeclarationType ||
+            $other->isPossiblyObject();
     }
 
     public function asIterable(CodeBase $_): ?Type

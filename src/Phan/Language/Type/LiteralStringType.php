@@ -299,7 +299,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             return !$context->isStrictTypes();
         }
         // TODO: More precise for NonEmptyMixedType
-        return $type instanceof CallableType || $type instanceof MixedType;
+        return $type instanceof CallableType ||
+            $type instanceof MixedType ||
+            $type instanceof TemplateType;
     }
 
     /**

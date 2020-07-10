@@ -2,4 +2,4 @@
 %s:35 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is $o of type int but \spl_object_hash() takes object
 %s:51 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $y of type string but \intdiv() takes int
 %s:52 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type int but \strlen() takes string
-%s:53 PhanTypeMismatchReturn Returning true of type true but foo() is declared to return void
+%s:53 PhanTypeMismatchReturnProbablyReal Returning true of type true but foo() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

@@ -1,1 +1,1 @@
-%s:22 PhanTypeMismatchReturn Returning new stdClass() of type \stdClass but test() is declared to return ?\MyClass376
+%s:22 PhanTypeMismatchReturnProbablyReal Returning new stdClass() of type \stdClass but test() is declared to return ?\MyClass376 (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

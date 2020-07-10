@@ -1,2 +1,2 @@
-%s:12 PhanTypeMismatchReturn Returning "'{$x}{$x}'" of type '\'xyxy\'' but test() is declared to return 'xyz'
-%s:14 PhanTypeMismatchReturn Returning ($x . ' ') of type 'xy ' but test() is declared to return 'xyz'
+%s:12 PhanTypeMismatchReturnProbablyReal Returning "'{$x}{$x}'" of type '\'xyxy\'' but test() is declared to return 'xyz' (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:14 PhanTypeMismatchReturnProbablyReal Returning ($x . ' ') of type 'xy ' but test() is declared to return 'xyz' (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

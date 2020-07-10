@@ -195,4 +195,35 @@ final class TemplateType extends Type
         // Always possible until we support inferring `@template T as ConcreteType`
         return true;
     }
+
+    public function isPossiblyFalsey(): bool {
+        return true;
+    }
+
+    public function isAlwaysTruthy(): bool
+    {
+        return false;
+    }
+
+    public function isPossiblyNumeric(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns true if this could include the type `true`
+     * (e.g. for `mixed`, `bool`, etc.)
+     */
+    public function isPossiblyTrue(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns true for types such as `mixed`, `bool`, `false`
+     */
+    public function isPossiblyFalse(): bool
+    {
+        return true;
+    }
 }

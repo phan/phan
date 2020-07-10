@@ -9,9 +9,9 @@ src/031_sleep.php:17 SleepCheckerMagicPropName __sleep is returning an array tha
 src/031_sleep.php:19 SleepCheckerInvalidPropName __sleep is returning an array that includes _Z, which cannot be found
 src/031_sleep.php:22 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
 src/031_sleep.php:28 SleepCheckerPropertyMissingTransient Property public $_myProp that is not serialized by __sleep should be annotated with @transient or @phan-transient
-src/031_sleep.php:35 PhanTypeMismatchReturn Returning 2 of type 2 but __sleep() is declared to return string[]
+src/031_sleep.php:35 PhanTypeMismatchReturnProbablyReal Returning 2 of type 2 but __sleep() is declared to return string[] (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 src/031_sleep.php:35 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
-src/031_sleep.php:37 PhanTypeMismatchReturn Returning void of type void but __sleep() is declared to return string[]
+src/031_sleep.php:37 PhanTypeMismatchReturnProbablyReal Returning void of type void but __sleep() is declared to return string[] (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 src/031_sleep.php:37 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
 src/031_sleep.php:39 PhanPluginConstantVariableScalar Variable $x is probably constant with a value of 'unknownProp'
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes _myprop, which cannot be found

@@ -1,6 +1,6 @@
-%s:11 PhanTypeMismatchReturn Returning 5 of type 5 but testSingleInt() is declared to return 4
+%s:11 PhanTypeMismatchReturnProbablyReal Returning 5 of type 5 but testSingleInt() is declared to return 4 (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:14 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 2 of type 2 but \testSingleInt() takes 1 (real type int) defined at %s:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:25 PhanTypeMismatchReturn Returning 6 of type 6 but testDoubleInt() is declared to return 4|5
+%s:25 PhanTypeMismatchReturnProbablyReal Returning 6 of type 6 but testDoubleInt() is declared to return 4|5 (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:31 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is -1 of type -1 but \testDoubleInt() takes 1|2 (real type int) defined at %s:20 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:43 PhanTypeMismatchReturn Returning 2 of type 2 but testNullableInt() is declared to return ?4
+%s:43 PhanTypeMismatchReturnProbablyReal Returning 2 of type 2 but testNullableInt() is declared to return ?4 (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:48 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 1 of type 1 but \testNullableInt() takes ?-1 (no real type) defined at %s:38 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

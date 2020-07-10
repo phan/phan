@@ -181,6 +181,7 @@ class Issue
     public const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     public const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     public const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
+    public const TypeMismatchReturnProbablyReal = 'PhanTypeMismatchReturnProbablyReal';
     public const TypeMismatchReturnReal     = 'PhanTypeMismatchReturnReal';
     public const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     public const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
@@ -1618,6 +1619,14 @@ class Issue
                 "Returning {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS}",
                 self::REMEDIATION_B,
                 10138
+            ),
+            new Issue(
+                self::TypeMismatchReturnProbablyReal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS} (the inferred real return type has nothing in common with the declared phpdoc return type)",
+                self::REMEDIATION_B,
+                10167
             ),
             new Issue(
                 self::PartialTypeMismatchReturn,

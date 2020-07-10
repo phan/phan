@@ -58,7 +58,7 @@ final class NullType extends ScalarType
 
     public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
     {
-        return $other->isNullable() || $other instanceof MixedType;
+        return $other->isNullable() || $other instanceof MixedType || $other instanceof TemplateType;
     }
 
     public function isSubtypeOf(Type $type): bool

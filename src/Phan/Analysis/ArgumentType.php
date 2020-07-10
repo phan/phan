@@ -966,7 +966,7 @@ final class ArgumentType
                     $argument_type_expanded,
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                     $method->getRepresentationForIssue(),
-                    (string)$alternate_parameter_type,
+                    $alternate_parameter_type,
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
