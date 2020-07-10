@@ -873,19 +873,15 @@ class AssignmentVisitor extends AnalysisVisitor
                 }
                 $right_inner_type = $this->right_type;
                 if ($right_inner_type->isEmpty()) {
-                    if ($key_type_enum === GenericArrayType::KEY_MIXED) {
-                        $right_type = ArrayType::instance(false)->asRealUnionType();
-                    } else {
-                        $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
-                    }
+                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
                 } else {
                     $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
                 }
             } else {
-                $right_type = $this->right_type->asNonEmptyListTypes();
+                $right_type = $this->right_type->asNonEmptyListTypes()->nonFalseyClone();
             }
             if (!$right_type->hasRealTypeSet()) {
-                $right_type = $right_type->withRealTypeSet([ArrayType::instance(false)]);
+                $right_type = $right_type->withRealTypeSet(UnionType::typeSetFromString('non-empty-array'));
             }
         }
 
