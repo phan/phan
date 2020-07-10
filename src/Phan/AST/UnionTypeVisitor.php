@@ -1267,6 +1267,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
                 if ($element_value_type->isEmpty()) {
                     $element_value_type = MixedType::instance(false)->asPHPDocUnionType();
+                } else {
+                    $element_value_type = $element_value_type->convertUndefinedToNullable();
                 }
             } else {
                 $element_value_type = Type::fromObject($value)->asRealUnionType();
