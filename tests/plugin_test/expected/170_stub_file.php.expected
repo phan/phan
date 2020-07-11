@@ -1,2 +1,2 @@
-src/170_stub_file.php:2 PhanTypeMismatchArgumentInternalReal Argument 1 ($x) is null of type null but \fakephanstub_function() takes int
-src/170_stub_file.php:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($x) is null of type null but \FakePhanStub::__construct() takes string
+src/170_stub_file.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($x) is null of type null but \fakephanstub_function() takes int
+src/170_stub_file.php:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($x) is null of type null but \FakePhanStub::__construct() takes string
