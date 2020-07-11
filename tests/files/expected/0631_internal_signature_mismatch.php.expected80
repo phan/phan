@@ -1,4 +1,4 @@
-%s:10 PhanTypeMismatchReturn Returning new self() of type \BadSerializable1 but unserialize() is declared to return void
+%s:10 PhanTypeMismatchReturnProbablyReal Returning new self() of type \BadSerializable1 but unserialize() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:15 PhanParamSignatureMismatchInternal Declaration of function unserialize($x) : int should be compatible with internal function unserialize(string $serialized) : void
 %s:15 PhanParamSignatureRealMismatchHasNoParamTypeInternal Declaration of function unserialize($x) : int should be compatible with internal function unserialize(string $serialized) (parameter #1 with no type cannot replace original parameter with type 'string')
 %s:21 PhanParamSignatureMismatchInternal Declaration of function unserialize(&$_) should be compatible with internal function unserialize(string $serialized) : void
