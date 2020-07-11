@@ -1831,12 +1831,13 @@ trait FunctionTrait
         $last_mandatory_phpdoc_param_offset = $this->last_mandatory_phpdoc_param_offset;
         $closure = null;
         if (is_int($last_mandatory_phpdoc_param_offset)) {
-            $param = $this->parameter_list[$last_mandatory_phpdoc_param_offset] ?? null;;
+            $param = $this->parameter_list[$last_mandatory_phpdoc_param_offset] ?? null;
+
             if ($param) {
                 /**
                  * @param list<Node|int|string|float> $array
                  */
-                $closure = static function(CodeBase $code_base, Context $context, FunctionInterface $function, array $array) use ($param, $last_mandatory_phpdoc_param_offset): void {
+                $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $array) use ($param, $last_mandatory_phpdoc_param_offset): void {
                     if (count($array) > $last_mandatory_phpdoc_param_offset) {
                         return;
                     }

@@ -740,9 +740,9 @@ class Context extends FileRef
             if ($defining_fqsen !== $element->getFQSEN()) {
                 if ($defining_fqsen instanceof FullyQualifiedMethodName) {
                     $element = $code_base->getMethodByFQSEN($defining_fqsen);
-                } else if ($defining_fqsen instanceof FullyQualifiedPropertyName) {
+                } elseif ($defining_fqsen instanceof FullyQualifiedPropertyName) {
                     $element = $code_base->getPropertyByFQSEN($defining_fqsen);
-                } else if ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
+                } elseif ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
                     $element = $code_base->getClassConstantByFQSEN($defining_fqsen);
                 }
             }

@@ -41,8 +41,8 @@ use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use Phan\Plugin\Internal\RedundantConditionVisitor;
+use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 
 use function array_map;
 use function count;

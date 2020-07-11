@@ -383,7 +383,7 @@ class ASTReverter
                 return sprintf('match (%s) {%s}', ASTReverter::toShortString($cond), $stmts->children ? ' ' . ASTReverter::toShortString($stmts) . ' ' : '');
             },
             ast\AST_MATCH_ARM_LIST => static function (Node $node): string {
-                return implode(', ', \array_map(__CLASS__ . '::toShortString', $node->children));
+                return implode(', ', \array_map(self::class . '::toShortString', $node->children));
             },
             ast\AST_MATCH_ARM => static function (Node $node): string {
                 ['cond' => $cond, 'expr' => $expr] = $node->children;

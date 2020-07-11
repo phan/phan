@@ -196,7 +196,8 @@ final class TemplateType extends Type
         return true;
     }
 
-    public function isPossiblyFalsey(): bool {
+    public function isPossiblyFalsey(): bool
+    {
         return true;
     }
 

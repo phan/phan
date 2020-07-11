@@ -21,6 +21,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\UnionType;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+
 use function count;
 
 /**
