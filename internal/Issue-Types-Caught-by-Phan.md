@@ -1778,6 +1778,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0631_internal_signature_mismatch.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0631_internal_signature_mismatch.php#L15).
+
 ## PhanParamSignatureRealMismatchHasParamType
 
 ```
