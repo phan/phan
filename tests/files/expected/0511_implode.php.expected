@@ -7,4 +7,4 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 2 ($pieces) is [new stdClass()] of type array{0:\stdClass} but \implode() takes string[]
 %s:13 PhanParamSpecial1 Argument 2 ($glue) is array{0:'hello',1:'world'} but \implode() takes string when argument 1 is array
 %s:14 PhanParamTooManyInternal Call with 3 arg(s) to \implode(string $glue, array $pieces) which only takes 2 arg(s)
-%s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is [] of type array{} but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [] of type array{} but \strlen() takes string

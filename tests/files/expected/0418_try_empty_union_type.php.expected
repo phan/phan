@@ -1,2 +1,2 @@
 %s:13 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
-%s:21 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $x of type 2 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:21 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $x of type 2 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

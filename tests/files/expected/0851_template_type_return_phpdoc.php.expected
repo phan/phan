@@ -1,1 +1,1 @@
-%s:22 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is MyTest::create(MySubclass::class) of type \NS851\MySubclass|\NS851\MyTest (real type \NS851\MyTest) but \strlen() takes string
+%s:22 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is MyTest::create(MySubclass::class) of type \NS851\MySubclass|\NS851\MyTest (real type \NS851\MyTest) but \strlen() takes string

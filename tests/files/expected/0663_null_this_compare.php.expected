@@ -1,1 +1,1 @@
-%s:17 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $this->_staticHostnames of type null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:17 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $this->_staticHostnames of type null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

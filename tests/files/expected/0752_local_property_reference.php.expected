@@ -1,2 +1,2 @@
-%s:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($array_arg) is $this->prop of type string but \reset() takes array|object
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($array_arg) is $this->prop of type string but \reset() takes array|object
 %s:13 PhanTypeMismatchArgumentPropertyReferenceReal Argument 0 is property \C752->prop with type string but \reset() takes a reference of type array|object (no real type)

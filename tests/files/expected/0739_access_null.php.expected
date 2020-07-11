@@ -1,5 +1,5 @@
 %s:3 PhanTypeArraySuspiciousNullable Suspicious array access to $a of nullable type ?array
 %s:5 PhanTypeArraySuspiciousNull Suspicious array access to null of type null
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is null['field'] of type null but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is null['field'] of type null but \intdiv() takes int
 %s:6 PhanTypeArraySuspiciousNull Suspicious array access to $nil of type null
 %s:8 PhanTypeArraySuspicious Suspicious array access to $nil of type null

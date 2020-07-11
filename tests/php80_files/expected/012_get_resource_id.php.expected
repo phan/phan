@@ -1,2 +1,2 @@
-%s:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($res) is 0 of type 0 but \get_resource_id() takes resource
+%s:2 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($res) is 0 of type 0 but \get_resource_id() takes resource
 %s:3 PhanRedundantCondition Redundant attempt to cast get_resource_id(STDIN) of type int to int

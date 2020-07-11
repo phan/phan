@@ -1,1 +1,1 @@
-%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $result of type true but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $result of type true but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

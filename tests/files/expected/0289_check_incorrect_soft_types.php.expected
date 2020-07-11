@@ -1,5 +1,5 @@
 %s:3 PhanUndeclaredTypeParameter Parameter $x has undeclared type \resource
-%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($fp) is $x of type \resource but \fread() takes resource
+%s:4 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($fp) is $x of type \resource but \fread() takes resource
 %s:10 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x of type false|resource but \intdiv() takes int
 %s:14 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 %s:18 PhanCompatibleMixedType Type 'mixed' refers to any value starting in PHP 8.0. In PHP 7.4 and earlier, it refers to a class/interface with the name 'mixed'

@@ -42,7 +42,7 @@
 %s:42 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar |= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:43 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar ^= 2) of type int but \expect_string_298() takes string defined at %s:3
 %s:44 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar &= 65535) of type int but \expect_string_298() takes string defined at %s:3
-%s:45 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $intVar of type 21.5 but \strlen() takes string
+%s:45 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $intVar of type 21.5 but \strlen() takes string
 %s:45 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar /= 2) of type float but \expect_string_298() takes string defined at %s:3
 %s:46 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar *= 2) of type float but \expect_string_298() takes string defined at %s:3
 %s:47 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar **= 2) of type float but \expect_string_298() takes string defined at %s:3

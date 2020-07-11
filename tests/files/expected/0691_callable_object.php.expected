@@ -1,7 +1,7 @@
-%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $o of type callable-object (real type object) but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $o of type callable-object (real type object) but \intdiv() takes int
 %s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $o of type null but \intdiv() takes int
-%s:24 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $o of type object but \intdiv() takes int
-%s:26 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $c of type callable-object but \intdiv() takes int
+%s:24 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $o of type object but \intdiv() takes int
+%s:26 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $c of type callable-object but \intdiv() takes int
 %s:28 PhanImpossibleCondition Impossible attempt to cast $c of type callable-object to empty
-%s:32 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $o of type callable-object but \intdiv() takes int
+%s:32 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $o of type callable-object but \intdiv() takes int
 %s:34 PhanImpossibleCondition Impossible attempt to cast $o of type callable-object to empty

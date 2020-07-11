@@ -1,1 +1,1 @@
-%s:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($start) is [1,2,3] of type array{0:1,1:2,2:3} but \substr() takes int
+%s:2 PhanTypeMismatchArgumentInternal%SReal Argument 2 ($start) is [1,2,3] of type array{0:1,1:2,2:3} but \substr() takes int

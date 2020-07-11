@@ -1,5 +1,5 @@
 %s:10 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $a of type non-empty-array<mixed,mixed> but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $a2 of type array{key:string} (real type array) but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $a2 of type array{key:string} (real type array) but \intdiv() takes int
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $a of type non-empty-array<mixed,mixed> but \intdiv() takes int
-%s:27 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $a2 of type array{key:non-empty-string} (real type array) but \intdiv() takes int
-%s:30 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $a3 of type array{key:true} (real type array) but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $a2 of type array{key:non-empty-string} (real type array) but \intdiv() takes int
+%s:30 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $a3 of type array{key:true} (real type array) but \intdiv() takes int
