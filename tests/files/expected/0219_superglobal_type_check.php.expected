@@ -3,7 +3,7 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $argv[0] of type string but \intdiv() takes int
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $_COOKIE of type array<string,string>|array<string,string[]> but \strlen() takes string
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $_REQUEST of type array<string,string>|array<string,string[]> but \strlen() takes string
-%s:19 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $_SERVER of type 'foo' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $_SERVER of type 'foo' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $_ENV of type array<string,string> but \strlen() takes string
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $_ENV['HOME'] of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:27 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $GLOBALS of type array<string,mixed> but \strlen() takes string

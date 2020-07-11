@@ -1,4 +1,4 @@
-%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $this->prop of type \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $this->prop of type \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
 %s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $this->prop of type \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is $k of type int but \spl_object_id() takes object
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $v of type object but \intdiv() takes int

@@ -355,6 +355,24 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /** @override */
+    public function visitMatch(Node $node): void
+    {
+        $this->maybeInvokeAllChildNodes($node);
+    }
+
+    /** @override */
+    public function visitMatchArmList(Node $node): void
+    {
+        $this->maybeInvokeAllChildNodes($node);
+    }
+
+    /** @override */
+    public function visitMatchArm(Node $node): void
+    {
+        $this->maybeInvokeAllChildNodes($node);
+    }
+
+    /** @override */
     public function visitExprList(Node $node): void
     {
         $this->maybeInvokeAllChildNodes($node);

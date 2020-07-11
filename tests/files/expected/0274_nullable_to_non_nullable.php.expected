@@ -1,1 +1,1 @@
-%s:12 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $result of type array but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $result of type array but \intdiv() takes int

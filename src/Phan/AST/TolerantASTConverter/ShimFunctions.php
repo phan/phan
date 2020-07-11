@@ -106,6 +106,9 @@ class ShimFunctions
         ast\AST_PARAM => 'AST_PARAM',
         ast\AST_FOR => 'AST_FOR',
         ast\AST_FOREACH => 'AST_FOREACH',
+        ast\AST_MATCH_ARM_LIST => 'AST_MATCH_ARM_LIST',
+        ast\AST_MATCH => 'AST_MATCH',
+        ast\AST_MATCH_ARM => 'AST_MATCH_ARM',
     ];
 
     /**

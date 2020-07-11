@@ -1,5 +1,5 @@
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $input of type array but \strlen() takes string
+%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $input of type array but \strlen() takes string
 %s:9 PhanTypeMismatchReturnReal Returning $input of type \Traversable but to_array() is declared to return array
 %s:18 PhanUndeclaredMethod Call to undeclared method \Traversable::nnnext
 %s:19 PhanTypeMismatchReturnReal Returning $input of type \Traversable but check_iterable() is declared to return array
-%s:21 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $input of type array but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $input of type array but \strlen() takes string

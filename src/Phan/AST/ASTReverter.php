@@ -377,6 +377,18 @@ class ASTReverter
                 }
                 return sprintf('(%s ?: %s)', self::toShortString($cond), self::toShortString($false));
             },
+            /** @suppress PhanPossiblyUndeclaredProperty */
+            ast\AST_MATCH => static function (Node $node): string {
+                ['cond' => $cond, 'stmts' => $stmts] = $node->children;
+                return sprintf('match (%s) {%s}', ASTReverter::toShortString($cond), $stmts->children ? ' ' . ASTReverter::toShortString($stmts) . ' ' : '');
+            },
+            ast\AST_MATCH_ARM_LIST => static function (Node $node): string {
+                return implode(', ', \array_map(__CLASS__ . '::toShortString', $node->children));
+            },
+            ast\AST_MATCH_ARM => static function (Node $node): string {
+                ['cond' => $cond, 'expr' => $expr] = $node->children;
+                return sprintf('%s => %s', $cond !== null ? ASTReverter::toShortString($cond) : 'default', ASTReverter::toShortString($expr));
+            },
             ast\AST_ISSET => static function (Node $node): string {
                 return sprintf(
                     'isset(%s)',

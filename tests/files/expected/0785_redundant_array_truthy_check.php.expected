@@ -1,2 +1,2 @@
 %s:4 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-array<mixed,mixed> to truthy
-%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type non-empty-array<mixed,mixed> but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type non-empty-array<mixed,mixed> but \strlen() takes string

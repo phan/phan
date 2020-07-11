@@ -21,17 +21,22 @@ sed -i \
     -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
     -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
     -e "s/expecting identifier (T_STRING) or static (T_STATIC) or namespace (T_NAMESPACE)/expecting identifier (T_STRING) or namespace (T_NAMESPACE)/" \
+    -e "s/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g" \
     -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
-    -e "s/of type \\\\Countable|\\\\SimpleXMLElement/of type \\\\SimpleXMLElement/" \
+    -e 's/of type \\Countable|\(\\Iterator|\\RecursiveIterator|\)\?\\SimpleXMLElement/of type \\SimpleXMLElement/' \
     -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \
     -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
     -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \
-    -e "s/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'/" \
-    -e "s/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'/" \
-    -e "s/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)/" \
+    -e "s@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'@" \
+    -e "s@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'@" \
+    -e "s@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@" \
     -e "/069_invalid_coalesce_assign.php:2 PhanNoopBinaryOperator/d" \
-    -e "s/|\\\\Stringable|/|/g" \
+    -e "s@|\\\\Stringable|@|@g" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
+    -e "s@031_not_magic_constant.php:3 PhanSyntaxError Unmatched ')'@031_not_magic_constant.php:3 PhanSyntaxError syntax error, unexpected ')'@" \
+    -e "s@PhanSyntaxError Unmatched '}'@PhanSyntaxError syntax error, unexpected '}', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\\\\\\\ (T_NS_SEPARATOR)@" \
+    -e "s@case_insensitive = false@case_insensitive = unknown@" \
+    -e "s@068_binary_literal.php:13 PhanSyntaxError Unclosed '{' on line 12@068_binary_literal.php:13 PhanSyntaxError syntax error, unexpected end of file@" \
     $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing

@@ -374,6 +374,8 @@ class Issue
     public const NoopNew                       = 'PhanNoopNew';
     public const NoopNewNoSideEffects          = 'PhanNoopNewNoSideEffects';
     public const NoopSwitchCases               = 'PhanNoopSwitchCases';
+    public const NoopMatchArms                 = 'PhanNoopMatchArms';
+    public const NoopMatchExpression           = 'PhanNoopMatchExpression';
     public const UnreachableCatch              = 'PhanUnreachableCatch';
     public const UnreferencedClass             = 'PhanUnreferencedClass';
     public const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -4046,6 +4048,22 @@ class Issue
                 'Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 6094
+            ),
+            new Issue(
+                self::NoopMatchArms,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'This match expression only has the default arm in {CODE}',
+                self::REMEDIATION_B,
+                6095
+            ),
+            new Issue(
+                self::NoopMatchExpression,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in {CODE}',
+                self::REMEDIATION_B,
+                6096
             ),
 
             // Issue::CATEGORY_REDEFINE

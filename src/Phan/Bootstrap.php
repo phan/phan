@@ -122,10 +122,10 @@ if (extension_loaded('ast')) {
         phan_output_ast_installation_instructions();
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
-    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.4') < 0) {
+    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.7') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 3.x requires php-ast 1.0.6+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 3.x requires php-ast 1.0.7+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );

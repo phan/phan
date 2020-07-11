@@ -3185,6 +3185,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `ast\AST_MATCH`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * analyzing the node
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitMatch(Node $node): Context
+    {
+        if ($this->isInNoOpPosition($node)) {
+            if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['stmts'])) {
+                $this->emitIssue(
+                    Issue::NoopMatchExpression,
+                    $node->lineno,
+                    ASTReverter::toShortString($node)
+                );
+            }
+        }
+        return $this->context;
+    }
+
+    /**
      * @param Node $node a node of kind AST_CONDITIONAL with a condition that is also of kind AST_CONDITIONAL
      */
     private function checkDeprecatedUnparenthesizedConditional(Node $node, Node $cond): void
@@ -4439,12 +4465,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_STMT_LIST:
                 return true;
             case ast\AST_EXPR_LIST:
+                $parent_parent_node = \prev($this->parent_node_list);
+                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+                if ($parent_parent_node->kind === ast\AST_MATCH_ARM) {
+                    return false;
+                }
                 if ($node !== \end($parent_node->children)) {
                     return true;
                 }
                 // This is an expression list, but it's in the condition
-                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
-                return $parent_node !== (\prev($this->parent_node_list)->children['cond'] ?? null);
+                return $parent_node !== ($parent_parent_node->children['cond'] ?? null);
         }
         return false;
     }

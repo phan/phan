@@ -42,6 +42,7 @@ class IdenticalCondition implements BinaryCondition
     public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
         if (!$expr instanceof Node) {
+            // Cannot be false/true.
             return null;
         }
         $code_base = $visitor->getCodeBase();

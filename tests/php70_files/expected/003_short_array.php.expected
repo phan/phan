@@ -1,9 +1,9 @@
 %s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value of type 2|3 but \strlen() takes string
 %s:8 PhanCompatibleShortArrayAssignPHP70 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value2 of type 2|3 but \strlen() takes string
-%s:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type array{0:2} but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type array{0:2} but \strlen() takes string
 %s:15 PhanCompatibleShortArrayAssignPHP70 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-%s:17 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $y of type array{0:2} but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $y of type array{0:2} but \strlen() takes string
 %s:21 PhanCompatibleKeyedArrayAssignPHP70 Using array keys in an array destructuring assignment is not compatible with PHP 7.0
 %s:21 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments (list($a,1=>$z))
-%s:24 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $z of type array{0:3} but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $z of type array{0:3} but \strlen() takes string

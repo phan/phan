@@ -3,14 +3,23 @@
 // @phan-stub-for-extension json@%s
 
 namespace {
+class JsonException extends \Exception {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
 interface JsonSerializable {
 
     // methods
     function jsonSerialize();
 }
 
-function json_decode(string $json, ?bool $assoc = null, int $depth = 512, int $options = 0) {}
-function json_encode($value, int $options = 0, int $depth = 512) : false|string {}
+function json_decode(string $json, ?bool $assoc = null, int $depth = 512, int $options = 0) : mixed {}
+function json_encode(mixed $value, int $options = 0, int $depth = 512) : false|string {}
 function json_last_error() : int {}
 function json_last_error_msg() : string {}
 const JSON_BIGINT_AS_STRING = 2;
@@ -30,10 +39,15 @@ const JSON_HEX_AMP = 2;
 const JSON_HEX_APOS = 4;
 const JSON_HEX_QUOT = 8;
 const JSON_HEX_TAG = 1;
+const JSON_INVALID_UTF8_IGNORE = 1048576;
+const JSON_INVALID_UTF8_SUBSTITUTE = 2097152;
 const JSON_NUMERIC_CHECK = 32;
 const JSON_OBJECT_AS_ARRAY = 1;
 const JSON_PARTIAL_OUTPUT_ON_ERROR = 512;
 const JSON_PRESERVE_ZERO_FRACTION = 1024;
 const JSON_PRETTY_PRINT = 128;
+const JSON_THROW_ON_ERROR = 4194304;
+const JSON_UNESCAPED_LINE_TERMINATORS = 2048;
+const JSON_UNESCAPED_SLASHES = 64;
 const JSON_UNESCAPED_UNICODE = 256;
 }

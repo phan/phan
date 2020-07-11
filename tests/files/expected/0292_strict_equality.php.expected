@@ -1,6 +1,6 @@
-%s:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $x of type 'key' but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $y of type array{0:'key'} but \intdiv() takes int
+%s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $x of type 'key' but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $y of type array{0:'key'} but \intdiv() takes int
 %s:16 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $z of type 1.5 but \intdiv() takes int
-%s:22 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($numerator) is $x of type null but \intdiv() takes int
+%s:22 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $x of type null but \intdiv() takes int
 %s:25 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $y of type false but \intdiv() takes int
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $z of type true but \intdiv() takes int

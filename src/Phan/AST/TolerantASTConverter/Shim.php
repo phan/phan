@@ -39,6 +39,15 @@ class Shim
             // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
             \define('ast\AST_ATTRIBUTE', 0x2fb);
         }
+        if (!\defined('ast\AST_MATCH_ARM_LIST')) {
+            \define('ast\AST_MATCH_ARM_LIST', 252);
+        }
+        if (!\defined('ast\AST_MATCH')) {
+            \define('ast\AST_MATCH', 0x2fc);
+        }
+        if (!\defined('ast\AST_MATCH_ARM')) {
+            \define('ast\AST_MATCH_ARM', 0x2fb);
+        }
         // Define flags
         if (!\defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {
             \define('ast\flags\DIM_ALTERNATIVE_SYNTAX', 1 << 1);

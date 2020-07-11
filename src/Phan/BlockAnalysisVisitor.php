@@ -42,6 +42,7 @@ use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
+use Phan\Plugin\Internal\RedundantConditionVisitor;
 
 use function array_map;
 use function count;
@@ -1543,37 +1544,39 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each child node and get an
             // updated context for the node
 
-            if ($previous_child_context instanceof Context) {
-                // The previous case statement fell through some of the time or all of the time.
-                $child_context = (new ContextMergeVisitor(
-                    $previous_child_context,
-                    [$previous_child_context, $fallthrough_context]
-                ))->combineScopeList([$previous_child_context->getScope(), $fallthrough_context->getScope()]);
-            } else {
-                // The previous case statement did not fall through, or does not exist.
-                $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
-            }
-            $child_context->withLineNumberStart($child_node->lineno);
             try {
                 $this->parent_node_list[] = $node;
+                $fallthrough_context->withLineNumberStart($child_node->lineno);
                 ConfigPluginSet::instance()->preAnalyzeNode(
                     $this->code_base,
                     $fallthrough_context,
                     $child_node
                 );
+                // Statements such as `case $x = 2;` should affect both the body of that case statements and following case statements.
+                // Modify the $fallthrough_context.
+                if ($case_cond_node instanceof Node) {
+                    $fallthrough_context = $this->analyzeAndGetUpdatedContext($fallthrough_context, $child_node, $case_cond_node);
+                }
+                if ($previous_child_context instanceof Context) {
+                    // The previous case statement fell through some of the time or all of the time.
+                    $child_context = (new ContextMergeVisitor(
+                        $previous_child_context,
+                        [$previous_child_context, $fallthrough_context]
+                    ))->combineScopeList([$previous_child_context->getScope(), $fallthrough_context->getScope()]);
+                } else {
+                    // The previous case statement did not fall through, or does not exist.
+                    $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
+                }
                 if ($case_cond_node !== null) {
-                    if ($case_cond_node instanceof Node) {
-                        $child_context = $this->analyzeAndGetUpdatedContext($child_context, $child_node, $case_cond_node);
-                    }
                     if ($switch_variable_condition) {
                         // e.g. make sure to handle $x from `switch (true) { case $x instanceof stdClass: }` or `switch ($x)`
                         // Note that this won't properly combine types from `case $x = expr: case $x = expr2:` (latter would override former),
                         // but I don't expect to see that in reasonable code.
                         $variables_to_check = $switch_variable_cond_variable_set + RedundantCondition::getVariableSet($case_cond_node);
+                        // Add the variable type from the above case statements, if it was possible for it to fall through
+                        // TODO: Also support switch(get_class($variable))
+                        $child_context = $switch_variable_condition($child_context, $case_cond_node);
                         foreach ($variables_to_check as $var_name) {
-                            // Add the variable type from the above case statements, if it was possible for it to fall through
-                            // TODO: Also support switch(get_class($variable))
-                            $child_context = $switch_variable_condition($child_context, $case_cond_node);
                             if ($previous_child_context !== null) {
                                 $variable = $child_context->getScope()->getVariableByNameOrNull($var_name);
                                 if ($variable) {
@@ -1647,10 +1650,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // Skip over case statements that only ever throw or return
                 if (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
                     // and skip over empty statement lists, unless they're the last in a long line of empty statement lists
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
                     $child_context_list[] = $child_context;
                 }
 
                 if ($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED) {
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
                     $previous_child_context = $child_context;
                 }
             }
@@ -1673,6 +1678,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
+        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable Phan cannot infer child_context_list was non-empty due to finally block
         return $this->postOrderAnalyze($context, $node);
     }
 
@@ -1740,7 +1746,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                         ];
                     }
                 }
-            } elseif (ParseVisitor::isConstExpr($switch_case_node)) {
+            }
+
+            if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $switch_case_node)) {
                 // e.g. switch(true), switch(MY_CONST), switch(['x'])
                 return [
                     $switch_case_node,
@@ -1748,6 +1756,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                      * @param Node|string|int|float $cond_node
                      */
                     function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                        // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
+                        while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
+                            $cond_node = $cond_node->children['var'];
+                        }
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeEqual($switch_case_node, $cond_node);
                     },
@@ -1755,6 +1767,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                      * @param Node|string|int|float $cond_node
                      */
                     function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                        // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
+                        while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
+                            $cond_node = $cond_node->children['var'];
+                        }
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeNotEqual($switch_case_node, $cond_node);
                     },
@@ -1764,6 +1780,234 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // do nothing, we warn elsewhere
         }
         return self::NOOP_SWITCH_COND_ANALYZER;
+    }
+
+    /**
+     * @param Node $node
+     * An AST node we'd like to analyze the statements for
+     *
+     * @return Context
+     * The updated context after visiting the node
+     *
+     * Based on visitSwitchList
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitMatchArmList(Node $node): Context
+    {
+        // Make a copy of the internal context so that we don't
+        // leak any changes within the closed context to the
+        // outer scope
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = $this->preOrderAnalyze(clone($context), $node);
+
+        $child_context_list = [];
+
+        // parent_node_list should always end in kind ast\AST_MATCH
+        $match_expression_node = end($this->parent_node_list);
+        if (!$match_expression_node instanceof Node) {
+            throw new AssertionError('Expected AST_MATCH node as parent of AST_MATCH_ARM_LIST');
+        }
+        $children = $node->children;
+        if (\count($children) <= 1 && !isset($children[0]->children['cond'])) {
+            // Warn about match expressions with only the default condition.
+            $this->emitIssue(
+                Issue::NoopMatchArms,
+                $match_expression_node->lineno,
+                ASTReverter::toShortString($match_expression_node)
+            );
+        }
+        // Create closures to infer the effects of checking the match expression against the match condition lists (assertions and their negations)
+        $cond_node = $match_expression_node->children['cond'];
+        [$unused_match_variable_node, $match_variable_condition, $match_variable_negated_condition] = $this->createMatchConditionAnalyzer(
+            $cond_node
+        );
+        if (Config::getValue('redundant_condition_detection')) {
+            $cond_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $match_expression_node->children['cond']);
+            if ($cond_type->hasRealTypeSet()) {
+                $cond_type = $cond_type->getRealUnionType()->withStaticResolvedInContext($context);
+            } else {
+                $cond_type = null;
+            }
+        } else {
+            $cond_type = null;
+        }
+        /*
+        if (($match_variable_condition || $match_variable_negated_condition) && $match_variable_node instanceof Node) {
+            $match_variable_cond_variable_set = RedundantCondition::getVariableSet($match_variable_node);
+        } else {
+            $match_variable_cond_variable_set = [];
+        }
+         */
+        $fallthrough_context = $context;
+
+        $default_arm_node = null;
+
+        foreach ($node->children as $arm_node) {
+            if (!$arm_node instanceof Node) {
+                throw new AssertionError("Match arm must be a node");
+            }
+
+            if ($arm_node->children['cond'] === null) {
+                if ($default_arm_node !== null) {
+                    $this->emitIssue(
+                        Issue::InvalidNode,
+                        $arm_node->lineno,
+                        'Saw an invalid match arm with multiple default nodes'
+                    );
+                    // fall through
+                } else {
+                    // TODO: Warn about duplicate default nodes
+                    $default_arm_node = $arm_node;
+                    continue;
+                }
+            }
+            // Step into each child node and get an
+            // updated context for the node
+
+            $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
+
+            $child_context->withLineNumberStart($arm_node->lineno);
+            try {
+                $this->parent_node_list[] = $node;
+                [$child_context, $fallthrough_context] = $this->analyzeMatchArm(
+                    $child_context,
+                    $fallthrough_context,
+                    $match_variable_condition,
+                    $match_variable_negated_condition,
+                    $arm_node,
+                    $cond_node,
+                    $cond_type
+                );
+            } finally {
+                \array_pop($this->parent_node_list);
+            }
+
+            // We can improve analysis of arms by using
+            // a BlockExitStatusChecker to avoid propagating invalid inferences.
+            if (self::willExecutionProceedAfterMatchArm($arm_node)) {
+                $child_context_list[] = $child_context;
+            }
+        }
+
+        if ($default_arm_node instanceof Node) {
+            // Duplicates above code
+            // TODO: Check if the default is unreachable
+
+            // Step into each child node and get an
+            // updated context for the node
+
+            $child_context = $fallthrough_context->withScope(clone($fallthrough_context->getScope()));
+
+            $child_context->withLineNumberStart($default_arm_node->lineno);
+            try {
+                $this->parent_node_list[] = $node;
+                [$child_context, $unused_fallthrough_context] = $this->analyzeMatchArm(
+                    $child_context,
+                    $fallthrough_context,
+                    $match_variable_condition,
+                    $match_variable_negated_condition,
+                    $default_arm_node,
+                    $cond_node,
+                    $cond_type
+                );
+            } finally {
+                \array_pop($this->parent_node_list);
+            }
+
+            // We can improve analysis of arms by using
+            // a BlockExitStatusChecker to avoid propagating invalid inferences.
+            if (self::willExecutionProceedAfterMatchArm($default_arm_node)) {
+                $child_context_list[] = $child_context;
+            }
+        }
+
+        // Match will throw an UnhandledMatchError if none of the arms apply.
+        if (count($child_context_list) > 0) {
+            if (count($child_context_list) >= 2) {
+                // For case statements, we need to merge the contexts
+                // of all child context into a single scope based
+                // on any possible branching structure
+                $context = (new ContextMergeVisitor(
+                    $context,
+                    $child_context_list
+                ))->combineChildContextList();
+            } else {
+                $context = $child_context_list[0];
+            }
+        }
+
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    private static function willExecutionProceedAfterMatchArm(Node $arm_node): bool
+    {
+        $expr_node = $arm_node->children['expr'];
+        if (!$expr_node instanceof Node) {
+            return true;
+        }
+        $block_exit_status = (new BlockExitStatusChecker())->__invoke($expr_node);
+        // Skip over arms that only ever throw/exit.
+        // equivalent to !willUnconditionallyThrowOrReturn()
+        return ($block_exit_status & ~BlockExitStatusChecker::STATUS_THROW_OR_RETURN_BITMASK) !== 0;
+    }
+
+    /**
+     * @param ?Closure(Context, mixed): Context $match_variable_condition
+     * @param ?Closure(Context, mixed): Context $match_variable_negated_condition
+     * @param Node|int|string|float $match_cond_node
+     * @param ?UnionType $cond_type for impossible condition detection
+     * @return array{0: Context, 1: Context} new values of [$child_context, $fallthrough_context]
+     */
+    private function analyzeMatchArm(
+        Context $child_context,
+        Context $fallthrough_context,
+        ?Closure $match_variable_condition,
+        ?Closure $match_variable_negated_condition,
+        Node $arm_node,
+        $match_cond_node,
+        ?UnionType $cond_type
+    ): array {
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $fallthrough_context,
+            $arm_node
+        );
+        ['expr' => $arm_expr_node, 'cond' => $arm_cond_node] = $arm_node->children;
+        if ($arm_cond_node !== null) {
+            if ($arm_cond_node instanceof Node) {
+                $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
+            }
+            if ($cond_type) {
+                (new RedundantConditionVisitor($this->code_base, $child_context))->checkImpossibleMatchArm($match_cond_node, $cond_type, $arm_node);
+            }
+            if ($match_variable_condition) {
+                // e.g. make sure to handle $x from `match (true) { $x instanceof stdClass => ... }` or `match ($x)`
+                // Note that this won't properly combine types from `($x = expr) => ... , ($x = expr2) => ...` (latter would override former),
+                // but I don't expect to see that in reasonable code.
+                //$variables_to_check = $match_variable_cond_variable_set + RedundantCondition::getVariableSet($arm_cond_node);
+
+                // Add the variable type from the **conditions of the** above arms,
+                // if it was possible for it to fall through
+                // TODO: Also support match(get_class($variable))
+                $child_context = $match_variable_condition($child_context, $arm_cond_node);
+            }
+            if ($match_variable_negated_condition) {
+                // Add the variable types that were ruled out by the above case statements, if it was possible for it to fall through.
+                // TODO: Also support match(get_class($variable))
+                $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $arm_cond_node);
+            }
+        }
+
+        if ($arm_expr_node instanceof Node) {
+            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_expr_node);
+        }
+        ConfigPluginSet::instance()->postAnalyzeNode(
+            $this->code_base,
+            $fallthrough_context,
+            $arm_node
+        );
+        return [$child_context, $fallthrough_context];
     }
 
     /**
@@ -2029,6 +2273,98 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->code_base,
             $context
         ))->__invoke($condition_node);
+    }
+
+    /**
+     * Returns a closure to analyze the conditions for match expressions for a match arm
+     *
+     * @param Node|int|string|float $match_case_node
+     * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}
+     * @see self::createSwitchConditionAnalyzer() - Based on that but uses strict equality instead
+     */
+    private function createMatchConditionAnalyzer($match_case_node): array
+    {
+        $match_kind = ($match_case_node->kind ?? null);
+        try {
+            if ($match_kind === ast\AST_VAR) {
+                $match_variable = (new ConditionVisitor($this->code_base, $this->context))->getVariableFromScope($match_case_node, $this->context);
+                if (!$match_variable) {
+                    return self::NOOP_SWITCH_COND_ANALYZER;
+                }
+                return [
+                    $match_case_node,
+                    /**
+                     * @param Node|string|int|float $cond_node
+                     */
+                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                        $visitor = new ConditionVisitor($this->code_base, $child_context);
+                        return $visitor->updateVariableToBeIdentical($match_case_node, $cond_node, $child_context);
+                    },
+                    /**
+                     * @param Node|string|int|float $cond_node
+                     */
+                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                        $visitor = new ConditionVisitor($this->code_base, $child_context);
+                        return $visitor->updateVariableToBeNotIdentical($match_case_node, $cond_node, $child_context);
+                    },
+                ];
+            } elseif ($match_kind === ast\AST_CALL) {
+                $name = $match_case_node->children['expr']->children['name'] ?? null;
+                if (\is_string($name)) {
+                    $name = \strtolower($name);
+                    if ($name === 'get_class') {
+                        $match_variable_node = $match_case_node->children['args']->children[0] ?? null;
+                        if (!$match_variable_node instanceof Node) {
+                            return self::NOOP_SWITCH_COND_ANALYZER;
+                        }
+                        if ($match_variable_node->kind !== ast\AST_VAR) {
+                            return self::NOOP_SWITCH_COND_ANALYZER;
+                        }
+                        $match_variable = (new ConditionVisitor($this->code_base, $this->context))->getVariableFromScope($match_variable_node, $this->context);
+                        if (!$match_variable) {
+                            return self::NOOP_SWITCH_COND_ANALYZER;
+                        }
+                        return [
+                            $match_variable_node,
+                            /**
+                             * @param Node|string|int|float $cond_node
+                             */
+                            function (Context $child_context, $cond_node) use ($match_variable_node): Context {
+                                $visitor = new ConditionVisitor($this->code_base, $child_context);
+                                return $visitor->analyzeClassAssertion(
+                                    $match_variable_node,
+                                    $cond_node
+                                ) ?? $child_context;
+                            },
+                            null,
+                        ];
+                    }
+                }
+            }
+            if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $match_case_node)) {
+                // e.g. match(true), match(MY_CONST), match(['x'])
+                return [
+                    $match_case_node,
+                    /**
+                     * @param Node|string|int|float $cond_node
+                     */
+                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                        $visitor = new ConditionVisitor($this->code_base, $child_context);
+                        return $visitor->analyzeAndUpdateToBeIdentical($match_case_node, $cond_node);
+                    },
+                    /**
+                     * @param Node|string|int|float $cond_node
+                     */
+                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                        $visitor = new ConditionVisitor($this->code_base, $child_context);
+                        return $visitor->analyzeAndUpdateToBeNotIdentical($match_case_node, $cond_node);
+                    },
+                ];
+            }
+        } catch (IssueException $_) {
+            // do nothing, we warn elsewhere
+        }
+        return self::NOOP_SWITCH_COND_ANALYZER;
     }
 
     /**

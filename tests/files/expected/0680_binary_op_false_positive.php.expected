@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:6 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:9 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is $x of type ?string but \strlen() takes string (expected type to be non-nullable)

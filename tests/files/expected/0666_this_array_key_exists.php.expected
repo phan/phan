@@ -1,4 +1,4 @@
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $this->x of type array{1:mixed,0:'test'|string} (real type non-empty-array<mixed,mixed>|object) but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $this->x of type array{1:mixed,0:'test'|string} (real type non-empty-array<mixed,mixed>|object) but \strlen() takes string
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->x[0] of type 'test'|string but \intdiv() takes int
 %s:15 PhanTypeInvalidDimOffset Invalid offset 0 of $this->x of array type array{}
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->x[0] of type null but \intdiv() takes int

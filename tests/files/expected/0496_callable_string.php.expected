@@ -1,5 +1,5 @@
 %s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is rand(0, 10) of type int but \strlen() takes string
-%s:20 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($var) is MyClass496::class of type 'NS\\MyClass496' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:20 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is MyClass496::class of type 'NS\\MyClass496' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:23 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myStaticMethod(\stdClass $arg) which requires 1 arg(s) defined at %s:8
 %s:25 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myInstanceMethod(\stdClass $arg) which requires 1 arg(s) defined at %s:9
 %s:28 PhanAccessPropertyNonStaticAsStatic Accessing non static property \NS\MyClass496->static_prop as static

@@ -31,6 +31,9 @@ Plugins:
 + Support throwing `\Phan\PluginV3\UnloadablePluginException` instead of returning a plugin object in plugin files.
 + When a plugin registers for a method definition with `AnalyzeFunctionCallCapability`, automatically register the same closure for all classlikes using the same inherited definition of that method. (#4021)
 
+Miscellaneous
++ Update more unit tests for php 8.0.
+
 Bug Fixes:
 + Make suppressions on trait methods/properties consistently apply to the inherited definitions from classes/traits using those traits.
 

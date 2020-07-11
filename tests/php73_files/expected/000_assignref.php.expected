@@ -1,2 +1,2 @@
 %s:8 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type 2 but \strlen() takes string
-%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $y of type \stdClass but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $y of type \stdClass but \strlen() takes string

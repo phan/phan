@@ -8,4 +8,4 @@
 %s:58 PhanTypeMismatchReturnProbablyReal Returning $vararg1 of type list<int> but a13() is declared to return int (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:74 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g2 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
 %s:78 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g3 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
-%s:84 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type int[] (real type array) but \strlen() takes string
+%s:84 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type int[] (real type array) but \strlen() takes string
