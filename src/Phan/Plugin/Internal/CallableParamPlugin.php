@@ -173,7 +173,7 @@ final class CallableParamPlugin extends PluginV3 implements
         $result['\\ReflectionFunction::__construct'] = self::generateClosure([0], []);
         $result['\\ReflectionClass::__construct'] = self::generateClosure([], [0]);
 
-        // When a codebase calls function_exists(string|callable) is to **check** if a function exists,
+        // When a codebase calls function_exists(string|callable) to **check** if a function exists,
         // don't emit PhanUndeclaredFunctionInCallable as a side effect.
         unset($result['\\function_exists']);
 
