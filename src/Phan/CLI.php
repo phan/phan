@@ -914,7 +914,7 @@ class CLI
         if (isset($opts['language-server-completion-vscode']) && Config::getValue('language_server_enable_completion')) {
             Config::setValue('language_server_enable_completion', Config::COMPLETION_VSCODE);
         }
-        if (Config::getValue('color_issue_messages') === null && $printer_type === 'text') {
+        if (Config::getValue('color_issue_messages') === null && in_array($printer_type, ['text', 'verbose'], true)) {
             if (Config::getValue('color_issue_messages_if_supported') && self::supportsColor(\STDOUT)) {
                 Config::setValue('color_issue_messages', true);
             }
@@ -1488,7 +1488,7 @@ EOT;
   `.phan/config.php`).
 
  -m, --output-mode <mode>
-  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', or 'html'
+  Output mode from 'text', 'verbose', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', or 'html'
 
  -o, --output <filename>
   Output filename
@@ -1496,7 +1496,7 @@ EOT;
 $init_help
  -C, --color, --no-color
   Add colors to the outputted issues.
-  This is recommended for only the default --output-mode ('text')
+  This is recommended for only --output-mode=text (the default) and 'verbose'
 
   [--color-scheme={default,code,light,eclipse_dark,vim}]
     This (or the environment variable PHAN_COLOR_SCHEME) can be used to set the color scheme for emitted issues.

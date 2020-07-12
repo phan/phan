@@ -19,11 +19,11 @@ use function is_string;
  *
  * 'text' is the only output format for which the option `--color` is recommended.
  */
-final class PlainTextPrinter implements IssuePrinterInterface
+class PlainTextPrinter implements IssuePrinterInterface
 {
 
     /** @var OutputInterface an output that plaintext formatted issues can be written to. */
-    private $output;
+    protected $output;
 
     public function print(IssueInstance $instance): void
     {

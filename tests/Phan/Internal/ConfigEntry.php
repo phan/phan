@@ -163,6 +163,7 @@ class ConfigEntry
         'enable_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'enable_extended_internal_return_type_plugins' => self::CATEGORY_ANALYSIS,
         'max_literal_string_type_length' => self::CATEGORY_ANALYSIS,
+        'max_verbose_snippet_length' => self::CATEGORY_OUTPUT,
         'plugins' => self::CATEGORY_ANALYSIS,
         'plugin_config' => self::CATEGORY_ANALYSIS,
         'maximum_recursion_depth' => self::CATEGORY_ANALYSIS,

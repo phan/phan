@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 3.1.0 (dev)
 -----------------------
 
+New features (CLI, Config):
++ Add `--output-mode=verbose` to print the line of code which caused the issue to be emitted after the textual issue output.
+  This is only emitted if the line is not whitespace, could be read, and does not exceed the config setting `max_verbose_snippet_length`.
+
 New features (Analysis):
 + Don't emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and other binary operation warnings for `mixed`
 + Emit `PhanIncompatibleRealPropertyType` when real property types are incompatible (#4016)

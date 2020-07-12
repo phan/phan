@@ -15,7 +15,7 @@ final class FileCache
     /**
      * @var int - Maximum cache size
      */
-    private static $max_size;
+    private static $max_size = self::MINIMUM_CACHE_SIZE;
 
     /**
      * @var array<string,FileCacheEntry> - An ordered php associative array, with most recently used at the end of the array.

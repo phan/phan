@@ -741,6 +741,9 @@ class Config
         // This can be enabled by setting PHAN_ENABLE_COLOR_OUTPUT=1 or passing `--color` or by setting `color_issue_messages_if_supported`
         'color_issue_messages' => null,
 
+        // In `--output-mode=verbose`, refuse to print lines of context that exceed this limit.
+        'max_verbose_snippet_length' => 1000,
+
         // Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.
         //
         // See the keys of `Phan\Output\Colorizing::STYLES` for valid color names,
@@ -1454,6 +1457,7 @@ class Config
             'long_progress_bar' => $is_bool,
             'markdown_issue_messages' => $is_bool,
             'max_literal_string_type_length' => $is_int_strict,
+            'max_verbose_snippet_length' => $is_int_strict,
             'minimum_severity' => $is_int_strict,
             'null_casts_as_any_type' => $is_bool,
             'null_casts_as_array' => $is_bool,
