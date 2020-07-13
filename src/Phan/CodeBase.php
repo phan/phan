@@ -39,6 +39,10 @@ use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
 
 use function count;
+use function get_defined_constants;
+use function get_extension_funcs;
+use function get_loaded_extensions;
+use function is_array;
 use function strtolower;
 
 use const STDERR;
@@ -392,13 +396,48 @@ class CodeBase
      */
     private function addClassesByNames(array $class_name_list): void
     {
+        $included_extension_subset = self::getIncludedExtensionSubset();
         foreach ($class_name_list as $class_name) {
             $reflection_class = new \ReflectionClass($class_name);
-            if (!$reflection_class->isUserDefined()) {
-                // include internal classes, but not external classes such as composer
-                $this->addReflectionClass($reflection_class);
+            if ($reflection_class->isUserDefined()) {
+                continue;
             }
+            if (is_array($included_extension_subset) && !isset($included_extension_subset[strtolower($reflection_class->getExtensionName() ?: '')])) {
+                // Allow preventing Phan from loading type information for a subset of extensions.
+                // This is useful if you have an extension installed locally (e.g. FFI, ast) but it won't be available in the target environment/php version.
+                continue;
+            }
+            // include internal classes, but not external classes such as composer
+            $this->addReflectionClass($reflection_class);
         }
+    }
+
+    /**
+     * @return ?array<string,true> if non-null, the subset of extensions phan will limit the loading of reflection information to.
+     */
+    private static function getIncludedExtensionSubset(): ?array
+    {
+        $included_extension_subset = Config::getValue('included_extension_subset');
+        if (!is_array($included_extension_subset)) {
+            return null;
+        }
+        $map = [
+            'core' => true,
+            'date' => true,
+            // 'hash' => true,  // always enabled in 7.4.0, too new
+            // 'json' => true,  // always enabled in 8.0.0, too new
+            'pcre' => true,
+            'reflection' => true,
+            'spl' => true,
+            'standard' => true,
+        ];
+        foreach ($included_extension_subset as $name) {
+            if ($name === 'user') {
+                continue;
+            }
+            $map[strtolower($name)] = true;
+        }
+        return $map;
     }
 
     /**
@@ -407,6 +446,23 @@ class CodeBase
      */
     private function addGlobalConstantsByNames(array $const_name_list): void
     {
+        $included_extension_subset = self::getIncludedExtensionSubset();
+        if (is_array($included_extension_subset)) {
+            $excluded_constant_set = [];
+            foreach (get_defined_constants(true) as $ext_name => $constant_values) {
+                if (isset($included_extension_subset[strtolower($ext_name)])) {
+                    continue;
+                }
+                foreach ($constant_values as $constant_name => $_) {
+                    $excluded_constant_set[$constant_name] = true;
+                }
+            }
+            foreach ($const_name_list as $i => $const_name) {
+                if (isset($excluded_constant_set[$const_name])) {
+                    unset($const_name_list[$i]);
+                }
+            }
+        }
         foreach ($const_name_list as $const_name) {
             // #1015 workaround for empty constant names ('' and '0').
             if (!\is_string($const_name)) {
@@ -517,6 +573,24 @@ class CodeBase
      */
     private function addInternalFunctionsByNames(array $internal_function_name_list): void
     {
+        $included_extension_subset = self::getIncludedExtensionSubset();
+        if (is_array($included_extension_subset)) {
+            $forbidden_function_set = [];
+            foreach (get_loaded_extensions(true) as $ext_name) {
+                if (isset($included_extension_subset[strtolower($ext_name)])) {
+                    continue;
+                }
+                foreach (get_extension_funcs($ext_name) ?: [] as $function_name) {
+                    $forbidden_function_set[strtolower($function_name)] = true;
+                }
+            }
+            foreach ($internal_function_name_list as $i => $function_name) {
+                if (isset($forbidden_function_set[$function_name])) {
+                    unset($internal_function_name_list[$i]);
+                }
+            }
+        }
+
         foreach ($internal_function_name_list as $function_name) {
             $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
         }

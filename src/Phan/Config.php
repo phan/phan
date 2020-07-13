@@ -801,6 +801,15 @@ class Config
         'autoload_internal_extension_signatures' => [
         ],
 
+        // This can be set to list of extensions to limit Phan to using the reflection information of.
+        // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
+        //
+        // Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
+        // If you want to add stubs, see `autoload_internal_extension_signatures`.
+        //
+        // If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
+        'included_extension_subset' => null,
+
         // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
         // but aren't available in the codebase, or from Reflection.
         // (may lead to false positives if an extension isn't loaded)
@@ -1385,6 +1394,23 @@ class Config
         /**
          * @param mixed $value
          */
+        $is_string_list_or_null = static function ($value): ?string {
+            if (is_null($value)) {
+                return null;
+            }
+            if (!is_array($value)) {
+                return 'Expected null or a list of strings' . self::errSuffixGotType($value);
+            }
+            foreach ($value as $i => $element) {
+                if (!is_string($element)) {
+                    return "Expected null or a list of strings: index $i is type '" . gettype($element) . "'";
+                }
+            }
+            return null;
+        };
+        /**
+         * @param mixed $value
+         */
         $is_associative_string_array = static function ($value): ?string {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
@@ -1404,6 +1430,7 @@ class Config
             'analyze_signature_compatibility' => $is_bool,
             'array_casts_as_null' => $is_bool,
             'autoload_internal_extension_signatures' => $is_associative_string_array,
+            'included_extension_subset' => $is_string_list_or_null,
             'backward_compatibility_checks' => $is_bool,
             'baseline_path' => $is_string_or_null,
             'cache_polyfill_asts' => $is_bool,

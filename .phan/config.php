@@ -461,7 +461,9 @@ return [
     // You can put paths to internal stubs in this config option.
     // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
     // Use a different extension from php to avoid accidentally loading these.
-    // The 'mkstubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
+    // The 'tool/mkstubs' script can be used to generate your own stubs (compatible with php 7.2+ right now)
+    //
+    // Also see `include_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
     'autoload_internal_extension_signatures' => [
         'ast'         => '.phan/internal_stubs/ast.phan_php',
         'ctype'       => '.phan/internal_stubs/ctype.phan_php',
@@ -476,6 +478,36 @@ return [
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
     ],
+
+    // This can be set to list of extensions to limit Phan to using the reflection information of.
+    // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
+    // The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
+    //
+    // Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
+    // If you want to add stubs, see `autoload_internal_extension_signatures`.
+    //
+    // If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
+    //
+    // Also see `ignore_undeclared_functions_with_known_signatures` to warn about using unknown functions.
+    /*
+    // E.g. this is what Phan would use for self-analysis
+    'included_extension_subset' => [
+        'core',
+        'standard',
+        'filter',
+        'json',
+        'tokenizer',  // parsing php code
+        'ast',  // parsing php code
+
+        'mbstring',  // utf-8 support
+        'iconv',  // symfony mbstring polyfill
+        'dom',  // checkstyle output format
+        'libxml',  // internal tools for extracting stubs
+        'simplexml',  // report generation
+        'pcntl',  // daemon/language server and parallel analysis
+        'phar',  // packaging
+    ],
+     */
 
     // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
     // but aren't available in the codebase, or from Reflection.

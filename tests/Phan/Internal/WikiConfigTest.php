@@ -101,7 +101,7 @@ class WikiConfigTest extends BaseTest
         if (array_key_exists($header, $old_text_for_section)) {
             $writer->append($old_text_for_section[$header]);
         } else {
-            $writer->append("\nTODO: Document config category $category_name\n\n");
+            $writer->append("\nTODO: Document config category $category_name (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)\n\n");
         }
     }
 

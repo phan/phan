@@ -6,6 +6,10 @@ Phan NEWS
 New features (CLI, Config):
 + Add `--output-mode=verbose` to print the line of code which caused the issue to be emitted after the textual issue output.
   This is only emitted if the line is not whitespace, could be read, and does not exceed the config setting `max_verbose_snippet_length`.
++ Add `included_extension_subset` to limit Phan to using the reflection information to a subset of available extensions. (#4015)
+  This can be used to make Phan warn about using constants/functions/classes that are not in the target environment or dependency list
+  of a given PHP project/library.
+  Note that this may cause issues if a class from an extension in this list depends on classes from another extension that is outside of this list.
 
 New features (Analysis):
 + Don't emit `PhanTypeInvalidLeftOperandOfBitwiseOp` and other binary operation warnings for `mixed`

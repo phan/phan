@@ -22,7 +22,8 @@ use function sprintf;
 final class VerbosePlaintextPrinterTest extends BaseTest
 {
 
-    private static function setUpFakeEntry(string $path): void {
+    private static function setUpFakeEntry(string $path): void
+    {
 
         $contents = '';
         for ($i = 1; $i <= 10; $i++) {

@@ -142,6 +142,7 @@ class ConfigEntry
         'skip_slow_php_options_warning' => self::CATEGORY_OUTPUT,
         'skip_missing_tokenizer_warning' => self::CATEGORY_OUTPUT,
         'autoload_internal_extension_signatures' => self::CATEGORY_ANALYSIS,
+        'included_extension_subset' => self::CATEGORY_ANALYSIS,
         'ignore_undeclared_functions_with_known_signatures' => self::CATEGORY_ANALYSIS,
         'use_fallback_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'use_polyfill_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
