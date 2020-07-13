@@ -4,7 +4,6 @@
 // @phan-file-suppress PhanPluginRemoveDebugAny
 require_once(__DIR__ . '/../../src/requirements.php');
 
-$code_base = require(__DIR__ . '/../../src/codebase.php');
 require_once(__DIR__ . '/../../src/Phan/Bootstrap.php');
 
 use Phan\CLI;
@@ -19,7 +18,7 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
-call_user_func(static function () use ($code_base) : void {
+call_user_func(static function () : void {
     // Create our CLI interface and load arguments
     chdir('/code');
     $cli = CLI::fromArgv();
@@ -128,6 +127,8 @@ call_user_func(static function () use ($code_base) : void {
             $include_paths = $file_list_from_cli;
         }
     }
+    // Generate codebase info after parsing configs (e.g. included_extension_subset)
+    $code_base = require(__DIR__ . '/../../src/codebase.php');
 
     // Analyze the file list provided via the CLI
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall if this throws, it's not recoverable.

@@ -114,7 +114,6 @@ call_user_func(static function () : void {
         return;
     }
 
-    $code_base = require __DIR__ . '/../src/codebase.php';
     require_once __DIR__ . '/../src/Phan/Bootstrap.php';
 
     $cli_builder = new CLIBuilder();
@@ -197,6 +196,8 @@ call_user_func(static function () : void {
     $putenv("PDEP_DEPTH", (string)$depth);
     $putenv("PDEP_ARGS", $arg_string);
     $putenv("PDEP_GRAPH_FLAGS", (string)$graph_flags);
+    // Generate codebase info after parsing configs (e.g. included_extension_subset)
+    $code_base = require(__DIR__ . '/../src/codebase.php');
 
     if (isset($options['i'])) {
         $data = @file_get_contents($graph_file);

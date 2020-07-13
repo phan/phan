@@ -54,7 +54,6 @@ call_user_func(static function (): void {
         suggest_functions_to_fully_qualify_usage(1);
     }
 
-    $code_base = require(__DIR__ . '/../src/codebase.php');
     require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
 
     $cli_builder = new CLIBuilder();
@@ -65,6 +64,8 @@ call_user_func(static function (): void {
     $cli_builder->setOption('plugin', __DIR__ . '/lib/NotFullyQualifiedReporterPlugin.php');
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli = $cli_builder->build();
+    // Generate codebase info after parsing configs (e.g. included_extension_subset)
+    $code_base = require(__DIR__ . '/../src/codebase.php');
 
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     Phan::analyzeFileList($code_base, /** @return string[] */ static function () use ($cli): array {
