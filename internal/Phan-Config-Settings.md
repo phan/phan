@@ -418,7 +418,7 @@ This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) i
 
 ## included_extension_subset
 
-This can be set to list of extensions to limit Phan to using the reflection information of.
+This can be set to a list of extensions to limit Phan to using the reflection information of.
 If this is a list, then Phan will not use the reflection information of extensions outside of this list.
 
 Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
