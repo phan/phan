@@ -489,8 +489,8 @@ return [
     // If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
     //
     // Also see `ignore_undeclared_functions_with_known_signatures` to warn about using unknown functions.
-    /*
     // E.g. this is what Phan would use for self-analysis
+    /*
     'included_extension_subset' => [
         'core',
         'standard',
@@ -499,13 +499,20 @@ return [
         'tokenizer',  // parsing php code
         'ast',  // parsing php code
 
-        'mbstring',  // utf-8 support
-        'iconv',  // symfony mbstring polyfill
+        'ctype',  // misc uses, also polyfilled
         'dom',  // checkstyle output format
+        'iconv',  // symfony mbstring polyfill
+        'igbinary',  // serializing/unserializing polyfilled ASTs
         'libxml',  // internal tools for extracting stubs
-        'simplexml',  // report generation
+        'mbstring',  // utf-8 support
         'pcntl',  // daemon/language server and parallel analysis
         'phar',  // packaging
+        'posix',  // parallel analysis
+        'readline',  // internal debugging utility, rarely used
+        'simplexml',  // report generation
+        'sysvmsg',  // parallelism
+        'sysvsem',
+        'sysvshm',
     ],
      */
 

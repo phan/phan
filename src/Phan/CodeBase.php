@@ -576,7 +576,8 @@ class CodeBase
         $included_extension_subset = self::getIncludedExtensionSubset();
         if (is_array($included_extension_subset)) {
             $forbidden_function_set = [];
-            foreach (get_loaded_extensions(true) as $ext_name) {
+            // Forbid functions both from extensions and zend_extensions such as xdebug
+            foreach (get_loaded_extensions() as $ext_name) {
                 if (isset($included_extension_subset[strtolower($ext_name)])) {
                     continue;
                 }

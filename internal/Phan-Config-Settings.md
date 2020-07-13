@@ -426,6 +426,9 @@ If you want to add stubs, see [`autoload_internal_extension_signatures`](#autolo
 
 If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
 
+When this is an array, [`ignore_undeclared_functions_with_known_signatures`](#ignore_undeclared_functions_with_known_signatures) will always be set to false.
+(because many of those functions will be outside of the configured list)
+
 (Default: `null`)
 
 ## infer_default_properties_in_construct

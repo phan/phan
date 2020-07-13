@@ -808,6 +808,9 @@ class Config
         // If you want to add stubs, see `autoload_internal_extension_signatures`.
         //
         // If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
+        //
+        // When this is an array, `ignore_undeclared_functions_with_known_signatures` will always be set to false.
+        // (because many of those functions will be outside of the configured list)
         'included_extension_subset' => null,
 
         // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
@@ -1141,6 +1144,12 @@ class Config
     {
         self::$configuration[$name] = $value;
         switch ($name) {
+            case 'ignore_undeclared_functions_with_known_signatures':
+            case 'included_extension_subset':
+                if (is_array(self::$configuration['included_extension_subset'])) {
+                    self::$configuration['ignore_undeclared_functions_with_known_signatures'] = false;
+                }
+                break;
             case 'null_casts_as_any_type':
                 self::$null_casts_as_any_type = $value;
                 break;
