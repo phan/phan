@@ -43,7 +43,6 @@
         "ext-tokenizer": "Needed for fallback/polyfill parser support and file/line-based suppressions."
     },
     "require-dev": {
-        "brianium/paratest": "^4.0.0",
         "phpunit/phpunit": "^8.5.0"
     },
     "autoload": {

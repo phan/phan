@@ -73,7 +73,15 @@ case "$TEST_SUITE" in
 		fi
 
 		if [[ "$PROCESSORS" > 1 ]]; then
-			vendor/bin/paratest --processes "$PROCESSORS" --runner WrapperRunner
+			if [ -e internal/paratest/vendor/bin/paratest ]; then
+				internal/paratest/vendor/bin/paratest --phpunit vendor/phpunit/phpunit/phpunit --processes "$PROCESSORS"
+			else
+				# TODO: Revisit separate paratest installation around 2021 when php 7.2 support is dropped.
+				echo "If you are using php 7.3+, you may wish to run 'composer install --ignore-platform-reqs' in internal/paratest/ to run tests in paratest." 1>&2
+				echo "- **Phan's paratest configuration is not supported by paratest's maintainers - if you encounter issues, run vendor/bin/phpunit instead.**" 1>&2
+				echo "- (The separate paratest installation is a kludgy workaround so that other dependencies in Phan's composer.lock such as composer/semver are not held back)" 1>&2
+				vendor/bin/phpunit
+			fi
 		else
 			vendor/bin/phpunit
 		fi

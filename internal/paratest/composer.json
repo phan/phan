@@ -1,0 +1,21 @@
+{
+    "name": "phan/fake-paratest-runner",
+    "description": "A paratest runner for phan. This is not a supported paratest configuration",
+    "type": "project",
+    "license": "MIT",
+    "x-comment": "- **Phan's paratest configuration is not supported by paratest's maintainers - if you encounter issues, run vendor/bin/phpunit instead.** (The separate paratest installation is a kludgy workaround so that other dependencies in Phan's main composer.lock such as composer/semver are not held back)",
+    "authors": [
+        {
+            "name": "Tyson Andre"
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "7.3.10"
+        }
+    },
+    "require": {
+        "brianium/paratest": "dev-master#3267d1d23853b3d2db33973afa681c36d67161a3"
+    }
+}

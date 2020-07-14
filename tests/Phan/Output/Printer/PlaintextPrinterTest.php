@@ -31,6 +31,7 @@ final class PlaintextPrinterTest extends BaseTest
         Config::setValue('color_issue_messages', false);
         // \putenv('PHAN_COLOR_SCHEME=');
         Colorizing::resetColorScheme();
+        \putenv('PHAN_COLOR_SCHEME=');
     }
 
     /**
