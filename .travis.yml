@@ -28,7 +28,7 @@ before_install:
 # Use it for Travis and published Phars.
 install:
   - composer --prefer-dist --classmap-authoritative install
-  - cd internal/paratest; composer --prefer-dist --classmap-authoritative install
+  - pushd internal/paratest; composer --prefer-dist --classmap-authoritative install; popd
 
 # We have a fake TEST_SUITE in tests/run_all_tests which runs Phan, and check if the exit code is non-zero and the standard output is non-empty.
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
