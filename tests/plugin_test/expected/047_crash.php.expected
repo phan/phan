@@ -1,3 +1,4 @@
+src/047_crash.php:6 PhanPluginUseReturnValueNoopVoid The function/method \X47::myMethod() is declared to return (empty union type) and it has no side effects
 src/047_crash.php:6 PhanUnusedPublicNoOverrideMethodParameter Parameter $arg is never used
 src/047_crash.php:11 PhanUnreferencedFunction Possibly zero references to function \example()
 src/047_crash.php:12 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 'my arg' of type 'my arg' but \X47::myMethod() takes int defined at src/047_crash.php:6

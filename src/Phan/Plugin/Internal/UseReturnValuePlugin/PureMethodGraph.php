@@ -6,6 +6,7 @@ namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 
 use Phan\CodeBase;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 
 /**
  * Data structure used to recursively check if a function or method is pure.
@@ -65,10 +66,26 @@ class PureMethodGraph
 
     private function recordPureFunction(FunctionInterface $function): void
     {
-        if ($function->getUnionType()->isNull()) {
+        if (self::isVoidFunction($function)) {
             PureMethodInferrer::warnNoopVoid($this->code_base, $function);
         }
         $function->setIsPure();
+    }
+
+    private static function isVoidFunction(FunctionInterface $function): bool
+    {
+        if ($function->getUnionType()->isNull()) {
+            return true;
+        }
+        if ($function->hasReturn() || $function->hasYield()) {
+            return false;
+        }
+        if ($function instanceof Method) {
+            if ($function->isAbstract() || $function->isFromPHPDoc()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function handleImpureFunction(string $key): void

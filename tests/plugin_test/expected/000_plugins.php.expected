@@ -31,6 +31,7 @@ src/000_plugins.php:93 PhanThrowTypeAbsent \ReturnChecks::missingReturnTypeSwitc
 src/000_plugins.php:114 PhanUnusedVariable Unused definition of variable $x
 src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $a of type int but \strlen() takes string
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`
+src/000_plugins.php:138 PhanPluginUseReturnValueNoopVoid The function/method \TestDemoPlugin::function() is declared to return (empty union type) and it has no side effects
 src/000_plugins.php:139 DemoPluginPropertyName Property \TestDemoPlugin::property should not be called `property`
 src/000_plugins.php:139 PhanReadOnlyPublicProperty Possibly zero write references to public property \TestDemoPlugin->property
 src/000_plugins.php:145 PhanTypeInvalidInstanceof Found an instanceof class name mixed of type mixed, but class name must be a valid object or a string
