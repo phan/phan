@@ -40,6 +40,7 @@ Plugins:
 + When a plugin registers for a method definition with `AnalyzeFunctionCallCapability`, automatically register the same closure for all classlikes using the same inherited definition of that method. (#4021)
 
 Miscellaneous
++ Support analyzing [PHP 8.0's match expression](https://wiki.php.net/rfc/match_expression_v2). (#3970)
 + Update more unit tests for php 8.0.
 
 Bug Fixes:
