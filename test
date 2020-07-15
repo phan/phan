@@ -1,5 +1,2 @@
 #!/bin/sh
-if ! ./vendor/bin/paratest ; then
-    echo "Please run 'composer install' or 'composer update' if running tests fails" 1>&2
-    exit 1
-fi
+tests/run_test __FakeAllPHPUnitTests
