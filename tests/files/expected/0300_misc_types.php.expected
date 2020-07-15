@@ -14,7 +14,7 @@
 %s:22 PhanTypeMismatchArgument Argument 1 ($x) is ($refIntVar =& $intVar) of type 42 but \expect_string_300() takes string defined at %s:3
 %s:22 PhanUnusedVariableReference Unused definition of variable $refIntVar as a reference
 %s:23 PhanImpossibleCondition Impossible attempt to cast false of type false to truthy
-%s:23 PhanTypeMismatchArgument Argument 1 ($x) is (unknown) of type ?string but \expect_int_300() takes int defined at %s:4
+%s:23 PhanTypeMismatchArgument Argument 1 ($x) is `ls` of type ?string but \expect_int_300() takes int defined at %s:4
 %s:25 PhanTypeMismatchArgumentReal Argument 1 ($x) is (object)(['key'=>'val']) of type \stdClass but \expect_string_300() takes string defined at %s:3
 %s:26 PhanImpossibleCondition Impossible attempt to cast null of type null to truthy
 %s:26 PhanTypeMismatchArgument Argument 1 ($x) is (null ? 'string' : 3) of type 3 but \expect_string_300() takes string defined at %s:3
