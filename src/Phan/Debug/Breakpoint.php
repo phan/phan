@@ -45,6 +45,7 @@ do {
         break;
     }
     try {
+        // @phan-suppress-next-line PhanPluginUnsafeEval this is only used ever manually for debugging
         eval($input . ';');
     } catch (\ParseError $exception) {
         print "Parse error in `$input`\n";

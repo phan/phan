@@ -1,0 +1,2 @@
+src/184_shell_exec.php:4 PhanPluginUnsafeShellExecDynamic This syntax for shell_exec() (`echo {$hello},`) is easily confused for a string and does not allow proper exit code/stderr handling, and is used with a non-constant. Consider proc_open() instead.
+src/184_shell_exec.php:4 PhanPluginUnsafeShellExec This syntax for shell_exec() (`echo "world"`) is easily confused for a string and does not allow proper exit code/stderr handling. Consider proc_open() instead.

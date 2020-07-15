@@ -259,6 +259,14 @@ This uses the following heuristics to reduce the number of false positives.
 - Avoids warning when the actual return type contains multiple types and the declared return type is a single FQSEN
   (e.g. don't warn about `Subclass1|Subclass2` being more specific than `BaseClass`)
 
+#### UnsafeCodePlugin.php
+
+This warns about code constructs that may be unsafe and prone to being used incorrectly in general.
+
+- **PhanPluginUnsafeEval**: `eval() is often unsafe and may have better alternatives such as closures and is unanalyzable. Suppress this issue if you are confident that input is properly escaped for this use case and there is no better way to do this.`
+- **PhanPluginUnsafeShellExec**: `This syntax for shell_exec() ({CODE}) is easily confused for a string and does not allow proper exit code/stderr handling. Consider proc_open() instead.`
+- **PhanPluginUnsafeShellExecDynamic**: `This syntax for shell_exec() ({CODE}) is easily confused for a string and does not allow proper exit code/stderr handling, and is used with a non-constant. Consider proc_open() instead.`
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,

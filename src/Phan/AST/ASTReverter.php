@@ -434,6 +434,22 @@ class ASTReverter
                 }
                 return '"' . implode('', $parts) . '"';
             },
+            ast\AST_SHELL_EXEC => static function (Node $node): string {
+                $parts = [];
+                $expr = $node->children['expr'];
+                if ($expr instanceof Node) {
+                    foreach ($expr->children as $c) {
+                        if ($c instanceof Node) {
+                            $parts[] = '{' . self::toShortString($c) . '}';
+                        } else {
+                            $parts[] = self::escapeInnerString((string)$c, '`');
+                        }
+                    }
+                } else {
+                    $parts[] = self::escapeInnerString((string)$expr, '`');
+                }
+                return '`' . implode('', $parts) . '`';
+            },
             // Slightly better short placeholders than (unknown)
             ast\AST_CLOSURE => static function (Node $_): string {
                 return '(function)';
