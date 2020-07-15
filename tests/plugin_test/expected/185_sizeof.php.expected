@@ -1,0 +1,1 @@
+src/185_sizeof.php:3 PhanDeprecatedFunctionInternal Call to deprecated function \sizeof() (Deprecated because: DeprecateAliasPlugin marked this as an as alias of count())

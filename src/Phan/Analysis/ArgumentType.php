@@ -255,7 +255,8 @@ final class ArgumentType
                     $context,
                     Issue::DeprecatedFunctionInternal,
                     $context->getLineNumberStart(),
-                    $method->getRepresentationForIssue()
+                    $method->getRepresentationForIssue(),
+                    $method->getDeprecationReason()
                 );
             }
         } else {

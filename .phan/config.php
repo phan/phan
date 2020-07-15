@@ -614,6 +614,7 @@ return [
         // This checks that there are no accidental echos/printfs left inside Phan's code.
         'RemoveDebugStatementPlugin',
         '.phan/plugins/UnsafeCodePlugin.php',
+        '.phan/plugins/DeprecateAliasPlugin.php',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis

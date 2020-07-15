@@ -151,5 +151,6 @@ return [
         'ShortArrayPlugin',
         'SimplifyExpressionPlugin',
         'UnsafeCodePlugin',
+        'DeprecateAliasPlugin',
     ],
 ];

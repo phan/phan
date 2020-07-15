@@ -2844,7 +2844,7 @@ class Issue
                 self::DeprecatedFunctionInternal,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function {FUNCTIONLIKE}",
+                "Call to deprecated function {FUNCTIONLIKE}{DETAILS}",
                 self::REMEDIATION_B,
                 5005
             ),

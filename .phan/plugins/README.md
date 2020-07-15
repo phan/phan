@@ -513,6 +513,10 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
 
 - **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
 
+### DeprecateAliasPlugin.php
+
+Makes Phan analyze aliases of global functions (e.g. `join()`, `sizeof()`) as if they were deprecated.
+
 #### PHP53CompatibilityPlugin.php
 
 Catches common incompatibilities from PHP 5.3 to 5.6.
