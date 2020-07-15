@@ -44,6 +44,7 @@ Plugins:
 Miscellaneous
 + Support analyzing [PHP 8.0's match expression](https://wiki.php.net/rfc/match_expression_v2). (#3970)
 + Update more unit tests for php 8.0.
++ Emit a warning and load an extremely limited polyfill for `filter_var` to parse integers/floats if the `filter` extension is not loaded.
 
 Bug Fixes:
 + Make suppressions on trait methods/properties consistently apply to the inherited definitions from classes/traits using those traits.
