@@ -135,5 +135,6 @@ return [
         'NotFullyQualifiedUsagePlugin',
         'PHPDocToRealTypesPlugin',
         'PHPDocRedundantPlugin',
+        'DeprecateAliasPlugin',
     ],
 ];

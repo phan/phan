@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\PluginV3;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
@@ -308,12 +309,17 @@ class DeprecateAliasPlugin extends PluginV3 implements
             }
             $function->setIsDeprecated(true);
             if (!$function->getDocComment()) {
-                $function->setDocComment('/** @deprecated DeprecateAliasPlugin marked this as an as alias of ' .
+                $function->setDocComment('/** @deprecated DeprecateAliasPlugin marked this as an alias of ' .
                     $original_name . (strpos($original_name, ' ') === false ? '()' : '').  '*/');
             }
         }
     }
 }
+
+if (Config::isIssueFixingPluginEnabled()) {
+    require_once __DIR__ . '/DeprecateAliasPlugin/fixers.php';
+}
+
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which it's defined.

@@ -522,6 +522,7 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
 ### DeprecateAliasPlugin.php
 
 Makes Phan analyze aliases of global functions (e.g. `join()`, `sizeof()`) as if they were deprecated.
+Supports `--automatic-fix`.
 
 #### PHP53CompatibilityPlugin.php
 

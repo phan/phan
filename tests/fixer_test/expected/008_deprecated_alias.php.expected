@@ -1,0 +1,2 @@
+src_copy/008_deprecated_alias.php:3 PhanDeprecatedFunctionInternal Call to deprecated function \join() (Deprecated because: DeprecateAliasPlugin marked this as an alias of implode())
+src_copy/008_deprecated_alias.php:3 PhanDeprecatedFunctionInternal Call to deprecated function \sizeof() (Deprecated because: DeprecateAliasPlugin marked this as an alias of count())
