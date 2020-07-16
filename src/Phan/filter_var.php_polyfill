@@ -74,15 +74,29 @@ $define_polyfill_const('FILTER_VALIDATE_URL', 273);
 function filter_var($value, int $filter = FILTER_DEFAULT, $options = null) {
     switch ($filter) {
         case FILTER_DEFAULT:
-            return $value;
+            if (is_array($value)) {
+                return false;
+            }
+            if (is_object($value)) {
+                if (!method_exists($value, '__toString')) {
+                    return false;
+                }
+            }
+            return (string) $value;
         case FILTER_VALIDATE_INT:
             if (is_int($value)) {
                 return $value;
             }
-            if (!is_scalar($value)) {
+            if (is_array($value)) {
                 return false;
             }
-            $value = (string)$value;
+            if (is_object($value)) {
+                if (!method_exists($value, '__toString')) {
+                    return false;
+                }
+            }
+            // handle "\v\n\r\t  0123  "
+            $value = trim((string)$value, " \t\r\n\v");
             if ($options !== null) {
                 if (!is_int($options)) {
                     throw new AssertionError("filter_var() polyfill: unsupported type for options with FILTER_VALIDATE_INT");
@@ -103,7 +117,7 @@ function filter_var($value, int $filter = FILTER_DEFAULT, $options = null) {
                     }
                 }
             }
-            if (!preg_match('/^-?(0|[1-9][0-9]*)$/D', $value)) {
+            if (!preg_match('/^[-+]?(0|[1-9][0-9]*)$/D', $value)) {
                 return false;
             }
             $result = (int)$value;
@@ -114,12 +128,38 @@ function filter_var($value, int $filter = FILTER_DEFAULT, $options = null) {
         case FILTER_VALIDATE_FLOAT:
             if ($options !== null) {
                 throw new AssertionError("filter_var() polyfill: Unsupported \$options");
-
             }
             if (!is_numeric($value)) {
                 return false;
             }
             return (float)$value;
+        case FILTER_VALIDATE_IP:
+            if ($options !== null) {
+                throw new AssertionError("filter_var() polyfill: Unsupported \$options");
+            }
+            if (is_array($value)) {
+                return false;
+            }
+            if (is_object($value)) {
+                if (!method_exists($value, '__toString')) {
+                    return false;
+                }
+            }
+            $result = (string)$value;
+            // TODO: This is incomplete and doesn't bother validating integer ranges or details.
+            if (strpos($result, ':')) {
+                // ipv6
+                if (!preg_match('/^[0-9a-f:.]+\.)$/i', $result)) {
+                    return false;
+                }
+                return $result;
+            } else {
+                // ipv4
+                if (!preg_match('/^([0-9]+\.){3}[0-9]+$/D', $result)) {
+                    return false;
+                }
+                return $result;
+            }
         default:
             throw new AssertionError("filter_var() polyfill: Unsupported filter $filter");
     }

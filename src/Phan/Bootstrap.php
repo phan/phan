@@ -179,7 +179,7 @@ assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to
 
 // php 8 seems to have segfault issues with disable_function
 if (!extension_loaded('filter') && !function_exists('filter_var')) {
-    fwrite(STDERR, "WARNING: Using a limited polyfill for filter_var() instead of the real filter_var. **ANALYSIS RESULTS MAY DIFFER AND PLUGINS MAY HAVE ISSUES.** Install and/or enable http://php.net/filter to fix this.\n");
+    fwrite(STDERR, "WARNING: Using a limited polyfill for filter_var() instead of the real filter_var. **ANALYSIS RESULTS MAY DIFFER AND PLUGINS MAY HAVE ISSUES.** Install and/or enable https://www.php.net/filter to fix this.\n");
     require_once __DIR__ . '/filter_var.php_polyfill';
 }
 

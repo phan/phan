@@ -755,7 +755,7 @@ class CLI
                     Config::setValue('daemonize_tcp', true);
                     $host = \filter_var($value, FILTER_VALIDATE_IP);
                     if (\strcasecmp($value, 'default') !== 0 && !$host) {
-                        throw new UsageException("--daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
+                        throw new UsageException("--daemonize-tcp-host must be the string 'default' or a valid ip address to listen on, got '$value'", 1);
                     }
                     if ($host) {
                         Config::setValue('daemonize_tcp_host', $host);
