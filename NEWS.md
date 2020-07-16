@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.1.0 (dev)
+Jul 16 2020, Phan 3.1.0
 -----------------------
 
 New features (CLI, Config):
@@ -23,11 +23,12 @@ New features (Analysis):
   This is useful when needing to preserve method signature compatibility in a method override, or when a parameter will become mandatory in a future backwards incompatible release of a project.
 + Emit `PhanTypeMismatchArgumentProbablyReal` instead of `PhanTypeMismatchArgument` when the inferred real type of an argument has nothing in common with the phpdoc type of a user-defined function/method.
   This is usually a stronger indicator that the phpdoc parameter type is inaccurate/incomplete or the argument is incorrect.
+  (Overall, fixing phpdoc errors may help ensure compatibility long-term if the library/framework being used moves to real types (e.g. php 8.0 union types) in the future.)
 
   **Note that Phan provides many ways to suppress issues (including the `--save-baseline=.phan/baseline.php` and `--load-baseline=.phan/baseline.php` functionality) in case
   the switch to `ProbablyReal` introduces too many new issues in your codebase.**
   (The new `ProbablyReal` issues are more severe than the original issue types.
-  When they're suppressed, the less severe issue types will also be suppressed)
+  When they're suppressed, the original less severe issue types will also be suppressed)
 + Emit `PhanTypeMismatchReturnProbablyReal` instead of `PhanTypeMismatchReturn` when the inferred real return type has nothing in common with the declared phpdoc return type of a user-defined function/method. (#4028)
 + Emit `PhanTypeMismatchPropertyProbablyReal` instead of `PhanTypeMismatchProperty` when the inferred assigned property type has nothing in common with a property's declared phpdoc type. (#4029)
 + Emit `PhanTypeMismatchArgumentInternalProbablyReal` instead of `PhanTypeMismatchArgumentInternal` in a few more cases.
@@ -36,6 +37,7 @@ New features (Analysis):
 + Also emit `PhanPluginUseReturnValueNoopVoid` when a function/method's return type is implicitly void (#4049)
 + Support `@param MyType $name one line description @unused-param` to suppress warnings about individual unused method parameters.
   This is a new alias of `@phan-unused-param`.
++ Support analyzing [PHP 8.0's match expression](https://wiki.php.net/rfc/match_expression_v2). (#3970)
 
 Plugins:
 + Warn and skip checks instead of crashing when running `InlineHTMLPlugin` without the `tokenizer` extension installed. (#3998)
@@ -47,7 +49,6 @@ Plugins:
 + Add `PHPDocInWrongCommentPlugin` to warn about using `/*` instead of `/**` with phpdoc annotations supported by Phan.
 
 Miscellaneous
-+ Support analyzing [PHP 8.0's match expression](https://wiki.php.net/rfc/match_expression_v2). (#3970)
 + Update more unit tests for php 8.0.
 + Emit a warning and load an extremely limited polyfill for `filter_var` to parse integers/floats if the `filter` extension is not loaded.
 
@@ -747,7 +748,7 @@ New features(Analysis):
 + Properly emit PhanPossiblyInfiniteRecursionSameParams for functions with varargs.
 + Emit `PhanNoopNew` or `PhanNoopNewNoSideEffects` when an object is created with `new expr(...)` but the result is not used (#3410)
   This can be suppressed for all instances of a class-like by adding the `@phan-constructor-used-for-side-effects` annotation to the class's doc comment.
-+ Emit `PhanPluginUseReturnValueInternalKnown` for about unused results of function calls on the right hand side of control flow operators (`??`/`?:`/`&&`/`||`) (#3408)
++ Emit `PhanPluginUseReturnValueInternalKnown` for unused results of function calls on the right-hand side of control flow operators (`??`/`?:`/`&&`/`||`) (#3408)
 
 Oct 20 2019, Phan 2.3.1
 -----------------------
@@ -1538,7 +1539,7 @@ Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.
 
 Plugins:
-+ Warn about assignments where the left and right hand side are the same expression in `DuplicateExpressionPlugin` (#2641)
++ Warn about assignments where the left-hand and right-hand side are the same expression in `DuplicateExpressionPlugin` (#2641)
   New issue type: `PhanPluginDuplicateExpressionAssignment`
 
 Deprecations:
