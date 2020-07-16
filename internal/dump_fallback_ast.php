@@ -75,6 +75,7 @@ EOB;
     global $argv;
 
     $as_php_ast = false;
+    $as_tokens = false;
     $as_php_ast_with_placeholders = false;
     $as_php_ast_native = false;
     foreach ($argv as $i => $arg) {
@@ -86,6 +87,8 @@ EOB;
         } elseif ($arg === '--php-ast-with-placeholders') {
             $as_php_ast = true;
             $as_php_ast_with_placeholders = true;
+        } elseif ($arg === '--tokens') {
+            $as_tokens = true;
         } elseif (in_array($argv[$i], ['help', '-h', '--help'], true)) {
             $print_help(0);
         } else {
@@ -104,14 +107,40 @@ EOB;
     }
 
     // Guess if this is a snippet or file contents
-    if (($expr[0] ?? '') !== '<' && \substr($expr, 0, 2) !== '#!') {
+    $add_prefix = ($expr[0] ?? '') !== '<' && \substr($expr, 0, 2) !== '#!';
+    if ($add_prefix) {
         $expr = '<' . '?php ' . $expr;
     }
 
-    if ($as_php_ast) {
+    if ($as_tokens) {
+        $tokens = token_get_all($expr);
+        if ($add_prefix) {
+            unset($tokens[0]);
+        }
+        dump_tokens($tokens);
+    } elseif ($as_php_ast) {
         dump_expr_as_ast($expr, $as_php_ast_with_placeholders, $as_php_ast_native);
     } else {
         dump_expr($expr);
+    }
+}
+
+/**
+ * Dump the list of tokens to the console
+ * @param array<int, string|array{0:int, 1:string, 2:int}> $tokens
+ */
+function dump_tokens(array $tokens): void {
+    foreach ($tokens as $token) {
+        if (is_string($token)) {
+            echo $token . PHP_EOL;
+            continue;
+        }
+        $kind = $token[0];
+        if ($kind === T_WHITESPACE) {
+            echo token_name($kind) . ': ' . var_export($token[1], true) . PHP_EOL;
+            continue;
+        }
+        echo token_name($kind) . ': ' . $token[1] . PHP_EOL;
     }
 }
 
