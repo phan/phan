@@ -10,6 +10,7 @@ use Phan\Language\Element\Comment\NullComment;
 use Phan\Library\StringUtil;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
+use Phan\PluginV3\UnloadablePluginException;
 
 /**
  * This plugin checks for the use of phpdoc annotations in non-phpdoc comments
@@ -81,5 +82,8 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
         }
         return $token;
     }
+}
+if (!function_exists('token_get_all')) {
+    throw new UnloadablePluginException("PHPDocInWrongCommentPlugin requires the tokenizer extension, which is not enabled (this plugin uses token_get_all())");
 }
 return new PHPDocInWrongCommentPlugin();
