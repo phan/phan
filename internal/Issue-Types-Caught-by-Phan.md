@@ -763,7 +763,7 @@ f1();
 ## PhanDeprecatedFunctionInternal
 
 ```
-Call to deprecated function {FUNCTIONLIKE}
+Call to deprecated function {FUNCTIONLIKE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php72_files/expected/0008_each_deprecated.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php72_files/src/0008_each_deprecated.php#L3).
