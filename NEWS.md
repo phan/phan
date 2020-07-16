@@ -54,6 +54,7 @@ Miscellaneous
 Bug Fixes:
 + Make suppressions on trait methods/properties consistently apply to the inherited definitions from classes/traits using those traits.
 + Fix false positive where Phan would think that union types with real types containing `int` and other types had an impossible condition.
+  Fix another false positive checking if `?A|?B` can cast to another union type.
 
 Jul 03 2020, Phan 3.0.5
 -----------------------

@@ -2456,7 +2456,9 @@ class UnionType implements Serializable
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->isNullable()) {
-                    return $source_type->withIsNullable(false)->isSubtypeOfAnyTypeInSet($target_type_set);
+                    if ($source_type->withIsNullable(false)->isSubtypeOfAnyTypeInSet($target_type_set)) {
+                        return true;
+                    }
                 }
             }
         }
