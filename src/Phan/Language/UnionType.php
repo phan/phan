@@ -2378,7 +2378,7 @@ class UnionType implements Serializable
                     return $type instanceof IntType || $type instanceof MixedType;
                 })
                 ) {
-                    return false;
+                    continue;
                 }
             }
             if ($type->asPHPDocUnionType()->canStrictCastToUnionType($code_base, $target)) {

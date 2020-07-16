@@ -1,3 +1,4 @@
+%s:3 PhanPluginUseReturnValueNoopVoid The function/method \Base9::test() is declared to return mixed and it has no side effects
 %s:4 PhanSyntaxReturnExpectedValue Syntax error: Function test() with return type mixed must return a value (did you mean "return null" instead of "return"?)
 %s:25 PhanParamSignatureRealMismatchReturnType Declaration of function test() should be compatible with function test() : mixed (method returning '' cannot override method returning 'mixed') defined in %s:9
 %s:29 PhanParamSignatureMismatch Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) : ?mixed defined in %s:19

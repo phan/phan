@@ -1,0 +1,3 @@
+src/009_impossible_cast.php:27 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type false|string(real=?false|?string)
+src/009_impossible_cast.php:27 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int|string)
+src/009_impossible_cast.php:30 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
