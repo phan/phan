@@ -21,7 +21,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 call_user_func(static function (): void {
     /**
      * @param $code_base @unused-param
-     * @return ?FileEditSet
+     * @return ?FileEditSet a representation of the edit to make to replace a call to a function alias with a call to the original function
      */
     $fix = static function (CodeBase $code_base, FileCacheEntry $contents, IssueInstance $instance): ?FileEditSet {
         $line = $instance->getLine();
