@@ -1,0 +1,2 @@
+src/187_unused_param.php:9 PhanUnusedGlobalFunctionParameter Parameter $fourth is never used
+src/187_unused_param.php:9 PhanUnusedGlobalFunctionParameter Parameter $second is never used

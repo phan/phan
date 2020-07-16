@@ -2459,14 +2459,11 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Add properties, constants and methods from the
-     * parent of this class
+     * Add constants from the parent of this class
      *
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor
      * details
-     *
-     * @return void
      */
     private function importConstantsFromParentClass(CodeBase $code_base): void
     {
@@ -2503,8 +2500,6 @@ class Clazz extends AddressableElement
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor
      * details
-     *
-     * @return void
      */
     private function importParentClass(CodeBase $code_base): void
     {

@@ -3036,7 +3036,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ))->getUnqualifiedNameForAnonymousClass();
 
             // Turn that into a fully qualified name, and that into a union type
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            // @phan-suppress-next-line PhanThrowTypeMismatchForCall
             $fqsen = FullyQualifiedClassName::fromStringInContext(
                 $anonymous_class_name,
                 $this->context
@@ -3060,7 +3060,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return StaticType::instance(false)->asRealUnionType();
         }
         if (!Type::isSelfTypeString($class_name)) {
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            // @phan-suppress-next-line PhanThrowTypeMismatchForCall
             return self::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
@@ -3103,13 +3103,13 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node containing a throw expression.
      *
      * @return UnionType
      * `void` is as close as possible to `no-return` or `never` for types currently available in Phan.
      */
-    public function visitThrow(Node $_): UnionType
+    public function visitThrow(Node $node): UnionType
     {
         return VoidType::instance(false)->asRealUnionType();
     }

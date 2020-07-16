@@ -1,0 +1,1 @@
+src/186_phpdoc_in_wrong_comment.php:2 PhanPluginPHPDocInWrongComment Saw possible phpdoc annotation in ordinary block comment "/*\n * @param string $value\n */". PHPDoc comments should start with "/**", not "/*"
