@@ -14,7 +14,7 @@ class Debug {
         return $x * 2;
     }
 
-    /*
+    /**
      * @return int
      */
     public function double2(int $x) {

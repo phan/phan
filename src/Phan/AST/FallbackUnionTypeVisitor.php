@@ -793,7 +793,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
         return LiteralIntType::instanceForValue(1, false)->asRealUnionType();
     }
 
-    /*
+    /**
      * @param Node $node
      * A node holding a class name
      *

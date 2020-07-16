@@ -988,10 +988,11 @@ final class Builder
 
     /**
      * @param list<int> $valid_types
+     * @suppress PhanAccessClassConstantInternal
      */
     private function checkCompatible(string $param_name, array $valid_types, int $i): bool
     {
-        if (\in_array($this->comment_type, $valid_types, true)) {
+        if (\in_array($this->comment_type, $valid_types, true) || $this->comment_type === Comment::ON_ANY) {
             return true;
         }
         $this->emitInvalidCommentForDeclarationType(

@@ -33,6 +33,7 @@ case "$TEST_SUITE" in
 			--plugin InvokePHPNativeSyntaxCheckPlugin \
 			--plugin AvoidableGetterPlugin \
 			--plugin UnknownClassElementAccessPlugin \
+			--plugin PHPDocInWrongCommentPlugin \
 			--dead-code-detection \
 			--assume-real-types-for-internal-functions \
 			--force-polyfill-parser \

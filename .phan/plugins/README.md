@@ -315,6 +315,12 @@ The warning types for methods are below:
 - **PhanPluginDuplicatePropertyDescription**: `Property {PROPERTY} has the same description as the property {PROPERTY} on line {LINE}: {COMMENT}`
 - **PhanPluginDuplicateMethodDescription**: `Method {METHOD} has the same description as the method {METHOD} on line {LINE}: {COMMENT}`
 
+#### PHPDocInWrongCommentPlugin
+
+This plugin warns about using phpdoc annotations such as `@param` in block comments(`/*`) instead of phpdoc comments(`/**`).
+
+- **PhanPluginPHPDocInWrongComment**: `Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**", not "/*"`
+
 #### InvalidVariableIssetPlugin.php
 
 Warns about invalid uses of `isset`. This README documentation may be inaccurate for this plugin.

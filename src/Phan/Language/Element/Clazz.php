@@ -2458,7 +2458,7 @@ class Clazz extends AddressableElement
         }
     }
 
-    /*
+    /**
      * Add properties, constants and methods from the
      * parent of this class
      *
@@ -2496,7 +2496,7 @@ class Clazz extends AddressableElement
         $this->importConstantsFromAncestorClass($code_base, $parent);
     }
 
-    /*
+    /**
      * Add properties, constants and methods from the
      * parent of this class
      *

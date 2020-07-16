@@ -204,7 +204,7 @@ class ArrayType extends IterableType
                 $result[] = $type_part;
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        // (at)phan-suppress-next-line PhanPartialTypeMismatchArgument
         return UnionType::getUniqueTypes($result);
              */
     }

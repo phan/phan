@@ -40,6 +40,8 @@ class Comment
     // TODO: Add another type for closure. (e.g. (at)phan-closure-scope)
     public const ON_METHOD     = 5;
     public const ON_FUNCTION   = 6;
+    /** @internal this may be refactored to stop using this constant */
+    public const ON_ANY        = -1;
 
     // List of types that are function-like (e.g. have params and function body)
     public const FUNCTION_LIKE = [

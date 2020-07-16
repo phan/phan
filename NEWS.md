@@ -40,6 +40,7 @@ Plugins:
 + Support throwing `\Phan\PluginV3\UnloadablePluginException` instead of returning a plugin object in plugin files.
 + When a plugin registers for a method definition with `AnalyzeFunctionCallCapability`, automatically register the same closure for all classlikes using the same inherited definition of that method. (#4021)
 + Add `UnsafeCodePlugin` to warn about uses of `eval` or the backtick string shorthand for `shell_exec()`.
++ Add `PHPDocInWrongCommentPlugin` to warn about using `/*` instead of `/**` with phpdoc annotations supported by Phan.
 
 Miscellaneous
 + Support analyzing [PHP 8.0's match expression](https://wiki.php.net/rfc/match_expression_v2). (#3970)

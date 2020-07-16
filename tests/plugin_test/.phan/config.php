@@ -152,5 +152,6 @@ return [
         'SimplifyExpressionPlugin',
         'UnsafeCodePlugin',
         'DeprecateAliasPlugin',
+        'PHPDocInWrongCommentPlugin',
     ],
 ];

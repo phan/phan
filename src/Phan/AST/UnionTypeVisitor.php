@@ -3008,7 +3008,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return LiteralIntType::instanceForValue(1, false)->asRealUnionType();
     }
 
-    /*
+    /**
      * @param Node $node
      * A node holding a class name
      *
@@ -3102,7 +3102,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return $this->context->getClassFQSEN()->asType()->asRealUnionType();
     }
 
-    /*
+    /**
      * @param Node $node
      * A node containing a throw expression.
      *
