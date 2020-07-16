@@ -50,6 +50,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     public static function getReturnTypeOverridesStatic(CodeBase $code_base): array
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
+        $string_union_type_with_false_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', 'string|false');
+        $string_union_type_with_null_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', '?string');
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
         $void_union_type = VoidType::instance(false)->asPHPDocUnionType();
@@ -222,7 +224,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $has_array ? $str_array_type : $str_replace_types;
         };
-        $string_or_false = UnionType::fromFullyQualifiedPHPDocString('string|false');
+        $string_or_false = UnionType::fromFullyQualifiedRealString('string|false');
         /**
          * @param list<Node|int|float|string> $args
          */
@@ -247,11 +249,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use (
             $string_or_false,
-            $string_union_type
+            $string_union_type_with_false_in_real
 ): UnionType {
             if (count($args) >= 2 && is_int($args[1]) && $args[1] <= 0) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
-                return $string_union_type;
+                return $string_union_type_with_false_in_real;
             }
             return $string_or_false;
         };
@@ -306,16 +308,16 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args
         ) use (
-            $string_union_type
+            $string_union_type_with_null_in_real
 ): UnionType {
             if (count($args) !== 1) {
                 if (count($args) !== 2) {
                     // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
-                    return $string_union_type;
+                    return $string_union_type_with_null_in_real;
                 }
                 $levels = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->asSingleScalarValueOrNull();
                 if (!is_int($levels)) {
-                    return $string_union_type;
+                    return $string_union_type_with_null_in_real;
                 }
                 if ($levels <= 0) {
                     // TODO: Could warn but not common
@@ -326,7 +328,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->asSingleScalarValueOrNull();
             if (!is_string($arg)) {
-                return $string_union_type;
+                return $string_union_type_with_null_in_real;
             }
 
             $result = \dirname($arg, $levels);
