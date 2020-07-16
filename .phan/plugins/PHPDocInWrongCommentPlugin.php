@@ -68,7 +68,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
                 $code_base,
                 (clone($context))->withLineNumberStart($token[2]),
                 'PhanPluginPHPDocInWrongComment',
-                'Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**", not "/*"',
+                'Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**" (followed by whitespace), not "/*"',
                 [StringUtil::jsonEncode(self::truncate($comment_string))]
             );
         }
