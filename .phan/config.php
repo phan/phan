@@ -627,6 +627,8 @@ return [
 
         // 'PHPUnitNotDeadCodePlugin',  // Marks PHPUnit test case subclasses and test cases as referenced code. This is only useful for runs when dead code detection is enabled.
 
+        // 'PHPDocInWrongCommentPlugin',  // Useful to warn about using "/*" instead of ""/**" where phpdoc annotations are used.
+
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
         // 'UnusedSuppressionPlugin',

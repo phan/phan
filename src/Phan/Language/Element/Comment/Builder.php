@@ -333,6 +333,23 @@ final class Builder
             $this->emitDeferredIssues();
         }
 
+        if (!$this->comment_flags &&
+            !$this->return_comment &&
+            !$this->parameter_list &&
+            !$this->variable_list &&
+            !$this->template_type_list &&
+            $this->inherited_type instanceof None &&
+            !$this->suppress_issue_set &&
+            !$this->magic_property_list &&
+            !$this->magic_method_list &&
+            !$this->phan_overrides &&
+            $this->closure_scope instanceof None &&
+            $this->throw_union_type->isEmpty() &&
+            !$this->param_assertion_map
+        ) {
+            // Don't create an extra object if the string contained `@` but nothing of use was actually extracted.
+            return NullComment::instance();
+        }
         // @phan-suppress-next-line PhanAccessMethodInternal
         return new Comment(
             $this->comment_flags,
