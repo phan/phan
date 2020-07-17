@@ -33,7 +33,7 @@ _arguments \
 	'(--init-level)--init-level=[a number from 1(strictest) to 5(least strict)]:level:(1 2 3 4 5)' \
 	'(1)*--init-analyze-dir=[a relative path to a directory to analyze]:dir:_directories' \
 	'(1)*--init-analyze-file=[a relative path to a file to analyze]:file:_files' \
-    '(--baseline-summary-type)--baseline-summary-type=[type of summary comment to generate]:type:(ordered_by_count ordered_by_type none)' \
+	'(--baseline-summary-type)--baseline-summary-type=[type of summary comment to generate]:type:(ordered_by_count ordered_by_type none)' \
 	'(--save-baseline)--save-baseline=[a path to save a baseline with pre-existing issues to]:file:_files' \
 	'(--load-baseline -B)'{--load-baseline=,-B+}'[a path to a baseline with pre-existing issues to read from]:file:_files' \
 	'(--analyze-twice)--analyze-twice[run the analysis phase twice]' \
