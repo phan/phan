@@ -932,6 +932,11 @@ class Config
         // For internal use only.
         '__save_baseline_path' => null,
 
+        // This is the type of summary comment that will be generated when `--save-baseline=path/to/baseline.php` is used.
+        // Supported values: 'ordered_by_count' (default), 'ordered_by_type', 'none'.
+        // (The first type makes it easier to find uncommon issues but is more prone to merge conflicts in version control)
+        'baseline_summary_type' => 'ordered_by_count',
+
         // A list of plugin files to execute.
         //
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. `'AlwaysReturnPlugin'`)
@@ -1442,6 +1447,7 @@ class Config
             'included_extension_subset' => $is_string_list_or_null,
             'backward_compatibility_checks' => $is_bool,
             'baseline_path' => $is_string_or_null,
+            'baseline_summary_type' => $is_string,
             'cache_polyfill_asts' => $is_bool,
             'check_docblock_signature_param_type_match' => $is_bool,
             'check_docblock_signature_return_type_match' => $is_bool,

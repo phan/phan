@@ -11664,7 +11664,7 @@ return [
 'resourcebundle_get_error_code' => ['int', 'r'=>'ResourceBundle'],
 'resourcebundle_get_error_message' => ['string', 'r'=>'ResourceBundle'],
 'resourcebundle_locales' => ['array', 'bundlename'=>'string'],
-'restore_error_handler' => ['bool'],
+'restore_error_handler' => ['true'],
 'restore_exception_handler' => ['bool'],
 'restore_include_path' => ['void'],
 'resultObj::__construct' => ['void', 'shapeindex'=>'int'],

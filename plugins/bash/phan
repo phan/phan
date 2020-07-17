@@ -97,6 +97,7 @@ _phan() {
 --save-baseline
 -B
 --load-baseline
+--baseline-summary-type
 --analyze-twice
 --analyze-all-files
 -h
@@ -155,7 +156,11 @@ _phan() {
             return 0
             ;;
         --output-mode | -m)
-            COMPREPLY=( $(compgen -W "text json csv codeclimate checkstyle pylint html" -- "${cur}" ))
+            COMPREPLY=( $(compgen -W "text verbose json csv codeclimate checkstyle pylint html" -- "${cur}" ))
+            return 0
+            ;;
+        --baseline-summary-type)
+            COMPREPLY=( $(compgen -W "ordered_by_count ordered_by_type none" -- "${cur}" ))
             return 0
             ;;
         --init-level)

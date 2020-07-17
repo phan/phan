@@ -6,12 +6,15 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\IssueInstance;
 use Phan\Language\FileRef;
 use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\SubscribeEmitIssueCapability;
+
+use function in_array;
 
 /**
  * This plugin generates a baseline from the issues that weren't suppressed by other plugins or config settings.
@@ -94,7 +97,8 @@ final class BaselineSavingPlugin extends PluginV3 implements
 return [
 
 EOT;
-        $contents .= $this->generateSuppressIssueSummary();
+        $summary_type = Config::getValue('baseline_summary_type');
+        $contents .= $this->generateSuppressIssueSummary($summary_type);
         $contents .= $this->generateSuppressFileEntries();
         $contents .= "];\n";
         return $contents;
@@ -126,14 +130,25 @@ EOT;
      * This is useful for checking if issues that you don't want in your project
      * have been added into a large baseline.
      */
-    private function generateSuppressIssueSummary(): string
+    private function generateSuppressIssueSummary(string $baseline_summary_type): string
     {
+        if ($baseline_summary_type === 'none') {
+            return '';
+        }
+        if (!in_array($baseline_summary_type, ['ordered_by_type', 'ordered_by_count'], true))  {
+            CLI::printWarningToStderr("Unknown baseline_summary_type '$baseline_summary_type'. Supported values: 'ordered_by_type', 'ordered_by_count', 'none'");
+        }
         $entries = [];
         foreach ($this->suppressions_by_type as $issue_type => $hashes) {
             $count = \count($hashes);
+            if ($baseline_summary_type === 'ordered_by_type') {
+                $key = $issue_type;
+            } else {
+                $key = -self::roundSuppressCount($count);
+            }
             $count_name = self::getSuppressCountLabel($count);
             $entries[] = [
-                -self::roundSuppressCount($count),
+                $key,
                 $issue_type,
                 \sprintf("    // %s : %s %s\n", $issue_type, $count_name, $count !== 1 ? "occurrences" : "occurrence"),
             ];
