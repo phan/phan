@@ -490,6 +490,15 @@ class ASTReverter
             ast\AST_TRY => static function (Node $_): string {
                 return '(try statement)';
             },
+            ast\AST_SWITCH => static function (Node $_): string {
+                return '(switch statement)';
+            },
+            ast\AST_SWITCH_LIST => static function (Node $_): string {
+                return '(switch case list)';
+            },
+            ast\AST_SWITCH_CASE => static function (Node $_): string {
+                return '(switch case statement)';
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }
