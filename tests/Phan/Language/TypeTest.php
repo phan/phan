@@ -55,7 +55,6 @@ final class TypeTest extends BaseTest
     {
         $this->assertParsesAsType(ArrayType::instance(false), '(array)');
         $this->assertParsesAsType(ArrayType::instance(false), '((array))');
-        $this->assertParsesAsType(ArrayType::instance(false), '((array))');
     }
 
     private const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
@@ -127,7 +126,7 @@ final class TypeTest extends BaseTest
         if ($extra !== '') {
             $message .= ": $extra";
         }
-        $this->assertSame($expected, $actual, $message);
+        $this->assertEquals($expected, $actual, $message);  // assertEquals has more useful formatting
         $this->assertSame($expected, $actual, $message);
     }
 

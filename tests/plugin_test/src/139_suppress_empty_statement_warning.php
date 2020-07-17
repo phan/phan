@@ -31,7 +31,7 @@ foreach ([2] as $_) {
     // TODO implement
 }
 
-foreach ([2] as $i) {
+foreach ([2] as $_) {
     // should warn
 }
 

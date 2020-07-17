@@ -1,3 +1,4 @@
+src/119_increment_decrement_unused.php:4 PhanPluginDuplicateAdjacentStatement Statement --$y is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 src/119_increment_decrement_unused.php:4 PhanUnusedVariable Unused definition of variable $y
 src/119_increment_decrement_unused.php:5 PhanUnusedVariable Unused definition of variable $x
 src/119_increment_decrement_unused.php:6 PhanNoopVariable Unused variable

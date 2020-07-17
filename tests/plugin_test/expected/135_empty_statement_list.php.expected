@@ -1,4 +1,5 @@
 src/135_empty_statement_list.php:3 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop
+src/135_empty_statement_list.php:5 PhanPluginDuplicateAdjacentStatement Statement (for loop) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 src/135_empty_statement_list.php:5 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop
 src/135_empty_statement_list.php:5 PhanPluginRedundantAssignmentInGlobalScope Assigning 0 to variable $i which already has that value
 src/135_empty_statement_list.php:8 PhanPluginEmptyStatementWhileLoop Empty statement list statement detected for the while loop

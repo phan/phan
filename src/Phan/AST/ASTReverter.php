@@ -469,6 +469,27 @@ class ASTReverter
                     self::toShortString($node->children['expr'])
                 );
             },
+            ast\AST_FOR => static function (Node $_): string {
+                return '(for loop)';
+            },
+            ast\AST_WHILE => static function (Node $_): string {
+                return '(while loop)';
+            },
+            ast\AST_DO_WHILE => static function (Node $_): string {
+                return '(do-while loop)';
+            },
+            ast\AST_FOREACH => static function (Node $_): string {
+                return '(foreach loop)';
+            },
+            ast\AST_IF => static function (Node $_): string {
+                return '(if statement)';
+            },
+            ast\AST_IF_ELEM => static function (Node $_): string {
+                return '(if statement element)';
+            },
+            ast\AST_TRY => static function (Node $_): string {
+                return '(try statement)';
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

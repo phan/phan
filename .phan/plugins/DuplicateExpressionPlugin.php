@@ -337,6 +337,33 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node $node
+     * A statement list of kind ast\AST_STMT_LIST to analyze.
+     * @override
+     */
+    public function visitStmtList(Node $node): void
+    {
+        $children = $node->children;
+        if (count($children) < 2) {
+            return;
+        }
+        $prev_hash = null;
+        foreach ($children as $child) {
+            $hash = ASTHasher::hash($child);
+            if ($hash === $prev_hash) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    (clone($this->context))->withLineNumberStart($child->lineno ?? $node->lineno),
+                    'PhanPluginDuplicateAdjacentStatement',
+                    "Statement {CODE} is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.",
+                    [ASTReverter::toShortString($child)]
+                );
+            }
+            $prev_hash = $hash;
+        }
+    }
+
+    /**
      * @param int|string $true_node_hash
      */
     private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash): void

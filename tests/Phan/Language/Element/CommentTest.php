@@ -67,7 +67,6 @@ final class CommentTest extends BaseTest
         $this->assertFalse($comment->isOverrideIntended());
         $this->assertFalse($comment->isNSInternal());
         $this->assertFalse($comment->hasReturnUnionType());
-        $this->assertFalse($comment->hasReturnUnionType());
         $this->assertInstanceOf(None::class, $comment->getClosureScopeOption());
         $this->assertSame([], $comment->getParameterList());
         $this->assertSame([], $comment->getParameterMap());
@@ -327,7 +326,6 @@ EOT;
         $this->assertTrue($scope_option->isDefined());
         $scope_type = $scope_option->get();
         $expected_type = Type::fromFullyQualifiedString('MyNS\MyClass');
-        $this->assertSame($expected_type, $scope_type);
         $this->assertSame($expected_type, $scope_type);
     }
 

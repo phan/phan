@@ -9,6 +9,10 @@ New features (CLI, Config):
   The default comment summary (`ordered_by_count`) is prone to merge conflicts in large projects.
   This does not affect analysis.
 
+Plugins:
++ Make `DuplicateExpressionPlugin` warn if adjacent statements are identical. (#4074)
+  New issue types: `PhanPluginDuplicateAdjacentStatement`.
+
 Jul 16 2020, Phan 3.1.0
 -----------------------
 

@@ -245,14 +245,6 @@ final class FQSENTest extends BaseTest
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedGlobalConstantName::make(
-                '',
-                'C'
-            ),
-            '\\C'
-        );
-
-        $this->assertFQSENEqual(
             FullyQualifiedGlobalConstantName::fromFullyQualifiedString('\\C'),
             '\\C'
         );

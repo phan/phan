@@ -6,6 +6,7 @@ src/077_both_literals.php:6 PhanPluginBothLiteralsBinaryOp Suspicious usage of a
 src/077_both_literals.php:6 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/077_both_literals.php:7 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 != 9 (result is true)
 src/077_both_literals.php:8 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 != 9 (result is true)
+src/077_both_literals.php:8 PhanPluginDuplicateAdjacentStatement Statement var_export(($x ?? (1 != 9))) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 src/077_both_literals.php:9 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2 < 3 (result is true)
 src/077_both_literals.php:10 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator <= are the same: 2
 src/077_both_literals.php:11 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2 <= '700' (result is true)

@@ -82,9 +82,6 @@ call_user_func(static function () : void {
     if ($has_any_option('p', 'progress-bar')) {
         $cli_builder->setOption('progress-bar');
     }
-    if ($has_any_option('p', 'progress-bar')) {
-        $cli_builder->setOption('progress-bar');
-    }
     $cli_builder->setOption('force-polyfill-parser-with-original-tokens');
     $cli_builder->setOption('plugin', dirname(__DIR__) . '/src/Phan/Plugin/Internal/PhantasmPlugin.php');
     // @phan-suppress-next-line PhanThrowTypeAbsentForCall
