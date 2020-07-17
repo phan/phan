@@ -934,7 +934,8 @@ class Config
 
         // This is the type of summary comment that will be generated when `--save-baseline=path/to/baseline.php` is used.
         // Supported values: 'ordered_by_count' (default), 'ordered_by_type', 'none'.
-        // (The first type makes it easier to find uncommon issues but is more prone to merge conflicts in version control)
+        // (The first type makes it easier to see uncommon issues when reading the code but is more prone to merge conflicts in version control)
+        // (Does not affect analysis)
         'baseline_summary_type' => 'ordered_by_count',
 
         // A list of plugin files to execute.

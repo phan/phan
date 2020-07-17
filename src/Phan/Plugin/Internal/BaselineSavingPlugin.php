@@ -135,7 +135,7 @@ EOT;
         if ($baseline_summary_type === 'none') {
             return '';
         }
-        if (!in_array($baseline_summary_type, ['ordered_by_type', 'ordered_by_count'], true))  {
+        if (!in_array($baseline_summary_type, ['ordered_by_type', 'ordered_by_count'], true)) {
             CLI::printWarningToStderr("Unknown baseline_summary_type '$baseline_summary_type'. Supported values: 'ordered_by_type', 'ordered_by_count', 'none'");
         }
         $entries = [];

@@ -129,7 +129,8 @@ EOB;
  * Dump the list of tokens to the console
  * @param array<int, string|array{0:int, 1:string, 2:int}> $tokens
  */
-function dump_tokens(array $tokens): void {
+function dump_tokens(array $tokens): void
+{
     foreach ($tokens as $token) {
         if (is_string($token)) {
             echo $token . PHP_EOL;

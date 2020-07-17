@@ -14,6 +14,7 @@ use function file_put_contents;
 use function fwrite;
 use function rtrim;
 use function strcasecmp;
+use function strpos;
 use function uasort;
 
 use const STDERR;
@@ -80,7 +81,11 @@ class WikiConfigTest extends BaseTest
             fwrite(STDERR, "Saving expected contents to '$wiki_filename_new'\n");
             file_put_contents($wiki_filename_new, $contents);
         }
-        $this->assertSame($contents, $original_contents, "Unexpected contents (can be solved by copying $wiki_filename_new to $wiki_filename if referenced files are tracked in git)");
+        $prefix = '';
+        if (strpos($contents, '# misc') !== false) {
+            $prefix = "choosing a category in " . __DIR__ . '/ConfigEntry.php then ';
+        }
+        $this->assertSame($contents, $original_contents, "Unexpected contents (can be solved by {$prefix}copying $wiki_filename_new to $wiki_filename if referenced files are tracked in git)");
     }
 
     /**
