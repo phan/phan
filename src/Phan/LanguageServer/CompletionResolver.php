@@ -18,6 +18,8 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\LanguageServer\Protocol\CompletionItem;
+use Phan\LanguageServer\Protocol\CompletionItemKind;
 
 use function is_string;
 
@@ -38,9 +40,9 @@ class CompletionResolver
         // TODO: Could use the parent node list
         // (e.g. don't use a method with a void return as an argument to another function)
         /**
-         * @param list<Node> $unused_parent_node_list
+         * @param list<Node> $parent_node_list
          */
-        return static function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base): void {
+        return static function (Context $context, Node $node, array $parent_node_list) use ($request, $code_base): void {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
@@ -99,6 +101,7 @@ class CompletionResolver
                     if (!is_string($const_name)) {
                         return;
                     }
+                    self::locateMiscellaneousTokenCompletion($request, $code_base, $context, $node, $const_name, $parent_node_list);
                     self::locateGlobalConstantCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateClassCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateGlobalFunctionCompletion($request, $code_base, $context, $node, $const_name);
@@ -253,6 +256,148 @@ class CompletionResolver
                 }
                 $request->recordCompletionElement($code_base, $method, $method->getName());
             }
+        }
+    }
+
+    /**
+     * Tokens that should be suggested when the parent node is a statement list.
+     */
+    private const COMPLETING_STATEMENT_TOKENS = [
+        'try',
+        'catch',
+        'finally',
+        'throw',
+        'if',
+        'elseif',
+        'endif',
+        'else',
+        'while',
+        'endwhile',
+        'do',
+        'for',
+        'endfor',
+        'foreach',
+        'endforeach',
+        'declare',
+        'enddeclare',
+        'switch',
+        'endswitch',
+        'break',
+        'continue',
+        'goto',
+        'echo',
+        'class',
+        'interface',
+        'trait',
+        'use',  // Only support use statements for now, not closure use
+        'static',
+        'unset',
+        'list',
+        // '__halt_compiler',  // Too rarely used to suggest
+    ];
+
+    /**
+     * Tokens that should be used as suggestions for places in which a generic name is suggested.
+     */
+    private const COMPLETING_TOKENS = [
+        'exit',
+        'die',
+        'function',
+        // 'yield', TODO check if in function
+        // 'instanceof',
+        // 'as',
+        // 'case',
+        // 'default',
+        // 'extends',
+        // 'implements',
+        'print',
+        'new',
+        'clone',
+        // 'var',
+        'eval',
+        'include',
+        'include_once',
+        'require',
+        'require_once',
+        'namespace',  // namespace-relative identifiers such as namespace\foo()
+        // 'insteadof',
+        'global',
+        'isset',
+        'empty',
+        // 'abstract',
+        // 'static',
+        // 'final',
+        // 'private',
+        // 'protected',
+        // 'public',
+        'array',
+        // 'callable',
+        // 'OR',
+        // 'AND',
+        // 'XOR',
+        '__CLASS__',
+        '__TRAIT__',
+        '__FUNCTION__',
+        '__METHOD__',
+        '__LINE__',
+        '__FILE__',
+        '__DIR__',
+    ];
+
+    /**
+     * @param string $incomplete_constant_name
+     * @param list<Node> $parent_node_list
+     * @suppress PhanUnusedPrivateMethodParameter
+     */
+    private static function locateMiscellaneousTokenCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        string $incomplete_constant_name,
+        array $parent_node_list
+    ): void {
+
+        // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+        if ($node->kind === ast\AST_CONST && $node->children['name']->flags !== ast\flags\NAME_NOT_FQ) {
+            // Don't suggest completions for namespace\keyword or \keyword, it's generally not valid.
+            return;
+        }
+        $parent_node = \end($parent_node_list);
+        $token_candidates = self::COMPLETING_TOKENS;
+        if (($parent_node->kind ?? null) === ast\AST_STMT_LIST) {
+            \array_push($token_candidates, ...self::COMPLETING_STATEMENT_TOKENS);
+        }
+        if (Config::get_closest_target_php_version_id() >= 80000) {
+            $token_candidates[] = 'match';
+        }
+        if (Config::get_closest_target_php_version_id() >= 70400) {
+            $token_candidates[] = 'fn';
+        }
+        \sort($token_candidates);
+        foreach ($token_candidates as $token) {
+            if (\stripos($token, $incomplete_constant_name) !== 0) {
+                // Don't bother suggesting tokens containing the name that aren't prefixes.
+                // It's less useful than it is for constants/functions.
+                continue;
+            }
+            $item = new CompletionItem();
+            $item->label = $token;
+            $item->kind = CompletionItemKind::KEYWORD;
+            $item->detail = null; // TODO: Better summary
+            $item->documentation = null;
+            $insert_text = null;
+            if (!CompletionRequest::useVSCodeCompletion()) {
+                if (\stripos($token, $incomplete_constant_name) === 0) {
+                    $insert_text = (string)\substr($token, \strlen($incomplete_constant_name));
+                    if (\preg_match('/[a-zA-Z]/', $incomplete_constant_name, $match)) {
+                        $is_upper = $match[0] >= 'A' && $match[0] <= 'Z';
+                        $insert_text = $is_upper ? \strtoupper($insert_text) : \strtolower($insert_text);
+                    }
+                }
+            }
+            $item->insertText = $insert_text;
+            $request->recordCompletionItem($item);
         }
     }
 

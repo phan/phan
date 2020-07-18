@@ -10,6 +10,9 @@ New features (CLI, Config):
   The default comment summary (`ordered_by_count`) is prone to merge conflicts in large projects.
   This does not affect analysis.
 
+Language Server/Daemon mode:
++ Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.
+
 Plugins:
 + Make `DuplicateExpressionPlugin` warn if adjacent statements are identical. (#4074)
   New issue types: `PhanPluginDuplicateAdjacentStatement`.

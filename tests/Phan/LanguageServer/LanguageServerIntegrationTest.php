@@ -421,9 +421,9 @@ class M9Example {
     public static function my_static_function () {}
     const my_class_const = ['literalString'];  // line 5
 }
-
-
-
+swi
+;
+echo __FI
 echo M9Example::$  // line 10
 echo M9Example::$my
 echo M9Example::
@@ -459,7 +459,7 @@ function M9InnerFunction($first_arg, \M9Example $second_arg) {
         return $second_arg;
     } else {
         echo $second_arg->
-        return $first_arg;
+        return $first_arg;  // line 45
     }
 }
 }
@@ -556,6 +556,44 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
+        $file_token_item = [
+            'label' => '__FILE__',
+            'kind' => CompletionItemKind::KEYWORD,
+            'detail' => null,
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => $for_vscode ? null : 'LE__',
+        ];
+        $switch_token_completions = [
+            [
+                'label' => 'switch',
+                'kind' => CompletionItemKind::KEYWORD,
+                'detail' => null,
+                'documentation' => null,
+                'sortText' => null,
+                'filterText' => null,
+                'insertText' => $for_vscode ? null : 'tch',
+            ],
+            [
+                'label' => 'T_ENDSWITCH',
+                'kind' => CompletionItemKind::VARIABLE,
+                'detail' => (string)\T_ENDSWITCH,
+                'documentation' => null,
+                'sortText' => null,
+                'filterText' => null,
+                'insertText' => null,
+            ],
+            [
+                'label' => 'T_SWITCH',
+                'kind' => CompletionItemKind::VARIABLE,
+                'detail' => (string)\T_SWITCH,
+                'documentation' => null,
+                'sortText' => null,
+                'filterText' => null,
+                'insertText' => null,
+            ],
+        ];
         // These completions are returned to the language client in alphabetical order
         $static_property_completions = [
             $property_completion_item,
@@ -581,6 +619,8 @@ EOT;
         ];
 
         return [
+            [new Position(7, 3), $switch_token_completions, $for_vscode],
+            [new Position(9, 9), [$file_token_item], $for_vscode],
             [new Position(10, 17), $static_property_completions, $for_vscode],
             [new Position(11, 19), $static_property_completions_substr, $for_vscode],
             [new Position(12, 16), $all_static_completions, $for_vscode],
