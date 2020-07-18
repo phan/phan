@@ -139,6 +139,7 @@ if (extension_loaded('ast')) {
         );
         phan_output_ast_installation_instructions();
     }
+    unset($ast_version);
 }
 
 // Use the composer autoloader
@@ -154,9 +155,11 @@ foreach ([
         break;
     }
 }
+unset($file);
 if (!$found_autoloader) {
     fwrite(STDERR, "Could not locate the autoloader\n");
 }
+unset($found_autoloader);
 
 define('EXIT_SUCCESS', 0);
 define('EXIT_FAILURE', 1);

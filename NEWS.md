@@ -9,6 +9,16 @@ New features (CLI, Config):
   (overrides the new `baseline_summary_type` config).
   The default comment summary (`ordered_by_count`) is prone to merge conflicts in large projects.
   This does not affect analysis.
++ Add `tool/phan_repl_helpers.php`, a prototype tool that adds some functionality to `php -a`.
+  It can be required by running `require_once 'path/to/phan/tool/phan_repl_helpers.php'` during an interactive session.
+
+  - This replaces the readline code completion and adds autocomplete for `->` on global variables.
+    This is currently buggy and very limited, and is missing some of the code completion functionality that is available in `php -a`.
+    (And it's missing a lot of the code completion functionality from the language server)
+  - This adds a global function `help($element_name_or_object)`. Run `help('help')` for usage and examples.
+  - Future releases may advantage of Phan's parsing/analysis capabilities in more ways.
+  - Several alternatives to the php shell already exist, such as [psysh](https://github.com/bobthecow/psysh).
+    `tool/phan_repl_helpers.php` is an experiment in augmenting the interactive php shell, not an alternative shell.
 
 Language Server/Daemon mode:
 + Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.

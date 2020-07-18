@@ -360,6 +360,7 @@ return [
         'tool/pdep',
         'tool/phantasm',
         'tool/phoogle',
+        'tool/php_shell_prepend.php',
         'internal/dump_fallback_ast.php',
         'internal/dump_html_styles.php',
         'internal/extract_arg_info.php',

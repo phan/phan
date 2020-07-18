@@ -1883,7 +1883,13 @@ EOB
             // > Clears all characters from the cursor position to the end of the line (including the character at the cursor position).
             $message = "\033[2K" . $message;
         }
-        fwrite(STDERR, $message);
+        if (\defined('STDERR')) {
+            fwrite(STDERR, $message);
+        } else {
+            // Fallback in case Phan runs interactively or in non-CLI SAPIs.
+            // This is incomplete.
+            echo $message;
+        }
     }
 
     /**
@@ -1915,7 +1921,7 @@ EOB
             $section = self::colorizeHelpSectionIfSupported($section);
         }
         if ($toStderr) {
-            fwrite(STDERR, $section);
+            CLI::printToStderr($section);
         } else {
             echo $section;
         }
