@@ -56,6 +56,8 @@ if (!function_exists('help')) {
  * php > $object->a<TAB>
  * append  asort
  * ```
+ *
+ * @suppress PhanUnreferencedFunction this is meant to be used interactively and is currently untested
  */
 function help($value = "\x00extended_help"): void {
     phan_repl_help($value);
