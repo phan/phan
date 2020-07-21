@@ -468,7 +468,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
-                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}. This will be an ArgumentCountError in PHP 8',
+                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}. This will be an ArgumentCountError in PHP 8.',
                     [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
                     Issue::SEVERITY_CRITICAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
@@ -505,9 +505,9 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
-                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
+                    'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}. This will be an ArgumentCountError in PHP 8.',
                     [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
-                    Issue::SEVERITY_NORMAL,
+                    Issue::SEVERITY_CRITICAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
             } elseif ($largest_positional < count($arg_nodes)) {

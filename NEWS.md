@@ -26,6 +26,8 @@ Language Server/Daemon mode:
 Plugins:
 + Make `DuplicateExpressionPlugin` warn if adjacent statements are identical. (#4074)
   New issue types: `PhanPluginDuplicateAdjacentStatement`.
++ Consistently make `PhanPluginPrintfNonexistentArgument` have critical severity. (#4080)
+  Passing too few format string arguments (e.g. `printf("%s %s", "Hello,")`) will be an `ArgumentCountError` in PHP 8.
 
 Jul 16 2020, Phan 3.1.0
 -----------------------
