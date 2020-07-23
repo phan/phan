@@ -388,16 +388,16 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             $recursive_union_type_builder = new UnionTypeBuilder();
             $representation = $this->__toString();
             try {
-                foreach ($union_type->getTypeSet() as $clazz_type) {
-                    if ($clazz_type->__toString() !== $representation) {
+                foreach ($union_type->getTypeSet() as $generic_array_type) {
+                    if ($generic_array_type->__toString() !== $representation) {
                         $recursive_union_type_builder->addUnionType(
-                            $clazz_type->asExpandedTypes(
+                            $generic_array_type->asExpandedTypes(
                                 $code_base,
                                 $recursion_depth + 1
                             )
                         );
                     } else {
-                        $recursive_union_type_builder->addType($clazz_type);
+                        $recursive_union_type_builder->addType($generic_array_type);
                     }
                 }
             } catch (RecursionDepthException $_) {
@@ -407,7 +407,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Add in aliases
             // (If enable_class_alias_support is false, this will do nothing)
             if (Config::getValue('enable_class_alias_support')) {
-                self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
+                $this->addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
             return $recursive_union_type_builder->getPHPDocUnionType();
         });
@@ -483,7 +483,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Add in aliases
             // (If enable_class_alias_support is false, this will do nothing)
             if (Config::getValue('enable_class_alias_support')) {
-                self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
+                $this->addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
             return $recursive_union_type_builder->getPHPDocUnionType();
         });

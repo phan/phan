@@ -1,0 +1,1 @@
+%s:39 PhanTypeMismatchArgument Argument 1 ($foos) is generateSomeStdClass() of type iterable<\NS\stdClass> but \NS\loopOverFoo() takes iterable<\NS\foo> defined at %s:31
