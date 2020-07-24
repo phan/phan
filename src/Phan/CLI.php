@@ -2514,6 +2514,9 @@ EOB
                 case 'parse':
                     $buf = "Parsing files..." . PHP_EOL;
                     break;
+                case 'classes':
+                    $buf = "Analyzing classes..." . PHP_EOL;
+                    break;
                 case 'function':
                     $buf = "Analyzing functions..." . PHP_EOL;
                     break;
