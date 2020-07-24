@@ -34,6 +34,7 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
 
+use function count;
 use function strlen;
 
 use const STDERR;
@@ -309,7 +310,7 @@ class Analysis
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
-                CLI::progress('function', (++$i) / (\count($function_map)), $function);
+                CLI::progress('function', (++$i) / (count($function_map)), $function);
             }
             $analyze_function_or_method($function);
         }
@@ -324,7 +325,7 @@ class Analysis
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.
                 // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i) / (\count($method_set)), $method);
+                CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
             $analyze_function_or_method($method);
         }
@@ -453,6 +454,7 @@ class Analysis
      */
     public static function analyzeClasses(CodeBase $code_base, array $path_filter = null): void
     {
+        CLI::progress('classes', 0.0, null);
         $classes = $code_base->getUserDefinedClassMap();
         if (\is_array($path_filter)) {
             // If a list of files is provided, then limit analysis to classes defined in those files.
@@ -464,13 +466,16 @@ class Analysis
                 }
             }
         }
+        $i = 0;
         foreach ($classes as $class) {
+            CLI::progress('classes', $i++ / count($classes), null);
             try {
                 $class->analyze($code_base);
             } catch (RecursionDepthException $_) {
                 continue;
             }
         }
+        CLI::progress('classes', 1.0, null);
     }
 
     /**

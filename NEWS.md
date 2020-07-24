@@ -19,6 +19,7 @@ New features (CLI, Config):
   - Future releases may advantage of Phan's parsing/analysis capabilities in more ways.
   - Several alternatives to the php shell already exist, such as [psysh](https://github.com/bobthecow/psysh).
     `tool/phan_repl_helpers.php` is an experiment in augmenting the interactive php shell, not an alternative shell.
++ Update progress bar during class analysis phase. (#4099)
 
 New features (Analysis):
 + Support casting `iterable<SubClass>` to `iterable<BaseClass>` (#4089)
