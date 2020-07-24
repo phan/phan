@@ -20,6 +20,10 @@ New features (CLI, Config):
   - Several alternatives to the php shell already exist, such as [psysh](https://github.com/bobthecow/psysh).
     `tool/phan_repl_helpers.php` is an experiment in augmenting the interactive php shell, not an alternative shell.
 
+New features (Analysis):
++ Support casting `iterable<SubClass>` to `iterable<BaseClass>` (#4089)
++ Change phrasing for `analyze` phase in `--long-progress-bar` with `--analyze-twice`
+
 Language Server/Daemon mode:
 + Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.
 

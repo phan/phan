@@ -2521,7 +2521,13 @@ EOB
                     $buf = "Analyzing methods..." . PHP_EOL;
                     break;
                 case 'analyze':
-                    $buf = "Analyzing files..." . PHP_EOL;
+                    static $did_print = false;
+                    if ($did_print) {
+                        $buf = "Analyzing files a second time..." . PHP_EOL;
+                    } else {
+                        $buf = "Analyzing files..." . PHP_EOL;
+                        $did_print = true;
+                    }
                     break;
                 case 'dead code':
                     $buf = "Checking for dead code..." . PHP_EOL;
