@@ -62,7 +62,10 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         self::analyzeFunctionLike($code_base, $function);
     }
 
-    public function analyzeMethod(CodeBase $unused_code_base, Method $method): void
+    /**
+     * @param CodeBase $code_base @unused-param
+     */
+    public function analyzeMethod(CodeBase $code_base, Method $method): void
     {
         if ($method->isFromPHPDoc() || $method->isMagic() || $method->isPHPInternal()) {
             return;

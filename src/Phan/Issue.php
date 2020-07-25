@@ -354,6 +354,8 @@ class Issue
     public const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
     public const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
     public const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
+    public const ParamNameIndicatingUnused                                   = 'PhanParamNameIndicatingUnused';
+    public const ParamNameIndicatingUnusedInClosure                          = 'PhanParamNameIndicatingUnusedInClosure';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3302,6 +3304,22 @@ class Issue
                 "First argument of class_alias() must be a name of user defined class ('{CLASS}' attempted)",
                 self::REMEDIATION_B,
                 7048
+            ),
+            new Issue(
+                self::ParamNameIndicatingUnused,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.',
+                self::REMEDIATION_B,
+                7050
+            ),
+            new Issue(
+                self::ParamNameIndicatingUnusedInClosure,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.',
+                self::REMEDIATION_B,
+                7051
             ),
 
             // Issue::CATEGORY_NOOP

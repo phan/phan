@@ -1641,6 +1641,29 @@ First argument of class_alias() must be a name of user defined class ('{CLASS}' 
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0615_class_alias.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0615_class_alias.php#L3).
 
+## PhanParamNameIndicatingUnused
+
+Note that this it may be appropriate to suppress this under the following circumstances:
+
+1. The parameter's name in the public API is actually meant to be `$unused*` or `$_`
+2. The project documents that it does not guarantee that parameter names won't change
+   or that named arguments shouldn't be used with the functions it provides.
+3. The functionality is marked as `@internal`
+
+```
+Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L2).
+
+## PhanParamNameIndicatingUnusedInClosure
+
+```
+Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0872_noop_closure.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0872_noop_closure.php#L4).
+
 ## PhanParamRedefined
 
 ```

@@ -3,13 +3,15 @@ function test181($unused = false) {
     echo "In test181\n";
 }
 test181(true);
-$cb = function ($unusedParam1, $unusedParam2 = 'default') {
+/** @param $param1 @unused-param */
+$cb = function ($param1, $unusedParam2 = 'default') {
 };
 $cb(1, 2);
 class Example181 {
     public function __construct(int $unusedVar = 0) {
     }
-    public function dump(int $unused_x = null, string $required, int $_ = 2) {
+    /** @param $x @unused-param */
+    public function dump(int $x = null, string $required, int $_ = 2) {
         var_dump($required);
     }
     public function overridden($unusedParam = null) {

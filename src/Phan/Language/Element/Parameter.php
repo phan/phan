@@ -15,6 +15,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
@@ -324,10 +325,13 @@ class Parameter extends Variable
 
         // If there is a default value, store it and its type
         $default_node = $node->children['default'];
-        if ($default_node !== null) {
-            if (preg_match('/^(_$|unused)/iD', $parameter_name)) {
+        if (preg_match('/^(_$|unused)/iD', $parameter_name)) {
+            if ($default_node !== null) {
                 $parameter->should_warn_if_provided = true;
             }
+            self::warnAboutParamNameIndicatingUnused($code_base, $context, $node, $parameter_name);
+        }
+        if ($default_node !== null) {
             // Set the actual value of the default
             $parameter->setDefaultValue($default_node);
             try {
@@ -384,6 +388,26 @@ class Parameter extends Variable
         }
 
         return $parameter;
+    }
+
+    private static function warnAboutParamNameIndicatingUnused(
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        string $parameter_name
+    ): void {
+        $is_closure = false;
+        if ($context->isInFunctionLikeScope()) {
+            $func = $context->getFunctionLikeFQSEN();
+            $is_closure = $func instanceof FullyQualifiedFunctionName && $func->isClosure();
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            $is_closure ? Issue::ParamNameIndicatingUnusedInClosure : Issue::ParamNameIndicatingUnused,
+            $node->lineno,
+            $parameter_name
+        );
     }
 
     /**

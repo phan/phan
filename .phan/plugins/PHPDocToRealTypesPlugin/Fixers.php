@@ -25,9 +25,10 @@ class Fixers
 
     /**
      * Add a missing return type to the real signature
+     * @param CodeBase $code_base @unused-param
      */
     public static function fixReturnType(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
     ): ?FileEditSet {

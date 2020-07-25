@@ -161,9 +161,10 @@ class InlineHTMLVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
      * @override
+     * @param Node $node @unused-param
      * @return void
      */
-    public function visitEcho(Node $_)
+    public function visitEcho(Node $node)
     {
         InlineHTMLPlugin::$file_set_to_analyze[$this->context->getFile()] = true;
     }

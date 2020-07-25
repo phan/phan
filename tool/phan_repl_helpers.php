@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+use Phan\CLI;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Library\StringUtil;
-use Phan\CLI;
 
 // On the off chance that php or an extension ever provides a global function called 'help',
 // check for this so that other utilities will work.
@@ -59,15 +61,17 @@ if (!function_exists('help')) {
  *
  * @suppress PhanUnreferencedFunction this is meant to be used interactively and is currently untested
  */
-function help($value = "\x00extended_help"): void {
-    phan_repl_help($value);
-}
+    function help($value = "\x00extended_help"): void
+    {
+        phan_repl_help($value);
+    }
 } /* End function_exists('help') check */
 
 /**
  * Actual implementation of help()
  */
-function phan_repl_help($value = "\x00extended_help"): void {
+function phan_repl_help($value = "\x00extended_help"): void
+{
     if ($value === "\x00extended_help") {
         echo "Phan " . CLI::PHAN_VERSION . " CLI autocompletion utilities.\n";
         echo "Type help(\$value); or help('function or constant or class name'); for help.\n";
@@ -176,18 +180,21 @@ restore_error_handler();
  * @phan-file-suppress PhanPluginRemoveDebugAny this is a debugging utility
  * @phan-file-suppress PhanAccessMethodInternal this is bundled with phan
  */
-class PhanPhpShellUtils {
+class PhanPhpShellUtils
+{
     /** @var bool whether to emit debugging code */
     private $debug;
 
-    public function __construct(bool $debug = false) {
+    public function __construct(bool $debug = false)
+    {
         $this->debug = $debug;
     }
 
     /**
      * Append a line to a logging file
      */
-    public function appendToLogFile(string $line): void {
+    public function appendToLogFile(string $line): void
+    {
         if (!$this->debug) {
             return;
         }
@@ -200,7 +207,8 @@ class PhanPhpShellUtils {
      * @param list<int|string> $candidates
      * @return list<string>
      */
-    public function generateCompletionsFromCandidates(array $candidates, string $prefix, string $prefix_to_add_to_completion): array {
+    public function generateCompletionsFromCandidates(array $candidates, string $prefix, string $prefix_to_add_to_completion): array
+    {
         $prefix_len = strlen($prefix);
         $completions = [];
         foreach ($candidates as $candidate) {
@@ -219,7 +227,8 @@ class PhanPhpShellUtils {
      * Generate completions for a variable. TODO: Account for local variables
      * @return list<string>
      */
-    public function generateVariableCompletions(string $last_token_str): array {
+    public function generateVariableCompletions(string $last_token_str): array
+    {
         $prefix = ltrim($last_token_str, '${');
         $keys = array_keys($GLOBALS);
         $keys[] = 'GLOBALS';
@@ -426,9 +435,8 @@ class PhanPhpShellUtils {
         $this->setReadlineConfig('completion_append_character', "\x00");
         try {
             // TODO: PHP's API only allows us to fetch the most recent line.
-            //
             $line_buffer = readline_info('line_buffer');
-            $tokens = (@token_get_all('<'.'?php ' . $line_buffer)) ?: [''];
+            $tokens = (@token_get_all('<' . '?php ' . $line_buffer)) ?: [''];  // Split up to fix vim syntax highlighting.
             $last_token = end($tokens);
             $last_token_str = self::tokenToString($last_token);
             $this->appendToLogFile("text='''$text''' start=$start end=$end line_buffer='''$line_buffer''' last_token_str='''$last_token_str'''\n");

@@ -239,9 +239,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
+     * @param CodeBase $code_base @unused-param
      */
     public function asExpandedTypes(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         int $unused_recursion_depth = 0
     ): UnionType {
         return $this->asPHPDocUnionType();
@@ -249,9 +250,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
+     * @param CodeBase $code_base @unused-param
      */
     public function asExpandedTypesPreservingTemplate(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         int $unused_recursion_depth = 0
     ): UnionType {
         return $this->asPHPDocUnionType();
@@ -293,7 +295,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context): ?FunctionInterface
+    /**
+     * @param CodeBase $code_base @unused-param
+     * @param Context $context @unused-param
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
     {
         return $this;
     }
@@ -333,14 +339,18 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     ////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * @param FileRef $file_ref @unused-param
      * @override
      */
-    public function addReference(FileRef $_): void
+    public function addReference(FileRef $file_ref): void
     {
     }
 
-    /** @override */
-    public function getReferenceCount(CodeBase $_): int
+    /**
+     * @param CodeBase $code_base @unused-param
+     * @override
+     */
+    public function getReferenceCount(CodeBase $code_base): int
     {
         return 1;
     }
@@ -405,8 +415,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('should not call ' . __METHOD__);
     }
 
-    /** @override */
-    public function analyzeWithNewParams(Context $unused_context, CodeBase $unused_codebase, array $unused_parameter_list): Context
+    /**
+     * @param CodeBase $code_base @unused-param
+     * @param Parameter[] $parameter_list @unused-param
+     * @override
+     */
+    public function analyzeWithNewParams(Context $unused_context, CodeBase $code_base, array $parameter_list): Context
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
@@ -429,8 +443,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    /** @override */
-    public function ensureScopeInitialized(CodeBase $_): void
+    /**
+     * @param CodeBase $code_base
+     * @override
+     */
+    public function ensureScopeInitialized(CodeBase $code_base): void
     {
     }
 

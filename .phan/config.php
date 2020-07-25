@@ -336,6 +336,9 @@ return [
         'PhanPluginPossiblyStaticProtectedMethod',
         // The types of ast\Node->children are all possibly unset.
         'PhanTypePossiblyInvalidDimOffset',
+        // TODO: Fix PhanParamNameIndicatingUnused* instances
+        'PhanParamNameIndicatingUnused',
+        'PhanParamNameIndicatingUnusedInClosure',
     ],
 
     // If empty, no filter against issues types will be applied.

@@ -24,6 +24,10 @@ New features (CLI, Config):
 New features (Analysis):
 + Support casting `iterable<SubClass>` to `iterable<BaseClass>` (#4089)
 + Change phrasing for `analyze` phase in `--long-progress-bar` with `--analyze-twice`
++ Add `PhanParamNameIndicatingUnused` and `PhanParamNameIndicatingUnusedInClosure`
+  to indicate that using parameter names(`$unused*`, `$_`) to indicate to Phan that a parameter is unused is no longer recommended.
+  Suppressions or the `@param [Type] $param_name @unused-param` syntax can be used instead.
+  PHP 8.0 will introduce named argument support.
 
 Language Server/Daemon mode:
 + Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.
