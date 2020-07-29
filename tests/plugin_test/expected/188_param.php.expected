@@ -1,0 +1,1 @@
+src/188_param.php:27 PhanTypeMismatchArgumentProbablyReal Argument 3 ($partialMatch) is null of type null but \PHPDocParamTest\B::compareProperty() takes bool|false (no real type) defined at src/188_param.php:22 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

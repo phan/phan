@@ -28,6 +28,8 @@ New features (Analysis):
   to indicate that using parameter names(`$unused*`, `$_`) to indicate to Phan that a parameter is unused is no longer recommended.
   Suppressions or the `@param [Type] $param_name @unused-param` syntax can be used instead.
   PHP 8.0 will introduce named argument support.
++ Add a message to `PhanParamSignatureMismatch` indicating the cause of the issue being emitted. (#4103)
+  Note that `PhanParamSignaturePHPDocMismatch*` and `PhanParamSignatureReal*` have fewer false positives.
 
 Language Server/Daemon mode:
 + Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.
@@ -37,6 +39,10 @@ Plugins:
   New issue types: `PhanPluginDuplicateAdjacentStatement`.
 + Consistently make `PhanPluginPrintfNonexistentArgument` have critical severity. (#4080)
   Passing too few format string arguments (e.g. `printf("%s %s", "Hello,")`) will be an `ArgumentCountError` in PHP 8.
+
+Bug fixes:
++ Fix false positive `PhanParamSignatureMismatch` issues (#4103)
++ Fix false positive `PhanParamSignaturePHPDocMismatchHasParamType` seen for magic method override of a real method with no real signature types. (#4103)
 
 Jul 16 2020, Phan 3.1.0
 -----------------------

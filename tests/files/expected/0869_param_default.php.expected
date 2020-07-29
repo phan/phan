@@ -1,2 +1,2 @@
-%s:7 PhanParamSignatureMismatch Declaration of function foo($x) should be compatible with function foo(bool|mixed $x = true) defined in %s:4
+%s:7 PhanParamSignatureMismatch Declaration of function foo($x) should be compatible with function foo(bool|mixed $x = true) defined in %s:4 (Saw more required parameters in the override)
 %s:7 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function foo($x) should be compatible with function foo($x = true) (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:4

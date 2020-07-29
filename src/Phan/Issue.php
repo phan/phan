@@ -3008,7 +3008,7 @@ class Issue
                 self::ParamSignatureMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with {METHOD} defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with {METHOD} defined in {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 7010
             ),
@@ -3016,7 +3016,7 @@ class Issue
                 self::ParamSignatureMismatchInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD}{DETAILS}",
                 self::REMEDIATION_B,
                 7011
             ),

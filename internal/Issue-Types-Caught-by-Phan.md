@@ -1692,7 +1692,7 @@ and warns if an overriding method's signature is incompatible with the overridde
 **For a check with much lower false positives and clearer issue messages, use the `PhanParamSignatureRealMismatch...` issue types instead.**
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} defined in {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0869_param_default.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0869_param_default.php#L7).
@@ -1704,7 +1704,7 @@ and warns if an overriding method's signature is incompatible with the overridde
 For a check with much lower false positives and clearer issue messages, use the `PhanParamSignatureRealMismatchInternal...` issue types.
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD}
+Declaration of {METHOD} should be compatible with internal {METHOD}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0308_inheritdoc_incompatible.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0308_inheritdoc_incompatible.php#L7).

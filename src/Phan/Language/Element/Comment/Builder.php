@@ -1156,17 +1156,19 @@ final class Builder
             $default_str = $param_match[17];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
-                $default_value_repr = \trim(\explode('=', $default_str, 2)[1]);
-                if (\strcasecmp($default_value_repr, 'null') === 0) {
+                $default_value_representation = \trim(\explode('=', $default_str, 2)[1]);
+                if (\strcasecmp($default_value_representation, 'null') === 0) {
                     $union_type = $union_type->nullableClone();
                 }
+            } else {
+                $default_value_representation = null;
             }
             $var_name = $param_match[16];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
             }
-            return new Parameter($var_name, $union_type, $this->guessActualLineLocation($comment_line_offset), $is_variadic, $has_default_value);
+            return new Parameter($var_name, $union_type, $this->guessActualLineLocation($comment_line_offset), $is_variadic, $has_default_value, false, false, false, $default_value_representation);
         }
         return null;
     }

@@ -1,1 +1,1 @@
-%s:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE) (at column 23)
+%s:3 PhanSyntaxError syntax error, unexpected token "|", expecting variable (at column 23)

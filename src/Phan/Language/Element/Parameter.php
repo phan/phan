@@ -74,6 +74,14 @@ class Parameter extends Variable
     private $default_value_constant_name = null;
 
     /**
+     * @var ?string
+     * The raw comment string from a default in an (at)method tag.
+     *
+     * This may be nonsense like '...' or 'default'.
+     */
+    private $default_value_representation = null;
+
+    /**
      * @var bool
      * True if the default value was inferred from reflection
      */
@@ -126,6 +134,15 @@ class Parameter extends Variable
     public function setDefaultValueFutureType(FutureUnionType $type): void
     {
         $this->default_value_future_type = $type;
+    }
+
+    /**
+     * @param ?string $representation
+     * The new representation of the default value.
+     */
+    public function setDefaultValueRepresentation(?string $representation): void
+    {
+        $this->default_value_representation = $representation;
     }
 
     /**
@@ -634,6 +651,9 @@ class Parameter extends Variable
 
     private function generateDefaultNodeRepresentation(bool $is_internal = true): string
     {
+        if (is_string($this->default_value_representation)) {
+            return $this->default_value_representation;
+        }
         if (is_string($this->default_value_constant_name)) {
             return '\\' . $this->default_value_constant_name;
         }

@@ -278,9 +278,10 @@ class Parser
             return 0;
         }
         $message = $native_parse_error->getMessage();
-        if (!\preg_match("/ unexpected '(.+)' \((T_\w+)\)/", $message, $matches)) {
-            if (!\preg_match("/ unexpected '(.+)', expecting/", $message, $matches)) {
-                if (!\preg_match("/ unexpected '(.+)'$/D", $message, $matches)) {
+        $prefix = "unexpected (?:token )?('(?:.+)'|\"(?:.+)\")";
+        if (!\preg_match("/$prefix \((T_\w+)\)/", $message, $matches)) {
+            if (!\preg_match("/$prefix, expecting/", $message, $matches)) {
+                if (!\preg_match("/$prefix$/D", $message, $matches)) {
                     return 0;
                 }
             }
@@ -294,7 +295,7 @@ class Parser
         } else {
             $token_kind = null;
         }
-        $token_str = $matches[1];
+        $token_str = \substr($matches[1], 1, -1);
         $tokens = \token_get_all($file_cache_entry->getContents());
         $candidates = [];
         $desired_line = $native_parse_error->getLine();

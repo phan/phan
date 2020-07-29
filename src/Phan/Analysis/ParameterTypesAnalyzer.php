@@ -525,6 +525,7 @@ class ParameterTypesAnalyzer
             // TODO: Fix edge cases caused by hack changing FQSEN of private methods
             return;
         }
+        $mismatch_details = '';
 
         // Get the parameters for that method
         $o_parameter_list = $o_method->getParameterList();
@@ -579,10 +580,12 @@ class ParameterTypesAnalyzer
             > $o_method->getNumberOfRequiredParameters()
         ) {
             $signatures_match = false;
+            $mismatch_details = 'Saw more required parameters in the override';
         } elseif ($method->getNumberOfParameters()
             < $o_method->getNumberOfParameters()
         ) {
             $signatures_match = false;
+            $mismatch_details = 'Saw fewer optional parameters in the override';
 
         // If parameter counts match, check their types
         } else {
@@ -600,20 +603,24 @@ class ParameterTypesAnalyzer
                 // @see https://3v4l.org/Utuo8
                 if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
                     $signatures_match = false;
+                    $mismatch_details = "Difference in passing by reference in override $parameter of parameter $o_parameter";
                     break;
                 }
 
                 // Variadic parameters must match up.
                 if ($o_parameter->isVariadic() !== $parameter->isVariadic()) {
                     $signatures_match = false;
+                    $mismatch_details = "Difference in being variadic in override $parameter of parameter $o_parameter";
                     break;
                 }
 
                 // Check for the presence of real types first, warn if the override has a type but the original doesn't.
                 $o_real_parameter = $o_real_parameter_list[$i] ?? null;
                 $real_parameter = $real_parameter_list[$i] ?? null;
-                if ($o_real_parameter !== null && $real_parameter !== null && !$real_parameter->getUnionType()->isEmptyOrMixed() && $o_real_parameter->getUnionType()->isEmptyOrMixed()) {
+                if ($o_real_parameter !== null && $real_parameter !== null && !$real_parameter->getUnionType()->isEmptyOrMixed() && $o_real_parameter->getUnionType()->isEmptyOrMixed()
+                    && (!$method->isFromPHPDoc() || $parameter->getUnionType()->isEmptyOrMixed())) {
                     $signatures_match = false;
+                    $mismatch_details = "Cannot use $parameter with a real type to override parameter $o_parameter without a real type";
                     break;
                 }
 
@@ -640,10 +647,9 @@ class ParameterTypesAnalyzer
                 //       via ->asExpandedTypes($code_base)?
                 //
                 //       @see https://3v4l.org/ke3kp
-                if (!$o_parameter->getUnionType()->canCastToUnionType(
-                    $parameter->getUnionType()
-                )) {
+                if (!self::canWeakCast($code_base, $o_parameter->getUnionType(), $parameter->getUnionType())) {
                     $signatures_match = false;
+                    $mismatch_details = "Expected $parameter to have the same type as $o_parameter or a supertype";
                     break;
                 }
             }
@@ -696,7 +702,8 @@ class ParameterTypesAnalyzer
                     Issue::ParamSignatureMismatchInternal,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method
+                    $o_method,
+                    $mismatch_details !== '' ? " ($mismatch_details)" : ''
                 );
             } else {
                 Issue::maybeEmit(
@@ -707,7 +714,8 @@ class ParameterTypesAnalyzer
                     $method,
                     $o_method,
                     $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
+                    $o_method->getFileRef()->getLineNumberStart(),
+                    $mismatch_details !== '' ? " ($mismatch_details)" : ''
                 );
             }
         }
@@ -738,6 +746,12 @@ class ParameterTypesAnalyzer
         }
     }
 
+    private static function canWeakCast(CodeBase $code_base, UnionType $overridden_type, UnionType $type): bool
+    {
+        $expanded_overridden_type = $overridden_type->asExpandedTypes($code_base);
+        return $expanded_overridden_type->canCastToUnionType($type) &&
+                    $expanded_overridden_type->hasAnyTypeOverlap($code_base, $type);
+    }
     /**
      * Previously, Phan bases the analysis off of phpdoc.
      * Keeping that around(e.g. to check that string[] is compatible with string[])
@@ -762,7 +776,9 @@ class ParameterTypesAnalyzer
         }
 
         // Get the parameters for that method
-        $o_parameter_list = $o_method->getRealParameterList();
+        // NOTE: If the overriding method is from an (at)method tag, then compare the phpdoc types instead here to emit FromPHPDoc issue equivalents.
+        // TODO: Track magic and real methods separately so that subclasses of subclasses get properly analyzed
+        $o_parameter_list = $method->isFromPHPDoc() ? $o_method->getParameterList() : $o_method->getRealParameterList();
 
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredRealParameters()
@@ -801,7 +817,7 @@ class ParameterTypesAnalyzer
 
         // TODO: Stricter checks for parameter types when this is a magic method?
         // - If the overriding method is magic, then compare the magic method phpdoc types against the phpdoc+real types  of the parent
-        foreach ($method->getRealParameterList() as $i => $parameter) {
+        foreach ($method->isFromPHPDoc() ? $method->getParameterList() : $method->getRealParameterList() as $i => $parameter) {
             $offset = $i + 1;
             // TODO: check if variadic
             if (!isset($o_parameter_list[$i])) {

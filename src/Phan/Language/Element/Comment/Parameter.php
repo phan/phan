@@ -60,6 +60,11 @@ class Parameter
     private $reference_type;
 
     /**
+     * @var ?string the original string for the default value representation
+     */
+    private $default_value_representation;
+
+    /**
      * @param string $name
      * The name of the parameter
      *
@@ -74,7 +79,8 @@ class Parameter
         bool $has_default_value = false,
         bool $is_output_reference = false,
         bool $is_ignored_reference = false,
-        bool $is_mandatory_in_phpdoc = false
+        bool $is_mandatory_in_phpdoc = false,
+        ?string $default_value_representation = null
     ) {
         $this->name = $name;
         $this->type = $type;
@@ -82,6 +88,7 @@ class Parameter
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
         $this->is_mandatory_in_phpdoc = $is_mandatory_in_phpdoc;
+        $this->default_value_representation = $default_value_representation;
         if ($is_ignored_reference) {
             $this->reference_type = self::REFERENCE_IGNORED;
         } elseif ($is_output_reference) {
@@ -131,6 +138,7 @@ class Parameter
             // If given '= "Default"', then extract the default from '<?php ("Default");'
             // Then get the type from UnionTypeVisitor, for defaults such as SomeClass::CONST.
         }
+        $param->setDefaultValueRepresentation($this->default_value_representation);
         return $param;
     }
 

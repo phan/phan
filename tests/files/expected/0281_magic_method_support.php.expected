@@ -1,4 +1,4 @@
-%s:9 PhanParamReqAfterOpt Required parameter (int $c) follows optional (array $b = null)
+%s:9 PhanParamReqAfterOpt Required parameter (int $c) follows optional (array $b = array())
 %s:17 PhanCommentDuplicateMagicMethod Comment declares @method myMethodWithVariadicParams multiple times
 %s:37 PhanUndeclaredMethod Call to undeclared method \A281::undeclaredMagicMethod
 %s:38 PhanTypeVoidAssignment Cannot assign void return value
