@@ -739,7 +739,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 ## PhanDeprecatedClassConstant
 
 ```
-Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}
+Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
@@ -4204,6 +4204,14 @@ Class uses undeclared trait {TRAIT}
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0048_parent_class_exists.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0048_parent_class_exists.php#L10).
 
+## PhanUndeclaredTypeClassConstant
+
+```
+Class constant {CONST} has undeclared class type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/189_class_constant_badtype.php#L4).
+
 ## PhanUndeclaredTypeParameter
 
 
@@ -4434,6 +4442,14 @@ Comment declares @param ${PARAMETER} multiple times
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0611_comment_duplicated_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0611_comment_duplicated_param.php#L7).
+
+## PhanCommentObjectInClassConstantType
+
+```
+Impossible phpdoc declaration that a class constant {CONST} has a type {TYPE} containing objects. This type is ignored during analysis.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/189_class_constant_badtype.php#L4).
 
 ## PhanCommentOverrideOnNonOverrideConstant
 

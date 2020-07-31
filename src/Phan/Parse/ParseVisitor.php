@@ -762,6 +762,7 @@ class ParseVisitor extends ScopeVisitor
                 $constant->setUnionType(Type::fromObject($value_node)->asRealUnionType());
             }
             $constant->setNodeForValue($value_node);
+            $constant->setComment($comment);
 
             $class->addConstant(
                 $this->code_base,
@@ -774,6 +775,7 @@ class ParseVisitor extends ScopeVisitor
                         $constant->getFileRef()->getLineNumberStart(),
                         (string)$constant->getFQSEN()
                     );
+                    break;
                 }
             }
         }

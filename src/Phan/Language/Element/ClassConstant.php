@@ -19,6 +19,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
 {
     use ConstantTrait;
 
+    /** @var ?Comment the phpdoc comment associated with this declaration, if any exists. */
+    private $comment;
+
     /**
      * @param Context $context
      * The context in which the structural element lives
@@ -181,5 +184,21 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $string .= "null;  // could not find";
         }
         return $string;
+    }
+
+    /**
+     * Set the phpdoc comment associated with this class comment.
+     */
+    public function setComment(?Comment $comment): void
+    {
+        $this->comment = $comment;
+    }
+
+    /**
+     * Get the phpdoc comment associated with this class comment.
+     */
+    public function getComment(): ?Comment
+    {
+        return $this->comment;
     }
 }

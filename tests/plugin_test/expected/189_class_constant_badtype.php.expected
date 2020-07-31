@@ -1,0 +1,5 @@
+src/189_class_constant_badtype.php:5 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \C189::MY_CONST has a type \MY_CONST containing objects. This type is ignored during analysis.
+src/189_class_constant_badtype.php:5 PhanUndeclaredTypeClassConstant Class constant \C189::MY_CONST has undeclared class type \MY_CONST
+src/189_class_constant_badtype.php:9 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \C189::INVALID_ITERABLE_CONST has a type iterable<T> containing objects. This type is ignored during analysis.
+src/189_class_constant_badtype.php:9 PhanTemplateTypeConstant constant \C189::INVALID_ITERABLE_CONST may not have a template type
+src/189_class_constant_badtype.php:13 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \C189::INVALID_TRAVERSABLE_CONST has a type iterable<\Traversable> containing objects. This type is ignored during analysis.

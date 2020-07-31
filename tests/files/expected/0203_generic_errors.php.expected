@@ -1,3 +1,4 @@
+%s:8 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \C::C has a type T containing objects. This type is ignored during analysis.
 %s:8 PhanTemplateTypeConstant constant \C::C may not have a template type
 %s:11 PhanTemplateTypeStaticProperty static property \C::$p may not have a template type
 %s:16 PhanTemplateTypeStaticMethod static method \C::f does not declare template type in its own comment and may not use the template type of class instances

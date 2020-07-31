@@ -1,5 +1,5 @@
 <?php
-
+// TODO: Support indicating in Phan's type system that templates are subtypes of types such as object
 /**
  * @phan-template T
  * @param T $x

@@ -98,7 +98,7 @@ final class TemplateType extends Type
     {
         // Return true because we don't know, it may or may not be an object.
         // Not sure if this will be called.
-        return true;
+        return false;
     }
 
     public function isObjectWithKnownFQSEN(): bool

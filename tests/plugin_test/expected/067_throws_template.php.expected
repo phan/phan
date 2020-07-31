@@ -1,1 +1,2 @@
+src/067_throws_template.php:9 PhanTypeInvalidThrowsNonObject @throws annotation of maybe_throw has invalid non-object type T, expected a class
 src/067_throws_template.php:21 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $result of type \Exception|\Throwable but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

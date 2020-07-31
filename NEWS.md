@@ -30,6 +30,10 @@ New features (Analysis):
   PHP 8.0 will introduce named argument support.
 + Add a message to `PhanParamSignatureMismatch` indicating the cause of the issue being emitted. (#4103)
   Note that `PhanParamSignaturePHPDocMismatch*` and `PhanParamSignatureReal*` have fewer false positives.
++ Warn about invalid types in class constants. (#4104)
+  Emit `PhanUndeclaredTypeClassConstant` if undeclared types are seen in phpdoc for class constants.
+  Emit `PhanCommentObjectInClassConstantType` if object types are seen in phpdoc for class constants.
++ Warn about `iterable<UndeclaredClass>` containing undeclared classes. (#4104)
 
 Language Server/Daemon mode:
 + Include PHP keywords such as `__FILE__`, `switch`, `function`, etc. in suggestions for code completions.
@@ -3488,7 +3492,7 @@ New Features (CLI, Configs)
   This config is enabled by default, and requires `check_docblock_signature_return_type_match` to be enabled.
 
 Bug Fixes
-+ Work around notice about COMPILER_HALT_OFFSET on windows.
++ Work around notice about COMPILER_HALT_OFFSET on Windows.
 + Fixes #462 : Fix type inferences for instanceof for checks with dynamic class names are provided.
   Valid class names are either a string or an instance of the class to check against.
   Warn if the class name is definitely invalid.

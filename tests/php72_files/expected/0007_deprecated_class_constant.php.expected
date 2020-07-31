@@ -1,2 +1,2 @@
-%s:6 PhanDeprecatedClassConstant Reference to deprecated property \O7::VALUE defined at %s:4
-%s:8 PhanDeprecatedClassConstant Reference to deprecated property \O7::VALUE defined at %s:4
+%s:6 PhanDeprecatedClassConstant Reference to deprecated class constant \O7::VALUE defined at %s:4
+%s:8 PhanDeprecatedClassConstant Reference to deprecated class constant \O7::VALUE defined at %s:4

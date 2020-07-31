@@ -9,6 +9,7 @@ use ast\Node;
 use Closure;
 use LogicException;
 use Phan\Analysis\AbstractMethodAnalyzer;
+use Phan\Analysis\ClassConstantTypesAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
@@ -3231,6 +3232,11 @@ class Clazz extends AddressableElement
         );
 
         PropertyTypesAnalyzer::analyzePropertyTypes(
+            $code_base,
+            $this
+        );
+
+        ClassConstantTypesAnalyzer::analyzeClassConstantTypes(
             $code_base,
             $this
         );

@@ -476,4 +476,10 @@ final class GenericIterableType extends IterableType
             );
         }
     }
+
+    public function getReferencedClasses(): Generator
+    {
+        yield from $this->key_union_type->getReferencedClasses();
+        yield from $this->element_union_type->getReferencedClasses();
+    }
 }

@@ -78,6 +78,7 @@ class Issue
     public const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
     public const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
     public const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
+    public const UndeclaredTypeClassConstant = 'PhanUndeclaredTypeClassConstant';
     public const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     public const UndeclaredVariable        = 'PhanUndeclaredVariable';
     public const PossiblyUndeclaredVariable = 'PhanPossiblyUndeclaredVariable';
@@ -582,6 +583,7 @@ class Issue
     public const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
     public const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
     public const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
+    public const CommentObjectInClassConstantType = 'PhanCommentObjectInClassConstantType';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -1179,6 +1181,14 @@ class Issue
                 "Property {PROPERTY} has undeclared type {TYPE}",
                 self::REMEDIATION_B,
                 11020
+            ),
+            new Issue(
+                self::UndeclaredTypeClassConstant,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Class constant {CONST} has undeclared class type {TYPE}",
+                self::REMEDIATION_B,
+                11054
             ),
             new Issue(
                 self::UndeclaredClosureScope,
@@ -2870,7 +2880,7 @@ class Issue
                 self::DeprecatedClassConstant,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}",
+                "Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5007
             ),
@@ -4993,6 +5003,14 @@ class Issue
                 '@phan-debug-var requested for variable ${VARIABLE} - it has union type {TYPE}',
                 self::REMEDIATION_A,
                 16020
+            ),
+            new Issue(
+                self::CommentObjectInClassConstantType,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Impossible phpdoc declaration that a class constant {CONST} has a type {TYPE} containing objects. This type is ignored during analysis.",
+                self::REMEDIATION_B,
+                16021
             ),
         ];
         // phpcs:enable Generic.Files.LineLength
