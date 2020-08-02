@@ -1006,6 +1006,14 @@ class C {
 }
 ```
 
+## PhanNoopRepeatedSilenceOperator
+
+```
+Saw a repeated silence operator in {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/190_repeated_silence.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/190_repeated_silence.php#L2).
+
 ## PhanNoopStringLiteral
 
 ```

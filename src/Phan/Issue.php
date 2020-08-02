@@ -379,6 +379,7 @@ class Issue
     public const NoopSwitchCases               = 'PhanNoopSwitchCases';
     public const NoopMatchArms                 = 'PhanNoopMatchArms';
     public const NoopMatchExpression           = 'PhanNoopMatchExpression';
+    public const NoopRepeatedSilenceOperator   = 'PhanNoopRepeatedSilenceOperator';
     public const UnreachableCatch              = 'PhanUnreachableCatch';
     public const UnreferencedClass             = 'PhanUnreferencedClass';
     public const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -4092,6 +4093,15 @@ class Issue
                 'The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in {CODE}',
                 self::REMEDIATION_B,
                 6096
+            ),
+            // TODO: If this is the attributes syntax in php 8.0 stable then this should be become critical.
+            new Issue(
+                self::NoopRepeatedSilenceOperator,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Saw a repeated silence operator in {CODE}',
+                self::REMEDIATION_B,
+                6097
             ),
 
             // Issue::CATEGORY_REDEFINE

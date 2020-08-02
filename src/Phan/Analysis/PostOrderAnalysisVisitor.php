@@ -1096,7 +1096,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitUnaryOp(Node $node): Context
     {
-        if ($node->flags !== flags\UNARY_SILENCE) {
+        if ($node->flags === flags\UNARY_SILENCE) {
+            $expr = $node->children['expr'];
+            if ($expr instanceof Node) {
+                if ($expr->kind === ast\AST_UNARY_OP && $expr->flags === flags\UNARY_SILENCE) {
+                    $this->emitIssue(
+                        Issue::NoopRepeatedSilenceOperator,
+                        $node->lineno,
+                        ASTReverter::toShortString($node)
+                    );
+                }
+            } else {
+                // TODO: Other node kinds
+                $this->emitIssue(
+                    Issue::NoopUnaryOperator,
+                    $node->lineno,
+                    self::NAME_FOR_UNARY_OP[$node->flags] ?? ''
+                );
+            }
+        } else {
             if ($this->isInNoOpPosition($node)) {
                 $this->emitIssue(
                     Issue::NoopUnaryOperator,

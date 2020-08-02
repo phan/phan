@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 3.1.2 (dev)
 -----------------------
 
+New features (Analysis):
++ Emit `PhanNoopRepeatedSilenceOperator` for `@@expr` or `@(@expr)`.
+  This is less efficient and only makes a difference in extremely rare edge cases.
+
 Jul 31 2020, Phan 3.1.1
 -----------------------
 
