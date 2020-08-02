@@ -284,6 +284,16 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     {
         return $this->value ? NullType::instance(false) : $this;
     }
+
+    /**
+     * Returns true if the value can be used in bitwise operands and cast to integers without precision loss.
+     *
+     * @override
+     */
+    public function isValidBitwiseOperand(): bool
+    {
+        return \fmod($this->value, 1.0) === 0.0 && $this->value >= -0xffffffffffffffff && $this->value <= 0xffffffffffffffff;
+    }
 }
 
 LiteralFloatType::init();

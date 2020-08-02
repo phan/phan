@@ -1912,7 +1912,7 @@ class Issue
                 self::TypeInvalidUnaryOperandBitwiseNot,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number or string)",
+                "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number that can fit in an int, or string)",
                 self::REMEDIATION_B,
                 10076
             ),

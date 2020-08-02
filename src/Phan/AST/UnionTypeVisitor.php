@@ -2962,7 +2962,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node,
                 static function (Type $type): bool {
                     // Adding $type instanceof StringType in case it becomes necessary later
-                    return $type->isValidNumericOperand() || $type instanceof StringType;
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    return ($type->isValidNumericOperand() && $type->isValidBitwiseOperand()) || $type instanceof StringType;
                 },
                 $result,
                 '~',

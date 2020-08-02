@@ -43,6 +43,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyMixedType;
@@ -860,8 +861,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                return ($type instanceof IntType || $type instanceof MixedType) &&
-                    !$type->isNullable();
+                if ($type->isNullable()) {
+                    return false;
+                }
+                if ($type instanceof IntType || $type instanceof MixedType) {
+                    return true;
+                }
+                if ($type instanceof LiteralFloatType) {
+                    return $type->isValidBitwiseOperand();
+                }
+                return false;
             },
             $left,
             $right,
@@ -886,8 +895,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                return ($type instanceof IntType || $type instanceof StringType || $type instanceof MixedType) &&
-                    !$type->isNullable();
+                if ($type->isNullable()) {
+                    return false;
+                }
+                if ($type instanceof IntType || $type instanceof StringType || $type instanceof MixedType) {
+                    return true;
+                }
+                if ($type instanceof LiteralFloatType) {
+                    return $type->isValidBitwiseOperand();
+                }
+                return false;
             },
             $left,
             $right,

@@ -3193,7 +3193,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 ## PhanTypeInvalidUnaryOperandBitwiseNot
 
 ```
-Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number or string)
+Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number that can fit in an int, or string)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0507_unary_op_warn.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0507_unary_op_warn.php#L2).

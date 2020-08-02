@@ -6,6 +6,7 @@ Phan NEWS
 New features (Analysis):
 + Emit `PhanNoopRepeatedSilenceOperator` for `@@expr` or `@(@expr)`.
   This is less efficient and only makes a difference in extremely rare edge cases.
++ Avoid false positives for bitwise operations on floats such as unsigned 64-bit numbers (#4106)
 
 Jul 31 2020, Phan 3.1.1
 -----------------------

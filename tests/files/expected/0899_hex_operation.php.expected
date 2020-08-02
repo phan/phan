@@ -1,0 +1,5 @@
+%s:10 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '&' between types int and 2.9514790517505786E+20
+%s:10 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of & is 2.9514790517505786E+20 (expected int|string)
+%s:11 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '&' between types int and 1.844674407800452E+19
+%s:11 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of & is 1.844674407800452E+19 (expected int|string)
+%s:12 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is 2.9399524756156324E+20 (expected number that can fit in an int, or string)
