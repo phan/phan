@@ -1991,6 +1991,9 @@ EOB
         };
         $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
         if (strlen($key) === 1) {
+            if (in_array($key, $short_options, true)) {
+                return $generate_suggestion_text($key);
+            }
             $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
             if (in_array($alternate, $short_options, true)) {
                 return $generate_suggestion_text($alternate);
