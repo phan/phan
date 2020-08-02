@@ -33,7 +33,7 @@ New features (Analysis):
 + Support casting `iterable<SubClass>` to `iterable<BaseClass>` (#4089)
 + Change phrasing for `analyze` phase in `--long-progress-bar` with `--analyze-twice`
 + Add `PhanParamNameIndicatingUnused` and `PhanParamNameIndicatingUnusedInClosure`
-  to indicate that using parameter names(`$unused*`, `$_`) to indicate to Phan that a parameter is unused is no longer recommended.
+  to indicate that using parameter names(`$unused*`, `$_`) to indicate to Phan that a parameter is unused is no longer recommended. (#4097)
   Suppressions or the `@param [Type] $param_name @unused-param` syntax can be used instead.
   PHP 8.0 will introduce named argument support.
 + Add a message to `PhanParamSignatureMismatch` indicating the cause of the issue being emitted. (#4103)
