@@ -244,6 +244,7 @@ class Issue
     public const RedundantConditionInLoop          = 'PhanRedundantConditionInLoop';
     public const RedundantConditionInGlobalScope   = 'PhanRedundantConditionInGlobalScope';
     public const InfiniteLoop                      = 'PhanInfiniteLoop';
+    public const PossiblyInfiniteLoop              = 'PhanPossiblyInfiniteLoop';
     public const ImpossibleTypeComparison          = 'PhanImpossibleTypeComparison';
     public const ImpossibleTypeComparisonInLoop    = 'PhanImpossibleTypeComparisonInLoop';
     public const ImpossibleTypeComparisonInGlobalScope = 'PhanImpossibleTypeComparisonInGlobalScope';
@@ -2582,6 +2583,14 @@ class Issue
                 "The loop condition {CODE} of type {TYPE} is always {TYPE} and nothing seems to exit the loop",
                 self::REMEDIATION_B,
                 10135
+            ),
+            new Issue(
+                self::PossiblyInfiniteLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "The loop condition {CODE} does not seem to change within the loop and nothing seems to exit the loop",
+                self::REMEDIATION_B,
+                10169
             ),
             new Issue(
                 self::ImpossibleTypeComparison,

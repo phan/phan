@@ -56,6 +56,8 @@ final class VariableGraph
     public const IS_LOOP_DEF       = 1 << 3;
     // Is this a caught exception
     public const IS_CAUGHT_EXCEPTION = 1 << 4;
+    public const IS_UNSET          = 1 << 5;
+    public const IS_DISABLED_WARNINGS = 1 << 6;
 
     public const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 
@@ -174,6 +176,30 @@ final class VariableGraph
     }
 
     /**
+     * Marks something as being an unset variable `$v` in `unset($v)`
+     *
+     * @param Node|string|int|float|null $node
+     */
+    public function markAsUnset($node): void
+    {
+        if ($node instanceof Node) {
+            $this->def_bitset[spl_object_id($node)] = self::IS_UNSET;
+        }
+    }
+
+    /**
+     * Indicates that warnings about unused definitions should be disabled
+     *
+     * @param Node|string|int|float|null $node
+     */
+    public function markAsDisabledWarnings($node): void
+    {
+        if ($node instanceof Node) {
+            $this->def_bitset[spl_object_id($node)] = self::IS_DISABLED_WARNINGS;
+        }
+    }
+
+    /**
      * Checks if the node for this id is defined as the value in a foreach over keys of an array.
      */
     public function isLoopValueDefinitionId(int $definition_id): bool
@@ -199,7 +225,7 @@ final class VariableGraph
      */
     public function isCaughtException(int $definition_id): bool
     {
-        return ($this->def_bitset[$definition_id] ?? 0) === self::IS_CAUGHT_EXCEPTION;
+        return (($this->def_bitset[$definition_id] ?? 0) & self::IS_CAUGHT_EXCEPTION) !== 0;
     }
 
     /**
@@ -220,7 +246,7 @@ final class VariableGraph
      */
     public function isGlobal(int $definition_id): bool
     {
-        return ($this->def_bitset[$definition_id] ?? 0) === self::IS_GLOBAL;
+        return (($this->def_bitset[$definition_id] ?? 0) & self::IS_GLOBAL) !== 0;
     }
 
     private function markBitForVariableName(string $name, int $bit): void
@@ -250,5 +276,27 @@ final class VariableGraph
             }
         }
         return $combined_def_use_map;
+    }
+
+    /**
+     * @return associative-array<int,associative-array<int,true>>
+     * Returns the combination of all use-def sets for all node ids.
+     * Marks globals, references, and static variables as defined with the placeholder of -1
+     */
+    public function computeCombinedUseDefs(): array
+    {
+        $combined_use_def_map = [];
+        foreach ($this->def_uses as $var_name => $def_use_map) {
+            $is_used_by_shared_state = (($this->variable_types[$var_name] ?? 0) & self::IS_REFERENCE_OR_GLOBAL_OR_STATIC) !== 0;
+            foreach ($def_use_map as $def_id => $use_set) {
+                foreach ($use_set as $use_id => $_) {
+                    if ($is_used_by_shared_state) {
+                        $combined_use_def_map[$use_id][self::USE_ID_FOR_SHARED_STATE] = true;
+                    }
+                    $combined_use_def_map[$use_id][$def_id] = true;
+                }
+            }
+        }
+        return $combined_use_def_map;
     }
 }

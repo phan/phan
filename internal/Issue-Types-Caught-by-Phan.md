@@ -2665,6 +2665,19 @@ Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} 
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/expected/026_strict_return_checks.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/src/026_strict_return_checks.php#L31).
 
+## PhanPossiblyInfiniteLoop
+
+This check uses heuristics and is prone to various false positives.
+False positives should be suppressed with a comment explaining why the loop condition changes or why the loop will terminate.
+
+This is only checked for inside of function bodies.
+
+```
+The loop condition {CODE} does not seem to change within the loop and nothing seems to exit the loop
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/119_increment_decrement_unused.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/119_increment_decrement_unused.php#L13).
+
 ## PhanPossiblyInfiniteRecursionSameParams
 
 Note that when there are 1 or more parameters, this is only emitted when unused variable detection is enabled (needed to check for reassignments)

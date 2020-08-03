@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use Exception;
 use Phan\AST\ArrowFunc;
+use Phan\AST\ASTReverter;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -99,6 +100,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             $variable_tracker_visitor->__invoke($stmts_node);
 
             $this->checkSideEffectFreeLoopNodes($variable_graph, $variable_tracker_visitor);
+            $this->checkPossiblyInfiniteLoopNodes($variable_graph, $variable_tracker_visitor);
         } finally {
             // @phan-suppress-next-line PhanTypeMismatchPropertyProbablyReal
             VariableTrackerVisitor::$variable_graph = null;
@@ -123,6 +125,49 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     $loop_node->lineno
                 );
             }
+        }
+    }
+
+    private function checkPossiblyInfiniteLoopNodes(
+        VariableGraph $variable_graph,
+        VariableTrackerVisitor $variable_tracker_visitor
+    ): void {
+        $loop_nodes = $variable_tracker_visitor->getPossiblyInfiniteLoopNodes();
+        if (!$loop_nodes) {
+            // Nothing to do
+            return;
+        }
+        $combined_use_defs = $variable_graph->computeCombinedUseDefs();
+        foreach ($loop_nodes as $loop_node) {
+            // Check if any variables read by the loop condition were set within the statements.
+            $cond = $loop_node->children['cond'];
+            if ($cond instanceof Node) {
+                $id_set_in_loop = self::extractNodeIdSet($cond);
+                if ($id_set_in_loop) {
+                    $stmts_node = $loop_node->children['stmts'];
+                    $id_set_of_stmts = $stmts_node instanceof Node ? self::extractNodeIdSet($stmts_node) : [];
+                    if (isset($loop_node->children['loop'])) {
+                        // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+                        $id_set_of_stmts += self::extractNodeIdSet($loop_node->children['loop']);
+                    }
+                    if ($id_set_of_stmts) {
+                        foreach ($id_set_in_loop as $id => $_) {
+                            if (!isset($combined_use_defs[$id])) {
+                                continue;
+                            }
+                            if (\array_intersect_key($combined_use_defs[$id], $id_set_of_stmts)) {
+                                continue 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            $this->emitIssue(
+                Issue::PossiblyInfiniteLoop,
+                $loop_node->lineno,
+                ASTReverter::toShortString($cond)
+            );
         }
     }
 
@@ -348,6 +393,10 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     // Don't warn if there's at least one usage of that definition
                     continue;
                 }
+                if (($graph->def_bitset[$definition_id] ?? 0) & VariableGraph::IS_UNSET) {
+                    // Don't warn about unset($x)
+                    continue;
+                }
                 $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
                 $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
                 // Choose a more precise issue type
@@ -418,6 +467,10 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         }
         $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
         $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
+        $def_bitmask = $graph->def_bitset[$definition_id] ?? 0;
+        if ($def_bitmask & VariableGraph::IS_DISABLED_WARNINGS) {
+            return;
+        }
         if ($type_bitmask === VariableGraph::IS_REFERENCE) {
             Issue::maybeEmitWithParameters(
                 $this->code_base,

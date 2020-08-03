@@ -4,6 +4,7 @@ src/119_increment_decrement_unused.php:5 PhanUnusedVariable Unused definition of
 src/119_increment_decrement_unused.php:6 PhanNoopVariable Unused variable
 src/119_increment_decrement_unused.php:6 PhanUnusedVariable Unused definition of variable $z
 src/119_increment_decrement_unused.php:8 PhanPluginConstantVariableScalar Variable $z is probably constant with a value of 2
+src/119_increment_decrement_unused.php:13 PhanPossiblyInfiniteLoop The loop condition ($other < $n) does not seem to change within the loop and nothing seems to exit the loop
 src/119_increment_decrement_unused.php:15 PhanUnusedVariable Unused definition of variable $i
 src/119_increment_decrement_unused.php:15 PhanUnusedVariable Unused definition of variable $j
 src/119_increment_decrement_unused.php:21 PhanPluginUseReturnValueNoopVoid The function/method \test_loop119b() is declared to return void and it has no side effects

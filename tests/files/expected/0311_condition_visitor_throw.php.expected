@@ -23,23 +23,30 @@
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
 %s:28 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of - is null= (expected number)
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
+%s:30 PhanPossiblyInfiniteLoop The loop condition ~$unaryMissing3 does not seem to change within the loop and nothing seems to exit the loop
 %s:30 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:30 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)
 %s:30 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:31 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:31 PhanPossiblyInfiniteLoop The loop condition ($c2 ?? false) does not seem to change within the loop and nothing seems to exit the loop
 %s:31 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:31 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:32 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:33 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:35 PhanPossiblyInfiniteLoop The loop condition ~$unaryMissing3 does not seem to change within the loop and nothing seems to exit the loop
 %s:35 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:35 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)
 %s:35 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:36 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:36 PhanPossiblyInfiniteLoop The loop condition ($c2 ?? false) does not seem to change within the loop and nothing seems to exit the loop
 %s:36 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
+%s:37 PhanPossiblyInfiniteLoop The loop condition (is_string($str) && (strlen($str) > 0)) does not seem to change within the loop and nothing seems to exit the loop
 %s:37 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+%s:38 PhanPossiblyInfiniteLoop The loop condition (is_string($str) && (intdiv($str, 10) > 0)) does not seem to change within the loop and nothing seems to exit the loop
 %s:38 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:39 PhanPossiblyInfiniteLoop The loop condition ($y && $x3) does not seem to change within the loop and nothing seems to exit the loop
 %s:39 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared

@@ -41,6 +41,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
+use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\StopParamAnalysisException;
 
@@ -766,6 +767,7 @@ final class MiscParamPlugin extends PluginV3 implements
             if (!$variable) {
                 return;
             }
+            VariableTrackerVisitor::markVariableAsModifiedByReference($arg_node);
             $variable = clone($variable);
             $context->addScopeVariable($variable);
             $old_type = $variable->getUnionType();

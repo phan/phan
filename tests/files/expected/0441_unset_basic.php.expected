@@ -1,3 +1,4 @@
+%s:5 PhanUnusedVariable Unused definition of variable $myVar
 %s:7 PhanTypeSuspiciousEcho Suspicious argument $myVar of type null= for an echo/print statement
 %s:7 PhanUndeclaredVariable Variable $myVar is undeclared
-%s:11 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type array{b:list<string>} but \strlen() takes string
+%s:11 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $x of type array{b:list<string>} but \strlen() takes string

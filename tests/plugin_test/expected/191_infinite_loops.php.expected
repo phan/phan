@@ -1,0 +1,2 @@
+src/191_infinite_loops.php:4 PhanPossiblyInfiniteLoop The loop condition B191 does not seem to change within the loop and nothing seems to exit the loop
+src/191_infinite_loops.php:5 PhanPossiblyInfiniteLoop The loop condition !B191 does not seem to change within the loop and nothing seems to exit the loop

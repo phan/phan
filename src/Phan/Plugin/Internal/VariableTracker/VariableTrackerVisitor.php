@@ -10,6 +10,7 @@ use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ArrowFunc;
+use Phan\AST\InferPureSnippetVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Issue;
@@ -28,7 +29,6 @@ use function is_string;
  * 4. Track based on an identifier corresponding to the \ast\Node of the assignment (e.g. using \spl_object_id())
  *
  * TODO: Improve analysis within the ternary operator (cond() ? ($x = 2) : ($x = 3);
- * TODO: Support unset
  * TODO: Fix tests/files/src/0426_inline_var_force.php
  *
  * @phan-file-suppress PhanTypeMismatchArgumentNullable child nodes as used here are non-null
@@ -64,6 +64,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * VariableTrackerPlugin should check that some of the variables defined or redefined in the loop were used outside of the loop.
      */
     private $side_effect_free_loop_nodes = [];
+
+    /**
+     * @var list<Node> a list of loop nodes that may have infinite loops with conditions on variables that aren't reassigned in the loop.
+     */
+    private $possibly_infinite_loop_nodes = [];
 
     public function __construct(CodeBase $code_base, Context $context, VariableTrackingScope $scope)
     {
@@ -123,6 +128,15 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     public function getSideEffectFreeLoopNodes(): array
     {
         return $this->side_effect_free_loop_nodes;
+    }
+
+    /**
+     * @return list<Node>
+     * A list of loop nodes that are possibly infinite loops.
+     */
+    public function getPossiblyInfiniteLoopNodes(): array
+    {
+        return $this->possibly_infinite_loop_nodes;
     }
 
     /**
@@ -356,6 +370,19 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($node->children['var'], false, self::getConstExprOrNull($expr));
     }
 
+    public function visitUnset(Node $node): VariableTrackingScope
+    {
+        $var_node = $node->children['var'];
+        if (!$var_node instanceof Node) {
+            return $this->scope;
+        }
+        self::$variable_graph->markAsUnset($var_node);
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $var_node->is_unset_target = true;
+
+        return $this->analyzeAssignmentTarget($var_node, false, null);
+    }
+
     /**
      * @param Node|string|int|float $expr
      * @return Node|string|int|float|null
@@ -425,6 +452,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->scope;
     }
 
+    /**
+     * @suppress PhanUndeclaredProperty
+     */
     private function analyzePropAssignmentTarget(Node $node): VariableTrackingScope
     {
         // Treat $y in `$x->$y = $z;` as a usage of $y
@@ -434,6 +464,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $name = $expr->children['name'];
             if (is_string($name)) {
                 // treat $x->prop = 2 like a usage of $x
+                if (isset($node->is_unset_target)) {
+                    self::$variable_graph->markAsUnset($expr);
+                }
                 self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
                 self::$variable_graph->recordVariableModification($name);
             }
@@ -459,6 +492,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                     self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
                     // @phan-suppress-next-line PhanUndeclaredProperty
                     if (isset($expr->phan_is_assignment_to_real_array)) {
+                        self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    } elseif (isset($node->is_unset_target)) {
+                        // @phan-suppress-next-line PhanUndeclaredProperty
+                        self::$variable_graph->markAsUnset($expr);
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
                     } else {
                         self::$variable_graph->recordVariableModification($name);
@@ -594,7 +632,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $name = $node->children['name'];
         if (\is_string($name)) {
             self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
-            if ($node === $this->top_level_statement) {
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            if ($node === $this->top_level_statement || isset($node->modified_by_reference)) {
+                // @phan-suppress-next-line PhanUndeclaredProperty
+                if (isset($node->modified_by_reference)) {
+                    self::$variable_graph->markAsDisabledWarnings($node);
+                }
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
                 $this->scope->recordDefinition($name, $node);
             }
@@ -602,6 +645,16 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             return $this->analyze($this->scope, $name);
         }
         return $this->scope;
+    }
+
+    /**
+     * Marks a node of kind ast\AST_VAR as modified by reference (e.g. by a call)
+     *
+     * @suppress PhanUndeclaredProperty
+     */
+    public static function markVariableAsModifiedByReference(Node $node): void
+    {
+        $node->modified_by_reference = true;
     }
 
     /**
@@ -664,7 +717,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * Analyzes `while (cond) { stmts }`
+     * Analyzes `while (cond) { stmts }` with kind ast\AST_WHILE
      * @override
      */
     public function visitWhile(Node $node): VariableTrackingScope
@@ -994,5 +1047,64 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if (isset($node->has_loop_body_without_side_effects)) {
             $this->side_effect_free_loop_nodes[] = $node;
         }
+        $cond = $node->children['cond'] ?? null;
+        if ($cond instanceof Node &&
+            !((new BlockExitStatusChecker())($node->children['stmts']) & ~(BlockExitStatusChecker::STATUS_PROCEED | BlockExitStatusChecker::STATUS_CONTINUE)) &&
+            InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $this->context, $cond) &&
+            !self::hasUnknownTypeLoopNodeKinds($cond)) {
+            $this->possibly_infinite_loop_nodes[] = $node;
+        }
+    }
+
+    private static function hasUnknownTypeLoopNodeKinds(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_PROP:
+            case ast\AST_STATIC_PROP:
+            case ast\AST_PRE_DEC:
+            case ast\AST_PRE_INC:
+            case ast\AST_POST_DEC:
+            case ast\AST_POST_INC:
+                return true;
+            case ast\AST_CALL:
+                if (self::isNonDeterministicCall($node)) {
+                    return true;
+                }
+                break;
+        }
+        foreach ($node->children as $c) {
+            if ($c instanceof Node && self::hasUnknownTypeLoopNodeKinds($c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private const NON_DETERMINISTIC_FUNCTIONS = [
+        'feof' => true,
+        'readdir' => true,
+        'rand' => true,
+        'array_rand' => true,
+        'mt_rand' => true,
+        'openssl_random_pseudo_bytes' => true,
+        'random_bytes' => true,
+        'random_int' => true,
+        'next' => true,
+        'prev' => true,
+    ];
+
+    private static function isNonDeterministicCall(Node $node): bool
+    {
+        $name_node = $node->children['expr'];
+        if (!$name_node instanceof Node || $name_node->kind !== ast\AST_NAME) {
+            return false;
+        }
+        $name = $name_node->children['name'];
+        if (!is_string($name)) {
+            return false;
+        }
+        return \array_key_exists($name, self::NON_DETERMINISTIC_FUNCTIONS);
     }
 }
