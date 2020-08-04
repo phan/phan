@@ -1,4 +1,4 @@
-%s:8 PhanUndeclaredConstant Reference to undeclared constant \this (Did you mean $this)
+%s:8 PhanUndeclaredConstant Reference to undeclared constant \this. This will cause a thrown Error in php 8.0+. (Did you mean $this)
 %s:13 PhanTypeMismatchReturnProbablyReal Returning FOO of type 42 but g() is declared to return \C (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:18 PhanTypeMismatchReturnProbablyReal Returning BAR of type 41 but h() is declared to return \C (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:22 PhanTypeSuspiciousEcho Suspicious argument new C()->g() of type \C for an echo/print statement

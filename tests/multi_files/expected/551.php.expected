@@ -1,1 +1,1 @@
-%s:5 PhanUndeclaredConstant Reference to undeclared constant \CONSTANT_NOT_IN_SCOPE
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \CONSTANT_NOT_IN_SCOPE. This will cause a thrown Error in php 8.0+.

@@ -1050,8 +1050,8 @@ class Issue
             new Issue(
                 self::UndeclaredConstant,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
-                "Reference to undeclared constant {CONST}",
+                self::SEVERITY_CRITICAL,
+                "Reference to undeclared constant {CONST}. This will cause a thrown Error in php 8.0+.",
                 self::REMEDIATION_B,
                 11011
             ),

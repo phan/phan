@@ -4046,7 +4046,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/expe
 This issue comes up when you reference a constant that doesn't exist.
 
 ```
-Reference to undeclared constant {CONST}
+Reference to undeclared constant {CONST}. This will cause a thrown Error in php 8.0+.
 ```
 
 

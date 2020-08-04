@@ -1,2 +1,2 @@
-%s:5 PhanUndeclaredConstant Reference to undeclared constant \self
-%s:8 PhanUndeclaredConstant Reference to undeclared constant \A237
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \self. This will cause a thrown Error in php 8.0+.
+%s:8 PhanUndeclaredConstant Reference to undeclared constant \A237. This will cause a thrown Error in php 8.0+.
