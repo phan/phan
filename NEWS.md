@@ -8,6 +8,10 @@ New features (Analysis):
   This is less efficient and only makes a difference in extremely rare edge cases.
 + Avoid false positives for bitwise operations on floats such as unsigned 64-bit numbers (#4106)
 
+Miscellaneous:
++ Raise the severity of `PhanUndeclaredConstant` from normal to critical.
+  Undeclared constants will become a thrown `Error` at runtime in PHP 8.0+.
+
 Jul 31 2020, Phan 3.1.1
 -----------------------
 
