@@ -960,6 +960,9 @@ class Config
 
         // This should only be set with `--analyze-twice`.
         '__analyze_twice' => false,
+
+        // This should only be set with `--always-exit-successfully-after-analysis`
+        '__always_exit_successfully_after_analysis' => false,
     ];
 
     public const COMPLETION_VSCODE = 'vscode';

@@ -13,6 +13,7 @@ require_once(__DIR__ . '/requirements.php');
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;
+use Phan\Config;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
@@ -39,4 +40,4 @@ $is_issue_found =
 
 // Provide an exit status code based on if
 // issues were found
-exit($is_issue_found ? EXIT_ISSUES_FOUND : EXIT_SUCCESS);
+exit($is_issue_found && !Config::getValue('__always_exit_successfully_after_analysis') ? EXIT_ISSUES_FOUND : EXIT_SUCCESS);

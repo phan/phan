@@ -100,6 +100,7 @@ _phan() {
 --baseline-summary-type
 --analyze-twice
 --analyze-all-files
+--always-exit-successfully-after-analysis
 -h
 --help
 -v

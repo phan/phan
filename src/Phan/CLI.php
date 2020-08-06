@@ -161,6 +161,7 @@ class CLI
         'language-server-verbose',
         'load-baseline:',
         'analyze-twice',
+        'always-exit-successfully-after-analysis',
         'long-progress-bar',
         'markdown-issue-messages',
         'memory-limit:',
@@ -908,6 +909,9 @@ class CLI
                     break;
                 case 'analyze-twice':
                     Config::setValue('__analyze_twice', true);
+                    break;
+                case 'always-exit-successfully-after-analysis':
+                    Config::setValue('__always_exit_successfully_after_analysis', true);
                     break;
                 default:
                     // All of phan's long options are currently at least 2 characters long.
@@ -1684,6 +1688,10 @@ Extended help:
   Emit a newline-separated list of files Phan would parse to stdout.
   This is useful to verify that options such as exclude_file_regex are
   properly set up, or to run other checks on the files Phan would parse.
+
+ --always-exit-successfully-after-analysis
+  Always exit with an exit code of 0, even if unsuppressed issues were emitted.
+  This helps in checking if Phan crashed.
 
  --dump-analyzed-file-list
   Emit a newline-separated list of files Phan would analyze to stdout.

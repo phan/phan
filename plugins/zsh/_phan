@@ -38,6 +38,7 @@ _arguments \
 	'(--load-baseline -B)'{--load-baseline=,-B+}'[a path to a baseline with pre-existing issues to read from]:file:_files' \
 	'(--analyze-twice)--analyze-twice[run the analysis phase twice]' \
 	'(--analyze-all-files)--analyze-all-files[ignore config settings to exclude files from analysis]' \
+	'(--always-exit-successfully-after-analysis)--always-exit-successfully-after-analysis[always exit with exit code 0 unless phan crashes]' \
 	'(--init-no-composer)--init-no-composer[don'\''t require a composer installation when initializing]' \
 	'(--init-overwrite)--init-overwrite[allow phan --init to override the existing .phan/config.php file]' \
 	'(--color --no-color -C)'{--color,-C}'[add colors to phan'\''s output]' \
