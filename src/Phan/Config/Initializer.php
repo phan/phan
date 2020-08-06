@@ -207,13 +207,14 @@ use Phan\Issue;
  *   (E.g. this only includes direct composer dependencies - You may have to manually add indirect composer dependencies to 'directory_list')
  * - Look at 'plugins' and add or remove plugins if appropriate (see https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
  * - Add global suppressions for pre-existing issues to suppress_issue_types (https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base)
+ *   - Consider setting up a baseline if there are a large number of pre-existing issues (see `phan --extended-help`)
  *
  * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *
- * @see src/Phan/Config.php
- * See Config for all configurable options.
+ * @see https://github.com/phan/phan/wiki/Phan-Config-Settings for all configurable options
+ * @see https://github.com/phan/phan/tree/master/src/Phan/Config.php
  *
  * A Note About Paths
  * ==================
