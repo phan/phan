@@ -114,6 +114,7 @@ class ConfigEntry
         'disable_line_based_suppression' => self::CATEGORY_ISSUE_FILTERING,
         'disable_file_based_suppression' => self::CATEGORY_ISSUE_FILTERING,
         'dump_ast' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'dump_matching_functions' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_signatures_file' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_parsed_file_list' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'debug_max_frame_length' => self::CATEGORY_HIDDEN_CLI_ONLY,

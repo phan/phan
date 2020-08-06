@@ -177,8 +177,8 @@ to this list to inhibit them from being reported.
 
 ## whitelist_issue_types
 
-If empty, no filter against issues types will be applied.
-If this white-list is non-empty, only issues within the list
+If this list is empty, no filter against issues types will be applied.
+If this list is non-empty, only issues within the list
 will be emitted by Phan.
 
 See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
@@ -429,6 +429,7 @@ This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) i
 
 This can be set to a list of extensions to limit Phan to using the reflection information of.
 If this is a list, then Phan will not use the reflection information of extensions outside of this list.
+The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
 
 Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
 If you want to add stubs, see [`autoload_internal_extension_signatures`](#autoload_internal_extension_signatures).
@@ -437,6 +438,8 @@ If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' wil
 
 When this is an array, [`ignore_undeclared_functions_with_known_signatures`](#ignore_undeclared_functions_with_known_signatures) will always be set to false.
 (because many of those functions will be outside of the configured list)
+
+Also see [`ignore_undeclared_functions_with_known_signatures`](#ignore_undeclared_functions_with_known_signatures) to warn about using unknown functions.
 
 (Default: `null`)
 
