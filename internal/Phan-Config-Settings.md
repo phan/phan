@@ -171,7 +171,7 @@ sloppy mature code base.
 ## suppress_issue_types
 
 Add any issue types (such as `'PhanUndeclaredMethod'`)
-to this black-list to inhibit them from being reported.
+to this list to inhibit them from being reported.
 
 (Default: `[]`)
 
