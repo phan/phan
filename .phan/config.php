@@ -9,8 +9,8 @@ use Phan\Issue;
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *
- * @see src/Phan/Config.php
- * See Config for all configurable options.
+ * @see https://github.com/phan/phan/wiki/Phan-Config-Settings for all configurable options
+ * @see src/Phan/Config.php for the configurable options in this version of Phan
  *
  * A Note About Paths
  * ==================
@@ -63,28 +63,30 @@ return [
     // If null_casts_as_any_type is true, this has no effect.
     'array_casts_as_null' => false,
 
-    // If enabled, Phan will warn if **any** type in a method's object expression
+    // If enabled, Phan will warn if **any** type in a method invocation's object
     // is definitely not an object,
     // or if **any** type in an invoked expression is not a callable.
     // Setting this to true will introduce numerous false positives
     // (and reveal some bugs).
     'strict_method_checking' => true,
 
-    // If enabled, Phan will warn if **any** type in the argument's type
-    // cannot be cast to a type in the parameter's expected type.
-    // Setting this to true will introduce a large number of false positives (and some bugs).
-    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    // If enabled, Phan will warn if **any** type in the argument's union type
+    // cannot be cast to a type in the parameter's expected union type.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
     'strict_param_checking' => true,
 
-    // If enabled, Phan will warn if **any** type in a property assignment's type
-    // cannot be cast to a type in the property's expected type.
-    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // If enabled, Phan will warn if **any** type in a property assignment's union type
+    // cannot be cast to a type in the property's declared union type.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_property_checking' => true,
 
-    // If enabled, Phan will warn if **any** type in the return statement's union type
-    // cannot be cast to a type in the method's declared return type.
-    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // If enabled, Phan will warn if **any** type in a returned value's union type
+    // cannot be cast to the declared return type.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_return_checking' => true,
 
@@ -94,20 +96,21 @@ return [
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
-    // This does not affect checks of array keys. See scalar_array_key_cast.
+    // This does not affect checks of array keys. See `scalar_array_key_cast`.
     'scalar_implicit_cast' => false,
 
     // If enabled, any scalar array keys (int, string)
     // are treated as if they can cast to each other.
-    // E.g. array<int,stdClass> can cast to array<string,stdClass> and vice versa.
+    // E.g. `array<int,stdClass>` can cast to `array<string,stdClass>` and vice versa.
     // Normally, a scalar type such as int could only cast to/from int and mixed.
     'scalar_array_key_cast' => false,
 
     // If this has entries, scalars (int, float, bool, string, null)
     // are allowed to perform the casts listed.
-    // E.g. ['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]
+    //
+    // E.g. `['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]`
     // allows casting null to a string, but not vice versa.
-    // (subset of scalar_implicit_cast)
+    // (subset of `scalar_implicit_cast`)
     'scalar_implicit_partial' => [],
 
     // If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.
@@ -115,9 +118,10 @@ return [
     'convert_possibly_undefined_offset_to_nullable' => false,
 
     // If true, seemingly undeclared variables in the global
-    // scope will be ignored. This is useful for projects
-    // with complicated cross-file globals that you have no
-    // hope of fixing.
+    // scope will be ignored.
+    //
+    // This is useful for projects with complicated cross-file
+    // globals that you have no hope of fixing.
     'ignore_undeclared_variables_in_global_scope' => false,
 
     // Backwards Compatibility Checking (This is very slow)
@@ -125,8 +129,7 @@ return [
 
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type
-    // declared in the method signature. This process is
-    // slow.
+    // declared in the method signature.
     'check_docblock_signature_return_type_match' => true,
 
     // If true, check to make sure the param types declared
@@ -134,17 +137,21 @@ return [
     // declared in the method signature.
     'check_docblock_signature_param_type_match' => true,
 
-    // (*Requires check_docblock_signature_param_type_match to be true*)
     // If true, make narrowed types from phpdoc params override
     // the real types from the signature, when real types exist.
     // (E.g. allows specifying desired lists of subclasses,
     //  or to indicate a preference for non-nullable types over nullable types)
+    //
     // Affects analysis of the body of the method and the param types passed in by callers.
+    //
+    // (*Requires `check_docblock_signature_param_type_match` to be true*)
     'prefer_narrowed_phpdoc_param_type' => true,
 
-    // (*Requires check_docblock_signature_return_type_match to be true*)
+    // (*Requires `check_docblock_signature_return_type_match` to be true*)
+    //
     // If true, make narrowed types from phpdoc returns override
     // the real types from the signature, when real types exist.
+    //
     // (E.g. allows specifying desired lists of subclasses,
     //  or to indicate a preference for non-nullable types over nullable types)
     // Affects analysis of return statements in the body of the method and the return types passed in by callers.
@@ -208,10 +215,15 @@ return [
     // as variables (like `$class->$property` or
     // `$class->$method()`) in ways that we're unable
     // to make sense of.
+    //
+    // To more aggressively detect dead code,
+    // you may want to set `dead_code_detection_prefer_false_negative` to `false`.
     'dead_code_detection' => false,
 
     // Set to true in order to attempt to detect unused variables.
-    // dead_code_detection will also enable unused variable detection.
+    // `dead_code_detection` will also enable unused variable detection.
+    //
+    // This has a few known false positives, e.g. for loops or branches.
     'unused_variable_detection' => true,
 
     // Set to true in order to force tracking references to elements
@@ -321,8 +333,8 @@ return [
     // Issue::SEVERITY_CRITICAL.
     'minimum_severity' => Issue::SEVERITY_LOW,
 
-    // Add any issue types (such as 'PhanUndeclaredMethod')
-    // here to inhibit them from being reported
+    // Add any issue types (such as `'PhanUndeclaredMethod'`)
+    // to this list to inhibit them from being reported.
     'suppress_issue_types' => [
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
         'PhanPluginNoCommentOnProtectedMethod',
@@ -341,9 +353,9 @@ return [
         'PhanParamNameIndicatingUnusedInClosure',
     ],
 
-    // If empty, no filter against issues types will be applied.
-    // If non-empty, only issues within the list will be emitted
-    // by Phan.
+    // If this list is empty, no filter against issues types will be applied.
+    // If this list is non-empty, only issues within the list
+    // will be emitted by Phan.
     //
     // See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
     // for the full list of issues that Phan detects.
@@ -459,7 +471,7 @@ return [
     ],
 
     // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
-    // (e.g. PHP is compiled with --enable-debug or when using Xdebug)
+    // (e.g. PHP is compiled with `--enable-debug` or when using Xdebug)
     'skip_slow_php_options_warning' => false,
 
     // You can put paths to internal stubs in this config option.
@@ -483,7 +495,7 @@ return [
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
     ],
 
-    // This can be set to list of extensions to limit Phan to using the reflection information of.
+    // This can be set to a list of extensions to limit Phan to using the reflection information of.
     // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
     // The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
     //
@@ -491,6 +503,9 @@ return [
     // If you want to add stubs, see `autoload_internal_extension_signatures`.
     //
     // If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
+    //
+    // When this is an array, `ignore_undeclared_functions_with_known_signatures` will always be set to false.
+    // (because many of those functions will be outside of the configured list)
     //
     // Also see `ignore_undeclared_functions_with_known_signatures` to warn about using unknown functions.
     // E.g. this is what Phan would use for self-analysis
@@ -544,7 +559,7 @@ return [
         // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
         'php_native_syntax_check_max_processes' => 4,
 
-        // blacklist of methods to warn about for HasPHPDocPlugin
+        // List of methods to suppress warnings about for HasPHPDocPlugin
         'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
         // Warn about duplicate descriptions for methods and property groups within classes.
         // (This skips over deprecated methods)

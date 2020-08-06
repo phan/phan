@@ -692,8 +692,8 @@ class Config
             // 'PhanUndeclaredMethod',
         ],
 
-        // If empty, no filter against issues types will be applied.
-        // If this white-list is non-empty, only issues within the list
+        // If this list is empty, no filter against issues types will be applied.
+        // If this list is non-empty, only issues within the list
         // will be emitted by Phan.
         //
         // See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
@@ -803,6 +803,7 @@ class Config
 
         // This can be set to a list of extensions to limit Phan to using the reflection information of.
         // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
+        // The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
         //
         // Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
         // If you want to add stubs, see `autoload_internal_extension_signatures`.
@@ -811,6 +812,8 @@ class Config
         //
         // When this is an array, `ignore_undeclared_functions_with_known_signatures` will always be set to false.
         // (because many of those functions will be outside of the configured list)
+        //
+        // Also see `ignore_undeclared_functions_with_known_signatures` to warn about using unknown functions.
         'included_extension_subset' => null,
 
         // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
@@ -922,6 +925,7 @@ class Config
         // This setting can be overridden if users wish to store strings that are even longer than 50 bytes.
         'max_literal_string_type_length' => 200,
 
+        // internal
         'dump_matching_functions' => false,
 
         // This is the path to a file containing a list of pre-existing issues to ignore, on a per-file basis.
