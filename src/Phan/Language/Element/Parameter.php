@@ -413,6 +413,10 @@ class Parameter extends Variable
         Node $node,
         string $parameter_name
     ): void {
+        if ($context->isPHPInternal()) {
+            // Don't warn about internal stubs - the actual extension may have $_ or $unused in the name.
+            return;
+        }
         $is_closure = false;
         if ($context->isInFunctionLikeScope()) {
             $func = $context->getFunctionLikeFQSEN();
