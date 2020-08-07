@@ -864,9 +864,11 @@ class ParameterTypesAnalyzer
             // Either 0 or both of the params must have types for the signatures to be compatible.
             $o_parameter_union_type = $o_parameter->getUnionType();
             $parameter_union_type = $parameter->getUnionType();
-            if ($parameter_union_type->isEmptyOrMixed() != $o_parameter_union_type->isEmpty()) {
+            // Mixed and empty parameter types are interchangeable in php 8
+            if ($parameter_union_type->isEmptyOrMixed() != $o_parameter_union_type->isEmptyOrMixed()) {
                 if ($parameter_union_type->isEmptyOrMixed()) {
-                    if ($parameter_union_type->isEmpty() && Config::getValue('allow_method_param_type_widening') === false) {
+                    // Don't warn about mixed
+                    if (Config::getValue('allow_method_param_type_widening') === false) {
                         $is_possibly_compatible = false;
                         self::emitSignatureRealMismatchIssue(
                             $code_base,

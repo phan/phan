@@ -443,10 +443,91 @@ final class ArgumentType
                 return;
             }
         }
+        $positions_used = null;
 
-        foreach ($arg_nodes as $i => $argument) {
-            // Get the parameter associated with this argument
-            $parameter = $method->getParameterForCaller($i);
+        foreach ($arg_nodes as $original_i => $argument) {
+            if (!\is_int($original_i)) {
+                throw new AssertionError("Expected argument index to be an integer");
+            }
+            $i = $original_i;
+            if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
+                if ($argument_expression === null) {
+                    throw new AssertionError("Expected argument to have an expression");
+                }
+                $found = false;
+                // TODO: Could optimize for long lists by precomputing a map, probably not worth it
+                foreach ($method->getRealParameterList() as $j => $parameter) {
+                    if ($parameter->getName() === $argument_name) {
+                        $found = true;
+                        $i = $j;
+                        break;
+                    }
+                }
+
+                if (!isset($parameter) || (!$found && !$parameter->isVariadic())) {
+                    if ($method->isPHPInternal()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UndeclaredNamedArgumentInternal,
+                            $argument->lineno,
+                            ASTReverter::toShortString($argument),
+                            $method->getRepresentationForIssue(true)
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UndeclaredNamedArgument,
+                            $argument->lineno,
+                            ASTReverter::toShortString($argument),
+                            $method->getRepresentationForIssue(true),
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
+                    continue;
+                }
+                if (!\is_array($positions_used)) {
+                    $positions_used = \array_slice($arg_nodes, 0, $original_i);
+                }
+            } else {
+                // Get the parameter associated with this argument
+                // FIXME: Use the real parameter name all the time for named arguments if it exists
+                $parameter = $method->getParameterForCaller($i);
+                $argument_expression = $argument;
+            }
+            if (\is_array($positions_used)) {
+                $reused_argument = $positions_used[$i] ?? null;
+                if ($reused_argument !== null && $parameter && !$parameter->isVariadic()) {
+                    if ($method->isPHPInternal()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DuplicateNamedArgumentInternal,
+                            $argument->lineno ?? $context->getLineNumberStart(),
+                            ASTReverter::toShortString($argument),
+                            ASTReverter::toShortString($reused_argument),
+                            $method->getRepresentationForIssue(true)
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DuplicateNamedArgument,
+                            $argument->lineno ?? $context->getLineNumberStart(),
+                            ASTReverter::toShortString($argument),
+                            ASTReverter::toShortString($reused_argument),
+                            $method->getRepresentationForIssue(true),
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
+                } else {
+                    $positions_used[$i] = $argument;
+                }
+            }
 
             // This issue should be caught elsewhere
             if (!$parameter) {
@@ -470,6 +551,9 @@ final class ArgumentType
                     $argument->is_reference = true;
                 }
             }
+        }
+        if (\is_array($positions_used)) {
+            self::checkAllNamedArgumentsPassed($code_base, $context, $context->getLineNumberStart(), $method, $positions_used);
         }
     }
 
@@ -532,16 +616,27 @@ final class ArgumentType
                 }
 
                 if (!isset($parameter) || (!$found && !$parameter->isVariadic())) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::UndeclaredNamedArgument,
-                        $argument->lineno,
-                        ASTReverter::toShortString($argument),
-                        $method->getRepresentationForIssue(),
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
-                    );
+                    if ($method->isPHPInternal()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UndeclaredNamedArgumentInternal,
+                            $argument->lineno,
+                            ASTReverter::toShortString($argument),
+                            $method->getRepresentationForIssue(true)
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UndeclaredNamedArgument,
+                            $argument->lineno,
+                            ASTReverter::toShortString($argument),
+                            $method->getRepresentationForIssue(true),
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
                     continue;
                 }
                 if (!\is_array($positions_used)) {
@@ -549,23 +644,36 @@ final class ArgumentType
                 }
             } else {
                 // Get the parameter associated with this argument
+                // FIXME: Use the real parameter name all the time for named arguments if it exists
                 $parameter = $method->getParameterForCaller($i);
                 $argument_expression = $argument;
             }
             if (\is_array($positions_used)) {
                 $reused_argument = $positions_used[$i] ?? null;
                 if ($reused_argument !== null && $parameter && !$parameter->isVariadic()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::DuplicateNamedArgument,
-                        $argument->lineno ?? $node->lineno,
-                        ASTReverter::toShortString($argument),
-                        ASTReverter::toShortString($reused_argument),
-                        $method->getRepresentationForIssue(),
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
-                    );
+                    if ($method->isPHPInternal()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DuplicateNamedArgumentInternal,
+                            $argument->lineno ?? $node->lineno,
+                            ASTReverter::toShortString($argument),
+                            ASTReverter::toShortString($reused_argument),
+                            $method->getRepresentationForIssue(true)
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DuplicateNamedArgument,
+                            $argument->lineno ?? $node->lineno,
+                            ASTReverter::toShortString($argument),
+                            ASTReverter::toShortString($reused_argument),
+                            $method->getRepresentationForIssue(true),
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
                 } else {
                     $positions_used[$i] = $argument;
                 }
@@ -601,7 +709,7 @@ final class ArgumentType
                             Issue::TypeNonVarPassByRef,
                             $argument->lineno ?? $node->lineno ?? 0,
                             ($i + 1),
-                            $method->getRepresentationForIssue()
+                            $method->getRepresentationForIssue(true)
                         );
                     }
                 } else {
@@ -648,6 +756,50 @@ final class ArgumentType
             }
             if ($argument_kind === ast\AST_UNPACK && $argument_expression instanceof Node) {
                 self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument_expression, $argument_type);
+            }
+        }
+        if (\is_array($positions_used)) {
+            self::checkAllNamedArgumentsPassed($code_base, $context, $node->lineno, $method, $positions_used);
+        }
+    }
+
+    /**
+     * @param array<int,mixed> $positions_used
+     */
+    private static function checkAllNamedArgumentsPassed(
+        CodeBase $code_base,
+        Context $context,
+        int $lineno,
+        FunctionInterface $method,
+        array $positions_used
+    ): void {
+        foreach ($method->getRealParameterList() as $i => $parameter) {
+            if ($parameter->isOptional() || $parameter->isVariadic()) {
+                continue;
+            }
+            if (isset($positions_used[$i])) {
+                continue;
+            }
+            if ($method->isPHPInternal()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::MissingNamedArgumentInternal,
+                    $lineno,
+                    $parameter,
+                    $method->getRepresentationForIssue(true)
+                );
+            } else {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::MissingNamedArgument,
+                    $lineno,
+                    $parameter,
+                    $method->getRepresentationForIssue(true),
+                    $method->getContext()->getFile(),
+                    $method->getContext()->getLineNumberStart()
+                );
             }
         }
     }
@@ -709,7 +861,7 @@ final class ArgumentType
                             Issue::TypeNonVarPassByRef,
                             $argument->lineno ?? $node->lineno ?? 0,
                             ($i + 1),
-                            $method->getRepresentationForIssue()
+                            $method->getRepresentationForIssue(true)
                         );
                     }
                 }

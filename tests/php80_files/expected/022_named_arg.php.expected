@@ -12,12 +12,13 @@
 %s:14 PhanTypeMismatchArgumentReal Argument 2 ($other) is true of type true but \test_named_arg() takes ?\stdClass defined at %s:7
 %s:14 PhanTypeMismatchArgumentReal Argument 3 ($flag) is 'invalid' of type 'invalid' but \test_named_arg() takes bool defined at %s:7
 %s:15 PhanArgumentUnpackingUsedWithNamedArgument Cannot mix named arguments and argument unpacking in (flag: 'invalid', ...($argv))
+%s:15 PhanMissingNamedArgument Missing named argument for int $a in call to \test_named_arg(int $a, ?\stdClass $other = null, bool $flag = false) defined at %s:7
 %s:15 PhanPositionalArgumentAfterNamedArgument Saw positional argument (...($argv)) after a named argument flag: 'invalid'
 %s:15 PhanTypeMismatchArgumentReal Argument 3 ($flag) is 'invalid' of type 'invalid' but \test_named_arg() takes bool defined at %s:7
 %s:15 PhanTypeMismatchArgument Argument 2 ($other) is ...($argv) of type string but \test_named_arg() takes ?\stdClass defined at %s:7
 %s:17 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string
 %s:18 PhanDefinitelyDuplicateNamedArgument Cannot repeat the same name for named arguments (string: true) and (string: 'blah')
-%s:18 PhanDuplicateNamedArgument Saw a call with arguments (string: true) and (string: 'blah') passed to the same parameter of \strlen() defined at internal:0
+%s:18 PhanDuplicateNamedArgumentInternal Saw a call with arguments (string: true) and (string: 'blah') passed to the same parameter of \strlen(string $string)
 %s:18 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s)
 %s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string
 %s:19 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string

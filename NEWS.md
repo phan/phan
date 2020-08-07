@@ -13,7 +13,8 @@ New features (Analysis):
   This is less efficient and only makes a difference in extremely rare edge cases.
 + Avoid false positives for bitwise operations on floats such as unsigned 64-bit numbers (#4106)
 + Incomplete support for analyzing calls with php 8.0's named arguments. (#4037)
-  New issue types: `PhanUndeclaredNamedArgument`, `PhanDuplicateNamedArgument`,
+  New issue types: `PhanUndeclaredNamedArgument*`, `PhanDuplicateNamedArgument*`,
+  `PhanMissingNamedArgument*`,
   `PhanDefinitelyDuplicateNamedArgument`, `PhanPositionalArgumentAfterNamedArgument`, and
   `PhanArgumentUnpackingUsedWithNamedArgument`
 

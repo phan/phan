@@ -1665,6 +1665,30 @@ Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of 
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L17).
 
+## PhanDuplicateNamedArgumentInternal
+
+```
+Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L18).
+
+## PhanMissingNamedArgument
+
+```
+Missing named argument for {PARAMETER} in call to {METHOD} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L7).
+
+## PhanMissingNamedArgumentInternal
+
+```
+Missing named argument for {PARAMETER} in call to {METHOD}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L13).
+
 ## PhanParamMustBeUserDefinedClassname
 
 ```
@@ -2130,6 +2154,14 @@ Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE} defined at 
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/023_named_arg.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/023_named_arg.php#L6).
+
+## PhanUndeclaredNamedArgumentInternal
+
+```
+Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L12).
 
 # RedefineError
 

@@ -358,10 +358,14 @@ class Issue
     public const ParamNameIndicatingUnused                                   = 'PhanParamNameIndicatingUnused';
     public const ParamNameIndicatingUnusedInClosure                          = 'PhanParamNameIndicatingUnusedInClosure';
     public const UndeclaredNamedArgument                                     = 'PhanUndeclaredNamedArgument';
+    public const UndeclaredNamedArgumentInternal                             = 'PhanUndeclaredNamedArgumentInternal';
     public const DuplicateNamedArgument                                      = 'PhanDuplicateNamedArgument';
+    public const DuplicateNamedArgumentInternal                              = 'PhanDuplicateNamedArgumentInternal';
     public const DefinitelyDuplicateNamedArgument                            = 'PhanDefinitelyDuplicateNamedArgument';
     public const PositionalArgumentAfterNamedArgument                        = 'PhanPositionalArgumentAfterNamedArgument';
     public const ArgumentUnpackingUsedWithNamedArgument                      = 'PhanArgumentUnpackingUsedWithNamedArgument';
+    public const MissingNamedArgument                                        = 'PhanMissingNamedArgument';
+    public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3346,12 +3350,28 @@ class Issue
                 7052
             ),
             new Issue(
+                self::UndeclaredNamedArgumentInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                7053
+            ),
+            new Issue(
                 self::DuplicateNamedArgument,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
                 'Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
-                7053
+                7054
+            ),
+            new Issue(
+                self::DuplicateNamedArgumentInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                7055
             ),
             new Issue(
                 self::DefinitelyDuplicateNamedArgument,
@@ -3359,7 +3379,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 'Cannot repeat the same name for named arguments ({CODE}) and ({CODE})',
                 self::REMEDIATION_B,
-                7054
+                7056
             ),
             new Issue(
                 self::PositionalArgumentAfterNamedArgument,
@@ -3367,7 +3387,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 'Saw positional argument ({CODE}) after a named argument {CODE}',
                 self::REMEDIATION_B,
-                7055
+                7057
             ),
             new Issue(
                 self::ArgumentUnpackingUsedWithNamedArgument,
@@ -3375,7 +3395,23 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 'Cannot mix named arguments and argument unpacking in {CODE}',
                 self::REMEDIATION_B,
-                7056
+                7058
+            ),
+            new Issue(
+                self::MissingNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Missing named argument for {PARAMETER} in call to {METHOD} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                7059
+            ),
+            new Issue(
+                self::MissingNamedArgumentInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Missing named argument for {PARAMETER} in call to {METHOD}',
+                self::REMEDIATION_B,
+                7060
             ),
 
             // Issue::CATEGORY_NOOP
