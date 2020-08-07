@@ -509,25 +509,79 @@ final class ArgumentType
                 return;
             }
         }
+        $positions_used = null;
 
-        foreach ($node->children as $i => $argument) {
-            if (!\is_int($i)) {
+        foreach ($node->children as $original_i => $argument) {
+            if (!\is_int($original_i)) {
                 throw new AssertionError("Expected argument index to be an integer");
             }
+            $i = $original_i;
+            if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
+                if ($argument_expression === null) {
+                    throw new AssertionError("Expected argument to have an expression");
+                }
+                $found = false;
+                // TODO: Could optimize for long lists by precomputing a map, probably not worth it
+                foreach ($method->getRealParameterList() as $j => $parameter) {
+                    if ($parameter->getName() === $argument_name) {
+                        $found = true;
+                        $i = $j;
+                        break;
+                    }
+                }
 
-            // Get the parameter associated with this argument
-            $parameter = $method->getParameterForCaller($i);
+                if (!isset($parameter) || (!$found && !$parameter->isVariadic())) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::UndeclaredNamedArgument,
+                        $argument->lineno,
+                        ASTReverter::toShortString($argument),
+                        $method->getRepresentationForIssue(),
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
+                    continue;
+                }
+                if (!\is_array($positions_used)) {
+                    $positions_used = \array_slice($node->children, 0, $original_i);
+                }
+            } else {
+                // Get the parameter associated with this argument
+                $parameter = $method->getParameterForCaller($i);
+                $argument_expression = $argument;
+            }
+            if (\is_array($positions_used)) {
+                $reused_argument = $positions_used[$i] ?? null;
+                if ($reused_argument !== null && $parameter && !$parameter->isVariadic()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::DuplicateNamedArgument,
+                        $argument->lineno ?? $node->lineno,
+                        ASTReverter::toShortString($argument),
+                        ASTReverter::toShortString($reused_argument),
+                        $method->getRepresentationForIssue(),
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
+                } else {
+                    $positions_used[$i] = $argument;
+                }
+            }
+
 
             // This issue should be caught elsewhere
             if (!$parameter) {
                 $argument_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,
-                    $argument,
+                    $argument_expression,
                     true
                 );
                 if ($argument_type->isVoidType()) {
-                    self::warnVoidTypeArgument($code_base, $context, $argument, $node);
+                    self::warnVoidTypeArgument($code_base, $context, $argument_expression, $node);
                 }
                 continue;
             }
@@ -537,8 +591,8 @@ final class ArgumentType
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
-                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument);
+                if ((!$argument_expression instanceof Node) || !\in_array($argument_kind, self::REFERENCE_NODE_KINDS, true)) {
+                    $is_possible_reference = self::isExpressionReturningReference($code_base, $context, $argument_expression);
 
                     if (!$is_possible_reference) {
                         Issue::maybeEmit(
@@ -554,7 +608,7 @@ final class ArgumentType
                     $variable_name = (new ContextNode(
                         $code_base,
                         $context,
-                        $argument
+                        $argument_expression
                     ))->getVariableName();
 
                     if (Type::isSelfTypeString($variable_name)
@@ -577,29 +631,29 @@ final class ArgumentType
             $argument_type = UnionTypeVisitor::unionTypeFromNode(
                 $code_base,
                 $context,
-                $argument,
+                $argument_expression,
                 true
             );
             if ($argument_type->isVoidType()) {
                 // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-                self::warnVoidTypeArgument($code_base, $context, $argument, $node);
+                self::warnVoidTypeArgument($code_base, $context, $argument_expression, $node);
             }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument_expression);
             if ($parameter->isPassByReference()) {
-                if ($argument instanceof Node) {
+                if ($argument_expression instanceof Node) {
                     // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
-                    $argument->is_reference = true;
+                    $argument_expression->is_reference = true;
                 }
             }
-            if ($argument_kind === ast\AST_UNPACK && $argument instanceof Node) {
-                self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument, $argument_type);
+            if ($argument_kind === ast\AST_UNPACK && $argument_expression instanceof Node) {
+                self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument_expression, $argument_type);
             }
         }
     }
 
     /**
-     * @param Node|string|int|float $argument
+     * @param Node|string|int|float|null $argument
      */
     private static function warnVoidTypeArgument(
         CodeBase $code_base,

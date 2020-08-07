@@ -20,7 +20,7 @@ class Shim
         }
         // Define node kinds that may be absent
         if (!\defined('ast\AST_PROP_GROUP')) {
-            \define('ast\AST_PROP_GROUP', 545);
+            \define('ast\AST_PROP_GROUP', 0x221);
         }
         if (!\defined('ast\AST_CLASS_NAME')) {
             \define('ast\AST_CLASS_NAME', 287);
@@ -35,10 +35,6 @@ class Shim
             // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
             \define('ast\AST_ATTRIBUTE_LIST', 253);
         }
-        if (!\defined('ast\AST_ATTRIBUTE')) {
-            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
-            \define('ast\AST_ATTRIBUTE', 0x2fb);
-        }
         if (!\defined('ast\AST_MATCH_ARM_LIST')) {
             \define('ast\AST_MATCH_ARM_LIST', 252);
         }
@@ -47,6 +43,19 @@ class Shim
         }
         if (!\defined('ast\AST_MATCH_ARM')) {
             \define('ast\AST_MATCH_ARM', 0x2fb);
+        }
+        if (!\defined('ast\AST_ATTRIBUTE')) {
+            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
+            \define('ast\AST_ATTRIBUTE', 0x2fa);
+        }
+        if (!\defined('ast\AST_NAMED_ARG')) {
+            \define('ast\AST_NAMED_ARG', 0x2f9);
+        }
+        if (!\defined('ast\AST_NULLSAFE_PROP')) {
+            \define('ast\AST_NULLSAFE_PROP', 0x2f8);
+        }
+        if (!\defined('ast\AST_NULLSAFE_METHOD_CALL')) {
+            \define('ast\AST_NULLSAFE_METHOD_CALL', 0x3ff);
         }
         // Define flags
         if (!\defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {

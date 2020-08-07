@@ -224,6 +224,11 @@ interface KindVisitor
     public function visitName(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_NAMED_ARG`
+     */
+    public function visitNamedArg(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_NAMESPACE`
      */
     public function visitNamespace(Node $node);

@@ -1,0 +1,3 @@
+%s:7 PhanTypeArraySuspicious Suspicious array access to $value of type int
+%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21::__construct() takes int defined at %s:4
+%s:11 PhanUndeclaredProperty Reference to undeclared property \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21->value

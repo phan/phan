@@ -1689,8 +1689,8 @@ class Type
                         $union_type = $union_type->nullableClone();
                     }
                 }
-                // $var_name = $param_match[19]; // would be unused
-                $result[] = new ClosureDeclarationParameter($union_type, $is_variadic, $is_reference, $has_default_value);
+                $var_name = $param_match[17];
+                $result[] = new ClosureDeclarationParameter($union_type, $is_variadic, $is_reference, $has_default_value, $var_name);
             }  // TODO: Otherwise, warn
         }
         return $result;

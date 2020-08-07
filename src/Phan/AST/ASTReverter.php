@@ -160,6 +160,9 @@ class ASTReverter
             ast\AST_ARG_LIST => static function (Node $node): string {
                 return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
             },
+            ast\AST_NAMED_ARG => static function (Node $node): string {
+                return $node->children['name'] . ': ' . self::toShortString($node->children['expr']);
+            },
             ast\AST_PARAM_LIST => static function (Node $node): string {
                 return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
             },

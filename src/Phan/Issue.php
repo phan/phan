@@ -357,6 +357,11 @@ class Issue
     public const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
     public const ParamNameIndicatingUnused                                   = 'PhanParamNameIndicatingUnused';
     public const ParamNameIndicatingUnusedInClosure                          = 'PhanParamNameIndicatingUnusedInClosure';
+    public const UndeclaredNamedArgument                                     = 'PhanUndeclaredNamedArgument';
+    public const DuplicateNamedArgument                                      = 'PhanDuplicateNamedArgument';
+    public const DefinitelyDuplicateNamedArgument                            = 'PhanDefinitelyDuplicateNamedArgument';
+    public const PositionalArgumentAfterNamedArgument                        = 'PhanPositionalArgumentAfterNamedArgument';
+    public const ArgumentUnpackingUsedWithNamedArgument                      = 'PhanArgumentUnpackingUsedWithNamedArgument';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3331,6 +3336,46 @@ class Issue
                 'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.',
                 self::REMEDIATION_B,
                 7051
+            ),
+            new Issue(
+                self::UndeclaredNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                7052
+            ),
+            new Issue(
+                self::DuplicateNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                7053
+            ),
+            new Issue(
+                self::DefinitelyDuplicateNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Cannot repeat the same name for named arguments ({CODE}) and ({CODE})',
+                self::REMEDIATION_B,
+                7054
+            ),
+            new Issue(
+                self::PositionalArgumentAfterNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Saw positional argument ({CODE}) after a named argument {CODE}',
+                self::REMEDIATION_B,
+                7055
+            ),
+            new Issue(
+                self::ArgumentUnpackingUsedWithNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                'Cannot mix named arguments and argument unpacking in {CODE}',
+                self::REMEDIATION_B,
+                7056
             ),
 
             // Issue::CATEGORY_NOOP

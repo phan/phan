@@ -402,6 +402,7 @@ class PhanPhpShellUtils
     {
         $function_candidates = array_values(array_merge(...array_values(get_defined_functions(true))));
         $function_completions = $this->generateCompletionsFromCandidates($function_candidates, $prefix, '');
+        // @phan-suppress-next-line PhanRedundantArrayValuesCall
         $other_candidates = array_values(array_merge(
             get_declared_classes(),
             get_declared_traits(),

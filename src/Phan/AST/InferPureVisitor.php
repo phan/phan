@@ -664,4 +664,12 @@ class InferPureVisitor extends AnalysisVisitor
             }
         }
     }
+
+    public function visitNamedArg(Node $node): void
+    {
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            $this->__invoke($expr);
+        }
+    }
 }
