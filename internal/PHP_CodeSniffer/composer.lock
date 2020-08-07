@@ -8,22 +8,22 @@
     "packages": [
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
-            "version": "v0.6.2",
+            "version": "v0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Dealerdirect/phpcodesniffer-composer-installer.git",
-                "reference": "8001af8eb107fbfcedc31a8b51e20b07d85b457a"
+                "reference": "e8d808670b8f882188368faaf1144448c169c0b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Dealerdirect/phpcodesniffer-composer-installer/zipball/8001af8eb107fbfcedc31a8b51e20b07d85b457a",
-                "reference": "8001af8eb107fbfcedc31a8b51e20b07d85b457a",
+                "url": "https://api.github.com/repos/Dealerdirect/phpcodesniffer-composer-installer/zipball/e8d808670b8f882188368faaf1144448c169c0b7",
+                "reference": "e8d808670b8f882188368faaf1144448c169c0b7",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.0",
-                "php": "^5.3|^7",
-                "squizlabs/php_codesniffer": "^2|^3"
+                "composer-plugin-api": "^1.0 || ^2.0",
+                "php": ">=5.3",
+                "squizlabs/php_codesniffer": "^2 || ^3 || 4.0.x-dev"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -70,7 +70,7 @@
                 "stylecheck",
                 "tests"
             ],
-            "time": "2020-01-29T20:22:20+00:00"
+            "time": "2020-06-25T14:57:39+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -127,16 +127,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "e47a24f410dea65e0990bd3bdfb64900751c2e25"
+                "reference": "89d4d33396cd2bced6b611fc82acdeafe173692f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/e47a24f410dea65e0990bd3bdfb64900751c2e25",
-                "reference": "e47a24f410dea65e0990bd3bdfb64900751c2e25",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/89d4d33396cd2bced6b611fc82acdeafe173692f",
+                "reference": "89d4d33396cd2bced6b611fc82acdeafe173692f",
                 "shasum": ""
             },
             "require": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.6.2",
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.6.2 || ^0.7",
                 "php": "^7.1",
                 "phpstan/phpdoc-parser": "0.4.5 - 0.4.8",
                 "squizlabs/php_codesniffer": "^3.5.5"
@@ -144,11 +144,11 @@
             "require-dev": {
                 "phing/phing": "2.16.3",
                 "php-parallel-lint/php-parallel-lint": "1.2.0",
-                "phpstan/phpstan": "0.12.27",
+                "phpstan/phpstan": "0.12.33",
                 "phpstan/phpstan-deprecation-rules": "0.12.4",
-                "phpstan/phpstan-phpunit": "0.12.11",
-                "phpstan/phpstan-strict-rules": "0.12.2",
-                "phpunit/phpunit": "7.5.20|8.5.2|9.2.2"
+                "phpstan/phpstan-phpunit": "0.12.12",
+                "phpstan/phpstan-strict-rules": "0.12.3",
+                "phpunit/phpunit": "7.5.20|8.5.2|9.2.6"
             },
             "type": "phpcodesniffer-standard",
             "extra": {
@@ -176,7 +176,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-22T11:04:04+00:00"
+            "time": "2020-07-20T09:15:04+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -184,12 +184,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "a957a73e3533353451eb9fd62ee58bd0aba2773c"
+                "reference": "2b8c1b38443c8501fba8f73ff23b9e32d174e03b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/a957a73e3533353451eb9fd62ee58bd0aba2773c",
-                "reference": "a957a73e3533353451eb9fd62ee58bd0aba2773c",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/2b8c1b38443c8501fba8f73ff23b9e32d174e03b",
+                "reference": "2b8c1b38443c8501fba8f73ff23b9e32d174e03b",
                 "shasum": ""
             },
             "require": {
@@ -227,7 +227,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2020-06-22T05:29:29+00:00"
+            "time": "2020-07-23T03:10:13+00:00"
         }
     ],
     "packages-dev": [],

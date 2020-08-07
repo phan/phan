@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Parameter;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * Not a type, but used by ClosureDeclarationType
@@ -18,6 +19,9 @@ final class ClosureDeclarationParameter
     /** @var UnionType the union type of the arguments expected for this variadic/non-variadic parameter */
     private $type;
 
+    /** @var ?string the name this was declared with in a comment (for checking named arguments). */
+    private $name;
+
     /** @var bool is this parameter variadic? */
     private $is_variadic;
 
@@ -27,9 +31,10 @@ final class ClosureDeclarationParameter
     /** @var bool is this parameter optional? */
     private $is_optional;
 
-    public function __construct(UnionType $type, bool $is_variadic, bool $is_reference, bool $is_optional)
+    public function __construct(UnionType $type, bool $is_variadic, bool $is_reference, bool $is_optional, string $name = null)
     {
         $this->type = $type;
+        $this->name = $name;
         $this->is_variadic = $is_variadic;
         $this->is_reference = $is_reference;
         $this->is_optional = $is_optional || $is_variadic;
@@ -75,6 +80,9 @@ final class ClosureDeclarationParameter
     public function __toString(): string
     {
         $repr = $this->type->__toString();
+        if (StringUtil::isNonZeroLengthString($this->name)) {
+            $repr .= ' $' . $this->name;
+        }
         if ($this->is_reference) {
             $repr .= '&';
         }
@@ -139,7 +147,7 @@ final class ClosureDeclarationParameter
             return $this;
         }
 
-        return new self($new_type, $this->is_variadic, $this->is_reference, $this->is_optional);
+        return new self($new_type, $this->is_variadic, $this->is_reference, $this->is_optional, $this->name);
     }
 
     // TODO: Memoize?
@@ -179,9 +187,10 @@ final class ClosureDeclarationParameter
         if ($this->is_reference) {
             $flags |= \ast\flags\PARAM_REF;
         }
+        $name = $this->name;
         $result = Parameter::create(
             (new Context())->withFile('phpdoc'),
-            "p$i",
+            StringUtil::isNonZeroLengthString($name) ? $name : "p$i",
             $this->type,
             $flags
         );

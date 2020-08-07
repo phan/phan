@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.1.2 (dev)
+??? ?? 2020, Phan 3.2.0 (dev)
 -----------------------
 
 New features (CLI, Config):
@@ -12,6 +12,10 @@ New features (Analysis):
 + Emit `PhanNoopRepeatedSilenceOperator` for `@@expr` or `@(@expr)`.
   This is less efficient and only makes a difference in extremely rare edge cases.
 + Avoid false positives for bitwise operations on floats such as unsigned 64-bit numbers (#4106)
++ Incomplete support for analyzing calls with php 8.0's named arguments. (#4037)
+  New issue types: `PhanUndeclaredNamedArgument`, `PhanDuplicateNamedArgument`,
+  `PhanDefinitelyDuplicateNamedArgument`, `PhanPositionalArgumentAfterNamedArgument`, and
+  `PhanArgumentUnpackingUsedWithNamedArgument`
 
 Miscellaneous:
 + Raise the severity of `PhanUndeclaredConstant` from normal to critical.

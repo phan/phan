@@ -1641,6 +1641,30 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/expe
 
 This category of error comes up when you're messing up your method or function parameters in some way.
 
+## PhanArgumentUnpackingUsedWithNamedArgument
+
+```
+Cannot mix named arguments and argument unpacking in {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L15).
+
+## PhanDefinitelyDuplicateNamedArgument
+
+```
+Cannot repeat the same name for named arguments ({CODE}) and ({CODE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L16) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L17).
+
+## PhanDuplicateNamedArgument
+
+```
+Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L17).
+
 ## PhanParamMustBeUserDefinedClassname
 
 ```
@@ -2090,6 +2114,22 @@ Argument {INDEX} is {TYPE} but {FUNCTIONLIKE} takes {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0364_extended_array_analyze.php.expected#L33) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0364_extended_array_analyze.php#L41).
+
+## PhanPositionalArgumentAfterNamedArgument
+
+```
+Saw positional argument ({CODE}) after a named argument {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L12).
+
+## PhanUndeclaredNamedArgument
+
+```
+Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/023_named_arg.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/023_named_arg.php#L6).
 
 # RedefineError
 

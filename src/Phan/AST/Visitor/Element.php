@@ -89,6 +89,7 @@ class Element
         ast\AST_METHOD             => 'visitMethod',
         ast\AST_METHOD_CALL        => 'visitMethodCall',
         ast\AST_NAME               => 'visitName',
+        ast\AST_NAMED_ARG          => 'visitNamedArg',
         ast\AST_NAMESPACE          => 'visitNamespace',
         ast\AST_NEW                => 'visitNew',
         ast\AST_PARAM              => 'visitParam',

@@ -589,7 +589,9 @@ class Parser
     // TODO: Refactor and make more code use this check
     private static function shouldUseNativeAST(): bool
     {
-        if (\PHP_VERSION_ID >= 70400) {
+        if (\PHP_VERSION_ID >= 80000) {
+            $min_version = '1.0.8';
+        } elseif (\PHP_VERSION_ID >= 70400) {
             $min_version = '1.0.2';
         } else {
             $min_version = '1.0.1';
