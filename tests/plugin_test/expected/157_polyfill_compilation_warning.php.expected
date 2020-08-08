@@ -1,1 +1,1 @@
-src/157_polyfill_compilation_warning.php:77 PhanSyntaxCompileWarning Saw a warning while parsing: Unterminated comment starting line 3
+src/157_polyfill_compilation_warning.php:3 PhanSyntaxCompileWarning Saw a warning while parsing: Unterminated comment starting line 3

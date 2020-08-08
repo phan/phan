@@ -1,2 +1,2 @@
+src/014_try_statement10.php:5 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch ()
 src/014_try_statement10.php:5 PhanSyntaxError syntax error, unexpected ')', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\ (T_NS_SEPARATOR) (at column 9)
-src/014_try_statement10.php:5 PhanUndeclaredGlobalVariable Global variable $ is undeclared

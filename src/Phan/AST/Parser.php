@@ -491,11 +491,17 @@ class Parser
     {
         if (\in_array($error['type'], [\E_DEPRECATED, \E_COMPILE_WARNING], true) &&
             \basename($error['file']) === 'PhpTokenizer.php') {
+            $line = $error['line'];
+            if (\preg_match('/line ([0-9]+)$/D', $error['message'], $matches)) {
+                $line = (int)$matches[1];
+            }
+
+
             Issue::maybeEmit(
                 $code_base,
                 $context,
                 $error['type'] === \E_COMPILE_WARNING ? Issue::SyntaxCompileWarning : Issue::CompatibleSyntaxNotice,
-                $error['line'],
+                $line,
                 $error['message']
             );
         }
