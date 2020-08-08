@@ -413,7 +413,15 @@ class PhanPhpShellUtils
         if ($function_completions && !$other_completions) {
             $this->setReadlineConfig('completion_append_character', "(");
         }
-        return array_merge($function_completions, $other_completions);
+        $result = array_merge($function_completions, $other_completions);
+        $prefix_len = strlen($prefix);
+        foreach ($result as &$val) {
+            $i = strrpos(substr($val, 0, $prefix_len), '\\');
+            if ($i !== false) {
+                $val = substr($val, $i+1);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -454,6 +462,17 @@ class PhanPhpShellUtils
                 // TODO: Actually infer types for expressions other than variables
                 return $this->generateInstanceObjectCompletions($tokens) ?: self::NO_AVAILABLE_COMPLETIONS;
             }
+            if ($last_token_str === '\\') {
+                if (is_array($prev_token)) {
+                    $prev_token_kind = $prev_token[0];
+                    // TODO: T_NAME_RELATIVE for namespace\
+                    // @phan-suppress-next-line PhanUndeclaredConstant
+                    if ($prev_token_kind === T_STRING || PHP_VERSION_ID >= 80000 && in_array($prev_token_kind, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                        $last_token_str = ltrim($prev_token[1], '\\') . $last_token_str;
+                    }
+                }
+            }
+
             // TODO: Handle completions when the text is incorrectly tokenized (e.g. 'ast\parse_')
             // That would benefit from using tolerant-php-parser to identify identifiers that contain multiple tokens (e.g. `$x = ast\parse_<TAB>`)
             // Alternately, just look for T_STRING and T_BACKSLASH and T_WHITESPACE combinations
