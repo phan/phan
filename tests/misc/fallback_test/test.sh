@@ -37,6 +37,7 @@ sed -i \
     -e "s@PhanSyntaxError Unmatched '}'@PhanSyntaxError syntax error, unexpected '}', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\\\\\\\ (T_NS_SEPARATOR)@" \
     -e "s@case_insensitive = false@case_insensitive = unknown@" \
     -e "s@068_binary_literal.php:13 PhanSyntaxError Unclosed '{' on line 12@068_binary_literal.php:13 PhanSyntaxError syntax error, unexpected end of file@" \
+    -e "s/ unexpected token \"\([^\"]\)*\"/ unexpected '\1'/" \
     $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing

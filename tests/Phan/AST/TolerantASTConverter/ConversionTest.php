@@ -192,6 +192,9 @@ final class ConversionTest extends BaseTest
         if (\PHP_VERSION_ID < 80000 && $test_folder_name === 'php80_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php8.0 syntax when running in php7.4 or older');
         }
+        if (\PHP_VERSION_ID >= 80000 && \basename($file_name) === 'use_simple.php') {
+            $this->markTestIncomplete('php-ast cannot parse php8.0 syntax when running in php7.4 or older');
+        }
         $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");

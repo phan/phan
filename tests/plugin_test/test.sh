@@ -37,7 +37,7 @@ sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
     -e 's/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g' \
     -e 's/string \$haystack, int|string \$needle, int \$offset = 0/string \$haystack, int|string \$needle, int \$offset = unknown/g' \
     -e 's/\\\(Exception\|Error\)|\\Stringable|\\Throwable/\\\1|\\Throwable/g' \
-    -e 's/strlen(): Argument #1 (\$str) must be of type string/strlen() expects parameter 1 to be string/g' \
+    -e 's/strlen(): Argument #1 (\$string) must be of type string/strlen() expects parameter 1 to be string/g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

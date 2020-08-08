@@ -1202,11 +1202,10 @@ class TolerantASTConverter
                     }
                 }
                 $catch_list_node = new ast\Node(ast\AST_NAME_LIST, 0, $catch_inner_list, $catch_inner_list[0]->lineno ?? $start_line);
-                // TODO: Change to handle multiple exception types in catch clauses
-                // after https://github.com/Microsoft/tolerant-php-parser/issues/103 is supported
+                $variableName = $n->variableName;
                 return static::astStmtCatch(
                     $catch_list_node,
-                    static::variableTokenToString($n->variableName),
+                    $variableName !== null ? static::variableTokenToString($variableName) : null,
                     // @phan-suppress-next-line PhanTypeMismatchArgumentNullable return_null_on_empty is false.
                     static::phpParserStmtlistToAstNode($n->compoundStatement, $start_line, false),
                     $start_line
@@ -1712,14 +1711,15 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_TRY, 0, $children, $start_line);
     }
 
-    private static function astStmtCatch(ast\Node $types, string $var, \ast\Node $stmts, int $lineno): ast\Node
+    private static function astStmtCatch(ast\Node $types, ?string $var, \ast\Node $stmts, int $lineno): ast\Node
     {
         return new ast\Node(
             ast\AST_CATCH,
             0,
             [
                 'class' => $types,
-                'var' => new ast\Node(ast\AST_VAR, 0, ['name' => $var], $lineno),
+                // php 8.0 allows catch statements without variables
+                'var' => is_string($var) ? new ast\Node(ast\AST_VAR, 0, ['name' => $var], $lineno) : null,
                 'stmts' => $stmts,
             ],
             $lineno
