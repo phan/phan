@@ -266,6 +266,65 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
+    public function testEmptyThrow(): void
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+throw
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
+    public function testEmptyMatch(): void
+    {
+        if (\PHP_VERSION_ID < 80000) {
+            $this->markTestSkipped("Requires php 8.0+");
+        }
+        $incomplete_contents = <<<'EOT'
+<?php
+match {
+;
+foo();
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+
+
+foo();
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
+    /**
+     * Should not crash
+     */
+    public function testEmptyMatchArm(): void
+    {
+        if (\PHP_VERSION_ID < 80000) {
+            $this->markTestSkipped("Requires php 8.0+");
+        }
+        $incomplete_contents = <<<'EOT'
+<?php
+match (1+) {
+    'a' => 'b',
+    =>,
+    1=>2,
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+match(1) {
+    'a' => 'b',
+};
+
+1;2;
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
     public function testMissingSemicolon(): void
     {
         $incomplete_contents = <<<'EOT'

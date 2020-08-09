@@ -357,6 +357,8 @@ return [
         // TODO: Fix PhanParamNameIndicatingUnused* instances
         'PhanParamNameIndicatingUnused',
         'PhanParamNameIndicatingUnusedInClosure',
+        // TODO: min_php_version config setting
+        'PhanCompatibleObjectTypePHP71',
     ],
 
     // If this list is empty, no filter against issues types will be applied.

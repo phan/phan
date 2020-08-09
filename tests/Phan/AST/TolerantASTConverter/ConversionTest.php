@@ -200,7 +200,12 @@ final class ConversionTest extends BaseTest
             $this->fail("Failed to read $file_name");
             return;  // unreachable
         }
-        $ast = ast\parse_code($contents, $ast_version, $file_name);
+        try {
+            $ast = ast\parse_code($contents, $ast_version, $file_name);
+        } catch (\ParseError $e) {
+            $this->fail("Failed for $file_name:{$e->getLine()}: {$e->getMessage()}");
+            return;  // unreachable
+        }
         self::normalizeOriginalAST($ast);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');
         $converter = new TolerantASTConverter();
