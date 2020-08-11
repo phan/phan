@@ -71,9 +71,11 @@ class RedundantReturnVisitor
             // Nodes that can't contain return statements.
             case ast\AST_CALL:
             case ast\AST_PROP:
+            case ast\AST_NULLSAFE_PROP:
             case ast\AST_STATIC_PROP:
             case ast\AST_STATIC_CALL:
             case ast\AST_METHOD_CALL:
+            case ast\AST_NULLSAFE_METHOD_CALL:
             case ast\AST_UNARY_OP:
             case ast\AST_BINARY_OP:
             case ast\AST_ASSIGN:

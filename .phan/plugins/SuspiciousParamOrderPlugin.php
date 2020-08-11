@@ -344,6 +344,15 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node $node a node of type AST_NULLSAFE_METHOD_CALL
+     * @override
+     */
+    public function visitNullsafeMethodCall(Node $node): void
+    {
+        $this->visitMethodCall($node);
+    }
+
+    /**
      * @param Node $node a node of type AST_METHOD_CALL
      * @override
      */

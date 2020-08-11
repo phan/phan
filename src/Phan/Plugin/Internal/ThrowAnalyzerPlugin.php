@@ -331,6 +331,14 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     /**
      * @override
      */
+    public function visitNullsafeMethodCall(Node $node): void
+    {
+        $this->visitMethodCall($node);
+    }
+
+    /**
+     * @override
+     */
     public function visitMethodCall(Node $node): void
     {
         $context = $this->context;

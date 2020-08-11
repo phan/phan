@@ -2003,14 +2003,14 @@ class ContextNode
             return;
         }
 
-        if ($this->node->kind === ast\AST_STATIC_CALL ||
-           $this->node->kind === ast\AST_METHOD_CALL) {
+        $kind = $this->node->kind;
+        if (\in_array($kind, [ast\AST_STATIC_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL], true)) {
             return;
         }
 
         $llnode = $this->node;
 
-        if ($this->node->kind !== ast\AST_DIM) {
+        if ($kind !== ast\AST_DIM) {
             if (!($this->node->children['expr'] instanceof Node)) {
                 return;
             }
@@ -2062,7 +2062,7 @@ class ContextNode
         // Foo::$bar['baz'](); is a problem
         // Foo::$bar['baz'] is not
         if ($lnode->kind === ast\AST_STATIC_PROP
-            && $this->node->kind !== ast\AST_CALL
+            && $kind !== ast\AST_CALL
         ) {
             return;
         }

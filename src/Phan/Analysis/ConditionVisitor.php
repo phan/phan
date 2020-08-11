@@ -554,6 +554,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         return $this->removeFalseyFromVariable($node, $this->context, false);
     }
 
+    public function visitNullsafeProp(Node $node): Context
+    {
+        return $this->visitProp($node);
+    }
+
     /**
      * @param Node $node
      * A node to parse, with kind ast\AST_PROP (e.g. `if ($this->prop_name)`)
@@ -564,6 +569,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     public function visitProp(Node $node): Context
     {
+        // TODO: Make this imply $expr_node is an object?
         $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
             return $this->context;

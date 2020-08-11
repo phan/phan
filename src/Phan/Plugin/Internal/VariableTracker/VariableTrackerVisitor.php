@@ -146,6 +146,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->scope;
     }
 
+    public function visitNullsafeMethodCall(Node $node): VariableTrackingScope
+    {
+        return $this->visitCall($node);
+    }
+
     public function visitMethodCall(Node $node): VariableTrackingScope
     {
         return $this->visitCall($node);

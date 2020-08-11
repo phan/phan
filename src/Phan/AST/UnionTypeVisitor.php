@@ -2528,6 +2528,34 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_NULLSAFE_PROP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     * @override
+     */
+    public function visitNullsafeProp(Node $node): UnionType
+    {
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'])->getRealUnionType();
+        $result = $this->analyzeProp($node, false);
+        if ($expr_type->isEmpty()) {
+            return $result->nullableClone();
+        }
+        if ($expr_type->isNull()) {
+            return NullType::instance(false)->asRealUnionType();
+        }
+        if ($expr_type->containsNullableOrUndefined()) {
+            return $result->nullableClone();
+        }
+        return $result;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_PROP`
      *
      * @param Node $node
@@ -2762,6 +2790,33 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitStaticCall(Node $node): UnionType
     {
         return $this->visitMethodCall($node);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_NULLSAFE_METHOD_CALL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitNullsafeMethodCall(Node $node): UnionType
+    {
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'])->getRealUnionType();
+        $result = $this->visitMethodCall($node);
+        if ($result->isEmpty()) {
+            return $result->nullableClone();
+        }
+        if ($expr_type->isNull()) {
+            return NullType::instance(false)->asRealUnionType();
+        }
+        if ($expr_type->containsNullableOrUndefined()) {
+            return $result->nullableClone();
+        }
+        return $result;
     }
 
     /**

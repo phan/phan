@@ -122,6 +122,14 @@ class UnknownClassElementAccessPlugin extends PluginV3 implements
 class UnknownClassElementAccessVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
+     * @param Node $node a node of kind ast\AST_NULLSAFE_METHOD_CALL, representing a call to an instance method
+     */
+    public function visitNullsafeMethodCall(Node $node): void
+    {
+        $this->visitMethodCall($node);
+    }
+
+    /**
      * @param Node $node a node of kind ast\AST_METHOD_CALL, representing a call to an instance method
      */
     public function visitMethodCall(Node $node): void

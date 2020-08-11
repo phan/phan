@@ -92,6 +92,8 @@ class Element
         ast\AST_NAMED_ARG          => 'visitNamedArg',
         ast\AST_NAMESPACE          => 'visitNamespace',
         ast\AST_NEW                => 'visitNew',
+        ast\AST_NULLSAFE_METHOD_CALL => 'visitNullsafeMethodCall',
+        ast\AST_NULLSAFE_PROP      => 'visitNullsafeProp',
         ast\AST_PARAM              => 'visitParam',
         ast\AST_PARAM_LIST         => 'visitParamList',
         ast\AST_PRE_INC            => 'visitPreInc',

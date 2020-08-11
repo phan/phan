@@ -2888,6 +2888,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             case ast\AST_YIELD:
             case ast\AST_DIM:
             case ast\AST_PROP:
+            case ast\AST_NULLSAFE_PROP:
             case ast\AST_STATIC_PROP:
             case ast\AST_CALL:
             case ast\AST_CLASS_CONST:
@@ -2895,6 +2896,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             case ast\AST_ASSIGN_REF:
             case ast\AST_ASSIGN_OP:  // XXX could figure out what kinds of assign ops are guaranteed to be non-null
             case ast\AST_METHOD_CALL:
+            case ast\AST_NULLSAFE_METHOD_CALL:
             case ast\AST_STATIC_CALL:
                 return true;
             case ast\AST_CONDITIONAL:

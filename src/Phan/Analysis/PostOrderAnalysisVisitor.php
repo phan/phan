@@ -3026,6 +3026,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
+    public function visitNullsafeMethodCall(Node $node): Context
+    {
+        return $this->visitMethodCall($node);
+    }
+
     /**
      * @param Node $node
      * A node to parse
@@ -3178,6 +3183,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkForPossibleNonObjectInMethod(Node $node, string $method_name): void
     {
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+        if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && !$type->isNull()) {
+            $type = $type->nonNullableClone();
+        }
         if ($type->containsDefiniteNonObjectType()) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -3401,6 +3409,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     public function visitProp(Node $node): Context
+    {
+        return $this->analyzeProp($node, false);
+    }
+
+    public function visitNullsafeProp(Node $node): Context
     {
         return $this->analyzeProp($node, false);
     }
@@ -4285,7 +4298,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkForInfiniteRecursion(Node $node, FunctionInterface $method): void
     {
         $argument_list_node = $node->children['args'];
-        if ($node->kind === ast\AST_METHOD_CALL) {
+        $kind = $node->kind;
+        if ($kind === ast\AST_METHOD_CALL || $kind === ast\AST_NULLSAFE_METHOD_CALL) {
             $expr = $node->children['expr'];
             if (!$expr instanceof Node || $expr->kind !== ast\AST_VAR || $expr->children['name'] !== 'this') {
                 return;

@@ -150,6 +150,8 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    // TODO visitNullsafeMethodCall should not be possible on the left hand side?
+
     /**
      * The following is an example of how this would happen.
      * (TODO: Check if the right-hand side is an object with offsetSet() or a reference?
@@ -933,6 +935,8 @@ class AssignmentVisitor extends AnalysisVisitor
         // TODO: Assignment sanity checks.
         return $this->context;
     }
+
+    // TODO: visitNullsafeProp should not be possible on the left hand side?
 
     /**
      * @param Node $node

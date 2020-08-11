@@ -1323,7 +1323,7 @@ final class ArgumentType
                     return true;
                 }
             }
-        } elseif ($node_kind === ast\AST_STATIC_CALL || $node_kind === ast\AST_METHOD_CALL) {
+        } elseif (\in_array($node_kind, [ast\AST_STATIC_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL], true)) {
             $method_name = $node->children['method'] ?? null;
             if (is_string($method_name)) {
                 $class_node = $node->children['class'] ?? $node->children['expr'];

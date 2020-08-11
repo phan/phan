@@ -1551,6 +1551,10 @@ class ParseVisitor extends ScopeVisitor
     {
         return $this->context;
     }
+    public function visitNullsafeProp(Node $node): Context
+    {
+        return $this->context;
+    }
     public function visitProp(Node $node): Context
     {
         return $this->context;

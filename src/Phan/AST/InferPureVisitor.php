@@ -244,6 +244,11 @@ class InferPureVisitor extends AnalysisVisitor
         $this->maybeInvoke($node->children['dim']);
     }
 
+    public function visitNullsafeProp(Node $node): void
+    {
+        $this->visitProp($node);
+    }
+
     public function visitProp(Node $node): void
     {
         ['expr' => $expr, 'prop' => $prop] = $node->children;
@@ -560,6 +565,11 @@ class InferPureVisitor extends AnalysisVisitor
 
         $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method));
         $this->visitArgList($node->children['args']);
+    }
+
+    public function visitNullsafeMethodCall(Node $node): void
+    {
+        $this->visitMethodCall($node);
     }
 
     public function visitMethodCall(Node $node): void

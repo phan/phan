@@ -74,10 +74,12 @@ class DefinitionResolver
                     return;
                 case ast\AST_STATIC_PROP:
                 case ast\AST_PROP:
+                case ast\AST_NULLSAFE_PROP:
                     self::locatePropDefinition($request, $code_base, $context, $node);
                     return;
                 case ast\AST_STATIC_CALL:
                 case ast\AST_METHOD_CALL:
+                case ast\AST_NULLSAFE_METHOD_CALL:
                     self::locateMethodDefinition($request, $code_base, $context, $node);
                     return;
                 case ast\AST_NEW:

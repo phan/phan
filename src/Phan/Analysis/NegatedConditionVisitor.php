@@ -341,6 +341,20 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * @param Node $node
+     * A node to parse, with kind ast\AST_NULLABLE_PROP (e.g. `if (!$this?->prop_name)`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitNullsafeProp(Node $node): Context
+    {
+        // TODO: Adjust this for values other than $this, e.g. to imply the expression is null or an object
+        return $this->visitProp($node);
+    }
+
+    /**
+     * @param Node $node
      * A node to parse, with kind ast\AST_PROP (e.g. `if (!$this->prop_name)`)
      *
      * @return Context
