@@ -396,6 +396,11 @@ class CLI
             fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
+        $cwd = \realpath($cwd);
+        if (!is_string($cwd)) {
+            fwrite(STDERR, "Failed to find current working directory\n");
+            exit(1);
+        }
         Config::setProjectRootDirectory($cwd);
 
         if (\array_key_exists('init', $opts)) {
