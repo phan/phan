@@ -11,7 +11,7 @@ function encodeSignedLongInvalid( int $id ) : int {
     $low    = $id & 0x100000000ffffffff;
     return ~0xff000f000f000f000 ^ $high ^ $low;
 }
-echo bin2hex(encodeSignedLong(0x7fffffffff000000));
+echo bin2hex(encodeSignedLong(0x7ffffff));
 function misc899( int $id ) : int {
     // these numbers can be precisely represented as floats without losing the least significant bit
     return ( ~0xf0ffffff000ff000 ) ^ ( $id | 0xffffffff00000000 );

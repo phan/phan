@@ -274,6 +274,7 @@ throw
 EOT;
         $valid_contents = <<<'EOT'
 <?php
+
 EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
