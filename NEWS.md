@@ -26,6 +26,8 @@ Miscellaneous:
 Bug fixes:
 + Suppress `PhanParamNameIndicatingUnused` in files loaded from `autoload_internal_extension_signatures`
 + Improve compatibility of polyfill/fallback parser with php 8.0
++ Also try to check against the realpath() of the current working directory when converting absolute paths
+  to relative paths.
 
 Jul 31 2020, Phan 3.1.1
 -----------------------
