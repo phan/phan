@@ -1,6 +1,6 @@
-src/006_type_check_undeclared_function.php:6 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s)
+src/006_type_check_undeclared_function.php:6 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
 src/006_type_check_undeclared_function.php:6 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is xdebug_get_stack_depth('stack') of type int but \spl_object_hash() takes object
 src/006_type_check_undeclared_function.php:6 PhanUndeclaredFunction Call to undeclared function \xdebug_get_stack_depth()
-src/006_type_check_undeclared_function.php:9 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s)
+src/006_type_check_undeclared_function.php:9 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
 src/006_type_check_undeclared_function.php:9 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is xdebug_get_stack_depth('stack') of type int but \spl_object_hash() takes object
 src/006_type_check_undeclared_function.php:9 PhanUndeclaredFunction Call to undeclared function \xdebug_get_stack_depth()

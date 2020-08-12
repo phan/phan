@@ -3,7 +3,7 @@
 %s:4 PhanPluginUseReturnValueNoopVoid The function/method \Test::no_args() is declared to return (empty union type) and it has no side effects
 %s:7 PhanParamTooMany Call with 2 arg(s) to \accepts_one($x) which only takes 1 arg(s) defined at %s:2
 %s:7 PhanUndeclaredVariable Variable $a is undeclared
-%s:8 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s)
+%s:8 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
 %s:8 PhanUndeclaredVariable Variable $other is undeclared
 %s:10 PhanParamTooMany Call with 1 arg(s) to \anonymous_class_%s::__construct() which only takes 0 arg(s) defined at %s:10
 %s:10 PhanUndeclaredVariable Variable $invalid is undeclared

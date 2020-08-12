@@ -8,5 +8,5 @@ src/061_cast_crash.php:27 PhanTypeMismatchArgument Argument 1 ($x) is (int)($x) 
 src/061_cast_crash.php:30 PhanTypeMismatchArgument Argument 1 ($x) is (int)($x) of type int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
 src/061_cast_crash.php:33 PhanTypeMismatchArgument Argument 1 ($x) is (float)($x) of type float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
 src/061_cast_crash.php:36 PhanTypeMismatchArgumentReal Argument 1 ($x) is (object)($x) of type object but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
-src/061_cast_crash.php:45 PhanCompatibleUnsetCast The unset cast (in (unset)($x)) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
+src/061_cast_crash.php:45 PhanCompatibleUnsetCast The unset cast (in (unset)($x)) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.
 src/061_cast_crash.php:45 PhanTypeMismatchArgumentReal Argument 1 ($x) is (unset)($x) of type null but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3

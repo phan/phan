@@ -6,7 +6,7 @@
 %s:8 PhanNoopCast Unused result of a (int)($a) cast
 %s:8 PhanRedundantConditionInGlobalScope Redundant attempt to cast $a of type 2 to int in the global scope (likely a false positive)
 %s:9 PhanNoopCast Unused result of a (bool)($a) cast
-%s:10 PhanCompatibleUnsetCast The unset cast (in (unset)($a)) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
+%s:10 PhanCompatibleUnsetCast The unset cast (in (unset)($a)) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.
 %s:10 PhanNoopCast Unused result of a (unset)($a) cast
 %s:11 PhanNoopCast Unused result of a (float)($a) cast
 %s:12 PhanNoopCast Unused result of a (array)($a) cast

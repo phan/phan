@@ -414,7 +414,7 @@ In PHP 5.6, return types ({TYPE}) are not supported
 ## PhanCompatibleAutoload
 
 ```
-Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).
+Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+. Use spl_autoload_register() instead (supported since PHP 5.1).
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/src/000_plugins.php#L64).
@@ -611,7 +611,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php74_files/expe
 ## PhanCompatibleUnsetCast
 
 ```
-The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.
+The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_test/src/061_cast_crash.php#L45).
@@ -2106,7 +2106,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 This issue is emitted when you're passing more than the number of required and optional parameters than are defined for an internal method or function.
 
 ```
-Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s)
+Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
 ```
 
 This will be emitted for the code

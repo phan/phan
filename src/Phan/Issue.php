@@ -2939,8 +2939,8 @@ class Issue
             new Issue(
                 self::ParamTooManyInternal,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_LOW,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s)",
+                self::SEVERITY_CRITICAL,
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.",
                 self::REMEDIATION_B,
                 7002
             ),
@@ -4699,7 +4699,7 @@ class Issue
                 self::CompatibleAutoload,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).",
+                "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+. Use spl_autoload_register() instead (supported since PHP 5.1).",
                 self::REMEDIATION_B,
                 3013
             ),
@@ -4707,7 +4707,7 @@ class Issue
                 self::CompatibleUnsetCast,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "The unset cast (in {CODE}) was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0.",
+                "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 3014
             ),
