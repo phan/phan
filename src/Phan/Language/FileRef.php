@@ -73,9 +73,13 @@ class FileRef implements \Serializable
      */
     public static function getProjectRelativePathForPath(string $cwd_relative_path): string
     {
+        if ($cwd_relative_path === '') {
+            return '';
+        }
         // Get a path relative to the project root
         // e.g. if the path is /my-project, then strip the beginning of "/my-project/src/a.php" to "src/a.php" but should not change /my-project-unrelated-src/a.php
         // And don't strip subdirectories of the same name, e.g. should convert "/my-project/subdir/my-project/file.php" to "subdir/my-project/file.php"
+        // And convert "/my-project/.//src/a.php" to "src/a.php"
         $path = \realpath($cwd_relative_path) ?: $cwd_relative_path;
         $root_directory = Config::getProjectRootDirectory();
         $n = \strlen($root_directory);
@@ -84,6 +88,24 @@ class FileRef implements \Serializable
                 $path = (string)\substr($path, $n + 1);
                 // Strip any extra beginning directory separators
                 $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
+                return $path;
+            }
+        }
+
+        // Deal with a wide variety of cases
+        // E.g. the project in question is a symlink,
+        // or uses directory separators that were converted to Windows directory by the call to realpath.
+        // (On Windows, 'c:/Project/Xyz/./other' gets normalized to 'C:\Project\Xyz\other' (uppercase drive letter))
+        $root_directory_realpath = (string)\realpath($root_directory);
+        if ($root_directory_realpath !== '' && $root_directory_realpath !== $root_directory) {
+            $n = \strlen($root_directory_realpath);
+            if (\strncmp($path, $root_directory_realpath, $n) === 0) {
+                if (\in_array($path[$n] ?? '', [\DIRECTORY_SEPARATOR, '/'], true)) {
+                    $path = (string)\substr($path, $n + 1);
+                    // Strip any extra beginning directory separators
+                    $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
+                    return $path;
+                }
             }
         }
 
