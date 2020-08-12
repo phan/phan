@@ -1689,12 +1689,12 @@ Extended help:
   This is useful to verify that options such as exclude_file_regex are
   properly set up, or to run other checks on the files Phan would parse.
 
+ --dump-analyzed-file-list
+  Emit a newline-separated list of files Phan would analyze to stdout.
+
  --always-exit-successfully-after-analysis
   Always exit with an exit code of 0, even if unsuppressed issues were emitted.
   This helps in checking if Phan crashed.
-
- --dump-analyzed-file-list
-  Emit a newline-separated list of files Phan would analyze to stdout.
 
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
