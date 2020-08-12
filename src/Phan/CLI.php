@@ -1692,10 +1692,6 @@ Extended help:
  --dump-analyzed-file-list
   Emit a newline-separated list of files Phan would analyze to stdout.
 
- --always-exit-successfully-after-analysis
-  Always exit with an exit code of 0, even if unsuppressed issues were emitted.
-  This helps in checking if Phan crashed.
-
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
@@ -1706,6 +1702,10 @@ Extended help:
   Currently, this only dumps classes/constants/functions/properties,
   and not variable definitions.
   This should be used with --quick, and can't be used with --processes <int>.
+
+ --always-exit-successfully-after-analysis
+  Always exit with an exit code of 0, even if unsuppressed issues were emitted.
+  This helps in checking if Phan crashed.
 
  --automatic-fix
   Automatically fix any issues Phan is capable of fixing.
