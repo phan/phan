@@ -131,7 +131,7 @@ class FileRef implements \Serializable
     }
 
     /**
-     * @var int $line_number
+     * @param int $line_number
      * The starting line number of the element within the file
      *
      * @return static
@@ -144,7 +144,7 @@ class FileRef implements \Serializable
     }
 
     /**
-     * @var int $line_number
+     * @param int $line_number
      * The starting line number of the element within the file
      *
      * @return void

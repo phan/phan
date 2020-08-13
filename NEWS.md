@@ -18,6 +18,7 @@ New features (Analysis):
   `PhanDefinitelyDuplicateNamedArgument`, `PhanPositionalArgumentAfterNamedArgument`, and
   `PhanArgumentUnpackingUsedWithNamedArgument`
 + Incomplete support for analyzing uses of PHP 8.0's nullsafe operator(`?->`) for property reads and method calls. (#4067)
++ Warn about using `@var` where `@param` should be used (#1366)
 
 Miscellaneous:
 + Raise the severity of `PhanUndeclaredConstant` from normal to critical.

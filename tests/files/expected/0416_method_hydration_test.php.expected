@@ -1,1 +1,3 @@
+%s:13 PhanCommentVarInsteadOfParam Saw @var annotation for $param but Phan expects the @param annotation to document the parameter with that name for function test2(int|mixed $param = D416::CONSTNAME)
+%s:23 PhanCommentVarInsteadOfParam Saw @var annotation for $param but Phan expects the @param annotation to document the parameter with that name for function test3(int|mixed $param = D416::CONSTNAME)
 %s:30 PhanUndeclaredConstantOfClass Reference to undeclared class constant \D416::MISSING_CONSTNAME

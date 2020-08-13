@@ -776,6 +776,19 @@ trait FunctionTrait
                 $real_parameter_name_map[$comment_parameter_name]->setIsOutputReference();
             }
         }
+        foreach ($comment->getVariableList() as $comment_variable) {
+            if (\array_key_exists($comment_variable->getName(), $real_parameter_name_map)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CommentVarInsteadOfParam,
+                    $comment_variable->getLineno(),
+                    $comment_variable->getName(),
+                    (string)$function
+                );
+                continue;
+            }
+        }
         $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
         if ($function instanceof Method) {
             $function->checkForTemplateTypes();

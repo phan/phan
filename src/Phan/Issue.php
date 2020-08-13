@@ -583,6 +583,7 @@ class Issue
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     public const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
     public const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
+    public const CommentVarInsteadOfParam         = 'PhanCommentVarInsteadOfParam';
     public const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
     public const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     public const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
@@ -5021,6 +5022,14 @@ class Issue
                 'Expected @param annotation for ${PARAMETER} to be before the @param annotation for ${PARAMETER}',
                 self::REMEDIATION_A,
                 16008
+            ),
+            new Issue(
+                self::CommentVarInsteadOfParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Saw @var annotation for ${VARIABLE} but Phan expects the @param annotation to document the parameter with that name for {FUNCTION}',
+                self::REMEDIATION_A,
+                16022
             ),
             new Issue(
                 self::ThrowTypeAbsent,

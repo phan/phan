@@ -4579,6 +4579,14 @@ Saw an @param annotation for ${PARAMETER}, but it was not found in the param lis
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0373_reject_bad_type_narrowing.php#L4).
 
+## PhanCommentVarInsteadOfParam
+
+```
+Saw @var annotation for ${VARIABLE} but Phan expects the @param annotation to document the parameter with that name for {FUNCTION}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0416_method_hydration_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0416_method_hydration_test.php#L13).
+
 ## PhanDebugAnnotation
 
 ```
