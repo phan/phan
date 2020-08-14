@@ -2782,8 +2782,8 @@ class Issue
             new Issue(
                 self::StaticCallToNonStatic,
                 self::CATEGORY_STATIC,
-                self::SEVERITY_NORMAL,
-                "Static call to non-static method {METHOD} defined at {FILE}:{LINE}",
+                self::SEVERITY_CRITICAL,
+                "Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This is an Error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 9000
             ),
