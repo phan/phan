@@ -1,1 +1,1 @@
-%s:9 PhanStaticCallToNonStatic Static call to non-static method \A::nonStaticMethod() defined at %s:4
+%s:9 PhanStaticCallToNonStatic Static call to non-static method \A::nonStaticMethod() defined at %s:4. This is an Error in PHP 8.0+.

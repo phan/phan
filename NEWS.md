@@ -21,7 +21,7 @@ New features (Analysis):
 + Warn about using `@var` where `@param` should be used (#1366)
 
 Miscellaneous:
-+ Raise the severity of `PhanUndeclaredConstant` from normal to critical.
++ Raise the severity of `PhanUndeclaredConstant` and `PhanStaticCallToNonStatic` from normal to critical.
   Undeclared constants will become a thrown `Error` at runtime in PHP 8.0+.
 
 Bug fixes:

@@ -1,1 +1,1 @@
-%s:10 PhanStaticCallToNonStatic Static call to non-static method \C45::f() defined at %s:5
+%s:10 PhanStaticCallToNonStatic Static call to non-static method \C45::f() defined at %s:5. This is an Error in PHP 8.0+.

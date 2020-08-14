@@ -28,7 +28,7 @@
 %s:86 PhanRedefineFunction Function f9 defined at %s:86 was previously defined at %s:87
 %s:87 PhanRedefineFunction Function f9 defined at %s:87 was previously defined at %s:86
 %s:90 PhanRedefineFunctionInternal Function strlen defined at %s:90 was previously defined internally
-%s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93
+%s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93. This is an Error in PHP 8.0+.
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
 %s:104 PhanTypeArraySuspicious Suspicious array access to $v4 of type false
 %s:107 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare [1,2] of type array{0:1,1:2} to 'string' of type 'string'

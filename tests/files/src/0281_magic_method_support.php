@@ -44,7 +44,7 @@ function testA281(A281 $a) {
     $a->fooWithOptionalSecondParam(42, 1); // valid
     $a->fooWithOptionalSecondParam(42, null); // invalid
     $a->fooWithOptionalSecondParam(); // invalid, expects 1 to 2 params.
-    $a::fooWithOptionalSecondParam(42); // invalid, calling an instance method statically.
+    $a::fooWithOptionalSecondParam(42); // invalid, calling an instance method statically. TODO: This is magic, use a different warning?
 
     $a->fooWithOptionalNullableParam('string'); // expects optional string
     $a->fooWithOptionalNullableParam(null); // expects optional, nullable string

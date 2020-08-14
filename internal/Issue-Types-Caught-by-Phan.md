@@ -2324,7 +2324,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 
 
 ```
-Static call to non-static method {METHOD} defined at {FILE}:{LINE}
+Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This is an Error in PHP 8.0+.
 ```
 
 

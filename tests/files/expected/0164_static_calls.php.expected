@@ -1,1 +1,1 @@
-%s:13 PhanStaticCallToNonStatic Static call to non-static method \Test::baz() defined at %s:6
+%s:13 PhanStaticCallToNonStatic Static call to non-static method \Test::baz() defined at %s:6. This is an Error in PHP 8.0+.
