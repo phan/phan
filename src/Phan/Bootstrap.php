@@ -176,7 +176,7 @@ assert_options(ASSERT_WARNING, false);
 assert_options(ASSERT_BAIL, false);
 // ASSERT_QUIET_EVAL has been removed starting with PHP 8
 if (defined('ASSERT_QUIET_EVAL')) {
-    assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line PhanUndeclaredConstant, UnusedPluginSuppression
+    assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line UnusedPluginSuppression, PhanTypeMismatchArgumentNullableInternal
 }
 assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 

@@ -366,10 +366,11 @@ class CompletionResolver
         if (($parent_node->kind ?? null) === ast\AST_STMT_LIST) {
             \array_push($token_candidates, ...self::COMPLETING_STATEMENT_TOKENS);
         }
-        if (Config::get_closest_target_php_version_id() >= 80000) {
+        // Suggest additional tokens that can be used in all supported php versions of this project.
+        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
             $token_candidates[] = 'match';
         }
-        if (Config::get_closest_target_php_version_id() >= 70400) {
+        if (Config::get_closest_minimum_target_php_version_id() >= 70400) {
             $token_candidates[] = 'fn';
         }
         \sort($token_candidates);

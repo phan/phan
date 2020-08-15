@@ -2977,7 +2977,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$type) {
             return;
         }
-        if (Config::get_closest_target_php_version_id() >= 80000) {
+        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
+            // Don't warn about using union types if the project dropped support for php versions older than 8.0
             return;
         }
         if ($type->kind === ast\AST_TYPE_UNION) {

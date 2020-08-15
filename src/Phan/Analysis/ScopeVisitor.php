@@ -159,12 +159,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitUse(Node $node): Context
     {
         $context = $this->context;
-        $target_php_version = Config::get_closest_target_php_version_id();
+        $minimum_target_php_version = Config::get_closest_minimum_target_php_version_id();
 
         foreach (self::aliasTargetMapFromUseNode($node) as $alias => [$flags, $target, $lineno]) {
             $flags = $node->flags ?: $flags;
-            if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
-                self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
+            if ($flags === \ast\flags\USE_NORMAL && $minimum_target_php_version < 70200) {
+                self::analyzeUseElemCompatibility($alias, $target, $minimum_target_php_version, $lineno);
             }
             if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
                 $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
@@ -222,11 +222,11 @@ abstract class ScopeVisitor extends AnalysisVisitor
     private function analyzeUseElemCompatibility(
         string $alias,
         FQSEN $target,
-        int $target_php_version,
+        int $minimum_target_php_version,
         int $lineno
     ): void {
         $alias_lower = \strtolower($alias);
-        if ($target_php_version < 70100) {
+        if ($minimum_target_php_version < 70100) {
             if ($alias_lower === 'void') {
                 Issue::maybeEmit(
                     $this->code_base,

@@ -4,6 +4,16 @@ Phan NEWS
 -----------------------
 
 New features (CLI, Config):
++ **Add the `minimum_target_php_version` config setting and `--minimum-target-php-version` CLI flag.** (#3939)
+  Phan will use this instead of `target_php_version` for some backwards compatibility checks
+  (i.e. to check that the feature in question is supported by the oldest php version the project supports).
+
+  If this is not configured, Phan will attempt to use the composer.json version ranges if they are available.
+  Otherwise, `target_php_version` will be used.
+
+  Phan will use `target_php_version` instead if `minimum_target_php_version` is greater than `target_php_version`.
+
+  Update various checks to use `minimum_target_php_version` instead of `target_php_version`.
 + Add `--always-exit-successfully-after-analysis` flag.
   By default, phan exits with a non-zero exit code if 1 or more unsuppressed issues were reported.
   When this CLI flag is set, phan will instead exit with exit code 0 as long as the analysis completed.

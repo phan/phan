@@ -73,9 +73,9 @@ class ParameterTypesAnalyzer
         }
 
         self::checkCommentParametersAreInOrder($code_base, $method);
-        $target_php_version = Config::get_closest_target_php_version_id();
-        if ($target_php_version < 70200 && !$method->isFromPHPDoc()) {
-            self::analyzeRealSignatureCompatibility($code_base, $method, $target_php_version);
+        $minimum_target_php_version = Config::get_closest_minimum_target_php_version_id();
+        if ($minimum_target_php_version < 70200 && !$method->isFromPHPDoc()) {
+            self::analyzeRealSignatureCompatibility($code_base, $method, $minimum_target_php_version);
         }
 
         // Look at each parameter to make sure their types
@@ -207,11 +207,11 @@ class ParameterTypesAnalyzer
     }
 
     /**
-     * Precondition: $target_php_version < 70200
+     * Precondition: $minimum_target_php_version < 70200
      */
-    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version): void
+    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $minimum_target_php_version): void
     {
-        $php70_checks = $target_php_version < 70100;
+        $php70_checks = $minimum_target_php_version < 70100;
 
         foreach ($method->getRealParameterList() as $real_parameter) {
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
@@ -238,7 +238,7 @@ class ParameterTypesAnalyzer
                         );
                         continue;
                     }
-                    if ($target_php_version < 70000 && $type instanceof ScalarType) {
+                    if ($minimum_target_php_version < 70000 && $type instanceof ScalarType) {
                         Issue::maybeEmit(
                             $code_base,
                             $method->getContext(),
@@ -270,7 +270,7 @@ class ParameterTypesAnalyzer
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
             if ($php70_checks) {
-                if ($target_php_version < 70000) {
+                if ($minimum_target_php_version < 70000) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -309,7 +309,7 @@ class ParameterTypesAnalyzer
                         );
                         continue;
                     }
-                    if ($target_php_version < 70000 && $type instanceof ScalarType) {
+                    if ($minimum_target_php_version < 70000 && $type instanceof ScalarType) {
                         Issue::maybeEmit(
                             $code_base,
                             $method->getContext(),
@@ -481,7 +481,7 @@ class ParameterTypesAnalyzer
         $construct_access_signature_mismatch_thrown = false;
         if ($method->getName() === '__construct') {
             // flip the switch on so we don't throw both ConstructAccessSignatureMismatch now and AccessSignatureMismatch later
-            $construct_access_signature_mismatch_thrown = Config::get_closest_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method);
+            $construct_access_signature_mismatch_thrown = Config::get_closest_minimum_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method);
 
             if ($construct_access_signature_mismatch_thrown) {
                 Issue::maybeEmit(

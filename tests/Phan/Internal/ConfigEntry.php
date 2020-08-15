@@ -49,6 +49,7 @@ class ConfigEntry
      */
     const CATEGORIES = [
         'target_php_version' => self::CATEGORY_ANALYSIS_VERSION,
+        'minimum_target_php_version' => self::CATEGORY_ANALYSIS_VERSION,
         'pretend_newer_core_methods_exist' => self::CATEGORY_ANALYSIS_VERSION,
         'polyfill_parse_all_element_doc_comments' => self::CATEGORY_ANALYSIS_VERSION,
         'file_list' => self::CATEGORY_FILES,

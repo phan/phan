@@ -51,7 +51,7 @@ class ShortArrayVisitor extends PluginAwarePostAnalysisVisitor
                 );
                 return;
             case \ast\flags\ARRAY_SYNTAX_LIST:
-                if (Config::get_closest_target_php_version_id() >= 70100) {
+                if (Config::get_closest_minimum_target_php_version_id() >= 70100) {
                     $this->emit(
                         'PhanPluginShortArrayList',
                         'Should use [] instead of list()',

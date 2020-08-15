@@ -168,6 +168,7 @@ class CLI
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
+        'minimum-target-php-version:',
         'native-syntax-check:',
         'no-color',
         'no-progress-bar',
@@ -671,6 +672,9 @@ class CLI
                     break;
                 case 'target-php-version':
                     Config::setValue('target_php_version', $value);
+                    break;
+                case 'minimum-target-php-version':
+                    Config::setValue('minimum_target_php_version', $value);
                     break;
                 case 'polyfill-parse-all-element-doc-comments':
                     // TODO: Drop in Phan 3
@@ -1540,6 +1544,9 @@ $init_help
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
    and checks for undefined classes/methods/functions)
+
+ --minimum-target-php-version {7.0,7.1,7.2,7.3,7.4,8.0,native}
+  The PHP version that will be used for feature/syntax compatibility warnings.
 
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
@@ -2620,8 +2627,7 @@ EOB
         if (getenv('PHAN_NO_UTF8')) {
             return false;
         }
-        // TODO: Use PHP_OS_FAMILY once the minimum supported php version is 7.2 or higher.
-        if (\DIRECTORY_SEPARATOR === '\\') {
+        if (\PHP_OS_FAMILY === 'Windows') {
             if (!\function_exists('sapi_windows_cp_is_utf8') || !\sapi_windows_cp_is_utf8()) {
                 return false;
             }

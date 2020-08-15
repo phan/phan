@@ -704,7 +704,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitAssign(Node $node): Context
     {
-        if (Config::get_closest_target_php_version_id() < 70100) {
+        if (Config::get_closest_minimum_target_php_version_id() < 70100) {
             $var_node = $node->children['var'];
             if ($var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
                 BlockAnalysisVisitor::analyzeArrayAssignBackwardsCompatibility($this->code_base, $this->context, $var_node);
@@ -755,7 +755,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         try {
             $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));
 
-            if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
+            if (Config::get_closest_minimum_target_php_version_id() < 70100 && \count($class_list) > 1) {
                 $this->emitIssue(
                     Issue::CompatibleMultiExceptionCatchPHP70,
                     $node->lineno

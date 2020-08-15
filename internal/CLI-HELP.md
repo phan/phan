@@ -109,6 +109,9 @@ Usage: ./phan [options] [files...]
   (Phan relies on Reflection for some param counts
    and checks for undefined classes/methods/functions)
 
+ --minimum-target-php-version {7.0,7.1,7.2,7.3,7.4,8.0,native}
+  The PHP version that will be used for feature/syntax compatibility warnings.
+
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 
