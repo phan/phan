@@ -50,6 +50,8 @@ use function is_executable;
 use function is_resource;
 use function is_string;
 use function min;
+use function phpversion;
+use function printf;
 use function shell_exec;
 use function str_repeat;
 use function strcasecmp;
@@ -374,7 +376,11 @@ class CLI
             throw new ExitException($result, EXIT_SUCCESS);
         }
         if (\array_key_exists('v', $opts) || \array_key_exists('version', $opts)) {
-            \printf("Phan %s\n", self::PHAN_VERSION);
+            printf("Phan %s" . PHP_EOL, self::PHAN_VERSION);
+            $ast_version = (string) phpversion('ast');
+            $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
+            printf("php-ast %s" . PHP_EOL, $ast_version_repr);
+            printf("PHP version used to run Phan: %s" . PHP_EOL, \PHP_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
         self::restartWithoutProblematicExtensions();

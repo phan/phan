@@ -243,9 +243,10 @@ final class CLITest extends BaseTest
             $this->assertSame(0, $e->getCode());
             $this->assertSame('', $e->getMessage());
         } finally {
-            $stdout = \ob_get_clean();
+            $stdout = (string)\ob_get_clean();
         }
-        $this->assertSame(\sprintf("Phan %s\n", CLI::PHAN_VERSION), $stdout);
+        $this->assertStringStartsWith(\sprintf("Phan %s" . \PHP_EOL, CLI::PHAN_VERSION), $stdout);
+        $this->assertStringContainsString(\PHP_VERSION, $stdout);
     }
 
     /** @return list<list> */

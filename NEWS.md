@@ -7,6 +7,7 @@ New features (CLI, Config):
 + Add `--always-exit-successfully-after-analysis` flag.
   By default, phan exits with a non-zero exit code if 1 or more unsuppressed issues were reported.
   When this CLI flag is set, phan will instead exit with exit code 0 as long as the analysis completed.
++ Include the installed php-ast version and the php version used to run Phan in the output of `phan --version`. (#4147)
 
 New features (Analysis):
 + Emit `PhanNoopRepeatedSilenceOperator` for `@@expr` or `@(@expr)`.
