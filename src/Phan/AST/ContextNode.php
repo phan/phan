@@ -746,7 +746,9 @@ class ContextNode
                 );
             }
 
-            if (!$union_type->isEmpty()
+            if (
+                $union_type->isDefinitelyUndefined() ||
+                (!$union_type->isEmpty()
                 && $union_type->isNativeType()
                 && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return !$type->isNullable() && ($type instanceof MixedType || $type instanceof ObjectType);
@@ -756,7 +758,7 @@ class ContextNode
                 && !(
                     Config::get_null_casts_as_any_type()
                     && $union_type->hasType(NullType::instance(false))
-                )
+                ))
             ) {
                 throw new IssueException(
                     Issue::fromType(Issue::NonClassMethodCall)(

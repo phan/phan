@@ -19,6 +19,8 @@ New features (Analysis):
   `PhanArgumentUnpackingUsedWithNamedArgument`
 + Incomplete support for analyzing uses of PHP 8.0's nullsafe operator(`?->`) for property reads and method calls. (#4067)
 + Warn about using `@var` where `@param` should be used (#1366)
++ Treat undefined variables as definitely null/undefined in various places
+  when they are used outside of loops and the global scope. (#4148)
 
 Miscellaneous:
 + Raise the severity of `PhanUndeclaredConstant` and `PhanStaticCallToNonStatic` from normal to critical.

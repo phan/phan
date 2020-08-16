@@ -398,7 +398,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             );
             return true;
         }
-        if ($method->getUnionType()->isNull() || !($method->hasReturn() || $method->isFromPHPDoc())) {
+        $phpdoc_return_type = $method->getPHPDocReturnType();
+        if (($phpdoc_return_type && $phpdoc_return_type->isNull()) || $method->getRealReturnType()->isNull() || !($method->hasReturn() || $method->isFromPHPDoc())) {
             return false;
         }
         $this->emitPluginIssue(

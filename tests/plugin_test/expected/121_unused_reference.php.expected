@@ -1,5 +1,6 @@
 src/121_unused_reference.php:3 PhanUnusedVariableReference Unused definition of variable $b as a reference
 src/121_unused_reference.php:5 PhanPluginConstantVariableScalar Variable $a is probably constant with a value of 2
+src/121_unused_reference.php:9 PhanTypeSuspiciousStringExpression Suspicious type null= of a variable or expression $staticVar used to build a string. (Expected type to be able to cast to a string)
 src/121_unused_reference.php:9 PhanUndeclaredVariable Variable $staticVar is undeclared
 src/121_unused_reference.php:10 PhanUnusedVariableStatic Unreferenced definition of variable $staticVar as a static variable
 src/121_unused_reference.php:11 PhanUnusedVariableStatic Unreferenced definition of variable $staticUnreferencedVar as a static variable

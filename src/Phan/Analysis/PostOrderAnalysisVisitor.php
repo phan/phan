@@ -3183,7 +3183,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkForPossibleNonObjectInMethod(Node $node, string $method_name): void
     {
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
-        if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && !$type->isNull()) {
+        if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && !$type->isNull() && !$type->isDefinitelyUndefined()) {
             $type = $type->nonNullableClone();
         }
         if ($type->containsDefiniteNonObjectType()) {

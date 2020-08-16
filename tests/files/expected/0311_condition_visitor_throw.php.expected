@@ -12,15 +12,19 @@
 %s:19 PhanUndeclaredVariable Variable $z is undeclared (Did you mean $y)
 %s:20 PhanUndeclaredVariable Variable $a is undeclared (Did you mean $y)
 %s:21 PhanUndeclaredVariable Variable $b is undeclared (Did you mean $y)
+%s:23 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $strTypo of type null but \strlen() takes string
 %s:23 PhanUndeclaredVariable Variable $strTypo is undeclared
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
 %s:25 PhanRedundantCondition Redundant attempt to cast $inCondVar of type 3 to truthy
 %s:25 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $inCondVar of type 3 but \strlen() takes string
 %s:26 PhanCoalescingAlwaysNull Using $c of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
 %s:26 PhanUndeclaredVariable Variable $c is undeclared (Did you mean $y)
+%s:27 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null= (expected number that can fit in an int, or string)
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
+%s:28 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of - is null= (expected number)
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
 %s:30 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
+%s:30 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)
 %s:30 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:31 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
 %s:31 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
@@ -29,6 +33,7 @@
 %s:33 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
 %s:35 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+%s:35 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)
 %s:35 PhanUndeclaredVariable Variable $unaryMissing3 is undeclared
 %s:36 PhanCoalescingAlwaysNullInLoop Using $c2 of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
 %s:36 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects

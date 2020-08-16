@@ -1,2 +1,4 @@
+%s:3 PhanTypeSuspiciousStringExpression Suspicious type null= of a variable or expression $undef_a used to build a string. (Expected type to be able to cast to a string)
 %s:3 PhanUndeclaredVariable Variable $undef_a is undeclared
+%s:4 PhanTypeSuspiciousStringExpression Suspicious type null= of a variable or expression $undef_b used to build a string. (Expected type to be able to cast to a string)
 %s:4 PhanUndeclaredVariable Variable $undef_b is undeclared

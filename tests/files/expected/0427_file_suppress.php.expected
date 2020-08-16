@@ -1,2 +1,3 @@
 %s:11 PhanUnreferencedUseConstant Possibly zero references to use statement for constant MAGIC_FUNCTION (\ast\flags\MAGIC_FUNCTION)
 %s:15 PhanTypeMissingReturnReal Method \test is declared to return string in its real type signature but has no return value
+%s:17 PhanTypeSuspiciousEcho Suspicious argument $globalVar of type null= for an echo/print statement

@@ -2,4 +2,5 @@ src/075_variable_suggestions.php:4 PhanUnusedVariable Unused definition of varia
 src/075_variable_suggestions.php:8 PhanUnusedVariable Unused definition of variable $value2 (Did you mean $value1 or $value3)
 src/075_variable_suggestions.php:10 PhanPossiblyUndeclaredVariable Variable $value1 is possibly undeclared
 src/075_variable_suggestions.php:11 PhanPluginConstantVariableScalar Variable $value3 is probably constant with a value of 33
+src/075_variable_suggestions.php:12 PhanTypeSuspiciousEcho Suspicious argument $unrelatedValueName of type null= for an echo/print statement
 src/075_variable_suggestions.php:12 PhanUndeclaredVariable Variable $unrelatedValueName is undeclared (Did you mean $unrelatedValuename)

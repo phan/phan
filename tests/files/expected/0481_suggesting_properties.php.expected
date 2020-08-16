@@ -1,6 +1,12 @@
+%s:37 PhanTypeSuspiciousEcho Suspicious argument $private_long_name of type null= for an echo/print statement
 %s:37 PhanUndeclaredVariable Variable $private_long_name is undeclared
+%s:38 PhanTypeSuspiciousEcho Suspicious argument $private_long_name_in_same_class of type null= for an echo/print statement
 %s:38 PhanUndeclaredVariable Variable $private_long_name_in_same_class is undeclared (Did you mean $this->private_long_name_in_same_class)
+%s:39 PhanTypeSuspiciousEcho Suspicious argument $other_long_name of type null= for an echo/print statement
 %s:39 PhanUndeclaredVariable Variable $other_long_name is undeclared (Did you mean self::$other_long_name)
+%s:40 PhanTypeSuspiciousEcho Suspicious argument $hidden_long_name of type null= for an echo/print statement
 %s:40 PhanUndeclaredVariable Variable $hidden_long_name is undeclared
+%s:41 PhanTypeSuspiciousEcho Suspicious argument $magic_long_name of type null= for an echo/print statement
 %s:41 PhanUndeclaredVariable Variable $magic_long_name is undeclared (Did you mean $this->magic_long_name)
+%s:42 PhanTypeSuspiciousEcho Suspicious argument $missing_long_name of type null= for an echo/print statement
 %s:42 PhanUndeclaredVariable Variable $missing_long_name is undeclared

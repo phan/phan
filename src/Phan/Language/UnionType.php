@@ -5357,7 +5357,7 @@ class UnionType implements Serializable
      */
     public function withIsDefinitelyUndefined(): UnionType
     {
-        $result = new AnnotatedUnionType($this->type_set, true, []);
+        $result = new AnnotatedUnionType($this->type_set, true, $this->real_type_set);
         $result->is_possibly_undefined = AnnotatedUnionType::DEFINITELY_UNDEFINED;
         return $result;
     }

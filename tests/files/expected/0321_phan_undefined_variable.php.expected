@@ -1,6 +1,8 @@
 %s:3 PhanUndeclaredVariable Variable $cond is undeclared
 %s:3 PhanUnusedVariable Unused definition of variable $x
+%s:5 PhanTypeMismatchDimAssignment When appending to a value of type array{}, found an array access index of type null=, but expected the index to be of type int|string
 %s:5 PhanUndeclaredVariable Variable $undef is undeclared
+%s:6 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type non-empty-associative-array<2>, found an array index of type null=, but expected the index to be of the non-nullable type int|string
 %s:6 PhanUndeclaredVariable Variable $undefB is undeclared
 %s:6 PhanUnusedVariable Unused definition of variable $y
 %s:8 PhanUndeclaredGlobalVariable Global variable $cond321 is undeclared
