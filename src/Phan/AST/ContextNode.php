@@ -10,6 +10,7 @@ use ast\Node;
 use Error;
 use Exception;
 use Phan\Analysis\ConditionVisitorUtil;
+use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -1758,6 +1759,11 @@ class ContextNode
                         if (\strpos($constant_name, '\\') !== false) {
                             $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
                         }
+                        // @phan-suppress-next-line PhanAccessClassConstantInternal
+                        $constant_exists_variable = $context->getScope()->getVariableByNameOrNull(ConditionVisitor::CONSTANT_EXISTS_PREFIX . \ltrim($fqsen->__toString(), '\\'));
+                        if ($constant_exists_variable && !$constant_exists_variable->getUnionType()->isPossiblyUndefined() && $constant_exists_variable->getFileRef()->getFile() === $context->getFile()) {
+                            return $this->createPlaceholderGlobalConstant($fqsen);
+                        }
                         $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
                             $constant_name
                         );
@@ -1776,6 +1782,11 @@ class ContextNode
         // or a relative constant for which nothing was found in the namespace
 
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            // @phan-suppress-next-line PhanAccessClassConstantInternal
+            $constant_exists_variable = $context->getScope()->getVariableByNameOrNull(ConditionVisitor::CONSTANT_EXISTS_PREFIX . \ltrim($fqsen->__toString(), '\\'));
+            if ($constant_exists_variable && !$constant_exists_variable->getUnionType()->isPossiblyUndefined() && $constant_exists_variable->getFileRef()->getFile() === $context->getFile()) {
+                return $this->createPlaceholderGlobalConstant($fqsen);
+            }
             $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
         }
 
@@ -1800,6 +1811,19 @@ class ContextNode
         }
 
         return $constant;
+    }
+
+    private function createPlaceholderGlobalConstant(
+        FullyQualifiedGlobalConstantName $fqsen
+    ): GlobalConstant {
+        return new GlobalConstant(
+            $this->context,
+            $fqsen->getName(),
+            // This can't be an object.
+            UnionType::fromFullyQualifiedRealString('?array|?bool|?float|?int|?resource|?string'),
+            0,
+            $fqsen
+        );
     }
 
     /**

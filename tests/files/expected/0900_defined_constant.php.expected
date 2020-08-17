@@ -1,0 +1,4 @@
+%s:5 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression unknown_constant with type ?array|?bool|?float|?int|?resource|?string
+%s:6 PhanUndeclaredConstant Reference to undeclared constant \UNKNOWN_CONSTANT. This will cause a thrown Error in php 8.0+.
+%s:9 PhanUndeclaredConstant Reference to undeclared constant \unknown_constant. This will cause a thrown Error in php 8.0+.
+%s:11 PhanUndeclaredConstant Reference to undeclared constant \unknown_constant. This will cause a thrown Error in php 8.0+.

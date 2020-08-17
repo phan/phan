@@ -22,6 +22,8 @@ New features (Analysis):
 + Warn about using `@var` where `@param` should be used (#1366)
 + Treat undefined variables as definitely null/undefined in various places
   when they are used outside of loops and the global scope. (#4148)
++ Don't warn about undeclared global constants after `defined()` conditions. (#3337)
+  Phan will infer a broad range of types for these constants that can't be narrowed.
 
 Miscellaneous:
 + Raise the severity of `PhanUndeclaredConstant` and `PhanStaticCallToNonStatic` from normal to critical.

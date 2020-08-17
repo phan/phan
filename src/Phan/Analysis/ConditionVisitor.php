@@ -45,6 +45,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 {
     use ConditionVisitorUtil;
 
+    /** @internal */
+    public const CONSTANT_EXISTS_PREFIX = "__phan\x00constant_exists_";
+
     /**
      * @var Context
      * The context in which the node we're going to be looking
@@ -955,10 +958,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
         // TODO: Check if the return value of the function is void/always truthy (e.g. object)
 
-        if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-            return $this->analyzeArrayKeyExists($args);
+        switch (\strtolower($raw_function_name)) {
+            case 'array_key_exists':
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+                return $this->analyzeArrayKeyExists($args);
+            case 'defined':
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+                return $this->analyzeDefined($args);
         }
+
         // Only look at things of the form
         // `\is_string($variable)`
         if (!($first_arg instanceof Node && $first_arg->kind === ast\AST_VAR)) {
@@ -1048,6 +1056,31 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             true,
             false
         );
+    }
+
+    /**
+     * @param list<Node|string|int|float> $args
+     */
+    private function analyzeDefined(array $args): Context
+    {
+        if (\count($args) !== 1) {
+            return $this->context;
+        }
+        $constant_name = $args[0];
+        if ($constant_name instanceof Node) {
+            $constant_name = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $constant_name)->asSingleScalarValueOrNullOrSelf();
+        }
+        if (!\is_string($constant_name)) {
+            return $this->context;
+        }
+        $context = $this->context->withClonedScope();
+        $context->addScopeVariable(new Variable(
+            $context,
+            self::CONSTANT_EXISTS_PREFIX . \ltrim($constant_name, '\\'),
+            UnionType::empty(),
+            0
+        ));
+        return $context;
     }
 
     /**
