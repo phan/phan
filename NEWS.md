@@ -34,6 +34,7 @@ Bug fixes:
 + Improve compatibility of polyfill/fallback parser with php 8.0
 + Also try to check against the realpath() of the current working directory when converting absolute paths
   to relative paths.
++ Generate baseline files with `/` instead of `\` on Windows in `--save-baseline` (#4149)
 
 Jul 31 2020, Phan 3.1.1
 -----------------------

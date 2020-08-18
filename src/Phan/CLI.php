@@ -646,7 +646,11 @@ class CLI
                     break;
                 case 'j':
                 case 'processes':
-                    Config::setValue('processes', (int)$value);
+                    $processes = \filter_var($value, FILTER_VALIDATE_INT);
+                    if ($processes <= 0) {
+                        throw new UsageException(\sprintf("Invalid arguments to --processes: %s (expected a positive integer)\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    Config::setValue('processes', $processes);
                     break;
                 case 'z':
                 case 'signature-compatibility':

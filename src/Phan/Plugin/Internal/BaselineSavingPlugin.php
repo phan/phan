@@ -65,6 +65,8 @@ final class BaselineSavingPlugin extends PluginV3 implements
         if (Phan::isExcludedAnalysisFile($file_path)) {
             return false;
         }
+        // Generate compatible baselines on Windows
+        $file_path = \str_replace(\DIRECTORY_SEPARATOR, '/', $file_path);
 
         // Would prefer to use formatSortableKey, but this doesn't provide the IssueInstance, and plugins have issues that can't be fetched with Issue::fromType.
         $hash = \sha1($issue_instance->__toString());
