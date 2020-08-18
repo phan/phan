@@ -25,6 +25,9 @@ New features (Analysis):
 + Don't warn about undeclared global constants after `defined()` conditions. (#3337)
   Phan will infer a broad range of types for these constants that can't be narrowed.
 
+Plugins:
++ Add more aliases to `DeprecateAliasPlugin`
+
 Miscellaneous:
 + Raise the severity of `PhanUndeclaredConstant` and `PhanStaticCallToNonStatic` from normal to critical.
   Undeclared constants will become a thrown `Error` at runtime in PHP 8.0+.
