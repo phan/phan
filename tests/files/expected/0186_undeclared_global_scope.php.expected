@@ -1,3 +1,3 @@
 %s:3 PhanUndeclaredGlobalVariable Global variable $undeclared is undeclared
-%s:7 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($array) is $undeclared of type null but \array_slice() takes array
+%s:7 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($array) is $undeclared of type null but \array_slice() takes array
 %s:7 PhanUndeclaredVariable Variable $undeclared is undeclared

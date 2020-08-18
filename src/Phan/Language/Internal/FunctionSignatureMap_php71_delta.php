@@ -24,7 +24,7 @@ return [
     'getenv\'1' => ['array<string,string>'],
     'getopt' => ['array<string,string>|array<string,false>|array<string,list<mixed>>', 'options'=>'string', 'longopts='=>'array', '&w_optind='=>'int'],
     'hash_hkdf' => ['string|false', 'algo'=>'string', 'ikm'=>'string', 'length='=>'int', 'info='=>'string', 'salt='=>'string'],
-    'is_iterable' => ['bool', 'var'=>'mixed'],
+    'is_iterable' => ['bool', 'value'=>'mixed'],
     'openssl_get_curve_names' => ['list<string>'],
     'pcntl_async_signals' => ['bool', 'on='=>'bool'],
     'pcntl_signal_get_handler' => ['int|string', 'signo'=>'int'],

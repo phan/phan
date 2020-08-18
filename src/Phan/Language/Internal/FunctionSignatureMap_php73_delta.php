@@ -27,7 +27,7 @@ return [
     'gmp_kronecker' => ['int', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int'],
     'gc_status' => ['array{runs:int,collected:int,threshold:int,roots:int}'],
     'hrtime' => ['array{0:int,1:int}|int|false', 'get_as_number='=>'bool'],
-    'is_countable' => ['bool', 'var'=>'mixed'],
+    'is_countable' => ['bool', 'value'=>'mixed'],
     'JsonException::__clone' => ['void'],
     'JsonException::__construct' => ['void'],
     'JsonException::__toString' => ['string'],

@@ -1,7 +1,7 @@
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{otherKey:mixed,key:string} but \strlen() takes string
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{key:string} but \strlen() takes string
 %s:15 PhanDebugAnnotation @phan-debug-var requested for variable $str - it has union type string(real=non-empty-array<mixed,mixed>|object|string)
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $str of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $str of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:17 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type 'field', but expected the index to be of type int
 %s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $str of type non-empty-array<mixed,mixed>|object but \strlen() takes string
 %s:21 PhanTypeMismatchArgument Argument 1 ($data) is [] of type array{} but Closure($data, $str) takes array{key:string} defined at %s:7

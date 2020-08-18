@@ -8,6 +8,6 @@
 %s:21 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $ao_nonnull of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string
 %s:23 PhanImpossibleCondition Impossible attempt to cast $s of type string to countable
 %s:24 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $s of type \Countable|array but \strlen() takes string
-%s:26 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $s of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:26 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $s of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:38 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $x of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|array{0:2}|iterable (real type \Countable|array) but \intdiv() takes int
-%s:41 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $x of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:41 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $x of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

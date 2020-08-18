@@ -46,7 +46,7 @@ return [
 'sapi_windows_set_ctrl_handler' => ['bool', 'handler'=>'callable(int):void', 'add='=>'bool'],
 'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],
 'SQLite3::backup' => ['bool', 'destination_db'=>'SQLite3', 'source_dbname='=>'string','destination_dbname='=>'string'],
-'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string|string[]'],
+'strip_tags' => ['string', 'string'=>'string', 'allowable_tags='=>'string|string[]'],
 'WeakReference::create' => ['WeakReference', 'referent'=>'object'],
 'WeakReference::get' => ['?object'],
 ],
@@ -54,6 +54,6 @@ return [
 'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'int', 'options='=>'array'],
 'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'int', 'options='=>'array'],
 'proc_open' => ['resource|false', 'command'=>'string', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
-'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string'],
+'strip_tags' => ['string', 'string'=>'string', 'allowable_tags='=>'string'],
 ]
 ];

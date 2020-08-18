@@ -237,7 +237,7 @@ EOT;
                 $param_name = preg_replace('/^(rw|r|w)_/', '', trim((string)$param_name, '.=&'));
                 $param_from_svn_name = trim($param_from_svn_name, '.=&');
                 if ($param_from_svn_name !== $param_name) {
-                    echo "Name mismatch for $function_like_name: #$param_index is $param_name in Phan, $param_from_svn_name in source\n";
+                    echo "Name mismatch for $function_like_name: #$param_index is \$$param_name in Phan, \$$param_from_svn_name in source\n";
                 }
             }
             if ($param_type_from_phan !== '') {

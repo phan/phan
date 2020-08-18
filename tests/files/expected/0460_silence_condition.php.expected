@@ -1,2 +1,2 @@
-%s:11 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($var) is $y of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:11 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $y of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

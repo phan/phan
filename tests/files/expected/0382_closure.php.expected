@@ -1,3 +1,3 @@
 %s:7 PhanParamTooFew Call with 0 arg(s) to Closure(int $x) : bool which requires 1 arg(s) defined at %s:6
-%s:8 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($var) is $x(2) of type bool but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:8 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $x(2) of type bool but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
 %s:11 PhanParamTooMany Call with 1 arg(s) to Closure() : string which only takes 0 arg(s) defined at %s:10

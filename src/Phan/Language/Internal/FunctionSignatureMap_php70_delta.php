@@ -44,7 +44,7 @@ return [
     'IntlChar::getPropertyEnum' => ['int', 'alias'=>'string'],
     'IntlChar::getPropertyName' => ['string|false', 'property'=>'int', 'namechoice='=>'int'],
     'IntlChar::getPropertyValueEnum' => ['int', 'property'=>'int', 'name'=>'string'],
-    'IntlChar::getPropertyValueName' => ['string|false', 'prop'=>'int', 'val'=>'int', 'namechoice='=>'int'],
+    'IntlChar::getPropertyValueName' => ['string|false', 'prop'=>'int', 'value'=>'int', 'namechoice='=>'int'],
     'IntlChar::getUnicodeVersion' => ['array'],
     'IntlChar::hasBinaryProperty' => ['bool', 'char'=>'int|string', 'property'=>'int'],
     'IntlChar::isalnum' => ['bool', 'codepoint'=>'mixed'],
