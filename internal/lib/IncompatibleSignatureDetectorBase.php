@@ -211,12 +211,11 @@ EOT;
     private function updateSignature(string $function_like_name, array $arguments_from_phan): array
     {
         $return_type = $arguments_from_phan[0];
-        $arguments_from_svn = null;
+        $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
+        if (is_null($arguments_from_svn)) {
+            return $arguments_from_phan;
+        }
         if ($return_type === '') {
-            $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
-            if (is_null($arguments_from_svn)) {
-                return $arguments_from_phan;
-            }
             $svn_return_type = $arguments_from_svn[0] ?? '';
             if ($svn_return_type !== '') {
                 static::debug("A better Phan return type for $function_like_name is " . $svn_return_type . "\n");
@@ -224,19 +223,26 @@ EOT;
             }
         }
         $param_index = 0;
+        $arguments_from_svn_list = array_values($arguments_from_svn);  // keys are 0, 1, 2,...
+        $arguments_from_svn_names = array_keys($arguments_from_svn);  // keys are 0, 1, 2,...
         foreach ($arguments_from_phan as $param_name => $param_type_from_phan) {
             if ($param_name === 0) {
                 continue;
             }
             $param_index++;
+
+            // after incrementing param_index
+            $param_from_svn_name = $arguments_from_svn_names[$param_index] ?? null;
+            if (is_string($param_from_svn_name)) {
+                $param_name = preg_replace('/^(rw|r|w)_/', '', trim((string)$param_name, '.=&'));
+                $param_from_svn_name = trim($param_from_svn_name, '.=&');
+                if ($param_from_svn_name !== $param_name) {
+                    echo "Name mismatch for $function_like_name: #$param_index is $param_name in Phan, $param_from_svn_name in source\n";
+                }
+            }
             if ($param_type_from_phan !== '') {
                 continue;
             }
-            $arguments_from_svn = $arguments_from_svn ?? $this->parseFunctionLikeSignature($function_like_name);
-            if (is_null($arguments_from_svn)) {
-                return $arguments_from_phan;
-            }
-            $arguments_from_svn_list = array_values($arguments_from_svn);  // keys are 0, 1, 2,...
             $param_from_svn = $arguments_from_svn_list[$param_index] ?? '';
             if ($param_from_svn !== '') {
                 static::debug("A better Phan param type for $function_like_name (for param #$param_index called \$$param_name) is $param_from_svn\n");

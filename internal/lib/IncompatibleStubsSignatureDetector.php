@@ -71,8 +71,8 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         // $failures += $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
         $failures += $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'numerator' => 'int', 'divisor' => 'int']);
         $failures += $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
-        $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['string', 'key' => 'string', 'hashKey' => 'string']);
-        if ($failures > 0) {
+        // $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['string', 'key' => 'string', 'hashKey' => 'string']);
+        if ($failures > 1) {
             exit(1);
         }
     }
@@ -172,6 +172,19 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             static::debug("Could not find $class_name\n");
             return null;
         }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        for ($alternate_id = 1; $class->isPHPInternal(); $alternate_id++) {
+            $alternate_class_fqsen = $class_fqsen->withAlternateId($alternate_id);
+            if (!$code_base->hasClassWithFQSEN($alternate_class_fqsen)) {
+                break;
+            }
+            $class = $code_base->getClassByFQSEN($alternate_class_fqsen);
+        }
+        if ($class->isPHPInternal()) {
+            static::debug("Could not find $class_name except from reflection\n");
+            return null;
+        }
+
         $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, $method_name);
         if (!$code_base->hasMethodWithFQSEN($method_fqsen)) {
             static::debug("Could not find $method_fqsen\n");
@@ -199,6 +212,17 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         }
         $function = $code_base->getFunctionByFQSEN($function_fqsen);
         $function->ensureScopeInitialized($code_base);
+        for ($alternate_id = 1; $function->isPHPInternal(); $alternate_id++) {
+            $alternate_fqsen = $function_fqsen->withAlternateId($alternate_id);
+            if (!$code_base->hasFunctionWithFQSEN($alternate_fqsen)) {
+                break;
+            }
+            $function = $code_base->getFunctionByFQSEN($alternate_fqsen);
+        }
+        if ($function->isPHPInternal()) {
+            static::debug("Could not find $function_name except from reflection\n");
+            return null;
+        }
         return $function->toFunctionSignatureArray();
     }
 
