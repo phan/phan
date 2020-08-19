@@ -418,7 +418,7 @@ class PhanPhpShellUtils
         foreach ($result as &$val) {
             $i = strrpos(substr($val, 0, $prefix_len), '\\');
             if ($i !== false) {
-                $val = substr($val, $i+1);
+                $val = substr($val, $i + 1);
             }
         }
         return $result;

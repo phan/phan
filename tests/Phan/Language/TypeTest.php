@@ -385,7 +385,7 @@ final class TypeTest extends BaseTest
             );
         };
         foreach (['?callable(string):void' => $make_type(null), '?callable(string $x)' => $make_type('x')] as $union_type_string => $expected_closure_type) {
-            $this->verifyClosureParam($expected_closure_type, $union_type_string, explode(':', $union_type_string)[0] . ':void');
+            $this->verifyClosureParam($expected_closure_type, $union_type_string, \explode(':', $union_type_string)[0] . ':void');
         }
     }
 

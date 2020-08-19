@@ -1357,13 +1357,13 @@ final class ConfigPluginSet extends PluginV3 implements
             $expected_kinds = [ \ast\AST_FOR, \ast\AST_FOREACH, \ast\AST_WHILE ];
             // TODO(tyson) figure out why Phan isn't warning about this example not being fully qualified outside of the language server.
             // --disable-plugins --quick --plugin NotFullyQualifiedUsagePlugin properly warns.
-            $additional_kinds = array_diff($handled_node_kinds, $expected_kinds);
+            $additional_kinds = \array_diff($handled_node_kinds, $expected_kinds);
             if ($additional_kinds) {
                 throw new AssertionError(
                     \sprintf(
                         "The following node kinds cannot be used in %s: %s",
                         $plugin_analysis_class,
-                        implode(', ', array_map([Parser::class, 'getKindName'], $additional_kinds))
+                        \implode(', ', \array_map([Parser::class, 'getKindName'], $additional_kinds))
                     )
                 );
             }
