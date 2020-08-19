@@ -1,1 +1,1 @@
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($obj) is $context of type resource but \spl_object_hash() takes object
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 ($object) is $context of type resource but \spl_object_hash() takes object

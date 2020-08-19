@@ -83,7 +83,7 @@ return [
     'random_bytes' => ['string', 'length'=>'int'],
     'random_int' => ['int', 'min'=>'int', 'max'=>'int'],
     'session_start' => ['bool', 'options='=>'array'],
-    'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes?:string[]|bool}'],
+    'unserialize' => ['mixed', 'value'=>'string', 'options='=>'array{allowed_classes?:string[]|bool}'],
 ],
 'old' => [
     'ereg' => ['int', 'pattern'=>'string', 'string'=>'string', 'regs='=>'array'],
@@ -204,6 +204,6 @@ return [
     'sybase_select_db' => ['bool', 'database_name'=>'string', 'link_identifier='=>'resource'],
     'sybase_set_message_handler' => ['bool', 'handler'=>'callable', 'connection='=>'resource'],
     'sybase_unbuffered_query' => ['resource', 'query'=>'string', 'link_identifier'=>'resource', 'store_result='=>'bool'],
-    'unserialize' => ['mixed', 'variable_representation'=>'string'],
+    'unserialize' => ['mixed', 'value'=>'string'],
 ]
 ];

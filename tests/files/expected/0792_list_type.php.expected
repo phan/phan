@@ -1,5 +1,5 @@
-%s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($obj) is $x of type list<\stdClass> (real type array) but \spl_object_id() takes object
-%s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($obj) is $y of type non-empty-list<\stdClass>|non-empty-list<bool> (real type array) but \spl_object_id() takes object
+%s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $x of type list<\stdClass> (real type array) but \spl_object_id() takes object
+%s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $y of type non-empty-list<\stdClass>|non-empty-list<bool> (real type array) but \spl_object_id() takes object
 %s:12 PhanTypeArraySuspicious Suspicious array access to $value of type \stdClass
 %s:14 PhanTypeInvalidDimOffset Invalid offset -1 of $y of array type non-empty-list<\stdClass>|non-empty-list<bool>
 %s:14 PhanTypeSuspiciousEcho Suspicious argument $y[-1] of type null for an echo/print statement
