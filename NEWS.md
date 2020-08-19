@@ -24,6 +24,7 @@ New features (Analysis):
   when they are used outside of loops and the global scope. (#4148)
 + Don't warn about undeclared global constants after `defined()` conditions. (#3337)
   Phan will infer a broad range of types for these constants that can't be narrowed.
++ Parse `lowercase-string` and `non-empty-lowercase-string` in phpdoc for compatibility, but treat them like ordinary strings.
 
 Plugins:
 + Add more aliases to `DeprecateAliasPlugin`

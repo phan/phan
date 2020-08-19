@@ -103,17 +103,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|associative-array|class-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -236,12 +236,14 @@ class Type
         'int'             => true,
         'iterable'        => true,
         'list'            => true,
+        'lowercase-string' => true,
         'mixed'           => true,
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
         'non-empty-mixed' => true,
         'non-empty-list'  => true,
         'non-empty-string' => true,
+        'non-empty-lowercase-string' => true,
         'non-zero-int'    => true,
         'null'            => true,
         'object'          => true,
@@ -500,6 +502,8 @@ class Type
                             $is_nullable
                         );
                         break;
+                    case 'lowercase-string':
+                        $value = StringType::instance($is_nullable);
                     case 'class-string':
                         $value = new ClassStringType(
                             '\\',
@@ -524,6 +528,7 @@ class Type
                         $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
                         break;
                     case 'non-empty-string':
+                    case 'non-empty-lowercase-string':
                         $value = new NonEmptyStringType($is_nullable);
                         break;
                     case 'non-zero-int':
@@ -805,6 +810,7 @@ class Type
                 return NonEmptyAssociativeArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-list':
                 return NonEmptyListType::fromElementType(MixedType::instance(false), $is_nullable);
+            case 'non-empty-lowercase-string':
             case 'non-empty-string':
                 return NonEmptyStringType::instance($is_nullable);
             case 'non-zero-int':
@@ -818,6 +824,7 @@ class Type
             case 'scalar':
                 return ScalarRawType::instance($is_nullable);
             case 'string':
+            case 'lowercase-string':
                 return StringType::instance($is_nullable);
             case 'true':
                 return TrueType::instance($is_nullable);
@@ -875,7 +882,7 @@ class Type
         if ($reflection_type instanceof \ReflectionNamedType) {
             $reflection_type_string = $reflection_type->getName();
             if ($reflection_type->allowsNull()) {
-                if (PHP_VERSION_ID >= 80000 && $reflection_type_string === 'mixed') {
+                if (\PHP_VERSION_ID >= 80000 && $reflection_type_string === 'mixed') {
                     return 'mixed';
                 }
                 return "?" . $reflection_type_string;

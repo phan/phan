@@ -1,0 +1,2 @@
+%s:8 PhanTypeMismatchReturnProbablyReal Returning null of type null but test901() is declared to return non-empty-string (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:10 PhanTypeMismatchArgumentProbablyReal Argument 1 ($str) is null of type null but \test901() takes string (no real type) defined at %s:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
