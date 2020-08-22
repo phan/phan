@@ -42,6 +42,7 @@ return [
     // (See `backward_compatibility_checks` for additional options)
     'target_php_version' => null,
 
+    // The PHP version that will be used for feature/syntax compatibility warnings.
     // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
     // If this is set to `null`, Phan will first attempt to infer the value from
     // the project's composer.json's `{"require": {"php": "version range"}}` if possible.

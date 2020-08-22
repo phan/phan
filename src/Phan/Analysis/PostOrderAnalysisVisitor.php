@@ -3154,7 +3154,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->emitIssue(
                         Issue::CompatibleNamedArgument,
                         $argument->lineno,
-                        ASTReverter::toShortString($argument),
+                        ASTReverter::toShortString($argument)
                     );
                 }
                 ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
