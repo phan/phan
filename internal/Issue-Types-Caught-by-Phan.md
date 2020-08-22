@@ -417,6 +417,8 @@ In PHP 5.6, return types ({TYPE}) are not supported
 Cannot use arrow functions before php 7.4 in {CODE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/007_throw_expression.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/007_throw_expression.php#L34).
+
 ## PhanCompatibleAutoload
 
 ```
@@ -483,6 +485,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expe
 Cannot use match expressions before php 8.0 in {CODE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/019_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/019_match.php#L3).
+
 ## PhanCompatibleMixedType
 
 ```
@@ -498,6 +502,14 @@ Catching multiple exceptions is not supported before PHP 7.1
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expected/008_catch_multiple_exceptions.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/src/008_catch_multiple_exceptions.php#L5).
+
+## PhanCompatibleNamedArgument
+
+```
+Cannot use named arguments before php 8.0 in argument ({CODE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/029_named_variadic.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/029_named_variadic.php#L5).
 
 ## PhanCompatibleNegativeStringOffset
 
@@ -522,6 +534,14 @@ Nullable type '{TYPE}' is not compatible with PHP 7.0
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expected/014_union_type_invalid.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/src/014_union_type_invalid.php#L3).
+
+## PhanCompatibleNullsafeOperator
+
+```
+Cannot use nullsafe operator before php 8.0 in {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/028_nullsafe_undef.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/028_nullsafe_undef.php#L5).
 
 ## PhanCompatibleObjectTypePHP71
 
@@ -2158,6 +2178,14 @@ Saw positional argument ({CODE}) after a named argument {CODE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L12).
+
+## PhanSuspiciousNamedArgumentForVariadic
+
+```
+Passing named argument to a variadic parameter ${PARAMETER} of the same name in a call to {METHOD}. This will set the array offset "{PARAMETER}" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/029_named_variadic.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/029_named_variadic.php#L5).
 
 ## PhanUndeclaredNamedArgument
 
