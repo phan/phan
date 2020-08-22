@@ -45,6 +45,9 @@ New features (Analysis):
   exposes the information that php itself tracks internally,
   and php deliberately does not track whether any of these node types have trailing commas.
 
+  There are already other ways to detect these backwards compatibility issues,
+  such as `--native-syntax-check path/to/php7.x`.
+
 Plugins:
 + Add more aliases to `DeprecateAliasPlugin`
 

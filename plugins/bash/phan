@@ -59,6 +59,7 @@ _phan() {
 -q
 --quick
 --target-php-version
+--minimum-target-php-version
 --ignore-undeclared
 -i
 --minimum-severity
@@ -81,6 +82,7 @@ _phan() {
 --disable-plugins
 -P
 --plugin
+--native-syntax-check
 --strict-method-checking
 --strict-object-checking
 --strict-param-checking
