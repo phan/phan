@@ -209,8 +209,13 @@ class IssueFixSuggester
     {
         $class_key = \strtolower(\ltrim($fqsen->__toString(), '\\'));
         if (\array_key_exists($class_key, self::getKnownClasses())) {
-            // Did you mean to configure
-            return ["to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class"];
+            // Generate the message 'Did you mean "to configure..."'
+            $message = "to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class.";
+            $included_extension_subset = Config::getValue('included_extension_subset');
+            if (is_array($included_extension_subset) || Config::getValue('autoload_internal_extension_signatures')) {
+                $message .= " (are the config settings 'included_extension_subset' and/or 'autoload_internal_extension_signatures' properly set up?)";
+            }
+            return [$message];
         }
         return [];
     }
