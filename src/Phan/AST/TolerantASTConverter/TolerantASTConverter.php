@@ -1953,12 +1953,17 @@ class TolerantASTConverter
             }
             $new_params[] = static::phpParserNodeToAstNode($parser_node);
         }
-        return new ast\Node(
+        $result = new ast\Node(
             ast\AST_PARAM_LIST,
             0,
             $new_params,
             $new_params[0]->lineno ?? $line
         );
+        if (($parser_node->kind ?? null) === TokenKind::CommaToken) {
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            $result->polyfill_has_trailing_comma = true;
+        }
+        return $result;
     }
 
     /**
@@ -1999,7 +2004,12 @@ class TolerantASTConverter
             }
             $ast_uses[] = new ast\Node(ast\AST_CLOSURE_VAR, $use->byRef ? ast\flags\CLOSURE_USE_REF : 0, ['name' => static::tokenToString($use->variableName)], self::getStartLine($use));
         }
-        return new ast\Node(ast\AST_CLOSURE_USES, 0, $ast_uses, $ast_uses[0]->lineno ?? $line);
+        $result = new ast\Node(ast\AST_CLOSURE_USES, 0, $ast_uses, $ast_uses[0]->lineno ?? $line);
+        if (($use->kind ?? null) === TokenKind::CommaToken) {
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            $result->polyfill_has_trailing_comma = true;
+        }
+        return $result;
     }
 
     private static function resolveDocCommentForClosure(PhpParser\Node\Expression $node): ?string
@@ -2256,7 +2266,13 @@ class TolerantASTConverter
             }
             $ast_args[] = static::phpParserNodeToAstNode($arg);
         }
-        return new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $args ? self::getStartLine($args) : $line);
+        $result = new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $args ? self::getStartLine($args) : $line);
+        if (($arg->kind ?? null) === TokenKind::CommaToken) {
+            // NOTE: This is deliberately using a dynamic property instead of a flag because other applications may use flags
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            $result->polyfill_has_trailing_comma = true;
+        }
+        return $result;
     }
 
     /**

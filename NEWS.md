@@ -37,6 +37,13 @@ New features (Analysis):
 + Don't warn about undeclared global constants after `defined()` conditions. (#3337)
   Phan will infer a broad range of types for these constants that can't be narrowed.
 + Parse `lowercase-string` and `non-empty-lowercase-string` in phpdoc for compatibility, but treat them like ordinary strings.
++ Emit `PhanCompatibleTrailingCommaParameterList` and `PhanCompatibleTrailingCommaArgumentList` **when the polyfill is used**. (#2269)
+  Trailing commas in argument lists require a minimum target version of php 7.3+,
+  and trailing commas in parameters or closure use lists require php 8.0+.
+
+  This is only available in the polyfill because the native `php-ast` parser
+  exposes the information that php itself tracks internally,
+  and php deliberately does not track whether any of these node types have trailing commas.
 
 Plugins:
 + Add more aliases to `DeprecateAliasPlugin`

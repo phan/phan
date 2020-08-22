@@ -1,0 +1,4 @@
+src/073_trailing_commas.php:4 PhanCompatibleTrailingCommaArgumentList Cannot use trailing commas in argument lists before php 7.3 in ([2]). NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
+src/073_trailing_commas.php:8 PhanCompatibleTrailingCommaParameterList Cannot use trailing commas in parameter or closure use lists before php 8.0 in declaration of (function). NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
+src/073_trailing_commas.php:10 PhanCompatibleTrailingCommaParameterList Cannot use trailing commas in parameter or closure use lists before php 8.0 in declaration of (function). NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
+src/073_trailing_commas.php:15 PhanCompatibleTrailingCommaArgumentList Cannot use trailing commas in argument lists before php 7.3 in ($param1, $param2, $x). NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
