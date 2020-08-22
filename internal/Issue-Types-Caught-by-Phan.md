@@ -616,6 +616,22 @@ Cannot use throw as an expression before php 8.0 in {CODE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php80_files/expected/007_throw_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php80_files/src/007_throw_expression.php#L8).
 
+## PhanCompatibleTrailingCommaArgumentList
+
+```
+Cannot use trailing commas in argument lists before php 7.3 in {CODE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/073_trailing_commas.php#L4).
+
+## PhanCompatibleTrailingCommaParameterList
+
+```
+Cannot use trailing commas in parameter or closure use lists before php 8.0 in declaration of {FUNCTIONLIKE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
+
 ## PhanCompatibleTypedProperty
 
 ```

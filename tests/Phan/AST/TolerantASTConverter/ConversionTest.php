@@ -162,19 +162,20 @@ final class ConversionTest extends BaseTest
      *
      * Phan does not use these flags because they are not natively provided in all PHP versions.
      * TODO: Shouldn't they be available in PHP 7.1+
+     * @suppress PhanUndeclaredProperty
      */
-    public static function normalizeYieldFlags(ast\Node $node): void
+    public static function normalizeNodeFlags(ast\Node $node): void
     {
         if (\in_array($node->kind, self::FUNCTION_DECLARATION_KINDS, true)) {
             // Alternately, could make Phan do this.
             $node->flags &= ~ast\flags\FUNC_GENERATOR;
         }
-        // @phan-suppress-next-line PhanUndeclaredProperty
         unset($node->is_not_parenthesized);
+        unset($node->polyfill_has_trailing_comma);
 
         foreach ($node->children as $v) {
             if ($v instanceof ast\Node) {
-                self::normalizeYieldFlags($v);
+                self::normalizeNodeFlags($v);
             }
         }
     }
@@ -222,8 +223,8 @@ final class ConversionTest extends BaseTest
             $fallback_ast = self::normalizeLineNumbers($fallback_ast);
             $ast          = self::normalizeLineNumbers($ast);
         }
-        self::normalizeYieldFlags($ast);
-        self::normalizeYieldFlags($fallback_ast);
+        self::normalizeNodeFlags($ast);
+        self::normalizeNodeFlags($fallback_ast);
         // TODO: Remove $ast->parent recursively
         $fallback_ast_repr = \var_export($fallback_ast, true);
         $original_ast_repr = \var_export($ast, true);
