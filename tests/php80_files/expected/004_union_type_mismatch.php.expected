@@ -1,2 +1,4 @@
+%s:2 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:2 PhanCompatibleUnionType Cannot use union types (string|false) before php 8.0
 %s:4 PhanTypeMismatchReturn Returning ($value * 2) of type int but test() is declared to return false|string
 %s:6 PhanTypeMismatchReturnReal Returning null of type null but test() is declared to return false|string

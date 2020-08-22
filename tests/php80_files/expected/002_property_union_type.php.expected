@@ -1,3 +1,5 @@
+%s:3 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:4 PhanCompatibleUnionType Cannot use union types (stdClass|false) before php 8.0
 %s:9 PhanTypeMismatchPropertyReal Assigning null of type null to property but \Example::$scalar is int|string
 %s:10 PhanTypeMismatchPropertyReal Assigning false of type false to property but \Example::$scalar is int|string
 %s:11 PhanTypeMismatchPropertyReal Assigning [] of type array{} to property but \Example::$scalar is int|string

@@ -1746,7 +1746,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isNonNullStringType()
             || ($union_type->canCastToUnionType($string_union_type) && !$union_type->hasMixedType())
         ) {
-            if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
+            if (Config::get_closest_minimum_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
                 $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
             }
             $this->checkIsValidStringOffset($union_type, $node, $dim_type);

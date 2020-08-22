@@ -411,6 +411,12 @@ This category of issue is emitted when there are compatibility issues. They will
 In PHP 5.6, return types ({TYPE}) are not supported
 ```
 
+## PhanCompatibleArrowFunction
+
+```
+Cannot use arrow functions before php 7.4 in {CODE}
+```
+
 ## PhanCompatibleAutoload
 
 ```
@@ -470,6 +476,12 @@ Using array keys in an array destructuring assignment is not compatible with PHP
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expected/003_short_array.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/src/003_short_array.php#L21).
+
+## PhanCompatibleMatchExpression
+
+```
+Cannot use match expressions before php 8.0 in {CODE}
+```
 
 ## PhanCompatibleMixedType
 

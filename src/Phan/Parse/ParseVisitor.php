@@ -375,7 +375,7 @@ class ParseVisitor extends ScopeVisitor
                 Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                 $real_union_type = UnionType::empty();
             }
-            if (Config::get_closest_target_php_version_id() < 70400) {
+            if (Config::get_closest_minimum_target_php_version_id() < 70400) {
                 $this->emitIssue(
                     Issue::CompatibleTypedProperty,
                     $type_node->lineno,

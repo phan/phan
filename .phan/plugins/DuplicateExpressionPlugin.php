@@ -205,7 +205,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         flags\BINARY_POW => '**',
         flags\BINARY_SHIFT_LEFT => '<<',
         flags\BINARY_SHIFT_RIGHT => '>>',
-        // flags\BINARY_COALESCE => '??',  // TODO: Support a minimum_php_version config.
+        flags\BINARY_COALESCE => '??',
     ];
 
     /**
@@ -225,14 +225,12 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
             $op_str = self::ASSIGN_OP_FLAGS[$expr->flags] ?? null;
             if (is_string($op_str) && ASTHasher::hash($var) === ASTHasher::hash($expr->children['left'])) {
                 $message = 'Can simplify this assignment to {CODE} {OPERATOR} {CODE}';
-                /*
                 if ($expr->flags === ast\flags\BINARY_COALESCE) {
-                    if (Config::get_closest_target_php_version_id() < 70400) {
+                    if (Config::get_closest_minimum_target_php_version_id() < 70400) {
                         return;
                     }
                     $message .= ' (requires php version 7.4 or newer)';
                 }
-                 */
 
                 $this->emitPluginIssue(
                     $this->code_base,

@@ -15,6 +15,7 @@ final class PHP73Test extends AbstractPhanFileTest
     private const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'target_php_version' => '7.3',
+        'minimum_target_php_version' => '7.3',
         'redundant_condition_detection' => true,
     ];
 

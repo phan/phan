@@ -574,7 +574,7 @@ Most of the reported issues will likely not be worth fixing, or be false positiv
 
 #### ShortArrayPlugin.php
 
-This suggests using shorter array syntaxes if supported by the `target_php_version`.
+This suggests using shorter array syntaxes if supported by the `minimum_target_php_version`.
 
 - **PhanPluginLongArray**: `Should use [] instead of array()`
 - **PhanPluginLongArrayList**: `Should use [] instead of list()`

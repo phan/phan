@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan;
 
+use Phan\Config\Initializer;
 use Phan\Library\Paths;
 use Phan\Library\StringUtil;
 
@@ -105,6 +106,9 @@ class Config
     /** @var int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'target_php_version' string */
     private static $closest_target_php_version_id;
 
+    /** @var int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'minimum_target_php_version' string */
+    private static $closest_minimum_target_php_version_id;
+
     /**
      * This constant contains the default values for Phan's configuration settings.
      *
@@ -126,6 +130,11 @@ class Config
         // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
         // (See `backward_compatibility_checks` for additional options)
         'target_php_version' => null,
+
+        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
+        // If this is set to `null` or a value greater than `target_php_version`,
+        // then Phan assumes `target_php_version`
+        'minimum_target_php_version' => null,
 
         // Default: true. If this is set to true,
         // and `target_php_version` is newer than the version used to run Phan,
@@ -1127,6 +1136,12 @@ class Config
     {
         return self::$closest_target_php_version_id;
     }
+
+    /** @return int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'minimum_target_php_version' string */
+    public static function get_closest_minimum_target_php_version_id(): int
+    {
+        return self::$closest_minimum_target_php_version_id;
+    }
     // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     /**
@@ -1201,23 +1216,13 @@ class Config
                 self::$configuration['allow_method_param_type_widening_original'] = $value;
                 if ($value === null) {
                     // If this setting is set to null, infer it based on the closest php version id.
-                    self::$configuration[$name] = self::$closest_target_php_version_id >= 70200;
+                    self::$configuration[$name] = self::$closest_minimum_target_php_version_id >= 70200;
                 }
                 break;
             case 'target_php_version':
-                if (is_int($value) || is_float($value)) {
-                    $value = \sprintf("%.1f", $value);
-                }
-                // @phan-suppress-next-line PhanSuspiciousTruthyString
-                $value = (string) ($value ?: PHP_VERSION);
-                if (\strtolower($value) === 'native') {
-                    $value = PHP_VERSION;
-                }
-
-                self::$closest_target_php_version_id = self::computeClosestTargetPHPVersionId($value);
-                if ((self::$configuration['allow_method_param_type_widening_original'] ?? null) === null) {
-                    self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
-                }
+            case 'minimum_target_php_version':
+                self::$configuration[$name] = $value;
+                self::updateClosestTargetPHPVersion();
                 break;
             case 'exclude_analysis_directory_list':
                 self::$configuration['__exclude_analysis_regex'] = self::generateDirectoryListRegex($value);
@@ -1235,6 +1240,79 @@ class Config
         'int' => 'non-zero-int',
         'string' => 'non-empty-string',
     ];
+
+    private static function updateClosestTargetPHPVersion(): void
+    {
+        $value = self::$configuration['target_php_version'];
+        if (is_int($value) || is_float($value)) {
+            $value = \sprintf("%.1f", $value);
+        }
+        // @phan-suppress-next-line PhanSuspiciousTruthyString, PhanSuspiciousTruthyCondition
+        $value = (string) ($value ?: PHP_VERSION);
+        if (\strtolower($value) === 'native') {
+            $value = PHP_VERSION;
+        }
+
+        self::$closest_target_php_version_id = self::computeClosestTargetPHPVersionId($value);
+
+        $min_value = self::$configuration['minimum_target_php_version'];
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        $min_value_id = StringUtil::isNonZeroLengthString($min_value) ? self::computeClosestTargetPHPVersionId($min_value) : null;
+
+        // @phan-suppress-next-line PhanSuspiciousTruthyString, PhanSuspiciousTruthyCondition
+        if (!$min_value_id) {
+            $min_value_id = self::determineMinimumPHPVersionFromComposer() ?? $min_value_id;
+        }
+        if (!$min_value_id) {
+            $min_value_id = self::computeClosestTargetPHPVersionId(PHP_VERSION);
+        }
+        self::$closest_minimum_target_php_version_id = (int) \min(self::$closest_target_php_version_id, $min_value_id);
+        if (!isset(self::$configuration['allow_method_param_type_widening_original'])) {
+            self::$configuration['allow_method_param_type_widening'] = self::$closest_minimum_target_php_version_id >= 70200;
+        }
+    }
+
+    /**
+     * Guess minimum_target_php_version based on composer.json supported versions
+     */
+    private static function determineMinimumPHPVersionFromComposer(): ?int
+    {
+        $settings = self::readComposerSettings();
+        [$version, $_] = Initializer::determineTargetPHPVersion($settings);
+
+        if (is_string($version)) {
+            return self::computeClosestTargetPHPVersionId($version);
+        }
+        return null;
+    }
+
+    /**
+     * Read the composer settings if this phan project is a composer project.
+     *
+     * @return array<string,mixed>
+     */
+    private static function readComposerSettings(): array
+    {
+        static $contents = null;
+        if (is_array($contents)) {
+            return $contents;
+        }
+        $path_to_composer_json = \getcwd() . "/composer.json";
+        if (!\file_exists($path_to_composer_json)) {
+            return $contents = [];
+        }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        $composer_json_contents = @\file_get_contents($path_to_composer_json);
+        if (!is_string($composer_json_contents)) {
+            return $contents = [];
+        }
+        $library_composer_settings = @\json_decode($composer_json_contents, true);
+        if (!is_array($library_composer_settings)) {
+            CLI::printWarningToStderr("Saw invalid composer.json file contents when reading project settings: " . \json_last_error_msg() . "\n");
+            return $contents = [];
+        }
+        return $library_composer_settings;
+    }
 
     /**
      * If int can cast to/from T, where T is possibly not falsey,

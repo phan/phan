@@ -701,6 +701,14 @@ If this is overridden to be null, this will be inferred from `target_php_version
 
 (Default: `false`)
 
+## minimum_target_php_version
+
+Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
+If this is set to `null` or a value greater than `target_php_version`,
+then Phan assumes `target_php_version`
+
+(Default: `null`)
+
 ## polyfill_parse_all_element_doc_comments
 
 Make the tolerant-php-parser polyfill generate doc comments

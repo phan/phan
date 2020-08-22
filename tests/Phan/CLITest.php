@@ -319,7 +319,7 @@ final class CLITest extends BaseTest
             $usage_message = \ob_get_clean();
             $expected_file_contents = "```\n$usage_message```\n";
             $actual_cli_help = \file_get_contents(\dirname(__DIR__, 2) . '/internal/CLI-HELP.md');
-            $this->assertSame($expected_file_contents, $actual_cli_help);
+            $this->assertSame($expected_file_contents, $actual_cli_help, "Expected internal/CLI-HELP.md to be updated with the contents of phan --extended-help");
         } finally {
             $argv = $old_argv;
         }
