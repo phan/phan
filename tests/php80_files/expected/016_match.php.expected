@@ -1,2 +1,4 @@
 %s:2 PhanPluginUseReturnValueNoopVoid The function/method \match_noop() is declared to return void and it has no side effects
+%s:3 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($a) { true => 1, false => var_export($a, true) }
 %s:3 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($a) { true => 1, false => var_export($a, true) }
+%s:10 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($a) { true => null, false => var_export($a) }

@@ -3036,7 +3036,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     public function visitNullsafeMethodCall(Node $node): Context
     {
+        $this->checkNullsafeOperatorCompatibility($node);
         return $this->visitMethodCall($node);
+    }
+
+    private function checkNullsafeOperatorCompatibility(Node $node): void
+    {
+        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+            $this->emitIssue(
+                Issue::CompatibleNullsafeOperator,
+                $node->lineno,
+                ASTReverter::toShortString($node)
+            );
+        }
     }
 
     /**
@@ -3430,6 +3442,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     public function visitNullsafeProp(Node $node): Context
     {
+        $this->checkNullsafeOperatorCompatibility($node);
         return $this->analyzeProp($node, false);
     }
 

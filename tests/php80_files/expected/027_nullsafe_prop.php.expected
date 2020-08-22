@@ -1,6 +1,13 @@
+%s:8 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $this?->em
+%s:14 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $y?->em
 %s:14 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $y with type null
 %s:14 PhanTypeSuspiciousEcho Suspicious argument $y?->em of type null for an echo/print statement
+%s:16 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->em
 %s:16 PhanTypeSuspiciousEcho Suspicious argument $x?->em of type ?\Em for an echo/print statement
+%s:17 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->i
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x?->i of type ?int but \strlen() takes string
+%s:18 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->undeclaredProp
 %s:18 PhanUndeclaredProperty Reference to undeclared property \Em->undeclaredProp
+%s:19 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->getEm()
+%s:19 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->getEm()?->i
 %s:19 PhanTypeMismatchReturnReal Returning $x?->getEm()?->i of type ?int but test26() is declared to return \stdClass

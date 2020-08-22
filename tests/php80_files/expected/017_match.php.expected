@@ -1,10 +1,15 @@
+%s:3 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) {}
 %s:3 PhanNoopMatchArms This match expression only has the default arm in match ($x) {}
 %s:3 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) {}
 %s:4 PhanPluginUnreachableCode Unreachable statement detected
+%s:7 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { default => 2 }
 %s:7 PhanNoopMatchArms This match expression only has the default arm in match ($x) { default => 2 }
 %s:7 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) { default => 2 }
+%s:12 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { true => 'x', $x => 'y' }
 %s:12 PhanTypeMismatchReturnReal Returning match ($x) { true => 'x', $x => 'y' } of type 'x'|'y' but test_match_value() is declared to return int
+%s:17 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) {}
 %s:17 PhanNoopMatchArms This match expression only has the default arm in match ($x) {}
 %s:17 PhanTypeMismatchReturnReal Returning match ($x) {} of type void but test_match_value() is declared to return int
+%s:19 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { default => null }
 %s:19 PhanNoopMatchArms This match expression only has the default arm in match ($x) { default => null }
 %s:19 PhanTypeMismatchReturnReal Returning match ($x) { default => null } of type null but test_match_value() is declared to return int

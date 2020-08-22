@@ -561,6 +561,7 @@ class Issue
     public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
     public const CompatibleArrowFunction            = 'PhanCompatibleArrowFunction';
     public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
+    public const CompatibleNullsafeOperator         = 'PhanCompatibleNullsafeOperator';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4841,6 +4842,14 @@ class Issue
                 "Cannot use arrow functions before php 7.4 in {CODE}",
                 self::REMEDIATION_B,
                 3033
+            ),
+            new Issue(
+                self::CompatibleNullsafeOperator,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use nullsafe operator before php 8.0 in {CODE}",
+                self::REMEDIATION_B,
+                3034
             ),
 
             // Issue::CATEGORY_GENERIC
