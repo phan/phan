@@ -559,6 +559,8 @@ class Issue
     public const CompatibleUnionType                = 'PhanCompatibleUnionType';
     public const CompatibleStaticType               = 'PhanCompatibleStaticType';
     public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
+    public const CompatibleArrowFunction            = 'PhanCompatibleArrowFunction';
+    public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4823,6 +4825,22 @@ class Issue
                 "Cannot use throw as an expression before php 8.0 in {CODE}",
                 self::REMEDIATION_B,
                 3028
+            ),
+            new Issue(
+                self::CompatibleMatchExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use match expressions before php 8.0 in {CODE}",
+                self::REMEDIATION_B,
+                3032
+            ),
+            new Issue(
+                self::CompatibleArrowFunction,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use arrow functions before php 7.4 in {CODE}",
+                self::REMEDIATION_B,
+                3033
             ),
 
             // Issue::CATEGORY_GENERIC

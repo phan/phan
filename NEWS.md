@@ -20,6 +20,8 @@ New features (CLI, Config):
 + Include the installed php-ast version and the php version used to run Phan in the output of `phan --version`. (#4147)
 
 New features (Analysis):
++ Emit `PhanCompatibleArrowFunction` if using arrow functions with a minimum target php version older than php 7.4.
++ Emit `PhanCompatibleMatchExpression` if using match expressions with a minimum target php version older than php 8.0.
 + Emit `PhanNoopRepeatedSilenceOperator` for `@@expr` or `@(@expr)`.
   This is less efficient and only makes a difference in extremely rare edge cases.
 + Avoid false positives for bitwise operations on floats such as unsigned 64-bit numbers (#4106)

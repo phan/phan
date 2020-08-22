@@ -19,7 +19,7 @@ cache:
 
 # We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
 before_install:
-  # NOTE: This is testing compatibility with the latest version of php-ast. Most ci jobs can just use `pecl install ast` to install php-ast 1.0.1+
+  # NOTE: This is testing compatibility with the latest version of php-ast. Most ci jobs can just use `pecl install ast` to install php-ast 1.0.8+
   - ./tests/travis_setup.sh
   - mkdir /tmp/opcache || true; echo -e 'opcache.enable_cli=1\nopcache.file_cache=/tmp/opcache' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate

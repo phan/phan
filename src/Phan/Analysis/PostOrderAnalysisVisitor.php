@@ -1479,6 +1479,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitArrowFunc(Node $node): Context
     {
+        if (Config::get_closest_minimum_target_php_version_id() < 70400) {
+            $this->emitIssue(
+                Issue::CompatibleArrowFunction,
+                $node->lineno,
+                ASTReverter::toShortString($node)
+            );
+        }
         return $this->visitClosure($node);
     }
 
@@ -3310,6 +3317,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMatch(Node $node): Context
     {
+        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+            $this->emitIssue(
+                Issue::CompatibleMatchExpression,
+                $node->lineno,
+                ASTReverter::toShortString($node)
+            );
+        }
         if ($this->isInNoOpPosition($node)) {
             if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['stmts'])) {
                 $this->emitIssue(
@@ -4841,11 +4855,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
         if ($parent_node->kind !== ast\AST_STMT_LIST) {
-            $this->emitIssue(
-                Issue::CompatibleThrowExpression,
-                $parent_node->lineno,
-                ASTReverter::toShortString($parent_node)
-            );
+            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+                $this->emitIssue(
+                    Issue::CompatibleThrowExpression,
+                    $parent_node->lineno,
+                    ASTReverter::toShortString($parent_node)
+                );
+            }
         }
 
         return $this->context;

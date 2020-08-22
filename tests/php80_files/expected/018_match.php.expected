@@ -5,6 +5,7 @@
 %s:12 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 3 of type 3 with operator '==='
 %s:17 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to 1 of type 1
 %s:18 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to null of type null
+%s:21 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
 %s:23 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 23.
 %s:24 PhanImpossibleTypeComparison Impossible attempt to check if $key of type int is identical to '1' of type '1'
 %s:26 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 23.
