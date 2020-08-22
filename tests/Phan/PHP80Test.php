@@ -9,7 +9,10 @@ use Phan\Plugin\ConfigPluginSet;
 
 /**
  * Unit tests of Phan analysis targeting PHP 8.0 codebases.
- * PHP 8.0 will be out in 202x
+ * PHP 8.0 will be out in 2020
+ *
+ * This also tests that compatibility warnings are emitted
+ * when the minimum_target_php_version is older.
  */
 final class PHP80Test extends AbstractPhanFileTest
 {
@@ -18,7 +21,7 @@ final class PHP80Test extends AbstractPhanFileTest
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
         'target_php_version' => '8.0',
-        'minimum_target_php_version' => '7.4',  // test compatibility warnings for projects
+        'minimum_target_php_version' => '7.2',  // test compatibility warnings for projects
         'plugins' => [
             'UseReturnValuePlugin',
             'UnreachableCodePlugin',

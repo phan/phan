@@ -366,6 +366,7 @@ class Issue
     public const ArgumentUnpackingUsedWithNamedArgument                      = 'PhanArgumentUnpackingUsedWithNamedArgument';
     public const MissingNamedArgument                                        = 'PhanMissingNamedArgument';
     public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
+    public const SuspiciousNamedArgumentForVariadic                          = 'PhanSuspiciousNamedArgumentForVariadic';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -562,6 +563,7 @@ class Issue
     public const CompatibleArrowFunction            = 'PhanCompatibleArrowFunction';
     public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
     public const CompatibleNullsafeOperator         = 'PhanCompatibleNullsafeOperator';
+    public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3417,6 +3419,14 @@ class Issue
                 self::REMEDIATION_B,
                 7060
             ),
+            new Issue(
+                self::SuspiciousNamedArgumentForVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Passing named argument to a variadic parameter ${PARAMETER} of the same name in a call to {METHOD}. This will set the array offset "{PARAMETER}" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).',
+                self::REMEDIATION_B,
+                7061
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(
@@ -4850,6 +4860,14 @@ class Issue
                 "Cannot use nullsafe operator before php 8.0 in {CODE}",
                 self::REMEDIATION_B,
                 3034
+            ),
+            new Issue(
+                self::CompatibleNamedArgument,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use named arguments before php 8.0 in argument ({CODE})",
+                self::REMEDIATION_B,
+                3035
             ),
 
             // Issue::CATEGORY_GENERIC

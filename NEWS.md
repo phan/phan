@@ -29,7 +29,7 @@ New features (Analysis):
   New issue types: `PhanUndeclaredNamedArgument*`, `PhanDuplicateNamedArgument*`,
   `PhanMissingNamedArgument*`,
   `PhanDefinitelyDuplicateNamedArgument`, `PhanPositionalArgumentAfterNamedArgument`, and
-  `PhanArgumentUnpackingUsedWithNamedArgument`
+  `PhanArgumentUnpackingUsedWithNamedArgument`, `PhanSuspiciousNamedArgumentForVariadic`
 + Incomplete support for analyzing uses of PHP 8.0's nullsafe operator(`?->`) for property reads and method calls. (#4067)
 + Warn about using `@var` where `@param` should be used (#1366)
 + Treat undefined variables as definitely null/undefined in various places

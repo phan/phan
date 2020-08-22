@@ -3150,14 +3150,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 throw new AssertionError("Expected argument index to be an integer");
             }
             if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+                    $this->emitIssue(
+                        Issue::CompatibleNamedArgument,
+                        $argument->lineno,
+                        ASTReverter::toShortString($argument),
+                    );
+                }
                 ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
                 if ($argument_expression === null) {
                     throw new AssertionError("Expected argument to have an expression");
                 }
                 if (isset($argument_name_set[$argument_name])) {
-                    Issue::maybeEmit(
-                        $this->code_base,
-                        $this->context,
+                    $this->emitIssue(
                         Issue::DefinitelyDuplicateNamedArgument,
                         $argument->lineno,
                         ASTReverter::toShortString($argument),

@@ -459,6 +459,9 @@ final class ArgumentType
                 // TODO: Could optimize for long lists by precomputing a map, probably not worth it
                 foreach ($method->getRealParameterList() as $j => $parameter) {
                     if ($parameter->getName() === $argument_name) {
+                        if ($parameter->isVariadic()) {
+                            self::emitSuspiciousNamedArgumentForVariadic($code_base, $context, $method, $argument);
+                        }
                         $found = true;
                         $i = $j;
                         break;
@@ -609,6 +612,9 @@ final class ArgumentType
                 // TODO: Could optimize for long lists by precomputing a map, probably not worth it
                 foreach ($method->getRealParameterList() as $j => $parameter) {
                     if ($parameter->getName() === $argument_name) {
+                        if ($parameter->isVariadic()) {
+                            self::emitSuspiciousNamedArgumentForVariadic($code_base, $context, $method, $argument);
+                        }
                         $found = true;
                         $i = $j;
                         break;
@@ -761,6 +767,24 @@ final class ArgumentType
         if (\is_array($positions_used)) {
             self::checkAllNamedArgumentsPassed($code_base, $context, $node->lineno, $method, $positions_used);
         }
+    }
+
+    private static function emitSuspiciousNamedArgumentForVariadic(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Node $argument
+    ): void {
+        $argument_name = $argument->children['name'];
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::SuspiciousNamedArgumentForVariadic,
+            $argument->lineno,
+            $argument_name,
+            $method->getRepresentationForIssue(true),
+            $argument_name
+        );
     }
 
     /**

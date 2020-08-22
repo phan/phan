@@ -19,4 +19,5 @@
 %s:29 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in (throw (throw new Exception()))
 %s:31 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in (throw new Exception('loop'))
 %s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type 0 to 10 of type 10 with operator '<' in a loop (likely a false positive)
+%s:34 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
 %s:34 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in return (throw new RuntimeException('unimplemented'));

@@ -1,3 +1,5 @@
+%s:4 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int
+%s:5 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type ?\Em
 %s:8 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $this?->em
 %s:14 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $y?->em
 %s:14 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $y with type null

@@ -7,20 +7,36 @@
 %s:7 PhanUnusedGlobalFunctionParameter Parameter $a is never used
 %s:7 PhanUnusedGlobalFunctionParameter Parameter $flag is never used
 %s:7 PhanUnusedGlobalFunctionParameter Parameter $other is never used
+%s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 1)
+%s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flag: true)
+%s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: new stdClass())
+%s:12 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 1)
 %s:12 PhanPositionalArgumentAfterNamedArgument Saw positional argument (new stdClass()) after a named argument a: 1
+%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 1)
+%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flag: true)
+%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: new stdClass())
+%s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: null)
+%s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flag: 'invalid')
+%s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: true)
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($a) is null of type null but \test_named_arg() takes int defined at %s:7
 %s:14 PhanTypeMismatchArgumentReal Argument 2 ($other) is true of type true but \test_named_arg() takes ?\stdClass defined at %s:7
 %s:14 PhanTypeMismatchArgumentReal Argument 3 ($flag) is 'invalid' of type 'invalid' but \test_named_arg() takes bool defined at %s:7
 %s:15 PhanArgumentUnpackingUsedWithNamedArgument Cannot mix named arguments and argument unpacking in (flag: 'invalid', ...($argv))
+%s:15 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flag: 'invalid')
 %s:15 PhanMissingNamedArgument Missing named argument for int $a in call to \test_named_arg(int $a, ?\stdClass $other = null, bool $flag = false) defined at %s:7
 %s:15 PhanPositionalArgumentAfterNamedArgument Saw positional argument (...($argv)) after a named argument flag: 'invalid'
 %s:15 PhanTypeMismatchArgumentReal Argument 3 ($flag) is 'invalid' of type 'invalid' but \test_named_arg() takes bool defined at %s:7
 %s:15 PhanTypeMismatchArgument Argument 2 ($other) is ...($argv) of type string but \test_named_arg() takes ?\stdClass defined at %s:7
+%s:17 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (string: true)
 %s:17 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string
+%s:18 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (string: 'blah')
+%s:18 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (string: true)
 %s:18 PhanDefinitelyDuplicateNamedArgument Cannot repeat the same name for named arguments (string: true) and (string: 'blah')
 %s:18 PhanDuplicateNamedArgumentInternal Saw a call with arguments (string: true) and (string: 'blah') passed to the same parameter of \strlen(string $string)
 %s:18 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
 %s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string
+%s:19 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (string: true)
 %s:19 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is true of type true but \strlen() takes string
+%s:20 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (arg: true)
 %s:20 PhanParamTooMany Call with 1 arg(s) to \noargs() which only takes 0 arg(s) defined at %s:5
 %s:20 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (arg: true) to \noargs() defined at %s:5
