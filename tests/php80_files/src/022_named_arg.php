@@ -18,3 +18,4 @@ var_export(strlen(string: true));
 var_export(strlen(string: 'blah', string: true));
 var_export(strlen(string: true));
 noargs(arg: true);
+test_named_arg(a: 1, OTHER: new stdClass(), flat: true);

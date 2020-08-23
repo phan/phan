@@ -40,3 +40,8 @@
 %s:20 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (arg: true)
 %s:20 PhanParamTooMany Call with 1 arg(s) to \noargs() which only takes 0 arg(s) defined at %s:5
 %s:20 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (arg: true) to \noargs() defined at %s:5
+%s:21 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (OTHER: new stdClass())
+%s:21 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 1)
+%s:21 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flat: true)
+%s:21 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (OTHER: new stdClass()) to \test_named_arg(int $a, ?\stdClass $other = null, bool $flag = false) defined at %s:7 (Did you mean other)
+%s:21 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (flat: true) to \test_named_arg(int $a, ?\stdClass $other = null, bool $flag = false) defined at %s:7 (Did you mean flag)
