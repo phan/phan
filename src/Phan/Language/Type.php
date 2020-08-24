@@ -504,6 +504,7 @@ class Type
                         break;
                     case 'lowercase-string':
                         $value = StringType::instance($is_nullable);
+                        break;
                     case 'class-string':
                         $value = new ClassStringType(
                             '\\',
