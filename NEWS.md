@@ -47,6 +47,7 @@ New features (Analysis):
 
   There are already other ways to detect these backwards compatibility issues,
   such as `--native-syntax-check path/to/php7.x`.
++ Warn about variable definitions that are unused due to fallthroughs in switch statements. (#4162)
 
 Plugins:
 + Add more aliases to `DeprecateAliasPlugin`
