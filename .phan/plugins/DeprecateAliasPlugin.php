@@ -298,7 +298,7 @@ class DeprecateAliasPlugin extends PluginV3 implements
         'dir' => 'getdir',
         'ftp_quit' => 'ftp_close',
         'getmxrr' => 'dns_get_mx',
-        'getrandmax' => 'mt_getrandmax',
+        // 'getrandmax' => 'mt_getrandmax',  // confusing because rand is not an alias of mt_rand
         'get_required_files' => 'get_included_files',
         'gmp_div' => 'gmp_div_q',
         // This may change in the future
