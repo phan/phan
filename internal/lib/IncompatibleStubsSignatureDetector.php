@@ -40,7 +40,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
     public function __construct(string $dir)
     {
-        if (!is_dir($dir)) {
+        if (!file_exists($dir)) {
             echo "Could not find '$dir'\n";
             static::printUsageAndExit();
         }
@@ -66,15 +66,21 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      */
     public function selfTest(): void
     {
+        fwrite(STDERR, "Running a test that this directory contains commonly used signature - ignore this if this is only for a single extension\n");
         $failures = 0;
         $failures += $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
         // $failures += $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
         $failures += $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'numerator' => 'int', 'divisor' => 'int']);
         $failures += $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
+        if ($failures) {
+            fwrite(STDERR, "Saw $failures incorrect or missing signatures");
+        }
         // $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['string', 'key' => 'string', 'hashKey' => 'string']);
+        /*
         if ($failures > 1) {
             exit(1);
         }
+         */
     }
 
     /**
@@ -98,6 +104,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      */
     private function getFileList(): array
     {
+        if (is_file($this->directory)) {
+            return [$this->directory];
+        }
         $iterator = new \CallbackFilterIterator(
             new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator(
