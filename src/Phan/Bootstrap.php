@@ -44,7 +44,8 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.6';
+// TODO: Change version here and in composer.json 1.0.9 when the attributes RFC change is released
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.8';
 
 /**
  * Dump instructions on how to install php-ast
