@@ -636,6 +636,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             if (((string)($part->attributes()['choice'] ?? '')) === 'opt') {
                 $param_name .= '=';
             }
+            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
             if (((string)($param_details->attributes()['role'] ?? '')) === 'reference') {
                 $param_name = "&$param_name";
             }
