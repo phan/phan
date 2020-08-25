@@ -58,6 +58,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
         // TODO: Change to a more suitable configuration?
         $this->code_base = require(dirname(__DIR__) . '/../src/codebase.php');
+        $this->initStubs();
     }
 
     /**
@@ -239,7 +240,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      * @return array<string,array<int|string,string>>
      * @override
      */
-    protected function getAvailableGlobalFunctionSignatures(): array
+    public function getAvailableGlobalFunctionSignatures(): array
     {
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function (): array {
             $code_base = $this->code_base;
@@ -260,7 +261,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      * @return array<string,array<int|string,string>>
      * @override
      */
-    protected function getAvailableMethodSignatures(): array
+    public function getAvailableMethodSignatures(): array
     {
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function (): array {
             $code_base = $this->code_base;

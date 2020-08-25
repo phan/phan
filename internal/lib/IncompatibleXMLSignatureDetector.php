@@ -32,7 +32,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @var string the base directory of the svn phpdoc repo */
     private $doc_base_directory;
 
-    private function __construct(string $dir)
+    public function __construct(string $dir)
     {
         if (!is_dir($dir)) {
             echo "Could not find '$dir'\n";
@@ -343,6 +343,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $detector->selfTest();
                 $detector->updatePHPDocSummaries();
                 break;
+            case 'compare-named-parameters':
+                self::compareNamedParameters();
+                return;  // unreachable
             case 'help':
             case '--help':
             case '-h':
@@ -536,7 +539,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
         // echo $signature_file_contents . "\n";
         try {
-            $result = new SimpleXMLElement($signature_file_contents, LIBXML_ERR_NONE);
+            $result = @new SimpleXMLElement($signature_file_contents, LIBXML_ERR_NONE);
         } catch (Exception $e) {
             static::info("Failed to parse signature from file '$file_path' : " . $e->getMessage() . "\n");
             return null;
@@ -715,7 +718,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @return array<string,array<int|string,string>>
      * @override
      */
-    protected function getAvailableGlobalFunctionSignatures(): array
+    public function getAvailableGlobalFunctionSignatures(): array
     {
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function (): array {
             $function_name_map = [];
@@ -1031,9 +1034,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      * @return array<string,array<int|string,string>>
      * @override
      */
-    protected function getAvailableMethodSignatures(): array
+    public function getAvailableMethodSignatures(): array
     {
-
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function (): array {
             $method_name_map = [];
             foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
@@ -1067,5 +1069,56 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             }
         }
         return $result;
+    }
+
+    /**
+     * Implements compare-named-parameters to prepare docs and stub files for php 8.0 named parameters
+     */
+    public static function compareNamedParameters(): void
+    {
+        global $argc, $argv;
+        if ($argc !== 4) {
+            fwrite(STDERR, "Invalid argument count, compare-named-parameters expects 2 arguments\n");
+            static::printUsageAndExit();
+        }
+        $stub_signature_detector = new IncompatibleStubsSignatureDetector($argv[2]);
+        $stub_signature_detector->selfTest();
+
+        $stub_signatures = array_merge(
+            $stub_signature_detector->getAvailableGlobalFunctionSignatures(),
+            $stub_signature_detector->getAvailableMethodSignatures()
+        );
+        $doc_signature_detector = new IncompatibleXMLSignatureDetector($argv[3]);
+        $doc_signatures = array_merge(
+            $doc_signature_detector->getAvailableGlobalFunctionSignatures(),
+            $doc_signature_detector->getAvailableMethodSignatures()
+        );
+        $doc_signatures_normalized = [];
+        foreach ($doc_signatures as $function_name => $parameters) {
+            $doc_signatures_normalized[strtolower($function_name)] = $parameters;
+        }
+        ksort($stub_signatures);
+        ksort($doc_signatures);
+        printf("Parsed %d signatures from stubs and %d from documentation\n", count($stub_signatures), count($doc_signatures));
+        echo "Comparing signatures\n";
+        foreach ($stub_signatures as $function_name => $parameters) {
+            if (count($parameters) <= 1) {
+                continue;
+            }
+            $doc_parameters = $doc_signatures_normalized[strtolower($function_name)] ?? null;
+            if (!$doc_parameters) {
+                continue;
+            }
+            unset($parameters[0]);
+            unset($doc_parameters[0]);
+            if (array_keys($parameters) !== array_keys($doc_parameters)) {
+                echo "Saw parameter name mismatch for $function_name\n";
+                echo "Reflection parameters: " . json_encode($parameters) . "\n";
+                echo "php.net documentation: " . json_encode($doc_parameters) . "\n";
+                echo "\n";
+            }
+        }
+        echo "Done comparing signatures\n";
+        exit(0);
     }
 }

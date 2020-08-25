@@ -69,6 +69,13 @@ Usage: $program_name command [...args]
   $program_name update-descriptions-stubs path/to/stubs_dir
     Update Phan's descriptions for functions/methods based on a checkout of a directory with stubs for extensions.
 
+  $program_name compare-named-parameters path/to/stubs_dir path/to/phpdoc_svn_dir
+
+    Compares the parameter names of the functions/methods in stub files used by php-src (or an extension) and the
+    official documentation from the repo used to generate php.net function documentation.
+
+    Treats any file ending in .php as a stub file.
+
 EOT;
         fwrite(STDERR, $msg);
         exit($exit_code);
@@ -288,7 +295,7 @@ EOT;
     /**
      * @return array<string,array<int|string,string>>
      */
-    abstract protected function getAvailableGlobalFunctionSignatures(): array;
+    abstract public function getAvailableGlobalFunctionSignatures(): array;
 
     /**
      * @param array<string,array<int|string,string>> &$phan_signatures
@@ -310,7 +317,7 @@ EOT;
     /**
      * @return array<string,array<int|string,string>>
      */
-    abstract protected function getAvailableMethodSignatures(): array;
+    abstract public function getAvailableMethodSignatures(): array;
 
     /**
      * @param array<string,array<int|string,string>> $phan_signatures
