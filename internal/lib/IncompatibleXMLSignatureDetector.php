@@ -381,6 +381,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'dividend' => 'int', 'divisor' => 'int']);
         $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
         $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string', 'cp' => 'int', 'encoding=' => 'string']);
+        $this->expectFunctionLikeSignaturesMatch('curl_multi_exec', ['int', 'mh' => 'resource', '&still_running' => 'int']);
     }
 
     /**
@@ -625,7 +626,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $i = 0;
         foreach ($param as $part) {
             $i++;
-            $param_name = (string)$part->parameter;
+            $param_details = $part->parameter;
+            $param_name = (string)$param_details;
             if (!$param_name) {
                 $param_name = 'arg' . $i;
             }
@@ -633,6 +635,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall TODO fix https://github.com/phan/phan/issues/3723
             if (((string)($part->attributes()['choice'] ?? '')) === 'opt') {
                 $param_name .= '=';
+            }
+            if (((string)($param_details->attributes()['role'] ?? '')) === 'reference') {
+                $param_name = "&$param_name";
             }
 
             $result[$param_name] = self::toTypeString($part->type);
@@ -1076,6 +1081,11 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      */
     public static function compareNamedParameters(): void
     {
+        if (PHP_MAJOR_VERSION < 8) {
+            fwrite(STDERR, "compare-named-parameters MUST BE RUN IN PHP 8.0+, BUT WAS RUN IN " . PHP_VERSION . "\n");
+            fwrite(STDERR, "exiting without generating stubs\n");
+            exit(1);
+        }
         global $argc, $argv;
         if ($argc !== 4) {
             fwrite(STDERR, "Invalid argument count, compare-named-parameters expects 2 arguments\n");
