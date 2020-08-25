@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.2.0 (dev)
+Aug 25 2020, Phan 3.2.0
 -----------------------
 
 New features (CLI, Config):
