@@ -5335,7 +5335,6 @@ class UnionType implements Serializable
      * Mark this union type as being possibly undefined.
      * This is used for union types of variables and for values of array shapes.
      *
-     * Base implementation. Overridden by AnnotatedUnionType.
      * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined): UnionType
@@ -5343,6 +5342,7 @@ class UnionType implements Serializable
         if (!$is_possibly_undefined) {
             return $this;
         }
+        // TODO: Would using [NullType] make more sense here?
         $result = new AnnotatedUnionType($this->type_set, true, $this->real_type_set);
         $result->is_possibly_undefined = $is_possibly_undefined;
         return $result;
