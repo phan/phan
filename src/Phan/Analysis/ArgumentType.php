@@ -529,7 +529,17 @@ final class ArgumentType
                 Issue::maybeEmitInstance($code_base, $context, $e->getIssueInstance());
                 continue;
             }
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i, $argument);
+            $lineno = $argument->lineno ?? $context->getLineNumberStart();
+            self::analyzeParameter(
+                $code_base,
+                $context,
+                $method,
+                $argument_type,
+                $lineno,
+                $i,
+                $argument,
+                new ast\Node(ast\AST_ARG_LIST, 0, $arg_nodes, $lineno)
+            );
             if ($parameter->isPassByReference()) {
                 if ($argument instanceof Node) {
                     // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
@@ -715,7 +725,7 @@ final class ArgumentType
                 self::warnVoidTypeArgument($code_base, $context, $argument_expression, $node);
             }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument_expression);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument_expression, $node);
             if ($parameter->isPassByReference()) {
                 if ($argument_expression instanceof Node) {
                     // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
@@ -897,7 +907,7 @@ final class ArgumentType
                 // Omit ContextNotObject check, this was checked for the first matching parameter
             }
 
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i, $argument);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno, $i, $argument, $node);
             if ($parameter->isPassByReference()) {
                 // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzers
                 $argument->is_reference = true;
@@ -908,9 +918,12 @@ final class ArgumentType
     /**
      * Analyze passing the an argument of type $argument_type to the ith parameter of the (possibly variadic) method $method,
      * for a call made from the line $lineno.
+     *
+     * @param int $i the index of the parameter.
      * @param Node|string|int|float $argument_node
+     * @param ?Node $node the node of the call TODO: Default
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, $argument_node): void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, $argument_node, ?Node $node): void
     {
         // Expand it to include all parent types up the chain
         try {
@@ -932,6 +945,18 @@ final class ArgumentType
             $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
             if (\is_null($candidate_alternate_parameter)) {
                 continue;
+            }
+            if ($alternate_parameter && $node) {
+                // If another function was already checked which had the right number of alternate parameters, don't bother allowing checks with param
+                $arglist = $node->kind === ast\AST_ARG_LIST ? $node : ($node->children['args'] ?? null);
+                if ($arglist) {
+                    $argcount = \count($arglist->children);
+
+                    // Make sure we have enough arguments
+                    if ($argcount < $alternate_method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
+                        continue;
+                    }
+                }
             }
 
             $alternate_parameter = $candidate_alternate_parameter;

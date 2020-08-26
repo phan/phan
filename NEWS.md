@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 3.2.1 (dev)
 -----------------------
 
+New features (Analysis):
++ Don't compare parameter types against alternate method signatures which have too many required parameters.
+  (e.g. warn about `max([])` but not `max([], [1])`)
+
 Aug 25 2020, Phan 3.2.0
 -----------------------
 

@@ -251,7 +251,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                                     $passed_array_element_types,
                                     $line,
                                     0,
-                                    new Node(\ast\AST_UNPACK, 0, ['expr' => $args[0]], $line)  // dummy node for issue messages
+                                    new Node(\ast\AST_UNPACK, 0, ['expr' => $args[0]], $line),  // dummy node for issue messages
+                                    null
                                 );
                                 if (!Config::get_quick_mode()) {
                                     $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
