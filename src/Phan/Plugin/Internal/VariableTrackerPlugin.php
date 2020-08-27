@@ -144,6 +144,11 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if ($cond instanceof Node) {
                 $id_set_in_loop = self::extractNodeIdSet($cond);
                 if ($id_set_in_loop) {
+                    foreach ($id_set_in_loop as $id => $_) {
+                        if (isset($combined_use_defs[$id][VariableGraph::USE_ID_FOR_SHARED_STATE])) {
+                            continue 2;
+                        }
+                    }
                     $stmts_node = $loop_node->children['stmts'];
                     $id_set_of_stmts = $stmts_node instanceof Node ? self::extractNodeIdSet($stmts_node) : [];
                     if (isset($loop_node->children['loop'])) {
@@ -393,7 +398,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     // Don't warn if there's at least one usage of that definition
                     continue;
                 }
-                if (($graph->def_bitset[$definition_id] ?? 0) & VariableGraph::IS_UNSET) {
+                if (($graph->def_bitset[$definition_id] ?? 0) & (VariableGraph::IS_UNSET|VariableGraph::IS_DISABLED_WARNINGS)) {
                     // Don't warn about unset($x)
                     continue;
                 }

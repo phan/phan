@@ -205,10 +205,30 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * This is the default implementation for node types which don't have any overrides
+     * Visit a statement list
      * @override
      */
     public function visitStmtList(Node $node): VariableTrackingScope
+    {
+        $top_level_statement = $this->top_level_statement;
+        foreach ($node->children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // TODO: Specialize?
+            $this->top_level_statement = $child_node;
+            $this->scope = $this->{Element::VISIT_LOOKUP_TABLE[$child_node->kind] ?? 'handleMissingNodeKind'}($child_node);
+        }
+        $this->top_level_statement = $top_level_statement;
+        return $this->scope;
+    }
+
+    /**
+     * Visit an expression list
+     * @override
+     */
+    public function visitExprList(Node $node): VariableTrackingScope
     {
         $top_level_statement = $this->top_level_statement;
         foreach ($node->children as $child_node) {
@@ -305,13 +325,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 // $node is the usage of this variable
                 // Here, we use $node instead of $var_node as the declaration node so that recordVariableUsage won't treat increments in loops as using themselves.
                 self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
-                if ($this->top_level_statement === $node) {
-                    // And the whole inc/dec operation is the redefinition of this variable.
-                    // To reduce false positives, treat `;$x++;` as a redefinition, but not `foo($x++)`
-                    self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
-                    $this->scope->recordDefinition($name, $node);
-                } else {
-                    self::$variable_graph->recordVariableModification($name);
+                // And the whole inc/dec operation is the redefinition of this variable.
+                self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
+                $this->scope->recordDefinition($name, $node);
+                if ($this->top_level_statement !== $node) {
+                    // To reduce false positives, warn about `;$x++;` but not `foo($x++)`
+                    self::$variable_graph->markAsDisabledWarnings($node);
                 }
                 return $this->scope;
             }
@@ -800,9 +819,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         foreach ($node->children['loop']->children ?? [] as $loop_node) {
             if ($loop_node instanceof Node) {
+                $this->top_level_statement = $loop_node;
                 $loop_scope = $this->analyze(new VariableTrackingBranchScope($inner_scope), $loop_node);
                 // @phan-suppress-next-line PhanTypeMismatchArgument
                 $inner_scope = $inner_scope->mergeWithSingleBranchScope($loop_scope);
+                $this->top_level_statement = $top_level_statement;
             }
         }
 
@@ -1067,6 +1088,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             case ast\AST_PRE_INC:
             case ast\AST_POST_DEC:
             case ast\AST_POST_INC:
+            case ast\AST_ASSIGN_OP:
                 return true;
             case ast\AST_CALL:
                 if (self::isNonDeterministicCall($node)) {
@@ -1084,6 +1106,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     private const NON_DETERMINISTIC_FUNCTIONS = [
         'feof' => true,
+        'fgetcsv' => true,
+        'fgets' => true,
+        'fread' => true,
+        'ftell' => true,
         'readdir' => true,
         'rand' => true,
         'array_rand' => true,
