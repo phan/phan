@@ -826,6 +826,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 $this->top_level_statement = $top_level_statement;
             }
         }
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument

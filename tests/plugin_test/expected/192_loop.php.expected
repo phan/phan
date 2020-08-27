@@ -1,0 +1,1 @@
+src/192_loop.php:8 PhanPluginConstantVariableBool Variable $loop is probably constant with a value of false
