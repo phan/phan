@@ -7,6 +7,9 @@ New features (Analysis):
 + Don't compare parameter types against alternate method signatures which have too many required parameters.
   (e.g. warn about `max([])` but not `max([], [1])`)
 
+Plugins:
++ Warn about `#` comments in `PHPDocInWrongCommentPlugin` if they're not used for the expected `#[` syntax of php 8.0 attributes.
+
 Aug 25 2020, Phan 3.2.0
 -----------------------
 

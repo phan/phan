@@ -318,8 +318,10 @@ The warning types for methods are below:
 #### PHPDocInWrongCommentPlugin
 
 This plugin warns about using phpdoc annotations such as `@param` in block comments(`/*`) instead of phpdoc comments(`/**`).
+This also warns about using `#` instead of `//` for line comments, because `#[` is used for php 8.0 attributes and will cause confusion.
 
 - **PhanPluginPHPDocInWrongComment**: `Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**", not "/*"`
+- **PhanPluginPHPDocHashComment**: `Saw comment starting with # in {COMMENT} - consider using // instead to avoid confusion with php 8.0 #[ attributes`
 
 #### InvalidVariableIssetPlugin.php
 

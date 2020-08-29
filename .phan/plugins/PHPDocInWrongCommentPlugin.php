@@ -52,6 +52,15 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
             // This is a comment, not T_DOC_COMMENT
             $comment_string = $token[1];
             if (strncmp($comment_string, '/*', 2) !== 0) {
+                if ($comment_string[0] === '#' && substr($comment_string, 1, 1) !== '[') {
+                    $this->emitIssue(
+                        $code_base,
+                        (clone($context))->withLineNumberStart($token[2]),
+                        'PhanPluginPHPDocHashComment',
+                        'Saw comment starting with {COMMENT} in {COMMENT} - consider using {COMMENT} instead to avoid confusion with php 8.0 {COMMENT} attributes',
+                        ['#', StringUtil::jsonEncode(self::truncate(trim($comment_string))), '//', '#[']
+                    );
+                }
                 continue;
             }
             if (strpos($comment_string, '@') === false) {

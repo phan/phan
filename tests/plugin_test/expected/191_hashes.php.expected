@@ -1,0 +1,2 @@
+src/191_hashes.php:4 PhanPluginPHPDocHashComment Saw comment starting with # in "#This is a comment" - consider using // instead to avoid confusion with php 8.0 #[ attributes
+src/191_hashes.php:8 PhanPluginPHPDocHashComment Saw comment starting with # in "#" - consider using // instead to avoid confusion with php 8.0 #[ attributes
