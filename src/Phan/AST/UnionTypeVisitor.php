@@ -1152,14 +1152,14 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_YIELD`
      *
-     * @param Node $unused_node
+     * @param Node $node @unused-param
      * A yield node. Does not affect the union type
      *
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitYield(Node $unused_node): UnionType
+    public function visitYield(Node $node): UnionType
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {

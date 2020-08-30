@@ -46,12 +46,20 @@ class ArrayType extends IterableType
         return true;  // Overrides Type
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
     {
         return true;  // Overrides Type
     }
 
-    public function isCountable(CodeBase $unused_code_base): bool
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function isCountable(CodeBase $code_base): bool
     {
         return true;  // Overrides Type
     }
@@ -298,7 +306,12 @@ class ArrayType extends IterableType
         return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @override
+     * @unused-param $code_base
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if ($other instanceof IterableType || $other instanceof MixedType || $other instanceof TemplateType) {
             return true;
@@ -310,9 +323,11 @@ class ArrayType extends IterableType
     }
 
     /**
+     * @override
+     * @unused-param $code_base
      * @return UnionType int|string for arrays
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
+    public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
         return UnionType::empty();
@@ -363,7 +378,12 @@ class ArrayType extends IterableType
         return null;
     }
 
-    public function canPossiblyCastToClass(CodeBase $unused_code_base, Type $unused_other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $other
+     * @override
+     */
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $other): bool
     {
         // arrays can't cast to object.
         return false;
@@ -373,8 +393,9 @@ class ArrayType extends IterableType
      * Returns the equivalent (possibly nullable) associative array type (or array shape type) for this type.
      *
      * TODO: Implement for ArrayShapeType (not currently calling it) with $can_reduce_size
+     * @unused-param $can_reduce_size
      */
-    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
+    public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         return AssociativeArrayType::fromElementType(
             MixedType::instance(false),

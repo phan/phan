@@ -2049,11 +2049,12 @@ class CodeBase
     }
 
     /**
+     * @unused-param $context
      * @return list<FullyQualifiedClassName> 0 or more namespaced class names found in this code base
      */
     public function suggestSimilarClassInOtherNamespace(
         FullyQualifiedClassName $missing_class,
-        Context $unused_context
+        Context $context
     ): array {
         $class_name = $missing_class->getName();
         $class_name_lower = strtolower($class_name);
@@ -2076,12 +2077,13 @@ class CodeBase
     }
 
     /**
+     * @unused-param $context
      * @return list<FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base with the same name but different namespaces
      */
     public function suggestSimilarGlobalFunctionInOtherNamespace(
         string $namespace,
         string $function_name,
-        Context $unused_context,
+        Context $context,
         bool $include_same_namespace = false
     ): array {
         $function_name_lower = strtolower($function_name);
@@ -2229,12 +2231,13 @@ class CodeBase
     }
 
     /**
+     * @unused-param $context
      * @return list<FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base, from various namespaces
      */
     public function suggestSimilarGlobalFunctionForNamespaceAndName(
         string $namespace,
         string $name,
-        Context $unused_context
+        Context $context
     ): array {
         $suggester = $this->getFunctionNameSuggesterForNamespace($namespace);
         $suggested_function_names = $suggester->getSuggestions($name);
@@ -2267,6 +2270,7 @@ class CodeBase
 
     /**
      * @param int $class_suggest_type value from IssueFixSuggester::CLASS_SUGGEST_*
+     * @unused-param $context
      *
      * @return list<FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
      *
@@ -2275,7 +2279,7 @@ class CodeBase
      */
     public function suggestSimilarClassInSameNamespace(
         FullyQualifiedClassName $missing_class,
-        Context $unused_context,
+        Context $context,
         int $class_suggest_type = IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES
     ): array {
         $namespace = $missing_class->getNamespace();

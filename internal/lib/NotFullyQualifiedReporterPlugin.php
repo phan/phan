@@ -50,7 +50,10 @@ class NotFullyQualifiedReporterPlugin extends PluginV3 implements
         return NotFullyQualifiedReporterVisitor::class;
     }
 
-    public function finalizeProcess(CodeBase $_): void
+    /**
+     * @unused-param $code_base
+     */
+    public function finalizeProcess(CodeBase $code_base): void
     {
         echo "<" . "?php declare(strict_types=1);\n";
         ksort(self::$calls);

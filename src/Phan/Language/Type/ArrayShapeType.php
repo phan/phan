@@ -206,9 +206,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @unused-param $code_base
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
+    public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         return $this->getKeyUnionType();
     }
@@ -228,9 +229,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @unused-param $code_base
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base): UnionType
+    public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
         return $this->genericArrayElementUnionType();
     }
@@ -1116,7 +1118,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         );
     }
 
-    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
+    /**
+     * @unused-param $can_reduce_size
+     */
+    public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         return $this;
     }

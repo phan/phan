@@ -602,7 +602,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
-    public function asArrayOrArrayAccessSubTypes(CodeBase $unused_code_base): UnionType
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function asArrayOrArrayAccessSubTypes(CodeBase $code_base): UnionType
     {
         return $this;
     }
@@ -1081,7 +1085,10 @@ final class EmptyUnionType extends UnionType
         return ($cache[$key_type] ?? ($cache[$key_type] = AssociativeArrayType::fromElementType(MixedType::instance(false), false, $key_type)->asRealUnionType()));
     }
 
-    public function withAssociativeArrays(bool $_): UnionType
+    /**
+     * @unused-param $can_reduce_size
+     */
+    public function withAssociativeArrays(bool $can_reduce_size): UnionType
     {
         return $this;
     }
@@ -1300,12 +1307,20 @@ final class EmptyUnionType extends UnionType
         return Type::fromFullyQualifiedString('\Generator');
     }
 
-    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         return $this;
     }
 
-    public function iterableValueUnionType(CodeBase $unused_code_base): UnionType
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
         return $this;
     }

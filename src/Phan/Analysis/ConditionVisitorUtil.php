@@ -361,9 +361,9 @@ trait ConditionVisitorUtil
 
     /**
      * overridden in subclasses
-     * @param Node|mixed $_
+     * @param Node|mixed $node @unused-param
      */
-    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $_): string
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node): string
     {
         return $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition;
     }
@@ -730,13 +730,14 @@ trait ConditionVisitorUtil
      * and infer the effects on $this->prop_name in the local scope.
      *
      * @param Node $node a node of kind ast\AST_PROP
+     * @unused-param $suppress_issues
      */
     final protected function updatePropertyExpressionWithConditionalFilter(
         Node $node,
         Context $context,
         Closure $should_filter_cb,
         Closure $filter_union_type_cb,
-        bool $unused_suppress_issues
+        bool $suppress_issues
     ): Context {
         if (!self::isThisVarNode($node->children['expr'])) {
             return $context;

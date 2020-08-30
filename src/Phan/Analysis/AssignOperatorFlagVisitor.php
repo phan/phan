@@ -348,8 +348,11 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         return $probably_int_or_float_type;
     }
 
-    /** @override */
-    public function visitBinaryDiv(Node $_): UnionType
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBinaryDiv(Node $node): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return FloatType::instance(false)->asRealUnionType();
@@ -391,28 +394,40 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         return FloatType::instance(false)->asRealUnionType();
     }
 
-    /** @override */
-    public function visitBinaryMod(Node $_): UnionType
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBinaryMod(Node $node): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return IntType::instance(false)->asRealUnionType();
     }
 
-    /** @override */
-    public function visitBinaryPow(Node $_): UnionType
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBinaryPow(Node $node): UnionType
     {
         // analyzed in AssignOperatorAnalysisVisitor
         return FloatType::instance(false)->asRealUnionType();
     }
 
-    /** @override */
-    public function visitBinaryShiftLeft(Node $_): UnionType
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBinaryShiftLeft(Node $node): UnionType
     {
         return IntType::instance(false)->asRealUnionType();
     }
 
-    /** @override */
-    public function visitBinaryShiftRight(Node $_): UnionType
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBinaryShiftRight(Node $node): UnionType
     {
         return IntType::instance(false)->asRealUnionType();
     }

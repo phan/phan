@@ -111,7 +111,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the class exists
      *
      * @param Clazz $class
@@ -119,14 +119,14 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      * @override
      */
     public function analyzeClass(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Clazz $class
     ): void {
         $this->postponeAnalysisOfElement($class);
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the method exists
      *
      * @param Method $method
@@ -134,7 +134,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      * @override
      */
     public function analyzeMethod(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Method $method
     ): void {
 
@@ -147,7 +147,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the function exists
      *
      * @param Func $function
@@ -155,14 +155,14 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      * @override
      */
     public function analyzeFunction(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Func $function
     ): void {
         $this->postponeAnalysisOfElement($function);
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the property exists
      *
      * @param Property $property
@@ -170,7 +170,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      * @override
      */
     public function analyzeProperty(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Property $property
     ): void {
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
@@ -276,11 +276,16 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         return;
     }
 
+    /**
+     * @unused-param $code_base
+     * @unused-param $file_contents
+     * @unused-param $node
+     */
     public function beforeAnalyzeFile(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Context $context,
-        string $unused_file_contents,
-        Node $unused_node
+        string $file_contents,
+        Node $node
     ): void {
         $file = $context->getFile();
         $this->files_for_postponed_analysis[$file] = $file;

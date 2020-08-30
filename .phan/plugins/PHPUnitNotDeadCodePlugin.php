@@ -54,8 +54,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
      * @override
+     * @unused-param $node
      */
-    public function visitClass(Node $unused_node): void
+    public function visitClass(Node $node): void
     {
         if (!Config::get_track_references()) {
             return;

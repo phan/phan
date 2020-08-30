@@ -4882,14 +4882,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $_
+     * @param Node $node @unused-param
      * A node to analyze
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitThrow(Node $_): Context
+    public function visitThrow(Node $node): Context
     {
         $parent_node = \end($this->parent_node_list);
         if (!($parent_node instanceof Node)) {

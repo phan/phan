@@ -56,7 +56,11 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
         return ClosureType::instance($this->is_nullable);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // TODO: Apply the inverse to objects with known fqsens - stdClass is not a closure
         if (!$other->isPossiblyObject()) {

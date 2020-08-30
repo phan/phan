@@ -208,15 +208,16 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the method exists
      *
      * @param Method $method
      * A method being analyzed
+     *
      * @override
      */
     public function analyzeMethod(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Method $method
     ): void {
         // 1. Perform any checks that can be done immediately to rule out being able
@@ -253,7 +254,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $unused_code_base
+     * @param CodeBase $code_base @unused-param
      * The code base in which the function exists
      *
      * @param Func $function
@@ -261,7 +262,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      * @override
      */
     public function analyzeFunction(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Func $function
     ): void {
         if (!$function->isClosure()) {

@@ -130,7 +130,11 @@ final class CallableStringType extends StringType implements CallableInterface
         return self::instance($is_nullable);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other instanceof StringType ||
             $other instanceof MixedType ||

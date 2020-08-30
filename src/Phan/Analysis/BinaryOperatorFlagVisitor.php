@@ -437,37 +437,37 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @param Node $unused_node
+     * @param Node $node @unused-param
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolAnd(Node $unused_node): UnionType
+    public function visitBinaryBoolAnd(Node $node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
 
     /**
-     * @param Node $unused_node
+     * @param Node $node @unused-param
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolXor(Node $unused_node): UnionType
+    public function visitBinaryBoolXor(Node $node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
 
     /**
-     * @param Node $unused_node
+     * @param Node $node @unused-param
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolOr(Node $unused_node): UnionType
+    public function visitBinaryBoolOr(Node $node): UnionType
     {
         return BoolType::instance(false)->asRealUnionType();
     }
@@ -999,10 +999,11 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
+     * @unused-param $node
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryMod(Node $unused_node): UnionType
+    public function visitBinaryMod(Node $node): UnionType
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asRealUnionType();

@@ -25,10 +25,10 @@ class HasTypeCondition implements BinaryCondition
      * Assert that this condition applies to the variable $var (i.e. $var has type $union_type)
      *
      * @param Node $var
-     * @param Node|int|string|float $unused_expr
+     * @param Node|int|string|float $expr @unused-param
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr): Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context
     {
         // Get the variable we're operating on
         $context = $visitor->getContext();
@@ -57,9 +57,9 @@ class HasTypeCondition implements BinaryCondition
      * Assert that this condition applies to the variable $object (i.e. get_class($object) === $expr)
      *
      * @param Node|int|string|float $object
-     * @param Node|int|string|float $unused_expr
+     * @param Node|int|string|float $expr @unused-param
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $unused_expr): Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context
     {
         $class_string = $this->type->asSingleScalarValueOrNull();
         if ($class_string === null) {
@@ -76,7 +76,13 @@ class HasTypeCondition implements BinaryCondition
         return null;
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $unused_visitor, Node $unused_call_node, $unused_expr): ?Context
+    /**
+     * @unused-param $visitor
+     * @unused-param $node
+     * @unused-param $expr
+     * @override
+     */
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $node, $expr): ?Context
     {
         // TODO: Could analyze get_class($array['field']) === stdClass::class (e.g. with AssignmentVisitor)
         return null;

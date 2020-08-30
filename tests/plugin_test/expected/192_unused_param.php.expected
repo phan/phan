@@ -1,0 +1,5 @@
+src/192_unused_param.php:5 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @unused-param'
+src/192_unused_param.php:8 PhanPluginUseReturnValueNoopVoid The function/method \test_unused_192() is declared to return void and it has no side effects
+src/192_unused_param.php:8 PhanUnreferencedFunction Possibly zero references to function \test_unused_192()
+src/192_unused_param.php:8 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+src/192_unused_param.php:8 PhanUnusedGlobalFunctionParameter Parameter $y is never used

@@ -39,19 +39,21 @@ class CallableArrayType extends ArrayType
     }
 
     /**
+     * @unused-param $code_base
      * @return UnionType int|string for arrays
      * @override
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base): UnionType
+    public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
         return IntType::instance(false)->asPHPDocUnionType();
     }
 
     /**
+     * @unused-param $code_base
      * @override
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base): UnionType
+    public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
         return UnionType::fromFullyQualifiedPHPDocString('string|object');
     }

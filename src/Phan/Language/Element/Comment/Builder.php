@@ -116,6 +116,10 @@ final class Builder
     public const PARAM_COMMENT_REGEX =
         '/@(?:phan-)?(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
+    /** @internal */
+    public const UNUSED_PARAM_COMMENT_REGEX =
+        '/@(?:phan-)?unused-param\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))/';
+
     /**
      * @param string $line
      * An individual line of a comment
@@ -392,13 +396,16 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
             switch ($type) {
                 case 'param':
                     $this->parseParamLine($i, $line);
+                    break;
+                case 'unused-param':
+                    $this->parseUnusedParamLine($i, $line);
                     break;
                 case 'var':
                     $this->maybeParseVarLine($i, $line);
@@ -530,6 +537,24 @@ final class Builder
         }
         $param = self::parameterFromCommentLine($line, false, $i);
         $this->parameter_list[] = $param;
+    }
+
+    private function parseUnusedParamLine(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@unused-param', Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
+        if (\preg_match(self::UNUSED_PARAM_COMMENT_REGEX, $line, $match)) {
+            // Currently only used in VariableTrackerPlugin
+            $name = $match[16];
+            $this->phan_overrides['unused-param'][$name] = $name;
+        } else {
+            $this->emitIssue(
+                Issue::UnextractableAnnotation,
+                $this->guessActualLineLocation($i),
+                \trim($line)
+            );
+        }
     }
 
     private function maybeParseVarLine(int $i, string $line): void
@@ -785,6 +810,9 @@ final class Builder
                 return;
             case 'phan-file-suppress':
                 // See BuiltinSuppressionPlugin
+                return;
+            case 'phan-unused-param':
+                $this->parseUnusedParamLine($i, $line);
                 return;
             case 'phan-suppress':
                 $this->maybeParseSuppress($i, $line);

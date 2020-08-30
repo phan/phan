@@ -25,9 +25,10 @@ class Fixers
 
     /**
      * Generate an edit to replace a fully qualified return type with a shorter equivalent representation.
+     * @unused-param $code_base
      */
     public static function fixReturnType(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
     ): ?FileEditSet {
@@ -44,9 +45,10 @@ class Fixers
 
     /**
      * Generate an edit to replace a fully qualified param type with a shorter equivalent representation.
+     * @unused-param $code_base
      */
     public static function fixParamType(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
     ): ?FileEditSet {

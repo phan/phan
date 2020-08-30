@@ -82,17 +82,19 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
 
     /**
      * @override
+     * @unused-param $node
      * @return void
      */
-    public function visitClass(Node $_)
+    public function visitClass(Node $node)
     {
     }
 
     /**
      * @override
+     * @unused-param $node
      * @return void
      */
-    public function visitFuncDecl(Node $_)
+    public function visitFuncDecl(Node $node)
     {
     }
 
@@ -113,9 +115,10 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
 
     /**
      * @override
+     * @unused-param $node
      * @return void
      */
-    public function visitArrowFunc(Node $_)
+    public function visitArrowFunc(Node $node)
     {
     }
 

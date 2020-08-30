@@ -59,8 +59,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
      */
 
-    /** @param Node $unused_node implementation for unhandled nodes */
-    public function visit(Node $unused_node): Context
+    /** @param Node $node implementation for unhandled nodes @unused-param */
+    public function visit(Node $node): Context
     {
         return $this->context;
     }
@@ -716,14 +716,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * No-op - all work is done in BlockAnalysisVisitor
      *
-     * @param Node $_
+     * @param Node $node @unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitForeach(Node $_): Context
+    public function visitForeach(Node $node): Context
     {
         return $this->context;
     }
@@ -861,14 +861,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $_
+     * @param Node $node @unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $_): Context
+    public function visitCall(Node $node): Context
     {
         return $this->context;
     }

@@ -240,10 +240,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
      * @param CodeBase $code_base @unused-param
+     * @unused-param $recursion_depth
      */
     public function asExpandedTypes(
         CodeBase $code_base,
-        int $unused_recursion_depth = 0
+        int $recursion_depth = 0
     ): UnionType {
         return $this->asPHPDocUnionType();
     }
@@ -251,10 +252,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
      * @param CodeBase $code_base @unused-param
+     * @unused-param $recursion_depth
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
-        int $unused_recursion_depth = 0
+        int $recursion_depth = 0
     ): UnionType {
         return $this->asPHPDocUnionType();
     }
@@ -388,45 +390,58 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    /** @override */
-    public function setFQSEN(FQSEN $_): void
+    /**
+     * @unused-param $fqsen
+     * @override
+     */
+    public function setFQSEN(FQSEN $fqsen): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
     /**
+     * @unused-param $code_base
      * @phan-return \Generator<static>
      * @override
      */
-    public function alternateGenerator(CodeBase $_): Generator
+    public function alternateGenerator(CodeBase $code_base): Generator
     {
         yield $this;
     }
 
-    /** @override */
-    public function analyze(Context $context, CodeBase $_): Context
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function analyze(Context $context, CodeBase $code_base): Context
     {
         return $context;
     }
 
-    /** @override */
+    /**
+     * @override
+     */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, Node $node = null): void
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
 
     /**
-     * @param CodeBase $code_base @unused-param
+     * @unused-param $context
+     * @unused-param $code_base
      * @param Parameter[] $parameter_list @unused-param
      * @override
      */
-    public function analyzeWithNewParams(Context $unused_context, CodeBase $code_base, array $parameter_list): Context
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list): Context
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
 
-    /** @override */
-    public function appendParameter(Parameter $_): void
+    /**
+     * @override
+     * @unused-param $parameter
+     */
+    public function appendParameter(Parameter $parameter): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
@@ -496,8 +511,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return FullyQualifiedFunctionName::fromFullyQualifiedString('\\closure_phpdoc' . $hash);
     }
 
-    /** @override */
-    public function getRepresentationForIssue(bool $unused_show_args = false): string
+    /**
+     * @unused-param $show_args
+     * @override
+     */
+    public function getRepresentationForIssue(bool $show_args = false): string
     {
         // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
         return $this->__toString();

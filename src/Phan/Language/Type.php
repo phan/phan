@@ -1997,8 +1997,9 @@ class Type
     /**
      * Returns true if this has any instance of `static` or `self`.
      * This is overridden in subclasses such as `SelfType` and `IterableType`
+     * @unused-param $code_base
      */
-    public function hasStaticOrSelfTypesRecursive(CodeBase $_): bool
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
     {
         // TODO: Check template types?
         return false;
@@ -2120,8 +2121,9 @@ class Type
      * Check if this type can possibly cast to the declared type, ignoring nullability of this type
      *
      * Precondition: This is either non-nullable or the type NullType/VoidType
+     * @unused-param $context
      */
-    public function canCastToDeclaredType(CodeBase $code_base, Context $unused_context, Type $other): bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if ($other->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other->withIsNullable(false))) {
             return true;

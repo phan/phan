@@ -27,10 +27,10 @@ class NotHasTypeCondition implements BinaryCondition
      * Assert that this condition applies to the variable $var (i.e. $var does not have type $union_type)
      *
      * @param Node $var
-     * @param Node|int|string|float $unused_expr
+     * @param Node|int|string|float $expr @unused-param
      * @override
      */
-    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $unused_expr): Context
+    public function analyzeVar(ConditionVisitorInterface $visitor, Node $var, $expr): Context
     {
         // Get the variable we're operating on
         $context = $visitor->getContext();
@@ -60,21 +60,31 @@ class NotHasTypeCondition implements BinaryCondition
     /**
      * Assert that this condition applies to the variable $object. Unimplemented.
      *
-     * @param Node|int|string|float $unused_object
-     * @param Node|int|string|float $unused_expr
+     * @param Node|int|string|float $object @unused-param
+     * @param Node|int|string|float $expr @unused-param
      */
-    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $unused_object, $unused_expr): Context
+    public function analyzeClassCheck(ConditionVisitorInterface $visitor, $object, $expr): Context
     {
         // Unimplemented, Not likely to be commonly used.
         return $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $unused_visitor, Node $unused_call_node, $unused_expr): ?Context
+    /**
+     * @unused-param $visitor
+     * @unused-param $call_node
+     * @unused-param $expr
+     */
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
         return null;
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $unused_visitor, Node $unused_complex_node, $unused_expr): ?Context
+    /**
+     * @unused-param $visitor
+     * @unused-param $complex_node
+     * @unused-param $expr
+     */
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
     {
         // TODO: Could analyze get_class($array['field']) === stdClass::class (e.g. with AssignmentVisitor)
         return null;

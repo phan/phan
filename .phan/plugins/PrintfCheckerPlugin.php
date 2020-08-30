@@ -190,7 +190,10 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
         return new PrimitiveValue($str);
     }
 
-    public function getReturnTypeOverrides(CodeBase $unused_code_base): array
+    /**
+     * @unused-param $code_base
+     */
+    public function getReturnTypeOverrides(CodeBase $code_base): array
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**

@@ -52,9 +52,10 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
+     * @unused-param $node
      * @return ?bool this gives up on analyzing catch lists
      */
-    public function visitCatchList(Node $_): ?bool
+    public function visitCatchList(Node $node): ?bool
     {
         return null;
     }
@@ -126,12 +127,20 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return null;
     }
 
-    public function visitBreak(Node $_): ?bool
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBreak(Node $node): ?bool
     {
         return false;
     }
 
-    public function visitContinue(Node $_): ?bool
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitContinue(Node $node): ?bool
     {
         return false;
     }
@@ -146,25 +155,28 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
+     * @unused-param $node
      * @override
      */
-    public function visitClosure(Node $_): ?bool
+    public function visitClosure(Node $node): ?bool
     {
         return null;
     }
 
     /**
+     * @unused-param $node
      * @override
      */
-    public function visitArrowFunc(Node $_): ?bool
+    public function visitArrowFunc(Node $node): ?bool
     {
         return null;
     }
 
     /**
+     * @unused-param $node
      * @override
      */
-    public function visitFuncDecl(Node $_): ?bool
+    public function visitFuncDecl(Node $node): ?bool
     {
         return null;
     }

@@ -57,14 +57,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $unused_node
+     * @param Node $node @unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $unused_node): Context
+    public function visit(Node $node): Context
     {
         // TODO: if ($this->context->isInGlobalScope()) {
         //            copy local to global

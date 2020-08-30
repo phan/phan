@@ -117,22 +117,34 @@ class InferPureVisitor extends AnalysisVisitor
         }
     }
 
-    /** @override */
-    public function visitClassName(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitClassName(Node $node): void
     {
     }
 
-    /** @override */
-    public function visitMagicConst(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitMagicConst(Node $node): void
     {
     }
 
-    /** @override */
-    public function visitConst(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitConst(Node $node): void
     {
     }
 
-    /** @override */
+    /**
+     * @unused-param $node
+     * @override
+     */
     public function visitEmpty(Node $node): void
     {
         $this->maybeInvoke($node->children['expr']);
@@ -144,13 +156,19 @@ class InferPureVisitor extends AnalysisVisitor
         $this->maybeInvoke($node->children['var']);
     }
 
-    /** @override */
-    public function visitContinue(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitContinue(Node $node): void
     {
     }
 
-    /** @override */
-    public function visitBreak(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitBreak(Node $node): void
     {
     }
 
@@ -383,13 +401,19 @@ class InferPureVisitor extends AnalysisVisitor
         $this->maybeInvokeAllChildNodes($node);
     }
 
-    /** @override */
-    public function visitGoto(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitGoto(Node $node): void
     {
     }
 
-    /** @override */
-    public function visitLabel(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitLabel(Node $node): void
     {
     }
 
@@ -479,8 +503,11 @@ class InferPureVisitor extends AnalysisVisitor
         $this->maybeInvoke($node->children['expr']);
     }
 
-    /** @override */
-    public function visitName(Node $_): void
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitName(Node $node): void
     {
         // do nothing
     }
