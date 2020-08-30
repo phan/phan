@@ -100,10 +100,13 @@ final class CompletionRequest extends NodeInfoRequest
         $this->completions[$item->label . ':' . $item->kind] = $item;
     }
 
+    /**
+     * @unused-param $code_base
+     */
     private static function createCompletionItem(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         TypedElementInterface $element,
-        string $prefix = null
+        ?string $prefix = null
     ): CompletionItem {
         $item = new CompletionItem();
         $item->label = self::labelForElement($element);

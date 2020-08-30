@@ -713,12 +713,20 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function setHasReturn(bool $_): void
+    /**
+     * @override
+     * @unused-param $has_return
+     */
+    public function setHasReturn(bool $has_return): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function setHasYield(bool $_): void
+    /**
+     * @override
+     * @unused-param $has_yield
+     */
+    public function setHasYield(bool $has_yield): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
@@ -733,17 +741,29 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function setIsReturnTypeUndefined(bool $_): void
+    /**
+     * @unused-param $is_return_type_undefined
+     * @override
+     */
+    public function setIsReturnTypeUndefined(bool $is_return_type_undefined): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function setNumberOfOptionalParameters(int $_): void
+    /**
+     * @unused-param $number
+     * @override
+     */
+    public function setNumberOfOptionalParameters(int $number): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    public function setNumberOfRequiredParameters(int $_): void
+    /**
+     * @unused-param $number
+     * @override
+     */
+    public function setNumberOfRequiredParameters(int $number): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
@@ -800,7 +820,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    public function hydrate(CodeBase $_): void
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function hydrate(CodeBase $code_base): void
     {
     }
 
@@ -823,7 +847,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    public function setIsDeprecated(bool $_): void
+    /**
+     * @unused-param $is_deprecated
+     * @override
+     */
+    public function setIsDeprecated(bool $is_deprecated): void
     {
     }
 
@@ -900,7 +928,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $signature;
     }
 
-    public function analyzeReturnTypes(CodeBase $unused_code_base): void
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function analyzeReturnTypes(CodeBase $code_base): void
     {
         // do nothing
     }
@@ -1020,11 +1052,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return [];
     }
 
-    public function recordHasMandatoryPHPDocParamAtOffset(int $unused_parameter_offset): void
+    public function recordHasMandatoryPHPDocParamAtOffset(int $parameter_offset): void
     {
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return !$other->isDefiniteNonCallableType();
     }

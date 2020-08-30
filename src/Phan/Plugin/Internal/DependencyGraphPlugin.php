@@ -76,8 +76,12 @@ class DependencyGraphPlugin extends PluginV3 implements
         return [\substr($file_string, 0, $idx), (int)\substr($file_string, $idx + 1)];
     }
 
-    /** Build file<->class mappings */
-    public function analyzeClass(CodeBase $unused_code_base, Clazz $class): void
+    /**
+     * Build file<->class mappings
+     *
+     * @unused-param $code_base
+     */
+    public function analyzeClass(CodeBase $code_base, Clazz $class): void
     {
         $this->elements[] = $class;
         $cnode = (string)$class->getFQSEN()->getCanonicalFQSEN();
@@ -204,8 +208,10 @@ class DependencyGraphPlugin extends PluginV3 implements
 
     /**
      * Build the actual class and file graphs
+     *
+     * @unused-param $code_base
      */
-    public function finalizeProcess(CodeBase $unused_code_base): void
+    public function finalizeProcess(CodeBase $code_base): void
     {
         if (empty($this->elements)) {
             \fwrite(\STDERR, "Nothing to analyze - please run pdep from your top-level project directory" . \PHP_EOL);

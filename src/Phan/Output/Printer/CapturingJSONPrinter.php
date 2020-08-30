@@ -54,7 +54,11 @@ class CapturingJSONPrinter extends JSONPrinter
         // Deliberately a no-op
     }
 
-    public function configureOutput(OutputInterface $_): void
+    /**
+     * @unused-param $output
+     * @override
+     */
+    public function configureOutput(OutputInterface $output): void
     {
         // Deliberately a no-op.
     }

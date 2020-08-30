@@ -369,7 +369,6 @@ return [
         // The types of ast\Node->children are all possibly unset.
         'PhanTypePossiblyInvalidDimOffset',
         // TODO: Fix PhanParamNameIndicatingUnused* instances
-        'PhanParamNameIndicatingUnused',
         'PhanParamNameIndicatingUnusedInClosure',
         // TODO: min_php_version config setting
         'PhanCompatibleObjectTypePHP71',

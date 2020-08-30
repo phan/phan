@@ -15,7 +15,11 @@ use Phan\Language\Type;
  */
 class StaticOrSelfType extends Type
 {
-    public function hasStaticOrSelfTypesRecursive(CodeBase $_): bool
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
     {
         return true;
     }

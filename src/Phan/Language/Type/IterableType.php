@@ -24,7 +24,11 @@ class IterableType extends NativeType
         return true;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // TODO: Check if $other is final and non-iterable
         return $other instanceof IterableType ||
@@ -32,7 +36,11 @@ class IterableType extends NativeType
             $other->isPossiblyObject();
     }
 
-    public function asIterable(CodeBase $_): ?Type
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function asIterable(CodeBase $code_base): ?Type
     {
         return $this->withIsNullable(false);
     }

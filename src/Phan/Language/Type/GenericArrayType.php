@@ -282,19 +282,21 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @unused-param $code_base
      * @return UnionType returns the array value's union type
      * @phan-override
      */
-    public function iterableValueUnionType(CodeBase $unused_codebase): UnionType
+    public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
         return $this->element_type->asPHPDocUnionType();
     }
 
     /**
+     * @unused-param $code_base
      * @return UnionType the array key's union type
      * @phan-override
      */
-    public function iterableKeyUnionType(CodeBase $unused_codebase): UnionType
+    public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         return self::unionTypeForKeyType($this->key_type);
     }
@@ -751,9 +753,10 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @unused-param $type
      * Precondition: Callers should check isObjectWithKnownFQSEN
      */
-    public function hasSameNamespaceAndName(Type $_): bool
+    public function hasSameNamespaceAndName(Type $type): bool
     {
         return false;
     }
@@ -848,10 +851,11 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     /**
      * Do not use this. Use ArrayType::instance or static::fromElementType
+     * @unused-param $is_nullable
      * @internal
      * @deprecated
      */
-    public static function instance(bool $unused_is_nullable)
+    public static function instance(bool $is_nullable)
     {
         throw new \AssertionError(static::class . '::' . __FUNCTION__ . ' should not be used');
     }
@@ -865,9 +869,10 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @unused-param $can_reduce_size
      * Returns the equivalent (possibly nullable) associative array type for this type.
      */
-    public function asAssociativeArrayType(bool $unused_can_reduce_size): ArrayType
+    public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         return AssociativeArrayType::fromElementType(
             $this->element_type,

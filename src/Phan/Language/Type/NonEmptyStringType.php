@@ -71,7 +71,10 @@ final class NonEmptyStringType extends StringType
         return parent::canCastToNonNullableType($type);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {

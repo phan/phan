@@ -40,11 +40,12 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
 
     /**
      * Only exists to prevent accidentally calling this on the parent class
+     * @unused-param $is_nullable
      * @internal
      * @deprecated
      * @throws RuntimeException to prevent this from being called
      */
-    public static function instance(bool $unused_is_nullable)
+    public static function instance(bool $is_nullable)
     {
         throw new RuntimeException('Call ' . self::class . '::instanceForValue() instead');
     }
@@ -270,7 +271,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return parent::canCastToNonNullableType($type);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $context, Type $type): bool
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $type): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {

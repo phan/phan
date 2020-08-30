@@ -191,9 +191,10 @@ final class CallableParamPlugin extends PluginV3 implements
     /**
      * When a function is loaded into the CodeBase for the first time during analysis
      * (e.g. `register_shutdown_function()`, this is called to conditionally add any checkers for callable/closure.
+     * @unused-param $code_base
      */
     public function handleLazyLoadInternalFunction(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         Func $function
     ): void {
         $closure = self::generateClosureForFunctionInterface($function);

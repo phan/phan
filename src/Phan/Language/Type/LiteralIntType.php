@@ -27,10 +27,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
 
     /**
      * Only exists to prevent accidentally calling this
+     * @unused-param $is_nullable
      * @internal - do not call
      * @deprecated
      */
-    public static function instance(bool $unused_is_nullable)
+    public static function instance(bool $is_nullable)
     {
         throw new RuntimeException('Call ' . self::class . '::instanceForValue() instead');
     }

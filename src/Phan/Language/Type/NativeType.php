@@ -68,12 +68,18 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
     {
         return false;
     }
 
-    public function isCountable(CodeBase $_): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isCountable(CodeBase $code_base): bool
     {
         return false;
     }
@@ -311,32 +317,38 @@ abstract class NativeType extends Type
     }
 
     /**
+     * @unused-param $code_base
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableKeyUnionType(CodeBase $unused_code_base): ?UnionType
+    public function iterableKeyUnionType(CodeBase $code_base): ?UnionType
     {
         return null;
     }
 
     /**
+     * @unused-param $code_base
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      */
-    public function iterableValueUnionType(CodeBase $unused_code_base): ?UnionType
+    public function iterableValueUnionType(CodeBase $code_base): ?UnionType
     {
         return null;
     }
 
     /**
-     * @param array<string,UnionType> $unused_template_parameter_type_map
+     * @param array<string,UnionType> $template_parameter_type_map @unused-param
      * @override
      */
     public function withTemplateParameterTypeMap(
-        array $unused_template_parameter_type_map
+        array $template_parameter_type_map
     ): UnionType {
         return $this->asPHPDocUnionType();
     }
 
-    public function isTemplateSubtypeOf(Type $unused_type): bool
+    /**
+     * @unused-param $type
+     * @override
+     */
+    public function isTemplateSubtypeOf(Type $type): bool
     {
         return false;
     }
@@ -351,12 +363,18 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type): ?\Closure
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?\Closure
     {
         return null;
     }
 
-    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context): ?\Phan\Language\Element\FunctionInterface
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $codebase, Context $context): ?\Phan\Language\Element\FunctionInterface
     {
         // overridden in subclasses
         return null;
@@ -378,12 +396,20 @@ abstract class NativeType extends Type
         return null;
     }
 
-    public function asIterable(CodeBase $_): ?Type
+    /**
+     * @override
+     * @unused-param $code_base
+     */
+    public function asIterable(CodeBase $code_base): ?Type
     {
         return null;
     }
 
-    public function hasStaticOrSelfTypesRecursive(CodeBase $_): bool
+    /**
+     * @override
+     * @unused-param $code_base
+     */
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
     {
         return false;
     }

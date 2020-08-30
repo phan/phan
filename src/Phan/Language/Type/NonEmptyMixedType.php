@@ -53,7 +53,11 @@ final class NonEmptyMixedType extends MixedType
         return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other->isPossiblyTruthy();
     }

@@ -76,7 +76,10 @@ final class BaselineSavingPlugin extends PluginV3 implements
         return false;
     }
 
-    public function finalizeProcess(CodeBase $unused_code_base): void
+    /**
+     * @unused-param $code_base
+     */
+    public function finalizeProcess(CodeBase $code_base): void
     {
         CLI::printToStderr("Saving a new issue baseline to '$this->baseline_path'\n" .
             "Subsequent Phan runs can read from this file with --load-baseline='$this->baseline_path' to ignore pre-existing issues.\n");

@@ -20,10 +20,13 @@ class ListType extends GenericArrayType
         parent::__construct($type, $is_nullable, GenericArrayType::KEY_INT);
     }
 
+    /**
+     * @unused-param $key_type
+     */
     public static function fromElementType(
         Type $type,
         bool $is_nullable,
-        int $unused_key_type = GenericArrayType::KEY_INT
+        int $key_type = GenericArrayType::KEY_INT
     ): GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type

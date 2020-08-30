@@ -22,6 +22,7 @@ class Some extends Option
 
     /**
      * @param T $_
+     * @phan-file-suppress PhanParamNameIndicatingUnused
      */
     public function __construct($_)
     {

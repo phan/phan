@@ -17,6 +17,7 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
 {
     /**
      * @override
+     * @unused-param $key_type
      * @return NonEmptyListType
      * @phan-real-return NonEmptyListType
      * (can't change signature type until minimum supported version is php 7.4)
@@ -24,7 +25,7 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
     public static function fromElementType(
         Type $type,
         bool $is_nullable,
-        int $unused_key_type = GenericArrayType::KEY_INT
+        int $key_type = GenericArrayType::KEY_INT
     ): GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type

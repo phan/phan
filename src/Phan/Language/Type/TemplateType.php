@@ -160,11 +160,12 @@ final class TemplateType extends Type
     }
 
     /**
+     * @unused-param $code_base
      * @param TemplateType $template_type the template type that this union type is being searched for.
      *
      * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type): ?Closure
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
         if ($this === $template_type) {
             return static function (UnionType $type, Context $_): UnionType {
@@ -183,14 +184,19 @@ final class TemplateType extends Type
         return false;
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     * @unused-param $other
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // Always possible until we support inferring `@template T as ConcreteType`
         return true;
     }
 
-    /** @param list<Type> $unused_target_type_set */
-    public function canCastToAnyTypeInSetWithoutConfig(array $unused_target_type_set): bool
+    /** @param list<Type> $target_type_set @unused-param */
+    public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set): bool
     {
         // Always possible until we support inferring `@template T as ConcreteType`
         return true;

@@ -45,9 +45,10 @@ class Fixers
 
     /**
      * Add a missing param type to the real signature
+     * @unused-param $code_base
      */
     public static function fixParamType(
-        CodeBase $unused_code_base,
+        CodeBase $code_base,
         FileCacheEntry $contents,
         IssueInstance $instance
     ): ?FileEditSet {

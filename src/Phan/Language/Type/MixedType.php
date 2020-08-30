@@ -22,9 +22,14 @@ class MixedType extends NativeType
     /** @phan-override */
     public const NAME = 'mixed';
 
-    // mixed or ?mixed can cast to/from anything.
-    // For purposes of analysis, there's usually no difference between mixed and nullable mixed.
-    public function canCastToType(Type $unused_type): bool
+    /**
+     * mixed or ?mixed can cast to/from anything.
+     * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+     *
+     * @unused-param $type
+     * @override
+     */
+    public function canCastToType(Type $type): bool
     {
         return true;
     }
@@ -38,14 +43,26 @@ class MixedType extends NativeType
         return true;
     }
 
-    // mixed or ?mixed can cast to/from anything.
-    // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    protected function canCastToNonNullableType(Type $unused_type): bool
+    /**
+     * mixed or ?mixed can cast to/from anything even if nullable.
+     * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+     *
+     * @unused-param $type
+     * @override
+     */
+    protected function canCastToNonNullableType(Type $type): bool
     {
         return true;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $unused_type): bool
+    /**
+     * mixed or ?mixed can cast to/from anything even if nullable.
+     * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+     *
+     * @unused-param $type
+     * @override
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         return true;
     }
@@ -60,10 +77,15 @@ class MixedType extends NativeType
         return $type instanceof MixedType;
     }
 
+    /**
+     * @unused-param $context
+     * @unused-param $code_base
+     * @override
+     */
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
-        Context $unused_context,
-        CodeBase $unused_code_base
+        Context $context,
+        CodeBase $code_base
     ): bool {
         // Type casting rules allow mixed to cast to anything.
         // But we don't want `@param mixed $x` to take precedence over `int $x` in the signature.
@@ -78,7 +100,11 @@ class MixedType extends NativeType
         return ArrayType::instance(false);
     }
 
-    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base): bool
+    /**
+     * @unused-param $code_base
+     * @override
+     */
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
     {
         return true;
     }
@@ -108,7 +134,10 @@ class MixedType extends NativeType
         return true;  // It's possible.
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $unused_other): bool
+    /**
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return true;  // It's possible.
     }

@@ -48,7 +48,12 @@ final class VoidType extends NativeType
         );
     }
 
-    public function canCastToDeclaredType(CodeBase $unused_code_base, Context $unused_context, Type $other): bool
+    /**
+     * @unused-param $code_base
+     * @unused-param $context
+     * @override
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other->isNullable() || $other instanceof MixedType || $other instanceof TemplateType;
     }
@@ -58,7 +63,12 @@ final class VoidType extends NativeType
         return $type->isNullable();
     }
 
-    public function isSubtypeOfNonNullableType(Type $unused_type): bool
+    /**
+     * void cannot be a subtype of a non-nullable type
+     *
+     * @unused-param $type
+     */
+    public function isSubtypeOfNonNullableType(Type $type): bool
     {
         return false;
     }
@@ -184,19 +194,31 @@ final class VoidType extends NativeType
         return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
     }
 
-    public function canCastToNonNullableType(Type $_): bool
+    /**
+     * @unused-param $type
+     * @override
+     */
+    public function canCastToNonNullableType(Type $type): bool
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         // But don't allow it for void?
         return false;
     }
 
-    public function canCastToNonNullableTypeWithoutConfig(Type $_): bool
+    /**
+     * @unused-param $type
+     * @override
+     */
+    public function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         return false;
     }
 
-    public function withIsNullable(bool $unused_is_nullable): Type
+    /**
+     * @unused-param $is_nullable
+     * @override
+     */
+    public function withIsNullable(bool $is_nullable): Type
     {
         return $this;
     }
