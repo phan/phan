@@ -10,6 +10,8 @@ New features (Analysis):
 + Warn about loop conditions that potentially don't change due to the body of the loop.
   This check uses heuristics and is prone to false positives.
   New issue types: `PhanPossiblyInfiniteLoop`
++ Treat `unset($x);` as shadowing variable definitions during dead code detection.
++ Change the way `$i++`, `--$i`, etc. are analyzed during dead code detection
 
 Plugins:
 + Warn about `#` comments in `PHPDocInWrongCommentPlugin` if they're not used for the expected `#[` syntax of php 8.0 attributes.
