@@ -84,6 +84,7 @@ final class CLITest extends BaseTest
         $expected_changed_options += [
             '__directory_regex' => '@^(\./)*(src)([/\\\\]|$)@',
             'directory_list' => ['src'],
+            'allow_method_param_type_widening' => true,
         ];
         if (!\extension_loaded('pcntl')) {
             $expected_changed_options += ['language_server_use_pcntl_fallback' => true];
@@ -193,6 +194,7 @@ final class CLITest extends BaseTest
                 [
                     'color_issue_messages' => true,
                     'target_php_version' => '7.1',
+                    'allow_method_param_type_widening' => false,
                 ],
                 [
                     'color' => false,

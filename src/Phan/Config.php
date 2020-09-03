@@ -319,7 +319,7 @@ class Config
         // This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
         //
         // If this is overridden to be null, this will be inferred from `target_php_version`.
-        'allow_method_param_type_widening' => false,
+        'allow_method_param_type_widening' => null,
 
         // Set this to true to make Phan guess that undocumented parameter types
         // (for optional parameters) have the same type as default values
@@ -1532,7 +1532,7 @@ class Config
         };
         $config_checks = [
             'absolute_path_issue_messages' => $is_bool,
-            'allow_method_param_type_widening' => $is_bool,
+            'allow_method_param_type_widening' => $is_bool_or_null,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
             'analyze_signature_compatibility' => $is_bool,
