@@ -697,9 +697,9 @@ Set this to true to allow contravariance in real parameter types of method overr
 See [this note about PHP 7.2's new features](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening).
 This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
 
-If this is overridden to be null, this will be inferred from `target_php_version`.
+If this is null, this will be inferred from `target_php_version`.
 
-(Default: `false`)
+(Default: `null`)
 
 ## minimum_target_php_version
 

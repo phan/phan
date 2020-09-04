@@ -609,6 +609,22 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
+     * An expression list has the weakest return status out of all of the (non-PROCEEDing) statements.
+     * @return int the corresponding status code
+     * @override
+     */
+    public function visitExprList(Node $node): int
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfBlock($node->children);
+        $node->flags = $status;
+        return $status;
+    }
+
+    /**
      * Analyzes a node with kind \ast\AST_IF
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      * @override
