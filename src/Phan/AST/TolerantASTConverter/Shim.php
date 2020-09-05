@@ -22,6 +22,9 @@ class Shim
         if (!\defined('ast\AST_PROP_GROUP')) {
             \define('ast\AST_PROP_GROUP', 0x221);
         }
+        if (!\defined('ast\AST_CLASS_CONST_GROUP')) {
+            \define('ast\AST_CLASS_CONST_GROUP', 0x220);
+        }
         if (!\defined('ast\AST_CLASS_NAME')) {
             \define('ast\AST_CLASS_NAME', 287);
         }
@@ -32,14 +35,12 @@ class Shim
             \define('ast\AST_TYPE_UNION', 254);
         }
         if (!\defined('ast\AST_ATTRIBUTE_LIST')) {
-            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
             \define('ast\AST_ATTRIBUTE_LIST', 253);
         }
         if (!\defined('ast\AST_MATCH_ARM_LIST')) {
             \define('ast\AST_MATCH_ARM_LIST', 252);
         }
         if (!\defined('ast\AST_ATTRIBUTE_GROUP')) {
-            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
             \define('ast\AST_ATTRIBUTE_GROUP', 251);
         }
         if (!\defined('ast\AST_MATCH')) {
@@ -49,7 +50,6 @@ class Shim
             \define('ast\AST_MATCH_ARM', 0x2fb);
         }
         if (!\defined('ast\AST_ATTRIBUTE')) {
-            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
             \define('ast\AST_ATTRIBUTE', 0x2fa);
         }
         if (!\defined('ast\AST_NAMED_ARG')) {
