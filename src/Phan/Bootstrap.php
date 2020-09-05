@@ -44,8 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-// TODO: Change version here and in composer.json 1.0.9 when the attributes RFC change is released
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.8';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.9';
 
 /**
  * Dump instructions on how to install php-ast
@@ -106,7 +105,25 @@ EOT
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     $ast_version = (string)phpversion('ast');
-    if (version_compare($ast_version, '1.0.0') <= 0) {
+    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.9') < 0) {
+        fprintf(
+            STDERR,
+            "ERROR: Phan 3.x requires php-ast 1.0.9+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
+        phan_output_ast_installation_instructions();
+        fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
+        exit(1);
+    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
+        fprintf(
+            STDERR,
+            "WARNING: Phan 3.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.6+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
+        phan_output_ast_installation_instructions();
+    } elseif (version_compare($ast_version, '1.0.0') <= 0) {
         if ($ast_version === '') {
             // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
             fwrite(STDERR, "ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
@@ -117,28 +134,14 @@ if (extension_loaded('ast')) {
         // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
         fprintf(
             STDERR,
-            "ERROR: Phan 3.x requires php-ast 1.0.1+ because it depends on AST version 70. php-ast '%s' is installed." . PHP_EOL,
+            "ERROR: Phan 3.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
+            Config::MINIMUM_AST_EXTENSION_VERSION,
+            Config::AST_VERSION,
             $ast_version
         );
         phan_output_ast_installation_instructions();
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
-    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.7') < 0) {
-        fprintf(
-            STDERR,
-            "WARNING: Phan 3.x requires php-ast 1.0.7+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
-            $ast_version,
-            PHP_VERSION
-        );
-        phan_output_ast_installation_instructions();
-    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
-        fprintf(
-            STDERR,
-            "WARNING: Phan 3.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.6+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
-            $ast_version,
-            PHP_VERSION
-        );
-        phan_output_ast_installation_instructions();
     }
     unset($ast_version);
 }

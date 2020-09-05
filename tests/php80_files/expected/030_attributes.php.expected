@@ -1,0 +1,5 @@
+%s:7 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
+%s:26 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:31 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:32 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $x) defined at %s:26
+%s:33 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:31

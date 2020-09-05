@@ -421,9 +421,14 @@ class Parser
      * @param ?Request $request - May affect the parser used for $file_path
      * @param list<Diagnostic> &$errors @phan-output-reference
      * @throws ParseException
+     * @suppress PhanThrowTypeMismatch
      */
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request, array &$errors = []): Node
     {
+        // @phan-suppress-next-line PhanRedundantCondition
+        if (!\in_array(Config::AST_VERSION, TolerantASTConverter::SUPPORTED_AST_VERSIONS, true)) {
+            throw new \Error(\sprintf("Unexpected polyfill version: want %s, got %d", \implode(', ', TolerantASTConverter::SUPPORTED_AST_VERSIONS), Config::AST_VERSION));
+        }
         $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $errors = [];
@@ -596,11 +601,12 @@ class Parser
     private static function shouldUseNativeAST(): bool
     {
         if (\PHP_VERSION_ID >= 80000) {
-            $min_version = '1.0.8';
+            // TODO: Increase to 1.0.10 when both polyfill attributes updates and php-ast are released
+            $min_version = '1.0.9';
         } elseif (\PHP_VERSION_ID >= 70400) {
             $min_version = '1.0.2';
         } else {
-            $min_version = '1.0.1';
+            $min_version = Config::MINIMUM_AST_EXTENSION_VERSION;
         }
         return \version_compare(\phpversion('ast') ?: '0.0.0', $min_version) >= 0;
     }

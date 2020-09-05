@@ -80,6 +80,22 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    // Attributes require AST version 80
+    public function visitAttribute(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitAttributeList(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitAttributeGroup(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitBinaryOp(Node $node)
     {
         return $this->visit($node);
@@ -116,6 +132,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitClassConstDecl(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitClassConstGroup(Node $node)
     {
         return $this->visit($node);
     }

@@ -28,6 +28,22 @@ interface KindVisitor
      */
     public function visitArrayElem(Node $node);
 
+    // Attributes require AST version 80
+    /**
+     * Visit a node with kind `ast\AST_ATTRIBUTE`
+     */
+    public function visitAttribute(Node $node);
+
+    /**
+     * Visit a node with kind `ast\AST_ATTRIBUTE_LIST`
+     */
+    public function visitAttributeList(Node $node);
+
+    /**
+     * Visit a node with kind `ast\AST_ATTRIBUTE_GROUP`
+     */
+    public function visitAttributeGroup(Node $node);
+
     /**
      * Visit a node with kind `ast\AST_ARROW_FUNC`
      */
@@ -87,6 +103,11 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_CLASS_CONST_DECL`
      */
     public function visitClassConstDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CLASS_CONST_GROUP`
+     */
+    public function visitClassConstGroup(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CLASS_NAME`

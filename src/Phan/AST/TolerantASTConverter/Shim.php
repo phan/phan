@@ -38,6 +38,10 @@ class Shim
         if (!\defined('ast\AST_MATCH_ARM_LIST')) {
             \define('ast\AST_MATCH_ARM_LIST', 252);
         }
+        if (!\defined('ast\AST_ATTRIBUTE_GROUP')) {
+            // @phan-suppress-next-line PhanUnreferencedConstant TODO support attributes
+            \define('ast\AST_ATTRIBUTE_GROUP', 251);
+        }
         if (!\defined('ast\AST_MATCH')) {
             \define('ast\AST_MATCH', 0x2fc);
         }

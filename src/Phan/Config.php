@@ -43,6 +43,9 @@ class Config
      */
     public const AST_VERSION = 70;
 
+    /**
+     * The minimum AST extension version in the oldest php version supported by Phan.
+     */
     public const MINIMUM_AST_EXTENSION_VERSION = '1.0.1';
 
     /**
