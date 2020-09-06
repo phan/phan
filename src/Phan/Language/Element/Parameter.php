@@ -41,6 +41,8 @@ use function strlen;
  */
 class Parameter extends Variable
 {
+    use HasAttributesTrait;
+
     public const REFERENCE_DEFAULT = 1;
     public const REFERENCE_READ_WRITE = 2;
     public const REFERENCE_WRITE_ONLY = 3;
@@ -402,6 +404,14 @@ class Parameter extends Variable
                 }
             }
             $parameter->handleDefaultValueOfNull();
+        }
+        $attributes_node = $node->children['attributes'] ?? null;
+        if ($attributes_node instanceof Node) {
+            $parameter->setAttributeList(Attribute::fromNodeForAttributeList(
+                $code_base,
+                $context,
+                $attributes_node
+            ));
         }
 
         return $parameter;

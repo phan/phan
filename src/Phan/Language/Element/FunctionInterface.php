@@ -465,4 +465,16 @@ interface FunctionInterface extends AddressableElementInterface
      * Record the existence of a parameter with an `(at)phan-mandatory-param` comment at $offset
      */
     public function recordHasMandatoryPHPDocParamAtOffset(int $parameter_offset): void;
+
+    /**
+     * Set the attributes associated with this function-like
+     * @param list<Attribute> $attribute_list
+     */
+    public function setAttributeList(array $attribute_list): void;
+
+    /**
+     * Get the attributes associated with this function-like
+     * @return list<Attribute>
+     */
+    public function getAttributeList(): array;
 }

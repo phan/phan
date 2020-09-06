@@ -20,6 +20,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
@@ -141,6 +142,11 @@ class ParseVisitor extends ScopeVisitor
         );
         $class->setDeclId($node->children['__declId']);
         $class->setDidFinishParsing(false);
+        $class->setAttributeList(Attribute::fromNodeForAttributeList(
+            $this->code_base,
+            $class_context,
+            $node->children['attributes'] ?? null
+        ));
         try {
             // Set the scope of the class's context to be the
             // internal scope of the class

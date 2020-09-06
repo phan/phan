@@ -1,2 +1,1 @@
-src/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=
 src/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected token "??="

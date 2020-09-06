@@ -1,7 +1,6 @@
 language: php
 
-# The 2.0 releases can be used with any PHP version from 7.1 to 7.4.
-# PHP 7.4 support is available in the latest Phan 2.x releases.
+# The 4.0 releases can be used with any PHP version from 7.2 to 8.0
 php:
   - 7.2
   - 7.3

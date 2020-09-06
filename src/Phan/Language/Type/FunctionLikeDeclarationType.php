@@ -1060,6 +1060,17 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
         return !$other->isDefiniteNonCallableType();
     }
+
+    public function setAttributeList(array $attribute_list): void
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    public function getAttributeList(): array
+    {
+        return [];
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

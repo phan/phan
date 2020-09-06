@@ -200,6 +200,11 @@ class Func extends AddressableElement implements FunctionInterface
             $node->children['params']
         );
         $func->setParameterList($parameter_list);
+        $func->setAttributeList(Attribute::fromNodeForAttributeList(
+            $code_base,
+            $element_context,
+            $node->children['attributes'] ?? null
+        ));
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.
 

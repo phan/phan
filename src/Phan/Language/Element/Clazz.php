@@ -66,6 +66,7 @@ class Clazz extends AddressableElement
 {
     use Memoize;
     use ClosedScopeElement;
+    use HasAttributesTrait;
 
     /**
      * @var Type|null
@@ -3578,5 +3579,23 @@ class Clazz extends AddressableElement
     public function getInternalContext(): Context
     {
         return $this->internal_context;
+    }
+
+    /**
+     * Returns true if this is a class that can be used as an attribute
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function isAttribute(): bool
+    {
+        if (!$this->isClass()) {
+            return false;
+        }
+        foreach ($this->attribute_list as $attribute) {
+            $fqsen = $attribute->getFQSEN();
+            if ($fqsen->getName() === 'Attribute' && $fqsen->getNamespace() === '\\') {
+                return true;
+            }
+        }
+        return false;
     }
 }
