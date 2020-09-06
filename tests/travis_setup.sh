@@ -13,7 +13,7 @@ set -xeu
 # (it's of the form yyyymmdd, e.g. 20180731 for php 7.3.)
 PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID . '_' . PHP_DEBUG . '_' . PHP_ZTS . '_new' . md5(PHP_EXTENSION_DIR);")
 PHAN_BUILD_DIR="$HOME/.cache/phan-ast"
-EXPECTED_AST_FILE="$PHAN_BUILD_DIR/build/php-ast-$PHP_VERSION_ID.so"
+EXPECTED_AST_FILE="$PHAN_BUILD_DIR/build/php-ast-$PHP_VERSION_ID-2020-09-20.so"
 
 [[ -d "$PHAN_BUILD_DIR" ]] || mkdir -p "$PHAN_BUILD_DIR"
 
