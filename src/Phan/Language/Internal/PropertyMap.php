@@ -13,7 +13,7 @@ $ast_node_shape_inner = \implode(',', [
     "catches?:ast\Node",
     "class?:ast\Node",
     "cond?:$ordinary_ast_node",
-    "const?:string",
+    "const?:string|ast\Node",
     "dim?:$ordinary_ast_node",
     "declares?:ast\Node",
     "docComment?:?string",

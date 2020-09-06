@@ -665,7 +665,7 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_CLASS_CONST_DECL`
+     * Visit a node with kind `\ast\AST_CLASS_CONST_GROUP`
      *
      * @param Node $node
      * A node to parse
@@ -675,11 +675,12 @@ class ParseVisitor extends ScopeVisitor
      * parsing the node
      *
      */
-    public function visitClassConstDecl(Node $node): Context
+    public function visitClassConstGroup(Node $node): Context
     {
         $class = $this->getContextClass();
 
-        foreach ($node->children as $child_node) {
+        // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
+        foreach ($node->children['const']->children as $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected class const element to be a Node');
             }
@@ -725,7 +726,7 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberEnd($child_node->endLineno ?? $line_number_start),
                 $name,
                 UnionType::empty(),
-                $node->flags ?? 0,
+                $node->flags,
                 $fqsen
             );
 

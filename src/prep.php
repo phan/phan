@@ -29,8 +29,8 @@ $visit_node = static function (\ast\Node $node, string $file_path): void {
     if ($node->kind === \ast\AST_CLASS_CONST) {
         // Debug::printNode($node);
 
-        if (\is_string($node->children['const'])) {
-            $name = $node->children['const'];
+        $name = $node->children['const'];
+        if (\is_string($name)) {
             if (preg_match('/.*SEARCH.*/', $name)) {
                 print "$file_path:{$node->lineno} $name\n";
             }

@@ -1869,6 +1869,9 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
+        if (!is_string($constant_name)) {
+            throw new AssertionError('$constant_name must be a string');
+        }
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
         }

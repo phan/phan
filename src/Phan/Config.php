@@ -41,12 +41,12 @@ class Config
      * The version of the AST (defined in php-ast) that we're using.
      * @see https://github.com/nikic/php-ast#ast-versioning
      */
-    public const AST_VERSION = 70;
+    public const AST_VERSION = 80;
 
     /**
      * The minimum AST extension version in the oldest php version supported by Phan.
      */
-    public const MINIMUM_AST_EXTENSION_VERSION = '1.0.1';
+    public const MINIMUM_AST_EXTENSION_VERSION = '1.0.7';
 
     /**
      * The version of the Phan plugin system.
