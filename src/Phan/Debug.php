@@ -444,6 +444,11 @@ class Debug
                     flags\MODIFIER_PROTECTED => 'MODIFIER_PROTECTED',
                     flags\MODIFIER_PRIVATE => 'MODIFIER_PRIVATE',
                 ],
+                ast\AST_CLASS_CONST_GROUP => [
+                    flags\MODIFIER_PUBLIC => 'MODIFIER_PUBLIC',
+                    flags\MODIFIER_PROTECTED => 'MODIFIER_PROTECTED',
+                    flags\MODIFIER_PRIVATE => 'MODIFIER_PRIVATE',
+                ],
                 ast\AST_PROP_GROUP => $property_modifiers,
                 ast\AST_TRAIT_ALIAS => $property_modifiers,
                 ast\AST_DIM => [

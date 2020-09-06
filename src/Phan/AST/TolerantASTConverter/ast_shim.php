@@ -12,11 +12,12 @@ declare(strict_types=1);
  * With modifications to be a functional replacement for the data
  * structures and global constants of ext-ast. (for class ast\Node)
  *
- * This supports AST version 70
+ * This supports AST version 80
  *
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
  *
+ * TODO: Add remaining constants
  *
  * @phan-file-suppress PhanUnreferencedConstant, UnusedPluginFileSuppression - Plugins may reference some of these constants
  * @phan-file-suppress PhanPluginUnknownArrayPropertyType, PhanPluginUnknownArrayMethodParamType this is a stub

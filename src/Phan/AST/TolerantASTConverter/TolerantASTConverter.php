@@ -109,8 +109,8 @@ Shim::load();
 class TolerantASTConverter
 {
     // The latest stable version of php-ast.
-    // For something != 70, update the library's release.
-    public const AST_VERSION = 70;
+    // For something != 80, update the library's release.
+    public const AST_VERSION = 80;
 
     // The versions that this supports
     public const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
@@ -750,6 +750,7 @@ class TolerantASTConverter
                             $return_line
                         ),
                         'returnType' => $ast_return_type,
+                        'attributes' => null,  // TODO implement
                     ],
                     $start_line,
                     static::resolveDocCommentForClosure($n),
@@ -1289,6 +1290,7 @@ class TolerantASTConverter
                         'params' => static::phpParserParamsToAstParams($n->parameters, $start_line),
                         'stmts' => static::phpParserStmtlistToAstNode($statements, self::getStartLine($statements), true),
                         'returnType' => $ast_return_type,
+                        'attributes' => null,  // TODO: implement
                     ],
                     $start_line,
                     $n->getDocCommentText(),
@@ -1939,6 +1941,8 @@ class TolerantASTConverter
                 'type' => $type,
                 'name' => $name,
                 'default' => $default,
+                'attributes' => null,
+                'docComment' => null,
             ],
             $line
         );
@@ -2109,6 +2113,7 @@ class TolerantASTConverter
                 'uses' => $uses,
                 'stmts' => $stmts,
                 'returnType' => $return_type,
+                'attributes' => null,  // TODO implement
             ],
             $start_line,
             $doc_comment,
@@ -2140,6 +2145,7 @@ class TolerantASTConverter
                 'params' => $params,
                 'stmts' => $stmts,
                 'returnType' => $return_type,
+                'attributes' => null,
             ],
             $line,
             $doc_comment,
@@ -2215,6 +2221,7 @@ class TolerantASTConverter
                 'extends'    => null,
                 'implements' => $extends,
                 'stmts'      => $stmts,
+                'attributes' => null,  // TODO implement
             ];
         } else {
             if ($implements !== null) {
@@ -2242,6 +2249,7 @@ class TolerantASTConverter
                 'extends'    => $extends,
                 'implements' => $ast_implements,
                 'stmts'      => $stmts,
+                'attributes' => null,  // TODO: implement
             ];
         }
 
@@ -2723,6 +2731,7 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_PROP_GROUP, $flags, [
             'type' => static::phpParserUnionTypeToAstNode($n->typeDeclaration, $n->otherTypeDeclarations, $type_line),
             'props' => $prop_decl,
+            'attributes' => null,  // TODO: Implement
         ], $line);
     }
 
@@ -2738,8 +2747,17 @@ class TolerantASTConverter
             $const_elems[] = static::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
-
-        return new ast\Node(ast\AST_CLASS_CONST_DECL, $flags, $const_elems, $const_elems[0]->lineno ?? $start_line);
+        $const_start_line = $const_elems[0]->lineno ?? $start_line;
+        $const_list_node = new ast\Node(ast\AST_CLASS_CONST_DECL, 0, $const_elems, $const_start_line);
+        return new ast\Node(
+            ast\AST_CLASS_CONST_GROUP,
+            $flags,
+            [
+                'const' => $const_list_node,
+                'attributes' => null,  // TODO implement
+            ],
+            $const_start_line
+        );
     }
 
     /**

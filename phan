@@ -2,7 +2,7 @@
 <?php
 // @phan-file-suppress PhanPluginRemoveDebugAny
 if (PHP_VERSION_ID < 70000) {
-    fwrite(STDERR, "ERROR: Phan 3.x requires PHP 7.2+, but it is being run with PHP " . PHP_VERSION . PHP_EOL);
+    fwrite(STDERR, "ERROR: Phan 4.x requires PHP 7.2+, but it is being run with PHP " . PHP_VERSION . PHP_EOL);
     fwrite(STDERR, "PHP 5.6 reached its end of life in December 2018." . PHP_EOL);
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
     exit(1);
