@@ -1,0 +1,1 @@
+src/041_invalid_extend.php:3 PhanSyntaxError Unmatched '}' (at column 46)

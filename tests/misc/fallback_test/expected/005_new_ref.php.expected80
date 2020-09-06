@@ -1,0 +1,2 @@
+src/005_new_ref.php:8 PhanSyntaxError syntax error, unexpected token "new"
+src/005_new_ref.php:9 PhanTypeMismatchReturn Returning $x->prop of type int but test5() is declared to return string

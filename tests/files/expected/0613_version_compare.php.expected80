@@ -1,2 +1,2 @@
-%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 3 ($oper) is 'EQ' of type 'EQ' but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
-%s:5 PhanTypeMismatchArgumentInternalReal Argument 3 ($oper) is null of type null but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne' (real type string)
+%s:4 PhanTypeMismatchArgumentInternalProbablyReal Argument 3 ($operator) is 'EQ' of type 'EQ' but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
+%s:5 PhanTypeMismatchArgumentInternalReal Argument 3 ($operator) is null of type null but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne' (real type string)

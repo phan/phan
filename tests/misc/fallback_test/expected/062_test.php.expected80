@@ -1,0 +1,3 @@
+src/062_test.php:2 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for 'if'{}
+src/062_test.php:2 PhanNoopArrayAccess Unused array offset fetch
+src/062_test.php:3 PhanSyntaxError syntax error, unexpected token "}" (at column 1)

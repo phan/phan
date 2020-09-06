@@ -1,0 +1,2 @@
+src/014_try_statement10.php:5 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch ()
+src/014_try_statement10.php:5 PhanSyntaxError syntax error, unexpected token ")" (at column 9)

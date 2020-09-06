@@ -5,7 +5,19 @@ if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/misc/fallback_test folder" 1>&2
 	exit 1
 fi
-for path in $(echo expected/*.php.expected | LC_ALL=C sort); do cat $path; done > $EXPECTED_PATH
+PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION;")
+echo "PHP_VERSION=$PHP_VERSION\n";
+
+for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
+    if [[ "$PHP_VERSION" -ge 8 ]]; then
+        alternate_path=${path/.expected/.expected80}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
+    cat $path;
+done > $EXPECTED_PATH
+
 if [[ $? != 0 ]]; then
 	echo "Failed to concatenate test cases" 1>&2
 	exit 1
@@ -18,26 +30,13 @@ rm $ACTUAL_PATH -f || exit 1
 sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
 # Normalize output that is seen only in certain minor version ranges
 sed -i \
-    -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
-    -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
-    -e "s/expecting identifier (T_STRING) or static (T_STATIC) or namespace (T_NAMESPACE)/expecting identifier (T_STRING) or namespace (T_NAMESPACE)/" \
-    -e "s/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g" \
-    -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
-    -e 's/of type \\Countable|\(\\Iterator|\\RecursiveIterator|\)\?\\SimpleXMLElement/of type \\SimpleXMLElement/' \
     -e "s/ expecting ';' or ','/ expecting ',' or ';'/" \
-    -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
-    -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \
+    -e 's/of type \\Countable|\(\\Iterator|\\RecursiveIterator|\)\?\\SimpleXMLElement/of type \\SimpleXMLElement/' \
     -e "s@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'@" \
     -e "s@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'@" \
-    -e "s@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@" \
+    -e "s@@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@" \
     -e "/069_invalid_coalesce_assign.php:2 PhanNoopBinaryOperator/d" \
-    -e "s@|\\\\Stringable|@|@g" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
-    -e "s@031_not_magic_constant.php:3 PhanSyntaxError Unmatched ')'@031_not_magic_constant.php:3 PhanSyntaxError syntax error, unexpected ')'@" \
-    -e "s@PhanSyntaxError Unmatched '}'@PhanSyntaxError syntax error, unexpected '}', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\\\\\\\ (T_NS_SEPARATOR)@" \
-    -e "s@case_insensitive = false@case_insensitive = unknown@" \
-    -e "s@068_binary_literal.php:13 PhanSyntaxError Unclosed '{' on line 12@068_binary_literal.php:13 PhanSyntaxError syntax error, unexpected end of file@" \
-    -e "s/ unexpected token \"\([^\"]\)*\"/ unexpected '\1'/" \
     $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing

@@ -1,0 +1,3 @@
+src/043_unexpected_static.php:2 PhanContextNotObject Cannot access static when not in object context
+src/043_unexpected_static.php:2 PhanSyntaxError syntax error, unexpected token ";", expecting "::" (at column 12)
+src/043_unexpected_static.php:2 PhanUndeclaredConstant Reference to undeclared constant \static. This will cause a thrown Error in php 8.0+. (Did you mean \T_STATIC)

@@ -1,0 +1,2 @@
+src/011_isset_intrinsic_expression5.php:2 PhanNoopIsset Unused result of an isset(null) check
+src/011_isset_intrinsic_expression5.php:2 PhanSyntaxError syntax error, unexpected token "isset", expecting "(" (at column 7)

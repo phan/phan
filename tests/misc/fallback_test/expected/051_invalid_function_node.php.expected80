@@ -1,0 +1,6 @@
+src/051_invalid_function_node.php:2 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for stdClass{}
+src/051_invalid_function_node.php:2 PhanNoopArrayAccess Unused array offset fetch
+src/051_invalid_function_node.php:2 PhanSyntaxError syntax error, unexpected token "(" (at column 10)
+src/051_invalid_function_node.php:2 PhanTypeInvalidCallable Saw type 0 which cannot be a callable
+src/051_invalid_function_node.php:2 PhanUndeclaredConstant Reference to undeclared constant \stdClass. This will cause a thrown Error in php 8.0+. (Did you mean \T_CLASS)
+src/051_invalid_function_node.php:3 PhanNoopStringLiteral Unused result of a string literal "notanint" near this line

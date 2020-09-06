@@ -1,0 +1,3 @@
+src/052_invalid_assign_ref.php:3 PhanInvalidNode Expected left side of assignment to be a variable
+src/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected token "=", expecting ")" (at column 18)
+src/052_invalid_assign_ref.php:4 PhanInvalidNode Expected left side of assignment to be a variable

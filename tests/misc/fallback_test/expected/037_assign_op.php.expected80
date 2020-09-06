@@ -1,0 +1,2 @@
+src/037_assign_op.php:3 PhanSyntaxError syntax error, unexpected token "+=" (at column 11)
+src/037_assign_op.php:3 PhanUnusedVariable Unused definition of variable $y
