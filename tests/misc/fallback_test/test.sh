@@ -34,7 +34,7 @@ sed -i \
     -e 's/of type \\Countable|\(\\Iterator|\\RecursiveIterator|\)\?\\SimpleXMLElement/of type \\SimpleXMLElement/' \
     -e "s@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'@047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'@" \
     -e "s@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'@052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'@" \
-    -e "s@@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@" \
+    -e "s@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@" \
     -e "/069_invalid_coalesce_assign.php:2 PhanNoopBinaryOperator/d" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
     $ACTUAL_PATH
