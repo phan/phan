@@ -2401,6 +2401,20 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.
 
+## PhanAttributeNonAttribute
+
+```
+Saw attribute {TYPE} which declared without {CODE}
+```
+
+## PhanAttributeNonClass
+
+```
+Saw attribute with fqsen {TYPE} which was a {CODE} instead of a class
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/031_attributes_invalid.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/031_attributes_invalid.php#L26).
+
 ## PhanCoalescingAlwaysNull
 
 ```
@@ -4095,6 +4109,14 @@ Reference to undeclared class {CLASS} for the original class of a class_alias fo
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0278_class_alias.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0278_class_alias.php#L34).
+
+## PhanUndeclaredClassAttribute
+
+```
+Reference to undeclared class {CLASS} in an attribute
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/031_attributes_invalid.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/031_attributes_invalid.php#L2).
 
 ## PhanUndeclaredClassCatch
 

@@ -454,8 +454,8 @@ class Method extends ClassElement implements FunctionInterface
      * @param Node $node
      * An AST node representing a method
      *
-     * @param ?Clazz $class
-     * This will be mandatory in a future Phan release
+     * @param ?Clazz $class @phan-mandatory-param
+     * This will be mandatory in a future Phan release.
      *
      * @return Method
      * A Method representing the AST node in the
@@ -509,6 +509,11 @@ class Method extends ClassElement implements FunctionInterface
             $node->children['params']
         );
         $method->setParameterList($parameter_list);
+        $method->setAttributeList(Attribute::fromNodeForAttributeList(
+            $code_base,
+            $element_context,
+            $node->children['attributes'] ?? null
+        ));
         foreach ($parameter_list as $parameter) {
             if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
                 $method->recordHasTemplateType();

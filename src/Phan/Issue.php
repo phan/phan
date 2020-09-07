@@ -60,6 +60,7 @@ class Issue
     public const UndeclaredClassProperty   = 'PhanUndeclaredClassProperty';
     public const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
     public const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
+    public const UndeclaredClassAttribute  = 'PhanUndeclaredClassAttribute';
     public const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     public const UndeclaredConstant        = 'PhanUndeclaredConstant';
     // Sadly, PhanUndeclaredClassConstant already exists and means the class is undeclared
@@ -271,6 +272,8 @@ class Issue
     public const PowerOfZero = 'PhanPowerOfZero';
     public const InvalidMixin = 'PhanInvalidMixin';
     public const IncompatibleRealPropertyType = 'PhanIncompatibleRealPropertyType';
+    public const AttributeNonClass = 'PhanAttributeNonClass';
+    public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -1385,7 +1388,14 @@ class Issue
                 self::REMEDIATION_B,
                 11048
             ),
-
+            new Issue(
+                self::UndeclaredClassAttribute,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Reference to undeclared class {CLASS} in an attribute",
+                self::REMEDIATION_B,
+                11055
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -2784,6 +2794,23 @@ class Issue
                 self::REMEDIATION_B,
                 10165
             ),
+            new Issue(
+                self::AttributeNonClass,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Saw attribute with fqsen {TYPE} which was a {CODE} instead of a class',
+                self::REMEDIATION_B,
+                10170
+            ),
+            new Issue(
+                self::AttributeNonAttribute,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Saw attribute {TYPE} which declared without {CODE}',
+                self::REMEDIATION_B,
+                10171
+            ),
+
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,

@@ -9,6 +9,7 @@ use ast\Node;
 use CompileError;
 use InvalidArgumentException;
 use ParseError;
+use Phan\Analysis\AttributeAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
@@ -271,6 +272,11 @@ class Analysis
             // This is the most time consuming step.
             // Can probably apply this to other functions, but this was the slowest.
             ParameterTypesAnalyzer::analyzeParameterTypes(
+                $code_base,
+                $function_or_method
+            );
+
+            AttributeAnalyzer::analyzeAttributesOfFunctionInterface(
                 $code_base,
                 $function_or_method
             );

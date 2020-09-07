@@ -54,6 +54,8 @@ use function spl_object_id;
  */
 trait FunctionTrait
 {
+    use HasAttributesTrait;
+
     /**
      * @var Comment|null This is reused when quick mode is off.
      */
