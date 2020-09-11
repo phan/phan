@@ -74,5 +74,8 @@ class Shim
         if (!\defined('ast\flags\TYPE_STATIC')) {
             \define('ast\flags\TYPE_STATIC', \PHP_MAJOR_VERSION >= 80000 ? 15 : 20);
         }
+        if (!\defined('ast\flags\TYPE_MIXED')) {
+            \define('ast\flags\TYPE_MIXED', \PHP_MAJOR_VERSION >= 80000 ? 16 : 21);
+        }
     }
 }
