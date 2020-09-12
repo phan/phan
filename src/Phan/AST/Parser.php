@@ -601,8 +601,7 @@ class Parser
     private static function shouldUseNativeAST(): bool
     {
         if (\PHP_VERSION_ID >= 80000) {
-            // TODO: Increase to 1.0.10 when both polyfill attributes updates and php-ast are released
-            $min_version = '1.0.9';
+            $min_version = '1.0.10';
         } elseif (\PHP_VERSION_ID >= 70400) {
             $min_version = '1.0.2';
         } else {

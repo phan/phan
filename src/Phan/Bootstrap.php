@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.9';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.10';
 
 /**
  * Dump instructions on how to install php-ast
@@ -119,9 +119,9 @@ foreach ([
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     $ast_version = (string)phpversion('ast');
-    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.9') < 0) {
+    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.10') < 0) {
         $error_message = sprintf(
-            "Phan 4.x requires php-ast 1.0.9+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "Phan 4.x requires php-ast 1.0.10+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
