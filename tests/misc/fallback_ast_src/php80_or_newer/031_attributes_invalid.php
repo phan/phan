@@ -6,19 +6,17 @@ function test31(
 ) {
     var_export($argument);
 }
-// TODO: Wait for these examples to be supported in tolerant-php-parser
-/*#[Attribute]
+
+#[Attribute]
 trait TraitAttribute {}
 #[Attribute]
 interface InterfaceAttribute {}
-new #[MyAttr] class { }
- */
 
 // Anything that's used as an attribute must *directly* have an attribute with the built-in Attribute class.
 #[Attribute]
 class GoodAttribute31 {
 }
-
+// This is invalid as an attribute because it does not have the attribute #[Attribute]
 class SubGoodAttribute31 extends GoodAttribute31 {}
 
 #[GoodAttribute31]
