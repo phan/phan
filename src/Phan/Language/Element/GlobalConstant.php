@@ -160,4 +160,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         }
         return [$namespace, $string];
     }
+
+    /**
+     * PHP does not support parsing attributes on global constants.
+     *
+     * @return list<Attribute>
+     */
+    public function getAttributeList(): array
+    {
+        return [];
+    }
 }

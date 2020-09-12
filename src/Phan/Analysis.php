@@ -480,6 +480,10 @@ class Analysis
             } catch (RecursionDepthException $_) {
                 continue;
             }
+            AttributeAnalyzer::analyzeAttributesOfClass(
+                $code_base,
+                $class
+            );
         }
         CLI::progress('classes', 1.0, null);
     }

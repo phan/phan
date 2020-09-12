@@ -13,15 +13,38 @@ use Phan\Debug;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+use const PHP_MAJOR_VERSION;
+
 /**
  * Represents the information Phan has about a declaration's attribute
  * (e.g. of a class, function, class constant, property, parameter, etc.)
+ *
+ * NOTE: This namespaced class depends on a different class of the same name in the global namespace,
+ * but only in php 8.0+.
+ *
+ * @phan-file-suppress PhanUndeclaredClassConstant Attribute exists only in php 8.0+ and is not polyfilled at the time of writing.
+ * @phan-file-suppress PhanUnreferencedPublicClassConstant provided for API completeness
  */
 final class Attribute
 {
+    /**
+     * Don't bother depending on a polyfill. It's possible symfony/polyfill-80 may add Attribute and make this redundant, though.
+     * https://github.com/symfony/polyfill/issues/235
+     *
+     * There's no guarantee the constants won't change in php 8.x or 9.x, so use the real values in php 8.0+.
+     */
+    const TARGET_CLASS          = PHP_MAJOR_VERSION < 8 ? 1  : \Attribute::TARGET_CLASS;
+    const TARGET_FUNCTION       = PHP_MAJOR_VERSION < 8 ? 2  : \Attribute::TARGET_FUNCTION;
+    const TARGET_METHOD         = PHP_MAJOR_VERSION < 8 ? 4  : \Attribute::TARGET_METHOD;
+    const TARGET_PROPERTY       = PHP_MAJOR_VERSION < 8 ? 8  : \Attribute::TARGET_PROPERTY;
+    const TARGET_CLASS_CONSTANT = PHP_MAJOR_VERSION < 8 ? 16 : \Attribute::TARGET_CLASS_CONSTANT;
+    const TARGET_PARAMETER      = PHP_MAJOR_VERSION < 8 ? 32 : \Attribute::TARGET_PARAMETER;
+    const TARGET_ALL            = PHP_MAJOR_VERSION < 8 ? 63 : \Attribute::TARGET_ALL;
+    const IS_REPEATABLE         = PHP_MAJOR_VERSION < 8 ? 64 : \Attribute::IS_REPEATABLE;
+
     /** @var FullyQualifiedClassName  */
     private $fqsen;
-    /** @var ?Node a node of kind ast\AST_ARG_LIST */
+    /** @var ?Node a node of kind ast\ast_arg_list */
     private $args;
     /** @var int the start lineno where the attribute was declared */
     private $lineno;

@@ -71,6 +71,7 @@ return [
 'PhpToken::isIgnorable' => ['bool'],
 'PhpToken::getTokenName' => ['string'],
 'proc_get_status' => ['array<string,int|string|bool>', 'process'=>'resource'],
+'ReflectionClass::getAttributes' => ['list<Attribute>'],
 'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['string|false', 'confidential_message'=>'string', 'public_message'=>'string', 'nonce'=>'string', 'key'=>'string'],
 'str_contains' => ['bool', 'haystack'=>'string', 'needle'=>'string'],
 'str_ends_with' => ['bool', 'haystack'=>'string', 'needle'=>'string'],

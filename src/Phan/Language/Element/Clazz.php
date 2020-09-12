@@ -15,6 +15,7 @@ use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -3587,15 +3588,62 @@ class Clazz extends AddressableElement
      */
     public function isAttribute(): bool
     {
-        if (!$this->isClass()) {
-            return false;
-        }
-        foreach ($this->attribute_list as $attribute) {
-            $fqsen = $attribute->getFQSEN();
-            if ($fqsen->getName() === 'Attribute' && $fqsen->getNamespace() === '\\') {
-                return true;
+        return $this->memoize(__METHOD__, function (): bool {
+            // TODO: Fix for internal classes
+            if (!$this->isClass()) {
+                return false;
             }
-        }
-        return false;
+            foreach ($this->attribute_list as $attribute) {
+                $fqsen = $attribute->getFQSEN();
+                if ($fqsen->getName() === 'Attribute' && $fqsen->getNamespace() === '\\') {
+                    return true;
+                }
+            }
+            if ($this->isPHPInternal()) {
+                // Check this after checking if it's an internal stub
+                $fqsen_string = $this->fqsen->__toString();
+                if ($fqsen_string === '\Attribute') {
+                    // Handle the most common case in php 8
+                    return true;
+                }
+                if (\PHP_MAJOR_VERSION >= 8 && \class_exists($fqsen_string)) {
+                    // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
+                    foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
+                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                        if ($php_attribute->getName() === 'Attribute') {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Returns the attribute flags associated with this attribute declaration.
+     *
+     * E.g. for `X` in `#[Attribute(Attribute::TARGET_FUNCTION)] class X {}`, returns `Attribute::TARGET_FUNCTION`.
+     *
+     * TODO: Support internal attributes using Reflection
+     */
+    public function getAttributeFlags(CodeBase $code_base): int
+    {
+        return $this->memoize(__METHOD__, function () use ($code_base): int {
+            foreach ($this->attribute_list as $attribute) {
+                $fqsen = $attribute->getFQSEN();
+                if ($fqsen->getName() === 'Attribute' && $fqsen->getNamespace() === '\\') {
+                    $args = $attribute->getArgs()->children ?? [];
+                    if ($args) {
+                        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $this->getContext(), \reset($args))->asSingleScalarValueOrNullOrSelf();
+                        if (\is_int($value)) {
+                            return $value;
+                        }
+                    }
+                    break;
+                }
+            }
+            return Attribute::TARGET_ALL;
+        });
     }
 }

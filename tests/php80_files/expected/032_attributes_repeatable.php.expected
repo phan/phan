@@ -1,0 +1,2 @@
+%s:4 PhanAttributeNonRepeatable Saw attribute \Attribute which was not declared as \Attribute::IS_REPEATABLE in the class definition at internal:0 but had a repeat declaration on line 3
+%s:23 PhanAttributeNonRepeatable Saw attribute \Single32 which was not declared as \Attribute::IS_REPEATABLE in the class definition at %s:12 but had a repeat declaration on line 22

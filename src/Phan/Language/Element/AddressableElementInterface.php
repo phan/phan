@@ -153,4 +153,12 @@ interface AddressableElementInterface extends TypedElementInterface
      * begins.
      */
     public function hydrate(CodeBase $code_base): void;
+
+    /**
+     * Returns the list of attribute declarations associated with this element.
+     * Often provided by HasAttributesTrait
+     *
+     * @return list<Attribute>
+     */
+    public function getAttributeList(): array;
 }
