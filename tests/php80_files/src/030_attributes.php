@@ -1,5 +1,8 @@
 <?php
+
 namespace AttributeTests;
+
+use Attribute;
 // XXX: Phan will need to upgrade from AST version 70 to 80 before it can parse attributes.
 // So it isn't actually checking the attributes right now.
 #[Attribute]

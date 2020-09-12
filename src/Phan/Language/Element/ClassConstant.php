@@ -18,6 +18,7 @@ use Phan\Library\StringUtil;
 class ClassConstant extends ClassElement implements ConstantInterface
 {
     use ConstantTrait;
+    use HasAttributesTrait;
 
     /** @var ?Comment the phpdoc comment associated with this declaration, if any exists. */
     private $comment;

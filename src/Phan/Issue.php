@@ -274,6 +274,7 @@ class Issue
     public const IncompatibleRealPropertyType = 'PhanIncompatibleRealPropertyType';
     public const AttributeNonClass = 'PhanAttributeNonClass';
     public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
+    public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -2806,9 +2807,17 @@ class Issue
                 self::AttributeNonAttribute,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                'Saw attribute {TYPE} which declared without {CODE}',
+                'Saw attribute {TYPE} which was declared without {CODE}',
                 self::REMEDIATION_B,
                 10171
+            ),
+            new Issue(
+                self::AttributeNonRepeatable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Saw attribute {CLASS} which was not declared as \Attribute::IS_REPEATABLE in the class definition at {FILE}:{LINE} but had a repeat declaration on line {LINE}',
+                self::REMEDIATION_B,
+                10172
             ),
 
             // Issue::CATEGORY_VARIABLE

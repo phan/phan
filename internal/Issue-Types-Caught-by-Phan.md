@@ -2404,8 +2404,10 @@ This category of issue come from using incorrect types or types that cannot cast
 ## PhanAttributeNonAttribute
 
 ```
-Saw attribute {TYPE} which declared without {CODE}
+Saw attribute {TYPE} which was declared without {CODE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/031_attributes_invalid.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/031_attributes_invalid.php#L26).
 
 ## PhanAttributeNonClass
 
@@ -2414,6 +2416,14 @@ Saw attribute with fqsen {TYPE} which was a {CODE} instead of a class
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/031_attributes_invalid.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/031_attributes_invalid.php#L26).
+
+## PhanAttributeNonRepeatable
+
+```
+Saw attribute {CLASS} which was not declared as \Attribute::IS_REPEATABLE in the class definition at {FILE}:{LINE} but had a repeat declaration on line {LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/032_attributes_repeatable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/032_attributes_repeatable.php#L4).
 
 ## PhanCoalescingAlwaysNull
 

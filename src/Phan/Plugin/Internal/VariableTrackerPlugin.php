@@ -243,6 +243,11 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    private const PARAM_MODIFIER_FLAG_SET =
+        ast\flags\PARAM_MODIFIER_PUBLIC |
+        ast\flags\PARAM_MODIFIER_PROTECTED |
+        ast\flags\PARAM_MODIFIER_PRIVATE;
+
     /**
      * @return array<int, string> maps unique definition ids to issue types
      */
@@ -267,6 +272,11 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             $graph->recordVariableDefinition($parameter_name, $parameter, $scope, null);
             if ($parameter->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($parameter_name);
+            }
+            if ($parameter->flags & self::PARAM_MODIFIER_FLAG_SET) {
+                // Workaround to stop warning about `__construct(public string $flags)`.
+                // Deliberately use a different arbitrary node.
+                $graph->recordVariableUsage($parameter_name, $node, $scope);
             }
         }
         foreach ($node->children['uses']->children ?? [] as $closure_use) {

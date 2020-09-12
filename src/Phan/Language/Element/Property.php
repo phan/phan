@@ -27,6 +27,7 @@ class Property extends ClassElement
 {
     use ElementFutureUnionType;
     use ClosedScopeElement;
+    use HasAttributesTrait;
 
     /**
      * @var ?FullyQualifiedPropertyName If this was originally defined in a trait, this is the trait's defining fqsen.

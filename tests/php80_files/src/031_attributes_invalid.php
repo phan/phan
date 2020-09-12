@@ -16,7 +16,7 @@ interface InterfaceAttribute {}
 #[Attribute]
 class GoodAttribute31 {
 }
-
+// This is invalid as an attribute because it does not have the attribute #[Attribute]
 class SubGoodAttribute31 extends GoodAttribute31 {}
 
 #[GoodAttribute31]
