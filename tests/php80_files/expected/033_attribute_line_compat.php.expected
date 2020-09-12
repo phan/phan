@@ -1,0 +1,11 @@
+%s:5 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\Attribute] of Class \MyAttr33
+%s:7 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of public const X
+%s:8 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of public static $property
+%s:9 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of function __construct()
+%s:12 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33()] of function a(int $first = 0, int $second = 0);
+%s:13 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of int $first = 0
+%s:18 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:18 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of function {closure}();
+%s:18 PhanNoopClosure Unused closure
+%s:19 PhanCompatibleAttributeOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute #[\MyAttr33] of function {closure}();
+%s:19 PhanNoopClosure Unused closure
