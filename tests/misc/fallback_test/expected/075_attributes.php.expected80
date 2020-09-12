@@ -1,0 +1,2 @@
+src/075_attributes.php:3 PhanSyntaxError syntax error, unexpected token "]" (at column 7)
+src/075_attributes.php:3 PhanUnusedPublicNoOverrideMethodParameter Parameter $ is never used

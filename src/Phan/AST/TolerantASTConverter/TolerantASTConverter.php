@@ -405,7 +405,7 @@ class TolerantASTConverter
     private static function phpParserAttributeGroupToAstAttributeGroup(PhpParser\Node\AttributeGroup $group): ?ast\Node
     {
         $children = [];
-        foreach ($group->attributes->children as $parser_attribute) {
+        foreach ($group->attributes->children ?? [] as $parser_attribute) {
             if (!$parser_attribute instanceof PhpParser\Node\Attribute) {
                 continue;
             }
