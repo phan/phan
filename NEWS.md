@@ -7,7 +7,12 @@ Backwards incompatible changes:
 + Switch from AST version 70 to AST version 80.
   `php-ast` should be upgraded to version 1.0.10-dev or newer.
 + Support analyzing PHP 8.0 attributes.
+  New issue types: `PhanCompatibleAttributeOnSameLine`, `PhanAttributeNonAttribute`, `PhanAttributeNonClass`, `PhanAttributeNonRepeatable`,
+  `PhanUndeclaredClassAttribute`.
 + Drop the no-op `--polyfill-parse-all-doc-comments` flag.
+
+Miscellaneous:
++ Make various classes from Phan implement `Stringable`.
 
 ??? ?? 2020, Phan 3.2.1 (dev)
 -----------------------

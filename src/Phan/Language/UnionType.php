@@ -55,6 +55,7 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Serializable;
+use Stringable;
 
 use function is_int;
 use function substr;
@@ -78,8 +79,9 @@ use function substr;
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document the public methods
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return values.
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
-class UnionType implements Serializable
+class UnionType implements Serializable, Stringable
 {
     /**
      * @var string

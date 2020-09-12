@@ -7,11 +7,13 @@ namespace Phan\Language\Element;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Debug;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Stringable;
 
 use const PHP_MAJOR_VERSION;
 
@@ -24,8 +26,9 @@ use const PHP_MAJOR_VERSION;
  *
  * @phan-file-suppress PhanUndeclaredClassConstant Attribute exists only in php 8.0+ and is not polyfilled at the time of writing.
  * @phan-file-suppress PhanUnreferencedPublicClassConstant provided for API completeness
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
-final class Attribute
+final class Attribute implements Stringable
 {
     /**
      * Don't bother depending on a polyfill. It's possible symfony/polyfill-80 may add Attribute and make this redundant, though.
@@ -44,7 +47,7 @@ final class Attribute
 
     /** @var FullyQualifiedClassName  */
     private $fqsen;
-    /** @var ?Node a node of kind ast\ast_arg_list */
+    /** @var ?Node a node of kind ast\AST_ARG_LIST */
     private $args;
     /** @var int the start lineno where the attribute was declared */
     private $lineno;
@@ -115,7 +118,7 @@ final class Attribute
     }
 
     /**
-     * Returns the optional argument list of this attribute.
+     * Returns the optional argument list of this attribute (a node of kind ast\AST_ARG_LIST).
      * @suppress PhanUnreferencedPublicMethod TODO: this will be used by Phan 4.0.0
      */
     public function getArgs(): ?Node
@@ -129,5 +132,15 @@ final class Attribute
     public function getLineno(): int
     {
         return $this->lineno;
+    }
+
+    public function __toString(): string
+    {
+        $result = '#[' . $this->fqsen->__toString();
+        if ($this->args) {
+            $result .= ASTReverter::toShortTypeString($this->args);
+        }
+        $result .= ']';
+        return $result;
     }
 }

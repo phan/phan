@@ -8,13 +8,15 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+use Stringable;
 
 /**
  * Any PHP structural element that also has a type and is
  * does not store a reference to its context (such as a variable).
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
-abstract class UnaddressableTypedElement
+abstract class UnaddressableTypedElement implements Stringable
 {
     /**
      * @var FileRef

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Phan\Language;
 
+use Stringable;
+
 /**
  * A Fully-Qualified Structural Element Name
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
-interface FQSEN
+interface FQSEN extends Stringable
 {
 
     /**
@@ -60,11 +63,4 @@ interface FQSEN
      * with this FQSEN
      */
     public function getCanonicalFQSEN();
-
-    /**
-     * @return string
-     * A string representation of this fully-qualified
-     * structural element name.
-     */
-    public function __toString(): string;
 }

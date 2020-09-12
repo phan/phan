@@ -419,6 +419,14 @@ Cannot use arrow functions before php 7.4 in {CODE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/007_throw_expression.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/007_throw_expression.php#L34).
 
+## PhanCompatibleAttributeOnSameLine
+
+```
+Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute {CODE} of {CODE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/033_attribute_line_compat.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/033_attribute_line_compat.php#L5).
+
 ## PhanCompatibleAutoload
 
 ```

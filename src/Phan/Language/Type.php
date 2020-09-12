@@ -70,6 +70,7 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
+use Stringable;
 
 use function count;
 use function explode;
@@ -90,11 +91,12 @@ use function trim;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanSuspiciousTruthyString
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return types.
  */
-class Type
+class Type implements Stringable
 {
     use \Phan\Memoize;
 
@@ -3282,7 +3284,7 @@ class Type
      * A human readable representation of this type
      * (This is frequently called, so prefer efficient operations)
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->memoize(__METHOD__, function (): string {
             $string = $this->asFQSENString();

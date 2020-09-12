@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Attribute;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
-use Phan\CodeBase;
 use Phan\Issue;
 
 /**
@@ -87,7 +88,7 @@ class AttributeAnalyzer
     private static function checkAttributeList(
         CodeBase $code_base,
         AddressableElementInterface $declaration,
-        $element,
+        object $element,
         array $attribute_list
     ): void {
         $attribute_set = [];
@@ -128,7 +129,7 @@ class AttributeAnalyzer
     private static function checkAttribute(
         CodeBase $code_base,
         AddressableElementInterface $declaration,
-        $element,
+        object $element,
         Attribute $attribute
     ): void {
         $fqsen = $attribute->getFQSEN();
@@ -165,6 +166,18 @@ class AttributeAnalyzer
                 $attribute->getLineno(),
                 $fqsen
             );
+        }
+        if ($attribute->getLineno() === $element->getFileRef()->getLineNumberStart()) {
+            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $declaration->getContext(),
+                    Issue::CompatibleAttributeOnSameLine,
+                    $attribute->getLineno(),
+                    $attribute,
+                    $element
+                );
+            }
         }
     }
 

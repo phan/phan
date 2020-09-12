@@ -7,6 +7,7 @@ namespace Phan;
 use AssertionError;
 use InvalidArgumentException;
 use Phan\Language\Context;
+use Phan\Language\Element\Attribute;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
@@ -14,6 +15,7 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\ConversionSpec;
 use Phan\Plugin\ConfigPluginSet;
+use Stringable;
 
 /**
  * An issue emitted during analysis.
@@ -571,6 +573,7 @@ class Issue
     public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
     public const CompatibleTrailingCommaArgumentList = 'PhanCompatibleTrailingCommaArgumentList';
     public const CompatibleTrailingCommaParameterList = 'PhanCompatibleTrailingCommaParameterList';
+    public const CompatibleAttributeOnSameLine      = 'PhanCompatibleAttributeOnSameLine';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4935,6 +4938,14 @@ class Issue
                 self::REMEDIATION_B,
                 3037
             ),
+            new Issue(
+                self::CompatibleAttributeOnSameLine,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute {CODE} of {CODE}",
+                self::REMEDIATION_B,
+                3038
+            ),
 
             // Issue::CATEGORY_GENERIC
             new Issue(
@@ -5445,7 +5456,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$template_parameters
+     * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement|Attribute ...$template_parameters
      * Any template parameters required for the issue
      * message
      * @suppress PhanUnreferencedPublicMethod
@@ -5474,7 +5485,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $template_parameters
+     * @param list<string|int|float|bool|Stringable> $template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -5561,7 +5572,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$parameters
+     * @param string|int|float|bool|Stringable ...$parameters
      * Template parameters for the issue's error message.
      * If these are objects, they should define __toString()
      */
@@ -5595,7 +5606,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param list<string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param list<string|int|float|bool|Stringable> $parameters
      * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message

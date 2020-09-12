@@ -6,13 +6,15 @@ namespace Phan\Language\Element;
 
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+use Stringable;
 
 /**
  * Any PHP structural element that also has a type and is
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
+ * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
-interface TypedElementInterface
+interface TypedElementInterface extends Stringable
 {
     /**
      * @return string

@@ -369,7 +369,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitPropGroup(Node $node): Context
     {
         // Bomb out if we're not in a class context
-        ['props' => $props_node, 'type' => $type_node] = $node->children;
+        ['attributes' => $attributes_node, 'props' => $props_node, 'type' => $type_node] = $node->children;
         if (!$props_node instanceof Node) {
             throw new AssertionError('Expected list of properties to be a node');
         }
@@ -406,6 +406,11 @@ class ParseVisitor extends ScopeVisitor
             $this->context,
             $props_node->lineno ?? 0,
             Comment::ON_PROPERTY
+        );
+        $attributes = Attribute::fromNodeForAttributeList(
+            $this->code_base,
+            $this->context,
+            $attributes_node
         );
 
         foreach ($props_node->children as $i => $child_node) {
@@ -523,6 +528,7 @@ class ParseVisitor extends ScopeVisitor
                 $property_fqsen,
                 $real_union_type
             );
+            $property->setAttributeList($attributes);
             if ($variable) {
                 $property->setPHPDocUnionType($variable->getUnionType());
             } elseif ($real_union_type) {
@@ -684,6 +690,11 @@ class ParseVisitor extends ScopeVisitor
     public function visitClassConstGroup(Node $node): Context
     {
         $class = $this->getContextClass();
+        $attributes = Attribute::fromNodeForAttributeList(
+            $this->code_base,
+            $this->context,
+            $node->children['attributes']
+        );
 
         // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
         foreach ($node->children['const']->children as $child_node) {
@@ -737,6 +748,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             $constant->setDocComment($doc_comment);
+            $constant->setAttributeList($attributes);
             $constant->setIsDeprecated($comment->isDeprecated());
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());

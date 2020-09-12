@@ -3643,6 +3643,23 @@ class Clazz extends AddressableElement
                     break;
                 }
             }
+            if ($this->isPHPInternal()) {
+                // Check this after checking if it's an internal stub
+                $fqsen_string = $this->fqsen->__toString();
+                if ($fqsen_string === '\Attribute') {
+                    // Handle the most common case in php 8
+                    return Attribute::TARGET_CLASS;
+                }
+                if (\PHP_MAJOR_VERSION >= 8 && \class_exists($fqsen_string)) {
+                    // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
+                    foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
+                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                        if ($php_attribute->getName() === 'Attribute') {
+                            return $php_attribute->getTarget();
+                        }
+                    }
+                }
+            }
             return Attribute::TARGET_ALL;
         });
     }

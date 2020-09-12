@@ -168,7 +168,7 @@ final class ClosureType extends Type
         return true;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->func) {
             $result = $this->func->asFunctionLikeDeclarationType()->__toString();
