@@ -9,8 +9,13 @@ use Phan\Config;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Attribute;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
+use Phan\Language\Element\Property;
 use Phan\Issue;
 
 /**
@@ -126,6 +131,53 @@ class AttributeAnalyzer
     /**
      * @param AddressableElementInterface|Parameter $element @phan-unused-param
      */
+    private static function getTargetConstantForElement(object $element): int
+    {
+        if ($element instanceof ClassElement) {
+            if ($element instanceof Property) {
+                return Attribute::TARGET_PROPERTY;
+            } elseif ($element instanceof ClassConstant) {
+                return Attribute::TARGET_CLASS_CONSTANT;
+            } elseif ($element instanceof Method) {
+                return Attribute::TARGET_METHOD;
+            }
+        } elseif ($element instanceof Clazz) {
+            return Attribute::TARGET_CLASS;
+        } elseif ($element instanceof Func) {
+            return Attribute::TARGET_FUNCTION;
+        } elseif ($element instanceof Parameter) {
+            return Attribute::TARGET_PARAMETER;
+        }
+        return 0;
+    }
+
+    private const ATTRIBUTE_TARGET_NAME = [
+        0                                => 'unknown',
+        Attribute::TARGET_CLASS          => '\Attribute::TARGET_CLASS',
+        Attribute::TARGET_CLASS_CONSTANT => '\Attribute::TARGET_CLASS_CONSTANT',
+        Attribute::TARGET_PARAMETER      => '\Attribute::TARGET_PARAMETER',
+        Attribute::TARGET_PROPERTY       => '\Attribute::TARGET_PROPERTY',
+        Attribute::TARGET_METHOD         => '\Attribute::TARGET_METHOD',
+        Attribute::TARGET_FUNCTION       => '\Attribute::TARGET_FUNCTION',
+    ];
+
+    /**
+     * Get a representation of the list of attribute target class constant names for a bitfield
+     */
+    private static function getTargetNames(int $expected_targets): string
+    {
+        $parts = [];
+        foreach (self::ATTRIBUTE_TARGET_NAME as $value => $name) {
+            if ($value & $expected_targets) {
+                $parts[] = $name;
+            }
+        }
+        return $parts ? \implode('|', $parts) : '(no valid \Attribute::TARGET_* values)';
+    }
+
+    /**
+     * @param AddressableElementInterface|Parameter $element @phan-unused-param
+     */
     private static function checkAttribute(
         CodeBase $code_base,
         AddressableElementInterface $declaration,
@@ -144,6 +196,22 @@ class AttributeAnalyzer
                         $attribute->getLineno(),
                         $fqsen,
                         '#[\Attribute(...)]'
+                    );
+                }
+                $expected_flags = $class->getAttributeFlags($code_base);
+                $actual_flag = self::getTargetConstantForElement($element);
+                if (!($actual_flag & $expected_flags)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $declaration->getContext(),
+                        Issue::AttributeWrongTarget,
+                        $attribute->getLineno(),
+                        $fqsen,
+                        $class->getContext()->getFile(),
+                        $class->getContext()->getLineNumberStart(),
+                        self::getTargetNames($expected_flags),
+                        $element,
+                        self::getTargetNames($actual_flag)
                     );
                 }
                 // TODO: Pass this to the method call analyzer?

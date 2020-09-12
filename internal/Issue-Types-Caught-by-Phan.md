@@ -2433,6 +2433,14 @@ Saw attribute {CLASS} which was not declared as \Attribute::IS_REPEATABLE in the
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/032_attributes_repeatable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/032_attributes_repeatable.php#L4).
 
+## PhanAttributeWrongTarget
+
+```
+Saw use of attribute {CLASS} declared at {FILE}:{LINE} which supports being declared on {DETAILS} but it was declared on {CODE} which requires an attribute declared to support {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/034_attribute_target.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/034_attribute_target.php#L11).
+
 ## PhanCoalescingAlwaysNull
 
 ```

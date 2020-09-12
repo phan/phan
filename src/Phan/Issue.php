@@ -277,6 +277,7 @@ class Issue
     public const AttributeNonClass = 'PhanAttributeNonClass';
     public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
     public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
+    public const AttributeWrongTarget = 'PhanAttributeWrongTarget';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -2821,6 +2822,14 @@ class Issue
                 'Saw attribute {CLASS} which was not declared as \Attribute::IS_REPEATABLE in the class definition at {FILE}:{LINE} but had a repeat declaration on line {LINE}',
                 self::REMEDIATION_B,
                 10172
+            ),
+            new Issue(
+                self::AttributeWrongTarget,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Saw use of attribute {CLASS} declared at {FILE}:{LINE} which supports being declared on {DETAILS} but it was declared on {CODE} which requires an attribute declared to support {DETAILS}',
+                self::REMEDIATION_B,
+                10173
             ),
 
             // Issue::CATEGORY_VARIABLE
