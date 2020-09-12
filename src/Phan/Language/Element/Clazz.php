@@ -3655,6 +3655,7 @@ class Clazz extends AddressableElement
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
                         if ($php_attribute->getName() === 'Attribute') {
+                            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
                             return $php_attribute->getTarget();
                         }
                     }
