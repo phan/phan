@@ -14,7 +14,10 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 2020, Phan 3.2.1 (dev)
+??? ?? 2020, Phan 3.2.2 (dev)
+-----------------------
+
+Sep 13 2020, Phan 3.2.1
 -----------------------
 
 New features (Analysis):
@@ -27,7 +30,7 @@ New features (Analysis):
 + Treat `unset($x);` as shadowing variable definitions during dead code detection.
 + Change the way `$i++`, `--$i`, etc. are analyzed during dead code detection
 + Properly enable `allow_method_param_type_widening` by default when the inferred `minimum_target_php_version` is `'7.2'` or newer. (#4168)
-+ Start preparing for switching to AST version 80. (#4167)`
++ Start preparing for switching to AST version 80 in an upcoming Phan 4 release. (#4167)`
 
 Bug fixes:
 + Fix various crashes in edge cases.
@@ -36,6 +39,10 @@ Bug fixes:
 
 Plugins:
 + Warn about `#` comments in `PHPDocInWrongCommentPlugin` if they're not used for the expected `#[` syntax of php 8.0 attributes.
+
+Maintenance:
++ Update polyfill/fallback parser to properly skip attributes in php 8.0.
+  The upcoming Phan 4 release will support analyzing attributes, which requires AST version 80.
 
 Aug 25 2020, Phan 3.2.0
 -----------------------
