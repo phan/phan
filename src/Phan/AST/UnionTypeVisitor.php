@@ -3365,7 +3365,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Check to see if the name is fully qualified
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
-            self::checkValidClassFQSEN($class_name);
+            self::checkValidClassFQSEN($context, $node, $class_name);
             $type = Type::fromStringInContext(
                 $class_name,
                 $context,
@@ -3386,7 +3386,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class_name = '\\' . $class_name;
             }
 
-            self::checkValidClassFQSEN($class_name);
+            self::checkValidClassFQSEN($context, $node, $class_name);
             $type = Type::fromFullyQualifiedString(
                 $class_name
             );
@@ -3398,17 +3398,19 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @throws FQSENException if invalid
      */
-    private static function checkValidClassFQSEN(string $class_name): void
+    private static function checkValidClassFQSEN(Context $context, Node $node, string $class_name): void
     {
         // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (\preg_match(FullyQualifiedGlobalStructuralElement::VALID_STRUCTURAL_ELEMENT_REGEX, $class_name)) {
             return;
         }
-        if ($class_name === '\\') {
-            throw new EmptyFQSENException("empty fqsen", '\\');
-        } else {
-            throw new InvalidFQSENException("invalid fqsen", $class_name);
-        }
+        throw new IssueException(
+            Issue::fromType($class_name === '\\' ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
+                $context->getFile(),
+                $node->lineno,
+                [ $class_name ]
+            )
+        );
     }
 
     /**
@@ -3441,7 +3443,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         // have the constant we're looking for
         foreach ($union_type->nonNativeTypes()->getTypeSet() as $class_type) {
             // Get the class FQSEN
-            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
+            try {
+                $class_fqsen = FullyQualifiedClassName::fromType($class_type);
+            } catch (InvalidFQSENException $e) {
+                throw new IssueException(
+                    Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
+                        $this->context->getFile(),
+                        $node->lineno,
+                        [ (string)$class_type ]
+                    )
+                );
+            }
 
             // See if the class exists
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {

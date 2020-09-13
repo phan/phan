@@ -11,3 +11,4 @@
 %s:12 PhanInvalidFQSENInClasslike Possible use of a classlike '\a\\' with an invalid FQSEN.
 %s:13 PhanNonClassMethodCall Call to method foo on non-class type 1
 %s:14 PhanNonClassMethodCall Call to method foo on non-class type 0
+%s:15 PhanInvalidFQSENInClasslike Possible use of a classlike '\??' with an invalid FQSEN.

@@ -1,0 +1,3 @@
+src/074_invalid_closure_use.php:3 PhanCompatibleDimAlternativeSyntax Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for ${0}{}
+src/074_invalid_closure_use.php:3 PhanNoopArrayAccess Unused array offset fetch
+src/074_invalid_closure_use.php:3 PhanSyntaxError syntax error, unexpected '$', expecting '(' (at column 27)

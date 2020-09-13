@@ -1,0 +1,2 @@
+src/076_pipe.php:3 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type string
+src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE) (at column 12)

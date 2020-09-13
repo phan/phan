@@ -236,10 +236,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitSwitch(Node $node): int
     {
-        $cond_status = $this->check($node->children['cond']);
-        if (($cond_status & self::STATUS_PROCEED) === 0) {
-            // handle throw expressions, switch(exit()), etc.
-            return $cond_status;
+        $cond = $node->children['cond'];
+        if ($cond instanceof Node) {
+            $cond_status = $this->check($cond);
+            if (($cond_status & self::STATUS_PROCEED) === 0) {
+                // handle throw expressions, switch(exit()), etc.
+                return $cond_status;
+            }
+        } else {
+            $cond_status = self::STATUS_PROCEED;
         }
         return $this->visitSwitchList($node->children['stmts']) | ($cond_status & ~self::STATUS_PROCEED);
     }
