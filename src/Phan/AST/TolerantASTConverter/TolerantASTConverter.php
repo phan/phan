@@ -1764,11 +1764,12 @@ class TolerantASTConverter
             /** @return ast\Node[]|ast\Node */
             'Microsoft\PhpParser\Node\Statement\NamedLabelStatement' => static function (PhpParser\Node\Statement\NamedLabelStatement $n, int $start_line) {
                 $label = new ast\Node(ast\AST_LABEL, 0, ['name' => static::tokenToString($n->name)], $start_line);
-                if (!$n->statement) {
+                $raw_statement = $n->statement;
+                if (!$raw_statement) {
                     // Hopefully, newer versions of tolerant-php-parser will treat named labels as a standlone statement
                     return $label;
                 }
-                $statement = static::phpParserNodeToAstNode($n->statement);
+                $statement = static::phpParserNodeToAstNode($raw_statement);
                 if (is_array($statement)) {
                     // E.g. there are multiple labels in a row.
                     \array_unshift($statement, $label);

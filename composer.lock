@@ -187,12 +187,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/microsoft/tolerant-php-parser.git",
-                "reference": "85b40c3855dbfb1e3ecdd15a53b47e1a1fd00061"
+                "reference": "b5c7cd4a7e64afa79e787d4d762b8af9859e05de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/microsoft/tolerant-php-parser/zipball/85b40c3855dbfb1e3ecdd15a53b47e1a1fd00061",
-                "reference": "85b40c3855dbfb1e3ecdd15a53b47e1a1fd00061",
+                "url": "https://api.github.com/repos/microsoft/tolerant-php-parser/zipball/b5c7cd4a7e64afa79e787d4d762b8af9859e05de",
+                "reference": "b5c7cd4a7e64afa79e787d4d762b8af9859e05de",
                 "shasum": ""
             },
             "require": {
@@ -220,7 +220,7 @@
                 }
             ],
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
-            "time": "2020-09-12T22:15:27+00:00"
+            "time": "2020-09-13T17:11:49+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
