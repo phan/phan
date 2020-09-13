@@ -24,15 +24,15 @@
 # SOFTWARE.
 
 
-FROM alpine:3.9
+FROM alpine:3.12
 
 WORKDIR /usr/src/app
 
 RUN adduser -u 9000 -D app
 
-ENV LAST_MODIFIED_DATE 2018-01-20
+ENV LAST_MODIFIED_DATE 2020-09-13
 
-ENV PHP_AST_VERSION=1.0.1
+ENV PHP_AST_VERSION=1.0.10
 
 RUN apk add --no-cache \
 	php7 && \
