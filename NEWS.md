@@ -15,6 +15,10 @@ New features (Analysis):
 + Properly enable `allow_method_param_type_widening` by default when the inferred `minimum_target_php_version` is `'7.2'` or newer. (#4168)
 + Start preparing for switching to AST version 80. (#4167)`
 
+Bug fixes:
++ Fix crash with adjacent named labels for gotos.
++ Fix false positive unused parameter warning with php 8.0 constructor property promotion.
+
 Plugins:
 + Warn about `#` comments in `PHPDocInWrongCommentPlugin` if they're not used for the expected `#[` syntax of php 8.0 attributes.
 
