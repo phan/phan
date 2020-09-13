@@ -713,15 +713,15 @@ class TolerantASTConverter
                 if ($n->questionToken !== null && $ast_return_type !== null) {
                     $ast_return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $start_line);
                 }
-                $useVariableNameList = $n->anonymousFunctionUseClause->useVariableNameList ?? null, $start_line;
-                if (!$useVariableNameList instanceof PhpParser\Node\DelimitedList\UseVariableNameList) {
-                    $useVariableNameList = null;
+                $use_variable_name_list = $n->anonymousFunctionUseClause->useVariableNameList ?? null;
+                if (!$use_variable_name_list instanceof PhpParser\Node\DelimitedList\UseVariableNameList) {
+                    $use_variable_name_list = null;
                 }
                 return static::astDeclClosure(
                     $n->byRefToken !== null,
                     $n->staticModifier !== null,
                     static::phpParserParamsToAstParams($n->parameters, $start_line),
-                    static::phpParserClosureUsesToAstClosureUses($useVariableNameList),
+                    static::phpParserClosureUsesToAstClosureUses($use_variable_name_list, $start_line),
                     // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty return_null_on_empty is false.
                     static::phpParserStmtlistToAstNode($n->compoundStatementOrSemicolon->statements, self::getStartLine($n->compoundStatementOrSemicolon), false),
                     $ast_return_type,
