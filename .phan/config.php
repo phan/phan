@@ -48,7 +48,7 @@ return [
     // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
     // If that could not be determined, then Phan assumes `target_php_version`.
     //
-    // For Phan 3.x, this is determined to be `'7.2'` from `"version": "^7.2.0"`.
+    // For analyzing Phan 3.x, this is determined to be `'7.2'` from `"version": "^7.2.0"`.
     'minimum_target_php_version' => null,
 
     // Default: true. If this is set to true,
@@ -368,10 +368,8 @@ return [
         'PhanPluginPossiblyStaticProtectedMethod',
         // The types of ast\Node->children are all possibly unset.
         'PhanTypePossiblyInvalidDimOffset',
-        // TODO: Fix PhanParamNameIndicatingUnused* instances
+        // TODO: Fix PhanParamNameIndicatingUnusedInClosure instances (low priority)
         'PhanParamNameIndicatingUnusedInClosure',
-        // TODO: min_php_version config setting
-        'PhanCompatibleObjectTypePHP71',
     ],
 
     // If this list is empty, no filter against issues types will be applied.
