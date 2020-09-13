@@ -1,5 +1,5 @@
 <?php
-class X {
+class X75 {
     #[] public static function test( #[ ) {}
 }
-X::test('extra');
+X75::test('extra');
