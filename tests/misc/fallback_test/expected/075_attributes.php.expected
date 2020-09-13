@@ -1,1 +1,1 @@
-src/075_attributes.php:5 PhanUndeclaredStaticMethod Static call to undeclared method \X::test
+src/075_attributes.php:5 PhanUndeclaredStaticMethod Static call to undeclared method \X75::test
