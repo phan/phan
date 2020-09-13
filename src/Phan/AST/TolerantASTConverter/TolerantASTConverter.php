@@ -1822,7 +1822,7 @@ class TolerantASTConverter
     protected static function phpParserUnionTypeToAstNode($type, ?PhpParser\Node\DelimitedList\QualifiedNameList $other_types, int $line): ?\ast\Node
     {
         $types = [];
-        if (!\is_null($type)) {
+        if (!\is_null($type) && !($type instanceof Token && $type->kind === TokenKind::BarToken)) {
             $result = static::phpParserTypeToAstNode($type, $line);
             if ($result) {
                 $types[] = $result;

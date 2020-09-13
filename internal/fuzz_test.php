@@ -40,7 +40,7 @@ class FuzzTest
         if ($i >= count($tokens)) {
             return null;
         }
-        $j = ($i + crc32($path) + 11155) % count($tokens);
+        $j = ($i + crc32($path) + 71155) % count($tokens);
         unset($tokens[$j]);
         return array_values($tokens);
     }
