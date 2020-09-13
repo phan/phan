@@ -16,6 +16,7 @@ New features (Analysis):
 + Start preparing for switching to AST version 80. (#4167)`
 
 Bug fixes:
++ Fix various crashes in edge cases.
 + Fix crash with adjacent named labels for gotos.
 + Fix false positive unused parameter warning with php 8.0 constructor property promotion.
 

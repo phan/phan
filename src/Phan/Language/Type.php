@@ -1274,7 +1274,7 @@ class Type
      * @return Type
      * Parse a type from the given string
      *
-     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
+     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal, PhanThrowTypeAbsent
      * @phan-side-effect-free
      */
     public static function fromStringInContext(
@@ -1284,7 +1284,7 @@ class Type
         CodeBase $code_base = null
     ): Type {
         if ($string === '') {
-            throw new AssertionError("Type cannot be empty");
+            throw new EmptyFQSENException("Type cannot be empty", '');
         }
         while (\substr($string, -1) === ')') {
             if ($string[0] === '?') {
