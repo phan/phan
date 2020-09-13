@@ -35,23 +35,23 @@ class FuzzTest
      * @param list<array|string> $tokens
      * @return ?list<array|string>
      */
-    private static function mutateTokens(string $path, array $tokens, int $i)
+    private static function mutateTokensByRemoval(string $path, array $tokens, int $i)
     {
         if ($i >= count($tokens)) {
             return null;
         }
         $j = ($i + crc32($path) + 11155) % count($tokens);
-        if (is_array($tokens[$j])) {
-            $c = $tokens[$j];
-            if ($c === '/') {
-                // do nothing
-            } else {
-                $tokens[$j][1] = '${0}';
-            }
-        } else {
-            $tokens[$j] = '${0}';
-        }
+        unset($tokens[$j]);
         return array_values($tokens);
+    }
+
+    /**
+     * @param list<array|string> $tokens
+     * @return ?list<array|string>
+     */
+    private static function mutateTokens(string $path, array $tokens, int $i)
+    {
+        return self::mutateTokensByRemoval($path, $tokens, $i);
     }
 
     /**
@@ -60,7 +60,10 @@ class FuzzTest
     public static function main()
     {
         self::$basename = dirname(realpath(__DIR__));
-        $file_contents = self::readFileContents(self::$basename . '/tests/files/src');
+        $file_contents = array_merge(
+            self::readFileContents(self::$basename . '/tests/files/src'),
+            self::readFileContents(self::$basename . '/tests/php80_files/src')
+        );
         $tokens_for_files = array_map('token_get_all', $file_contents);
         for ($i = 0; true; $i++) {
             $new_tokens_for_files = [];
@@ -111,6 +114,8 @@ return [
 
     'prefer_narrowed_phpdoc_param_type' => true,
 
+    'redundant_condition_detection' => true,
+
     'unused_variable_detection' => true,
     'plugins' => [
         'AlwaysReturnPlugin',
@@ -136,9 +141,12 @@ EOT
         }
 
         // TODO: Use proc_open
-        $cmd = self::$basename . '/phan --use-fallback-parser --project-root-directory ' . $tmp_dir;
+        $cmd = self::$basename . '/phan --use-fallback-parser --always-exit-successfully-after-analysis --no-progress-bar --project-root-directory ' . $tmp_dir;
         echo "Running $cmd\n";
-        system($cmd);
+        system($cmd, $out_status);
+        if ($out_status) {
+            echo "FAILED TO RUN in $tmp_dir\n";
+        }
     }
 }
 FuzzTest::main();
