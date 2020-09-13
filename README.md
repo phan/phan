@@ -4,8 +4,8 @@ Phan looks for common issues and will verify type compatibility on various opera
 information is available or can be deduced. Phan has a good (but not comprehensive) understanding of flow control
 and can track values in a few use cases (e.g. arrays, integers, and strings).
 
-[![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan)
-[![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
+[![Build Status](https://travis-ci.org/phan/phan.svg?branch=v4)](https://travis-ci.org/phan/phan)
+[![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=v4&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/v4)
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://img.shields.io/packagist/v/phan/phan.svg)](https://packagist.org/packages/phan/phan)
 [![License](https://img.shields.io/packagist/l/phan/phan.svg)](https://github.com/phan/phan/blob/master/LICENSE)
