@@ -820,7 +820,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         } else {
             $outer_scope_unbranched = $this->scope;
         }
-        $outer_scope_unbranched = $this->analyzeWhenValidNode($outer_scope_unbranched, $node->children['cond']);
+        $outer_scope_unbranched = $this->analyzeCondExprList($outer_scope_unbranched, $node->children['cond']);
         $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
@@ -836,7 +836,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $this->top_level_statement = $top_level_statement;
         }
         // TODO: If the graph analysis is improved, look into making this stop analyzing 'loop' twice
-        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        $inner_scope = $this->analyzeCondExprList($inner_scope, $node->children['cond']);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         foreach ($node->children['loop']->children ?? [] as $loop_node) {
             if ($loop_node instanceof Node) {
@@ -847,12 +847,35 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 $this->top_level_statement = $top_level_statement;
             }
         }
-        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        $inner_scope = $this->analyzeCondExprList($inner_scope, $node->children['cond']);
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
         return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
+    }
+
+    /**
+     * @param Node|float|int|string|null $cond
+     */
+    private function analyzeCondExprList(VariableTrackingScope $scope, $cond): VariableTrackingScope
+    {
+        if (!$cond instanceof Node) {
+            return $scope;
+        }
+        $children = $cond->children;
+        $last_child_node = \end($children);
+        $top_level_statement = $this->top_level_statement;
+        foreach ($children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            $this->top_level_statement = $child_node === $last_child_node ? $cond : $child_node;
+            $scope = $this->analyze($scope, $child_node);
+        }
+        $this->top_level_statement = $top_level_statement;
+        return $scope;
     }
 
     /**

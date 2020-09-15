@@ -1,0 +1,7 @@
+src/193_loop.php:2 PhanPluginUseReturnValueNoopVoid The function/method \test193() is declared to return void and it has no side effects
+src/193_loop.php:4 PhanNoopVariable Unused variable
+src/193_loop.php:4 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
+src/193_loop.php:4 PhanUndeclaredVariable Variable $placeholder is undeclared
+src/193_loop.php:4 PhanUnusedVariable Unused definition of variable $placeholder
+src/193_loop.php:8 PhanPluginUseReturnValueNoopVoid The function/method \test193b() is declared to return void and it has no side effects
+src/193_loop.php:10 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects

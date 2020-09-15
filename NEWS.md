@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.2.2 (dev)
 -----------------------
 
+Bug fixes:
++ Fix false positive `PhanUnusedVariable` in `for (; $loop; ...) {}` (#4191)
+
 Sep 13 2020, Phan 3.2.1
 -----------------------
 
