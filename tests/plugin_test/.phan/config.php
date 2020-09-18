@@ -117,6 +117,8 @@ return [
         'fakephantest' => '.phan/internal_stubs/fakephantest.phan_php',
     ],
 
+    'infer_default_properties_in_construct' => true,
+
     // A list of plugin files to execute
     // (Execute all of them.)
     // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.

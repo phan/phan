@@ -244,9 +244,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (!$default_type) {
                 continue;
             }
-            if ($property->getDefiningFQSEN() !== $property->getRealDefiningFQSEN()) {
+            if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
                 // Here, we don't analyze the properties of parent classes to avoid false positives.
                 // Phan doesn't infer that the scope is cleared by parent::__construct().
+                //
+                // TODO: It should be possible to inherit property types from parent::__construct() for simple constructors?
+                // TODO: Check if there's actually any calls to parent::__construct, infer types aggressively if there are no calls.
+                // TODO: Phan does not yet infer or apply implications of setPropName(), etc.
                 continue;
             }
             $property_types[$property->getName()] = $default_type;
