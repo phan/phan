@@ -7,6 +7,7 @@ Bug fixes:
 + Fix false positive `PhanUnusedVariable` in `for (; $loop; ...) {}` (#4191)
 + Don't infer defaults of ancestor class properties when analyzing the implementation of `__construct`. (#4195)
   This is only affects projects where the config setting `infer_default_properties_in_construct` is overridden to be enabled.
++ Check `minimum_target_php_version` for more compatibility warnings about parameter types.
 
 Sep 13 2020, Phan 3.2.1
 -----------------------
