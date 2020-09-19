@@ -1,0 +1,1 @@
+%s:3 PhanTypeMismatchArgumentInternal%SReal Argument 2 ($code) is $e of type \Exception%S|\Throwable but \AssertionError::__construct() takes int%S

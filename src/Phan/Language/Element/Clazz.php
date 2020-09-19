@@ -425,6 +425,9 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getMethods() as $reflection_method) {
+            if ($reflection_method->getDeclaringClass()->name !== $class_name) {
+                continue;
+            }
             $method_context = $context->withScope($class_scope);
 
             $method_list =

@@ -5,6 +5,7 @@ Phan NEWS
 
 New features (Analysis):
 + Improve handling of missing argument info when analyzing calls to functions/methods.
+  This will result in better issue detection for inherited methods or methods which Phan does not have type info for.
 
 Bug fixes:
 + Fix false positive `PhanUnusedVariable` in `for (; $loop; ...) {}` (#4191)
