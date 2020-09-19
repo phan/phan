@@ -983,7 +983,7 @@ EOT
                 new Position(5, 12),  // MY_NAMESPACED_CONST
                 <<<'EOT'
 ```php
-public static function myMethod() : \MyOtherClass
+public static function myMethod(): \MyOtherClass
 ```
 
 `@return MyOtherClass` details
@@ -1005,7 +1005,7 @@ EOT
                 new Position(7, 4),  // MY_NAMESPACED_CONST
                 <<<'EOT'
 ```php
-function global_function_with_comment(int $x, ?string $y) : void
+function global_function_with_comment(int $x, ?string $y): void
 ```
 
 This has a mix of comments and annotations, annotations are included in hover
@@ -1088,7 +1088,7 @@ EOT
                 new Position(22, 10),  // strlen
                 <<<'EOT'
 ```php
-function strlen(string $string) : int
+function strlen(string $string): int
 ```
 
 Get string length
@@ -1101,7 +1101,7 @@ EOT
                 <<<'EOT'
 ```php
 namespace ast;
-function parse_code(string $code, int $version, string $filename = unknown) : \ast\Node
+function parse_code(string $code, int $version, string $filename = unknown): \ast\Node
 ```
 
 Parses code string and returns AST root node.
@@ -1134,7 +1134,7 @@ EOT
                 new Position(28, 45),  // AssertionError
                 <<<'EOT'
 ```php
-public function __construct()
+public function __construct(string $message = unknown, int $code = unknown, ?\Error|?\Throwable $previous = null): void
 ```
 
 Construct an instance of `\AssertionError`.
@@ -1165,7 +1165,7 @@ EOT
                 new Position(33, 22),  // ArrayObject->count() (override)
                 <<<'EOT'
 ```php
-public function count() : int
+public function count(): int
 ```
 
 Get the number of public properties in the ArrayObject
@@ -1176,7 +1176,7 @@ EOT
                 new Position(35, 22),  // ArrayObject->count() (inherited)
                 <<<'EOT'
 ```php
-public function count() : int
+public function count(): int
 ```
 
 Get the number of public properties in the ArrayObject
