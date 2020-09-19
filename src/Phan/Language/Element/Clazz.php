@@ -1568,8 +1568,7 @@ class Clazz extends AddressableElement
                     $context->getFile(),
                     $context->getLineNumberStart(),
                     [
-                        (string)$constant_fqsen,
-                        (string)$this->getFQSEN()
+                        $this->getFQSEN() . '::' . $constant_fqsen
                     ],
                     IssueFixSuggester::suggestSimilarClassConstant($code_base, $context, $constant_fqsen)
                 )
