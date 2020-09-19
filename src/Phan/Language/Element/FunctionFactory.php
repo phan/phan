@@ -174,7 +174,6 @@ class FunctionFactory
         if ($class_name !== 'ServerResponse') {
             $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
             $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
-            $method->inheritRealParameterDefaults();
         }
 
         return self::functionListFromFunction($method);
@@ -198,6 +197,10 @@ class FunctionFactory
         );
 
         if (!$map_list) {
+            if (!$function->getParameterList()) {
+                $function->setParameterList($function->getRealParameterList());
+            }
+            $function->inheritRealParameterDefaults();
             return [$function];
         }
 
@@ -307,6 +310,7 @@ class FunctionFactory
                     $alternate_function->setNumberOfRequiredParameters(0);
                 }
             }
+            $alternate_function->inheritRealParameterDefaults();
 
             return $alternate_function;
         }, $map_list);
