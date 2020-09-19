@@ -1,7 +1,7 @@
 Phan NEWS
 
-??? ?? 202?, Phan 4.0.0 (dev)
------------------------
+Sep 19 2020, Phan 4.0.0-alpha1
+------------------------------
 
 New features (Analysis):
 + Support analyzing PHP 8.0 attributes when Phan is run with php 8.0 or newer.
