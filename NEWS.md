@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.2.2 (dev)
 -----------------------
 
+New features (Analysis):
++ Improve handling of missing argument info when analyzing calls to functions/methods.
+
 Bug fixes:
 + Fix false positive `PhanUnusedVariable` in `for (; $loop; ...) {}` (#4191)
 + Don't infer defaults of ancestor class properties when analyzing the implementation of `__construct`. (#4195)
