@@ -249,21 +249,25 @@ class ParameterTypesAnalyzer
                     }
                 }
                 if ($type_class === ObjectType::class) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleObjectTypePHP71,
-                        $real_parameter->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
+                    if ($minimum_target_php_version < 70200) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleObjectTypePHP71,
+                            $real_parameter->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                    }
                 } elseif ($type_class === MixedType::class) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleMixedType,
-                        $real_parameter->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
+                    if ($minimum_target_php_version < 80000) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleMixedType,
+                            $real_parameter->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                    }
                 }
             }
         }
@@ -280,62 +284,68 @@ class ParameterTypesAnalyzer
                     );
                 }
                 // Could check for use statements, but `php7.1 -l path/to/file.php` would do that already.
-                if ($type_class === VoidType::class) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleVoidTypePHP70,
-                        $method->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
-                } else {
-                    if ($type->isNullable()) {
-                        // Don't emit CompatibleNullableTypePHP70 for `void`.
+                if ($minimum_target_php_version < 70100) {
+                    if ($type_class === VoidType::class) {
                         Issue::maybeEmit(
                             $code_base,
                             $method->getContext(),
-                            Issue::CompatibleNullableTypePHP70,
+                            Issue::CompatibleVoidTypePHP70,
                             $method->getFileRef()->getLineNumberStart(),
                             (string)$type
                         );
-                    }
-                    if ($type_class === IterableType::class) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $method->getContext(),
-                            Issue::CompatibleIterableTypePHP70,
-                            $method->getFileRef()->getLineNumberStart(),
-                            (string)$type
-                        );
-                        continue;
-                    }
-                    if ($minimum_target_php_version < 70000 && $type instanceof ScalarType) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $method->getContext(),
-                            Issue::CompatibleScalarTypePHP56,
-                            $method->getFileRef()->getLineNumberStart(),
-                            (string)$type
-                        );
+                    } else {
+                        if ($type->isNullable()) {
+                            // Don't emit CompatibleNullableTypePHP70 for `void`.
+                                Issue::maybeEmit(
+                                    $code_base,
+                                    $method->getContext(),
+                                    Issue::CompatibleNullableTypePHP70,
+                                    $method->getFileRef()->getLineNumberStart(),
+                                    (string)$type
+                                );
+                        }
+                        if ($type_class === IterableType::class) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::CompatibleIterableTypePHP70,
+                                $method->getFileRef()->getLineNumberStart(),
+                                (string)$type
+                            );
+                            continue;
+                        }
+                        if ($minimum_target_php_version < 70000 && $type instanceof ScalarType) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::CompatibleScalarTypePHP56,
+                                $method->getFileRef()->getLineNumberStart(),
+                                (string)$type
+                            );
+                        }
                     }
                 }
             }
             if ($type_class === ObjectType::class) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::CompatibleObjectTypePHP71,
-                    $method->getFileRef()->getLineNumberStart(),
-                    (string)$type
-                );
+                if ($minimum_target_php_version < 70200) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleObjectTypePHP71,
+                        $method->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
             } elseif ($type_class === MixedType::class) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::CompatibleMixedType,
-                    $method->getFileRef()->getLineNumberStart(),
-                    (string)$type
-                );
+                if ($minimum_target_php_version < 80000) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleMixedType,
+                        $method->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
             }
         }
     }
