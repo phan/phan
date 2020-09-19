@@ -1,0 +1,5 @@
+src/194_construct.php:7 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int
+src/194_construct.php:7 PhanWriteOnlyPublicProperty Possibly zero read references to public property \N194\SubOption->subSubOption
+src/194_construct.php:12 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \N194\SubOption
+src/194_construct.php:26 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \N194\Options
+src/194_construct.php:34 PhanUnreferencedClass Possibly zero references to class \N194\C

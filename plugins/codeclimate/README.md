@@ -15,7 +15,7 @@ The following example uses the phan codeclimate image to analyze the phan checko
 By running it from a different folder passing in a different config.json to `-v`, options can be changed.
 
 ```sh
-sudo docker run -v $PWD:/code:ro -v $PWD:/code:ro -v $PWD/plugins/codeclimate/config-example.json:/config.json phan:1.2.6
+sudo docker run -v $PWD:/code:ro -v $PWD/plugins/codeclimate/config-example.json:/config.json phan:3.2.1
 ```
 
 Future work

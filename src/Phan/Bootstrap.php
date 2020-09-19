@@ -145,6 +145,10 @@ if (extension_loaded('ast')) {
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
     }
+    // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
+    if (PHP_VERSION_ID >= 80000 && strpos(PHP_VERSION, 'dev') === false && version_compare(PHP_VERSION, '8.0.0beta4') < 0) {
+        fwrite(STDERR, "WARNING: Phan may not work properly in PHP 8 versions before PHP 8.0.0beta4. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
+    }
     unset($ast_version);
 }
 unset($file);
