@@ -71,7 +71,7 @@ final class ArgumentType
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
-                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children, $node);
+                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children ?? [], $node);
             } catch (StopParamAnalysisException $_) {
                 return;
             }
@@ -79,10 +79,11 @@ final class ArgumentType
 
         // Emit an issue if this is an externally accessed internal method
         $arglist = $node->children['args'];
-        $argcount = \count($arglist->children);
+        $arglist_children = $arglist->children ?? [];
+        $argcount = \count($arglist_children);
 
         // Make sure we have enough arguments
-        if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
+        if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist_children)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
@@ -134,12 +135,16 @@ final class ArgumentType
         }
 
         // Check the parameter types
-        self::analyzeParameterList(
-            $code_base,
-            $method,
-            $arglist,
-            $context
-        );
+        // NOTE: Attributes have an optional arg list, which is the same as 0 args.
+        // Because there are 0 args, no argument types need to be checked.
+        if ($arglist instanceof Node) {
+            self::analyzeParameterList(
+                $code_base,
+                $method,
+                $arglist,
+                $context
+            );
+        }
     }
 
     /**

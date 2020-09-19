@@ -8,7 +8,7 @@ Backwards incompatible changes:
   `php-ast` should be upgraded to version 1.0.10-dev or newer.
 + Support analyzing PHP 8.0 attributes when Phan is run with php 8.0 or newer.
   New issue types: `PhanCompatibleAttributeOnSameLine`, `PhanAttributeNonAttribute`, `PhanAttributeNonClass`, `PhanAttributeNonRepeatable`,
-  `PhanUndeclaredClassAttribute`, `PhanAttributeWrongTarget`.
+  `PhanUndeclaredClassAttribute`, `PhanAttributeWrongTarget`, `PhanAccessNonPublicAttribute`.
 + Drop the no-op `--polyfill-parse-all-doc-comments` flag.
 
 Miscellaneous:

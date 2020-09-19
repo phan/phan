@@ -1,2 +1,2 @@
-%s:4 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($kind) is 'key' of type 'key' but \ast\Node::__construct() takes int
+%s:4 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($kind) is 'key' of type 'key' but \ast\Node::__construct() takes int%S
 %s:6 PhanTypeMismatchArgumentInternal Argument 3 ($children) is [new stdClass()] of type array{0:\stdClass} but \ast\Node::__construct() takes \ast\Node[]|\ast\Node\Decl[]|bool[]|float[]|int[]|null[]|string[]

@@ -1,0 +1,8 @@
+%s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($flags) is [] of type array{} but \Attribute::__construct() takes int
+%s:14 PhanAccessNonPublicAttribute Attempting to access attribute \DeprecatedAttribute35 with non-public constructor \DeprecatedAttribute35::__construct() defined at %s:4. This will throw if ReflectionAttribute->newInstance() is called.
+%s:14 PhanDeprecatedClass Using a deprecated class \DeprecatedAttribute35 defined at %s:4
+%s:14 PhanParamTooMany Call with 1 arg(s) to \DeprecatedAttribute35::__construct() which only takes 0 arg(s) defined at %s:5
+%s:15 PhanAccessNonPublicAttribute Attempting to access attribute \TypedAttribute35 with non-public constructor \TypedAttribute35::__construct() defined at %s:9. This will throw if ReflectionAttribute->newInstance() is called.
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($flags) is [] of type array{} but \TypedAttribute35::__construct() takes int defined at %s:10
+%s:16 PhanAccessNonPublicAttribute Attempting to access attribute \TypedAttribute35 with non-public constructor \TypedAttribute35::__construct() defined at %s:9. This will throw if ReflectionAttribute->newInstance() is called.
+%s:16 PhanParamTooFew Call with 0 arg(s) to \TypedAttribute35::__construct(int $flags) which requires 1 arg(s) defined at %s:10

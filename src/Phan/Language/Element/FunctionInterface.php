@@ -161,6 +161,20 @@ interface FunctionInterface extends AddressableElementInterface
     public function getParameterList();
 
     /**
+     * @param list<Parameter> $parameter_list
+     * A list of parameters to set on this method
+     * (When quick_mode is false, this is also called to temporarily
+     * override parameter types, etc.)
+     * @internal
+     */
+    public function setParameterList(array $parameter_list): void;
+
+    /**
+     * @internal - moves real parameter defaults to the inferred phpdoc parameters
+     */
+    public function inheritRealParameterDefaults(): void;
+
+    /**
      * Gets the $ith parameter for the **caller**.
      * In the case of variadic arguments, an infinite number of parameters exist.
      * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],

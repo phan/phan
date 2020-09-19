@@ -635,6 +635,22 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $result;
     }
 
+    /**
+     * @param list<Parameter> $parameter_list
+     */
+    public function setParameterList(array $parameter_list): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /**
+     * @internal - moves real parameter defaults to the inferred phpdoc parameters
+     */
+    public function inheritRealParameterDefaults(): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
     public function getRealParameterList(): array
     {
         return $this->getParameterList();

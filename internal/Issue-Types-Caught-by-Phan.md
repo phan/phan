@@ -106,6 +106,14 @@ Cannot access protected method {METHOD} defined at {FILE}:{LINE} (if this call s
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0298_call_magic_method_accesses_inaccessible.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0298_call_magic_method_accesses_inaccessible.php#L80).
 
+## PhanAccessNonPublicAttribute
+
+```
+Attempting to access attribute {CLASS} with non-public constructor {METHOD} defined at {FILE}:{LINE}. This will throw if ReflectionAttribute->newInstance() is called.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/035_attribute_args.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/035_attribute_args.php#L14).
+
 ## PhanAccessNonStaticToStatic
 
 This issue is emitted when a class redeclares an inherited instance method as a static method.

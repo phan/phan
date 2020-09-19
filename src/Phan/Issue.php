@@ -536,6 +536,8 @@ class Issue
     public const AccessOverridesFinalMethodInTrait      = 'PhanAccessOverridesFinalMethodInTrait';
     public const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
     public const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
+    // TODO: Should probably also warn about the declaration
+    public const AccessNonPublicAttribute               = 'PhanAccessNonPublicAttribute';
 
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
@@ -4637,6 +4639,14 @@ class Issue
                 "Declaration of method {METHOD} overrides final method {METHOD} defined in trait in {FILE}:{LINE}. This is actually allowed in case of traits, even for final methods, but may lead to unexpected behavior",
                 self::REMEDIATION_B,
                 1033
+            ),
+            new Issue(
+                self::AccessNonPublicAttribute,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Attempting to access attribute {CLASS} with non-public constructor {METHOD} defined at {FILE}:{LINE}. This will throw if ReflectionAttribute->newInstance() is called.",
+                self::REMEDIATION_B,
+                1034
             ),
 
             // Issue::CATEGORY_COMPATIBLE

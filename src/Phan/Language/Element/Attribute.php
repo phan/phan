@@ -47,20 +47,20 @@ final class Attribute implements Stringable
 
     /** @var FullyQualifiedClassName  */
     private $fqsen;
-    /** @var ?Node a node of kind ast\AST_ARG_LIST */
-    private $args;
+    /** @var ?Node a node of kind ast\AST_ATTRIBUTE */
+    private $node;
     /** @var int the start lineno where the attribute was declared */
     private $lineno;
 
     /**
      * @param FullyQualifiedClassName $fqsen the class name of the attribute being created
-     * @param ?Node $args a node of kind ast\AST_ARG_LIST
+     * @param ?Node $node a node of kind ast\AST_ATTRIBUTE
      * @param int $lineno the start line where the attribute was declared
      */
-    public function __construct(FullyQualifiedClassName $fqsen, ?Node $args, int $lineno)
+    public function __construct(FullyQualifiedClassName $fqsen, ?Node $node, int $lineno)
     {
         $this->fqsen = $fqsen;
-        $this->args = $args;
+        $this->node = $node;
         $this->lineno = $lineno;
     }
 
@@ -80,7 +80,7 @@ final class Attribute implements Stringable
 
         // The name is fully qualified.
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
-        return new self($class_fqsen, $node->children['args'], $node->lineno);
+        return new self($class_fqsen, $node, $node->lineno);
     }
 
     /**
@@ -119,11 +119,19 @@ final class Attribute implements Stringable
 
     /**
      * Returns the optional argument list of this attribute (a node of kind ast\AST_ARG_LIST).
-     * @suppress PhanUnreferencedPublicMethod TODO: this will be used by Phan 4.0.0
      */
     public function getArgs(): ?Node
     {
-        return $this->args;
+        return $this->node->children['args'] ?? null;
+    }
+
+    /**
+     * Returns the optional node defining this attribute (a node of kind ast\AST_ARG_LIST).
+     * This is null for attributes of internal classes.
+     */
+    public function getNode(): ?Node
+    {
+        return $this->node;
     }
 
     /**
@@ -137,8 +145,9 @@ final class Attribute implements Stringable
     public function __toString(): string
     {
         $result = '#[' . $this->fqsen->__toString();
-        if ($this->args) {
-            $result .= ASTReverter::toShortTypeString($this->args);
+        $args = $this->node->children['args'] ?? null;
+        if ($args) {
+            $result .= ASTReverter::toShortTypeString($args);
         }
         $result .= ']';
         return $result;

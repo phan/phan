@@ -215,7 +215,37 @@ class AttributeAnalyzer
                     );
                 }
                 // TODO: Pass this to the method call analyzer?
-                //$method = $class->getMethodByName($code_base, '__construct');
+                $class->addReference($declaration->getContext());
+                if ($class->isDeprecated()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $declaration->getContext(),
+                        Issue::DeprecatedClass,
+                        $attribute->getLineno(),
+                        (string)$class->getFQSEN(),
+                        $class->getContext()->getFile(),
+                        $class->getContext()->getLineNumberStart(),
+                        $class->getDeprecationReason()
+                    );
+                }
+                $constructor = $class->getMethodByName($code_base, '__construct');
+                if (!$constructor->isPublic()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $declaration->getContext(),
+                        Issue::AccessNonPublicAttribute,
+                        $attribute->getLineno(),
+                        (string)$class->getFQSEN(),
+                        $constructor->getRepresentationForIssue(),
+                        $class->getContext()->getFile(),
+                        $class->getContext()->getLineNumberStart()
+                    );
+                }
+                $attribute_node = $attribute->getNode();
+
+                if ($attribute_node) {
+                    ArgumentType::analyze($constructor, $attribute_node, $declaration->getContext(), $code_base);
+                }
             } else {
                 Issue::maybeEmit(
                     $code_base,
