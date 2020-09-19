@@ -5,7 +5,11 @@ Phan NEWS
 
 New features (Analysis):
 + Support analyzing PHP 8.0 attributes when Phan is run with php 8.0 or newer.
-  New issue types: `PhanCompatibleAttributeOnSameLine`, `PhanAttributeNonAttribute`, `PhanAttributeNonClass`, `PhanAttributeNonRepeatable`,
+  Warn if the attribute syntax is likely to be incompatible in php 7.
+  Warn if using attributes incorrectly or with incorrect argument lists.
+
+  New issue types: `PhanCompatibleAttributeGroupOnSameLine`, `PhanCompatibleAttributeGroupOnMultipleLines`,
+  `PhanAttributeNonAttribute`, `PhanAttributeNonClass`, `PhanAttributeNonRepeatable`,
   `PhanUndeclaredClassAttribute`, `PhanAttributeWrongTarget`, `PhanAccessNonPublicAttribute`.
 
 Backwards incompatible changes:
