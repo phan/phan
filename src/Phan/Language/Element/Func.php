@@ -425,7 +425,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $return_type = $this->getUnionType();
         if (!$return_type->isEmpty()) {
-            $stub .= ' : ' . (string)$return_type;
+            $stub .= ': ' . (string)$return_type;
         }
         return $stub;
     }

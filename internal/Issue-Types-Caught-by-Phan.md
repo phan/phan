@@ -425,7 +425,7 @@ In PHP 5.6, return types ({TYPE}) are not supported
 Cannot use arrow functions before php 7.4 in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/007_throw_expression.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/007_throw_expression.php#L34).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/007_throw_expression.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/007_throw_expression.php#L34).
 
 ## PhanCompatibleAttributeGroupOnMultipleLines
 
@@ -512,7 +512,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expe
 Cannot use match expressions before php 8.0 in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/019_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/019_match.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/019_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/019_match.php#L3).
 
 ## PhanCompatibleMixedType
 
@@ -536,7 +536,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expe
 Cannot use named arguments before php 8.0 in argument ({CODE})
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/029_named_variadic.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/029_named_variadic.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/029_named_variadic.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/029_named_variadic.php#L5).
 
 ## PhanCompatibleNegativeStringOffset
 
@@ -568,7 +568,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php70_files/expe
 Cannot use nullsafe operator before php 8.0 in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/028_nullsafe_undef.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/028_nullsafe_undef.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/028_nullsafe_undef.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/028_nullsafe_undef.php#L5).
 
 ## PhanCompatibleObjectTypePHP71
 
@@ -649,7 +649,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php80_files/expe
 Cannot use trailing commas in argument lists before php 7.3 in {CODE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/073_trailing_commas.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/misc/fallback_test/src/073_trailing_commas.php#L4).
 
 ## PhanCompatibleTrailingCommaParameterList
 
@@ -657,7 +657,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_t
 Cannot use trailing commas in parameter or closure use lists before php 8.0 in declaration of {FUNCTIONLIKE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
 
 ## PhanCompatibleTypedProperty
 
@@ -1026,7 +1026,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_te
 This match expression only has the default arm in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/014_match.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/014_match.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/014_match.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/014_match.php#L3).
 
 ## PhanNoopMatchExpression
 
@@ -1034,7 +1034,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/016_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/016_match.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/016_match.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/016_match.php#L3).
 
 ## PhanNoopNew
 
@@ -1087,7 +1087,7 @@ class C {
 Saw a repeated silence operator in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/190_repeated_silence.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/190_repeated_silence.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/190_repeated_silence.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/190_repeated_silence.php#L2).
 
 ## PhanNoopStringLiteral
 
@@ -1147,7 +1147,7 @@ This can also be suppressed on the functionlike's declaration.
 Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/181_provide_unused_param.php#L5).
 
 ## PhanProvidingUnusedParameterOfClosure
 
@@ -1155,7 +1155,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/exp
 Providing an unused optional parameter ${PARAMETER} to {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/181_provide_unused_param.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/181_provide_unused_param.php#L8).
 
 ## PhanReadOnlyPHPDocProperty
 
@@ -1722,7 +1722,7 @@ This category of error comes up when you're messing up your method or function p
 Cannot mix named arguments and argument unpacking in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L15).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/022_named_arg.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/022_named_arg.php#L15).
 
 ## PhanDefinitelyDuplicateNamedArgument
 
@@ -1730,7 +1730,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Cannot repeat the same name for named arguments ({CODE}) and ({CODE})
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L16) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L17).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/022_named_arg.php.expected#L16) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/022_named_arg.php#L17).
 
 ## PhanDuplicateNamedArgument
 
@@ -1738,7 +1738,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L17).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/022_named_arg.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/022_named_arg.php#L17).
 
 ## PhanDuplicateNamedArgumentInternal
 
@@ -1746,7 +1746,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L18).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/022_named_arg.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/022_named_arg.php#L18).
 
 ## PhanMissingNamedArgument
 
@@ -1754,7 +1754,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Missing named argument for {PARAMETER} in call to {METHOD} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/024_named_arg_missing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/024_named_arg_missing.php#L7).
 
 ## PhanMissingNamedArgumentInternal
 
@@ -1762,7 +1762,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Missing named argument for {PARAMETER} in call to {METHOD}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/024_named_arg_missing.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/024_named_arg_missing.php#L13).
 
 ## PhanParamMustBeUserDefinedClassname
 
@@ -1785,7 +1785,7 @@ Note that this it may be appropriate to suppress this under the following circum
 Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/181_provide_unused_param.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/181_provide_unused_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/181_provide_unused_param.php#L2).
 
 ## PhanParamNameIndicatingUnusedInClosure
 
@@ -1793,7 +1793,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/exp
 Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0872_noop_closure.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0872_noop_closure.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/files/expected/0872_noop_closure.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/files/src/0872_noop_closure.php#L4).
 
 ## PhanParamRedefined
 
@@ -1932,7 +1932,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0631_internal_signature_mismatch.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0631_internal_signature_mismatch.php#L15).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/files/expected/0631_internal_signature_mismatch.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/files/src/0631_internal_signature_mismatch.php#L15).
 
 ## PhanParamSignatureRealMismatchHasParamType
 
@@ -2137,7 +2137,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/misc/fallback_te
 Call with {COUNT} arg(s) to {FUNCTIONLIKE} which has phpdoc indicating it requires {COUNT} arg(s) (${PARAMETER} is mandatory) defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/182_provide_mandatory_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/182_provide_mandatory_param.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/182_provide_mandatory_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/182_provide_mandatory_param.php#L10).
 
 ## PhanParamTooFewInternal
 
@@ -2220,7 +2220,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Saw positional argument ({CODE}) after a named argument {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/022_named_arg.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/022_named_arg.php#L12).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/022_named_arg.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/022_named_arg.php#L12).
 
 ## PhanSuspiciousNamedArgumentForVariadic
 
@@ -2228,7 +2228,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Passing named argument to a variadic parameter ${PARAMETER} of the same name in a call to {METHOD}. This will set the array offset "{PARAMETER}" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/029_named_variadic.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/029_named_variadic.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/029_named_variadic.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/029_named_variadic.php#L5).
 
 ## PhanUndeclaredNamedArgument
 
@@ -2236,7 +2236,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/023_named_arg.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/023_named_arg.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/023_named_arg.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/023_named_arg.php#L6).
 
 ## PhanUndeclaredNamedArgumentInternal
 
@@ -2244,7 +2244,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/exp
 Saw a call with undeclared named argument ({CODE}) to {FUNCTIONLIKE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/024_named_arg_missing.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/024_named_arg_missing.php#L12).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/024_named_arg_missing.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/024_named_arg_missing.php#L12).
 
 # RedefineError
 
@@ -2577,7 +2577,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Declaration of {PROPERTY} of real type {TYPE} is incompatible with inherited property {PROPERTY} of real type {TYPE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php74_files/expected/027_typed_property_mismatch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php74_files/src/027_typed_property_mismatch.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php74_files/expected/027_typed_property_mismatch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php74_files/src/027_typed_property_mismatch.php#L6).
 
 ## PhanInfiniteLoop
 
@@ -2735,7 +2735,7 @@ This is only checked for inside of function bodies.
 The loop condition {CODE} does not seem to change within the loop and nothing seems to exit the loop
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/119_increment_decrement_unused.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/119_increment_decrement_unused.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/119_increment_decrement_unused.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/119_increment_decrement_unused.php#L13).
 
 ## PhanPossiblyInfiniteRecursionSameParams
 
@@ -3236,7 +3236,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int|string)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
 
 ## PhanTypeInvalidLeftOperandOfIntegerOp
 
@@ -3300,7 +3300,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int|string)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/138_suspicious_object_comparison.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/138_suspicious_object_comparison.php#L15).
 
 ## PhanTypeInvalidRightOperandOfIntegerOp
 
@@ -3501,7 +3501,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS} defined at {FILE}:{LINE} (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0023_doc_comment.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0023_doc_comment.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/rasmus_files/expected/0023_doc_comment.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/rasmus_files/src/0023_doc_comment.php#L10).
 
 ## PhanTypeMismatchArgumentPropertyReference
 
@@ -3697,7 +3697,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/php74_files/expe
 Assigning {CODE} of type {TYPE}{DETAILS} to property but {PROPERTY} is {TYPE}{DETAILS} (the inferred real assigned type has nothing in common with the declared phpdoc property type)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0236_assign_ref_analyzed.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0236_assign_ref_analyzed.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/files/expected/0236_assign_ref_analyzed.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/files/src/0236_assign_ref_analyzed.php#L10).
 
 ## PhanTypeMismatchPropertyReal
 
@@ -3741,7 +3741,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Returning {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} is declared to return {TYPE}{DETAILS} (the inferred real return type has nothing in common with the declared phpdoc return type)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/rasmus_files/expected/0027_void.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/rasmus_files/src/0027_void.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/rasmus_files/expected/0027_void.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/rasmus_files/src/0027_void.php#L6).
 
 ## PhanTypeMismatchReturnReal
 
@@ -3947,7 +3947,7 @@ $a = (new A)->v();
 Suspicious use of void return value {CODE} where a value is expected
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0888_void_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0888_void_expression.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/files/expected/0888_void_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/files/src/0888_void_expression.php#L5).
 
 # UndefError
 
@@ -4426,7 +4426,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Class constant {CONST} has undeclared class type {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/189_class_constant_badtype.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/189_class_constant_badtype.php#L4).
 
 ## PhanUndeclaredTypeParameter
 
@@ -4665,7 +4665,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Impossible phpdoc declaration that a class constant {CONST} has a type {TYPE} containing objects. This type is ignored during analysis.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/189_class_constant_badtype.php#L4).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/plugin_test/src/189_class_constant_badtype.php#L4).
 
 ## PhanCommentOverrideOnNonOverrideConstant
 
@@ -4721,7 +4721,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Saw @var annotation for ${VARIABLE} but Phan expects the @param annotation to document the parameter with that name for {FUNCTION}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0416_method_hydration_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0416_method_hydration_test.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/files/expected/0416_method_hydration_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/files/src/0416_method_hydration_test.php#L13).
 
 ## PhanDebugAnnotation
 
