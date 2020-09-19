@@ -898,6 +898,10 @@ EOT;
      */
     public function hoverInOtherFileProvider(): array
     {
+        // TODO: Extract the parameter defaults from php 8.0's stub files
+        // so they can be used in error messages for php 7?
+        $parse_code_default = \PHP_VERSION_ID >= 80000 ? "'string code'" : 'unknown';
+        $error_default_code = \PHP_VERSION_ID >= 80000 ? "0" : 'unknown';
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
 <?php // line 0
@@ -1098,10 +1102,10 @@ EOT
             [
                 $example_file_contents,
                 new Position(23, 14),  // ast\parse_code
-                <<<'EOT'
+                <<<EOT
 ```php
 namespace ast;
-function parse_code(string $code, int $version, string $filename = unknown): \ast\Node
+function parse_code(string \$code, int \$version, string \$filename = $parse_code_default): \ast\Node
 ```
 
 Parses code string and returns AST root node.
@@ -1132,9 +1136,9 @@ EOT
             [
                 $example_file_contents,
                 new Position(28, 45),  // AssertionError
-                <<<'EOT'
+                <<<"EOT"
 ```php
-public function __construct(string $message = unknown, int $code = unknown, ?\Error|?\Throwable $previous = null): void
+public function __construct(string \$message = unknown, int \$code = $error_default_code, ?\Error|?\Throwable \$previous = null): void
 ```
 
 Construct an instance of `\AssertionError`.
