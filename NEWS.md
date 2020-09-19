@@ -3,12 +3,14 @@ Phan NEWS
 ??? ?? 202?, Phan 4.0.0 (dev)
 -----------------------
 
-Backwards incompatible changes:
-+ Switch from AST version 70 to AST version 80.
-  `php-ast` should be upgraded to version 1.0.10-dev or newer.
+New features (Analysis):
 + Support analyzing PHP 8.0 attributes when Phan is run with php 8.0 or newer.
   New issue types: `PhanCompatibleAttributeOnSameLine`, `PhanAttributeNonAttribute`, `PhanAttributeNonClass`, `PhanAttributeNonRepeatable`,
   `PhanUndeclaredClassAttribute`, `PhanAttributeWrongTarget`, `PhanAccessNonPublicAttribute`.
+
+Backwards incompatible changes:
++ Switch from AST version 70 to AST version 80.
+  `php-ast` should be upgraded to version 1.0.10-dev or newer.
 + Drop the no-op `--polyfill-parse-all-doc-comments` flag.
 
 Miscellaneous:
