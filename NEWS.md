@@ -20,6 +20,9 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
+??? ?? 2020, Phan 3.2.3 (dev)
+-----------------------
+
 Sep 19 2020, Phan 3.2.2
 -----------------------
 
