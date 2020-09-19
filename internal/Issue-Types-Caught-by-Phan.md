@@ -427,10 +427,21 @@ Cannot use arrow functions before php 7.4 in {CODE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/007_throw_expression.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/007_throw_expression.php#L34).
 
-## PhanCompatibleAttributeOnSameLine
+## PhanCompatibleAttributeGroupOnMultipleLines
+
+NOTE: This is done on a best effort basis - The native php-ast parser does not provide the actual end line numbers for attribute groups.
 
 ```
-Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute {CODE} of {CODE}
+Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/032_attributes_repeatable.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/032_attributes_repeatable.php#L11).
+
+## PhanCompatibleAttributeGroupOnSameLine
+
+
+```
+Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/033_attribute_line_compat.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/033_attribute_line_compat.php#L5).

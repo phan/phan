@@ -51,17 +51,21 @@ final class Attribute implements Stringable
     private $node;
     /** @var int the start lineno where the attribute was declared */
     private $lineno;
+    /** @var ?Node $group */
+    private $group;
 
     /**
      * @param FullyQualifiedClassName $fqsen the class name of the attribute being created
-     * @param ?Node $node a node of kind ast\AST_ATTRIBUTE
+     * @param ?Node $node a node of kind ast\AST_ATTRIBUTE (unless on an internal class)
      * @param int $lineno the start line where the attribute was declared
+     * @param ?Node $group the group containing the attribute
      */
-    public function __construct(FullyQualifiedClassName $fqsen, ?Node $node, int $lineno)
+    public function __construct(FullyQualifiedClassName $fqsen, ?Node $node, int $lineno, ?Node $group)
     {
         $this->fqsen = $fqsen;
         $this->node = $node;
         $this->lineno = $lineno;
+        $this->group = $group;
     }
 
     /**
@@ -71,7 +75,8 @@ final class Attribute implements Stringable
     public static function fromNodeForAttribute(
         CodeBase $code_base,
         Context $context,
-        Node $node
+        Node $node,
+        Node $group
     ): Attribute {
         if ($node->kind !== ast\AST_ATTRIBUTE) {
             throw new AssertionError("Expected AST_ATTRIBUTE but got " . Debug::nodeName($node));
@@ -80,7 +85,7 @@ final class Attribute implements Stringable
 
         // The name is fully qualified.
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
-        return new self($class_fqsen, $node, $node->lineno);
+        return new self($class_fqsen, $node, $node->lineno, $group);
     }
 
     /**
@@ -100,10 +105,12 @@ final class Attribute implements Stringable
         }
         $attributes = [];
         foreach ($node->children as $group) {
-            // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+            if (!$group instanceof Node) {
+                throw new AssertionError("Expected ast\AST_ATTRIBUTE_GROUP but got non-node");
+            }
             foreach ($group->children as $attribute_node) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-                $attributes[] = self::fromNodeForAttribute($code_base, $context, $attribute_node);
+                $attributes[] = self::fromNodeForAttribute($code_base, $context, $attribute_node, $group);
             }
         }
         return $attributes;
@@ -126,7 +133,15 @@ final class Attribute implements Stringable
     }
 
     /**
-     * Returns the optional node defining this attribute (a node of kind ast\AST_ARG_LIST).
+     * Returns the optional #[] group containing this attribute (a node of kind ast\AST_ATTRIBUTE_GROUP).
+     */
+    public function getGroup(): ?Node
+    {
+        return $this->group;
+    }
+
+    /**
+     * Returns the optional node defining this attribute (a node of kind ast\AST_ATTRIBUTE).
      * This is null for attributes of internal classes.
      */
     public function getNode(): ?Node
@@ -137,19 +152,51 @@ final class Attribute implements Stringable
     /**
      * Returns the starting line number
      */
-    public function getLineno(): int
+    public function getLineNumberStart(): int
     {
         return $this->lineno;
     }
 
+    /**
+     * Returns the starting line number of the group containing this attribute
+     */
+    public function getGroupLineNumberStart(): int
+    {
+        return $this->group->lineno ?? $this->lineno;
+    }
+
+    /**
+     * Returns the best guess of the ending line number of the group containing this attribute
+     */
+    public function getGroupLineNumberEnd(): int
+    {
+        return $this->group ? self::guessEndLineno($this->group) : $this->lineno;
+    }
+
+    /**
+     * Guess the ending line number of a node
+     */
+    private static function guessEndLineno(Node $node): int
+    {
+        $line = $node->lineno;
+        foreach ($node->children as $child_node) {
+            if ($child_node instanceof Node) {
+                $new_line = self::guessEndLineno($child_node);
+                if ($new_line > $line) {
+                    $line = $new_line;
+                }
+            }
+        }
+        return $line;
+    }
+
     public function __toString(): string
     {
-        $result = '#[' . $this->fqsen->__toString();
+        $result = $this->fqsen->__toString();
         $args = $this->node->children['args'] ?? null;
         if ($args) {
             $result .= ASTReverter::toShortTypeString($args);
         }
-        $result .= ']';
         return $result;
     }
 }

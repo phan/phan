@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use Phan\AST\ASTReverter;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Element\AddressableElementInterface;
@@ -116,11 +117,11 @@ class AttributeAnalyzer
                     $code_base,
                     $declaration->getContext(),
                     Issue::AttributeNonRepeatable,
-                    $attribute->getLineno(),
+                    $attribute->getLineNumberStart(),
                     $fqsen,
                     $class->getContext()->getFile(),
                     $class->getContext()->getLineNumberStart(),
-                    $previous_attribute->getLineno()
+                    $previous_attribute->getLineNumberStart()
                 );
             } else {
                 $attribute_set[$fqsen_id] = $attribute;
@@ -184,6 +185,7 @@ class AttributeAnalyzer
         object $element,
         Attribute $attribute
     ): void {
+        $attribute_lineno = $attribute->getLineNumberStart();
         $fqsen = $attribute->getFQSEN();
         if ($code_base->hasClassWithFQSEN($fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
@@ -193,7 +195,7 @@ class AttributeAnalyzer
                         $code_base,
                         $declaration->getContext(),
                         Issue::AttributeNonAttribute,
-                        $attribute->getLineno(),
+                        $attribute_lineno,
                         $fqsen,
                         '#[\Attribute(...)]'
                     );
@@ -205,7 +207,7 @@ class AttributeAnalyzer
                         $code_base,
                         $declaration->getContext(),
                         Issue::AttributeWrongTarget,
-                        $attribute->getLineno(),
+                        $attribute_lineno,
                         $fqsen,
                         $class->getContext()->getFile(),
                         $class->getContext()->getLineNumberStart(),
@@ -221,7 +223,7 @@ class AttributeAnalyzer
                         $code_base,
                         $declaration->getContext(),
                         Issue::DeprecatedClass,
-                        $attribute->getLineno(),
+                        $attribute_lineno,
                         (string)$class->getFQSEN(),
                         $class->getContext()->getFile(),
                         $class->getContext()->getLineNumberStart(),
@@ -234,7 +236,7 @@ class AttributeAnalyzer
                         $code_base,
                         $declaration->getContext(),
                         Issue::AccessNonPublicAttribute,
-                        $attribute->getLineno(),
+                        $attribute_lineno,
                         (string)$class->getFQSEN(),
                         $constructor->getRepresentationForIssue(),
                         $class->getContext()->getFile(),
@@ -251,7 +253,7 @@ class AttributeAnalyzer
                     $code_base,
                     $declaration->getContext(),
                     Issue::AttributeNonClass,
-                    $attribute->getLineno(),
+                    $attribute_lineno,
                     $fqsen,
                     $class->isTrait() ? 'trait' : ($class->isInterface() ? 'interface' : 'abstract class')
                 );
@@ -261,19 +263,32 @@ class AttributeAnalyzer
                 $code_base,
                 $declaration->getContext(),
                 Issue::UndeclaredClassAttribute,
-                $attribute->getLineno(),
+                $attribute_lineno,
                 $fqsen
             );
         }
-        if ($attribute->getLineno() === $element->getFileRef()->getLineNumberStart()) {
-            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+            $attribute_group_start_lineno = $attribute->getGroupLineNumberStart();
+            $attribute_group_end_lineno = $attribute->getGroupLineNumberEnd();
+            if ($attribute_group_start_lineno === $element->getFileRef()->getLineNumberStart()) {
                 Issue::maybeEmit(
                     $code_base,
                     $declaration->getContext(),
-                    Issue::CompatibleAttributeOnSameLine,
-                    $attribute->getLineno(),
-                    $attribute,
+                    Issue::CompatibleAttributeGroupOnSameLine,
+                    $attribute_group_end_lineno,
+                    ASTReverter::toShortString($attribute->getGroup()),
                     $element
+                );
+            }
+            if ($attribute_group_end_lineno > $attribute_group_start_lineno) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $declaration->getContext(),
+                    Issue::CompatibleAttributeGroupOnMultipleLines,
+                    $attribute_group_start_lineno,
+                    ASTReverter::toShortString($attribute->getGroup()),
+                    $element,
+                    $attribute_group_end_lineno
                 );
             }
         }

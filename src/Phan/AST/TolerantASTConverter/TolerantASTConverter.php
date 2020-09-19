@@ -414,12 +414,16 @@ class TolerantASTConverter
         if (!$children) {
             return null;
         }
-        return new ast\Node(
+        $result = new ast\Node(
             ast\AST_ATTRIBUTE_GROUP,
             0,
             $children,
             self::getStartLine($group)
         );
+        // Not part of php-ast, but useful as an indicator that the attribute group syntax is probably incompatible with php 7 and older
+        // if it spans multiple lines.
+        $result->endLineno = static::getEndLine($group);
+        return $result;
     }
 
     private static function phpParserAttributeToAstAttribute(PhpParser\Node\Attribute $attribute): ast\Node

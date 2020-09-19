@@ -1,7 +1,9 @@
 <?php
 
 #[Attribute(Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
-#[Attribute(Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
+#[
+    Attribute(Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE),
+]
 class Route32 {
     public function __construct(public string $path) {}
 }

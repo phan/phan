@@ -576,7 +576,8 @@ class Issue
     public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
     public const CompatibleTrailingCommaArgumentList = 'PhanCompatibleTrailingCommaArgumentList';
     public const CompatibleTrailingCommaParameterList = 'PhanCompatibleTrailingCommaParameterList';
-    public const CompatibleAttributeOnSameLine      = 'PhanCompatibleAttributeOnSameLine';
+    public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
+    public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4958,12 +4959,20 @@ class Issue
                 3037
             ),
             new Issue(
-                self::CompatibleAttributeOnSameLine,
+                self::CompatibleAttributeGroupOnSameLine,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute {CODE} of {CODE}",
+                "Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}",
                 self::REMEDIATION_B,
                 3038
+            ),
+            new Issue(
+                self::CompatibleAttributeGroupOnMultipleLines,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable",
+                self::REMEDIATION_B,
+                3039
             ),
 
             // Issue::CATEGORY_GENERIC

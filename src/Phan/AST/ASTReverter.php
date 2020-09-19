@@ -11,6 +11,7 @@ use Closure;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\TolerantASTConverter\Shim;
 
+use function array_map;
 use function implode;
 use function is_string;
 use function sprintf;
@@ -137,7 +138,7 @@ class ASTReverter
              * @suppress PhanPartialTypeMismatchArgument
              */
             ast\AST_TYPE_UNION => static function (Node $node): string {
-                return implode('|', \array_map('self::toShortTypeString', $node->children));
+                return implode('|', array_map('self::toShortTypeString', $node->children));
             },
             /**
              * @suppress PhanTypeMismatchArgumentNullable
@@ -158,13 +159,27 @@ class ASTReverter
                 return self::formatIncDec('--%s', $node->children['var']);
             },
             ast\AST_ARG_LIST => static function (Node $node): string {
-                return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
+                return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
+            },
+            ast\AST_ATTRIBUTE_LIST => static function (Node $node): string {
+                return implode(' ', array_map('self::toShortString', $node->children));
+            },
+            ast\AST_ATTRIBUTE_GROUP => static function (Node $node): string {
+                return implode(', ', array_map('self::toShortString', $node->children));
+            },
+            ast\AST_ATTRIBUTE => static function (Node $node): string {
+                $result = self::toShortString($node->children['class']);
+                $args = $node->children['args'];
+                if ($args) {
+                    $result .= self::toShortString($args);
+                }
+                return $result;
             },
             ast\AST_NAMED_ARG => static function (Node $node): string {
                 return $node->children['name'] . ': ' . self::toShortString($node->children['expr']);
             },
             ast\AST_PARAM_LIST => static function (Node $node): string {
-                return '(' . implode(', ', \array_map('self::toShortString', $node->children)) . ')';
+                return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
             },
             ast\AST_PARAM => static function (Node $node): string {
                 $str = '$' . $node->children['name'];
@@ -183,7 +198,7 @@ class ASTReverter
                 return $str;
             },
             ast\AST_EXPR_LIST => static function (Node $node): string {
-                return implode(', ', \array_map('self::toShortString', $node->children));
+                return implode(', ', array_map('self::toShortString', $node->children));
             },
             ast\AST_CLASS_CONST => static function (Node $node): string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];
@@ -230,7 +245,7 @@ class ASTReverter
                 }
             },
             ast\AST_NAME_LIST => static function (Node $node): string {
-                return implode('|', \array_map('self::toShortString', $node->children));
+                return implode('|', array_map('self::toShortString', $node->children));
             },
             ast\AST_ARRAY => static function (Node $node): string {
                 $parts = [];
@@ -403,7 +418,7 @@ class ASTReverter
                 return sprintf('match (%s) {%s}', ASTReverter::toShortString($cond), $stmts->children ? ' ' . ASTReverter::toShortString($stmts) . ' ' : '');
             },
             ast\AST_MATCH_ARM_LIST => static function (Node $node): string {
-                return implode(', ', \array_map(self::class . '::toShortString', $node->children));
+                return implode(', ', array_map(self::class . '::toShortString', $node->children));
             },
             ast\AST_MATCH_ARM => static function (Node $node): string {
                 ['cond' => $cond, 'expr' => $expr] = $node->children;
