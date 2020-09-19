@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.9';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.10';
 
 /**
  * Dump instructions on how to install php-ast
@@ -105,10 +105,10 @@ EOT
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     $ast_version = (string)phpversion('ast');
-    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.9') < 0) {
+    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.10') < 0) {
         fprintf(
             STDERR,
-            "ERROR: Phan 3.x requires php-ast 1.0.9+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "ERROR: Phan 3.x requires php-ast 1.0.10+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
@@ -142,6 +142,10 @@ if (extension_loaded('ast')) {
         phan_output_ast_installation_instructions();
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
+    }
+    // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
+    if (PHP_VERSION_ID >= 80000 && strpos(PHP_VERSION, 'dev') === false && version_compare(PHP_VERSION, '8.0.0beta4') < 0) {
+        fwrite(STDERR, "WARNING: Phan may not work properly in PHP 8 versions before PHP 8.0.0beta4. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
     unset($ast_version);
 }
