@@ -885,7 +885,8 @@ class Method extends ClassElement implements FunctionInterface
             $return_type = $this->real_return_type;
         }
         if ($return_type && !$return_type->isEmpty()) {
-            $string .= ' : ' . (string)$return_type;
+            // Use PSR-12 style with no space before `:`
+            $string .= ': ' . (string)$return_type;
         }
 
         return $string;
