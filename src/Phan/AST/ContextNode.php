@@ -1776,7 +1776,7 @@ class ContextNode
                 );
             }
         } catch (FQSENException $e) {
-            throw new AssertionError("Impossible FQSENException: " . $e->getMessage(), $e);
+            throw new AssertionError("Impossible FQSENException: " . $e->getMessage());
         }
         // This is either a fully qualified constant,
         // or a relative constant for which nothing was found in the namespace
