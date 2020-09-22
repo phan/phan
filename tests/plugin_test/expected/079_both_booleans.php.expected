@@ -1,4 +1,2 @@
 src/079_both_booleans.php:5 PhanNoopBinaryOperator Unused result of a binary '&&' operator
-src/079_both_booleans.php:5 PhanPluginNonBoolInLogicalArith Non bool value of type false|non-empty-mixed in logical arithmetic
 src/079_both_booleans.php:6 PhanNoopBinaryOperator Unused result of a binary '||' operator
-src/079_both_booleans.php:6 PhanPluginNonBoolInLogicalArith Non bool value of type false|non-empty-mixed in logical arithmetic

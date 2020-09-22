@@ -11,10 +11,12 @@
 %s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $value of type ?array{} but \spl_object_hash() takes object
 %s:22 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($condition && (throw new Exception()))
 %s:22 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type false(real=false)
+%s:24 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($condition || (throw new Exception()))
 %s:24 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type non-empty-mixed(real=non-empty-mixed)
 %s:24 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
 %s:26 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($condition && (throw new Exception()))
 %s:26 PhanRedundantCondition Redundant attempt to cast $condition of type non-empty-mixed to truthy
+%s:27 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($condition || (throw new Exception()))
 %s:27 PhanImpossibleCondition Impossible attempt to cast $condition of type ?''|?'0'|?0|?0.0|?array{}|?false to truthy
 %s:29 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in (throw (throw new Exception()))
 %s:31 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in (throw new Exception('loop'))
