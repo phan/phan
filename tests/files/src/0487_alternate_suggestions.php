@@ -39,7 +39,7 @@ class A487 {
      */
     public function test_throw_suggestions($x) {
         if (rand() % 2) {
-            throw $_GLOBALS['_exception'];
+            throw $_GLOBALS['_exception'];  // wrong, should be $GLOBALS
         }
         return $x;
     }

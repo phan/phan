@@ -1,0 +1,3 @@
+%s:7 PhanTypeInvalidThrowStatementNonThrowable \NS905\test_throws() can throw new stdClass() of type \stdClass here which can't cast to \Throwable
+%s:10 PhanTypeInvalidThrowStatementNonThrowable (top level statement) can throw 'a party' of type 'a party' here which can't cast to \Throwable
+%s:12 PhanTypeInvalidThrowStatementNonThrowable (top level statement) can throw new stdClass() of type \stdClass here which can't cast to \Throwable

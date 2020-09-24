@@ -98,19 +98,25 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitThrow(Node $node): void
     {
-        $context = $this->context;
-        if (!$context->isInFunctionLikeScope()) {
-            return;
-        }
         $code_base = $this->code_base;
-
+        $context = $this->context;
         $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
         $union_type = $this->withoutCaughtUnionTypes($union_type, true);
         if ($union_type->isEmpty()) {
             // Give up if we don't know
             return;
         }
+        if (!$context->isInFunctionLikeScope()) {
+            $this->warnAboutPossiblyThrownTypeIgnoringFunctionThrowsComment($node, $union_type, null);
+            return;
+        }
+
         $analyzed_function = $context->getFunctionLikeInScope($code_base);
+        if (!Config::getValue('warn_about_undocumented_throw_statements')) {
+            $this->warnAboutPossiblyThrownTypeIgnoringFunctionThrowsComment($node, $union_type, $analyzed_function);
+            return;
+        }
+
         if (Config::get_closest_target_php_version_id() < 70400) {
             if ($analyzed_function instanceof Method && \strcasecmp('__toString', $analyzed_function->getName()) === 0) {
                 $this->emitIssue(
@@ -257,6 +263,30 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                     );
                 }
             }
+        }
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_THROW
+     */
+    protected function warnAboutPossiblyThrownTypeIgnoringFunctionThrowsComment(
+        Node $node,
+        UnionType $union_type,
+        ?FunctionInterface $analyzed_function
+    ): void {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        $throwable = UnionType::fromFullyQualifiedRealString('\Throwable');
+        if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, $throwable)) {
+            $this->emitIssue(
+                Issue::TypeInvalidThrowStatementNonThrowable,
+                $node->lineno,
+                $analyzed_function ? $analyzed_function->getRepresentationForIssue() : '(top level statement)',
+                ASTReverter::toShortString($node->children['expr']),
+                (string)$union_type,
+                '\Throwable'
+            );
         }
     }
 
