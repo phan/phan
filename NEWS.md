@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2020, Phan 3.2.3 (dev)
 -----------------------
 
+New features (CLI, Config):
++ Add `light_high_contrast` support for `--color-scheme`. (#4203)
+  This may be useful in terminals or CI web pages that use white backgrounds.
+
 Bug fixes:
 + Properly analyze the right hand side for `$cond || throw ...;` (e.g. emit `PhanCompatibleThrowException`) (#4199)
 + Don't infer implications of `left || right` on the right hand expression when the right hand side has no side effects. (#4199)
