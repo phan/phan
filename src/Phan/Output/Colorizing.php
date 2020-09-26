@@ -226,6 +226,7 @@ class Colorizing
         'eclipse_dark' => \Phan\Output\ColorScheme\EclipseDark::class,
         'light' => \Phan\Output\ColorScheme\Light::class,
         'vim' => \Phan\Output\ColorScheme\Vim::class,
+        'light_high_contrast' => \Phan\Output\ColorScheme\LightHighContrast::class,
     ];
 
     /**
