@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\CodeBase;
 use Phan\Config;
@@ -17,6 +18,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
+use Phan\Parse\ParseVisitor;
 use Phan\Issue;
 
 /**
@@ -246,6 +248,17 @@ class AttributeAnalyzer
                 $attribute_node = $attribute->getNode();
 
                 if ($attribute_node) {
+
+                    foreach ($attribute_node->children['args']->children ?? [] as $arg_node) {
+                        if ($arg_node instanceof Node && !ParseVisitor::isConstExpr($arg_node)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $declaration->getContext(),
+                                Issue::InvalidConstantExpression,
+                                $arg_node->lineno
+                            );
+                        }
+                    }
                     ArgumentType::analyze($constructor, $attribute_node, $declaration->getContext(), $code_base);
                 }
             } else {
