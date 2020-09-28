@@ -1,2 +1,2 @@
 <?php
-echo count("example " . );
+echo array_values("example " . );

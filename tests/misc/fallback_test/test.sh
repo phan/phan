@@ -37,6 +37,7 @@ sed -i \
     -e "s@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '??=' (T_COALESCE_EQUAL) (at column 3)@069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)@" \
     -e "/069_invalid_coalesce_assign.php:2 PhanNoopBinaryOperator/d" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
+    -e "/077_invalid_attribute.php:3 PhanSyntaxError/d" \
     -e "s@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting function (T_FUNCTION) or const (T_CONST)@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE)@" \
     $ACTUAL_PATH
 

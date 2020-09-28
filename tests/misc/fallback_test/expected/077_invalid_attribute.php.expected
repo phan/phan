@@ -1,0 +1,1 @@
+src/077_invalid_attribute.php:3 PhanUndeclaredFunction Call to undeclared function \missing_method()

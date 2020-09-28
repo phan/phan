@@ -1,2 +1,3 @@
-src/021_binary_op.php:2 PhanSyntaxError syntax error, unexpected token ")" (at column 25)
-src/021_binary_op.php:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($value) is 'example ' of type 'example ' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+src/021_binary_op.php:2 PhanSyntaxError syntax error, unexpected token ")" (at column 32)
+src/021_binary_op.php:2 PhanTypeConversionFromArray array to string conversion
+src/021_binary_op.php:2 PhanTypeMismatchArgumentInternalReal Argument 1 ($array) is 'example ' of type 'example ' but \array_values() takes array
