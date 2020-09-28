@@ -1264,6 +1264,11 @@ class TolerantASTConverter
                 // This node type is generated for something that isn't a function/constant/property. e.g. "public example();"
                 return null;
             },
+            /** @return null - A stub that will be removed by the caller. */
+            'Microsoft\PhpParser\Node\MissingDeclaration' => static function (PhpParser\Node\MissingDeclaration $unused_n, int $unused_start_line) {
+                // This node type is generated for something that starts with an attribute but isn't a declaration.
+                return null;
+            },
             /**
              * @throws InvalidNodeException
              */
