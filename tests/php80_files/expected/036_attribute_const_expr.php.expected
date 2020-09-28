@@ -1,0 +1,3 @@
+%s:2 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:7 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: Attribute::TARGET_FUNCTION)
+%s:7 PhanInvalidConstantExpression Constant expression contains invalid operations
