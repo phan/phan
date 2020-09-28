@@ -2869,7 +2869,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         try {
-            $class_node = $node->children['class'] ?? $node->children['expr'];
+            $static_class_node = $node->children['class'] ?? null;
+            $class_node = $static_class_node ?? $node->children['expr'];
             if (!($class_node instanceof Node)) {
                 // E.g. `'string_literal'->method()`
                 // Other places will also emit NonClassMethodCall for the same node
@@ -2930,8 +2931,16 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
 
-                    // Resolve any references to \static or \static[]
-                    $union_type = $union_type->withStaticResolvedInContext($class->getInternalContext());
+                    // Resolve any references to `static` or `static[]`
+                    if ($this->context->isInClassScope() &&
+                        $static_class_node instanceof Node &&
+                        $static_class_node->kind === ast\AST_NAME &&
+                        \strcasecmp($static_class_node->children['name'], 'parent') === 0) {
+                        // If parent::foo() returns `static`, then use the current class instead of the parent class
+                        $union_type = $union_type->withStaticResolvedInContext($this->context);
+                    } else {
+                        $union_type = $union_type->withStaticResolvedInContext($class->getInternalContext());
+                    }
 
                     if ($combined_union_type) {
                         '@phan-var UnionType $combined_union_type';
@@ -3154,7 +3163,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         // Reference to a parent class
-        if ($class_name === 'parent') {
+        if (\strcasecmp($class_name, 'parent') === 0) {
             $class = $this->context->getClassInScope(
                 $this->code_base
             );
