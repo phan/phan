@@ -1,1 +1,1 @@
-%s:22 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($value) is $link of type non-empty-string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:22 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $link of type non-empty-string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
