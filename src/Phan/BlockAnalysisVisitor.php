@@ -2645,12 +2645,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
-            $context = (new ContextMergeVisitor(
-                $context,
-                [$context, $context_with_false_left_condition, $right_context]
-            ))->combineChildContextList();
             if ($right_node->kind === ast\AST_THROW) {
                 return $this->postOrderAnalyze($context_with_false_left_condition, $node);
+            }
+            if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
+                // If the expression on the right side does have side effects (e.g. `$cond || $x = foo()`), then we need to merge all possibilities.
+                //
+                // However, if it doesn't have side effects (e.g. `$a && $b` in `var_export($a || $b)`, then adding the inferences is counterproductive)
+                $context = (new ContextMergeVisitor(
+                    $context,
+                    [$context, $context_with_false_left_condition, $right_context]
+                ))->combineChildContextList();
             }
         }
 
@@ -2708,10 +2713,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
             if ($right_node->kind === ast\AST_THROW) {
                 return $this->postOrderAnalyze($context_with_true_left_condition, $node);
             }
-            $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
                 // If the expression on the right side does have side effects (e.g. `$cond || $x = foo()`), then we need to merge all possibilities.
                 //

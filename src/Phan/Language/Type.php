@@ -2174,8 +2174,9 @@ class Type implements Stringable
             // If at least one class is final (and the other is a trait/interface), we already confirmed there's nothing in common.
             return false;
         }
-        if ($this_class->isClass() && $other_class->isClass()) {
-            // So now we have two classes.
+        if (($this_class->isClass() || $this->isThrowableInterface()) &&
+            ($other_class->isClass() || $other->isThrowableInterface())) {
+            // So now we have two classes or interfaces that are only implemented by a sealed set of classes.
             // We already know that their expanded types don't overlap from checking asExpandedTypes, so there's no possible common subtype.
             return false;
         }
@@ -4037,4 +4038,12 @@ class Type implements Stringable
             yield from $template_union_type->getTypesRecursively();
         }
     }
+
+    /**
+     * Returns true if this is referring to the throwable interface exactly
+     */
+    public function isThrowableInterface(): bool {
+        return $this->name === 'Throwable' && $this->namespace === '\\';
+    }
+
 }

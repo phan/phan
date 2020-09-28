@@ -978,9 +978,7 @@ final class ConfigPluginSet extends PluginV3 implements
         if (Config::getValue('enable_include_path_checks')) {
             $plugin_set[] = new RequireExistsPlugin();
         }
-        if (Config::getValue('warn_about_undocumented_throw_statements')) {
-            $plugin_set[] = new ThrowAnalyzerPlugin();
-        }
+        $plugin_set[] = new ThrowAnalyzerPlugin();
         if (Config::getValue('unused_variable_detection') || Config::getValue('dead_code_detection')) {
             $plugin_set[] = new VariableTrackerPlugin();
         }

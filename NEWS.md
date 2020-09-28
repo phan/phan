@@ -23,6 +23,19 @@ Miscellaneous:
 ??? ?? 2020, Phan 3.2.3 (dev)
 -----------------------
 
+New features (CLI, Config):
++ Add `light_high_contrast` support for `--color-scheme`. (#4203)
+  This may be useful in terminals or CI web pages that use white backgrounds.
+
+New features (Analysis):
++ Infer that `parent::someMethodReturningStaticType()` is a subtype of the current class, not just the parent class. (#4202)
+
+Bug fixes:
++ Properly analyze the right hand side for `$cond || throw ...;` (e.g. emit `PhanCompatibleThrowException`) (#4199)
++ Don't infer implications of `left || right` on the right hand expression when the right hand side has no side effects. (#4199)
++ Emit `PhanTypeInvalidThrowStatementNonThrowable` for thrown expressions that definitely aren't `\Throwable`
+  even when `warn_about_undocumented_throw_statements` is disabled or the throw expression is in the top level scope. (#4200)
+
 Sep 19 2020, Phan 3.2.2
 -----------------------
 

@@ -1,0 +1,2 @@
+%s:14 PhanTypeInstantiateAbstract Instantiation of abstract class \NS906\AbstractDto
+%s:34 PhanTypeMismatchPropertyProbablyReal Assigning 123 of type 123 to property but \NS906\Dto->baz is array (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

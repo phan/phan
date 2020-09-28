@@ -476,6 +476,7 @@ class MarkupDescription
             if ($line === '') {
                 continue;
             }
+            $min_whitespace = \min($min_whitespace, \strlen($line));
             $min_whitespace = \min($min_whitespace, \strspn($line, ' ', 0, $min_whitespace));
             if ($min_whitespace === 0) {
                 return $lines;
