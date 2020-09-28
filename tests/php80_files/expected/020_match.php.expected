@@ -1,7 +1,7 @@
 %s:6 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (true) { default => strlen($x), is_string($x) => count($x) }
 %s:6 PhanTypeMismatchReturnReal Returning match (true) { default => strlen($x), is_string($x) => count($x) } of type int but test20() is declared to return string
 %s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
-%s:8 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
 %s:13 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (true) { default => strlen($x), is_string($x) => strlen($x), is_int($x) => "x={$x}" }
 %s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
 %s:16 PhanImpossibleCondition Impossible attempt to cast $x of type null to int

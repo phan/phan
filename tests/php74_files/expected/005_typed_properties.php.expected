@@ -1,4 +1,4 @@
 %s:17 PhanParamTooFew Call with 0 arg(s) to \TypedProperties\A::__construct(?int $a, string $b, \TypedProperties\SubClass $c) which requires 3 arg(s) defined at %s:10
-%s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $a->a of type ?int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
-%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $a->b of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $a->a of type ?int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
+%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $a->b of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $a->c of type \TypedProperties\A|\TypedProperties\SubClass but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

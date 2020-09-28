@@ -1,1 +1,1 @@
-%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $variableName of type 'testVariable' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $variableName of type 'testVariable' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
