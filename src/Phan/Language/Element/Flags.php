@@ -69,6 +69,8 @@ class Flags
     public const IS_FAKE_CONSTRUCTOR = (1 << 27);
     public const IS_EXTERNAL_MUTATION_FREE = (1 << 28);
     public const IS_SIDE_EFFECT_FREE = self::IS_READ_ONLY | self::IS_EXTERNAL_MUTATION_FREE;
+    // @abstract tag on class constants or other elements
+    public const IS_PHPDOC_ABSTRACT = (1 << 29);
 
     /**
      * Either enable or disable the given flag on

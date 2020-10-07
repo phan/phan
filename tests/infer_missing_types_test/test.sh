@@ -24,8 +24,10 @@ echo "Comparing the output:"
 
 # Normalize PHP_VERSION_ID
 # and remove php 8.0 warnings
+# Seeing ArrayAccess as a suggestion in some php versions
 sed -i \
     -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
+    -e 's/ or interface \\ArrayAccess//' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

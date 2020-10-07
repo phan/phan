@@ -979,8 +979,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
                 if (($block_exit_status & BlockExitStatusChecker::STATUS_THROW_OR_RETURN_BITMASK) === $block_exit_status) {
                     $inner_exiting_scope_list[] = $inner_scope;
-                } else if ($block_exit_status !== BlockExitStatusChecker::STATUS_PROCEED ||
-                        $i === \count($node->children) - 1)  {
+                } elseif ($block_exit_status !== BlockExitStatusChecker::STATUS_PROCEED ||
+                        $i === \count($node->children) - 1) {
                     $inner_scope_list[] = $inner_scope;
                 }
                 if (!($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED)) {

@@ -1,6 +1,5 @@
 src/156_parent_type.php_crash:8 PhanUnusedPublicNoOverrideMethodParameter Parameter $args is never used
 src/156_parent_type.php_crash:8 PhanUnusedPublicNoOverrideMethodParameter Parameter $method is never used
-src/156_parent_type.php_crash:14 PhanReadOnlyPHPDocProperty Possibly zero write references to PHPDoc @property \D156->declared
 src/156_parent_type.php_crash:24 PhanPluginPossiblyStaticClosure Closure() can be static
 src/156_parent_type.php_crash:27 PhanUndeclaredProperty Reference to undeclared property \A156->prop
 src/156_parent_type.php_crash:33 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $c->declared of type int but \strlen() takes string

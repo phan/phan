@@ -1,0 +1,4 @@
+%s:16 PhanCommentAbstractOnInheritedProperty Class \NA\NA\NA\Bar inherits a property \NA\NA\NA\Foo::X1 declared at %s:7 marked as @abstract in phpdoc but does not override it
+%s:20 PhanCommentAbstractOnInheritedProperty Class \NA\NA\NA\Bas inherits a property \NA\NA\NA\Foo::x2 declared at %s:10 marked as @abstract in phpdoc but does not override it
+%s:27 PhanCommentAbstractOnInheritedProperty Class \NA\NA\NA\Bat inherits a property \NA\NA\NA\Foo::x2 declared at %s:10 marked as @abstract in phpdoc but does not override it
+%s:31 PhanCommentOverrideOnNonOverrideProperty Saw an @override annotation for property \NA\NA\NA\Bat::notAnOverride, but could not find an overridden property

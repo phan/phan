@@ -4560,6 +4560,30 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 
 This is emitted for some (but not all) comments which Phan thinks are invalid or unparsable.
 
+## PhanCommentAbstractOnInheritedConstant
+
+```
+Class {CLASS} inherits a class constant {CONST} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0907_abstract_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0907_abstract_class_constant.php#L16).
+
+## PhanCommentAbstractOnInheritedMethod
+
+```
+Class {CLASS} inherits a method {METHOD} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0909_phpdoc_abstract_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0909_phpdoc_abstract_method.php#L20).
+
+## PhanCommentAbstractOnInheritedProperty
+
+```
+Class {CLASS} inherits a property {PROPERTY} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0908_abstract_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0908_abstract_property.php#L16).
+
 ## PhanCommentAmbiguousClosure
 
 ```
@@ -4615,6 +4639,14 @@ Saw an @override annotation for method {METHOD}, but could not find an overridde
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0355_namespace_relative.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/files/src/0355_namespace_relative.php#L34).
+
+## PhanCommentOverrideOnNonOverrideProperty
+
+```
+Saw an @override annotation for property {PROPERTY}, but could not find an overridden property
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0908_abstract_property.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0908_abstract_property.php#L31).
 
 ## PhanCommentParamAssertionWithoutRealParam
 

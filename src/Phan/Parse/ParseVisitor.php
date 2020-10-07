@@ -733,6 +733,7 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsDeprecated($comment->isDeprecated());
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
+            $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
             $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {

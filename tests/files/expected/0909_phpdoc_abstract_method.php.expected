@@ -1,0 +1,2 @@
+%s:20 PhanCommentAbstractOnInheritedMethod Class \NS909\C1 inherits a method \NS909\Base::test declared at %s:9 marked as @abstract in phpdoc but does not override it
+%s:21 PhanCommentAbstractOnInheritedMethod Class \NS909\C2 inherits a method \NS909\T::other declared at %s:15 marked as @abstract in phpdoc but does not override it
