@@ -1,0 +1,3 @@
+%s:16 PhanCommentAbstractOnInheritedConstant Class \NA\NA\Bar inherits a class constant \NA\NA\Foo::X1 declared at %s:7 marked as @abstract in phpdoc but does not override it
+%s:20 PhanCommentAbstractOnInheritedConstant Class \NA\NA\Bas inherits a class constant \NA\NA\Foo::X2 declared at %s:10 marked as @abstract in phpdoc but does not override it
+%s:27 PhanCommentAbstractOnInheritedConstant Class \NA\NA\Bat inherits a class constant \NA\NA\Foo::X2 declared at %s:10 marked as @abstract in phpdoc but does not override it

@@ -590,6 +590,10 @@ class Issue
     public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     public const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
+    public const CommentOverrideOnNonOverrideProperty = 'PhanCommentOverrideOnNonOverrideProperty';
+    public const CommentAbstractOnInheritedConstant = 'PhanCommentAbstractOnInheritedConstant';
+    public const CommentAbstractOnInheritedProperty = 'PhanCommentAbstractOnInheritedProperty';
+    public const CommentAbstractOnInheritedMethod = 'PhanCommentAbstractOnInheritedMethod';
     public const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
     public const CommentVarInsteadOfParam         = 'PhanCommentVarInsteadOfParam';
     public const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
@@ -5089,6 +5093,38 @@ class Issue
                 "Saw an @override annotation for class constant {CONST}, but could not find an overridden constant",
                 self::REMEDIATION_B,
                 16007
+            ),
+            new Issue(
+                self::CommentOverrideOnNonOverrideProperty,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @override annotation for property {PROPERTY}, but could not find an overridden property",
+                self::REMEDIATION_B,
+                16026
+            ),
+            new Issue(
+                self::CommentAbstractOnInheritedConstant,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Class {CLASS} inherits a class constant {CONST} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it",
+                self::REMEDIATION_B,
+                16023
+            ),
+            new Issue(
+                self::CommentAbstractOnInheritedProperty,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Class {CLASS} inherits a property {PROPERTY} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it",
+                self::REMEDIATION_B,
+                16024
+            ),
+            new Issue(
+                self::CommentAbstractOnInheritedMethod,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Class {CLASS} inherits a method {METHOD} declared at {FILE}:{LINE} marked as {COMMENT} in phpdoc but does not override it",
+                self::REMEDIATION_B,
+                16025
             ),
             new Issue(
                 self::CommentParamOutOfOrder,

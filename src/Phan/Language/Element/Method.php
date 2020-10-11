@@ -158,31 +158,6 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return bool
-     * True if this method is intended to be an override of another method (contains (at)override)
-     */
-    public function isOverrideIntended(): bool
-    {
-        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
-    }
-
-    /**
-     * Sets whether this method is intended to be an override of another method (contains (at)override)
-     * @param bool $is_override_intended
-
-     */
-    public function setIsOverrideIntended(bool $is_override_intended): void
-    {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                $this->getPhanFlags(),
-                Flags::IS_OVERRIDE_INTENDED,
-                $is_override_intended
-            )
-        );
-    }
-
-    /**
      * Returns true if this element is overridden by at least one other element
      */
     public function isOverriddenByAnother(): bool

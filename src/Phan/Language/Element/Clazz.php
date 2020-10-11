@@ -820,6 +820,7 @@ class Clazz extends AddressableElement
         Property $inherited_property,
         Property $overriding_property
     ): void {
+        $overriding_property->setIsOverride(true);
         if ($inherited_property->isFromPHPDoc() || $inherited_property->isDynamicProperty() ||
             $overriding_property->isFromPHPDoc() || $overriding_property->isDynamicProperty()) {
             return;
@@ -1437,6 +1438,21 @@ class Clazz extends AddressableElement
                 )
             );
             return;
+        }
+        // Warn if inheriting a class constant declared as @abstract without overriding it.
+        // Optionally, could check if other interfaces declared class constants with the same value, but low priority.
+        if ($constant->isPHPDocAbstract() && !$constant->isPrivate() && !$this->isAbstract() && $this->isClass()) {
+            Issue::maybeEmit(
+                $code_base,
+                $this->getContext(),
+                Issue::CommentAbstractOnInheritedConstant,
+                $this->getContext()->getLineNumberStart(),
+                $this->getFQSEN(),
+                $constant->getRealDefiningFQSEN(),
+                $constant->getContext()->getFile(),
+                $constant->getContext()->getLineNumberStart(),
+                '@abstract'
+            );
         }
 
         // Update the FQSEN if it's not associated with this
@@ -2709,6 +2725,21 @@ class Clazz extends AddressableElement
 
         // Copy properties
         foreach ($class->getPropertyMap($code_base) as $property) {
+            if ($property->isPHPDocAbstract() && !$property->isPrivate() &&
+                $this->isClass() && !$this->isAbstract() && !$this->hasPropertyWithName($code_base, $property->getName())) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->getContext(),
+                    Issue::CommentAbstractOnInheritedProperty,
+                    $this->getContext()->getLineNumberStart(),
+                    $this->getFQSEN(),
+                    $property->getRealDefiningFQSEN(),
+                    $property->getContext()->getFile(),
+                    $property->getContext()->getLineNumberStart(),
+                    '@abstract'
+                );
+            }
+
             // TODO: check for conflicts in visibility and default values for traits.
             // TODO: Check for ancestor classes with the same private property?
             $this->addProperty(
@@ -3176,7 +3207,12 @@ class Clazz extends AddressableElement
             }
         }
 
+        // Fetch the properties declared within the class, to check if they have override annotations later.
+        $original_declared_properties = $this->getPropertyMap($code_base);
+
         $this->importAncestorClasses($code_base);
+
+        self::analyzePropertyOverrides($code_base, $original_declared_properties);
 
         // Make sure there are no abstract methods on non-abstract classes
         AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(
@@ -3202,6 +3238,28 @@ class Clazz extends AddressableElement
                     Issue::CommentOverrideOnNonOverrideConstant,
                     $context->getLineNumberStart(),
                     (string)$constant->getFQSEN()
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string, Property> $original_declared_properties
+     */
+    private static function analyzePropertyOverrides(CodeBase $code_base, array $original_declared_properties): void
+    {
+        foreach ($original_declared_properties as $property) {
+            if ($property->isOverrideIntended() && !$property->isOverride()) {
+                if ($property->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideProperty)) {
+                    continue;
+                }
+                $context = $property->getContext();
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CommentOverrideOnNonOverrideProperty,
+                    $context->getLineNumberStart(),
+                    (string)$property->getFQSEN()
                 );
             }
         }
@@ -3250,11 +3308,37 @@ class Clazz extends AddressableElement
             $this
         );
 
+        $this->analyzeInheritedMethods($code_base);
+
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
             $code_base,
             $this
         );
+    }
+
+    private function analyzeInheritedMethods(CodeBase $code_base): void
+    {
+        if ($this->isClass() && !$this->isAbstract()) {
+            foreach ($this->getMethodMap($code_base) as $method) {
+                if ($method->getRealDefiningFQSEN() === $method->getFQSEN()) {
+                    continue;
+                }
+                if ($method->isPHPDocAbstract() && !$method->isPrivate()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $this->getContext(),
+                        Issue::CommentAbstractOnInheritedMethod,
+                        $this->getContext()->getLineNumberStart(),
+                        $this->getFQSEN(),
+                        $method->getRealDefiningFQSEN(),
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart(),
+                        '@abstract'
+                    );
+                }
+            }
+        }
     }
 
     public function setDidFinishParsing(bool $did_finish_parsing): void

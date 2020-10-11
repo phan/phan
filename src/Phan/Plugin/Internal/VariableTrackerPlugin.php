@@ -408,7 +408,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     // Don't warn if there's at least one usage of that definition
                     continue;
                 }
-                if (($graph->def_bitset[$definition_id] ?? 0) & (VariableGraph::IS_UNSET|VariableGraph::IS_DISABLED_WARNINGS)) {
+                if (($graph->def_bitset[$definition_id] ?? 0) & (VariableGraph::IS_UNSET | VariableGraph::IS_DISABLED_WARNINGS)) {
                     // Don't warn about unset($x)
                     continue;
                 }

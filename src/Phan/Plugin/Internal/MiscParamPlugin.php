@@ -40,8 +40,8 @@ use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
-use Phan\PluginV3;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
+use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\StopParamAnalysisException;
 

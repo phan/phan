@@ -103,31 +103,6 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $this->name;
     }
 
-    /**
-     * @return bool
-     * True if this class constant is intended to be an override of another class constant (contains (at)override)
-     */
-    public function isOverrideIntended(): bool
-    {
-        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
-    }
-
-    /**
-     * Records whether or not this class constant is intended to be an override of another class constant (contains (at)override in PHPDoc)
-     * @param bool $is_override_intended
-
-     */
-    public function setIsOverrideIntended(bool $is_override_intended): void
-    {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                $this->getPhanFlags(),
-                Flags::IS_OVERRIDE_INTENDED,
-                $is_override_intended
-            )
-        );
-    }
-
     public function getMarkupDescription(): string
     {
         $string = '';
