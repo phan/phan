@@ -5404,6 +5404,19 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if the union type is exclusively generators
+     */
+    public function isExclusivelyGenerators(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!$type->isGenerator()) {
+                return false;
+            }
+        }
+        return \count($this->type_set) > 0;
+    }
+
+    /**
      * Gets the type of this converted to a generator.
      * E.g. converts the type of an iterable/array/Generator `$x`
      * to the type of a generator with the implementation `yield from $x`

@@ -103,6 +103,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             ))->getFunctionFromNode();
 
             foreach ($function_list_generator as $function) {
+                $this->checkUseReturnValueGenerator($function, $node);
                 if ($function instanceof Method) {
                     $fqsen = $function->getDefiningFQSEN()->__toString();
                 } else {
@@ -230,6 +231,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
+        $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
             $this->quickWarn($method, $fqsen, $node);
@@ -277,6 +279,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
+        $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if ($this->quickWarn($method, $fqsen, $node)) {
             return;
@@ -292,6 +295,19 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             $counter->used_locations[$key] = $this->context;
         } else {
             $counter->unused_locations[$key] = $this->context;
+        }
+    }
+
+    private function checkUseReturnValueGenerator(FunctionInterface $function, Node $node): void
+    {
+        if ($function->hasYield() || $function->getUnionType()->isExclusivelyGenerators()) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                (clone($this->context))->withLineNumberStart($node->lineno),
+                UseReturnValuePlugin::UseReturnValueGenerator,
+                'Expected to use the return value of the function/method {FUNCTION} returning a generator of type {TYPE}',
+                [$function->getRepresentationForIssue(true), $function->getUnionType()]
+            );
         }
     }
 

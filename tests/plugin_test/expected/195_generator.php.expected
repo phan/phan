@@ -1,0 +1,3 @@
+src/195_generator.php:7 PhanPluginUseReturnValueGenerator Expected to use the return value of the function/method \test195() returning a generator of type \Generator<int>
+src/195_generator.php:12 PhanUnreferencedFunction Possibly zero references to function \testmethod195()
+src/195_generator.php:13 PhanPluginUseReturnValueGenerator Expected to use the return value of the function/method \Base195::test() returning a generator of type \Generator

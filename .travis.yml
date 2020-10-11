@@ -8,6 +8,12 @@ php:
   - 7.4
   - nightly
 
+jobs:
+  # PHP's argument names are being changed until 8.0.0 stable is released in November,
+  # leading to build failures unrelated to Phan itself.
+  allow_failures:
+  - php: nightly
+
 # NOTE: Travis starts up 5 test suites at a time.
 # So, it's faster to run all of the tests at once per supported PHP version.
 dist: xenial
