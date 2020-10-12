@@ -29,6 +29,7 @@ Bug fixes:
 + Don't infer implications of `left || right` on the right hand expression when the right hand side has no side effects. (#4199)
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` for thrown expressions that definitely aren't `\Throwable`
   even when `warn_about_undocumented_throw_statements` is disabled or the throw expression is in the top level scope. (#4200)
++ Increase the minimum requirements in composer.json to what Phan actually requires. (#4217)
 
 Sep 19 2020, Phan 3.2.2
 -----------------------
