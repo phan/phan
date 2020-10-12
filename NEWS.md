@@ -1,5 +1,10 @@
 Phan NEWS
 
+Oct 12 2020, Phan 4.0.0-alpha2
+------------------------------
+
+Merge changes from Phan 3.2.3.
+
 Sep 19 2020, Phan 4.0.0-alpha1
 ------------------------------
 
@@ -20,7 +25,7 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 2020, Phan 3.2.3 (dev)
+Oct 12 2020, Phan 3.2.3
 -----------------------
 
 New features (CLI, Config):
