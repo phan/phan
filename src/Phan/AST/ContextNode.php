@@ -9,8 +9,8 @@ use ast;
 use ast\Node;
 use Error;
 use Exception;
-use Phan\Analysis\ConditionVisitorUtil;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\ConditionVisitorUtil;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -569,8 +569,12 @@ class ContextNode
      * An exception is thrown if fetching the requested class name
      * would trigger an issue (e.g. Issue::ContextNotObject)
      */
-    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null, bool $warn_if_wrong_type = true): array
-    {
+    public function getClassList(
+        bool $ignore_missing_classes = false,
+        int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY,
+        string $custom_issue_type = null,
+        bool $warn_if_wrong_type = true
+    ): array {
         [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
@@ -747,18 +751,17 @@ class ContextNode
                 );
             }
 
-            if (
-                $union_type->isDefinitelyUndefined() ||
-                (!$union_type->isEmpty()
-                && $union_type->isNativeType()
-                && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
-                    return !$type->isNullable() && ($type instanceof MixedType || $type instanceof ObjectType);
-                })
-                // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
-                && !(($is_static || $is_new_expression) && $union_type->hasNonNullStringType())
-                && !(
-                    Config::get_null_casts_as_any_type()
-                    && $union_type->hasType(NullType::instance(false))
+            if ($union_type->isDefinitelyUndefined()
+                || (!$union_type->isEmpty()
+                    && $union_type->isNativeType()
+                    && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                        return !$type->isNullable() && ($type instanceof MixedType || $type instanceof ObjectType);
+                    })
+                    // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
+                    && !(($is_static || $is_new_expression) && $union_type->hasNonNullStringType())
+                    && !(
+                        Config::get_null_casts_as_any_type()
+                        && $union_type->hasType(NullType::instance(false))
                 ))
             ) {
                 throw new IssueException(
@@ -950,8 +953,12 @@ class ContextNode
     /**
      * @throws IssueException for PhanUndeclaredFunction to be caught and reported by the caller
      */
-    private function returnStubOrThrowUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace, FullyQualifiedFunctionName $namespaced_function_fqsen = null, bool $return_placeholder_for_undefined = false): Func
-    {
+    private function returnStubOrThrowUndeclaredFunctionIssueException(
+        FullyQualifiedFunctionName $function_fqsen,
+        bool $suggest_in_global_namespace,
+        FullyQualifiedFunctionName $namespaced_function_fqsen = null,
+        bool $return_placeholder_for_undefined = false
+    ): Func {
         if ($return_placeholder_for_undefined) {
             $functions = $this->code_base->getPlaceholdersForUndeclaredFunction($function_fqsen);
             Issue::maybeEmitWithParameters(
@@ -1761,7 +1768,9 @@ class ContextNode
                         }
                         // @phan-suppress-next-line PhanAccessClassConstantInternal
                         $constant_exists_variable = $context->getScope()->getVariableByNameOrNull(ConditionVisitor::CONSTANT_EXISTS_PREFIX . \ltrim($fqsen->__toString(), '\\'));
-                        if ($constant_exists_variable && !$constant_exists_variable->getUnionType()->isPossiblyUndefined() && $constant_exists_variable->getFileRef()->getFile() === $context->getFile()) {
+                        if ($constant_exists_variable &&
+                            !$constant_exists_variable->getUnionType()->isPossiblyUndefined() &&
+                            $constant_exists_variable->getFileRef()->getFile() === $context->getFile()) {
                             return $this->createPlaceholderGlobalConstant($fqsen);
                         }
                         $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
