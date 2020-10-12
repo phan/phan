@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "squizlabs/php_codesniffer": "dev-master",
-        "slevomat/coding-standard": "dev-master"
+        "squizlabs/php_codesniffer": "^3.5.6",
+        "slevomat/coding-standard": "^6.4.1"
     }
 }
