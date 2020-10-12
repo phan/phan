@@ -286,7 +286,10 @@ class Type implements Stringable
     /** For types copied from phpdoc, e.g. `(at)param integer $x` */
     public const FROM_PHPDOC = 2;
 
-    /** To distinguish NativeType subclasses and classes with the same name. Overridden in subclasses */
+    /**
+     * To distinguish NativeType subclasses and classes with the same name.
+     * Overridden in some subclasses but not others.
+     */
     public const KEY_PREFIX = '';
 
     /** To normalize combinations of union types */
@@ -404,6 +407,8 @@ class Type implements Stringable
      * A single canonical instance of the given type.
      *
      * @suppress PhanThrowTypeAbsent
+     *
+     * Overridden in some subclasses but not others.
      */
     protected static function make(
         string $namespace,
@@ -4042,8 +4047,8 @@ class Type implements Stringable
     /**
      * Returns true if this is referring to the throwable interface exactly
      */
-    public function isThrowableInterface(): bool {
+    public function isThrowableInterface(): bool
+    {
         return $this->name === 'Throwable' && $this->namespace === '\\';
     }
-
 }

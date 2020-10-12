@@ -396,7 +396,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -475,6 +475,11 @@ final class Builder
                         $this->comment_flags |= Flags::IS_DEPRECATED;
                     }
                     break;
+                case 'abstract':
+                    if (\preg_match('/@abstract\b/', $line, $match)) {
+                        $this->comment_flags |= Flags::IS_PHPDOC_ABSTRACT;
+                    }
+                    break;
                 default:
                     if (\strpos($type, 'phan-') === 0) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
@@ -492,7 +497,7 @@ final class Builder
         if (\strpos($line, 'verride') !== false) {
             if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
                 // TODO: split class const and global const.
-                if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i)) {
+                if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST, Comment::ON_PROPERTY], $i)) {
                     $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
                 }
             }
@@ -788,6 +793,9 @@ final class Builder
                 if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i)) {
                     $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
                 }
+                return;
+            case 'phan-abstract':
+                $this->comment_flags |= Flags::IS_PHPDOC_ABSTRACT;
                 return;
             case 'phan-var':
                 if (!$this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i)) {

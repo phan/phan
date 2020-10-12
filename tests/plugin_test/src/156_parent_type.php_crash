@@ -11,7 +11,7 @@ class B156 extends B156 {
 class C156 extends D156 {
 }
 /**
- * @property int $declared
+ * @property int $declared NOTE: Phan has false positives/negatives because this is a circular dependency, which would throw an Error if this file was run in php
  */
 class D156 extends C156 {
     public function __get($name) {

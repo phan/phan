@@ -1,5 +1,10 @@
 Phan NEWS
 
+Oct 12 2020, Phan 4.0.0-alpha2
+------------------------------
+
+Merge changes from Phan 3.2.3.
+
 Sep 19 2020, Phan 4.0.0-alpha1
 ------------------------------
 
@@ -20,7 +25,7 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 2020, Phan 3.2.3 (dev)
+Oct 12 2020, Phan 3.2.3
 -----------------------
 
 New features (CLI, Config):
@@ -29,12 +34,27 @@ New features (CLI, Config):
 
 New features (Analysis):
 + Infer that `parent::someMethodReturningStaticType()` is a subtype of the current class, not just the parent class. (#4202)
++ Support phpdoc `@abstract` or `@phan-abstract` on non-abstract class constants, properties, and methods
+  to indicate that the intent is for non-abstract subclasses to override the definition. (#2278, #2285)
+  New issue types: `PhanCommentAbstractOnInheritedConstant`, `PhanCommentAbstractOnInheritedProperty`, `PhanCommentOverrideOnNonOverrideProperty`
+
+  For example, code using `static::SOME_CONST` or `static::$SOME_PROPERTY` or `$this->someMethod()`
+  may declare a placeholder `@abstract` constant/property/method,
+  and use this annotation to ensure that all non-abstract subclasses override the constant/property/method
+  (if using real abstract methods is not practical for a use case)
++ Warn about `@override` on properties that do not override an ancestor's property definition.
+  New issue type: `PhanCommentOverrideOnNonOverrideProperty`.
+  (Phan already warns for constants and methods)
+
+Plugins:
++ Emit `PhanPluginUseReturnValueGenerator` for calling a function returning a generator without using the returned Generator. (#4013)
 
 Bug fixes:
 + Properly analyze the right hand side for `$cond || throw ...;` (e.g. emit `PhanCompatibleThrowException`) (#4199)
 + Don't infer implications of `left || right` on the right hand expression when the right hand side has no side effects. (#4199)
 + Emit `PhanTypeInvalidThrowStatementNonThrowable` for thrown expressions that definitely aren't `\Throwable`
   even when `warn_about_undocumented_throw_statements` is disabled or the throw expression is in the top level scope. (#4200)
++ Increase the minimum requirements in composer.json to what Phan actually requires. (#4217)
 
 Sep 19 2020, Phan 3.2.2
 -----------------------

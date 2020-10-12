@@ -183,6 +183,7 @@ Note that this prevents the hardcoded checks from working.
 
 - **PhanPluginUseReturnValue**: `Expected to use the return value of the user-defined function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
 - **PhanPluginUseReturnValueInternal**: `Expected to use the return value of the internal function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
+- **PhanPluginUseReturnValueGenerator**: `Expected to use the return value of the function/method {FUNCTION} returning a generator of type {TYPE}`,
 
 See [UseReturnValuePlugin.php](./UseReturnValuePlugin.php) for configuration options.
 

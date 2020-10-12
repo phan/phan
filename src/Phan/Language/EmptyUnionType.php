@@ -1301,6 +1301,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function isExclusivelyGenerators(): bool
+    {
+        return false;
+    }
+
     /** @suppress PhanThrowTypeAbsentForCall */
     public function asGeneratorTemplateType(): Type
     {

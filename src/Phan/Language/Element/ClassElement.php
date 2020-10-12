@@ -291,4 +291,52 @@ abstract class ClassElement extends AddressableElement
         }
         return false;
     }
+
+    /**
+     * @return bool
+     * True if this class constant is intended to be overridden in non-abstract classes.
+     */
+    public function isPHPDocAbstract(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_PHPDOC_ABSTRACT);
+    }
+
+    /**
+     * Records whether or not this class constant is intended to be abstract
+     */
+    public function setIsPHPDocAbstract(bool $is_abstract): void
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_PHPDOC_ABSTRACT,
+                $is_abstract
+            )
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this method is intended to be an override of another method (contains (at)override)
+     */
+    public function isOverrideIntended(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
+    }
+
+    /**
+     * Sets whether this method is intended to be an override of another method (contains (at)override)
+     * @param bool $is_override_intended
+
+     */
+    public function setIsOverrideIntended(bool $is_override_intended): void
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_OVERRIDE_INTENDED,
+                $is_override_intended
+            )
+        );
+    }
 }
