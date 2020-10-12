@@ -18,6 +18,12 @@
 %s:11 PhanTypeMismatchArgument Argument 2 ($requiredString) is 0 of type 0 but \C24::main() takes string defined at %s:3
 %s:12 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (definitelyInvalidFlag: 'value')
 %s:12 PhanUndeclaredNamedArgumentInternal Saw a call with undeclared named argument (definitelyInvalidFlag: 'value') to \strlen(string $string)
-%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (divisor: 123)
-%s:13 PhanMissingNamedArgumentInternal Missing named argument for int $dividend in call to \intdiv(int $numerator, int $divisor)
-%s:13 PhanParamTooFewInternal Call with 1 arg(s) to \intdiv(int $numerator, int $divisor) which requires 2 arg(s)
+%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
+%s:13 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (value: [])
+%s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
+%s:14 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($data, int $options = 0, int $depth = 512)
+%s:15 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (array: 123)
+%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $input1, array ...$args)
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $input1, array ...$args) which requires 2 arg(s)
+%s:15 PhanTypeConversionFromArray array to string conversion
+%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($input1) is 123 of type 123 but \array_map() takes array

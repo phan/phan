@@ -445,6 +445,15 @@ class Comment
 
     /**
      * @return bool
+     * Set to true if the comment contains an 'abstract' directive.
+     */
+    public function isPHPDocAbstract(): bool
+    {
+        return ($this->comment_flags & Flags::IS_PHPDOC_ABSTRACT) !== 0;
+    }
+
+    /**
+     * @return bool
      * Set to true if the comment contains an 'internal'
      * directive.
      */
@@ -464,7 +473,13 @@ class Comment
         return ($this->comment_flags & Flags::IS_SIDE_EFFECT_FREE) === Flags::IS_SIDE_EFFECT_FREE;
     }
 
-    private const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
+    private const FLAGS_FOR_PROPERTY =
+        Flags::IS_NS_INTERNAL |
+        Flags::IS_DEPRECATED |
+        Flags::IS_READ_ONLY |
+        Flags::IS_WRITE_ONLY |
+        Flags::IS_PHPDOC_ABSTRACT |
+        Flags::IS_OVERRIDE_INTENDED;
 
     /**
      * Gets the subset of the bitmask that applies to properties.
@@ -494,7 +509,9 @@ class Comment
         Flags::IS_NS_INTERNAL |
         Flags::IS_DEPRECATED |
         Flags::HARDCODED_RETURN_TYPE |
-        Flags::IS_SIDE_EFFECT_FREE;
+        Flags::IS_SIDE_EFFECT_FREE |
+        Flags::IS_PHPDOC_ABSTRACT |
+        Flags::IS_OVERRIDE_INTENDED;
 
     /**
      * Gets the subset of the bitmask that applies to methods.

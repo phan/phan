@@ -142,7 +142,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
         }
         $check_error_message = preg_replace(self::STDIN_FILENAME_REGEX, '', $check_error_message);
 
-
         self::emitIssue(
             $code_base,
             clone($context)->withLineNumberStart($lineno),
