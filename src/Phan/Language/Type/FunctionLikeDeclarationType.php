@@ -749,7 +749,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     public function hasYield(): bool
     {
-        throw new \AssertionError('unexpected call to ' . __METHOD__);
+        return false;
     }
 
     public function setInternalScope(ClosedScope $scope): void
