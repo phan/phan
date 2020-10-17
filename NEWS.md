@@ -1,5 +1,12 @@
 Phan NEWS
 
+??? ?? 2020, Phan 3.2.4 (dev)
+-----------------------
+
+New features (Analysis):
++ Partially support `self<A>` and `static<B>` in phpdoc types. (#4226)
+  This support is incomplete and may run into issues with inheritance.
+
 Oct 12 2020, Phan 3.2.3
 -----------------------
 

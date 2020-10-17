@@ -53,6 +53,33 @@ final class SelfType extends StaticOrSelfType
         return $instance;
     }
 
+    /**
+     * Generates self<A> with template parameter type lists, from phpdoc types such as `(at)return self<A>`
+     *
+     * @param list<UnionType> $template_parameter_type_list
+     *
+     * TODO: This is only reachable in trait method definitions - make sure that classes will resolve the trait's template parameter types properly when inheriting methods
+     * or handling trait methods defined as (at)return T
+     */
+    public static function instanceWithTemplateTypeList(bool $is_nullable, array $template_parameter_type_list): SelfType
+    {
+        if (!$template_parameter_type_list) {
+            return self::instance($is_nullable);
+        }
+        static $map = [];
+        $key = ($is_nullable ? 'T' : 'F') . \implode(',', \array_map(static function (UnionType $union_type): string {
+            return $union_type->__toString();
+        }, $template_parameter_type_list));
+
+        if (isset($map[$key])) {
+            return $map[$key];
+        }
+        $result = new SelfType($is_nullable);
+        // @phan-suppress-next-line PhanAccessReadOnlyProperty
+        $result->template_parameter_type_list = $template_parameter_type_list;
+        return $result;
+    }
+
     public function isNativeType(): bool
     {
         return false;
@@ -82,20 +109,37 @@ final class SelfType extends StaticOrSelfType
     /**
      * @return Type
      * Either this or 'self' resolved in the given context.
+     * @suppress PhanAccessReadOnlyProperty
      */
-    public function withStaticResolvedInContext(
-        Context $context
-    ): Type {
+    public function withStaticResolvedInContext(Context $context): Type {
+        // TODO: Special handling of self<static>, if needed?
+        return $this->withSelfResolvedInContext($context);
+    }
+
+    /**
+     * @return Type
+     * 'self' resolved in the given context.
+     * @suppress PhanAccessReadOnlyProperty
+     *
+     * TODO: Handle `(at)return OtherType<self>`
+     */
+    public function withSelfResolvedInContext(Context $context): Type {
         // If the context isn't in a class scope, there's nothing
         // we can do
         if (!$context->isInClassScope()) {
             return $this;
         }
         $type = $context->getClassFQSEN()->asType();
-        if ($this->is_nullable) {
-            return $type->withIsNullable(true);
+        if ($this->template_parameter_type_list) {
+            return Type::make(
+                $type->namespace,
+                $type->name,
+                $this->template_parameter_type_list,
+                $this->is_nullable,
+                Type::FROM_TYPE
+            );
         }
-        return $type;
+        return $type->withIsNullable($this->is_nullable);
     }
 
     /**

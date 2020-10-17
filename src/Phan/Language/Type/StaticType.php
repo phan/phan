@@ -56,6 +56,33 @@ final class StaticType extends StaticOrSelfType
         return $instance;
     }
 
+    /**
+     * Generates static<A> with template parameter type lists, from phpdoc types such as `(at)return static<A>`
+     *
+     * @param list<UnionType> $template_parameter_type_list
+     */
+    public static function instanceWithTemplateTypeList(bool $is_nullable, array $template_parameter_type_list): StaticType
+    {
+        if (!$template_parameter_type_list) {
+            return self::instance($is_nullable);
+        }
+        static $map = [];
+        $key = ($is_nullable ? 'T' : 'F') . \implode(',', \array_map(static function (UnionType $union_type): string {
+            return $union_type->__toString();
+        }, $template_parameter_type_list));
+
+        if (isset($map[$key])) {
+            return $map[$key];
+        }
+
+        $instance = static::make('\\', static::NAME, $template_parameter_type_list, false, Type::FROM_TYPE);
+        if (!($instance instanceof static)) {
+            throw new AssertionError('Expected StaticType::make to return StaticType');
+        }
+        return $instance;
+    }
+
+
     public function isNativeType(): bool
     {
         return false;
@@ -95,10 +122,16 @@ final class StaticType extends StaticOrSelfType
             return $this;
         }
         $type = $context->getClassFQSEN()->asType();
-        if ($this->is_nullable) {
-            return $type->withIsNullable(true);
+        if ($this->template_parameter_type_list) {
+            return $type->make(
+                $type->namespace,
+                $type->name,
+                $this->template_parameter_type_list,
+                $type->is_nullable,
+                Type::FROM_TYPE
+            );
         }
-        return $type;
+        return $type->withIsNullable($this->is_nullable);
     }
 
     /**
