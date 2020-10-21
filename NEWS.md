@@ -7,6 +7,9 @@ New features (Analysis):
 + Partially support `self<A>` and `static<B>` in phpdoc types. (#4226)
   This support is incomplete and may run into issues with inheritance.
 
+Bug fixes:
++ Properly infer the literal string value of `__FUNCTION__` for global functions in namespaces (#4231)
+
 Oct 12 2020, Phan 3.2.3
 -----------------------
 

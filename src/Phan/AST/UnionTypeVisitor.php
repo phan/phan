@@ -442,7 +442,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             case ast\flags\MAGIC_FUNCTION:
                 if ($this->context->isInFunctionLikeScope()) {
                     $fqsen = $this->context->getFunctionLikeFQSEN();
-                    return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : $fqsen->getName());
+                    if ($fqsen instanceof FullyQualifiedMethodName) {
+                        // For NS\MyClass::methodName, return 'methodName'
+                        $value = $fqsen->getName();
+                    } else {
+                        // For NS\my_method, return 'NS\my_method'
+                        $value = $fqsen->isClosure() ? '{closure}' : \ltrim($fqsen->__toString(), '\\');
+                    }
+                    return self::literalStringUnionType($value);
                 }
                 $this->warnAboutUndeclaredMagicConstant($node, 'used outside of functionlike');
                 break;

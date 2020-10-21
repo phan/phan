@@ -14,7 +14,7 @@ class Test338 {
     use Trait338;
     public function test() {
         expect_int338(__FILE__);
-        expect_string338(__LINE__);
+        expect_string338(__LINE__);  // because of the lack of strict_types=1 this won't throw an Error at runtime
         expect_int338(__CLASS__);
         expect_int338(__DIR__);
         expect_int338(__FUNCTION__);
