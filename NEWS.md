@@ -9,6 +9,7 @@ New features (Analysis):
 
 Bug fixes:
 + Properly infer the literal string value of `__FUNCTION__` for global functions in namespaces (#4231)
++ Fix false positive `PhanPossiblyInfiniteLoop` for `do {} while (false);` that is unchangeably false (#4236)
 
 Oct 12 2020, Phan 3.2.3
 -----------------------
