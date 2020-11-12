@@ -1077,7 +1077,7 @@ class Type
         array $shape_components,
         bool $is_nullable
     ): FunctionLikeDeclarationType {
-        if (count($shape_components) === 0) {
+        if (!$shape_components) {
             // The literal int '0' is a valid union type, but it's falsey, so check the count instead.
             // shouldn't happen
             throw new AssertionError("Expected at least one component of a closure phpdoc type");

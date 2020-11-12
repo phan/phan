@@ -15,6 +15,7 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
@@ -76,25 +77,33 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             return $mixed_type->asPHPDocUnionType();
         };
         /**
-         * @param list<Node|int|float|string> $args
+         * @return Closure(CodeBase, Context, Func, list<Node|int|float|string>): UnionType
          */
-        $get_element_type_of_first_arg_check_nonempty = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type): UnionType {
-            if (\count($args) >= 1) {
-                $arg_node = $args[0];
-                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $element_types = $array_type->genericArrayElementTypes();
-                if (!$element_types->isEmpty()) {
-                    // We set __phan_is_nonempty because the return type is computed after the original variable type is changed.
-                    // @phan-suppress-next-line PhanUndeclaredProperty
-                    if ($array_type->containsFalsey() && !isset($arg_node->__phan_is_nonempty)) {
-                        // This array can be empty, so these helpers can return false.
-                        return $element_types->withType($false_type);
+        $get_element_type_of_first_arg_check_nonempty_builder = static function (Type $default_type) use ($mixed_type) : Closure {
+            /**
+             * @param list<Node|int|float|string> $args
+             */
+            return static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $default_type): UnionType {
+                if (\count($args) >= 1) {
+                    $arg_node = $args[0];
+                    $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                    $element_types = $array_type->genericArrayElementTypes();
+                    if (!$element_types->isEmpty()) {
+                        // We set __phan_is_nonempty because the return type is computed after the original variable type is changed.
+                        // @phan-suppress-next-line PhanUndeclaredProperty
+                        if ($array_type->containsFalsey() && !isset($arg_node->__phan_is_nonempty)) {
+                            // This array can be empty, so these helpers can return false/null.
+                            return $element_types->withType($default_type);
+                        }
+                        return $element_types;
                     }
-                    return $element_types;
                 }
-            }
-            return $mixed_type->asPHPDocUnionType();
+                return $mixed_type->asPHPDocUnionType();
+            };
         };
+
+        $get_element_type_of_first_arg_check_nonempty_false = $get_element_type_of_first_arg_check_nonempty_builder($false_type);
+        $get_element_type_of_first_arg_check_nonempty_null = $get_element_type_of_first_arg_check_nonempty_builder($null_type);
         /**
          * @param list<Node|int|float|string> $args
          * Note that key() is currently guaranteed to return int|string|null, and ignores implementations of ArrayAccess.
@@ -647,14 +656,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
         return [
             // Gets the element types of the first
-            'array_pop'   => $get_element_type_of_first_arg_check_nonempty,
-            'array_shift' => $get_element_type_of_first_arg_check_nonempty,
+            'array_pop'   => $get_element_type_of_first_arg_check_nonempty_null,
+            'array_shift' => $get_element_type_of_first_arg_check_nonempty_null,
             'current'     => $get_element_type_of_first_arg,
-            'end'         => $get_element_type_of_first_arg_check_nonempty,
+            'end'         => $get_element_type_of_first_arg_check_nonempty_false,
             'next'        => $get_element_type_of_first_arg,
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
-            'reset'       => $get_element_type_of_first_arg_check_nonempty,
+            'reset'       => $get_element_type_of_first_arg_check_nonempty_false,
             'each'        => $each_callback,
 
             'key'          => $key_callback,
