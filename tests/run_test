@@ -73,7 +73,7 @@ case "$TEST_SUITE" in
 			PROCESSORS=$(nproc || echo 2)
 		fi
 
-		if [[ "$PROCESSORS" > 1 ]]; then
+		if [[ "$PROCESSORS" > 1 ]] && php -r 'exit(PHP_VERSION_ID>=70300?0:1);'; then
 			if [ -e internal/paratest/vendor/bin/paratest ]; then
 				internal/paratest/vendor/bin/paratest --phpunit vendor/phpunit/phpunit/phpunit --processes "$PROCESSORS"
 			else

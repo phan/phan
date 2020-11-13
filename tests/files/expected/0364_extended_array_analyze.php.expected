@@ -1,5 +1,5 @@
-%s:8 PhanTypeMismatchArgument Argument 1 ($x) is array_pop(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
-%s:9 PhanTypeMismatchArgument Argument 1 ($x) is array_shift(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
+%s:8 PhanTypeMismatchArgument Argument 1 ($x) is array_pop(get_array_by_ref364()) of type float|null but \p364() takes \stdClass defined at %s:45
+%s:9 PhanTypeMismatchArgument Argument 1 ($x) is array_shift(get_array_by_ref364()) of type float|null but \p364() takes \stdClass defined at %s:45
 %s:10 PhanTypeMismatchArgument Argument 1 ($x) is current(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
 %s:11 PhanTypeMismatchArgument Argument 1 ($x) is end(get_array_by_ref364()) of type false|float but \p364() takes \stdClass defined at %s:45
 %s:13 PhanTypeMismatchArgument Argument 1 ($x) is next($x) of type false|float but \p364() takes \stdClass defined at %s:45

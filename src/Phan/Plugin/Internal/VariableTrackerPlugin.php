@@ -10,6 +10,7 @@ use ast\Node;
 use Exception;
 use Phan\AST\ArrowFunc;
 use Phan\AST\ASTReverter;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -141,7 +142,14 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($loop_nodes as $loop_node) {
             // Check if any variables read by the loop condition were set within the statements.
             $cond = $loop_node->children['cond'];
+            if ($cond instanceof Node && $cond->kind === ast\AST_EXPR_LIST) {
+                $cond = \end($cond->children);
+            }
             if ($cond instanceof Node) {
+                if (UnionTypeVisitor::checkCondUnconditionalTruthiness($cond) !== null) {
+                    // e.g. false, null
+                    continue;
+                }
                 $id_set_in_loop = self::extractNodeIdSet($cond);
                 if ($id_set_in_loop) {
                     foreach ($id_set_in_loop as $id => $_) {
@@ -166,6 +174,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                         }
                     }
                 }
+            } elseif (!$cond) {  // @phan-suppress-current-line PhanSuspiciousTruthyString
+                continue;
             }
 
             $this->emitIssue(

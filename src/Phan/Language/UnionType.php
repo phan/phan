@@ -1149,7 +1149,7 @@ class UnionType implements Serializable, Stringable
 
         return $this->asMappedUnionType(static function (Type $type) use ($context): Type {
             if ($type instanceof SelfType) {
-                return $context->getClassFQSEN()->asType()->withIsNullable($type->isNullable());
+                return $type->withSelfResolvedInContext($context);
             }
             return $type;
         });
