@@ -748,6 +748,8 @@ class Type implements Stringable
      *
      * @param int $source Type::FROM_*
      *
+     * @param list<UnionType> $template_parameter_type_list used for static, etc. @phan-mandatory-param
+     *
      * @return Type
      * Get a type for the given type name
      *
@@ -757,7 +759,8 @@ class Type implements Stringable
     public static function fromInternalTypeName(
         string $type_name,
         bool $is_nullable,
-        int $source
+        int $source,
+        array $template_parameter_type_list = []
     ): Type {
 
         // If this is a generic type (like int[]), return
@@ -771,7 +774,8 @@ class Type implements Stringable
                 self::fromInternalTypeName(
                     \substr($type_name, 0, $pos),
                     false,
-                    $source
+                    $source,
+                    $template_parameter_type_list
                 ),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
@@ -842,14 +846,13 @@ class Type implements Stringable
             case 'iterable':
                 return IterableType::instance($is_nullable);
             case 'static':
-                return StaticType::instance($is_nullable);
             case '$this':
-                return StaticType::instance($is_nullable);
+                return StaticType::instanceWithTemplateTypeList($is_nullable, $template_parameter_type_list);
         }
 
         if (\substr($type_name, 0, 1) === '?') {
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-            return self::fromInternalTypeName(\substr($type_name, 1), true, $source);
+            return self::fromInternalTypeName(\substr($type_name, 1), true, $source, $template_parameter_type_list);
         }
         throw new AssertionError("No internal type with name $type_name");
     }
@@ -983,40 +986,34 @@ class Type implements Stringable
             }
         }
 
+        // Map the names of the types to actual types in the
+        // template parameter type list
+        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+
         if (!$namespace) {
             if (count($template_parameter_type_name_list) > 0) {
                 $type_name = \strtolower($type_name);
                 switch ($type_name) {
                     case 'array':
                     case 'non-empty-array':
-                        // template parameter type list
-                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
                         return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-array', false);
                     case 'associative-array':
                     case 'non-empty-associative-array':
-                        // template parameter type list
-                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
                         return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-array', true);
                     case 'list':
                     case 'non-empty-list':
-                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-list');
                     case 'iterable':
-                        // template parameter type list
-                        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
                         return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
             }
             return self::fromInternalTypeName(
                 $fully_qualified_string,
                 $is_nullable,
-                Type::FROM_NODE
+                Type::FROM_NODE,
+                $template_parameter_type_list
             );
         }
-
-        // Map the names of the types to actual types in the
-        // template parameter type list
-        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
 
         if (0 !== \strpos($namespace, '\\')) {
             $namespace = '\\' . $namespace;
@@ -1082,7 +1079,7 @@ class Type implements Stringable
         array $shape_components,
         bool $is_nullable
     ): FunctionLikeDeclarationType {
-        if (count($shape_components) === 0) {
+        if (!$shape_components) {
             // The literal int '0' is a valid union type, but it's falsey, so check the count instead.
             // shouldn't happen
             throw new AssertionError("Expected at least one component of a closure phpdoc type");
@@ -1489,7 +1486,7 @@ class Type implements Stringable
                 }
                 // TODO: Warn about unrecognized types.
             }
-            return self::fromInternalTypeName($type_name, $is_nullable, $source);
+            return self::fromInternalTypeName($type_name, $is_nullable, $source, $template_parameter_type_list);
         }
 
         // Things like `self[]` or `$this[]`
@@ -1527,13 +1524,18 @@ class Type implements Stringable
                 return self::maybeFindParentType($is_nullable, $context, $code_base);
             }
             if ($source === self::FROM_PHPDOC && $context->getScope()->isInTraitScope()) {
-                return SelfType::instance($is_nullable);
+                return SelfType::instanceWithTemplateTypeList($is_nullable, $template_parameter_type_list);
             }
             // Equivalent to getClassFQSEN()->asType()->withIsNullable but slightly faster (this is frequently used)
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-            return self::fromFullyQualifiedString(
-                $context->getClassFQSEN()->__toString()
-            )->withIsNullable($is_nullable);
+            $fqsen = $context->getClassFQSEN();
+            return self::make(
+                $fqsen->getNamespace(),
+                $fqsen->getName(),
+                $template_parameter_type_list,
+                $is_nullable,
+                $source
+            );
         }
 
         // Merge the current namespace with the given relative
@@ -2859,18 +2861,22 @@ class Type implements Stringable
             return \get_class($type) === MixedType::class || $this->isPossiblyTruthy();
         }
 
-        // A nullable type cannot cast to a non-nullable type
-        if ($this->is_nullable && !$type->is_nullable) {
-            // If this is nullable, but that isn't, and we've
-            // configured nulls to cast as anything (or as arrays), ignore
-            // the nullable part.
+        if ($this->is_nullable) {
+            // A nullable type cannot cast to a non-nullable type (Except when null_casts_as_any_type is true)
             if (Config::get_null_casts_as_any_type()) {
-                return $this->withIsNullable(false)->canCastToType($type);
+                return true;
             } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
-                return $this->withIsNullable(false)->canCastToType($type);
+                return true;
+            } elseif ($type->isScalar() && (
+                    Config::getValue('scalar_implicit_cast') ||
+                    in_array($type->getName(), Config::getValue('scalar_implicit_partial')['null'] ?? [], true))) {
+                // e.g. allow casting ?string to string if scalar_implicit_cast or 'null' => ['string'] is in scalar_implicit_partial.
+                return true;
             }
 
-            return false;
+            if (!$type->isNullable()) {
+                return false;
+            }
         }
 
         // Get a non-null version of the type we're comparing

@@ -12128,6 +12128,7 @@ return [
 'setlocale\'1' => ['string|false', 'category'=>'int', 'locale'=>'?array'],
 'setproctitle' => ['void', 'title'=>'string'],
 'setrawcookie' => ['bool', 'name'=>'string', 'value='=>'string', 'expires='=>'int', 'path='=>'string', 'domain='=>'string', 'secure='=>'bool', 'httponly='=>'bool'],
+'setrawcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'associative-array'],
 'setRightFill' => ['void', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
 'setthreadtitle' => ['bool', 'title'=>'string'],
 'settype' => ['bool', '&rw_var'=>'mixed', 'type'=>'string'],
