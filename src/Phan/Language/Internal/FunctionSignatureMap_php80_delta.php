@@ -66,7 +66,7 @@ return [
 'mktime' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 'parse_str' => ['void', 'encoded_string'=>'string', '&w_result'=>'array'],
 'password_hash' => ['string', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
-'PhpToken::getAll' => ['list<PhpToken>', 'code'=>'string', 'flags='=>'int'],
+'PhpToken::tokenize' => ['list<PhpToken>', 'code'=>'string', 'flags='=>'int'],
 'PhpToken::is' => ['bool', 'kind'=>'string|int|string[]|int[]'],
 'PhpToken::isIgnorable' => ['bool'],
 'PhpToken::getTokenName' => ['string'],
