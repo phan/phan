@@ -151,7 +151,7 @@ return [
 'curl_error' => '?string',
 'curl_escape' => '?false|?string',
 'curl_exec' => '?false|?string',
-'curl_file_create' => 'object',
+'curl_file_create' => 'CURLFile',
 'curl_getinfo' => '?array|?false|?float|?int|?string',
 'curl_init' => '?false|?resource',
 'curl_multi_add_handle' => '?int',
