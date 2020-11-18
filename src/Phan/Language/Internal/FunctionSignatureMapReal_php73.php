@@ -778,7 +778,7 @@ return [
 'parse_url' => 'array|false|int|null|string',
 'passthru' => '?false',
 'password_get_info' => '?array<string,array>|?array<string,int>|?array<string,string>|?false',
-'password_hash' => 'false|null|string',
+'password_hash' => 'false|null|string|int',
 'password_needs_rehash' => '?bool',
 'password_verify' => 'bool',
 'pathinfo' => 'array|string',
