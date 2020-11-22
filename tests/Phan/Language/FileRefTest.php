@@ -20,10 +20,11 @@ final class FileRefTest extends BaseTest
     public function testGetProjectRelativePathForPath(): void
     {
         $root_dir = \dirname(__DIR__, 3);
+        $basename = \basename($root_dir);  // The basename of the realpath is almost always 'phan'
         Config::setProjectRootDirectory($root_dir);
         $this->expectProjectRelativePath('src/Phan/CLI.php', 'src/Phan/CLI.php');
         $this->expectProjectRelativePath('src/Phan/CLI.php', $root_dir . '/src/Phan/CLI.php');
-        $this->expectProjectRelativePath('src/Phan/CLI.php', '../phan/src/Phan/CLI.php');
+        $this->expectProjectRelativePath('src/Phan/CLI.php', "../$basename/src/Phan/CLI.php");
         // TODO: could normalize on Windows?
         $this->assertSame('../other/path.txt', FileRef::getProjectRelativePathForPath('../other/path.txt'));
         // Projects starting with the same folder prefix (phan) should be properly normalized
