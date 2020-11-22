@@ -1624,6 +1624,22 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if this is exclusively IntType or LiteralIntType or NullType
+     */
+    public function isIntTypeOrNull(): bool
+    {
+        if (\count($this->type_set) === 0) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof IntType) && !($type instanceof NullType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns true if this is exclusively non-null IntType or LiteralIntType or FloatType or LiteralFloatType
      */
     public function isNonNullIntOrFloatType(): bool

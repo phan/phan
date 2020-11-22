@@ -1363,6 +1363,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function isIntTypeOrNull(): bool
+    {
+        return false;
+    }
+
     public function isNonNullIntOrFloatType(): bool
     {
         return false;

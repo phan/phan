@@ -1123,7 +1123,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $result = $result->asNonEmptyListTypes();
             }
-            $result = $result->withRealTypeSet(self::arrayTypeFromRealTypeBuilder($real_value_types_builder, $has_key));
+            $result = $result->withRealTypeSet($this->arrayTypeFromRealTypeBuilder($real_value_types_builder, $node, $has_key));
             if ($is_definitely_non_empty) {
                 return $result->nonFalseyClone();
             }
@@ -1138,21 +1138,43 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return list<ArrayType>
      */
-    private static function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, bool $has_key): array
+    private function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, Node $node, bool $has_key): array
     {
-        if (!$builder || $builder->isEmpty()) {
-            static $array_type_set = null;
-            if ($array_type_set === null) {
-                $array_type_set = [ArrayType::instance(false)];
+        // Here, we only check for the real type being an integer.
+        // Unknown strings such as '0' will cast to integers when used as array keys,
+        // and if we knew all of the array keys were literals we would have generated an array shape instead.
+        $has_int_keys = true;
+        if ($has_key) {
+            foreach ($node->children as $child_node) {
+                $key = $child_node->children['key'] ?? null;
+                if (!isset($key)) {
+                    // unpacking an array with string keys is a runtime error so these must be ints.
+                    continue;
+                }
+                $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key);
+                if (!$key_type->getRealUnionType()->isIntTypeOrNull()) {
+                    $has_int_keys = false;
+                    break;
+                }
             }
-            return $array_type_set;
+        }
+        if (!$builder || $builder->isEmpty()) {
+            if (!$has_key) {
+                return UnionType::typeSetFromString('list');
+            }
+            return UnionType::typeSetFromString($has_int_keys ? 'array<int,mixed>' : 'array');
         }
         $real_types = [];
         foreach ($builder->getTypeSet() as $type) {
             if ($has_key) {
-                $real_types[] = ListType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
+                // TODO: Could be more precise if all keys are known to be non-numeric strings or integers
+                $real_types[] = GenericArrayType::fromElementType(
+                    $type,
+                    false,
+                    $has_int_keys ? GenericArrayType::KEY_INT : GenericArrayType::KEY_MIXED
+                );
             } else {
-                $real_types[] = GenericArrayType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
+                $real_types[] = ListType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
             }
         }
         return $real_types;

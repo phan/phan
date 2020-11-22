@@ -1,5 +1,13 @@
 Phan NEWS
 
+??? ?? 2020, Phan 3.2.5 (dev)
+-----------------------
+
+Bug fixes
++ Fix logic error inferring the real key type of lists and arrays
+  and infer that the real union type of arrays is `array<int,something>`
+  when all keys have real type int. (#4251)
+
 Nov 12 2020, Phan 3.2.4
 -----------------------
 
