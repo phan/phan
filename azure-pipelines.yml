@@ -1,0 +1,26 @@
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+jobs:
+  - template: .azure/job.yml
+    parameters:
+      configurationName: PHP_72_NTS
+      phpVersion: 7.2
+      vmImage: 'ubuntu-16.04'
+  - template: .azure/job.yml
+    parameters:
+      configurationName: PHP_73_NTS
+      phpVersion: 7.3
+      vmImage: 'ubuntu-18.04'
+  - template: .azure/job.yml
+    parameters:
+      configurationName: PHP_74_NTS
+      phpVersion: 7.4
+      vmImage: 'ubuntu-20.04'
+# - template: .azure/job.yml
+#   parameters:
+#     configurationName: PHP_80_NTS
+#     phpVersion: 8.0
+#     vmImage: 'ubuntu-20.04'
