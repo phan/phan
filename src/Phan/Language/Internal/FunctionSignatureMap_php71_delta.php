@@ -20,7 +20,7 @@ return [
     'curl_multi_errno' => ['int', 'mh'=>'resource'],
     'curl_share_errno' => ['int', 'sh'=>'resource'],
     'curl_share_strerror' => ['string', 'code'=>'int'],
-    'get_headers' => ['array<int|string,array|string>|false', 'url'=>'string', 'format='=>'int', 'context='=>'resource'],
+    'get_headers' => ['array<int|string,array|string>|false', 'url'=>'string', 'format='=>'bool', 'context='=>'resource'],
     'getenv\'1' => ['array<string,string>'],
     'getopt' => ['array<string,string>|array<string,false>|array<string,list<mixed>>', 'options'=>'string', 'longopts='=>'array', '&w_optind='=>'int'],
     'hash_hkdf' => ['string|false', 'algo'=>'string', 'ikm'=>'string', 'length='=>'int', 'info='=>'string', 'salt='=>'string'],
@@ -41,7 +41,7 @@ return [
 ],
 'old' => [
     'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argument_count='=>'int'],
-    'get_headers' => ['array|false', 'url'=>'string', 'format='=>'int'],
+    'get_headers' => ['array|false', 'url'=>'string', 'format='=>'bool'],
     'getopt' => ['array<string,string>|array<string,false>|array<string,list<string|false>>', 'options'=>'string', 'longopts='=>'array'],
     'pg_fetch_all' => ['array', 'result'=>'resource'],
     'pg_last_error' => ['string', 'connection='=>'resource'],

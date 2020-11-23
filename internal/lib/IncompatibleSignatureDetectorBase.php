@@ -56,6 +56,9 @@ Usage: $program_name command [...args]
   $program_name update-stubs path/to/stubs-dir
     Update any of Phan's missing signatures based on a checkout of a directory with stubs for extensions.
 
+  $program_name update-real-stubs path/to/php-src-or-ext-dir
+    Print information about where *.stub.php files conflict with Phan's stub files.
+
   $program_name update-svn path/to/phpdoc_svn_dir
     Update any of Phan's missing signatures based on a checkout of the docs.php.net source repo.
 
@@ -215,7 +218,7 @@ EOT;
      * @param array<mixed,string> $arguments_from_phan
      * @return array<mixed,string>
      */
-    private function updateSignature(string $function_like_name, array $arguments_from_phan): array
+    protected function updateSignature(string $function_like_name, array $arguments_from_phan): array
     {
         $return_type = $arguments_from_phan[0];
         $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
@@ -257,6 +260,7 @@ EOT;
             }
         }
         // TODO: Update param types
+        // @see IncompatibleRealStubsDetector
         return $arguments_from_phan;
     }
 

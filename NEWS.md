@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 2020, Phan 3.2.5 (dev)
 -----------------------
 
+New features (Analysis):
++ Convert more internal function signature types from resource to the new object types with `target_php_version` of `8.0`+ (#4246)
+
 Bug fixes
 + Fix logic error inferring the real key type of lists and arrays
   and infer that the real union type of arrays is `array<int,something>`

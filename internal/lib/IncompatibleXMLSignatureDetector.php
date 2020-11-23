@@ -7,6 +7,7 @@ use Phan\Memoize;
 
 require_once __DIR__ . '/IncompatibleSignatureDetectorBase.php';
 require_once __DIR__ . '/IncompatibleStubsSignatureDetector.php';
+require_once __DIR__ . '/IncompatibleRealStubsSignatureDetector.php';
 
 /**
  * A utility to read php.net's xml documentation for functions, methods,
@@ -292,6 +293,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             // TODO: CLI flags
             static::printUsageAndExit();
         }
+        // Attempt to parse newer php syntax such as union types on a best-effort basis.
+        Config::setValue('use_fallback_parser', true);
         $command = $argv[1];
         switch ($command) {
             case 'sort':
@@ -312,6 +315,17 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $detector->addMissingFunctionLikeSignatures();
                 $detector->updateFunctionSignatures();
                 // TODO: Sort .php.extra_signatures and .php.new
+                break;
+            case 'update-real-stubs':
+                if (count($argv) !== 3) {
+                    fwrite(STDERR, "Invalid argument count, update-stubs expects 1 argument\n");
+                    static::printUsageAndExit();
+                }
+                // TODO: Add a way to exclude /tests/
+                $detector = new IncompatibleRealStubsSignatureDetector($argv[2]);
+                $detector->selfTest();
+                $detector->addMissingFunctionLikeSignatures();
+                $detector->updateFunctionSignatures();
                 break;
             case 'update-stubs':
                 if (count($argv) !== 3) {
