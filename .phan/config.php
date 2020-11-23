@@ -466,6 +466,7 @@ return [
         'vendor/psr/log/Psr',
         'vendor/sabre/event/lib',
         'vendor/symfony/console',
+        'vendor/symfony/polyfill-php80',
         '.phan/plugins',
         '.phan/stubs',
     ],
