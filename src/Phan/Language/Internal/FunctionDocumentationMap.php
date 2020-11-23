@@ -10826,12 +10826,12 @@ Alias of {@see oci_cancel}',
 Alias of {@see OCI-Lob::close()}',
 'ocicollappend' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
-(@see OCI_Collection::append)',
+(@see OCICollection::append)',
 'ocicollassign' => '(PHP 4 >= 4.0.6, PECL OCI8 1.0)
 Alias of {@see OCI-Collection::assign()}
 Assigns a value to the collection from another existing collection',
 'ocicollassignelem' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
-Alias of {@see OCI_Collection::assignElem}',
+Alias of {@see OCICollection::assignElem}',
 'ocicollgetelem' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
 {@see OCI_COLLection::getElem}',
@@ -10843,7 +10843,7 @@ Alias of
 {@see OCI_COLLection::size}',
 'ocicolltrim' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
-{@see OCI_Collection::trim}',
+{@see OCICollection::trim}',
 'ocicolumnisnull' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of {@see oci_field_is_null}',
 'ocicolumnname' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
@@ -10873,7 +10873,7 @@ Alias of {@see oci_fetch}',
 'ocifetchstatement' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of {@see oci_fetch_all}',
 'ocifreecollection' => '(PHP 4 &gt;= 4.0.7, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
-Alias of {@see OCI_Collection::free}',
+Alias of {@see OCICollection::free}',
 'ocifreecursor' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
 {@see oci_free_statement}',
@@ -10886,7 +10886,7 @@ Alias of {@see oci_free_statement}',
 Alias of {@see oci_internal_debug}',
 'ociloadlob' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
-{@see OCI_Lob::load}',
+{@see OCILob::load}',
 'ocilogoff' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of {@see oci_close}',
 'ocilogon' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
@@ -10923,7 +10923,7 @@ Alias of
 {@see OCI-Lob::save}',
 'ocisavelobfile' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
-{@see OCI_Lob::import}',
+{@see OCILob::import}',
 'ociserverversion' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of {@see oci_server_version}',
 'ocisetprefetch' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
@@ -10932,7 +10932,7 @@ Alias of {@see oci_set_prefetch}',
 Alias of {@see oci_statement_type}',
 'ociwritelobtofile' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
 Alias of
-{@see OCI_Lob::export}',
+{@see OCILob::export}',
 'ociwritetemporarylob' => '(PHP 4 &gt;= 4.0.6, PECL OCI8 1.0)
 Writes a temporary large object
 Alias of {@see OCI-Lob::writeTemporary()}',

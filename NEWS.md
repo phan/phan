@@ -11,6 +11,10 @@ Bug fixes
   and infer that the real union type of arrays is `array<int,something>`
   when all keys have real type int. (#4251)
 
+Miscellaneous:
++ Rename OCI-Collection and OCI-Lob to OCICollection and OCILob internally to prepare for php 8 support.
+  (Previously `OCI_Collection` and `OCI_Lob` were used to be valid fqsens internally)
+
 Nov 12 2020, Phan 3.2.4
 -----------------------
 
