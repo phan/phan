@@ -35,7 +35,7 @@ return [
 'FFI::type' => ['FFI\CType', 'type'=>'string'],
 'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 'imagecreatefromtga' => ['resource|false', 'filename'=>'string'],
-'openssl_x509_verify' => ['resource|false', 'cert'=>'string|resource', 'key'=>'string|resource'],
+'openssl_x509_verify' => ['int', 'cert'=>'string|resource', 'key'=>'string|resource'],
 'password_algos' => ['list<string>'],
 'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
 'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
