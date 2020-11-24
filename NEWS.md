@@ -4,7 +4,7 @@ Phan NEWS
 -----------------------
 
 New features (Analysis):
-+ Convert more internal function signature types from resource to the new object types with `target_php_version` of `8.0`+ (#4246)
++ Convert more internal function signature types from resource to the new object types with `target_php_version` of `8.0`+ (#4245, #4246)
 
 Bug fixes
 + Fix logic error inferring the real key type of lists and arrays
