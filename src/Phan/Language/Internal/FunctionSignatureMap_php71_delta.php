@@ -27,7 +27,7 @@ return [
     'is_iterable' => ['bool', 'value'=>'mixed'],
     'openssl_get_curve_names' => ['list<string>'],
     'pcntl_async_signals' => ['bool', 'on='=>'bool'],
-    'pcntl_signal_get_handler' => ['int|string', 'signo'=>'int'],
+    'pcntl_signal_get_handler' => ['int|callable', 'signo'=>'int'],
     'pg_fetch_all' => ['array<int,array>|false', 'result'=>'resource', 'result_type='=>'int'],
     'pg_last_error' => ['string', 'connection='=>'resource', 'operation='=>'int'],
     'pg_select' => ['string|bool', 'db'=>'resource', 'table'=>'string', 'ids'=>'array', 'options='=>'int', 'result_type='=>'int'],

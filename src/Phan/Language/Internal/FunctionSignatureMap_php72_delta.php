@@ -24,7 +24,7 @@ return [
     'hash_update' => ['bool', 'context'=>'HashContext', 'data'=>'string'],
     'hash_update_file' => ['bool', 'context'=>'HashContext', 'filename'=>'string', 'scontext='=>'?resource'],
     'hash_update_stream' => ['int', 'context'=>'HashContext', 'handle'=>'resource', 'length='=>'int'],
-    'imagebmp' => ['bool', 'image'=>'resource', 'to='=>'mixed', 'compressed='=>'bool'],
+    'imagebmp' => ['bool', 'image'=>'resource', 'to='=>'null|resource|string', 'compressed='=>'bool'],
     'imagecreatefrombmp' => ['resource|false', 'filename'=>'string'],
     'imageopenpolygon' => ['bool', 'image'=>'resource', 'points'=>'array', 'num_points'=>'int', 'color'=>'int'],
     'imageresolution' => ['array<int,int>|bool', 'image'=>'resource', 'res_x='=>'int', 'res_y='=>'int'],
