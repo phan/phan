@@ -1,5 +1,5 @@
 %s:7 PhanNonClassMethodCall Call to method badMethodCall on non-class type int[]|null
 %s:10 PhanNonClassMethodCall Call to method badMethodCall on non-class type int
 %s:21 PhanUndeclaredMethod Call to undeclared method \ArrayAccess::offsetExisssssssts
-%s:22 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $x of type \ArrayAccess (real type object) but \intdiv() takes int
-%s:31 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x of type false but \intdiv() takes int
+%s:22 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $x of type \ArrayAccess (real type object) but \intdiv() takes int
+%s:31 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type false but \intdiv() takes int

@@ -1,1 +1,1 @@
-%s:4 PhanParamTooManyInternal Call with 3 arg(s) to \getopt(string $options, array $longopts = %s) which only takes 2 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
+%s:4 PhanParamTooManyInternal Call with 3 arg(s) to \getopt(string $short_options, array $long_options = %s) which only takes 2 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.

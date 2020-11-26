@@ -14,7 +14,7 @@
 %s:21 PhanUndeclaredVariable Variable $b is undeclared (Did you mean $y)
 %s:23 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $strTypo of type null but \strlen() takes string
 %s:23 PhanUndeclaredVariable Variable $strTypo is undeclared
-%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $str of type string but \intdiv() takes int
 %s:25 PhanRedundantCondition Redundant attempt to cast $inCondVar of type 3 to truthy
 %s:25 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $inCondVar of type 3 but \strlen() takes string
 %s:26 PhanCoalescingAlwaysNull Using $c of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
@@ -33,7 +33,7 @@
 %s:31 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:32 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:33 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
-%s:33 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:33 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $str of type string but \intdiv() takes int
 %s:35 PhanPossiblyInfiniteLoop The loop condition ~$unaryMissing3 does not seem to change within the loop and nothing seems to exit the loop
 %s:35 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:35 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)
@@ -46,7 +46,7 @@
 %s:37 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:38 PhanPossiblyInfiniteLoop The loop condition (is_string($str) && (intdiv($str, 10) > 0)) does not seem to change within the loop and nothing seems to exit the loop
 %s:38 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
-%s:38 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $str of type string but \intdiv() takes int
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $str of type string but \intdiv() takes int
 %s:39 PhanPossiblyInfiniteLoop The loop condition ($y && $x3) does not seem to change within the loop and nothing seems to exit the loop
 %s:39 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared

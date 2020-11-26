@@ -1,7 +1,7 @@
 %s:18 PhanTypeMissingReturn Method \B307::offsetExists is declared to return bool in phpdoc but has no return value
 %s:22 PhanTypeMissingReturn Method \B307::offsetGet is declared to return mixed in phpdoc but has no return value
 %s:34 PhanTypeMismatchReturn Returning 42 of type 42 but serialize() is declared to return ?string
-%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $serialized of type string but \intdiv() takes int
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $serialized of type string but \intdiv() takes int
 %s:39 PhanUnusedVariable Unused definition of variable $x
 %s:40 PhanTypeMismatchReturnProbablyReal Returning true of type true but unserialize() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:44 PhanUnusedVariable Unused definition of variable $result

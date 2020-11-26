@@ -1,7 +1,7 @@
 %s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $options['hooks'] of type array (real type ?array) but \strlen() takes string
-%s:25 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $options['hooks'] of type array{0:string} (real type ?array{0:string}) but \intdiv() takes int
+%s:25 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $options['hooks'] of type array{0:string} (real type ?array{0:string}) but \intdiv() takes int
 %s:34 PhanDebugAnnotation @phan-debug-var requested for variable $options - it has union type array{hooks:string}(real=array{hooks:string}|non-empty-array<mixed,mixed>)
-%s:36 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $options['hooks'] of type string (real type ?string) but \intdiv() takes int
+%s:36 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $options['hooks'] of type string (real type ?string) but \intdiv() takes int
 %s:38 PhanDebugAnnotation @phan-debug-var requested for variable $options - it has union type array{hooks:array}(real=array{hooks:array}|non-empty-array<mixed,mixed>)
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $options['hooks'] of type array but \strlen() takes string
 %s:41 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $options of type array{hooks:array|string} (real type array{hooks:array|string}|non-empty-array<mixed,mixed>) but \strlen() takes string

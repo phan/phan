@@ -1,2 +1,2 @@
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->x of type string but \intdiv() takes int
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->x of type null but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $this->x of type string but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $this->x of type null but \intdiv() takes int

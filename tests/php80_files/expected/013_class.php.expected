@@ -1,3 +1,3 @@
-%s:6 PhanTypeMismatchArgumentInternalReal Argument 1 ($numerator) is $obj::class of type 'stdClass' but \intdiv() takes int
+%s:6 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is $obj::class of type 'stdClass' but \intdiv() takes int
 %s:7 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression $x with type array{}
 %s:8 PhanRedundantConditionInGlobalScope Redundant attempt to cast $value of type class-string to string in the global scope (likely a false positive)
