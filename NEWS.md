@@ -1,10 +1,11 @@
 Phan NEWS
 
-??? ?? 2020, Phan 3.2.5 (dev)
+Nov 26 2020, Phan 3.2.5
 -----------------------
 
 New features (Analysis):
 + Convert more internal function signature types from resource to the new object types with `target_php_version` of `8.0`+ (#4245, #4246)
++ Make internal function signature types and counts consistent with PHP 8.0's `.php.stub` files used to generate some reflection information.
 
 Bug fixes
 + Fix logic error inferring the real key type of lists and arrays
