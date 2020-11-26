@@ -108,7 +108,7 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTest
         foreach ($real_map as $function_name => $return_type_string) {
             $real_signature = $map[\strtolower($function_name)] ?? null;
             if ($real_signature === null) {
-                $errors .= "Expected function name '$function_name' to be found in signatures for php 7.4\n";
+                $errors .= "Expected function name '$function_name' to be found in signatures for PHP_VERSION_ID=$php_version_id\n";
                 continue;
             }
             $return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $return_type_string), $context, Type::FROM_TYPE);

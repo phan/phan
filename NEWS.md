@@ -1,5 +1,10 @@
 Phan NEWS
 
+Nov 26 2020, Phan 4.0.0-alpha4
+------------------------------
+
+Merge changes from Phan 3.2.5.
+
 Nov 12 2020, Phan 4.0.0-alpha3
 ------------------------------
 
@@ -29,6 +34,23 @@ Backwards incompatible changes:
 
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
+
+Nov 26 2020, Phan 3.2.5
+-----------------------
+
+New features (Analysis):
++ Convert more internal function signature types from resource to the new object types with `target_php_version` of `8.0`+ (#4245, #4246)
++ Make internal function signature types and counts consistent with PHP 8.0's `.php.stub` files used to generate some reflection information.
+
+Bug fixes
++ Fix logic error inferring the real key type of lists and arrays
+  and infer that the real union type of arrays is `array<int,something>`
+  when all keys have real type int. (#4251)
++ Fix rendering of processed item count in `--long-progress-bar`.
+
+Miscellaneous:
++ Rename OCI-Collection and OCI-Lob to OCICollection and OCILob internally to prepare for php 8 support.
+  (Previously `OCI_Collection` and `OCI_Lob` were used to be valid fqsens internally)
 
 Nov 12 2020, Phan 3.2.4
 -----------------------
