@@ -517,10 +517,17 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                             echo "A better Phan return type for $function_like_name is $param_from_external_stub (previously $param_type_from_phan)\n";
                         }
                         $arguments_from_phan[$param_name] = $param_from_external_stub;
+                        break;
                     }
                 }
             }
             $param_index++;
+        }
+        if (count($arguments_from_external_stub) > count($arguments_from_phan)) {
+            $repr = self::encodeSignatureArguments($arguments_from_external_stub);
+            if (strpos($repr, '...') === false) {
+                echo "There are more arguments for $function_like_name: $repr\n";
+            }
         }
         return $arguments_from_phan;
     }

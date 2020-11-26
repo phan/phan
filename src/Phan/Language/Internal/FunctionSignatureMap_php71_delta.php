@@ -32,7 +32,7 @@ return [
     'pg_last_error' => ['string', 'connection='=>'resource', 'operation='=>'int'],
     'pg_select' => ['string|bool', 'db'=>'resource', 'table'=>'string', 'ids'=>'array', 'options='=>'int', 'result_type='=>'int'],
     'sapi_windows_cp_conv' => ['string', 'in_codepage'=>'int|string', 'out_codepage'=>'int|string', 'subject'=>'string'],
-    'sapi_windows_cp_get' => ['int'],
+    'sapi_windows_cp_get' => ['int', 'kind='=>'string'],
     'sapi_windows_cp_is_utf8' => ['bool'],
     'sapi_windows_cp_set' => ['bool', 'code_page'=>'int'],
     'session_create_id' => ['string', 'prefix='=>'string'],
