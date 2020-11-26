@@ -90,9 +90,8 @@ call_user_func(static function () : void {
             }
         }
     };
-    $include_paths = $codeclimate_config['include_paths'] ?? [];
 
-    foreach (is_array($include_paths) ? $include_paths : [] as $path) {
+    foreach ($codeclimate_config['include_paths'] as $path) {
         if (is_dir('/code/' . $path)) {
             $queue_with_include_paths('/code/' . $path);
         } else {
