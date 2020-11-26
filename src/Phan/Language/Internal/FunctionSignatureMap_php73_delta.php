@@ -40,7 +40,7 @@ return [
     'JsonException::getTrace' => ['array<int,array<string,mixed>>'],
     'JsonException::getTraceAsString' => ['string'],
     'ldap_add_ext' => ['resource|false', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'serverctrls='=>'array'],
-    'ldap_bind_ext' => ['resource|false', 'link_identifier'=>'resource', 'bind_rdn='=>'string', 'bind_password='=>'?string', 'serverctls='=>'?string'],
+    'ldap_bind_ext' => ['resource|false', 'link_identifier'=>'resource', 'bind_rdn='=>'string', 'bind_password='=>'?string', 'serverctls='=>'?array'],
     'ldap_mod_add_ext' => ['resource|false', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'serverctrls='=>'array'],
     'ldap_mod_del_ext' => ['resource|false', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'serverctrls='=>'array'],
     'ldap_mod_replace_ext' => ['resource|false', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'serverctrls='=>'array'],

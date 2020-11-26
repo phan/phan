@@ -64,9 +64,8 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __destruct()
     {
         // Shut down and remove the queue
-        $success = \msg_remove_queue(
-            $this->message_queue_resource
-        );
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
+        $success = \msg_remove_queue($this->message_queue_resource);
         if (!$success) {
             // @phan-suppress-next-line PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
             throw new AssertionError("Failed to remove queue with ID {$this->message_queue_resource}");
@@ -89,9 +88,8 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function readQueuedIssues(): void
     {
         // Get the status of the queue
-        $status = \msg_stat_queue(
-            $this->message_queue_resource
-        );
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
+        $status = \msg_stat_queue($this->message_queue_resource);
 
         // Read messages while there are still messages on
         // the queue
@@ -102,6 +100,7 @@ class ParallelParentCollector implements IssueCollectorInterface
             // Receive the message, populating $message by
             // reference
             if (\msg_receive(
+                // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
                 $this->message_queue_resource,
                 self::MESSAGE_TYPE_ISSUE,
                 $message_type,
@@ -119,9 +118,8 @@ class ParallelParentCollector implements IssueCollectorInterface
                 break;
             }
 
-            $status = \msg_stat_queue(
-                $this->message_queue_resource
-            );
+            // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
+            $status = \msg_stat_queue($this->message_queue_resource);
         }
     }
 

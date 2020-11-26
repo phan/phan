@@ -35,11 +35,13 @@ return [
 'FFI::type' => ['FFI\CType', 'type'=>'string'],
 'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 'imagecreatefromtga' => ['resource|false', 'filename'=>'string'],
-'openssl_x509_verify' => ['resource|false', 'cert'=>'string|resource', 'key'=>'string|resource'],
+'openssl_x509_verify' => ['int', 'cert'=>'string|resource', 'key'=>'string|resource'],
 'password_algos' => ['list<string>'],
 'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
 'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
 'pcntl_unshare' => ['bool', 'flags'=>'int'],
+'preg_replace_callback' => ['string|string[]', 'regex'=>'string|array', 'callback'=>'callable(array):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
+'preg_replace_callback_array' => ['string|string[]', 'pattern'=>'array<string,callable(array):string>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 'proc_open' => ['resource|false', 'command'=>'string|string[]', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 'ReflectionReference::getId' => ['string'],
@@ -53,6 +55,8 @@ return [
 'old' => [
 'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'int', 'options='=>'array'],
 'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'int', 'options='=>'array'],
+'preg_replace_callback' => ['string|string[]', 'regex'=>'string|array', 'callback'=>'callable(array):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
+'preg_replace_callback_array' => ['string|string[]', 'pattern'=>'array<string,callable(array):string>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 'proc_open' => ['resource|false', 'command'=>'string', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 'strip_tags' => ['string', 'string'=>'string', 'allowable_tags='=>'string'],
 ]
