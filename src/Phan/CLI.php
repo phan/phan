@@ -2593,7 +2593,7 @@ EOB
                     // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
                     $buf .= " " . \sprintf(
                         "%" . strlen((string)(int)$count) . "d / %d (%3d%%) %.0fMB" . PHP_EOL,
-                        $offset ?? 0,
+                        min(self::$current_progress_offset_long_progress, $count),
                         (int)$count,
                         100 * $p,
                         $memory

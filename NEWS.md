@@ -10,6 +10,7 @@ Bug fixes
 + Fix logic error inferring the real key type of lists and arrays
   and infer that the real union type of arrays is `array<int,something>`
   when all keys have real type int. (#4251)
++ Fix rendering of processed item count in `--long-progress-bar`.
 
 Miscellaneous:
 + Rename OCI-Collection and OCI-Lob to OCICollection and OCILob internally to prepare for php 8 support.
