@@ -327,6 +327,17 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $detector->addMissingFunctionLikeSignatures();
                 $detector->updateFunctionSignatures();
                 break;
+            case 'update-real-param-names':
+                if (count($argv) !== 3) {
+                    fwrite(STDERR, "Invalid argument count, update-stubs expects 1 argument\n");
+                    static::printUsageAndExit();
+                }
+                // TODO: Add a way to exclude /tests/
+                $detector = new IncompatibleRealStubsSignatureDetector($argv[2]);
+                $detector->selfTest();
+                $detector->addMissingFunctionLikeSignatures();
+                $detector->updateFunctionSignaturesParamNames();
+                break;
             case 'update-stubs':
                 if (count($argv) !== 3) {
                     fwrite(STDERR, "Invalid argument count, update-stubs expects 1 argument\n");

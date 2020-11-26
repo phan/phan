@@ -59,6 +59,9 @@ Usage: $program_name command [...args]
   $program_name update-real-stubs path/to/php-src-or-ext-dir
     Print information about where *.stub.php files conflict with Phan's stub files.
 
+  $program_name update-real-param-names path/to/php-src-or-ext-dir
+    Update param names of functions (without alternates) based on *.stub.php files in a directory.
+
   $program_name update-svn path/to/phpdoc_svn_dir
     Update any of Phan's missing signatures based on a checkout of the docs.php.net source repo.
 
@@ -274,7 +277,7 @@ EOT;
         $this->addMissingGlobalFunctionSignatures($phan_signatures);
         $this->addMissingMethodSignatures($phan_signatures);
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.extra_signatures';
-        static::info("Saving function signatures with extra paths to $new_signature_path (updating param and return types)\n");
+        static::info("Saving function signatures with added missing signatures to $new_signature_path (updating param and return types)\n");
         static::sortSignatureMap($phan_signatures);
         static::saveSignatureMap($new_signature_path, $phan_signatures);
     }
@@ -398,9 +401,9 @@ EOT;
     /**
      * @throws RuntimeException if the file could not be read
      */
-    public static function readSignatureHeader(): string
+    public static function readSignatureHeader(?string $path = null): string
     {
-        return self::readArrayFileHeader(ORIGINAL_SIGNATURE_PATH);
+        return self::readArrayFileHeader($path ?? ORIGINAL_SIGNATURE_PATH);
     }
 
     /**
@@ -503,6 +506,18 @@ EOT;
     }
 
     /**
+     * @param array<string,array<string,array<int|string,string>>> $deltas
+     */
+    public static function saveSignatureDeltaMap(string $new_delta_path, string $original_delta_path, array $deltas, bool $include_header = true): void
+    {
+        $contents = static::serializeSignatureDeltas($deltas);
+        if ($include_header) {
+            $contents = static::readSignatureHeader($original_delta_path) . $contents;
+        }
+        file_put_contents($new_delta_path, $contents);
+    }
+
+    /**
      * @param array<string,array<int|string,string>> $signatures
      */
     public static function serializeSignatures(array $signatures): string
@@ -510,6 +525,23 @@ EOT;
         $parts = "return [\n";
         foreach ($signatures as $function_like_name => $arguments) {
             $parts .= static::encodeSingleSignature($function_like_name, $arguments);
+        }
+        $parts .= "];\n";
+        return $parts;
+    }
+
+    /**
+     * @param array<string,array<string,array<int|string,string>>> $deltas
+     */
+    public static function serializeSignatureDeltas(array $deltas): string
+    {
+        $parts = "return [\n";
+        foreach ($deltas as $section_name => $signatures) {
+            $parts .= "'$section_name' => [\n";
+            foreach ($signatures as $function_like_name => $arguments) {
+                $parts .= static::encodeSingleSignature($function_like_name, $arguments);
+            }
+            $parts .= "],\n";
         }
         $parts .= "];\n";
         return $parts;
