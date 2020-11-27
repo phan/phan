@@ -1,6 +1,6 @@
 Phan NEWS
 
-Nov 26 2020, Phan 3.2.6 (dev)
+Nov 27 2020, Phan 3.2.6
 -----------------------
 
 New features (Analysis):
