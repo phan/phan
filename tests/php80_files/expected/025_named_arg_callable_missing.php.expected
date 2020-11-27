@@ -20,4 +20,4 @@
 %s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
 %s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (value: 1000)
 %s:15 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
-%s:15 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($data, int $options = 0, int $depth = 512)
+%s:15 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($value, int $flags = 0, int $depth = 512)

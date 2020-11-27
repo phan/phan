@@ -467,6 +467,85 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
     /**
      * @param array<mixed,string> $arguments_from_phan
      * @return array<mixed,string>
+     */
+    protected function updateSignatureParamNames(string $function_like_name, array $arguments_from_phan): array
+    {
+        $arguments_from_external_stub = $this->parseFunctionLikeSignature($function_like_name);
+        if (is_null($arguments_from_external_stub)) {
+            return $arguments_from_phan;
+        }
+        $repr = self::encodeSignatureArguments($arguments_from_phan);
+        if (str_contains($repr, '...')) {
+            return $arguments_from_phan;
+        }
+        $count = count($arguments_from_phan);
+        $keys = array_keys($arguments_from_phan);
+        $keys_external = array_keys($arguments_from_external_stub);
+        $new_arguments_from_phan = [];
+        foreach ($keys as $i => $param_name) {
+            $type = $arguments_from_phan[$param_name];
+            if (!isset($keys_external[$i])) {
+                $new_arguments_from_phan[$param_name] = $type;
+                continue;
+            }
+            $param_name_external = $keys_external[$i];
+            if (is_string($param_name) && is_string($param_name_external)) {
+                if (str_starts_with($param_name, '&w_')) {
+                    $param_name_external = preg_replace('/^\&(w_)?/', '&w_', $param_name_external);
+                } elseif (str_starts_with($param_name, '&rw_')) {
+                    $param_name_external = preg_replace('/^\&(rw_)?/', '&rw_', $param_name_external);
+                } elseif (str_starts_with($param_name, '&r_')) {
+                    $param_name_external = preg_replace('/^\&(r_)?/', '&r_', $param_name_external);
+                }
+            }
+            $new_arguments_from_phan[$param_name_external] = $type;
+        }
+        if (count($new_arguments_from_phan) !== $count) {
+            return $arguments_from_phan;
+        }
+        return $new_arguments_from_phan;
+    }
+
+    /**
+     * Update the function/method signatures using the subclass's source of type information
+     */
+    public function updateFunctionSignaturesParamNames(): void
+    {
+        $phan_signatures = static::readSignatureMap();
+        $new_signatures = [];
+        foreach ($phan_signatures as $method_name => $arguments) {
+            if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
+                // Don't update functions/methods with alternate
+                $new_signatures[$method_name] = $arguments;
+                continue;
+            }
+            $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+        }
+        $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.new';
+        static::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
+        static::saveSignatureMap($new_signature_path, $new_signatures);
+        $deltas = ['70', '71', '72', '73', '74', '80'];
+        foreach ($deltas as $delta) {
+            $delta_path = dirname(__DIR__, 2) . "/src/Phan/Language/Internal/FunctionSignatureMap_php{$delta}_delta.php";
+            $delta_contents = require($delta_path);
+            foreach (['old', 'new'] as $section) {
+                foreach ($delta_contents[$section] as $method_name => $arguments) {
+                    if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
+                        // Don't update functions/methods with alternate
+                        continue;
+                    }
+                    $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+                }
+            }
+            $new_delta_path = "$delta_path.new";
+            static::info("Saving modified function signature deltas to $new_delta_path (updating param names)\n");
+            static::saveSignatureDeltaMap($new_delta_path, $delta_path, $delta_contents);
+        }
+    }
+
+    /**
+     * @param array<mixed,string> $arguments_from_phan
+     * @return array<mixed,string>
      * @override
      */
     protected function updateSignature(string $function_like_name, array $arguments_from_phan): array
@@ -538,6 +617,8 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
      */
     public static function readSignatureMap(): array
     {
-        return UnionType::internalFunctionSignatureMap(PHP_VERSION_ID);
+        // TODO: Preserve the original case
+        return require(dirname(__DIR__, 2) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
+        // return UnionType::internalFunctionSignatureMap(PHP_VERSION_ID);
     }
 }

@@ -1,2 +1,2 @@
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x->x of type \stdClass but \intdiv() takes int
-%s:16 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is new stdClass() of type \stdClass but \intdiv() takes int
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x->x of type \stdClass but \intdiv() takes int
+%s:16 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is new stdClass() of type \stdClass but \intdiv() takes int

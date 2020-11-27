@@ -1,10 +1,10 @@
 src/004_array_real_key.php:8 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type int|list<mixed>(real=?int|?list<mixed>)
 src/004_array_real_key.php:10 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $i of type int but \strlen() takes string
-src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $i of type string but \intdiv() takes int
+src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
 src/004_array_real_key.php:19 PhanTypeMismatchArgumentReal Argument 1 ($s) is $i of type int but \accepts_string() takes string defined at src/004_array_real_key.php:3
 src/004_array_real_key.php:23 PhanPluginUnknownArrayFunctionReturnType Function \create_array() has a return type of array, but does not specify key or value types
 src/004_array_real_key.php:23 PhanUnreferencedFunction Possibly zero references to function \create_array()
-src/004_array_real_key.php:27 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $i of type string but \intdiv() takes int
+src/004_array_real_key.php:27 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
 src/004_array_real_key.php:28 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type array{0:'value'}(real=array{0:'value'})
 src/004_array_real_key.php:28 PhanTypeErrorInInternalCall Saw a call to an internal function strlen() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: strlen() expects parameter 1 to be string, array given
 src/004_array_real_key.php:28 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($string) is $value of type array{0:'value'} but \strlen() takes string

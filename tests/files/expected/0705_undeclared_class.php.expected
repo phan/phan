@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $r of type \ReflectionFunctionAbstract|\ReflectionMethod|\Reflector but \intdiv() takes int
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $r of type \ReflectionFunctionAbstract|\ReflectionMethod|\Reflector but \intdiv() takes int
 %s:9 PhanUndeclaredMethod Call to undeclared method \ReflectionClass::getMissingMethod

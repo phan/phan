@@ -1,13 +1,13 @@
 %s:7 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop
 %s:8 PhanPossiblyUnsetPropertyOfThis Attempting to read property $this->prop which was unset in the current scope
-%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->prop of type null but \intdiv() takes int
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $this->prop of type null but \intdiv() takes int
 %s:8 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop
 %s:9 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \DynamicProperty742's property declared_prop declared at %s:5 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
 %s:10 PhanPossiblyUnsetPropertyOfThis Attempting to read property $this->declared_prop which was unset in the current scope
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $this->declared_prop of type null but \intdiv() takes int
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $this->declared_prop of type null but \intdiv() takes int
 %s:11 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop
-%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $this->prop of type array{} but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $this->prop of type array{} but \intdiv() takes int
 %s:12 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop
 %s:13 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop
-%s:14 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $this->prop of type \stdClass but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $this->prop of type \stdClass but \intdiv() takes int
 %s:14 PhanUndeclaredProperty Reference to undeclared property \DynamicProperty742->prop

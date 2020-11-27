@@ -1,2 +1,2 @@
-%s:6 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 3 of \preg_match(string $pattern, string $subject, string[] &$subpatterns = %s, int $flags = %s, int $offset = %s)
+%s:6 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 3 of \preg_match(string $pattern, string $subject, string[] &$matches = %s, int $flags = %s, int $offset = %s)
 %s:8 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $matches of type array{0:string} but \strlen() takes string

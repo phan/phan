@@ -1,0 +1,4 @@
+%s:9 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public $x of \HasUntypedPropertyPromotion::__construct($x)
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $this->x of type array but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $c->x of type \stdClass but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $c->x of type array but \strlen() takes string

@@ -1,3 +1,9 @@
+%s:5 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private ?\MissingClass $other = null of \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21::__construct(int $value, ?\MissingClass $other = null)
+%s:5 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $value of \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21::__construct(int $value, ?\MissingClass $other = null)
+%s:5 PhanUndeclaredTypeParameter Parameter $other has undeclared type ?\MissingClass
+%s:5 PhanUndeclaredTypeProperty Property \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21->other has undeclared type ?\MissingClass
 %s:7 PhanTypeArraySuspicious Suspicious array access to $value of type int
-%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21::__construct() takes int defined at %s:4
-%s:11 PhanUndeclaredProperty Reference to undeclared property \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21->value
+%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21::__construct() takes int defined at %s:5
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x->value of type int but \strlen() takes string
+%s:14 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int
+%s:17 PhanRedefineProperty Property $value defined at %s:17 was previously defined at %s:14

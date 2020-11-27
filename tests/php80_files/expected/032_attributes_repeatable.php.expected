@@ -1,3 +1,5 @@
 %s:5 PhanAttributeNonRepeatable Saw attribute \Attribute which was not declared as \Attribute::IS_REPEATABLE in the class definition at internal:0 but had a repeat declaration on line 3
+%s:8 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $path of \Route32::__construct(string $path)
 %s:11 PhanCompatibleAttributeGroupOnMultipleLines Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group Attribute(Attribute::TARGET_FUNCTION) of Class \Single32 ending around line 12. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
+%s:15 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $path of \Single32::__construct(string $path)
 %s:25 PhanAttributeNonRepeatable Saw attribute \Single32 which was not declared as \Attribute::IS_REPEATABLE in the class definition at %s:14 but had a repeat declaration on line 24

@@ -1,9 +1,9 @@
 %s:6 PhanTypeInvalidDimOffset Invalid offset "key" of $value of array type list<mixed>
 %s:11 PhanTypeInvalidDimOffset Invalid offset "key" of $value2 of array type list<mixed>
-%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 0 of type 0 but \json_decode() takes bool
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($associative) is 0 of type 0 but \json_decode() takes bool
 %s:16 PhanTypeInvalidDimOffset Invalid offset "key" of $value2 of array type list<mixed>
-%s:24 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 1 of type 1 but \json_decode() takes bool
+%s:24 PhanTypeMismatchArgumentInternal Argument 2 ($associative) is 1 of type 1 but \json_decode() takes bool
 %s:39 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value with type array|bool|float|int|null|string
-%s:40 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 1 of type 1 but \json_decode() takes bool
+%s:40 PhanTypeMismatchArgumentInternal Argument 2 ($associative) is 1 of type 1 but \json_decode() takes bool
 %s:41 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value with type array|bool|float|int|null|string
 %s:43 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value2 with type array|bool|float|int|null|string

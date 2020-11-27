@@ -1,2 +1,2 @@
-%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $c3->isIterable() of type bool but \intdiv() takes int
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $c3->isIterateable() of type bool but \intdiv() takes int
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $c3->isIterable() of type bool but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $c3->isIterateable() of type bool but \intdiv() takes int

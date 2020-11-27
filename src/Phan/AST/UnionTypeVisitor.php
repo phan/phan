@@ -446,8 +446,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // For NS\MyClass::methodName, return 'methodName'
                         $value = $fqsen->getName();
                     } else {
-                        // For NS\my_method, return 'NS\my_method'
-                        $value = $fqsen->isClosure() ? '{closure}' : \ltrim($fqsen->__toString(), '\\');
+                        if ($fqsen->isClosure()) {
+                            $this->emitIssue(
+                                Issue::SuspiciousMagicConstant,
+                                $node->lineno,
+                                '__FUNCTION__',
+                                "used inside of a closure instead of a function/method - the value is always '{closure}'"
+                            );
+                            $value = '{closure}';
+                        } else {
+                            // For \NS\my_function, return 'NS\my_function'.
+                            $value = \ltrim($fqsen->__toString(), '\\');
+                        }
                     }
                     return self::literalStringUnionType($value);
                 }
