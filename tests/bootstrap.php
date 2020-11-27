@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+use Phan\AST\TolerantASTConverter\Shim;
+
 // Test output of failures is shorter with relative paths than absolute paths
 const RASMUS_TEST_FILE_DIR = './tests/rasmus_files/src';
 const RASMUS_EXPECTED_DIR = './tests/rasmus_files/expected';
@@ -25,3 +28,6 @@ const PHP80_TEST_FILE_DIR = './tests/php80_files/src';
 const PHP80_EXPECTED_DIR = './tests/php80_files/expected';
 
 require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';
+
+// Need to declare newer constants such as PARAM_MODIFIER_PUBLIC when running some tests
+Shim::load();

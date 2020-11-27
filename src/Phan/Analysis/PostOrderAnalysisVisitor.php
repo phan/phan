@@ -4493,6 +4493,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     ($method instanceof Func && $method->isClosure() ? $argument_type : $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances())->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
+            if ($method instanceof Method && ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS)) {
+                $this->analyzeArgumentWithConstructorPropertyPromotion($method, $parameter);
+            }
         }
 
         // If we're passing by reference, get the variable
@@ -4575,6 +4578,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
         $parameter_list[$parameter_offset] = $pass_by_reference_variable;
     }
+
+    private function analyzeArgumentWithConstructorPropertyPromotion(Method $method, Parameter $parameter): void {
+        if (!$method->isNewConstructor()) {
+            return;
+        }
+        $code_base = $this->code_base;
+        $class_fqsen = $method->getClassFQSEN();
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        $property = $class->getPropertyByName($code_base, $parameter->getName());
+        AssignmentVisitor::addTypesToPropertyStandalone($code_base, $this->context, $property, $parameter->getUnionType());
+    }
+
 
     /**
      * Emit warnings if the pass-by-reference call would set the property to an invalid type
