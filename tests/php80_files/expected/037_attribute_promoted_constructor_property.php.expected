@@ -1,0 +1,4 @@
+%s:18 PhanAttributeWrongTarget Saw use of attribute \NS37\OnParameter declared at %s:8 which supports being declared on \Attribute::TARGET_PARAMETER but it was declared on public int $value which requires an attribute declared to support \Attribute::TARGET_PROPERTY
+%s:18 PhanAttributeWrongTarget Saw use of attribute \NS37\OnProperty declared at %s:11 which supports being declared on \Attribute::TARGET_PROPERTY but it was declared on public int $value which requires an attribute declared to support \Attribute::TARGET_PARAMETER
+%s:19 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $value of \NS37\Example::__construct(int $value, int $other)
+%s:20 PhanAttributeWrongTarget Saw use of attribute \NS37\OnProperty declared at %s:11 which supports being declared on \Attribute::TARGET_PROPERTY but it was declared on int $other which requires an attribute declared to support \Attribute::TARGET_PARAMETER
