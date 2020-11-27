@@ -28,6 +28,7 @@ use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -332,12 +333,21 @@ class ParseVisitor extends ScopeVisitor
             $class->addMethod($code_base, $method, None::instance());
         }
 
-        if ('__construct' === $method_name) {
+        $method_name_lower = \strtolower($method_name);
+        if ('__construct' === $method_name_lower) {
             $class->setIsParentConstructorCalled(false);
-        } elseif ('__invoke' === $method_name) {
+
+            // Handle constructor property promotion of __construct parameters
+            foreach ($method->getParameterList() as $i => $parameter) {
+                if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS) {
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentNullable kind is AST_PARAM
+                    $this->addPromotedConstructorPropertyFromParam($class, $parameter, $node->children['params']->children[$i]);
+                }
+            }
+        } elseif ('__invoke' === $method_name_lower) {
             // TODO: More precise callable shape
             $class->addAdditionalType(CallableType::instance(false));
-        } elseif ('__toString' === $method_name
+        } elseif ('__tostring' === $method_name_lower
             && !$this->context->isStrictTypes()
         ) {
             $class->addAdditionalType(StringType::instance(false));
@@ -345,9 +355,81 @@ class ParseVisitor extends ScopeVisitor
 
 
         // Create a new context with a new scope
-        return $this->context->withScope(
-            $method->getInternalScope()
+        return $this->context->withScope($method->getInternalScope());
+    }
+
+    /**
+     * Add an instance property from php 8.0 constructor property promotion
+     * (`__construct(public int $param)`)
+     *
+     * This heavily duplicates parts of visitPropGroup
+     */
+    private function addPromotedConstructorPropertyFromParam(
+        Clazz $class,
+        Parameter $parameter,
+        Node $parameter_node
+    ): void  {
+        $code_base = $this->code_base;
+        $lineno = $parameter_node->lineno;
+        $context = (clone($this->context))->withLineNumberStart($lineno);
+        if ($parameter_node->flags & ast\flags\PARAM_VARIADIC) {
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $lineno,
+                "Cannot declare variadic promoted property"
+            );
+            return;
+        }
+        $property_fqsen = FullyQualifiedPropertyName::make($class->getFQSEN(), $parameter->getName());
+
+        if ($code_base->hasPropertyWithFQSEN($property_fqsen)) {
+            $old_property = $code_base->getPropertyByFQSEN($property_fqsen);
+            if ($old_property->getDefiningFQSEN() === $property_fqsen) {
+                // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
+                // PhanRedefineMagicProperty is a separate check.
+                if ($old_property->isFromPHPDoc()) {
+                    return;
+                }
+                $this->emitIssue(
+                    Issue::RedefineProperty,
+                    $lineno,
+                    $property_fqsen->getName(),
+                    $context->getFile(),
+                    $lineno,
+                    $context->getFile(),
+                    $old_property->getContext()->getLineNumberStart()
+                );
+                return;
+            }
+        }
+        // TODO support attributes in Phan 4
+        // TODO: this should probably use FutureUnionType instead.
+        $property = new Property(
+            $context,
+            $parameter->getName(),
+            $parameter->getUnionType(),
+            $parameter_node->flags & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS,
+            $property_fqsen,
+            $parameter->getUnionType()->getRealUnionType()
         );
+        $doc_comment = $parameter_node->children['docComment'] ?? '';
+        // Get a comment on the property declaration
+        $comment = Comment::fromStringInContext(
+            $doc_comment,
+            $code_base,
+            $context,
+            $lineno,
+            Comment::ON_PROPERTY  // TODO: Could optionally add a new ON_PARAM kind?
+        );
+        $property->setDocComment($doc_comment);
+        $property->setPhanFlags($comment->getPhanFlagsForProperty());
+        $property->setSuppressIssueSet($comment->getSuppressIssueSet());
+        $class->addProperty($code_base, $property, None::instance());
+        if ($class->isImmutable()) {
+            if (!$property->isStatic() && !$property->isWriteOnly()) {
+                $property->setIsReadOnly(true);
+            }
+        }
     }
 
     /**
@@ -530,9 +612,7 @@ class ParseVisitor extends ScopeVisitor
             // Add the property to the class
             $class->addProperty($this->code_base, $property, None::instance());
 
-            $property->setSuppressIssueSet(
-                $comment->getSuppressIssueSet()
-            );
+            $property->setSuppressIssueSet($comment->getSuppressIssueSet());
 
             if ($future_union_type_node instanceof Node) {
                 $future_union_type = new FutureUnionType(

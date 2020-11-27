@@ -1,0 +1,4 @@
+%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private int $x of \T32::__construct(int $x)
+%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private int $x of \Y32::__construct(int $x)
+%s:9 PhanTypeMismatchReturnReal Returning $this->x of type int but getX() is declared to return \stdClass
+%s:14 PhanAccessPropertyPrivate Cannot access private property \Y32->x defined at %s:3 (Did you mean \Y32::getX())

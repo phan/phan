@@ -46,6 +46,9 @@ class Parameter extends Variable
     public const REFERENCE_WRITE_ONLY = 3;
     public const REFERENCE_IGNORED = 4;
 
+    public const PARAM_MODIFIER_VISIBILITY_FLAGS = ast\flags\PARAM_MODIFIER_PUBLIC | ast\flags\PARAM_MODIFIER_PRIVATE | ast\flags\PARAM_MODIFIER_PROTECTED;
+
+
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
@@ -588,6 +591,11 @@ class Parameter extends Variable
     public function __toString(): string
     {
         $string = '';
+        $flags = $this->getFlags();
+        if ($flags & self::PARAM_MODIFIER_VISIBILITY_FLAGS) {
+            $string .= $flags & ast\flags\PARAM_MODIFIER_PUBLIC ? 'public ' :
+                        ($flags & ast\flags\PARAM_MODIFIER_PROTECTED ? 'protected ' : 'private ');
+        }
 
         $union_type = $this->getNonVariadicUnionType();
         if (!$union_type->isEmpty()) {
