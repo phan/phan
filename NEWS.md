@@ -1,5 +1,11 @@
 Phan NEWS
 
+Nov 26 2020, Phan 3.2.6 (dev)
+-----------------------
+
+New features (Analysis):
++ Update many more real parameter names to match php 8.0's parameter names for php's own internal methods. (#4263)
+
 Nov 26 2020, Phan 3.2.5
 -----------------------
 

@@ -9,5 +9,5 @@
 %s:23 PhanImpossibleCondition Impossible attempt to cast $s of type string to countable
 %s:24 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $s of type \Countable|array but \strlen() takes string
 %s:26 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $s of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:38 PhanTypeMismatchArgumentInternalReal Argument 1 ($numerator) is $x of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|array{0:2}|iterable but \intdiv() takes int
+%s:38 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is $x of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|array{0:2}|iterable but \intdiv() takes int
 %s:41 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $x of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)

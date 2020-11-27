@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($numerator) is $x[0] of type \stdClass (real type ?\stdClass) but \intdiv() takes int
+%s:6 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $x[0] of type \stdClass (real type ?\stdClass) but \intdiv() takes int

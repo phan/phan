@@ -6,7 +6,7 @@
 %s:46 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $m->getAttr(null) of type int but \spl_object_hash() takes object
 %s:46 PhanTypeMismatchArgumentReal Argument 1 ($path) is null of type null but \NSMixin\MyClass::getAttr() takes string defined at %s:8
 %s:48 PhanParamTooMany Call with 1 arg(s) to \NSMixin\MyClass::setAbc() which only takes 0 arg(s) defined at %s:11
-%s:49 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $m->instanceProp of type string but \intdiv() takes int
+%s:49 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $m->instanceProp of type string but \intdiv() takes int
 %s:51 PhanUndeclaredProperty Reference to undeclared property \NSMixin\MyClass->privateInstanceProp
 %s:53 PhanUndeclaredStaticProperty Static property 'staticProp' on \NSMixin\MyClass is undeclared
 %s:54 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\NSMixin\MyClass'

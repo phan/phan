@@ -1,8 +1,8 @@
-src/072_custom_assertions.php:41 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $x of type string but \intdiv() takes int
-src/072_custom_assertions.php:43 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $y of type \stdClass but \intdiv() takes int
-src/072_custom_assertions.php:86 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $arg of type false|string but \intdiv() takes int
-src/072_custom_assertions.php:87 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $obj of type \stdClass but \intdiv() takes int
-src/072_custom_assertions.php:90 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $arg of type string but \intdiv() takes int
+src/072_custom_assertions.php:41 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type string but \intdiv() takes int
+src/072_custom_assertions.php:43 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $y of type \stdClass but \intdiv() takes int
+src/072_custom_assertions.php:86 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $arg of type false|string but \intdiv() takes int
+src/072_custom_assertions.php:87 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $obj of type \stdClass but \intdiv() takes int
+src/072_custom_assertions.php:90 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $arg of type string but \intdiv() takes int
 src/072_custom_assertions.php:93 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $node of type \ast\Node but \strlen() takes string
 src/072_custom_assertions.php:118 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \SomeNS\missingClass
 src/072_custom_assertions.php:119 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='

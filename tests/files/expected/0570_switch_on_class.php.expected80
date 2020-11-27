@@ -6,4 +6,4 @@
 %s:24 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN 'A|B'
 %s:27 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\stdClass'
 %s:30 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '?stdClass'
-%s:35 PhanTypeMismatchArgumentInternalReal Argument 1 ($numerator) is $a of type \ReflectionClass|\ReflectionFunction|\ReflectionFunctionAbstract|\Reflector|\Stringable but \intdiv() takes int
+%s:35 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is $a of type \ReflectionClass|\ReflectionFunction|\ReflectionFunctionAbstract|\Reflector|\Stringable but \intdiv() takes int

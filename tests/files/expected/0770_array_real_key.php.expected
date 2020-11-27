@@ -1,5 +1,5 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $i of type int but \strlen() takes string
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $i of type string but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
 %s:21 PhanTypeMismatchArgumentReal Argument 1 ($s) is $i of type int but \accepts_string() takes string defined at %s:3
-%s:29 PhanTypeMismatchArgumentInternal Argument 1 ($numerator) is $i of type string but \intdiv() takes int
+%s:29 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
 %s:30 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $value of type array{0:'value'} but \strlen() takes string
