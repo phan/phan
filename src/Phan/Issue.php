@@ -567,6 +567,7 @@ class Issue
     public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
     public const CompatibleTrailingCommaArgumentList = 'PhanCompatibleTrailingCommaArgumentList';
     public const CompatibleTrailingCommaParameterList = 'PhanCompatibleTrailingCommaParameterList';
+    public const CompatibleConstructorPropertyPromotion = 'PhanCompatibleConstructorPropertyPromotion';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4264,6 +4265,7 @@ class Issue
                 self::REMEDIATION_B,
                 8005
             ),
+            // FIXME: It's redundant to include the first FILE:LINE of the declaration in the full issue message
             new Issue(
                 self::RedefineClassAlias,
                 self::CATEGORY_REDEFINE,
@@ -4902,6 +4904,14 @@ class Issue
                 "Cannot use trailing commas in argument lists before php 7.3 in {CODE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.",
                 self::REMEDIATION_B,
                 3037
+            ),
+            new Issue(
+                self::CompatibleConstructorPropertyPromotion,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Cannot use constructor property promotion before php 8.0 for {PARAMETER} of {METHOD}",
+                self::REMEDIATION_B,
+                3038
             ),
 
             // Issue::CATEGORY_GENERIC

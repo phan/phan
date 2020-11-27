@@ -82,6 +82,27 @@ class ParameterTypesAnalyzer
         // are valid
         $is_optional_seen = false;
         foreach ($method->getParameterList() as $i => $parameter) {
+            if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS) {
+                if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $parameter->createContext($method),
+                        Issue::CompatibleConstructorPropertyPromotion,
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        $parameter,
+                        $method->getRepresentationForIssue(true)
+                    );
+                } else {
+                    // emit an InvalidNode warning for non-constructors (closures, global functions, other methods)
+                    Issue::maybeEmit(
+                        $code_base,
+                        $parameter->createContext($method),
+                        Issue::InvalidNode,
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        "Cannot use visibility modifier on parameter $parameter of non-constructor " . $method->getRepresentationForIssue(true)
+                    );
+                }
+            }
             $union_type = $parameter->getUnionType();
 
             if ($parameter->isOptional()) {

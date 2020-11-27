@@ -59,9 +59,10 @@ class UnitTestRecord
 
     private static function getContents(string $filename): string
     {
-        $contents = file_get_contents($filename);
+        // Suppress error so that the failure message is understandable
+        $contents = @file_get_contents($filename);
         if (!is_string($contents)) {
-            throw new RuntimeException("Failed to read $filename");
+            throw new RuntimeException("Failed to read file $filename that's expected to exist in a unit test: " . (\error_get_last()['message'] ?? 'unknown'));
         }
         return $contents;
     }

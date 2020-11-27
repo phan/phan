@@ -427,6 +427,14 @@ Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.0.3/tests/plugin_test/src/000_plugins.php#L64).
 
+## PhanCompatibleConstructorPropertyPromotion
+
+```
+Cannot use constructor property promotion before php 8.0 for {PARAMETER} of {METHOD}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/032_variadic_promoted_property.php#L3).
+
 ## PhanCompatibleDefaultEqualsNull
 
 ```
