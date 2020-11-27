@@ -9,6 +9,7 @@ New features (Analysis):
 + Infer types of properties from arguments passed into constructor for PHP 8.0 constructor property promotion. (#3938)
 + Emit `PhanInvalidNode` and `PhanRedefineProperty` when misusing syntax for constructor property promotion. (#3938)
 + Emit `PhanCompatibleConstructorPropertyPromotion` when the project's `minimum_target_php_version` is older than `8.0` (#3938)
++ Emit `PhanSuspiciousMagicConstant` when using `__FUNCTION__` inside of a closure. (#4222)
 
 Nov 26 2020, Phan 3.2.5
 -----------------------
