@@ -47,7 +47,7 @@ return [
 'ldap_rename_ext' => ['resource|false', 'ldap'=>'resource', 'dn'=>'string', 'new_rdn'=>'string', 'new_parent'=>'string', 'delete_old_rdn'=>'bool', 'controls='=>'array'],
 'net_get_interfaces' => ['array<string,array<string,mixed>>|false'],
 'openssl_pkey_derive' => ['string|false', 'public_key'=>'mixed', 'private_key'=>'mixed', 'key_length='=>'?int'],
-'session_set_cookie_params\'1' => ['bool', 'options'=>'array{lifetime?:int,path?:string,domain?:?string,secure?:bool,httponly?:bool}'],
+'session_set_cookie_params\'1' => ['bool', 'lifetime_or_options'=>'array{lifetime?:int,path?:string,domain?:?string,secure?:bool,httponly?:bool}'],
 'socket_wsaprotocol_info_export' => ['string|false', 'socket'=>'resource', 'process_id'=>'int'],
 'socket_wsaprotocol_info_import' => ['resource|false', 'info_id'=>'string'],
 'socket_wsaprotocol_info_release' => ['bool', 'info_id'=>'string'],

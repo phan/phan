@@ -23,7 +23,7 @@
 %s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
 %s:14 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($value, int $flags = 0, int $depth = 512)
 %s:15 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (array: 123)
-%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $input1, array ...$args)
-%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $input1, array ...$args) which requires 2 arg(s)
+%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $array, array ...$arrays)
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $array, array ...$arrays) which requires 2 arg(s)
 %s:15 PhanTypeConversionFromArray array to string conversion
-%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($input1) is 123 of type 123 but \array_map() takes array
+%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($array) is 123 of type 123 but \array_map() takes array
