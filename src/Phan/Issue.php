@@ -4737,7 +4737,7 @@ class Issue
             new Issue(
                 self::CompatibleUnsetCast,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 3014
@@ -4766,10 +4766,11 @@ class Issue
                 self::REMEDIATION_B,
                 3017
             ),
+            // TODO: Update messages to reflect that these were removed in php 8.0
             new Issue(
                 self::CompatibleDimAlternativeSyntax,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}",
                 self::REMEDIATION_B,
                 3018
@@ -4777,7 +4778,7 @@ class Issue
             new Issue(
                 self::CompatibleImplodeOrder,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
                 self::REMEDIATION_B,
                 3019
@@ -4785,7 +4786,7 @@ class Issue
             new Issue(
                 self::CompatibleUnparenthesizedTernary,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'",
                 self::REMEDIATION_B,
                 3020
@@ -4798,6 +4799,7 @@ class Issue
                 self::REMEDIATION_B,
                 3021
             ),
+            // TODO mention that they will be treated like regular methods.
             new Issue(
                 self::CompatiblePHP8PHP4Constructor,
                 self::CATEGORY_COMPATIBLE,

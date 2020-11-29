@@ -1,4 +1,4 @@
-%s:2 PhanParamTooFewInternal Call with 0 arg(s) to \max(non-empty-array<mixed,mixed> $arg1) which requires 1 arg(s)
-%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($arg1) is [] of type array{} but \max() takes non-empty-array<mixed,mixed>
+%s:2 PhanParamTooFewInternal Call with 0 arg(s) to \max(non-empty-array<mixed,mixed> $value) which requires 1 arg(s)
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 ($value) is [] of type array{} but \max() takes non-empty-array<mixed,mixed>
 %s:5 PhanParamSpecial2 Argument 1 ($values) is 1 but \max() takes array when passed only one argument
-%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($arg1) is 1 of type 1 but \max() takes non-empty-array<mixed,mixed>
+%s:5 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($value) is 1 of type 1 but \max() takes non-empty-array<mixed,mixed>
