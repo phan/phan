@@ -120,7 +120,8 @@ class IssueFixSuggester
         $suggested_fqsens = \array_merge(
             $code_base->suggestSimilarGlobalFunctionInOtherNamespace($namespace, $name, $context),
             $code_base->suggestSimilarGlobalFunctionInSameNamespace($namespace, $name, $context, $suggest_in_global_namespace),
-            $code_base->suggestSimilarNewInAnyNamespace($namespace, $name, $context, $suggest_in_global_namespace)
+            $code_base->suggestSimilarNewInAnyNamespace($namespace, $name, $context, $suggest_in_global_namespace),
+            $code_base->suggestSimilarGlobalFunctionInNewerVersion($namespace, $name, $context, $suggest_in_global_namespace)
         );
         if (count($suggested_fqsens) === 0) {
             return null;
@@ -132,6 +133,9 @@ class IssueFixSuggester
         $generate_type_representation = static function ($fqsen): string {
             if ($fqsen instanceof FullyQualifiedClassName) {
                 return "new $fqsen()";
+            }
+            if (is_string($fqsen) && strpos($fqsen, 'added in PHP') !== false) {
+                return $fqsen;
             }
             return $fqsen . '()';
         };
