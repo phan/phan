@@ -493,6 +493,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
             }
             $param_name_external = $keys_external[$i];
             if (is_string($param_name) && is_string($param_name_external)) {
+                // FIXME doesn't handle &...w_
                 if (str_starts_with($param_name, '&w_')) {
                     $param_name_external = preg_replace('/^\&(w_)?/', '&w_', $param_name_external);
                 } elseif (str_starts_with($param_name, '&rw_')) {
