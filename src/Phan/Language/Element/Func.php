@@ -442,7 +442,11 @@ class Func extends AddressableElement implements FunctionInterface
 
         $return_type = $this->real_return_type;
         if ($return_type && !$return_type->isEmpty()) {
-            $stub .= ' : ' . (string)$return_type;
+            $return_type_string = (string)$return_type;
+            if (\PHP_VERSION_ID >= 80000 && $return_type_string === '?mixed') {
+                $return_type_string = 'mixed';
+            }
+            $stub .= ' : ' . $return_type_string;
         }
         $stub .= " {}\n";
         $namespace = \ltrim($fqsen->getNamespace(), '\\');
