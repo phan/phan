@@ -599,7 +599,11 @@ class Parameter extends Variable
 
         $union_type = $this->getNonVariadicUnionType();
         if (!$union_type->isEmpty()) {
-            $string .= $union_type->__toString() . ' ';
+            $type_string = $union_type->__toString();
+            if (\PHP_VERSION_ID >= 80000 && $type_string === '?mixed') {
+                $type_string = 'mixed';
+            }
+            $string .= $type_string . ' ';
         }
 
         if ($this->isPassByReference()) {
@@ -631,7 +635,11 @@ class Parameter extends Variable
 
         $union_type = $this->getNonVariadicUnionType();
         if (!$union_type->isEmpty()) {
-            $string .= $union_type->__toString() . ' ';
+            $type_string = $union_type->__toString();
+            if (\PHP_VERSION_ID >= 80000 && $type_string === '?mixed') {
+                $type_string = 'mixed';
+            }
+            $string .= $type_string . ' ';
         }
 
         if ($this->isPassByReference()) {
@@ -790,6 +798,9 @@ class Parameter extends Variable
 
         // TODO: hide template types, generic array or real array types
         $union_type_string = $union_type->__toString();
+        if (\PHP_VERSION_ID >= 80000 && $union_type_string === '?mixed') {
+            return 'mixed';
+        }
         if ($union_type_string === 'mixed') {
             return '';
         }
