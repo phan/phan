@@ -1,4 +1,4 @@
-%s:9 PhanTypeMismatchReturnReal Returning null of type null but object_test() is declared to return object
+/tests/php72_files/src/0001_objecthint.php:9 PhanTypeMismatchReturnReal Returning null of type null but object_test() is declared to return object
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \object_test() takes object defined at %s:3
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is [] of type array{} but \object_test() takes object defined at %s:3
 %s:14 PhanTypeMismatchArgumentReal Argument 2 ($y) is [] of type array{} but \object_test() takes ?object defined at %s:3
@@ -7,4 +7,5 @@
 %s:30 PhanNonClassMethodCall Call to method __construct on non-class type false
 %s:30 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression false with type false
 %s:31 PhanUndeclaredClassMethod Call to method __construct from undeclared class \true
+%s:32 PhanNonClassMethodCall Call to method __construct on non-class type mixed
 %s:32 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression mixed with type mixed

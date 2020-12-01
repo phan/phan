@@ -1366,6 +1366,28 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     *
+     * To reduce false positives for unknown array element types (etc.),
+     * this distinguishes between the phpdoc types ?mixed and mixed,
+     * even though both can contain false.
+     */
+    public function containsNonMixedNullable(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->isNullable()) {
+                if ($type instanceof MixedType) {
+                    if ($type->__toString() === 'mixed') {
+                        continue;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool - True if empty or at least one type is NullType or nullable.
      * e.g. true for `?int`, `int|null`, or ``
      */
@@ -1381,11 +1403,12 @@ class UnionType implements Serializable
 
     /**
      * @return bool - True if not empty and at least one type is NullType or mixed.
+     * TODO deprecate and remove
      */
     public function containsNullableOrMixed(): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || $type instanceof MixedType) {
+            if ($type->isNullable()) {
                 return true;
             }
         }
@@ -1443,7 +1466,7 @@ class UnionType implements Serializable
 
             $result[] = $type->withIsNullable(false);
         }
-        return $result;
+        return $result ?: UnionType::typeSetFromString('non-null-mixed');
     }
 
 

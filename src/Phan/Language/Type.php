@@ -56,6 +56,7 @@ use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -241,6 +242,7 @@ class Type
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
         'non-empty-mixed' => true,
+        'non-null-mixed' => true,
         'non-empty-list'  => true,
         'non-empty-string' => true,
         'non-empty-lowercase-string' => true,
@@ -815,6 +817,8 @@ class Type
                 return MixedType::instance($is_nullable);
             case 'non-empty-mixed':
                 return NonEmptyMixedType::instance($is_nullable);
+            case 'non-null-mixed':
+                return NonNullMixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-associative-array':

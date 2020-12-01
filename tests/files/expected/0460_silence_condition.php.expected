@@ -1,2 +1,4 @@
-%s:11 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
-%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $y of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array|string
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string(real=string)
+%s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $y of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

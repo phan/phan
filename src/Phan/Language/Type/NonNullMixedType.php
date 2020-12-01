@@ -9,19 +9,28 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
- * Represents the PHPDoc `non-empty-mixed` type, which can cast to/from any non-empty type and is truthy.
+ * Represents the PHPDoc `non-empty-mixed` type, which can cast to/from any non-null type and is non-null
  *
  * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
  * @phan-pure
  */
-final class NonEmptyMixedType extends MixedType
+final class NonNullMixedType extends MixedType
 {
     /** @phan-override */
-    public const NAME = 'non-empty-mixed';
+    public const NAME = 'non-null-mixed';
+
+    public static function instance(bool $is_nullable)
+    {
+        if ($is_nullable) {
+            return MixedType::instance(true);
+        }
+        static $instance = null;
+        return $instance ?? ($instance = static::make('\\', self::NAME, [], false, Type::FROM_NODE));
+    }
 
     public function canCastToType(Type $type): bool
     {
-        return $type->isPossiblyTruthy() || ($this->is_nullable && $type->is_nullable);
+        return !($type instanceof NullType || $type instanceof VoidType);
     }
 
     /**
@@ -38,16 +47,6 @@ final class NonEmptyMixedType extends MixedType
         return (bool)$target_type_set;
     }
 
-    protected function canCastToNonNullableType(Type $type): bool
-    {
-        return $type->isPossiblyTruthy();
-    }
-
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
-    {
-        return $type->isPossiblyTruthy();
-    }
-
     public function asGenericArrayType(int $key_type): Type
     {
         return GenericArrayType::fromElementType($this, false, $key_type);
@@ -59,17 +58,7 @@ final class NonEmptyMixedType extends MixedType
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $other->isPossiblyTruthy();
-    }
-
-    public function isPossiblyFalsey(): bool
-    {
-        return $this->is_nullable;
-    }
-
-    public function isAlwaysTruthy(): bool
-    {
-        return !$this->is_nullable;
+        return $this->canCastToType($other);
     }
 
     public function asObjectType(): ?Type
@@ -88,7 +77,7 @@ final class NonEmptyMixedType extends MixedType
 
     public function asNonFalseyType(): Type
     {
-        return $this->withIsNullable(false);
+        return $this;
     }
 
     /** @override */
@@ -100,6 +89,6 @@ final class NonEmptyMixedType extends MixedType
     /** @override */
     public function __toString(): string
     {
-        return $this->is_nullable ? '?non-empty-mixed' : 'non-empty-mixed';
+        return $this->is_nullable ? '?non-null-mixed' : 'non-null-mixed';
     }
 }

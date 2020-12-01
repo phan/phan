@@ -1113,7 +1113,7 @@ final class ArgumentType
                 return null;
             }
             // @phan-suppress-next-line PhanAccessMethodInternal
-            if (!$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
+            if ($argument_type_expanded_resolved->isNull() || !$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
                 if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {
                     $real_arg_type = $argument_type->getRealUnionType();
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();

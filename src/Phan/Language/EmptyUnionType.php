@@ -351,7 +351,7 @@ final class EmptyUnionType extends UnionType
     /** @override */
     public function nonNullableClone(): UnionType
     {
-        return $this;
+        return UnionType::fromFullyQualifiedRealString('non-null-mixed');
     }
 
     /** @override */
@@ -369,7 +369,7 @@ final class EmptyUnionType extends UnionType
     /** @override */
     public function withIsNullable(bool $is_nullable): UnionType
     {
-        return $this;
+        return $is_nullable ? $this : $this->nonNullableClone();
     }
 
     /**
@@ -553,10 +553,13 @@ final class EmptyUnionType extends UnionType
      * @internal
      * @override
      */
+    /**
+     * No longer a special case
     public function canCastToUnionTypeIfNonNull(UnionType $target): bool
     {
         return false;
     }
+     */
 
     public function canCastToUnionTypeHandlingTemplates(
         UnionType $target,

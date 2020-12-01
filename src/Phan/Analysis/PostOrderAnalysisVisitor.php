@@ -1655,7 +1655,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Suppressing TypeMismatchReturnReal also suppresses less severe return type mismatches
             return;
         }
-        if ($this->checkCanCastToReturnTypeIfWasNonNullInstead($expression_type, $method_return_type)) {
+        if (!$expression_type->isNull() && $this->checkCanCastToReturnTypeIfWasNonNullInstead($expression_type, $method_return_type)) {
             if ($this->shouldSuppressIssue(Issue::TypeMismatchReturn, $lineno)) {
                 // Suppressing TypeMismatchReturn also suppresses TypeMismatchReturnNullable
                 return;
