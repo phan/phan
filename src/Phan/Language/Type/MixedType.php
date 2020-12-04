@@ -188,6 +188,11 @@ class MixedType extends NativeType
         return true;
     }
 
+    public function isNullableLabeled(): bool
+    {
+        return $this->is_nullable;
+    }
+
     /** Overridden by NonEmptyMixedType */
     public function __toString(): string
     {

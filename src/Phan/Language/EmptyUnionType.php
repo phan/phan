@@ -320,6 +320,14 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @override
+     */
+    public function containsNonMixedNullable(): bool
+    {
+        return false;
+    }
+
+    /**
      * @return bool - True if not empty and at least one type is NullType or mixed.
      */
     public function containsNullableOrMixed(): bool
@@ -336,6 +344,11 @@ final class EmptyUnionType extends UnionType
     }
 
     public function isNull(): bool
+    {
+        return false;
+    }
+
+    public function isRealTypeNullOrUndefined(): bool
     {
         return false;
     }
@@ -553,13 +566,11 @@ final class EmptyUnionType extends UnionType
      * @internal
      * @override
      */
-    /**
-     * No longer a special case
     public function canCastToUnionTypeIfNonNull(UnionType $target): bool
     {
-        return false;
+        // TODO: Better check for isPossiblyNonNull
+        return UnionType::fromFullyQualifiedRealString('non-null-mixed')->canCastToUnionType($target);
     }
-     */
 
     public function canCastToUnionTypeHandlingTemplates(
         UnionType $target,

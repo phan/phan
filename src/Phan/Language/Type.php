@@ -1793,9 +1793,21 @@ class Type
     /**
      * Is this nullable?
      *
-     * E.g. returns true for `?array`, `null`, etc.
+     * E.g. returns true for `?array`, `null`, `mixed`, etc.
      */
     public function isNullable(): bool
+    {
+        return $this->is_nullable;
+    }
+
+    /**
+     * Is this nullable in a way that Phan would emit warnings about nullable?
+     *
+     * E.g. returns true for `?array`, `null`, `?mixed` (but not `mixed`), etc.
+     *
+     * Currently, the only difference between this and isNullable() is for `?mixed` vs `mixed`
+     */
+    public function isNullableLabeled(): bool
     {
         return $this->is_nullable;
     }

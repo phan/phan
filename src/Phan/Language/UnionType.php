@@ -1437,6 +1437,19 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns true if !isset(expr) is unconditionally true for the real types
+     */
+    public function isRealTypeNullOrUndefined(): bool
+    {
+        foreach ($this->real_type_set as $type) {
+            if (!($type instanceof NullType) && !($type instanceof VoidType)) {
+                return false;
+            }
+        }
+        return \count($this->type_set) !== 0;
+    }
+
+    /**
      * @return UnionType a clone of this that does not include null,
      *                   and has the non-null equivalents of any nullable types in this UnionType
      */
@@ -1505,7 +1518,7 @@ class UnionType implements Serializable
     {
         $result = [];
         foreach ($type_list as $type) {
-            if ($type->isNullable()) {
+            if ($type->isNullableLabeled()) {
                 $result[] = $type;
             } else {
                 $result[] = $type->withIsNullable(true);
@@ -3601,6 +3614,7 @@ class UnionType implements Serializable
      */
     public function numericTypes(): UnionType
     {
+        // TODO: Replace mixed with int|string|float in ConditionVisitor
         return $this->makeFromFilter(static function (Type $type): bool {
             // IntType and LiteralStringType
             return $type->isPossiblyNumeric();

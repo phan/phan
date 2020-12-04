@@ -1058,6 +1058,9 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         // On the left side, remove null and replace '?T' with 'T'
         // Don't bother if the right side contains null.
         if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
+            if ($left_type->getRealUnionType()->isRealTypeNullOrUndefined()) {
+                return $right_type;
+            }
             $left_type = $left_type->nonNullableClone();
         }
 
