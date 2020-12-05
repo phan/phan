@@ -263,7 +263,11 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 $function_name = $func->getFQSEN()->getNamespacedName();
                 // echo "Saw $function_name at {$func->getContext()}\n";
                 $func->ensureScopeInitialized($code_base);
-                $function_name_map[$function_name] = $func->toFunctionSignatureArray();
+                try {
+                    $function_name_map[$function_name] = $func->toFunctionSignatureArray();
+                } catch (\InvalidArgumentException $e) {
+                    fwrite(STDERR, "TODO: Fix signature for {$func->getFQSEN()}: {$e->getMessage()}\n");
+                }
             }
             return $function_name_map;
         });
@@ -544,7 +548,11 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 continue;
             }
              */
-            $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+            try {
+                $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+            } catch (InvalidArgumentException|FQSENException $e) {
+                fwrite(STDERR, "Unexpected invalid signature for $method_name, skipping: $e\n");
+            }
         }
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.new';
         static::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
@@ -561,7 +569,11 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                         continue;
                     }
                      */
-                    $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+                    try {
+                        $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+                    } catch (InvalidArgumentException|FQSENException $e) {
+                        fwrite(STDERR, "Unexpected invalid signature for $method_name for $delta_path, skipping: $e\n");
+                    }
                 }
             }
             $new_delta_path = "$delta_path.new";
