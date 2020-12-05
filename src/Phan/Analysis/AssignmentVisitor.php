@@ -1878,9 +1878,9 @@ class AssignmentVisitor extends AnalysisVisitor
                     }
                 }
             } elseif (!$assign_type->hasTypeMatchingCallback(static function (Type $type) use ($simple_xml_element_type): bool {
-                return !$type->isNullable() && ($type instanceof MixedType || $type === $simple_xml_element_type);
+                return !$type->isNullableLabeled() && ($type instanceof MixedType || $type === $simple_xml_element_type);
             })) {
-                // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
+                // Imitate the check in UnionTypeVisitor, don't warn for mixed (but warn for `?mixed`), etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
                     $node->lineno,

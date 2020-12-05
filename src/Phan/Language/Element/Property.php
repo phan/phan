@@ -429,6 +429,7 @@ class Property extends ClassElement
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
             }
+            // $type is the name of a class - replace it with $new and preserve nullability.
             if (FullyQualifiedClassName::fromType($type) === $old) {
                 $union_type = $union_type
                     ->withoutType($type)

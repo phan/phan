@@ -19,6 +19,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
@@ -174,6 +175,10 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 if ($type instanceof IntType || $type instanceof FloatType) {
                     $has_numeric = true;
                 } elseif ($type->isPossiblyNumeric()) {
+                    if ($type instanceof LiteralStringType) {
+                        $has_numeric = true;
+                        continue;
+                    }
                     return self::_IS_REASONABLE_CONDITION;
                 } else {
                     $has_non_numeric = true;

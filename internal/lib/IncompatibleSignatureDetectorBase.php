@@ -214,7 +214,7 @@ EOT;
             }
             try {
                 $new_signatures[$method_name] = static::updateSignature($method_name, $arguments);
-            } catch (FQSENException|InvalidArgumentException $e) {
+            } catch (FQSENException | InvalidArgumentException $e) {
                 static::info("Skipping invalid signature for $method_name: $e\n");
                 $new_signatures[$method_name] = $arguments;
             }

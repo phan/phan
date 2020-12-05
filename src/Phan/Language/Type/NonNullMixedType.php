@@ -19,12 +19,16 @@ final class NonNullMixedType extends MixedType
     /** @phan-override */
     public const NAME = 'non-null-mixed';
 
+    /**
+     * @suppress PhanPartialTypeMismatchArgument static::make() is Type, not mixed
+     */
     public static function instance(bool $is_nullable)
     {
         if ($is_nullable) {
             return MixedType::instance(true);
         }
         static $instance = null;
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn Type can't cast to NonNullMixedType
         return $instance ?? ($instance = static::make('\\', self::NAME, [], false, Type::FROM_NODE));
     }
 

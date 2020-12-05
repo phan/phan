@@ -47,6 +47,7 @@ use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyMixedType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
@@ -286,7 +287,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // unset($x[$i]) should convert a list<T> or non-empty-list<T> to an array<Y>
             $union_type = $union_type->withAssociativeArrays(true)->asMappedUnionType(static function (Type $type): Type {
                 if ($type instanceof NonEmptyMixedType) {
-                    return MixedType::instance($type->isNullable());
+                    // convert non-empty-mixed to non-null-mixed because `unset($x[$i])` could have removed the last element of an array,
+                    // but that would still not be null.
+                    return $type->isNullableLabeled() ? MixedType::instance(true) : NonNullMixedType::instance(false);
                 }
                 return $type;
             });
@@ -862,7 +865,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                if ($type->isNullable()) {
+                if ($type->isNullableLabeled()) {
                     return false;
                 }
                 if ($type instanceof IntType || $type instanceof MixedType) {
@@ -896,7 +899,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type): bool {
-                if ($type->isNullable()) {
+                if ($type->isNullableLabeled()) {
                     return false;
                 }
                 if ($type instanceof IntType || $type instanceof StringType || $type instanceof MixedType) {
@@ -4579,7 +4582,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parameter_list[$parameter_offset] = $pass_by_reference_variable;
     }
 
-    private function analyzeArgumentWithConstructorPropertyPromotion(Method $method, Parameter $parameter): void {
+    private function analyzeArgumentWithConstructorPropertyPromotion(Method $method, Parameter $parameter): void
+    {
         if (!$method->isNewConstructor()) {
             return;
         }

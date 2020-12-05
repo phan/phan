@@ -100,6 +100,7 @@ final class VoidType extends NativeType
             return true;
         }
 
+        // TODO Make this more strict with real types, somehow?
         if (Config::get_null_casts_as_any_type()) {
             return true;
         }

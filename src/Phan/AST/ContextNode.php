@@ -1467,7 +1467,7 @@ class ContextNode
             foreach ($union_type->getTypeSet() as $type) {
                 if (!$type->isPossiblyObject()) {
                     $invalid = $invalid->withType($type);
-                } elseif ($type->isNullable()) {
+                } elseif ($type->isNullableLabeled()) {
                     $invalid = $invalid->withType(NullType::instance(false));
                 }
             }
@@ -1476,15 +1476,21 @@ class ContextNode
                     $invalid = $invalid->nonNullableClone();
                 }
                 if (!$invalid->isEmpty()) {
-                    $this->emitIssue(
-                        Issue::PossiblyUndeclaredProperty,
-                        $node->lineno,
-                        $property_name,
-                        $union_type,
-                        $invalid
-                    );
-                    if ($property) {
-                        return $property;
+                    foreach ($invalid->getTypeset() as $type) {
+                        if (!$type->isNullableLabeled()) {
+                            continue;
+                        }
+                        $this->emitIssue(
+                            Issue::PossiblyUndeclaredProperty,
+                            $node->lineno,
+                            $property_name,
+                            $union_type,
+                            $invalid
+                        );
+                        if ($property) {
+                            return $property;
+                        }
+                        break;
                     }
                 }
             }

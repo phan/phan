@@ -838,8 +838,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
         $common_left_fields = null;
         foreach ($left->getRealTypeSet() as $type) {
-            // if ($type->isNullable()) { return; }
-
             if (!$type instanceof ArrayShapeType) {
                 if ($type instanceof ListType) {
                     continue;

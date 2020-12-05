@@ -238,7 +238,7 @@ class ParameterTypesAnalyzer
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
                 $type_class = \get_class($type);
                 if ($php70_checks) {
-                    if ($type->isNullable()) {
+                    if ($type->isNullableLabeled()) {
                         if ($real_parameter->isUsingNullableSyntax()) {
                             Issue::maybeEmit(
                                 $code_base,
@@ -315,15 +315,15 @@ class ParameterTypesAnalyzer
                             (string)$type
                         );
                     } else {
-                        if ($type->isNullable()) {
+                        if ($type->isNullableLabeled()) {
                             // Don't emit CompatibleNullableTypePHP70 for `void`.
-                                Issue::maybeEmit(
-                                    $code_base,
-                                    $method->getContext(),
-                                    Issue::CompatibleNullableTypePHP70,
-                                    $method->getFileRef()->getLineNumberStart(),
-                                    (string)$type
-                                );
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::CompatibleNullableTypePHP70,
+                                $method->getFileRef()->getLineNumberStart(),
+                                (string)$type
+                            );
                         }
                         if ($type_class === IterableType::class) {
                             Issue::maybeEmit(
