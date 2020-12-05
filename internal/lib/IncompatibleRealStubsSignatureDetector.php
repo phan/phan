@@ -163,6 +163,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
 
         // TODO: Load without internal signatures
         $code_base = $this->code_base;
+
         foreach ($file_list as $path_to_stub) {
             fwrite(STDERR, "Loading stub $path_to_stub\n");
             try {
@@ -172,6 +173,9 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 // throw $e;
             }
         }
+        // After parsing all files, mark stub functions as having return statements so that the inferred type won't be void.
+        self::markAllStubsAsNonVoid($code_base);
+
         Analysis::analyzeFunctions($code_base);
     }
 

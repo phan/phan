@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Phan\CodeBase;
+use Phan\Exception\FQSENException;
 use Phan\Memoize;
 
 define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__, 2) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
@@ -210,7 +212,12 @@ EOT;
                 $new_signatures[$method_name] = $arguments;
                 continue;
             }
-            $new_signatures[$method_name] = static::updateSignature($method_name, $arguments);
+            try {
+                $new_signatures[$method_name] = static::updateSignature($method_name, $arguments);
+            } catch (FQSENException|InvalidArgumentException $e) {
+                static::info("Skipping invalid signature for $method_name: $e\n");
+                $new_signatures[$method_name] = $arguments;
+            }
         }
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.new';
         static::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
@@ -655,5 +662,23 @@ EOT;
         }
         $result .= "]";
         return $result;
+    }
+
+    /**
+     * Indicate that all functions parsed from stubs with no return statements are non-void
+     */
+    public static function markAllStubsAsNonVoid(CodeBase $code_base): void
+    {
+        static::info("Marking all stubs as non-void\n");
+        foreach ($code_base->getFunctionMap() as $func) {
+            if (!$func->isPHPInternal()) {
+                $func->setHasReturn(true);
+            }
+        }
+        foreach ($code_base->getMethodSet() as $func) {
+            if (!$func->isPHPInternal()) {
+                $func->setHasReturn(true);
+            }
+        }
     }
 }
