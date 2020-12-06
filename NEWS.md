@@ -7,6 +7,7 @@ New features (Analysis):
 + Update real parameter names to match php 8.0's parameter names for php's own internal methods (including variadics and those with multiple signatures). (#4263)
 + Raise the severity of some php 8.0 incompatibility issues to critical.
 + Fix handling of references after renaming variadic reference parameters of `fscanf`/`scanf`/`mb_convert_variables`
++ Mention if PhanUndeclaredFunction is potentially caused by the target php version being too old. (#4230)
 
 Nov 27 2020, Phan 3.2.6
 -----------------------
