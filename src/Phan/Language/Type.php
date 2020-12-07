@@ -56,6 +56,7 @@ use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -241,6 +242,7 @@ class Type
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
         'non-empty-mixed' => true,
+        'non-null-mixed' => true,
         'non-empty-list'  => true,
         'non-empty-string' => true,
         'non-empty-lowercase-string' => true,
@@ -815,6 +817,8 @@ class Type
                 return MixedType::instance($is_nullable);
             case 'non-empty-mixed':
                 return NonEmptyMixedType::instance($is_nullable);
+            case 'non-null-mixed':
+                return NonNullMixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-associative-array':
@@ -1789,9 +1793,21 @@ class Type
     /**
      * Is this nullable?
      *
-     * E.g. returns true for `?array`, `null`, etc.
+     * E.g. returns true for `?array`, `null`, `mixed`, etc.
      */
     public function isNullable(): bool
+    {
+        return $this->is_nullable;
+    }
+
+    /**
+     * Is this nullable in a way that Phan would emit warnings about nullable?
+     *
+     * E.g. returns true for `?array`, `null`, `?mixed` (but not `mixed`), etc.
+     *
+     * Currently, the only difference between this and isNullable() is for `?mixed` vs `mixed`
+     */
+    public function isNullableLabeled(): bool
     {
         return $this->is_nullable;
     }
@@ -3091,18 +3107,21 @@ class Type
             return true;
         }
 
-        if ($type instanceof MixedType) {
-            return true;
+        $other_is_nullable = $type->isNullable();
+        // A nullable type is not a subtype of a non-nullable type
+        if ($this->isNullable() && !$other_is_nullable) {
+            return false;
         }
 
-        // A nullable type is not a subtype of a non-nullable type
-        if ($this->is_nullable && !$type->is_nullable) {
-            return false;
+        if ($type instanceof MixedType) {
+            // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed
+            // (check isNullable first)
+            return true;
         }
 
         // Get a non-null version of the type we're comparing
         // against.
-        if ($type->is_nullable) {
+        if ($other_is_nullable) {
             $type = $type->withIsNullable(false);
 
             // Check one more time to see if the types are equal
@@ -3232,6 +3251,7 @@ class Type
             return true;
         }
         if ($this->isNullable() && !$union_type->containsNullable()) {
+            // e.g. can't cast ?int to int, mixed to non-null-mixed, etc.
             return false;
         }
         $this_resolved = $this->withStaticResolvedInContext($context);

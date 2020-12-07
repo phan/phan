@@ -1331,7 +1331,7 @@ class UnionType implements Serializable
         $new_type_set = [];
 
         foreach ($type_set as $type) {
-            if ($type->isNullable()) {
+            if ($type->isNullableLabeled()) {
                 $is_nullable = true;
             }
             if ($type->withIsNullable(false)->asExpandedTypes($code_base)->hasType($object_type)) {
@@ -1366,6 +1366,23 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     *
+     * To reduce false positives for unknown array element types (etc.),
+     * this distinguishes between the phpdoc types ?mixed and mixed,
+     * even though both can contain false.
+     */
+    public function containsNonMixedNullable(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->isNullableLabeled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool - True if empty or at least one type is NullType or nullable.
      * e.g. true for `?int`, `int|null`, or ``
      */
@@ -1381,11 +1398,12 @@ class UnionType implements Serializable
 
     /**
      * @return bool - True if not empty and at least one type is NullType or mixed.
+     * TODO deprecate and remove
      */
     public function containsNullableOrMixed(): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || $type instanceof MixedType) {
+            if ($type->isNullable()) {
                 return true;
             }
         }
@@ -1406,6 +1424,19 @@ class UnionType implements Serializable
     public function isNull(): bool
     {
         foreach ($this->type_set as $type) {
+            if (!($type instanceof NullType) && !($type instanceof VoidType)) {
+                return false;
+            }
+        }
+        return \count($this->type_set) !== 0;
+    }
+
+    /**
+     * Returns true if !isset(expr) is unconditionally true for the real types
+     */
+    public function isRealTypeNullOrUndefined(): bool
+    {
+        foreach ($this->real_type_set as $type) {
             if (!($type instanceof NullType) && !($type instanceof VoidType)) {
                 return false;
             }
@@ -1443,7 +1474,7 @@ class UnionType implements Serializable
 
             $result[] = $type->withIsNullable(false);
         }
-        return $result;
+        return $result ?: UnionType::typeSetFromString('non-null-mixed');
     }
 
 
@@ -1482,7 +1513,7 @@ class UnionType implements Serializable
     {
         $result = [];
         foreach ($type_list as $type) {
-            if ($type->isNullable()) {
+            if ($type->isNullableLabeled()) {
                 $result[] = $type;
             } else {
                 $result[] = $type->withIsNullable(true);
@@ -1660,6 +1691,7 @@ class UnionType implements Serializable
      */
     public function isNonNullNumberType(): bool
     {
+        // TODO: This duplicates isNonNullIntOrFloatType
         if (\count($this->type_set) === 0) {
             return false;
         }
@@ -3578,10 +3610,29 @@ class UnionType implements Serializable
      */
     public function numericTypes(): UnionType
     {
-        return $this->makeFromFilter(static function (Type $type): bool {
-            // IntType and LiteralStringType
-            return $type->isPossiblyNumeric();
-        });
+        // TODO: Replace mixed with int|string|float in ConditionVisitor
+        return UnionType::of(
+            self::toNumericTypes($this->type_set),
+            self::toNumericTypes($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type> the types that can be numeric
+     */
+    private static function toNumericTypes(array $type_set): array
+    {
+        $result = [];
+        foreach ($type_set as $type) {
+            if ($type->isPossiblyNumeric()) {
+                if ($type instanceof MixedType) {
+                    return UnionType::typeSetFromString('int|string|float');
+                }
+                $result[] = $type->withIsNullable(false);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -5628,7 +5679,10 @@ class UnionType implements Serializable
         return UnionType::typeSetFromString('bool');
     }
 
-    /** @return list<IntType|StringType> */
+    /**
+     * @return list<IntType|StringType>
+     * @suppress PhanPartialTypeMismatchReturn not able to infer subclass from typeSetFromString
+     */
     private static function intOrStringTypeSet(): array
     {
         static $types;
@@ -5908,7 +5962,7 @@ class UnionType implements Serializable
     public function containsDefiniteNonObjectType(): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || $type->isDefiniteNonObjectType()) {
+            if ($type->isNullableLabeled() || $type->isDefiniteNonObjectType()) {
                 return true;
             }
         }
@@ -5923,7 +5977,7 @@ class UnionType implements Serializable
     public function containsDefiniteNonObjectAndNonClassType(): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || ($type->isDefiniteNonObjectType() && !$type instanceof StringType)) {
+            if ($type->isNullableLabeled() || ($type->isDefiniteNonObjectType() && !$type instanceof StringType)) {
                 return true;
             }
         }
@@ -5936,7 +5990,7 @@ class UnionType implements Serializable
     public function containsDefiniteNonCallableType(): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || $type->isDefiniteNonCallableType()) {
+            if ($type->isNullableLabeled() || $type->isDefiniteNonCallableType()) {
                 return true;
             }
         }

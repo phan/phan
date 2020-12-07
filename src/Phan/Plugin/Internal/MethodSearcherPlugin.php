@@ -113,6 +113,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
     }
 
     /**
+     * @param Type $type a type with the name of a class
      * @return Type[] a list of types to replace $type with
      */
     public static function getReplacementTypesForFullyQualifiedClassName(

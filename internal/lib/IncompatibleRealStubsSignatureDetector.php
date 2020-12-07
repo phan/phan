@@ -554,7 +554,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
              */
             try {
                 $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
-            } catch (InvalidArgumentException|FQSENException $e) {
+            } catch (InvalidArgumentException | FQSENException $e) {
                 fwrite(STDERR, "Unexpected invalid signature for $method_name, skipping: $e\n");
             }
         }
@@ -575,7 +575,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                      */
                     try {
                         $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
-                    } catch (InvalidArgumentException|FQSENException $e) {
+                    } catch (InvalidArgumentException | FQSENException $e) {
                         fwrite(STDERR, "Unexpected invalid signature for $method_name for $delta_path, skipping: $e\n");
                     }
                 }

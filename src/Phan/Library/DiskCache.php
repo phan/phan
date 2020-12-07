@@ -88,7 +88,7 @@ class DiskCache implements Cache
             }
             $this->directory_exists = true;
         }
-        return $this->directory_exists ?? false;
+        return $this->directory_exists;
     }
 
     /**

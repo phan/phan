@@ -79,7 +79,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @return Closure(CodeBase, Context, Func, list<Node|int|float|string>): UnionType
          */
-        $get_element_type_of_first_arg_check_nonempty_builder = static function (Type $default_type) use ($mixed_type) : Closure {
+        $get_element_type_of_first_arg_check_nonempty_builder = static function (Type $default_type) use ($mixed_type): Closure {
             /**
              * @param list<Node|int|float|string> $args
              */

@@ -496,6 +496,8 @@ trait ConditionVisitorUtil
                 };
             }
         } else {
+            // Remove loosely equal types.
+            // TODO: Does this properly remove null for `$var != 0`?
             $cb = static function (Type $type) use ($value): bool {
                 return $type instanceof LiteralTypeInterface && $type->getValue() == $value;
             };

@@ -855,10 +855,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     // FIXME move this to PostOrderAnalysisVisitor so that all expressions can be analyzed, not just variables?
                     $new_type = $default_if_empty;
                 } else {
-                    $new_type = $new_type->nonNullableClone();
+                    // Add the missing type set before making the non-nullable clone.
+                    // Otherwise, it'd have the real type set non-null-mixed.
                     if (!$new_type->hasRealTypeSet()) {
                         $new_type = $new_type->withRealTypeSet($default_if_empty->getRealTypeSet());
                     }
+                    $new_type = $new_type->nonNullableClone();
                     if (!$allow_undefined) {
                         $new_type = $new_type->withIsPossiblyUndefined(false);
                     }

@@ -442,6 +442,12 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     {
         return $this->value ? NullType::instance(false) : $this;
     }
+
+    /** @override */
+    public function isPossiblyNumeric(): bool
+    {
+        return \is_numeric($this->value);
+    }
 }
 
 LiteralStringType::init();

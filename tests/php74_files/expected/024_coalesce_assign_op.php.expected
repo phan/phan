@@ -1,1 +1,4 @@
-%s:7 PhanTypeMismatchReturnReal Returning $result of type array{x:2,y:string} but test() is declared to return bool
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type null(real=null)
+%s:6 PhanTypeInvalidDimOffset Invalid offset "z" of $result of array type array{x:2}
+%s:6 PhanUnusedVariable Unused definition of variable $z
+%s:9 PhanTypeMismatchReturnReal Returning $result of type array{x:2,y:string} but test() is declared to return bool
