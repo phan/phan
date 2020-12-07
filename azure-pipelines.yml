@@ -19,8 +19,8 @@ jobs:
       configurationName: PHP_74_NTS
       phpVersion: 7.4
       vmImage: 'ubuntu-20.04'
-# - template: .azure/job.yml
-#   parameters:
-#     configurationName: PHP_80_NTS
-#     phpVersion: 8.0
-#     vmImage: 'ubuntu-20.04'
+  - template: .azure/job.yml
+    parameters:
+      configurationName: PHP_80_NTS
+      phpVersion: 8.0
+      vmImage: 'ubuntu-20.04'
