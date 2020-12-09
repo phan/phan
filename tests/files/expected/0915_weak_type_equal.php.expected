@@ -1,0 +1,2 @@
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $size - it has union type ?mixed
+%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $size - it has union type ?'0'(real=?'0')

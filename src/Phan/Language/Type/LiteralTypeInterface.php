@@ -6,7 +6,7 @@ namespace Phan\Language\Type;
 
 /**
  * Empty interface used by quick checks if a Type is a specific literal int/string.
- * @method mixed getValue()
+ * @method ?int|?string|?float|?bool getValue()
  * @phan-pure
  */
 interface LiteralTypeInterface

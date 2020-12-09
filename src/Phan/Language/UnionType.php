@@ -1746,13 +1746,16 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return bool if this contains at least one literal int/string type (e.g. `'myString'|false`)
+     * @return bool if this contains at least one literal int/float/string type (e.g. `'myString'|false`)
      */
     public function hasLiterals(): bool
     {
         foreach ($this->type_set as $type) {
             if ($type instanceof LiteralTypeInterface) {
-                return true;
+                $value = $type->getValue();
+                if (!\is_null($value) && !\is_bool($value)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1767,11 +1770,16 @@ class UnionType implements Serializable
         if (!$this->hasLiterals()) {
             return $this;
         }
+        // Could use asMappedUnionType but this may be frequently called
         $new_types = [];
         foreach ($this->type_set as $type) {
             $new_types[] = $type->asNonLiteralType();
         }
-        return UnionType::of($new_types);
+        $new_real_types = [];
+        foreach ($this->real_type_set as $type) {
+            $new_real_types[] = $type->asNonLiteralType();
+        }
+        return UnionType::of($new_types, $new_real_types);
     }
 
     /**
@@ -5582,7 +5590,13 @@ class UnionType implements Serializable
         foreach ($type_set as $type) {
             // ~null is an error, don't check isNullable()
             if ($type instanceof LiteralTypeInterface) {
-                $value = ~$type->getValue();
+                try {
+                    // throws error for bool/null
+                    $value = ~$type->getValue();
+                } catch (\Error $_) {
+                    continue;
+                }
+
                 if (is_int($value)) {
                     $result[] = LiteralIntType::instanceForValue($value, false);
                 } else {

@@ -822,6 +822,9 @@ trait ConditionVisitorUtil
         $new_real_union_type = $new_union_type->getRealUnionType();
         $combined_real_types = [];
         foreach ($old_union_type->getRealTypeSet() as $type) {
+            if (!$type->asPHPDocUnionType()->hasAnyWeakTypeOverlap($new_real_union_type)) {
+                continue;
+            }
             // @phan-suppress-next-line PhanAccessMethodInternal
             // TODO: Implement Type->canWeakCastToUnionType?
             if ($type->isPossiblyFalsey() && !$new_real_union_type->containsFalsey()) {
@@ -838,12 +841,14 @@ trait ConditionVisitorUtil
                 $type = $type->asNonTruthyType();
             }
             if ($type instanceof LiteralTypeInterface) {
+                // If this is a literal type, we only want types that could possibly be loosely equal to this
                 foreach ($new_real_union_type->getTypeSet() as $other_type) {
                     if (!$other_type instanceof LiteralTypeInterface || $type->getValue() == $other_type->getValue()) {
                         $combined_real_types[] = $type;
                         continue 2;
                     }
                 }
+                continue;
             }
             $combined_real_types[] = $type;
         }
@@ -863,8 +868,6 @@ trait ConditionVisitorUtil
         $new_real_union_type = $new_union_type->getRealUnionType();
         $combined_real_types = [];
         foreach ($old_union_type->getRealTypeSet() as $type) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            // TODO: Implement Type->canWeakCastToUnionType?
             if ($type->isPossiblyFalsey() && !$new_real_union_type->containsFalsey()) {
                 if ($type->isAlwaysFalsey()) {
                     continue;
