@@ -10,6 +10,7 @@ New features (Analysis):
 + Fix handling of references after renaming variadic reference parameters of `fscanf`/`scanf`/`mb_convert_variables`
 + Mention if PhanUndeclaredFunction is potentially caused by the target php version being too old. (#4230)
 + Support a `non-null-mixed` type and change the way analysis involving nullability is checked for `mixed` (phpdoc and real). (#4278, #4276)
++ Improve real type inference for conditionals on literal types (#4288)
 
 Nov 27 2020, Phan 3.2.6
 -----------------------

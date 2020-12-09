@@ -16,7 +16,7 @@ use Phan\Language\Type;
  * @see BoolType
  * @phan-pure
  */
-final class FalseType extends ScalarType
+final class FalseType extends ScalarType implements LiteralTypeInterface
 {
     /** @phan-override */
     public const NAME = 'false';
@@ -121,5 +121,10 @@ final class FalseType extends ScalarType
     public function asSignatureType(): Type
     {
         return BoolType::instance($this->is_nullable);
+    }
+
+    /** @return false */
+    public function getValue(): bool {
+        return false;
     }
 }

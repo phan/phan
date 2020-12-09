@@ -14,7 +14,7 @@ use Phan\Language\UnionType;
  * Singleton representing the type `null`
  * @phan-pure
  */
-final class NullType extends ScalarType
+final class NullType extends ScalarType implements LiteralTypeInterface
 {
     /** @phan-override */
     public const NAME = 'null';
@@ -270,5 +270,14 @@ final class NullType extends ScalarType
     public function isScalar(): bool
     {
         return false;
+    }
+
+    /** @return null */
+    public function getValue() {
+        return null;
+    }
+
+    public function asNonLiteralType(): Type {
+        return $this;
     }
 }

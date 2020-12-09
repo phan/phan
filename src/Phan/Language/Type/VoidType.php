@@ -14,7 +14,7 @@ use Phan\Language\UnionType;
  * Represents the return type `void`
  * @phan-pure
  */
-final class VoidType extends NativeType
+final class VoidType extends NativeType implements LiteralTypeInterface
 {
     /** @phan-override */
     public const NAME = 'void';
@@ -298,5 +298,14 @@ final class VoidType extends NativeType
     public function isScalar(): bool
     {
         return false;
+    }
+
+    /** @return null */
+    public function getValue() {
+        return null;
+    }
+
+    public function asNonLiteralType(): Type {
+        return $this;
     }
 }
