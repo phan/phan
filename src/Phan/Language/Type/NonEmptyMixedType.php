@@ -67,6 +67,11 @@ final class NonEmptyMixedType extends MixedType
         return $this->is_nullable;
     }
 
+    public function isPossiblyFalse(): bool
+    {
+        return false;
+    }
+
     public function isAlwaysTruthy(): bool
     {
         return !$this->is_nullable;
@@ -101,5 +106,10 @@ final class NonEmptyMixedType extends MixedType
     public function __toString(): string
     {
         return $this->is_nullable ? '?non-empty-mixed' : 'non-empty-mixed';
+    }
+
+    public function weaklyOverlaps(Type $other): bool
+    {
+        return $other->isPossiblyTruthy();
     }
 }

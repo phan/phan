@@ -17,5 +17,5 @@
 %s:67 PhanParamSignatureRealMismatchParamIsReference Declaration of function k(&$a) should be compatible with function k($a) (parameter #1 is a reference parameter overriding a non-reference parameter) defined in %s:62
 %s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63 (Difference in passing by reference in override $b of parameter &$b)
 %s:68 PhanParamSignatureRealMismatchParamIsNotReference Declaration of function l($b) should be compatible with function l(&$b) (parameter #1 is a non-reference parameter overriding a reference parameter) defined in %s:63
-%s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(mixed $a = null) defined in %s:72 (Saw more required parameters in the override)
+%s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(?mixed $a = null) defined in %s:72 (Saw more required parameters in the override)
 %s:76 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function m($a) should be compatible with function m($a = null) (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:72

@@ -41,6 +41,11 @@ final class TrueType extends ScalarType
         return true;
     }
 
+    public function isPossiblyFalse(): bool
+    {
+        return true;
+    }
+
     public function isAlwaysTrue(): bool
     {
         return !$this->is_nullable;  // If it can be null, it's not **always** identical to true
@@ -91,8 +96,7 @@ final class TrueType extends ScalarType
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $other->isInBoolFamily() ||
-            $other instanceof MixedType ||
+        return $other->isPossiblyTrue() ||
             $other instanceof TemplateType ||
             (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }

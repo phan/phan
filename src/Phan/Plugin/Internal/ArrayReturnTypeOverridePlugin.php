@@ -607,7 +607,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     ]
                 );
             }
-            return $mixed_type->asPHPDocUnionType();
+            return $false_type->asPHPDocUnionType();
         };
         /**
          * @param list<Node|int|float|string> $args

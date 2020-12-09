@@ -51,6 +51,11 @@ final class FalseType extends ScalarType
         return true;
     }
 
+    public function isPossiblyTrue(): bool
+    {
+        return true;
+    }
+
     public function asNonFalseType(): Type
     {
         if (!($this->is_nullable)) {
@@ -94,10 +99,15 @@ final class FalseType extends ScalarType
         return self::performComparison(false, $scalar, $flags);
     }
 
+    /**
+     * Check if this type can possibly cast to the declared type, ignoring nullability of this type
+     *
+     * Precondition: This is either non-nullable or the type NullType/VoidType
+     * @unused-param $context
+     */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $other->isInBoolFamily() ||
-            \get_class($other) === MixedType::class ||
+        return $other->isPossiblyTrue() ||
             $other instanceof TemplateType ||
             (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
     }

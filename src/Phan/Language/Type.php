@@ -104,17 +104,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -1604,11 +1604,11 @@ class Type
     private static function maybeFindParentType(bool $is_nullable, Context $context, CodeBase $code_base = null): Type
     {
         if ($code_base === null) {
-            return MixedType::instance($is_nullable);
+            return NonNullMixedType::instance($is_nullable);
         }
         $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
         if (!$parent_type) {
-            return MixedType::instance($is_nullable);
+            return NonNullMixedType::instance($is_nullable);
         }
 
         return $parent_type->withIsNullable($is_nullable);
@@ -2872,7 +2872,8 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return \get_class($type) === MixedType::class || $this->isPossiblyTruthy();
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         if ($this->is_nullable) {
@@ -2922,7 +2923,8 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // A nullable type cannot cast to a non-nullable type
@@ -2968,7 +2970,8 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         if ($this->is_nullable) {
@@ -3017,7 +3020,8 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Check for allowable type conversions from object types to native types
@@ -3057,7 +3061,8 @@ class Type
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Check for allowable type conversions from object types to native types
@@ -3116,7 +3121,8 @@ class Type
         if ($type instanceof MixedType) {
             // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed
             // (check isNullable first)
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Get a non-null version of the type we're comparing
@@ -4039,6 +4045,7 @@ class Type
      */
     public function weaklyOverlaps(Type $other): bool
     {
+        // TODO: Finish implementing, check if types are compatible when both are non-null, check for object vs non-object
         return $this->isPossiblyFalsey() && $other->isPossiblyFalsey();
     }
 
