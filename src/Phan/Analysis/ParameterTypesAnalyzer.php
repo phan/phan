@@ -655,14 +655,13 @@ class ParameterTypesAnalyzer
                     break;
                 }
 
-                // A stricter type on an overriding method is cool
-                if ($parameter->getUnionType()->isEmpty()
-                    || $parameter->getUnionType()->isType(MixedType::instance(false))
-                ) {
+                if ($parameter->getUnionType()->isEmptyOrMixed()) {
+                    // parameter type widening is allowed
                     continue;
                 }
 
-                if ($o_parameter->getUnionType()->isEmpty() || $o_parameter->getUnionType()->isType(MixedType::instance(false))) {
+                if ($o_parameter->getUnionType()->isEmptyOrMixed()) {
+                    // XXX Not sure why this check was here but there are better checks elsewhere for real mismatches
                     continue;
                 }
 

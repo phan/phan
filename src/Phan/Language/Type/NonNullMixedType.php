@@ -95,4 +95,9 @@ final class NonNullMixedType extends MixedType
     {
         return $this->is_nullable ? '?non-null-mixed' : 'non-null-mixed';
     }
+
+    public function weaklyOverlaps(Type $other): bool
+    {
+        return !$other instanceof NullType && !$other instanceof VoidType;
+    }
 }

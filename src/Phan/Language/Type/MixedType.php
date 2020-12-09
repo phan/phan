@@ -67,6 +67,7 @@ class MixedType extends NativeType
         return true;
     }
 
+    // FIXME: non-empty-mixed/non-null-mixed is a subtype of mixed, but not vice versa?
     public function isSubtypeOf(Type $type): bool
     {
         return $type instanceof MixedType;
@@ -167,6 +168,16 @@ class MixedType extends NativeType
         return false;
     }
 
+    public function isPossiblyFalse(): bool
+    {
+        return true;
+    }
+
+    public function isPossiblyTrue(): bool
+    {
+        return true;
+    }
+
     public function asObjectType(): ?Type
     {
         return ObjectType::instance(false);
@@ -197,6 +208,12 @@ class MixedType extends NativeType
     public function __toString(): string
     {
         return $this->is_nullable ? '?mixed' : 'mixed';
+    }
+
+    /** @unused-param $other */
+    public function weaklyOverlaps(Type $other): bool
+    {
+        return true;
     }
 }
 class_exists(NonEmptyMixedType::class);
