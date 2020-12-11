@@ -11,6 +11,8 @@ New features (Analysis):
 + Mention if PhanUndeclaredFunction is potentially caused by the target php version being too old. (#4230)
 + Support a `non-null-mixed` type and change the way analysis involving nullability is checked for `mixed` (phpdoc and real). (#4278, #4276)
 + Improve real type inference for conditionals on literal types (#4288)
++ Emit `PhanSuspiciousNamedArgumentVariadicInternal` when using named arguments with variadic parameters of internal functions that are
+  not among the few reflection functions known to support named arguments. (#4284)
 
 Nov 27 2020, Phan 3.2.6
 -----------------------

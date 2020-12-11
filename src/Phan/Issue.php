@@ -368,6 +368,7 @@ class Issue
     public const MissingNamedArgument                                        = 'PhanMissingNamedArgument';
     public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
     public const SuspiciousNamedArgumentForVariadic                          = 'PhanSuspiciousNamedArgumentForVariadic';
+    public const SuspiciousNamedArgumentVariadicInternal                     = 'PhanSuspiciousNamedArgumentVariadicInternal';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3443,6 +3444,14 @@ class Issue
                 self::REMEDIATION_B,
                 7061
             ),
+            new Issue(
+                self::SuspiciousNamedArgumentVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Passing named argument {CODE} to the variadic parameter of the internal function {METHOD}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.',
+                self::REMEDIATION_B,
+                7062
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(
@@ -4819,7 +4828,7 @@ class Issue
             new Issue(
                 self::CompatibleScalarTypePHP56,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names",
                 self::REMEDIATION_B,
                 3024
@@ -4827,7 +4836,7 @@ class Issue
             new Issue(
                 self::CompatibleAnyReturnTypePHP56,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In PHP 5.6, return types ({TYPE}) are not supported",
                 self::REMEDIATION_B,
                 3025
