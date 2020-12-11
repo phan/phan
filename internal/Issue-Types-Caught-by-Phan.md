@@ -2211,6 +2211,14 @@ Passing named argument to a variadic parameter ${PARAMETER} of the same name in 
 
 e.g. [this issue](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/expected/029_named_variadic.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/3.2.2/tests/php80_files/src/029_named_variadic.php#L5).
 
+## PhanSuspiciousNamedArgumentVariadicInternal
+
+```
+Passing named argument {CODE} to the variadic parameter of the internal function {METHOD}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/036_named_variadic.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/036_named_variadic.php#L6).
+
 ## PhanUndeclaredNamedArgument
 
 ```

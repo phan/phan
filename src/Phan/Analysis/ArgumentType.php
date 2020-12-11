@@ -469,9 +469,17 @@ final class ArgumentType
                         break;
                     }
                 }
-
-                if (!isset($parameter) || (!$found && !$parameter->isVariadic())) {
+                if (!isset($parameter)) {
                     self::emitUndeclaredNamedArgument($code_base, $context, $method, $argument);
+                    continue;
+                }
+
+                if (!$found) {
+                    if (!$parameter->isVariadic()) {
+                        self::emitUndeclaredNamedArgument($code_base, $context, $method, $argument);
+                    } elseif ($method->isPHPInternal()) {
+                        self::emitSuspiciousNamedArgumentVariadicInternal($code_base, $context, $method, $argument);
+                    }
                     continue;
                 }
                 if (!\is_array($positions_used)) {
@@ -613,8 +621,16 @@ final class ArgumentType
                     }
                 }
 
-                if (!isset($parameter) || (!$found && !$parameter->isVariadic())) {
+                if (!isset($parameter)) {
                     self::emitUndeclaredNamedArgument($code_base, $context, $method, $argument);
+                    continue;
+                }
+                if (!$found) {
+                    if (!$parameter->isVariadic()) {
+                        self::emitUndeclaredNamedArgument($code_base, $context, $method, $argument);
+                    } elseif ($method->isPHPInternal()) {
+                        self::emitSuspiciousNamedArgumentVariadicInternal($code_base, $context, $method, $argument);
+                    }
                     continue;
                 }
                 if (!\is_array($positions_used)) {
@@ -798,6 +814,43 @@ final class ArgumentType
                     $method->getContext()->getLineNumberStart(),
                 ],
                 $suggestion
+            );
+        }
+    }
+
+    /**
+     * Warn about using named arguments with internal functions,
+     * ignoring known exceptions such as call_user_func, ReflectionMethod->invoke, etc.
+     * @param FunctionInterface $method an internal function
+     * @param Node $argument a node of kind ast\AST_NAMED_ARG
+     */
+    private static function emitSuspiciousNamedArgumentVariadicInternal(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Node $argument
+    ): void {
+        $fqsen = $method instanceof Method ? $method->getRealDefiningFQSEN() : $method->getFQSEN();
+        if (!\in_array($fqsen->__toString(), [
+            '\call_user_func',
+            '\ReflectionMethod::invoke',
+            '\ReflectionMethod::newInstance',
+            '\ReflectionFunction::invoke',
+            '\ReflectionFunction::newInstance',
+            '\ReflectionFunctionAbstract::invoke',
+            '\ReflectionFunctionAbstract::newInstance',
+            '\Closure::call',
+            '\Closure::__invoke',
+        ], true)) {
+            Issue::maybeEmitWithParameters(
+                $code_base,
+                $context,
+                Issue::SuspiciousNamedArgumentVariadicInternal,
+                $argument->lineno,
+                [
+                    ASTReverter::toShortString($argument),
+                    $method->getRepresentationForIssue(true),
+                ]
             );
         }
     }
