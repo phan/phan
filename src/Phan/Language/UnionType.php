@@ -1366,6 +1366,20 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or VoidType or marked with `?`
+     * (same as containsNullable but excludes mixed)
+     */
+    public function containsNullableLabeled(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->isNullableLabeled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool - True if not empty and at least one type is NullType or nullable.
      *
      * To reduce false positives for unknown array element types (etc.),
