@@ -320,6 +320,14 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     */
+    public function containsNullableLabeled(): bool
+    {
+        return false;
+    }
+
+    /**
      * @override
      */
     public function containsNonMixedNullable(): bool
