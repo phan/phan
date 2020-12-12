@@ -2098,7 +2098,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
-            $resulting_element_type = $resulting_element_type->nullableClone();
+            // Here, this uses Foo|null instead of ?Foo to only warn when strict types are used.
+            $resulting_element_type = $resulting_element_type->withType(NullType::instance(false));
         }
         if (!$is_computing_real_type_set) {
             $resulting_real_element_type = self::resolveArrayShapeElementTypesForOffset($union_type->getRealUnionType(), $dim_value, true);

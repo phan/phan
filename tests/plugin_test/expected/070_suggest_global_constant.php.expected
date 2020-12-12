@@ -11,5 +11,5 @@ src/070_suggest_global_constant.php:20 PhanUnreferencedPublicClassConstant Possi
 src/070_suggest_global_constant.php:21 PhanUnreferencedPublicProperty Possibly zero references to public property \TestNS\Foo70::$AST_BINARY_OP
 src/070_suggest_global_constant.php:22 PhanUnreferencedPrivateProperty Possibly zero references to private property \TestNS\Foo70->SOME_LOWERCASE_CONSTANT
 src/070_suggest_global_constant.php:24 PhanUndeclaredConstant Reference to undeclared constant \AST_BINARY_OP. This will cause a thrown Error in php 8.0+. (Did you mean \ast\AST_BINARY_OP or self::$AST_BINARY_OP or self::AST_BINARY_OP)
-src/070_suggest_global_constant.php:25 PhanUndeclaredConstant Reference to undeclared constant \SOME_LOWERCASE_CONSTANT. This will cause a thrown Error in php 8.0+. (Did you mean $this->SOME_LOWERCASE_CONSTANT or \TestNS\SOME_lowercase_constant)
+src/070_suggest_global_constant.php:25 PhanUndeclaredConstant Reference to undeclared constant \SOME_LOWERCASE_CONSTANT. This will cause a thrown Error in php 8.0+. (Did you mean \TestNS\SOME_lowercase_constant)
 src/070_suggest_global_constant.php:26 PhanUndeclaredConstant Reference to undeclared constant \SOME_CONSTANT_NAME. This will cause a thrown Error in php 8.0+. (Did you mean self::SOME_CONSTANT_NAME)

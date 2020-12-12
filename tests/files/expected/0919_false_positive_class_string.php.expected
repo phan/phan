@@ -1,0 +1,1 @@
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $package - it has union type array{class:class-string}|non-empty-mixed(real=array{class:class-string}|non-null-mixed)

@@ -22,7 +22,7 @@ class Foo70 {
     private $SOME_LOWERCASE_CONSTANT = 'xx';
     public static function main() {
         var_export(AST_BINARY_OP);
-        var_export(SOME_LOWERCASE_CONSTANT);
+        var_export(SOME_LOWERCASE_CONSTANT);  // should not suggest instance property
         return SOME_CONSTANT_NAME;
     }
 }
