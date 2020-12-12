@@ -2054,6 +2054,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
                         continue;
                     }
+                    if ($is_computing_real_type_set) {
+                        // Avoid false positives for real type checking.
+                        // TODO: Improve handling for GenericArrayType, strings, etc.
+                        return null;
+                    }
                     // TODO: Could be more precise about check for ArrayAccess
                     $has_generic_array = true;
                     continue;
