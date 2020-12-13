@@ -56,6 +56,7 @@ use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -105,17 +106,17 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -243,6 +244,7 @@ class Type implements Stringable
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
         'non-empty-mixed' => true,
+        'non-null-mixed' => true,
         'non-empty-list'  => true,
         'non-empty-string' => true,
         'non-empty-lowercase-string' => true,
@@ -817,6 +819,8 @@ class Type implements Stringable
                 return MixedType::instance($is_nullable);
             case 'non-empty-mixed':
                 return NonEmptyMixedType::instance($is_nullable);
+            case 'non-null-mixed':
+                return NonNullMixedType::instance($is_nullable);
             case 'non-empty-array':
                 return NonEmptyGenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'non-empty-associative-array':
@@ -1602,11 +1606,11 @@ class Type implements Stringable
     private static function maybeFindParentType(bool $is_nullable, Context $context, CodeBase $code_base = null): Type
     {
         if ($code_base === null) {
-            return MixedType::instance($is_nullable);
+            return NonNullMixedType::instance($is_nullable);
         }
         $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
         if (!$parent_type) {
-            return MixedType::instance($is_nullable);
+            return NonNullMixedType::instance($is_nullable);
         }
 
         return $parent_type->withIsNullable($is_nullable);
@@ -1791,9 +1795,21 @@ class Type implements Stringable
     /**
      * Is this nullable?
      *
-     * E.g. returns true for `?array`, `null`, etc.
+     * E.g. returns true for `?array`, `null`, `mixed`, etc.
      */
     public function isNullable(): bool
+    {
+        return $this->is_nullable;
+    }
+
+    /**
+     * Is this nullable in a way that Phan would emit warnings about nullable?
+     *
+     * E.g. returns true for `?array`, `null`, `?mixed` (but not `mixed`), etc.
+     *
+     * Currently, the only difference between this and isNullable() is for `?mixed` vs `mixed`
+     */
+    public function isNullableLabeled(): bool
     {
         return $this->is_nullable;
     }
@@ -2858,7 +2874,8 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            return \get_class($type) === MixedType::class || $this->isPossiblyTruthy();
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         if ($this->is_nullable) {
@@ -2908,7 +2925,8 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // A nullable type cannot cast to a non-nullable type
@@ -2954,7 +2972,8 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         if ($this->is_nullable) {
@@ -3003,7 +3022,8 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Check for allowable type conversions from object types to native types
@@ -3043,7 +3063,8 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            return true;
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Check for allowable type conversions from object types to native types
@@ -3093,18 +3114,22 @@ class Type implements Stringable
             return true;
         }
 
-        if ($type instanceof MixedType) {
-            return true;
+        $other_is_nullable = $type->isNullable();
+        // A nullable type is not a subtype of a non-nullable type
+        if ($this->isNullable() && !$other_is_nullable) {
+            return false;
         }
 
-        // A nullable type is not a subtype of a non-nullable type
-        if ($this->is_nullable && !$type->is_nullable) {
-            return false;
+        if ($type instanceof MixedType) {
+            // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed
+            // (check isNullable first)
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
         }
 
         // Get a non-null version of the type we're comparing
         // against.
-        if ($type->is_nullable) {
+        if ($other_is_nullable) {
             $type = $type->withIsNullable(false);
 
             // Check one more time to see if the types are equal
@@ -3234,6 +3259,7 @@ class Type implements Stringable
             return true;
         }
         if ($this->isNullable() && !$union_type->containsNullable()) {
+            // e.g. can't cast ?int to int, mixed to non-null-mixed, etc.
             return false;
         }
         $this_resolved = $this->withStaticResolvedInContext($context);
@@ -4021,6 +4047,7 @@ class Type implements Stringable
      */
     public function weaklyOverlaps(Type $other): bool
     {
+        // TODO: Finish implementing, check if types are compatible when both are non-null, check for object vs non-object
         return $this->isPossiblyFalsey() && $other->isPossiblyFalsey();
     }
 

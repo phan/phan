@@ -1,0 +1,3 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type array|array{offset:array{1:mixed}}(real=array{offset:array{1:mixed}}|non-null-mixed)
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type array{1:mixed}
+%s:11 PhanUnusedVariable Unused definition of variable $other

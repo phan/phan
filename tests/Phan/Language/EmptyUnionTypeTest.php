@@ -18,10 +18,13 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
 use ReflectionClass;
@@ -181,9 +184,12 @@ final class EmptyUnionTypeTest extends BaseTest
                     IntType::instance(false),
                     ArrayType::instance(false),
                     FalseType::instance(true),
+                    TrueType::instance(false),
                     ObjectType::instance(false),
                     MixedType::instance(false),
+                    NonNullMixedType::instance(false),
                     Type::fromFullyQualifiedString('\stdClass'),
+                    LiteralIntType::instanceForValue(0, false),
                 ];
             case UnionType::class:
                 // TODO: Add tests of real union types
@@ -198,6 +204,7 @@ final class EmptyUnionTypeTest extends BaseTest
                     ObjectType::instance(false)->asPHPDocUnionType(),
                     ObjectType::instance(false)->asRealUnionType(),
                     MixedType::instance(false)->asPHPDocUnionType(),
+                    MixedType::instance(true)->asPHPDocUnionType(),
                     Type::fromFullyQualifiedString('\stdClass')->asPHPDocUnionType(),
                 ];
             case Closure::class:

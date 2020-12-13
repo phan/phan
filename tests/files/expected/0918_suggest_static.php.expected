@@ -1,0 +1,2 @@
+%s:6 PhanUndeclaredVariable Variable $foo is undeclared
+%s:9 PhanUndeclaredVariable Variable $foo is undeclared (Did you mean $this->foo)

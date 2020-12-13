@@ -113,6 +113,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
     }
 
     /**
+     * @param Type $type a type with the name of a class
      * @return Type[] a list of types to replace $type with
      */
     public static function getReplacementTypesForFullyQualifiedClassName(
@@ -270,6 +271,7 @@ final class MethodSearcherPlugin extends PluginV3 implements
         return UnionType::empty();
     }
 
+    // TODO: Handle non-null-mixed/non-empty-mixed
     private static function isMixed(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {

@@ -171,7 +171,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if ($old_index !== null) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($children[$i]->lineno),
+                    (clone($this->context))->withLineNumberStart($children[$i]->lineno),
                     'PhanPluginDuplicateSwitchCaseLooseEquality',
                     "Switch case({STRING_LITERAL}) is loosely equivalent (==) to an earlier case ({STRING_LITERAL}) in switch statement - the earlier entry may be chosen instead.",
                     [self::normalizeSwitchKey($values_to_check[$i]), self::normalizeSwitchKey($values_to_check[$old_index])],

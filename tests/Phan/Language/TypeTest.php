@@ -28,6 +28,8 @@ use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyMixedType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
@@ -81,6 +83,8 @@ final class TypeTest extends BaseTest
         $this->assertParsesAsType(IntType::instance(false), 'int');
         $this->assertParsesAsType(IterableType::instance(false), 'iterable');
         $this->assertParsesAsType(MixedType::instance(false), 'mixed');
+        $this->assertParsesAsType(NonEmptyMixedType::instance(false), 'non-empty-mixed');
+        $this->assertParsesAsType(NonNullMixedType::instance(false), 'non-null-mixed');
         $this->assertParsesAsType(ObjectType::instance(false), 'object');
         $this->assertParsesAsType(ResourceType::instance(false), 'resource');
         $this->assertParsesAsType(StaticType::instance(false), 'static');

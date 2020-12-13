@@ -19,6 +19,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
@@ -131,10 +132,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             $method = new ReflectionMethod(UnionType::class, $extract_types_method);
             /** @suppress PhanPluginUnknownObjectMethodCall ReflectionMethod cannot be analyzed */
             return $make_first_arg_checker(static function (UnionType $type) use ($method): int {
-                $new_real_type = $method->invoke($type)->nonNullableClone();
+                $new_real_type = $method->invoke($type);
                 if ($new_real_type->isEmpty()) {
                     return self::_IS_IMPOSSIBLE;
                 }
+                $new_real_type = $new_real_type->nonNullableClone();
                 if ($new_real_type->isEqualTo($type)) {
                     return self::_IS_REDUNDANT;
                 }
@@ -144,10 +146,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         $resource_callback = $make_first_arg_checker(static function (UnionType $type): int {
             $new_real_type = $type->makeFromFilter(static function (Type $type): bool {
                 return $type instanceof ResourceType;
-            })->nonNullableClone();
+            });
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
             }
+            $new_real_type = $new_real_type->nonNullableClone();
             if ($new_real_type->isEqualTo($type)) {
                 return self::_IS_REDUNDANT;
             }
@@ -172,6 +175,10 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 if ($type instanceof IntType || $type instanceof FloatType) {
                     $has_numeric = true;
                 } elseif ($type->isPossiblyNumeric()) {
+                    if ($type instanceof LiteralStringType) {
+                        $has_numeric = true;
+                        continue;
+                    }
                     return self::_IS_REASONABLE_CONDITION;
                 } else {
                     $has_non_numeric = true;
@@ -199,10 +206,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }, $expected_type);
         };
         $callable_callback = $make_first_arg_checker(static function (UnionType $type): int {
-            $new_real_type = $type->callableTypes()->nonNullableClone();
+            $new_real_type = $type->callableTypes();
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
             }
+            $new_real_type = $new_real_type->nonNullableClone();
             if ($new_real_type->isEqualTo($type)) {
                 if (!$new_real_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return $type instanceof ArrayShapeType;

@@ -573,6 +573,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 // Add types which are not scalars
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($type_filter($type)) {
+                        // e.g. mixed|SomeClass can be null because mixed can be null.
                         $has_null = $has_null || $type->isNullable();
                         continue;
                     }
@@ -583,6 +584,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 if ($has_null && !$has_other_nullable_types) {
                     $new_type_builder->addType(NullType::instance(false));
                 }
+                // TODO: Infer real type sets as well?
                 $variable->setUnionType($new_type_builder->getPHPDocUnionType());
             };
         };

@@ -1,1 +1,1 @@
-%s:4 PhanParamReqAfterOpt Required parameter ($required) follows optional (mixed $optional = null)
+%s:4 PhanParamReqAfterOpt Required parameter ($required) follows optional (?mixed $optional = null)

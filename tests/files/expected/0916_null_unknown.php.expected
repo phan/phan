@@ -1,0 +1,11 @@
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{0:int,1:int,2:int,3:int|string,4:int|string,5:int|string}(real=array{0:int,1:int,2:int,3:int|string,4:int|string,5:int|string})
+%s:4 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types null and true
+%s:4 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of | is null (expected int|string)
+%s:4 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is true (expected int|string)
+%s:5 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '^' between types null and 1
+%s:5 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of ^ is null (expected int|string)
+%s:6 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '&' between types null and 123
+%s:6 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of & is null (expected int|string)
+%s:8 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is false (expected number that can fit in an int, or string)
+%s:9 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is true (expected number that can fit in an int, or string)
+%s:10 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is null (expected number that can fit in an int, or string)

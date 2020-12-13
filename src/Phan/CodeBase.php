@@ -2107,6 +2107,53 @@ class CodeBase
         }, $namespaces_for_function);
     }
 
+    private static function phpVersionIdToString(int $php_version_id): string
+    {
+        return \sprintf('%d.%d', $php_version_id / 10000, ($php_version_id / 100) % 100);
+    }
+
+    /**
+     * @unused-param $context
+     * @return list<string> 0 or more namespaced function names found in this code base for newer php versions
+     */
+    public function suggestSimilarGlobalFunctionInNewerVersion(
+        string $namespace,
+        string $function_name,
+        Context $context,
+        bool $suggest_in_global_namespace
+    ): array {
+        if (!$suggest_in_global_namespace && $namespace !== '\\') {
+            return [];
+        }
+        $target_php_version_config = Config::get_closest_target_php_version_id();
+        $target_php_version = (int)\floor(\min($target_php_version_config, \PHP_VERSION_ID) / 100) * 100;
+        $targets = [50600, 70000, 70100, 70200, 70300, 70400, 80000];
+        $function_name_lower = strtolower($function_name);
+        foreach ($targets as $i => $target) {
+            // If $target_php_version is 7.1 only check for functions added in 7.2 or newer that weren't in the previous version.
+            // Don't suggest functions added in 7.1
+            $next_target = $targets[$i + 1] ?? 0;
+            if (!$next_target || $next_target <= $target_php_version) {
+                continue;
+            }
+            $signature_map = UnionType::internalFunctionSignatureMap($next_target);
+            if (isset($signature_map[$function_name_lower])) {
+                $old_signature_map = UnionType::internalFunctionSignatureMap($target);
+                if (!isset($old_signature_map[$function_name_lower])) {
+                    $details = \sprintf('target_php_version=%s run with PHP %s', self::phpVersionIdToString($target_php_version_config), self::phpVersionIdToString(\PHP_VERSION_ID));
+                    $suggestion = \sprintf(
+                        '(to use the function %s() added in PHP %s in a project with %s without a polyfill parsed by Phan)',
+                        $function_name,
+                        self::phpVersionIdToString($next_target),
+                        $details
+                    );
+                    return [$suggestion];
+                }
+            }
+        }
+        return [];
+    }
+
     /**
      * @internal
      */

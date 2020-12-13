@@ -216,6 +216,7 @@ abstract class NativeType extends Type
                 FalseType::NAME    => in_array(FalseType::NAME, $permitted_cast_type_names, true),
                 FloatType::NAME    => in_array(FloatType::NAME, $permitted_cast_type_names, true),
                 IntType::NAME      => in_array(IntType::NAME, $permitted_cast_type_names, true),
+                // TODO: Handle other subtypes of mixed?
                 MixedType::NAME    => true,
                 NullType::NAME     => in_array(NullType::NAME, $permitted_cast_type_names, true),
                 ObjectType::NAME   => in_array(ObjectType::NAME, $permitted_cast_type_names, true),
