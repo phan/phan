@@ -561,8 +561,11 @@ class IssueFixSuggester
             }
             if ($property->isStatic()) {
                 return ['self::$' . $name];
-            } else {
-                return ['$this->' . $name];
+            } elseif ($context->isInFunctionLikeScope()) {
+                $current_function = $context->getFunctionLikeInScope($code_base);
+                if (!$current_function->isStatic()) {
+                    return ['$this->' . $name];
+                }
             }
         } catch (\Exception $_) {
             // ignore
@@ -647,8 +650,14 @@ class IssueFixSuggester
             if ($class_in_scope->hasPropertyWithName($code_base, $variable_name)) {
                 $property = $class_in_scope->getPropertyByName($code_base, $variable_name);
                 if (self::shouldSuggestProperty($context, $class_in_scope, $property)) {
-                    $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
-                    $suggestions[] = $suggestion_prefix . $variable_name;
+                    if ($property->isStatic()) {
+                        $suggestions[] = 'self::$' . $variable_name;
+                    } elseif ($context->isInFunctionLikeScope()) {
+                        $current_function = $context->getFunctionLikeInScope($code_base);
+                        if (!$current_function->isStatic()) {
+                            $suggestions[] = '$this->' . $variable_name;
+                        }
+                    }
                 }
             }
         }

@@ -904,6 +904,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         return [
             'class_exists' => $class_exists_callback,
+            'interface_exists' => $class_exists_callback,  // Currently, there's just class-string, not trait-string or interface-string.
+            'trait_exists' => $class_exists_callback,
             'method_exists' => $method_exists_callback,
             'is_a' => $is_a_callback,
             'is_array' => $array_callback,
