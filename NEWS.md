@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 202?, Phan 3.2.7 (dev)
+Dec 13 2020, Phan 3.2.7
 -----------------------
 
 New features (Analysis):
