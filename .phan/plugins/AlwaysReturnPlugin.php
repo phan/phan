@@ -152,7 +152,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         }
         $return_type = $func->getUnionType();
         return ($return_type->isEmpty()
-            || $return_type->containsNullable()
+            || $return_type->containsNullableLabeled()
             || $return_type->hasType(VoidType::instance(false))
             || $return_type->hasType(NullType::instance(false)));
     }

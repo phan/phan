@@ -220,6 +220,7 @@ class ArrayType extends IterableType
     /**
      * @param non-empty-list<Type> $right_types the original types being added to
      * @return list<ArrayType>
+     * @suppress PhanPartialTypeMismatchArgument UnionType::typeSetFromString is list<Type>
      */
     private static function computeRealTypeSetFromArrayTypeLists(array $right_types, bool $is_assignment): array
     {
@@ -230,6 +231,7 @@ class ArrayType extends IterableType
             }
         }
         static $array_type_set;
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn Type cannot cast to ArrayType
         return $array_type_set ?? ($array_type_set = UnionType::typeSetFromString('array'));
     }
 

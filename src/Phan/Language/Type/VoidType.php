@@ -14,7 +14,7 @@ use Phan\Language\UnionType;
  * Represents the return type `void`
  * @phan-pure
  */
-final class VoidType extends NativeType
+final class VoidType extends NativeType implements LiteralTypeInterface
 {
     /** @phan-override */
     public const NAME = 'void';
@@ -55,7 +55,7 @@ final class VoidType extends NativeType
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $other->isNullable() || $other instanceof MixedType || $other instanceof TemplateType;
+        return $other->isNullable() || $other instanceof TemplateType;
     }
 
     public function isSubtypeOf(Type $type): bool
@@ -96,10 +96,11 @@ final class VoidType extends NativeType
         }
 
         // Null(void) can cast to a nullable type.
-        if ($type->is_nullable) {
+        if ($type->isNullable()) {
             return true;
         }
 
+        // TODO Make this more strict with real types, somehow?
         if (Config::get_null_casts_as_any_type()) {
             return true;
         }
@@ -116,9 +117,6 @@ final class VoidType extends NativeType
                 return true;
             }
         }
-        if (\get_class($type) === MixedType::class) {
-            return true;
-        }
 
         return false;
     }
@@ -130,16 +128,8 @@ final class VoidType extends NativeType
             return true;
         }
 
-        // Null(void) can cast to a nullable type or mixed.
-        if ($type->is_nullable) {
-            return true;
-        }
-
-        if (\get_class($type) === MixedType::class) {
-            return true;
-        }
-
-        return false;
+        // Null(void) can cast to a nullable type or mixed (but not non-null-mixed).
+        return $type->isNullable();
     }
 
     /**
@@ -186,7 +176,7 @@ final class VoidType extends NativeType
             }
         }
         if ($type instanceof MixedType) {
-            return !$type instanceof NonEmptyMixedType;
+            return $type->isNullable();
         }
 
         // Test to see if we can cast to the non-nullable version
@@ -229,6 +219,11 @@ final class VoidType extends NativeType
     }
 
     public function isNullable(): bool
+    {
+        return true;
+    }
+
+    public function isNullableLabeled(): bool
     {
         return true;
     }
@@ -303,5 +298,14 @@ final class VoidType extends NativeType
     public function isScalar(): bool
     {
         return false;
+    }
+
+    /** @return null */
+    public function getValue() {
+        return null;
+    }
+
+    public function asNonLiteralType(): Type {
+        return $this;
     }
 }

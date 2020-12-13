@@ -1707,7 +1707,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
             $generic_types = $generic_types->asNormalizedTypes();
-            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNullable()) {
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNonMixedNullable()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno,
@@ -1988,9 +1988,35 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             // $union_type is exclusively array shape types, but those don't contain the field $dim_value.
             // It's undefined (which becomes null)
-            return NullType::instance(false)->asPHPDocUnionType();
+            if (self::couldRealTypesHaveKey($union_type->getRealTypeSet(), $dim_value)) {
+                return NullType::instance(false)->asPHPDocUnionType();
+            }
+            return NullType::instance(false)->asRealUnionType();
         }
         return $resulting_element_type;
+    }
+
+    /**
+     * @param list<Type> $real_type_set
+     * @param int|string|float $dim_value
+     */
+    private static function couldRealTypesHaveKey(array $real_type_set, $dim_value): bool
+    {
+        foreach ($real_type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                if (\array_key_exists($dim_value, $type->getFieldTypes())) {
+                    return true;
+                }
+            } elseif ($type instanceof ListType) {
+                $filtered = \is_int($dim_value) ? $dim_value : \filter_var($dim_value, \FILTER_VALIDATE_INT);
+                if (\is_int($filtered) && $filtered >= 0) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return \count($real_type_set) === 0;
     }
 
     /**
@@ -2027,6 +2053,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
                     if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
                         continue;
+                    }
+                    if ($is_computing_real_type_set) {
+                        // Avoid false positives for real type checking.
+                        // TODO: Improve handling for GenericArrayType, strings, etc.
+                        return null;
                     }
                     // TODO: Could be more precise about check for ArrayAccess
                     $has_generic_array = true;
@@ -2067,7 +2098,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
-            $resulting_element_type = $resulting_element_type->nullableClone();
+            // Here, this uses Foo|null instead of ?Foo to only warn when strict types are used.
+            $resulting_element_type = $resulting_element_type->withType(NullType::instance(false));
         }
         if (!$is_computing_real_type_set) {
             $resulting_real_element_type = self::resolveArrayShapeElementTypesForOffset($union_type->getRealUnionType(), $dim_value, true);
@@ -2139,7 +2171,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         try {
             if ($generic_types->isEmpty()) {
                 if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
-                    return !$type->isNullable() && $type instanceof MixedType;
+                    return !$type->isNullableLabeled() && $type instanceof MixedType;
                 })) {
                     throw new IssueException(
                         Issue::fromType(Issue::TypeMismatchUnpackValue)(

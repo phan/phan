@@ -375,6 +375,7 @@ class Issue
     public const MissingNamedArgument                                        = 'PhanMissingNamedArgument';
     public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
     public const SuspiciousNamedArgumentForVariadic                          = 'PhanSuspiciousNamedArgumentForVariadic';
+    public const SuspiciousNamedArgumentVariadicInternal                     = 'PhanSuspiciousNamedArgumentVariadicInternal';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3494,6 +3495,14 @@ class Issue
                 self::REMEDIATION_B,
                 7061
             ),
+            new Issue(
+                self::SuspiciousNamedArgumentVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Passing named argument {CODE} to the variadic parameter of the internal function {METHOD}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.',
+                self::REMEDIATION_B,
+                7062
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(
@@ -4796,7 +4805,7 @@ class Issue
             new Issue(
                 self::CompatibleUnsetCast,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 3014
@@ -4825,10 +4834,11 @@ class Issue
                 self::REMEDIATION_B,
                 3017
             ),
+            // TODO: Update messages to reflect that these were removed in php 8.0
             new Issue(
                 self::CompatibleDimAlternativeSyntax,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}",
                 self::REMEDIATION_B,
                 3018
@@ -4836,7 +4846,7 @@ class Issue
             new Issue(
                 self::CompatibleImplodeOrder,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
                 self::REMEDIATION_B,
                 3019
@@ -4844,7 +4854,7 @@ class Issue
             new Issue(
                 self::CompatibleUnparenthesizedTernary,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'",
                 self::REMEDIATION_B,
                 3020
@@ -4857,6 +4867,7 @@ class Issue
                 self::REMEDIATION_B,
                 3021
             ),
+            // TODO mention that they will be treated like regular methods.
             new Issue(
                 self::CompatiblePHP8PHP4Constructor,
                 self::CATEGORY_COMPATIBLE,
@@ -4876,7 +4887,7 @@ class Issue
             new Issue(
                 self::CompatibleScalarTypePHP56,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names",
                 self::REMEDIATION_B,
                 3024
@@ -4884,7 +4895,7 @@ class Issue
             new Issue(
                 self::CompatibleAnyReturnTypePHP56,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "In PHP 5.6, return types ({TYPE}) are not supported",
                 self::REMEDIATION_B,
                 3025

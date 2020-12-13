@@ -26,7 +26,7 @@ function check($var) {
 	} elseif (is_null($var)) {
 		emitType($var);
 	} elseif (is_numeric($var)) {
-		emitType($var);
+		'@phan-debug-var $var';emitType($var);
 	} elseif (is_object($var)) {
 		emitType($var);
 	} elseif (is_real($var)) {

@@ -1,4 +1,3 @@
 %s:3 PhanTypeMismatchArgumentNullableInternal Argument 1 ($array) is $arr of type ?array but \array_values() takes array (expected type to be non-nullable)
 %s:17 PhanTypeArraySuspiciousNullable Suspicious array access to $arr2 of nullable type ?array
 %s:18 PhanTypeArraySuspiciousNullable Suspicious array access to $arr2 of nullable type ?array
-%s:18 PhanTypeArraySuspiciousNullable Suspicious array access to $arr2['other2'] of nullable type ?mixed

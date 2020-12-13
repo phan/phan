@@ -374,7 +374,7 @@ class ParseVisitor extends ScopeVisitor
         Clazz $class,
         Parameter $parameter,
         Node $parameter_node
-    ): void  {
+    ): void {
         $code_base = $this->code_base;
         $lineno = $parameter_node->lineno;
         $context = (clone($this->context))->withLineNumberStart($lineno);

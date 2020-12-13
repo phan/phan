@@ -58,7 +58,7 @@ return [
 'sodium_crypto_aead_aes256gcm_keygen' => ['string'],
 'sodium_crypto_aead_chacha20poly1305_decrypt' => ['string', 'ciphertext'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
 'sodium_crypto_aead_chacha20poly1305_encrypt' => ['string', 'message'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
-'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['?string|?false', 'ciphertext'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
+'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['false|string', 'ciphertext'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
 'sodium_crypto_aead_chacha20poly1305_ietf_encrypt' => ['string', 'message'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
 'sodium_crypto_aead_chacha20poly1305_ietf_keygen' => ['string'],
 'sodium_crypto_aead_chacha20poly1305_keygen' => ['string'],

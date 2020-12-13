@@ -1,20 +1,20 @@
 %s:7 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: true)
-%s:7 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
-%s:7 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
-%s:7 PhanParamTooFew Call with 1 arg(s) to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) which requires 2 arg(s) defined at %s:3
+%s:7 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:7 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:7 PhanParamTooFew Call with 1 arg(s) to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) which requires 2 arg(s) defined at %s:3
 %s:8 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (optionalFlag: true)
-%s:8 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
+%s:8 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:9 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (optionalFlag: true)
 %s:9 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: 123)
-%s:9 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
+%s:9 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:10 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (optionalFlag: true)
 %s:10 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: 123)
 %s:10 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (requiredInt: 0)
-%s:10 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
+%s:10 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (optionalFlag: true)
 %s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: 123)
 %s:11 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (requiredString: 0)
-%s:11 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, ?mixed $other = null) defined at %s:3
+%s:11 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:11 PhanTypeMismatchArgument Argument 2 ($requiredString) is 0 of type 0 but \C24::main() takes string defined at %s:3
 %s:12 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (definitelyInvalidFlag: 'value')
 %s:12 PhanUndeclaredNamedArgumentInternal Saw a call with undeclared named argument (definitelyInvalidFlag: 'value') to \strlen(string $string)
@@ -23,7 +23,7 @@
 %s:14 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (flags: 123)
 %s:14 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($value, int $flags = 0, int $depth = 512)
 %s:15 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (array: 123)
-%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $input1, array ...$args)
-%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $input1, array ...$args) which requires 2 arg(s)
+%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $array, array ...$arrays)
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $array, array ...$arrays) which requires 2 arg(s)
 %s:15 PhanTypeConversionFromArray array to string conversion
-%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($input1) is 123 of type 123 but \array_map() takes array
+%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($array) is 123 of type 123 but \array_map() takes array

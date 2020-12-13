@@ -238,7 +238,7 @@ class ParameterTypesAnalyzer
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
                 $type_class = \get_class($type);
                 if ($php70_checks) {
-                    if ($type->isNullable()) {
+                    if ($type->isNullableLabeled()) {
                         if ($real_parameter->isUsingNullableSyntax()) {
                             Issue::maybeEmit(
                                 $code_base,
@@ -315,15 +315,15 @@ class ParameterTypesAnalyzer
                             (string)$type
                         );
                     } else {
-                        if ($type->isNullable()) {
+                        if ($type->isNullableLabeled()) {
                             // Don't emit CompatibleNullableTypePHP70 for `void`.
-                                Issue::maybeEmit(
-                                    $code_base,
-                                    $method->getContext(),
-                                    Issue::CompatibleNullableTypePHP70,
-                                    $method->getFileRef()->getLineNumberStart(),
-                                    (string)$type
-                                );
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::CompatibleNullableTypePHP70,
+                                $method->getFileRef()->getLineNumberStart(),
+                                (string)$type
+                            );
                         }
                         if ($type_class === IterableType::class) {
                             Issue::maybeEmit(
@@ -655,14 +655,13 @@ class ParameterTypesAnalyzer
                     break;
                 }
 
-                // A stricter type on an overriding method is cool
-                if ($parameter->getUnionType()->isEmpty()
-                    || $parameter->getUnionType()->isType(MixedType::instance(false))
-                ) {
+                if ($parameter->getUnionType()->isEmptyOrMixed()) {
+                    // parameter type widening is allowed
                     continue;
                 }
 
-                if ($o_parameter->getUnionType()->isEmpty() || $o_parameter->getUnionType()->isType(MixedType::instance(false))) {
+                if ($o_parameter->getUnionType()->isEmptyOrMixed()) {
+                    // XXX Not sure why this check was here but there are better checks elsewhere for real mismatches
                     continue;
                 }
 

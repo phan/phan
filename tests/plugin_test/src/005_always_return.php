@@ -67,3 +67,19 @@ C5::test();
 $c = new C5();
 $c->soft_nullable_test5();
 $c->soft_non_nullable_test5();
+/** @return mixed should warn */
+function testmixed5() {
+    if (rand(0, 1) == 0) {
+        return "test";
+    }
+    echo "odd\n";
+}
+/** @return ?mixed should not warn */
+function testmixed5_likelynull() {
+    if (rand(0, 1) == 0) {
+        return "test";
+    }
+    echo "odd\n";
+}
+testmixed5();
+testmixed5_likelynull();

@@ -10,6 +10,7 @@ use ast\Node;
 use InvalidArgumentException;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -27,6 +28,7 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
+use Throwable;
 
 use function is_string;
 use function preg_match;
@@ -264,19 +266,29 @@ class Parameter extends Variable
             $flags
         );
         if ($reflection_parameter->isOptional()) {
-            if ($reflection_parameter->isDefaultValueAvailable()) {
-                $default_value = $reflection_parameter->getDefaultValue();
-                $parameter->setDefaultValue($default_value);
-                $default_type = Type::fromObject($default_value)->asPHPDocUnionType();
-                if ($reflection_parameter->isDefaultValueConstant()) {
-                    $parameter->default_value_constant_name = $reflection_parameter->getDefaultValueConstantName();
-                }
-                $parameter->default_value_from_reflection = true;
+            if (!$parameter_type->isEmpty() && !$parameter_type->containsNullable()) {
+                $default_type = $parameter_type;
             } else {
-                if (!$parameter_type->isEmpty() && !$parameter_type->containsNullable()) {
-                    $default_type = $parameter_type;
-                } else {
-                    $default_type = NullType::instance(false)->asPHPDocUnionType();
+                $default_type = NullType::instance(false)->asPHPDocUnionType();
+            }
+            if ($reflection_parameter->isDefaultValueAvailable()) {
+                try {
+                    $default_value = $reflection_parameter->getDefaultValue();
+                    $parameter->setDefaultValue($default_value);
+                    $default_type = Type::fromObject($default_value)->asPHPDocUnionType();
+                    if ($reflection_parameter->isDefaultValueConstant()) {
+                        $parameter->default_value_constant_name = $reflection_parameter->getDefaultValueConstantName();
+                    }
+                    $parameter->default_value_from_reflection = true;
+                } catch (Throwable $e) {
+                    CLI::printErrorToStderr(\sprintf(
+                        "Warning: encountered invalid ReflectionParameter information for param $%s: %s %s\n",
+                        $reflection_parameter->getName(),
+                        \get_class($e),
+                        $e->getMessage()
+                    ));
+                    // Uncomment to show which function is invalid
+                    // phan_print_backtrace();
                 }
             }
             $parameter->setDefaultValueType($default_type);

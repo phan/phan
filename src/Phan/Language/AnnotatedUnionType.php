@@ -107,6 +107,16 @@ class AnnotatedUnionType extends UnionType
         return $this->is_possibly_undefined === self::DEFINITELY_UNDEFINED;
     }
 
+    public function isNull(): bool
+    {
+        return $this->is_possibly_undefined === self::DEFINITELY_UNDEFINED || parent::isNull();
+    }
+
+    public function isRealTypeNullOrUndefined(): bool
+    {
+        return $this->is_possibly_undefined === self::DEFINITELY_UNDEFINED || parent::isRealTypeNullOrUndefined();
+    }
+
     public function __toString(): string
     {
         $result = parent::__toString();

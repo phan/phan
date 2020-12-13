@@ -1,6 +1,6 @@
 %s:14 PhanUndeclaredVariable Variable $undError is undeclared
 %s:15 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = %s) which requires 2 arg(s)
-%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is cons2128Error of type null but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is cons2128Error of type null (real type array|bool|float|int|null|resource|string=) but \strlen() takes string
 %s:17 PhanUndeclaredConstant Reference to undeclared constant \cons2128Error2. This will cause a thrown Error in php 8.0+. (Did you mean \cons2128Error)
 %s:18 PhanParamTooFewInternal Call with 1 arg(s) to \define(string $constant_name, $value, bool $case_insensitive = %s) which requires 2 arg(s)
 %s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($constant_name) is $undefVar of type null but \define() takes string

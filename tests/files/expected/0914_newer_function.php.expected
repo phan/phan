@@ -1,0 +1,2 @@
+%s:6 PhanUndeclaredFunction Call to undeclared function \str_contains() (Did you mean (to use the function str_contains() added in PHP 8.0 in a project with target_php_version=7.1 run with PHP 7.%s without a polyfill parsed by Phan))
+%s:15 PhanUndeclaredFunction Call to undeclared function \str_contains() (Did you mean (to use the function str_contains() added in PHP 8.0 in a project with target_php_version=7.1 run with PHP 7.%s without a polyfill parsed by Phan))

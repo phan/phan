@@ -887,7 +887,7 @@ trait FunctionTrait
             // to null
             if ($default_is_null) {
                 if ($was_empty) {
-                    $parameter->addUnionType(MixedType::instance(false)->asPHPDocUnionType());
+                    $parameter->addUnionType(MixedType::instance(true)->asPHPDocUnionType());
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {

@@ -163,6 +163,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
 
         // TODO: Load without internal signatures
         $code_base = $this->code_base;
+
         foreach ($file_list as $path_to_stub) {
             fwrite(STDERR, "Loading stub $path_to_stub\n");
             try {
@@ -172,6 +173,9 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 // throw $e;
             }
         }
+        // After parsing all files, mark stub functions as having return statements so that the inferred type won't be void.
+        self::markAllStubsAsNonVoid($code_base);
+
         Analysis::analyzeFunctions($code_base);
     }
 
@@ -224,6 +228,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
     public function parseFunctionSignature(string $function_name): ?array
     {
         $this->initStubs();
+        $function_name = preg_replace("/'.*$/D", '', $function_name);  // remove alternate id
         $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
         $code_base = $this->code_base;
         if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
@@ -262,7 +267,11 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 $function_name = $func->getFQSEN()->getNamespacedName();
                 // echo "Saw $function_name at {$func->getContext()}\n";
                 $func->ensureScopeInitialized($code_base);
-                $function_name_map[$function_name] = $func->toFunctionSignatureArray();
+                try {
+                    $function_name_map[$function_name] = $func->toFunctionSignatureArray();
+                } catch (\InvalidArgumentException $e) {
+                    fwrite(STDERR, "TODO: Fix signature for {$func->getFQSEN()}: {$e->getMessage()}\n");
+                }
             }
             return $function_name_map;
         });
@@ -474,10 +483,12 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
         if (is_null($arguments_from_external_stub)) {
             return $arguments_from_phan;
         }
+        /*
         $repr = self::encodeSignatureArguments($arguments_from_phan);
         if (str_contains($repr, '...')) {
             return $arguments_from_phan;
         }
+         */
         $count = count($arguments_from_phan);
         $keys = array_keys($arguments_from_phan);
         $keys_external = array_keys($arguments_from_external_stub);
@@ -490,6 +501,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
             }
             $param_name_external = $keys_external[$i];
             if (is_string($param_name) && is_string($param_name_external)) {
+                // FIXME doesn't handle &...w_
                 if (str_starts_with($param_name, '&w_')) {
                     $param_name_external = preg_replace('/^\&(w_)?/', '&w_', $param_name_external);
                 } elseif (str_starts_with($param_name, '&rw_')) {
@@ -497,13 +509,32 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
                 } elseif (str_starts_with($param_name, '&r_')) {
                     $param_name_external = preg_replace('/^\&(r_)?/', '&r_', $param_name_external);
                 }
+                $param_name_external = self::copyParamModifiers($param_name_external, $param_name);
             }
             $new_arguments_from_phan[$param_name_external] = $type;
         }
         if (count($new_arguments_from_phan) !== $count) {
+            static::info("Could not rename signature for $function_like_name due to param name conflict\n");
             return $arguments_from_phan;
         }
         return $new_arguments_from_phan;
+    }
+
+
+    /**
+     * Migrate `&...old_param=` to `&...new_param=` for an alternate signature
+     */
+    private static function copyParamModifiers(string $new, string $old): string
+    {
+        $new = trim($new, '&.=');
+        if ($old[-1] === '=') {
+            $new .= '=';
+        }
+        $i = strspn($old, '&.');
+        if ($i > 0) {
+            return substr($old, 0, $i) . $new;
+        }
+        return $new;
     }
 
     /**
@@ -514,12 +545,18 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
         $phan_signatures = static::readSignatureMap();
         $new_signatures = [];
         foreach ($phan_signatures as $method_name => $arguments) {
+            /*
             if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
                 // Don't update functions/methods with alternate
                 $new_signatures[$method_name] = $arguments;
                 continue;
             }
-            $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+             */
+            try {
+                $new_signatures[$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+            } catch (InvalidArgumentException | FQSENException $e) {
+                fwrite(STDERR, "Unexpected invalid signature for $method_name, skipping: $e\n");
+            }
         }
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.new';
         static::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
@@ -530,11 +567,17 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
             $delta_contents = require($delta_path);
             foreach (['old', 'new'] as $section) {
                 foreach ($delta_contents[$section] as $method_name => $arguments) {
+                    /*
                     if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
                         // Don't update functions/methods with alternate
                         continue;
                     }
-                    $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+                     */
+                    try {
+                        $delta_contents[$section][$method_name] = $this->updateSignatureParamNames($method_name, $arguments);
+                    } catch (InvalidArgumentException | FQSENException $e) {
+                        fwrite(STDERR, "Unexpected invalid signature for $method_name for $delta_path, skipping: $e\n");
+                    }
                 }
             }
             $new_delta_path = "$delta_path.new";

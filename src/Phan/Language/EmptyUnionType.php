@@ -320,6 +320,22 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     */
+    public function containsNullableLabeled(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @override
+     */
+    public function containsNonMixedNullable(): bool
+    {
+        return false;
+    }
+
+    /**
      * @return bool - True if not empty and at least one type is NullType or mixed.
      */
     public function containsNullableOrMixed(): bool
@@ -340,6 +356,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function isRealTypeNullOrUndefined(): bool
+    {
+        return false;
+    }
+
     /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      */
@@ -351,7 +372,7 @@ final class EmptyUnionType extends UnionType
     /** @override */
     public function nonNullableClone(): UnionType
     {
-        return $this;
+        return UnionType::fromFullyQualifiedRealString('non-null-mixed');
     }
 
     /** @override */
@@ -369,7 +390,7 @@ final class EmptyUnionType extends UnionType
     /** @override */
     public function withIsNullable(bool $is_nullable): UnionType
     {
-        return $this;
+        return $is_nullable ? $this : $this->nonNullableClone();
     }
 
     /**
@@ -555,7 +576,8 @@ final class EmptyUnionType extends UnionType
      */
     public function canCastToUnionTypeIfNonNull(UnionType $target): bool
     {
-        return false;
+        // TODO: Better check for isPossiblyNonNull
+        return UnionType::fromFullyQualifiedRealString('non-null-mixed')->canCastToUnionType($target);
     }
 
     public function canCastToUnionTypeHandlingTemplates(
