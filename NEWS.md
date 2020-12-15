@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 202?, Phan 3.2.8 (dev)
+-----------------------
+
+Bug fixes:
++ Fix false positive PhanUnusedVariable for variable redefined in loop (#4301)
+
 Dec 13 2020, Phan 3.2.7
 -----------------------
 
