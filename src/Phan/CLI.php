@@ -655,7 +655,7 @@ class CLI
                     break;
                 case 'z':
                 case 'signature-compatibility':
-                    Config::setValue('analyze_signature_compatibility', (bool)$value);
+                    Config::setValue('analyze_signature_compatibility', true);
                     break;
                 case 'y':
                 case 'minimum-severity':
