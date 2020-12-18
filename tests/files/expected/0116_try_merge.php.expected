@@ -1,3 +1,4 @@
 %s:16 PhanTypeMismatchArgument Argument 1 ($p) is $a of type 42 but \f() takes string defined at %s:15
 %s:17 PhanTypeMismatchArgument Argument 1 ($p) is $b of type 42|true but \f() takes string defined at %s:15
+%s:18 PhanPossiblyUndeclaredGlobalVariable Global variable $c is possibly undeclared
 %s:18 PhanTypeMismatchArgument Argument 1 ($p) is $c of type 21|null but \f() takes string defined at %s:15
