@@ -1,0 +1,4 @@
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $excep - it has union type ?\RuntimeException=
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $flag - it has union type 'error'|false|int(real='error'|false|int)
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \Error|\RuntimeException|null=
+%s:28 PhanParamTooFew Call with 0 arg(s) to \check920(int $flag) which requires 1 arg(s) defined at %s:11

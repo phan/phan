@@ -2441,9 +2441,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // Analyze the catch blocks and finally blocks with a mix of the types
         // from the try block and the catch blocks.
-        // NOTE: when strict_mode = 1, variables that are only defined in some Contexts
-        // but not others will be treated as absent.
-        // TODO: Improve in future releases
+        // There's still some ways this could be improved for combining contexts.
+        // (It's difficult to do this perfectly, especially since almost any expression in a try block
+        // may throw under some circumstances)
+        //
         // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
         $context = (new ContextMergeVisitor(
             $context,
