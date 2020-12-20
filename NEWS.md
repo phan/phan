@@ -7,6 +7,7 @@ Bug fixes:
 + Fix false positive PhanUnusedVariable for variable redefined in loop (#4301)
 + Fix handling of `-z`/`--signature-compatibility` - that option now enables `analyze_signature_compatibility` instead of disabling it. (#4303)
 + Fix possible `PhanCoalescingNeverUndefined` for variable defined in catch block (#4305)
++ Don't emit `PhanCompatibleConstructorPropertyPromotion` when `minimum_target_php_version` is 8.0 or newer. (#4307)
 
 Dec 13 2020, Phan 3.2.7
 -----------------------
