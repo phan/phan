@@ -5,3 +5,4 @@ function test(int|string $value) : string|false {
     }
     return null;
 }
+var_export(test(21));

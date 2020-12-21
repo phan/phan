@@ -1,3 +1,4 @@
 %s:4 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:5 PhanParamSuspiciousOrder Argument #2 of this call to \str_starts_with is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:6 PhanParamSuspiciousOrder Argument #2 of this call to \str_ends_with is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:9 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \test_contains() defined at %s:2

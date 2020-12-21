@@ -1,14 +1,18 @@
+%s:2 PhanUnreferencedFunction Possibly zero references to function \test15()
 %s:3 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { 1, 2 => (throw new Exception()), 3 => 'invalid' }
 %s:3 PhanTypeMismatchReturnReal Returning match ($x) { 1, 2 => (throw new Exception()), 3 => 'invalid' } of type 'invalid' but test15() is declared to return ?int
 %s:4 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in 1, 2 => (throw new Exception())
+%s:8 PhanUnreferencedFunction Possibly zero references to function \test_suspicious_scalar()
 %s:9 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (2) { 1 => 'x', 2 => 'y', 3 => 'invalid' }
 %s:10 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 1 of type 1 with operator '==='
 %s:11 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 2 of type 2 with operator '==='
 %s:12 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 3 of type 3 with operator '==='
+%s:15 PhanUnreferencedFunction Possibly zero references to function \test_suspicious_type()
 %s:16 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($key) { 1 => 'x', null => 'y' }
 %s:17 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to 1 of type 1
 %s:18 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to null of type null
 %s:21 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:21 PhanUnreferencedFunction Possibly zero references to function \test_duplicates()
 %s:22 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($key) { 1, 2, 2 => 'x', '1' => 'y', __LINE__ => 'z', (1 + 1) => 'w', $other => 1, $other => 2, null, null => 3 }
 %s:23 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 23.
 %s:24 PhanImpossibleTypeComparison Impossible attempt to check if $key of type int is identical to '1' of type '1'

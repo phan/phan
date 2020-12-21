@@ -424,6 +424,8 @@ class ParseVisitor extends ScopeVisitor
         $property->setDocComment($doc_comment);
         $property->setPhanFlags($comment->getPhanFlagsForProperty());
         $property->setSuppressIssueSet($comment->getSuppressIssueSet());
+        $property->setHasWriteReference(); // Assigned from within constructor
+        $property->addReference($context); // Assigned from within constructor
         $class->addProperty($code_base, $property, None::instance());
         if ($class->isImmutable()) {
             if (!$property->isStatic() && !$property->isWriteOnly()) {

@@ -1,0 +1,3 @@
+%s:6 PhanUnreferencedFunction Possibly zero references to function \test15()
+%s:10 PhanUnreferencedFunction Possibly zero references to function \test15b()
+%s:13 PhanUnreferencedFunction Possibly zero references to function \test16c()

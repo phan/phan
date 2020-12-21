@@ -1,13 +1,13 @@
 <?php
 // Still not finished
-class FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21 {
+class ConstructorPromotion21 {
     public function __construct(
         public int $value, private MissingClass $other = null
     ) {
         echo $value[0];
     }
 }
-$x = new FIXME_IMPLEMENT_CONSTRUCTOR_PROMOTION21('invalid');
+$x = new ConstructorPromotion21('invalid');
 echo strlen($x->value);
 
 class DuplicatePromotedProperty {

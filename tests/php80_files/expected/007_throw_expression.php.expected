@@ -1,3 +1,4 @@
+%s:6 PhanUnreferencedFunction Possibly zero references to function \test_throw_expression()
 %s:8 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($nullableValue ?? (throw new InvalidArgumentException()))
 %s:8 PhanUnusedVariable Unused definition of variable $value
 %s:9 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in ($x = (throw new Exception()))
@@ -24,3 +25,4 @@
 %s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type 0 to 10 of type 10 with operator '<' in a loop (likely a false positive)
 %s:34 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
 %s:34 PhanCompatibleThrowExpression Cannot use throw as an expression before php 8.0 in return (throw new RuntimeException('unimplemented'));
+%s:34 PhanUnreferencedClosure Possibly zero references to Closure()

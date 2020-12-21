@@ -1,7 +1,9 @@
 %s:3 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int|string
 %s:3 PhanCompatibleUnionType Cannot use union types (int|string) before php 8.0
+%s:3 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Example::$scalar
 %s:4 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type \stdClass|false
 %s:4 PhanCompatibleUnionType Cannot use union types (stdClass|false) before php 8.0
+%s:4 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Example->ip
 %s:9 PhanTypeMismatchPropertyReal Assigning null of type null to property but \Example::$scalar is int|string
 %s:10 PhanTypeMismatchPropertyReal Assigning false of type false to property but \Example::$scalar is int|string
 %s:11 PhanTypeMismatchPropertyReal Assigning [] of type array{} to property but \Example::$scalar is int|string

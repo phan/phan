@@ -1,10 +1,13 @@
+%s:5 PhanUnreferencedFunction Possibly zero references to function \test20()
 %s:6 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (true) { default => strlen($x), is_string($x) => count($x) }
 %s:6 PhanTypeMismatchReturnReal Returning match (true) { default => strlen($x), is_string($x) => count($x) } of type int but test20() is declared to return string
 %s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
 %s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $x of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:12 PhanUnreferencedFunction Possibly zero references to function \test20b()
 %s:13 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (true) { default => strlen($x), is_string($x) => strlen($x), is_int($x) => "x={$x}" }
 %s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type null but \strlen() takes string
 %s:16 PhanImpossibleCondition Impossible attempt to cast $x of type null to int
+%s:20 PhanUnreferencedFunction Possibly zero references to function \test20c()
 %s:21 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (is_string($x)) { true => (function)(), false => (function)(), default => 'placeholder' }
 %s:21 PhanImpossibleCondition Impossible attempt to cast $x of type null to string
 %s:22 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string(real=string)

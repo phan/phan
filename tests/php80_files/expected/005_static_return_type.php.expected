@@ -3,7 +3,9 @@
 %s:4 PhanContextNotObject Cannot access static when not in object context
 %s:8 PhanCompatibleStaticType Cannot use static return types before php 8.0
 %s:14 PhanPluginUseReturnValueNoopVoid The function/method \MySubclass::helper() is declared to return (empty union type) and it has no side effects
+%s:17 PhanUnreferencedClass Possibly zero references to class \MyInvalidSubclass
 %s:18 PhanPluginUseReturnValueNoopVoid The function/method \MyInvalidSubclass::helper() is declared to return (empty union type) and it has no side effects
+%s:18 PhanUnreferencedPublicMethod Possibly zero references to public method \MyInvalidSubclass::helper()
 %s:21 PhanParamSignatureRealMismatchReturnType Declaration of function getInstance() : \MyInvalidSubclass should be compatible with function getInstance() : static (method returning '\MyInvalidSubclass' cannot override method returning 'static') defined in %s:8
 %s:27 PhanCompatibleStaticType Cannot use static return types before php 8.0
 %s:34 PhanUndeclaredMethod Call to undeclared method \MySubclass::helper2 (Did you mean expr->helper())

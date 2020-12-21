@@ -16,3 +16,4 @@ function myFunction() {
         throw new InvalidArgumentException();
     }
 }
+myFunction();
