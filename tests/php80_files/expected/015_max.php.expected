@@ -1,3 +1,5 @@
 %s:6 PhanUnreferencedFunction Possibly zero references to function \test15()
 %s:10 PhanUnreferencedFunction Possibly zero references to function \test15b()
+%s:13 PhanPluginUnknownArrayFunctionParamType Function test16c() has a parameter type of array for $a, but does not specify any key types or value types
+%s:13 PhanPluginUnknownArrayFunctionReturnType Function \test16c() has a return type of array, but does not specify key or value types
 %s:13 PhanUnreferencedFunction Possibly zero references to function \test16c()

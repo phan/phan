@@ -11,4 +11,6 @@
 %s:21 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (is_string($x)) { true => (function)(), false => (function)(), default => 'placeholder' }
 %s:21 PhanImpossibleCondition Impossible attempt to cast $x of type null to string
 %s:22 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string(real=string)
+%s:22 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: string)
 %s:23 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=null)
+%s:23 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: null)
