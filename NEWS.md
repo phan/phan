@@ -10,6 +10,7 @@ Bug fixes:
 + Don't emit `PhanCompatibleConstructorPropertyPromotion` when `minimum_target_php_version` is 8.0 or newer. (#4307)
 + Infer that PHP 8.0 constructor property promotion's properties have write references. (#4308)
   They are written to by the constructor.
++ Inherit phpdoc parameter types for the property declaration in php 8.0 constructor property promotion (#4311)
 
 Dec 13 2020, Phan 3.2.7
 -----------------------
