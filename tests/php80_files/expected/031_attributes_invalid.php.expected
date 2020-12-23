@@ -1,11 +1,16 @@
 %s:2 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute in an attribute
 %s:4 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute2 in an attribute
 %s:4 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute3 in an attribute
+%s:11 PhanUnreferencedClass Possibly zero references to class \TraitAttribute
+%s:13 PhanUnreferencedClass Possibly zero references to class \InterfaceAttribute
 %s:23 PhanPluginUseReturnValueNoopVoid The function/method \goodExample31() is declared to return void and it has no side effects
 %s:26 PhanAttributeNonAttribute Saw attribute \SubGoodAttribute31 which was declared without #[\Attribute(...)]
 %s:26 PhanAttributeNonClass Saw attribute with fqsen \AbstractAttribute which was a abstract class instead of a class
 %s:27 PhanPluginUseReturnValueNoopVoid The function/method \badExample31() is declared to return void and it has no side effects
+%s:27 PhanUnreferencedFunction Possibly zero references to function \badExample31()
 %s:30 PhanAttributeNonClass Saw attribute with fqsen \TraitAttribute which was a trait instead of a class
 %s:34 PhanAttributeNonClass Saw attribute with fqsen \InterfaceAttribute which was a interface instead of a class
 %s:35 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:35 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: true)
 %s:36 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:35
+%s:41 PhanUnreferencedClass Possibly zero references to class \AbstractAttribute

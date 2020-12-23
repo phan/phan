@@ -20,12 +20,14 @@ final class PHP80Test extends AbstractPhanFileTest
         'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
+        'dead_code_detection' => true,  // for use with constructor property promotion, etc.
         'target_php_version' => '8.0',
         'minimum_target_php_version' => '7.2',  // test compatibility warnings for projects
         'plugins' => [
             'UseReturnValuePlugin',
             'UnreachableCodePlugin',
             'DuplicateArrayKeyPlugin',
+            'UnknownElementTypePlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
     ];

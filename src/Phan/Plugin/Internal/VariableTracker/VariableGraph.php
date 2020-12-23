@@ -101,12 +101,12 @@ final class VariableGraph
         if (isset($node->is_reference)) {
             $this->markAsReference($name);
         }
+        $node_id = \spl_object_id($node);
+        $scope->recordUsageById($name, $node_id);
         $defs_for_variable = $scope->getDefinition($name);
         if (!$defs_for_variable) {
             return;
         }
-        $node_id = \spl_object_id($node);
-        $scope->recordUsageById($name, $node_id);
         foreach ($defs_for_variable as $def_id => $_) {
             if ($def_id !== $node_id) {
                 $this->def_uses[$name][$def_id][$node_id] = true;

@@ -1,3 +1,4 @@
+%s:3 PhanPluginUnknownMethodReturnType Method \C24::main() has no declared or inferred return type
 %s:7 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: true)
 %s:7 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:7 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3

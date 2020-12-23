@@ -1,11 +1,18 @@
 %s:5 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group Attribute of Class \MyAttr33
 %s:7 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of public const X
+%s:7 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \MyAttr33::X
 %s:8 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of public static $property
+%s:8 PhanPluginUnknownPropertyType Property \MyAttr33::$property has an initial type that cannot be inferred
+%s:8 PhanUnreferencedPublicProperty Possibly zero references to public property \MyAttr33::$property
 %s:9 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of function __construct()
 %s:12 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33() of function a(int $first = 0, int $second = 0);
+%s:12 PhanUnreferencedFunction Possibly zero references to function \a()
 %s:13 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of int $first = 0
 %s:18 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
 %s:18 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of function {closure}();
 %s:18 PhanNoopClosure Unused closure
+%s:18 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
+%s:18 PhanUnreferencedClosure Possibly zero references to Closure()
 %s:19 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of function {closure}();
 %s:19 PhanNoopClosure Unused closure
+%s:19 PhanUnreferencedClosure Possibly zero references to Closure()

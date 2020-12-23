@@ -164,42 +164,48 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $try_scope = \reset($this->child_context_list)->getScope();
         // }
 
-        if (\count($catch_scope_list) === 0) {
+        if (!$catch_scope_list) {
             // All of the catch statements will unconditionally rethrow or return.
             // So, after the try and catch blocks (finally is analyzed separately),
             // the context is the same as if the try block finished successfully.
             return $this->context->withScope($try_scope);
         }
 
+        if (\count($catch_scope_list) > 1) {
+            $catch_scope = $this->combineScopeList($catch_scope_list)->getScope();
+        } else {
+            $catch_scope = \reset($catch_scope_list);
+        }
+
         // TODO: Use getVariableMapExcludingScope
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
-            foreach ($catch_scope_list as $catch_scope) {
-                // Merge types if try and catch have a variable in common
-                $catch_variable = $catch_scope->getVariableByNameOrNull(
-                    $variable_name
-                );
-                if ($catch_variable) {
-                    $variable->setUnionType($variable->getUnionType()->withUnionType(
-                        $catch_variable->getUnionType()
-                    ));
-                }
+            // Merge types if try and catch have a variable in common
+            $catch_variable = $catch_scope->getVariableByNameOrNull(
+                $variable_name
+            );
+            if ($catch_variable) {
+                $variable->setUnionType($variable->getUnionType()->withUnionType(
+                    $catch_variable->getUnionType()
+                ));
             }
         }
 
         // Look for variables that exist in catch, but not try
-        foreach ($catch_scope_list as $catch_scope) {
-            foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
-                $variable_name = (string)$variable_name;
-                if (!$try_scope->hasVariableWithName($variable_name)) {
-                    // Note that it can be null
-                    $variable->setUnionType($variable->getUnionType()->withType(
-                        NullType::instance(false)
-                    ));
-
-                    // Add it to the try scope
-                    $try_scope->addVariable($variable);
+        foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
+            $variable_name = (string)$variable_name;
+            if (!$try_scope->hasVariableWithName($variable_name)) {
+                $type = $variable->getUnionType();
+                if (!$type->containsNullableLabeled()) {
+                    $type = $type->withType(NullType::instance(false));
                 }
+                // Note that it can be null
+                // TODO: This still infers the wrong type when there are multiple catch blocks.
+                // Combine all of the catch blocks into one context and merge with that instead?
+                $variable->setUnionType($type->withIsPossiblyUndefined(true));
+
+                // Add it to the try scope
+                $try_scope->addVariable($variable);
             }
         }
 

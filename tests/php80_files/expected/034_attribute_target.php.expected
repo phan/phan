@@ -1,9 +1,15 @@
 %s:11 PhanAttributeWrongTarget Saw use of attribute \Attribute declared at internal:0 which supports being declared on \Attribute::TARGET_CLASS but it was declared on function test(); which requires an attribute declared to support \Attribute::TARGET_FUNCTION
+%s:12 PhanUnreferencedFunction Possibly zero references to function \AttributeTarget\test()
 %s:14 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on Class \AttributeTarget\Other which requires an attribute declared to support \Attribute::TARGET_CLASS
+%s:15 PhanUnreferencedClass Possibly zero references to class \AttributeTarget\Other
 %s:16 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on public const C which requires an attribute declared to support \Attribute::TARGET_CLASS_CONSTANT
 %s:18 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on public static int $a which requires an attribute declared to support \Attribute::TARGET_PROPERTY
+%s:19 PhanReadOnlyPublicProperty Possibly zero write references to public property \AttributeTarget\Other::$a
 %s:20 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on function b(int $param) which requires an attribute declared to support \Attribute::TARGET_METHOD
+%s:21 PhanPluginUnknownMethodReturnType Method \AttributeTarget\Other::b() has no declared or inferred return type
+%s:21 PhanUnreferencedPublicMethod Possibly zero references to public method \AttributeTarget\Other::b()
 %s:22 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on int $param which requires an attribute declared to support \Attribute::TARGET_PARAMETER
 %s:29 PhanAttributeWrongTarget Saw use of attribute \AttributeTarget\FuncAttr declared at %s:8 which supports being declared on \Attribute::TARGET_FUNCTION but it was declared on Interface \AttributeTarget\I which requires an attribute declared to support \Attribute::TARGET_CLASS
+%s:30 PhanUnreferencedClass Possibly zero references to class \AttributeTarget\I
 %s:33 PhanAttributeWrongTarget Saw use of attribute \Attribute declared at internal:0 which supports being declared on \Attribute::TARGET_CLASS but it was declared on function {closure}(); which requires an attribute declared to support \Attribute::TARGET_FUNCTION
 %s:34 PhanAttributeNonRepeatable Saw attribute \AttributeTarget\FuncAttr which was not declared as \Attribute::IS_REPEATABLE in the class definition at %s:8 but had a repeat declaration on line 32

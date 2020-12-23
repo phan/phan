@@ -652,7 +652,7 @@ class Context extends FileRef
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
             if (!$code_base->hasMethodWithFQSEN($fqsen)) {
-                throw new RuntimeException("Method does not exist");
+                throw new RuntimeException("Method $fqsen does not exist");
             }
             return $code_base->getMethodByFQSEN($fqsen);
         }
