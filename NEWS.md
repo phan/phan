@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 202?, Phan 3.2.9 (dev)
+-----------------------
+
+Bug fixes:
++ Fix a few parameter names for issue messages (#4316)
+
 Dec 23 2020, Phan 3.2.8
 -----------------------
 
