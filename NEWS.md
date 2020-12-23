@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 202?, Phan 3.2.8 (dev)
+Dec 23 2020, Phan 3.2.8
 -----------------------
 
 Bug fixes:
