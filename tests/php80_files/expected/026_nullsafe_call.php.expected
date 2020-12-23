@@ -1,3 +1,5 @@
+%s:2 PhanPluginUnknownArrayFunctionReturnType Function \test26() has a return type of array, but does not specify key or value types
+%s:2 PhanUnreferencedFunction Possibly zero references to function \test26()
 %s:4 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $x?->invalidMethod()
 %s:4 PhanNonClassMethodCall Call to method invalidMethod on non-class type null
 %s:6 PhanCompatibleNullsafeOperator Cannot use nullsafe operator before php 8.0 in $str?->length()

@@ -1,3 +1,4 @@
+%s:5 PhanUnreferencedFunction Possibly zero references to function \test_closure()
 %s:6 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (other: 0)
 %s:6 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (other: 0) to Closure(int $name):void defined at %s:5
 %s:7 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (name: 0)

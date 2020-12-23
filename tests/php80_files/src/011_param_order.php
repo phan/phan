@@ -6,3 +6,4 @@ function test_contains(string $x) {
         str_ends_with('x', $x),
     ];
 }
+test_contains('xylophone');

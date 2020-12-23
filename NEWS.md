@@ -1,5 +1,10 @@
 Phan NEWS
 
+Dec 23 2020, Phan 4.0.0-RC2
+---------------------------
+
+Merge changes from Phan 3.2.8.
+
 Dec 13 2020, Phan 4.0.0-RC1
 ---------------------------
 
@@ -45,6 +50,19 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
+Dec 23 2020, Phan 3.2.8
+-----------------------
+
+Bug fixes:
++ Fix false positive PhanUnusedVariable for variable redefined in loop (#4301)
++ Fix handling of `-z`/`--signature-compatibility` - that option now enables `analyze_signature_compatibility` instead of disabling it. (#4303)
++ Fix possible `PhanCoalescingNeverUndefined` for variable defined in catch block (#4305)
++ Don't emit `PhanCompatibleConstructorPropertyPromotion` when `minimum_target_php_version` is 8.0 or newer. (#4307)
++ Infer that PHP 8.0 constructor property promotion's properties have write references. (#4308)
+  They are written to by the constructor.
++ Inherit phpdoc parameter types for the property declaration in php 8.0 constructor property promotion (#4311)
+>>>>>>> upstream/master
+
 Dec 13 2020, Phan 3.2.7
 -----------------------
 
@@ -71,7 +89,7 @@ New features (Analysis):
 + Infer that an instance property exists for PHP 8.0 constructor property promotion. (#3938)
 + Infer types of properties from arguments passed into constructor for PHP 8.0 constructor property promotion. (#3938)
 + Emit `PhanInvalidNode` and `PhanRedefineProperty` when misusing syntax for constructor property promotion. (#3938)
-+ Emit `PhanCompatibleConstructorPropertyPromotion` when the project's `minimum_target_php_version` is older than `8.0` (#3938)
++ Emit `PhanCompatibleConstructorPropertyPromotion` when constructor property promotion is used. (#3938)
 + Emit `PhanSuspiciousMagicConstant` when using `__FUNCTION__` inside of a closure. (#4222)
 
 Nov 26 2020, Phan 3.2.5

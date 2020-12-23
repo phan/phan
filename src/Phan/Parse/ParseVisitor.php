@@ -42,7 +42,7 @@ use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\CallableType;
+use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
@@ -347,12 +347,12 @@ class ParseVisitor extends ScopeVisitor
             foreach ($method->getParameterList() as $i => $parameter) {
                 if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS) {
                     // @phan-suppress-next-line PhanTypeMismatchArgumentNullable kind is AST_PARAM
-                    $this->addPromotedConstructorPropertyFromParam($class, $parameter, $node->children['params']->children[$i]);
+                    $this->addPromotedConstructorPropertyFromParam($class, $method, $parameter, $node->children['params']->children[$i]);
                 }
             }
         } elseif ('__invoke' === $method_name_lower) {
             // TODO: More precise callable shape
-            $class->addAdditionalType(CallableType::instance(false));
+            $class->addAdditionalType(CallableObjectType::instance(false));
         } elseif ('__tostring' === $method_name_lower
             && !$this->context->isStrictTypes()
         ) {
@@ -372,10 +372,10 @@ class ParseVisitor extends ScopeVisitor
      */
     private function addPromotedConstructorPropertyFromParam(
         Clazz $class,
+        Method $method,
         Parameter $parameter,
         Node $parameter_node
     ): void {
-        $code_base = $this->code_base;
         $lineno = $parameter_node->lineno;
         $context = (clone($this->context))->withLineNumberStart($lineno);
         if ($parameter_node->flags & ast\flags\PARAM_VARIADIC) {
@@ -386,52 +386,44 @@ class ParseVisitor extends ScopeVisitor
             );
             return;
         }
-        $property_fqsen = FullyQualifiedPropertyName::make($class->getFQSEN(), $parameter->getName());
-
-        if ($code_base->hasPropertyWithFQSEN($property_fqsen)) {
-            $old_property = $code_base->getPropertyByFQSEN($property_fqsen);
-            if ($old_property->getDefiningFQSEN() === $property_fqsen) {
-                // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
-                // PhanRedefineMagicProperty is a separate check.
-                if ($old_property->isFromPHPDoc()) {
-                    return;
-                }
-                $this->emitIssue(
-                    Issue::RedefineProperty,
-                    $lineno,
-                    $property_fqsen->getName(),
-                    $context->getFile(),
-                    $lineno,
-                    $context->getFile(),
-                    $old_property->getContext()->getLineNumberStart()
-                );
-                return;
-            }
-        }
         // TODO support attributes in Phan 4
         // TODO: this should probably use FutureUnionType instead.
-        $property = new Property(
-            $context,
-            $parameter->getName(),
-            $parameter->getUnionType(),
-            $parameter_node->flags & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS,
-            $property_fqsen,
-            $parameter->getUnionType()->getRealUnionType()
-        );
         $doc_comment = $parameter_node->children['docComment'] ?? '';
-        // Get a comment on the property declaration
-        $comment = Comment::fromStringInContext(
+        $name = $parameter->getName();
+        $method_comment = $method->getComment();
+        $variable_comment = $method_comment ? ($method_comment->getParameterMap()[$name] ?? null) : null;
+        $property_comment = Comment::fromStringInContext(
             $doc_comment,
-            $code_base,
-            $context,
+            $this->code_base,
+            $this->context,
             $lineno,
-            Comment::ON_PROPERTY  // TODO: Could optionally add a new ON_PARAM kind?
+            Comment::ON_PROPERTY
         );
-        $property->setDocComment($doc_comment);
-        $property->setPhanFlags($comment->getPhanFlagsForProperty());
-        $property->setSuppressIssueSet($comment->getSuppressIssueSet());
+        $attributes = Attribute::fromNodeForAttributeList(
+            $this->code_base,
+            $this->context,
+            $parameter_node->children['attributes']
+        );
+
+        $property = $this->addProperty(
+            $class,
+            $parameter->getName(),
+            $parameter_node->children['default'],
+            $parameter->getUnionType()->getRealUnionType(),
+            $variable_comment,
+            $lineno,
+            $parameter_node->flags & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS,
+            $doc_comment,
+            $property_comment,
+            $attributes
+        );
+        if (!$property) {
+            return;
+        }
         $property->setAttributeList($parameter->getAttributeList());
-        $class->addProperty($code_base, $property, None::instance());
+        // Get a comment on the property declaration
+        $property->setHasWriteReference(); // Assigned from within constructor
+        $property->addReference($context); // Assigned from within constructor
         if ($class->isImmutable()) {
             if (!$property->isStatic() && !$property->isWriteOnly()) {
                 $property->setIsReadOnly(true);
@@ -474,7 +466,6 @@ class ParseVisitor extends ScopeVisitor
         } else {
             $real_union_type = UnionType::empty();
         }
-        $real_type_set = $real_union_type->getTypeSet();
 
         $class = $this->getContextClass();
         $doc_comment = '';
@@ -504,235 +495,248 @@ class ParseVisitor extends ScopeVisitor
                 continue;
             }
             $variable = $comment->getVariableList()[$i] ?? null;
-            $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
-
-            // If something goes wrong will getting the type of
-            // a property, we'll store it as a future union
-            // type and try to figure it out later
-            $future_union_type_node = null;
-
             $default_node = $child_node->children['default'];
-
-            $context_for_property = (clone($this->context))->withLineNumberStart($child_node->lineno);
-
             $property_name = $child_node->children['name'];
-
             if (!\is_string($property_name)) {
                 throw new AssertionError(
                     'Property name must be a string. '
                     . 'Got '
                     . \print_r($property_name, true)
                     . ' at '
-                    . $context_for_property
+                    . (clone($this->context))->withLineNumberStart($child_node->lineno)
                 );
             }
-
-
-            if ($default_node === null) {
-                // This is a declaration such as `public $x;` with no $default_node
-                // (we don't assume the property is always null, to reduce false positives)
-                // We don't need to compare this to the real union type
-                $union_type = $real_union_type;
-                $default_type = NullType::instance(false)->asRealUnionType();
-            } else {
-                if ($default_node instanceof Node) {
-                    $this->checkNodeIsConstExpr($default_node);
-                    $union_type = $this->resolveDefaultPropertyNode($default_node);
-                    if (!$union_type) {
-                        // We'll type check this union type against the real union type when the future union type is resolved
-                        $future_union_type_node = $default_node;
-                        $union_type = UnionType::empty();
-                    }
-                } else {
-                    // Get the type of the default (not a literal)
-                    // The literal value needs to be known to warn about incompatible composition of traits
-                    $union_type = Type::fromObject($default_node)->asPHPDocUnionType();
-                }
-                $default_type = $union_type;
-                // Erase the corresponding real type set to avoid false positives such as `$x->prop['field'] === null` is redundant/impossible.
-                $union_type = $union_type->asNonLiteralType()->eraseRealTypeSetRecursively();
-                if ($real_union_type->isEmpty()) {
-                    if ($union_type->isType(NullType::instance(false))) {
-                        $union_type = UnionType::empty();
-                    }
-                } else {
-                    if (!$union_type->isStrictSubtypeOf($this->code_base, $real_union_type)) {
-                        $this->emitIssue(
-                            Issue::TypeMismatchPropertyDefaultReal,
-                            $context_for_property->getLineNumberStart(),
-                            $real_union_type,
-                            $property_name,
-                            ASTReverter::toShortString($default_node),
-                            $union_type
-                        );
-                        $union_type = $real_union_type;
-                    } else {
-                        $original_union_type = $union_type;
-                        foreach ($real_union_type->getTypeSet() as $type) {
-                            if (!$type->asPHPDocUnionType()->isStrictSubtypeOf($this->code_base, $original_union_type)) {
-                                $union_type = $union_type->withType($type);
-                            }
-                        }
-                    }
-                    $union_type = $union_type->withRealTypeSet($real_union_type->getTypeSet())->asNormalizedTypes();
-                }
-            }
-
-            $property_fqsen = FullyQualifiedPropertyName::make(
-                $class->getFQSEN(),
-                $property_name
-            );
-            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
-                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
-                if ($old_property->getDefiningFQSEN() === $property_fqsen) {
-                    // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
-                    // PhanRedefineMagicProperty is a separate check.
-                    if ($old_property->isFromPHPDoc()) {
-                        continue;
-                    }
-                    $this->emitIssue(
-                        Issue::RedefineProperty,
-                        $child_node->lineno,
-                        $property_name,
-                        $this->context->getFile(),
-                        $child_node->lineno,
-                        $this->context->getFile(),
-                        $old_property->getContext()->getLineNumberStart()
-                    );
-                    continue;
-                }
-            }
-
-            $property = new Property(
-                $context_for_property,
+            $this->addProperty(
+                $class,
                 $property_name,
-                $union_type,
+                $default_node,
+                $real_union_type,
+                $variable,
+                $child_node->lineno,
                 $node->flags,
-                $property_fqsen,
-                $real_union_type
+                $doc_comment,
+                $comment,
+                $attributes
             );
-            $property->setAttributeList($attributes);
-            if ($variable) {
-                $property->setPHPDocUnionType($variable->getUnionType());
-            } elseif ($real_union_type) {
-                $property->setPHPDocUnionType($real_union_type);
-            }
-            $property->setDefaultType($default_type);
-
-            $property->setPhanFlags($comment->getPhanFlagsForProperty());
-            $property->setDocComment($doc_comment);
-
-            // Add the property to the class
-            $class->addProperty($this->code_base, $property, None::instance());
-
-            $property->setSuppressIssueSet($comment->getSuppressIssueSet());
-
-            if ($future_union_type_node instanceof Node) {
-                $future_union_type = new FutureUnionType(
-                    $this->code_base,
-                    new ElementContext($property),
-                    //new ElementContext($property),
-                    $future_union_type_node
-                );
-            } else {
-                $future_union_type = null;
-            }
-            // Look for any @var declarations
-            if ($variable) {
-                $original_union_type = $union_type;
-                // We try to avoid resolving $future_union_type except when necessary,
-                // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
-                if ($future_union_type) {
-                    try {
-                        $original_union_type = $future_union_type->get()->eraseRealTypeSetRecursively();
-                        if (!$variable_has_literals) {
-                            $original_union_type = $original_union_type->asNonLiteralType();
-                        }
-                        // We successfully resolved the union type. We no longer need $future_union_type
-                        $future_union_type = null;
-                    } catch (IssueException $_) {
-                        // Do nothing
-                    }
-                    if ($future_union_type === null) {
-                        if ($original_union_type->isType(ArrayShapeType::empty())) {
-                            $union_type = ArrayType::instance(false)->asPHPDocUnionType();
-                        } elseif ($original_union_type->isType(NullType::instance(false))) {
-                            $union_type = UnionType::empty();
-                        } else {
-                            $union_type = $original_union_type;
-                        }
-                        // Replace the empty union type with the resolved union type.
-                        $property->setUnionType($union_type->withRealTypeSet($real_type_set));
-                    }
-                }
-
-                if ($default_node !== null &&
-                    !$original_union_type->isType(NullType::instance(false)) &&
-                    !$variable->getUnionType()->asExpandedTypes($this->code_base)->canCastToUnionType($original_union_type) &&
-                    !$original_union_type->asExpandedTypes($this->code_base)->canCastToUnionType($variable->getUnionType()) &&
-                    !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
-                ) {
-                    $this->emitIssue(
-                        Issue::TypeMismatchPropertyDefault,
-                        $child_node->lineno,
-                        (string)$variable->getUnionType(),
-                        $property->getName(),
-                        ASTReverter::toShortString($default_node),
-                        (string)$original_union_type
-                    );
-                }
-
-                // Don't set 'null' as the type if that's the default
-                // given that its the default default.
-                if ($union_type->isType(NullType::instance(false))) {
-                    $union_type = UnionType::empty();
-                }
-
-                $original_property_type = $property->getUnionType();
-                $original_variable_type = $variable->getUnionType();
-                $variable_type = $original_variable_type->withStaticResolvedInContext($this->context);
-                if ($variable_type !== $original_variable_type) {
-                    // Instance properties with (at)var static will have the same type as the class they're in
-                    // TODO: Support `static[]` as well when inheriting
-                    if ($property->isStatic()) {
-                        $this->emitIssue(
-                            Issue::StaticPropIsStaticType,
-                            $variable->getLineno(),
-                            $property->getRepresentationForIssue(),
-                            $original_variable_type,
-                            $variable_type
-                        );
-                    } else {
-                        $property->setHasStaticInUnionType(true);
-                    }
-                }
-                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(static function (Type $type): bool {
-                    return \get_class($type) !== ArrayType::class;
-                })) {
-                    // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
-                    $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
-                } else {
-                    // Set the declared type to the doc-comment type and add
-                    // |null if the default value is null
-                    $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
-                }
-            }
-
-            // Wait until after we've added the (at)var type
-            // before setting the future so that calling
-            // $property->getUnionType() doesn't force the
-            // future to be reified.
-            if ($future_union_type instanceof FutureUnionType) {
-                $property->setFutureUnionType($future_union_type);
-            }
-            if ($class->isImmutable()) {
-                if (!$property->isStatic() && !$property->isWriteOnly()) {
-                    $property->setIsReadOnly(true);
-                }
-            }
         }
 
         return $this->context;
+    }
+
+
+    /**
+     * @param ?(ast\Node|string|float|int) $default_node
+     * @param list<Attribute> $attributes
+     */
+    private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes): ?Property
+    {
+        $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
+
+        // If something goes wrong will getting the type of
+        // a property, we'll store it as a future union
+        // type and try to figure it out later
+        $future_union_type_node = null;
+
+        $context_for_property = (clone($this->context))->withLineNumberStart($lineno);
+        $real_type_set = $real_union_type->getTypeSet();
+
+        if ($default_node === null) {
+            // This is a declaration such as `public $x;` with no $default_node
+            // (we don't assume the property is always null, to reduce false positives)
+            // We don't need to compare this to the real union type
+            $union_type = $real_union_type;
+            $default_type = NullType::instance(false)->asRealUnionType();
+        } else {
+            if ($default_node instanceof Node) {
+                $this->checkNodeIsConstExpr($default_node);
+                $union_type = $this->resolveDefaultPropertyNode($default_node);
+                if (!$union_type) {
+                    // We'll type check this union type against the real union type when the future union type is resolved
+                    $future_union_type_node = $default_node;
+                    $union_type = UnionType::empty();
+                }
+            } else {
+                // Get the type of the default (not a literal)
+                // The literal value needs to be known to warn about incompatible composition of traits
+                $union_type = Type::fromObject($default_node)->asPHPDocUnionType();
+            }
+            $default_type = $union_type;
+            // Erase the corresponding real type set to avoid false positives such as `$x->prop['field'] === null` is redundant/impossible.
+            $union_type = $union_type->asNonLiteralType()->eraseRealTypeSetRecursively();
+            if ($real_union_type->isEmpty()) {
+                if ($union_type->isType(NullType::instance(false))) {
+                    $union_type = UnionType::empty();
+                }
+            } else {
+                if (!$union_type->isStrictSubtypeOf($this->code_base, $real_union_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchPropertyDefaultReal,
+                        $context_for_property->getLineNumberStart(),
+                        $real_union_type,
+                        $property_name,
+                        ASTReverter::toShortString($default_node),
+                        $union_type
+                    );
+                    $union_type = $real_union_type;
+                } else {
+                    $original_union_type = $union_type;
+                    foreach ($real_union_type->getTypeSet() as $type) {
+                        if (!$type->asPHPDocUnionType()->isStrictSubtypeOf($this->code_base, $original_union_type)) {
+                            $union_type = $union_type->withType($type);
+                        }
+                    }
+                }
+                $union_type = $union_type->withRealTypeSet($real_union_type->getTypeSet())->asNormalizedTypes();
+            }
+        }
+
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $class->getFQSEN(),
+            $property_name
+        );
+        if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+            $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+            if ($old_property->getDefiningFQSEN() === $property_fqsen) {
+                // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
+                // PhanRedefineMagicProperty is a separate check.
+                if ($old_property->isFromPHPDoc()) {
+                    return null;
+                }
+                $this->emitIssue(
+                    Issue::RedefineProperty,
+                    $lineno,
+                    $property_name,
+                    $this->context->getFile(),
+                    $lineno,
+                    $this->context->getFile(),
+                    $old_property->getContext()->getLineNumberStart()
+                );
+                return null;
+            }
+        }
+
+        $property = new Property(
+            $context_for_property,
+            $property_name,
+            $union_type,
+            $flags,
+            $property_fqsen,
+            $real_union_type
+        );
+        $property->setAttributeList($attributes);
+        if ($variable) {
+            $property->setPHPDocUnionType($variable->getUnionType());
+        } else {
+            $property->setPHPDocUnionType($real_union_type);
+        }
+        $property->setDefaultType($default_type);
+
+        $property->setPhanFlags($property_comment->getPhanFlagsForProperty());
+        $property->setDocComment($doc_comment);
+
+        // Add the property to the class
+        $class->addProperty($this->code_base, $property, None::instance());
+
+        $property->setSuppressIssueSet($property_comment->getSuppressIssueSet());
+
+        if ($future_union_type_node instanceof Node) {
+            $future_union_type = new FutureUnionType(
+                $this->code_base,
+                new ElementContext($property),
+                //new ElementContext($property),
+                $future_union_type_node
+            );
+        } else {
+            $future_union_type = null;
+        }
+        // Look for any @var declarations
+        if ($variable) {
+            $original_union_type = $union_type;
+            // We try to avoid resolving $future_union_type except when necessary,
+            // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
+            if ($future_union_type) {
+                try {
+                    $original_union_type = $future_union_type->get()->eraseRealTypeSetRecursively();
+                    if (!$variable_has_literals) {
+                        $original_union_type = $original_union_type->asNonLiteralType();
+                    }
+                    // We successfully resolved the union type. We no longer need $future_union_type
+                    $future_union_type = null;
+                } catch (IssueException $_) {
+                    // Do nothing
+                }
+                if ($future_union_type === null) {
+                    if ($original_union_type->isType(ArrayShapeType::empty())) {
+                        $union_type = ArrayType::instance(false)->asPHPDocUnionType();
+                    } elseif ($original_union_type->isType(NullType::instance(false))) {
+                        $union_type = UnionType::empty();
+                    } else {
+                        $union_type = $original_union_type;
+                    }
+                    // Replace the empty union type with the resolved union type.
+                    $property->setUnionType($union_type->withRealTypeSet($real_type_set));
+                }
+            }
+
+            if ($default_node !== null &&
+                !$original_union_type->isType(NullType::instance(false)) &&
+                !$variable->getUnionType()->asExpandedTypes($this->code_base)->canCastToUnionType($original_union_type) &&
+                !$original_union_type->asExpandedTypes($this->code_base)->canCastToUnionType($variable->getUnionType()) &&
+                !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+            ) {
+                $this->emitIssue(
+                    Issue::TypeMismatchPropertyDefault,
+                    $lineno,
+                    (string)$variable->getUnionType(),
+                    $property->getName(),
+                    ASTReverter::toShortString($default_node),
+                    (string)$original_union_type
+                );
+            }
+
+            $original_property_type = $property->getUnionType();
+            $original_variable_type = $variable->getUnionType();
+            $variable_type = $original_variable_type->withStaticResolvedInContext($this->context);
+            if ($variable_type !== $original_variable_type) {
+                // Instance properties with (at)var static will have the same type as the class they're in
+                // TODO: Support `static[]` as well when inheriting
+                if ($property->isStatic()) {
+                    $this->emitIssue(
+                        Issue::StaticPropIsStaticType,
+                        $variable->getLineno(),
+                        $property->getRepresentationForIssue(),
+                        $original_variable_type,
+                        $variable_type
+                    );
+                } else {
+                    $property->setHasStaticInUnionType(true);
+                }
+            }
+            if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                return \get_class($type) !== ArrayType::class;
+            })) {
+                // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
+                $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
+            } else {
+                // Set the declared type to the doc-comment type and add
+                // |null if the default value is null
+                $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
+            }
+        }
+
+        // Wait until after we've added the (at)var type
+        // before setting the future so that calling
+        // $property->getUnionType() doesn't force the
+        // future to be reified.
+        if ($future_union_type instanceof FutureUnionType) {
+            $property->setFutureUnionType($future_union_type);
+        }
+        if ($class->isImmutable()) {
+            if (!$property->isStatic() && !$property->isWriteOnly()) {
+                $property->setIsReadOnly(true);
+            }
+        }
+        return $property;
     }
 
     /**

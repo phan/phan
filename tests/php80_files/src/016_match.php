@@ -13,3 +13,5 @@ function match_side_effects(bool $a): void {
     };
 }
 
+match_noop(false);
+match_side_effects(false);

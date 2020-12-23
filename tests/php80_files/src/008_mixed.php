@@ -20,3 +20,4 @@ class SubSubclass8 extends Subclass8 {
         return $x;
     }
 }
+var_export((new SubSubclass8())->test(false));

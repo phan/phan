@@ -33,3 +33,4 @@ class MyValidSubclass extends MyBase {
 MySubclass::getInstance()->helper();
 MySubclass::getInstance()->helper2();  // should warn
 MyValidSubclass::getInstance()->helper2();  // should warn
+var_export(test5());

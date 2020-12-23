@@ -1,6 +1,11 @@
-%s:10 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
-%s:29 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
-%s:30 PhanUndeclaredConstant Reference to undeclared constant \MISSING_CONSTANT. This will cause a thrown Error in php 8.0+.
-%s:34 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
-%s:35 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $x) defined at %s:29
-%s:36 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:34
+%s:6 PhanUnreferencedClass Possibly zero references to class \AttributeTests\MyAttribute
+%s:7 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
+%s:13 PhanPluginUnknownPropertyType Property \AttributeTests\X->property has an initial type that cannot be inferred
+%s:13 PhanUnreferencedPublicProperty Possibly zero references to public property \AttributeTests\X->property
+%s:21 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \AttributeTests\X::FOO
+%s:26 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:26 PhanPluginUnknownClosureReturnType Closure Closure(int $x) has no declared or inferred return type (Types inferred after analysis: int)
+%s:31 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:31 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
+%s:32 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $x) defined at %s:26
+%s:33 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:31

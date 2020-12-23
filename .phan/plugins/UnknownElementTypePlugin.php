@@ -380,8 +380,13 @@ class UnknownElementTypePlugin extends PluginV3 implements
 
     public function finalizeProcess(CodeBase $code_base): void
     {
-        foreach ($this->deferred_checks as $check) {
-            $check($code_base);
+        try {
+            foreach ($this->deferred_checks as $check) {
+                $check($code_base);
+            }
+        } finally {
+            // There were errors in unit tests if this wasn't cleared.
+            $this->deferred_checks = [];
         }
     }
 }

@@ -908,6 +908,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 '@phan-var VariableTrackingBranchScope $inner_cond_scope';
                 $outer_scope = $outer_scope->mergeBranchScopeList([$inner_cond_scope], $merge_parent_scope, []);
             }
+            $this->scope = $outer_scope;
 
             $inner_scope = new VariableTrackingBranchScope($outer_scope);
             $inner_scope = $this->analyze($inner_scope, $stmts_node);

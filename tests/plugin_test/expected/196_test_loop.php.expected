@@ -1,0 +1,5 @@
+src/196_test_loop.php:2 PhanUnreferencedFunction Possibly zero references to function \test_loop1()
+src/196_test_loop.php:5 PhanUndeclaredVariable Variable $previousVal is undeclared
+src/196_test_loop.php:11 PhanUnreferencedFunction Possibly zero references to function \test_loop2()
+src/196_test_loop.php:14 PhanUndeclaredVariable Variable $previousVal is undeclared
+src/196_test_loop.php:16 PhanUnusedVariable Unused definition of variable $previousVal
