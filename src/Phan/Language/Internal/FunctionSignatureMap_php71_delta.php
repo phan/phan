@@ -15,8 +15,8 @@
  */
 return [
 'new' => [
-'Closure::fromCallable' => ['Closure', 'callable'=>'callable'],
-'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argument_count='=>'int', 'flags='=>'int'],
+'Closure::fromCallable' => ['Closure', 'callback'=>'callable'],
+'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int', 'flags='=>'int'],
 'curl_multi_errno' => ['int', 'multi_handle'=>'resource'],
 'curl_share_errno' => ['int', 'share_handle'=>'resource'],
 'curl_share_strerror' => ['string', 'error_code'=>'int'],
@@ -40,7 +40,7 @@ return [
 'unpack' => ['array|false', 'format'=>'string', 'string'=>'string', 'offset='=>'int'],
 ],
 'old' => [
-'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argument_count='=>'int'],
+'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int'],
 'get_headers' => ['array|false', 'url'=>'string', 'associative='=>'bool'],
 'getopt' => ['array<string,string>|array<string,false>|array<string,list<string|false>>', 'short_options'=>'string', 'long_options='=>'array'],
 'pg_fetch_all' => ['array', 'result'=>'resource'],

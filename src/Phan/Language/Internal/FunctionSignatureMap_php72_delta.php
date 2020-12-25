@@ -41,7 +41,7 @@ return [
 'oci_set_call_timeout' => ['bool', 'connection'=>'resource', 'timeout'=>'int'],
 'oci_unregister_taf_callback' => ['bool', 'connection'=>'resource'],
 'ReflectionClass::isIterable' => ['bool'],
-'SQLite3::openBlob' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname='=>'string', 'flags='=>'int'],
+'SQLite3::openBlob' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'database='=>'string', 'flags='=>'int'],
 'sapi_windows_vt100_support' => ['bool', 'stream'=>'resource', 'enable='=>'bool'],
 'socket_addrinfo_bind' => ['?resource', 'address'=>'resource'],
 'socket_addrinfo_connect' => ['?resource', 'address'=>'resource'],
@@ -144,6 +144,6 @@ return [
 'hash_update' => ['bool', 'context'=>'resource', 'data'=>'string'],
 'hash_update_file' => ['bool', 'context'=>'resource', 'filename'=>'string', 'stream_context='=>'?resource'],
 'hash_update_stream' => ['int', 'context'=>'resource', 'stream'=>'resource', 'length='=>'int'],
-'SQLite3::openBlob' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname='=>'string'],
+'SQLite3::openBlob' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'database='=>'string'],
 ],
 ];
