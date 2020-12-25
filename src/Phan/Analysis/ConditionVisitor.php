@@ -887,6 +887,20 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // (E.g. ?ArrayObject|false becomes ArrayObject)
             $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base));
         };
+        /**
+         * @param list<Node|mixed> $args
+         */
+        $has_count_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args): void {
+            // Change the type to match the is_countable relationship
+            // If we already have possible countable types, then keep those
+            // (E.g. ?ArrayObject|false becomes ArrayObject)
+            $variable->setUnionType(
+                $variable->getUnionType()
+                ->withStaticResolvedInContext($context)
+                ->countableTypesStrictCast($code_base)
+                ->nonFalseyClone()
+            );
+        };
         $class_exists_callback = $make_callback('classStringTypes', ClassStringType::instance(false)->asRealUnionType());
         $method_exists_callback = $make_callback('classStringOrObjectTypes', UnionType::fromFullyQualifiedRealString('class-string|object'));
         /** @return void */
@@ -904,6 +918,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         return [
             'class_exists' => $class_exists_callback,
+            'count' => $has_count_callback,  // handle `if (count($x))` but not yet `if (count($x) > 0)`
             'interface_exists' => $class_exists_callback,  // Currently, there's just class-string, not trait-string or interface-string.
             'trait_exists' => $class_exists_callback,
             'method_exists' => $method_exists_callback,

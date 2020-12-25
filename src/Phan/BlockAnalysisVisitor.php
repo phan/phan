@@ -37,6 +37,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
@@ -953,9 +954,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             } else {
                 // e.g. look up global constants and class constants.
                 // TODO: Handle non-empty-array, etc.
-                $expr_value = (new ContextNode($code_base, $this->context, $expr_node))->getEquivalentPHPScalarValue();
-
-                $has_at_least_one_iteration = \is_array($expr_value) && count($expr_value) > 0;
+                $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $this->context, $expr_node);
+                $has_at_least_one_iteration = !$union_type->containsFalsey() && !$union_type->isEmpty() &&
+                    !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                        return !$type instanceof ArrayType;
+                    });
             }
         }
 

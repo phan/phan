@@ -24,10 +24,11 @@ final class PHP80Test extends AbstractPhanFileTest
         'target_php_version' => '8.0',
         'minimum_target_php_version' => '7.2',  // test compatibility warnings for projects
         'plugins' => [
-            'UseReturnValuePlugin',
-            'UnreachableCodePlugin',
             'DuplicateArrayKeyPlugin',
+            'EmptyMethodAndFunctionPlugin',
             'UnknownElementTypePlugin',
+            'UnreachableCodePlugin',
+            'UseReturnValuePlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
     ];

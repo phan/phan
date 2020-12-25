@@ -1,4 +1,5 @@
 %s:6 PhanUnreferencedClass Possibly zero references to class \AttributeTests\MyAttribute
+%s:7 PhanEmptyPublicMethod Empty public method \AttributeTests\MyAttribute::__construct()
 %s:7 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
 %s:13 PhanPluginUnknownPropertyType Property \AttributeTests\X->property has an initial type that cannot be inferred
 %s:13 PhanUnreferencedPublicProperty Possibly zero references to public property \AttributeTests\X->property
