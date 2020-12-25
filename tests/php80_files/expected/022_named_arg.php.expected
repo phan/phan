@@ -1,3 +1,4 @@
+%s:5 PhanEmptyFunction Empty function \noargs()
 %s:5 PhanPluginUseReturnValueNoopVoid The function/method \noargs() is declared to return void and it has no side effects
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $flag - it has union type bool(real=bool)

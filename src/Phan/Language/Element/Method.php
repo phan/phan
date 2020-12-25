@@ -254,6 +254,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isNewConstructor(): bool
     {
+        // NOTE: This is normalized to lowercase by canonicalName
         return $this->name === '__construct';
     }
 
@@ -262,6 +263,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagicCall(): bool
     {
+        // NOTE: This is normalized to lowercase by canonicalName
         return $this->name === '__call';
     }
 
@@ -270,6 +272,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isMagicCallStatic(): bool
     {
+        // NOTE: This is normalized to lowercase by canonicalName
         return $this->name === '__callStatic';
     }
 

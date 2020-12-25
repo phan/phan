@@ -204,19 +204,19 @@ EOT;
         $base = dirname(realpath(__DIR__), 3);
         $files = array_merge(
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/ast/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/config_override_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/empty_methods_plugin_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php80_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php73_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php72_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php70_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/intl_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/rewriting_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/misc/config_override_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/soap_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/misc/ast/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php70_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php72_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php73_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php80_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/rasmus_files/expected/*.php.expected') ?: []
             //glob($base . '/tests/multi_files/expected/*.php.expected') ?: []
         );
