@@ -64,8 +64,8 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
         }
         $this->directory = $realpath;
 
-        // TODO: Change to a more suitable configuration?
-        $this->code_base = require(dirname(__DIR__) . '/../src/codebase.php');
+        // NOTE: This is deliberately not using any of Phan's internal stub information.
+        $this->code_base = new CodeBase([], [], [], [], []);
         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall not able to infer type of require
         $this->code_base->eagerlyLoadAllSignatures();
         $this->initStubs();
@@ -215,7 +215,6 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
             return null;
         }
         $method = $code_base->getMethodByFQSEN($method_fqsen);
-        // echo "Found $method_fqsen at " . $method->getFileRef()->getFile() . "\n";
 
         $method->ensureScopeInitialized($code_base);
         return $method->toFunctionSignatureArray();
