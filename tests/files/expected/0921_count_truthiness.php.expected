@@ -1,0 +1,2 @@
+%s:4 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type non-empty-array<mixed,mixed> (iterating has no side effects)
+%s:11 PhanTypeInvalidDimOffset Invalid offset 0 of $value of array type array{}
