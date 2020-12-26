@@ -273,11 +273,13 @@ final class NullType extends ScalarType implements LiteralTypeInterface
     }
 
     /** @return null */
-    public function getValue() {
+    public function getValue()
+    {
         return null;
     }
 
-    public function asNonLiteralType(): Type {
+    public function asNonLiteralType(): Type
+    {
         return $this;
     }
 }

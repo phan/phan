@@ -301,11 +301,13 @@ final class VoidType extends NativeType implements LiteralTypeInterface
     }
 
     /** @return null */
-    public function getValue() {
+    public function getValue()
+    {
         return null;
     }
 
-    public function asNonLiteralType(): Type {
+    public function asNonLiteralType(): Type
+    {
         return $this;
     }
 }
