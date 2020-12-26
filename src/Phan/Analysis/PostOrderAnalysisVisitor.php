@@ -499,7 +499,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Check for __toString(), stringable variables/expressions in encapsulated strings work whether or not strict_types is set
             try {
                 foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
-                    if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                    if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                         return;
                     }
                 }
@@ -695,7 +695,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$context->isStrictTypes()) {
                 try {
                     foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
-                        if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                        if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                             return $context;
                         }
                     }
@@ -3109,7 +3109,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, false);
+            ))->getMethod($method_name, false, true);
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -3752,7 +3752,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($method->isPrivate()) {
             $has_call_magic_method = !$method->isStatic()
-                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call', true);
 
             $this->emitIssue(
                 $has_call_magic_method ?
@@ -3767,7 +3767,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             $has_call_magic_method = !$method->isStatic()
-                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call', true);
 
             $this->emitIssue(
                 $has_call_magic_method ?
@@ -4877,7 +4877,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($class->isClass()
             && ($class->getElementNamespace() ?: "\\") === "\\"
             && \strcasecmp($class->getName(), $method->getName()) === 0
-            && $class->hasMethodWithName($this->code_base, "__construct")
+            && $class->hasMethodWithName($this->code_base, "__construct", false)  // return true for the fake constructor
         ) {
             try {
                 $constructor = $class->getMethodByName($this->code_base, "__construct");

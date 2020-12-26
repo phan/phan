@@ -365,6 +365,9 @@ class DefinitionResolver
         }
     }
 
+    /**
+     * Locate a definition given a direct call to an instance or static method
+     */
     public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node): void
     {
         $is_static = $node->kind === ast\AST_STATIC_CALL;
@@ -373,7 +376,7 @@ class DefinitionResolver
             return;
         }
         try {
-            $method = (new ContextNode($code_base, $context, $node))->getMethod($method_name, $is_static);
+            $method = (new ContextNode($code_base, $context, $node))->getMethod($method_name, $is_static, true);
         } catch (IssueException | NodeException $_) {
             // ignore
             return;

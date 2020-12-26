@@ -2955,11 +2955,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $combined_union_type = null;
             foreach ($this->classListFromNode($class_node) as $class) {
-                if (!$class->hasMethodWithName(
-                    $this->code_base,
-                    $method_name
-                )
-                ) {
+                if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
                     continue;
                 }
 
@@ -3721,7 +3717,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 continue;
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
-            if (!$class->hasMethodWithName($code_base, $method_name)) {
+            if (!$class->hasMethodWithName($code_base, $method_name, true)) {
                 // emit error below
                 continue;
             }
@@ -3883,7 +3879,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return [];
         }
         $class = $code_base->getClassByFQSEN($class_fqsen);
-        if (!$class->hasMethodWithName($code_base, $method_name)) {
+        if (!$class->hasMethodWithName($code_base, $method_name, true)) {
             $this->emitIssue(
                 Issue::UndeclaredStaticMethodInCallable,
                 $context->getLineNumberStart(),

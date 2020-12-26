@@ -646,7 +646,7 @@ class ContextNode
      * @param bool $is_static
      * Set to true if this is a static method call
      *
-     * @param bool $is_direct
+     * @param bool $is_direct @phan-mandatory-param
      * Set to true if this is directly invoking the method (guaranteed not to be special syntax)
      *
      * @param bool $is_new_expression
@@ -790,13 +790,10 @@ class ContextNode
                     // TODO: Could favor the most generic subclass in a union type
                     continue;
                 }
-                $method = $class->getMethodByName(
-                    $this->code_base,
-                    $method_name
-                );
+                $method = $class->getMethodByName($this->code_base, $method_name);
                 if ($method->hasTemplateType()) {
                     try {
-                        return $method->resolveTemplateType(
+                        $method = $method->resolveTemplateType(
                             $this->code_base,
                             UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
                         );
@@ -811,7 +808,9 @@ class ContextNode
                 $class_without_method = $class->getFQSEN();
             }
         }
-        $method = $method ?? $call_method;
+        if (!$method || ($is_direct && $method->isFakeConstructor())) {
+            $method = $call_method;
+        }
         if ($method) {
             if ($class_without_method && Config::get_strict_method_checking()) {
                 $this->emitIssue(

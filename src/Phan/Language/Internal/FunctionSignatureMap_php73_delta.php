@@ -19,7 +19,7 @@ return [
 'new' => [
 'array_key_first' => ['int|string|null', 'array'=>'array'],
 'array_key_last' => ['int|string|null', 'array'=>'array'],
-'DateTime::createFromImmutable' => ['static', 'datetime'=>'DateTimeImmutable'],
+'DateTime::createFromImmutable' => ['static', 'object'=>'DateTimeImmutable'],
 'fpm_get_status' => ['array|false'],
 'gmp_binomial' => ['GMP|false', 'n'=>'GMP|string|int', 'k'=>'int'],
 'gmp_lcm' => ['GMP', 'num1'=>'GMP|string|int', 'num2'=>'GMP|string|int'],

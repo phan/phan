@@ -157,7 +157,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         if (!$clazz->hasMethodWithName(
             $code_base,
-            $method_name
+            $method_name,
+            true
         )) {
             throw new CodeBaseException(
                 null,

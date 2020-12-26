@@ -1,5 +1,10 @@
 Phan NEWS
 
+Dec 23 2020, Phan 4.0.0-RC3 (dev)
+---------------------------
+
+Merge changes from Phan 3.2.9-dev.
+
 Dec 23 2020, Phan 4.0.0-RC2
 ---------------------------
 
@@ -49,6 +54,19 @@ Backwards incompatible changes:
 
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
+
+??? ?? 202?, Phan 3.2.9 (dev)
+-----------------------
+
+Bug fixes:
++ Fix a few parameter names for issue messages (#4316)
++ Fix bug that could cause Phan not to warn about `SomeClassWithoutConstruct::__construct`
+  in some edge cases. (#4323)
++ Properly infer `self` is referring to the current object context even when the object context is unknown in namespaces. (#4070)
+
+Deprecations:
++ Emit a deprecation notice when running this in PHP 7 and php-ast < 1.0.7. (#4189)
+  This can be suppressed by setting the environment variable `PHAN_SUPPRESS_AST_DEPRECATION=1`.
 
 Dec 23 2020, Phan 3.2.8
 -----------------------

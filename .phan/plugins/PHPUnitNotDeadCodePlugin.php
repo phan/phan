@@ -113,7 +113,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     {
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
-            if ($class->hasMethodWithName($this->code_base, $data_provider_name)) {
+            if ($class->hasMethodWithName($this->code_base, $data_provider_name, true)) {
                 $class->getMethodByName($this->code_base, $data_provider_name)->addReference($this->context);
             }
         }

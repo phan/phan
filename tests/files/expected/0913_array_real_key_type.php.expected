@@ -1,3 +1,4 @@
 %s:4 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type non-empty-array<string,'something'>(real=non-empty-array<mixed,'something'>)
 %s:6 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type string(real=int|string)
-%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type non-empty-associative-array<int>|non-empty-associative-array<string>(real=non-empty-array<mixed,int>|non-empty-array<mixed,string>)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type non-empty-array<string,string>(real=non-empty-array<mixed,int>|non-empty-array<mixed,string>)
+%s:12 PhanTypeMismatchReturn Returning $y of type non-empty-array<string,string> but test_int_key() is declared to return array<int,int>

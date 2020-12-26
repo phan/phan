@@ -1,5 +1,5 @@
-src/0000_empty_methods_functions.php:6 PhanEmptyPublicMethod Empty public method two
-src/0000_empty_methods_functions.php:8 PhanEmptyProtectedMethod Empty protected method three
-src/0000_empty_methods_functions.php:10 PhanEmptyPrivateMethod Empty private method four
-src/0000_empty_methods_functions.php:20 PhanEmptyFunction Empty function emptyFunction756
-src/0000_empty_methods_functions.php:25 PhanEmptyClosure Empty closure
+src/0000_empty_methods_functions.php:6 PhanEmptyPublicMethod Empty public method \ClassWithEmptyMethods756::two()
+src/0000_empty_methods_functions.php:8 PhanEmptyProtectedMethod Empty protected method \ClassWithEmptyMethods756::three()
+src/0000_empty_methods_functions.php:10 PhanEmptyPrivateMethod Empty private method \ClassWithEmptyMethods756::four()
+src/0000_empty_methods_functions.php:20 PhanEmptyFunction Empty function \emptyFunction756()
+src/0000_empty_methods_functions.php:25 PhanEmptyClosure Empty closure Closure()

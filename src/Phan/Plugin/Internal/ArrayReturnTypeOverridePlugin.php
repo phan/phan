@@ -330,12 +330,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $types = $types instanceof UnionType ? $types->withUnionType($new_types) : $new_types;
                 $has_non_array = $has_non_array || (!$passed_array_type->hasRealTypeSet() || !$passed_array_type->asRealUnionType()->nonArrayTypes()->isEmpty());
             }
-            if ($types instanceof UnionType) {
-                $types = $types->withFlattenedTopLevelArrayShapeTypeInstances()
-                               ->withIntegerKeyArraysAsLists();
-            } else {
-                $types = UnionType::empty();
-            }
+            $types = $types->withFlattenedTopLevelArrayShapeTypeInstances()
+                           ->withIntegerKeyArraysAsLists();
             if ($types->isEmpty()) {
                 $types = $types->withType($array_type);
             }

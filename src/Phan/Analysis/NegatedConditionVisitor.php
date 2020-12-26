@@ -625,6 +625,19 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             })->asNormalizedTypes());
         };
         /** @param list<Node|mixed> $unused_args */
+        $zero_count_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type): array {
+                if ($type->isPossiblyObject()) {
+                    // TODO: Could cast iterable to Traversable|array{}
+                    return [$type];
+                }
+                if (!$type->isPossiblyFalsey()) {
+                    return [];
+                }
+                return [$type->asNonTruthyType()];
+            })->asNormalizedTypes());
+        };
+        /** @param list<Node|mixed> $unused_args */
         $remove_array_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
             $union_type = $variable->getUnionType();
             $variable->setUnionType(UnionType::of(
@@ -652,6 +665,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         };
 
         return [
+            'count' => $zero_count_callback,
             'is_null' => $remove_null_cb,
             'is_array' => $remove_array_callback,
             'is_bool' => $remove_bool_callback,

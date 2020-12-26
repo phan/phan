@@ -7,6 +7,7 @@ use Phan\Issue;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -34,26 +35,36 @@ final class EmptyMethodAndFunctionPlugin extends PluginV3 implements PostAnalyze
 final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
 {
 
+    /** @param Node $node a node of kind ast\AST_METHOD */
     public function visitMethod(Node $node): void
     {
         $stmts_node = $node->children['stmts'] ?? null;
 
-        if ($stmts_node && !$stmts_node->children) {
-            $method = $this->context->getFunctionLikeInScope($this->code_base);
-            if (!($method instanceof Method)) {
-                throw new AssertionError("Expected $method to be a method");
+        if (!$stmts_node || $stmts_node->children) {
+            return;
+        }
+        $method = $this->context->getFunctionLikeInScope($this->code_base);
+        if (!($method instanceof Method)) {
+            throw new AssertionError("Expected $method to be a method");
+        }
+        if ($method->isNewConstructor()) {
+            foreach ($node->children['params']->children as $param) {
+                if ($param instanceof Node && ($param->flags & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS)) {
+                    // This uses constructor property promotion
+                    return;
+                }
             }
+        }
 
-            if (!$method->isOverriddenByAnother()
-                && !$method->isOverride()
-                && !$method->isDeprecated()
-            ) {
-                $this->emitIssue(
-                    self::getIssueTypeForEmptyMethod($method),
-                    $node->lineno,
-                    $method->getName()
-                );
-            }
+        if (!$method->isOverriddenByAnother()
+            && !$method->isOverride()
+            && !$method->isDeprecated()
+        ) {
+            $this->emitIssue(
+                self::getIssueTypeForEmptyMethod($method),
+                $node->lineno,
+                $method->getRepresentationForIssue()
+            );
         }
     }
 
@@ -81,19 +92,12 @@ final class EmptyMethodAndFunctionVisitor extends PluginAwarePostAnalysisVisitor
                 throw new AssertionError("Expected $function to be Func\n");
             }
 
-            if (! $function->isDeprecated()) {
-                if (!$function->isClosure()) {
-                    $this->emitIssue(
-                        Issue::EmptyFunction,
-                        $node->lineno,
-                        $function->getName()
-                    );
-                } else {
-                    $this->emitIssue(
-                        Issue::EmptyClosure,
-                        $node->lineno
-                    );
-                }
+            if (!$function->isDeprecated()) {
+                $this->emitIssue(
+                    $function->isClosure() ? Issue::EmptyClosure : Issue::EmptyFunction,
+                    $node->lineno,
+                    $function->getRepresentationForIssue()
+                );
             }
         }
     }

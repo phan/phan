@@ -4221,7 +4221,7 @@ class Issue
                 self::EmptyClosure,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                'Empty closure',
+                'Empty closure {FUNCTION}',
                 self::REMEDIATION_B,
                 6078
             ),

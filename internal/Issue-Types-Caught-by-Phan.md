@@ -886,8 +886,10 @@ These `PhanEmpty*` issues warn about empty statement lists of functions, and are
 Note that this is not emitted for empty statement lists in functions or methods that are overrides, are overridden, or are deprecated.
 
 ```
-Empty closure
+Empty closure {FUNCTION}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/expected/0000_empty_methods_functions.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/src/0000_empty_methods_functions.php#L25).
 
 ## PhanEmptyForeach
 
@@ -911,11 +913,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/3.0.3/tests/files/expected/0
 Empty function {FUNCTION}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L15) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/032_variadic_promoted_property.php#L10).
+
 ## PhanEmptyPrivateMethod
 
 ```
 Empty private method {METHOD}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/expected/0000_empty_methods_functions.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/src/0000_empty_methods_functions.php#L10).
 
 ## PhanEmptyProtectedMethod
 
@@ -923,11 +929,15 @@ Empty private method {METHOD}
 Empty protected method {METHOD}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/expected/0000_empty_methods_functions.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/empty_methods_plugin_test/src/0000_empty_methods_functions.php#L8).
+
 ## PhanEmptyPublicMethod
 
 ```
 Empty public method {METHOD}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php80_files/expected/005_static_return_type.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php80_files/src/005_static_return_type.php#L14).
 
 ## PhanEmptyYieldFrom
 

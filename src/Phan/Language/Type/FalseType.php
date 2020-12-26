@@ -124,7 +124,8 @@ final class FalseType extends ScalarType implements LiteralTypeInterface
     }
 
     /** @return false */
-    public function getValue(): bool {
+    public function getValue(): bool
+    {
         return false;
     }
 }

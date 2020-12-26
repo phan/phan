@@ -113,7 +113,8 @@ final class TrueType extends ScalarType implements LiteralTypeInterface
     }
 
     /** @return true */
-    public function getValue(): bool {
+    public function getValue(): bool
+    {
         return true;
     }
 }

@@ -5484,7 +5484,10 @@ class UnionType implements Serializable, Stringable
     {
         try {
             foreach ($this->asClassList($code_base, $context) as $clazz) {
-                if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                // NOTE: It's possible for an internal class to cast to string without implementing __toString.
+                // (PHP 8 implements that in more places)
+                // The $is_direct to hasMethodWithName currently doesn't matter one way or another for that.
+                if ($clazz->hasMethodWithName($code_base, "__toString", false)) {
                     return true;
                 }
             }

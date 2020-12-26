@@ -89,7 +89,7 @@ final class AnalyzerTest extends BaseTest
             $this->code_base->getClassByFQSEN($class_fqsen);
 
         self::assertTrue(
-            $clazz->hasMethodWithName($this->code_base, 'c'),
+            $clazz->hasMethodWithName($this->code_base, 'c', true),
             "Method with FQSEN not found"
         );
     }

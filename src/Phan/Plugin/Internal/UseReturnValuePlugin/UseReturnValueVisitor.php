@@ -227,7 +227,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, false);
+            ))->getMethod($method_name, false, true);
         } catch (Exception $_) {
             return;
         }
