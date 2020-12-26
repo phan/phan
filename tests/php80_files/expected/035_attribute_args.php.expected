@@ -1,3 +1,4 @@
+%s:5 PhanEmptyPrivateMethod Empty private method \DeprecatedAttribute35::__construct()
 %s:10 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $flags of \TypedAttribute35::__construct(int $flags)
 %s:10 PhanWriteOnlyPublicProperty Possibly zero read references to public property \TypedAttribute35->flags
 %s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($flags) is [] of type array{} but \Attribute::__construct() takes int

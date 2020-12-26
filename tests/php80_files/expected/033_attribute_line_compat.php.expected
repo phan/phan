@@ -5,6 +5,7 @@
 %s:8 PhanPluginUnknownPropertyType Property \MyAttr33::$property has an initial type that cannot be inferred
 %s:8 PhanUnreferencedPublicProperty Possibly zero references to public property \MyAttr33::$property
 %s:9 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of function __construct()
+%s:9 PhanEmptyPublicMethod Empty public method \MyAttr33::__construct()
 %s:12 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33() of function a(int $first = 0, int $second = 0);
 %s:12 PhanUnreferencedFunction Possibly zero references to function \a()
 %s:13 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of int $first = 0
@@ -14,5 +15,6 @@
 %s:18 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
 %s:18 PhanUnreferencedClosure Possibly zero references to Closure()
 %s:19 PhanCompatibleAttributeGroupOnSameLine Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group MyAttr33 of function {closure}();
+%s:19 PhanEmptyClosure Empty closure Closure()
 %s:19 PhanNoopClosure Unused closure
 %s:19 PhanUnreferencedClosure Possibly zero references to Closure()
