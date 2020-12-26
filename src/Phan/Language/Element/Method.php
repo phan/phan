@@ -259,6 +259,14 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Returns true if this is a placeholder for the `__construct` method that was never declared
+     */
+    public function isFakeConstructor(): bool
+    {
+        return ($this->getPhanFlags() & Flags::IS_FAKE_CONSTRUCTOR) !== 0;
+    }
+
+    /**
      * Returns true if this is the magic `__call` method
      */
     public function isMagicCall(): bool
@@ -284,7 +292,7 @@ class Method extends ClassElement implements FunctionInterface
         Clazz $clazz,
         CodeBase $code_base
     ): Method {
-        if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
+        if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName(), true)) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
         } else {
             $old_style_constructor = null;
@@ -312,7 +320,7 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($old_style_constructor->getUnionType());
         }
 
-        $method->setPhanFlags(Flags::IS_FAKE_CONSTRUCTOR);
+        $method->setPhanFlags($method->getPhanFlags() | Flags::IS_FAKE_CONSTRUCTOR);
 
         return $method;
     }
@@ -740,7 +748,7 @@ class Method extends ClassElement implements FunctionInterface
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
-            if ($ancestor_class->hasMethodWithName($code_base, $this->name)) {
+            if ($ancestor_class->hasMethodWithName($code_base, $this->name, true)) {
                 $method = $ancestor_class->getMethodByName(
                     $code_base,
                     $this->name
