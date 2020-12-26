@@ -26,13 +26,13 @@ class Shim
         }
         // Define node kinds that may be absent
         if (!defined('ast\AST_PROP_GROUP')) {
-            define('ast\AST_PROP_GROUP', 0x221);
+            define('ast\AST_PROP_GROUP', 0x2ef);
         }
         if (!defined('ast\AST_CLASS_CONST_GROUP')) {
-            define('ast\AST_CLASS_CONST_GROUP', 0x220);
+            define('ast\AST_CLASS_CONST_GROUP', 0x2ee);
         }
         if (!defined('ast\AST_CLASS_NAME')) {
-            define('ast\AST_CLASS_NAME', 287);
+            define('ast\AST_CLASS_NAME', 0x23d);
         }
         if (!defined('ast\AST_ARROW_FUNC')) {
             define('ast\AST_ARROW_FUNC', 71);

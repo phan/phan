@@ -1,12 +1,16 @@
 Phan NEWS
 
-Dec 23 2020, Phan 4.0.0-RC3 (dev)
----------------------------
+Dec 23 2020, Phan 4.0.0
+-----------------------
 
-Merge changes from Phan 3.2.9-dev.
-
++ Merge changes from Phan 3.2.9.
 + Relax minimum php-ast restrictions when polyfill is used for Phan 4.
 + Fix conflicting class constant seen in polyfill when php-ast 1.0.6 was installed.
+
+The Phan v4 release line has the following changes from Phan 3:
+- Bump the minimum required AST version from 70 to 80 (Required to analyze php 8.0 attributes - the rest of the php 8.0 syntax changes are supported in both Phan 3 and Phan 4).
+  A few third party plugins may be affected by the increase of the AST version.
+- Supports analyzing whether `#[...]` attributes are used properly when run with PHP 8.0+
 
 Dec 23 2020, Phan 4.0.0-RC2
 ---------------------------
@@ -58,7 +62,7 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 202?, Phan 3.2.9 (dev)
+Dec 26 2020, Phan 3.2.9
 -----------------------
 
 Bug fixes:
