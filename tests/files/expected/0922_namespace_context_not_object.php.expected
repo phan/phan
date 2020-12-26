@@ -1,0 +1,3 @@
+%s:3 PhanContextNotObject Cannot access self when not in object context
+%s:4 PhanUndeclaredClassMethod Call to method foo from undeclared class \NS922\self
+%s:5 PhanUndeclaredClassMethod Call to method foo from undeclared class \X\Another\self

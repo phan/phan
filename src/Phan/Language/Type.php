@@ -1517,16 +1517,21 @@ class Type
         }
 
         // If this is a type referencing the current class
-        // in scope such as 'self' or 'static', return that.
-        if (self::isSelfTypeString($type_name)
-            && $context->isInClassScope()
-        ) {
+        // in scope such as 'self' or 'static', return that whether or not this is in a class
+        // (but not NS\self which is an invalid class name)
+        if (self::isSelfTypeString($type_name) && !$namespace) {
             if (stripos($type_name, 'parent') !== false) {
                 // Will throw if $code_base is null or there is no parent type
                 return self::maybeFindParentType($is_nullable, $context, $code_base);
             }
             if ($source === self::FROM_PHPDOC && $context->getScope()->isInTraitScope()) {
                 return SelfType::instanceWithTemplateTypeList($is_nullable, $template_parameter_type_list);
+            }
+            if (!$context->isInClassScope()) {
+                if (strcasecmp($type_name, 'static') === 0) {
+                    return StaticType::instance($is_nullable);
+                }
+                return SelfType::instance($is_nullable);
             }
             // Equivalent to getClassFQSEN()->asType()->withIsNullable but slightly faster (this is frequently used)
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
