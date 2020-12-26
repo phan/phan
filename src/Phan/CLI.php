@@ -854,7 +854,7 @@ class CLI
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
                     // In order to parse with AST version 80, 1.0.7+ is required
-                    if (\version_compare($ast_version, '1.0.6') <= 0) {
+                    if (\version_compare($ast_version, Config::MINIMUM_AST_EXTENSION_VERSION) < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }

@@ -145,7 +145,7 @@ if (extension_loaded('ast')) {
             CLI::printErrorToStderr("extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
         }
         $error_message = sprintf(
-            "ERROR: Phan 4.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
+            "Phan 4.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
             Config::MINIMUM_AST_EXTENSION_VERSION,
             Config::AST_VERSION,
             $ast_version

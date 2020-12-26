@@ -5,6 +5,9 @@ Dec 23 2020, Phan 4.0.0-RC3 (dev)
 
 Merge changes from Phan 3.2.9-dev.
 
++ Relax minimum php-ast restrictions when polyfill is used for Phan 4.
++ Fix conflicting class constant seen in polyfill when php-ast 1.0.6 was installed.
+
 Dec 23 2020, Phan 4.0.0-RC2
 ---------------------------
 
@@ -79,7 +82,6 @@ Bug fixes:
 + Infer that PHP 8.0 constructor property promotion's properties have write references. (#4308)
   They are written to by the constructor.
 + Inherit phpdoc parameter types for the property declaration in php 8.0 constructor property promotion (#4311)
->>>>>>> upstream/master
 
 Dec 13 2020, Phan 3.2.7
 -----------------------
