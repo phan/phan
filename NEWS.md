@@ -5,6 +5,8 @@ Phan NEWS
 
 Bug fixes:
 + Fix a few parameter names for issue messages (#4316)
++ Fix bug that could cause Phan not to warn about `SomeClassWithoutConstruct::__construct`
+  in some edge cases. (#4323)
 
 Dec 23 2020, Phan 3.2.8
 -----------------------
