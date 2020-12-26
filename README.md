@@ -168,7 +168,8 @@ return [
     // at https://github.com/phan/phan/tree/v4/.phan/plugins
     //
     // Alternately, you can pass in the full path to a PHP file
-    // with the plugin's implementation (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')
+    // with the plugin's implementation.
+    // (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')
     'plugins' => [
         // checks if a function, closure or method unconditionally returns.
         // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
