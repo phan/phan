@@ -177,8 +177,8 @@ EOT;
     private static function textForExample(array $example): string
     {
         [$record, $src_file_lineno, $expected_file_lineno] = $example;
-        $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->src_filename);
-        $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/master/tests/', $record->expected_filename);
+        $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v4/tests/', $record->src_filename);
+        $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v4/tests/', $record->expected_filename);
 
         return <<<EOT
 e.g. [this issue]($expected_url#L$expected_file_lineno) is emitted when analyzing [this PHP file]($src_url#L$src_file_lineno).
