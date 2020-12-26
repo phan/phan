@@ -21,7 +21,7 @@ composer require phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-Phan depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.0.1+) and supports analyzing PHP version 7.0-7.4 syntax.
+Phan depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.0.10+ is preferred) and supports analyzing PHP version 7.0-7.4 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
 (Phan can be used without php-ast by using the CLI option `--allow-polyfill-parser`, but there are slight differences in the parsing of doc comments)
 
@@ -106,7 +106,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/2.4.1/.phan/config.php#L494-L537)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/3.2.8/.phan/config.php#L601-L674)
 
 # Usage
 
