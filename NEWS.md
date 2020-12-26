@@ -9,6 +9,10 @@ Bug fixes:
   in some edge cases. (#4323)
 + Properly infer `self` is referring to the current object context even when the object context is unknown in namespaces. (#4070)
 
+Deprecations:
++ Emit a deprecation notice when running this in PHP 7 and php-ast < 1.0.7. (#4189)
+  This can be suppressed by setting the environment variable `PHAN_SUPPRESS_AST_DEPRECATION=1`.
+
 Dec 23 2020, Phan 3.2.8
 -----------------------
 
