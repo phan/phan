@@ -83,7 +83,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '4.0.0-RC3-dev';
+    public const PHAN_VERSION = '4.0.0';
 
     /**
      * List of short flags passed to getopt
@@ -1127,7 +1127,7 @@ class CLI
                 }
             }
             if ($valid_files === 0) {
-                // TODO convert this to an error in Phan 3.
+                // TODO convert this to an error in Phan 5.
                 $error_message = \sprintf(
                     "None of the files to analyze in %s exist - This will be an error in future Phan releases." . PHP_EOL,
                     Config::getProjectRootDirectory()
@@ -2753,7 +2753,7 @@ EOB
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
             \fprintf(
                 STDERR,
-                "ERROR: Phan 3.x requires php-ast 1.0.7+ because it depends on AST version 80. php-ast '%s' is installed." . PHP_EOL,
+                "ERROR: Phan 4.x requires php-ast 1.0.7+ because it depends on AST version 80. php-ast '%s' is installed." . PHP_EOL,
                 $ast_version
             );
             require_once __DIR__ . '/Bootstrap.php';
