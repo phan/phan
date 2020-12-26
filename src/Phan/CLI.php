@@ -2712,7 +2712,7 @@ EOB
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
                 . "See https://github.com/phan/phan#getting-started for more details.\n"
-                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n",
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --allow-polyfill-parser or --force-polyfill-parser (which are noticeably slower))\n",
                 false,
                 true
             );
