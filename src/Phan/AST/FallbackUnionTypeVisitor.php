@@ -676,7 +676,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
         try {
             $possible_types = null;
             foreach (UnionTypeVisitor::classListFromNodeAndContext($this->code_base, $this->context, $class_node) as $class) {
-                if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+                if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
                     return UnionType::empty();
                 }
                 $method = $class->getMethodByName($this->code_base, $method_name);
@@ -724,7 +724,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
         }
         try {
             $class = $this->context->getClassInScope($this->code_base);
-            if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+            if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
                 return UnionType::empty();
             }
             $method = $class->getMethodByName($this->code_base, $method_name);

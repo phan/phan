@@ -193,7 +193,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, false);
+            ))->getMethod($method_name, false, true);
             $this->checkAssignmentToFunctionResult($node, [$method]);
         } catch (Exception $_) {
             // ignore it
@@ -983,7 +983,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // Check to see if this class has the property or
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
-                if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
+                if (!$clazz->hasMethodWithName($this->code_base, '__set', true)) {
                     continue;
                 }
             }

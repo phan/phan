@@ -2209,8 +2209,9 @@ class CodeBase
         if (!$class->isClass()) {
             return null;
         }
-        if (!$class->hasMethodWithName($this, '__construct')) {
-            return null;
+        if (!$class->hasMethodWithName($this, '__construct', true)) {
+            // Allow both the constructor and the absence of a constructor
+            return $fqsen;
         }
         $class_fqsen_in_current_scope = IssueFixSuggester::maybeGetClassInCurrentScope($context);
         if ($class->getMethodByName($this, '__construct')->isAccessibleFromClass($this, $class_fqsen_in_current_scope)) {

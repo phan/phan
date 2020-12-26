@@ -474,7 +474,7 @@ class InferPureVisitor extends AnalysisVisitor
                 // TODO build a list of internal classes where result of new() is often unused.
                 continue;
             }
-            if (!$class->hasMethodWithName($this->code_base, '__construct')) {
+            if (!$class->hasMethodWithName($this->code_base, '__construct', true)) {
                 throw new NodeException($name_node, 'no __construct found');
             }
             $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, '__construct'));
@@ -586,7 +586,7 @@ class InferPureVisitor extends AnalysisVisitor
         } catch (Exception $_) {
             throw new NodeException($node);
         }
-        if (!$class->hasMethodWithName($this->code_base, $method)) {
+        if (!$class->hasMethodWithName($this->code_base, $method, true)) {
             throw new NodeException($node, 'no method');
         }
 
@@ -610,7 +610,7 @@ class InferPureVisitor extends AnalysisVisitor
             throw new NodeException($node);
         }
         $class = $this->getClassForVariable($expr);
-        if (!$class->hasMethodWithName($this->code_base, $method_name)) {
+        if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
             throw new NodeException($expr, 'does not have method');
         }
         $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method_name));

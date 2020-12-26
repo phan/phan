@@ -1085,7 +1085,7 @@ final class ArgumentType
             if (!$context->isStrictTypes() && $alternate_parameter_type->hasNonNullStringType()) {
                 try {
                     foreach ($argument_type_expanded_resolved->asClassList($code_base, $context) as $clazz) {
-                        if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                        if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                             return;
                         }
                     }
@@ -1445,7 +1445,8 @@ final class ArgumentType
                     ) as $class) {
                         if (!$class->hasMethodWithName(
                             $code_base,
-                            $method_name
+                            $method_name,
+                            true
                         )) {
                             continue;
                         }

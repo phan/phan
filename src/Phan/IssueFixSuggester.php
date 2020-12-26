@@ -348,7 +348,7 @@ class IssueFixSuggester
                 $suggestions[] = $class->getFQSEN() . '::' . $wanted_property_name;
             }
         }
-        if ($class->hasMethodWithName($code_base, $wanted_property_name)) {
+        if ($class->hasMethodWithName($code_base, $wanted_property_name, true)) {
             $method = $class->getMethodByName($code_base, $wanted_property_name);
             $suggestions[] = $class->getFQSEN() . ($method->isStatic() ? '::' : '->') . $wanted_property_name . '()';
         }

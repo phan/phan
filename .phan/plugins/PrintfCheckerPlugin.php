@@ -604,7 +604,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                     // TODO: Move into a common helper method?
                     try {
                         foreach ($actual_union_type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
-                            if ($clazz->hasMethodWithName($code_base, '__toString')) {
+                            if ($clazz->hasMethodWithName($code_base, '__toString', true)) {
                                 $can_cast_to_string = true;
                                 break;
                             }

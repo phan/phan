@@ -933,7 +933,7 @@ class Clazz extends AddressableElement
                 $flags |= \ast\flags\MODIFIER_STATIC;
             }
             $method_name = $comment_method->getName();
-            if ($this->hasMethodWithName($code_base, $method_name)) {
+            if ($this->hasMethodWithName($code_base, $method_name, true)) {
                 // No point, and this would hurt inference accuracy.
                 continue;
             }
@@ -1083,7 +1083,7 @@ class Clazz extends AddressableElement
 
         // Check to see if we can use a __get magic method
         // TODO: What about __set?
-        if (!$is_static && $this->hasMethodWithName($code_base, '__get')) {
+        if (!$is_static && $this->hasMethodWithName($code_base, '__get', true)) {
             $method = $this->getMethodByName($code_base, '__get');
 
             // Make sure the magic method is accessible
@@ -1810,6 +1810,7 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param bool $is_direct_invocation @phan-mandatory-param
      * @return bool
      * True if this class has a method with the given name
      */
@@ -1898,7 +1899,7 @@ class Clazz extends AddressableElement
      */
     public function hasCallMethod(CodeBase $code_base): bool
     {
-        return $this->hasMethodWithName($code_base, '__call');
+        return $this->hasMethodWithName($code_base, '__call', true);
     }
 
     /**
@@ -1955,7 +1956,7 @@ class Clazz extends AddressableElement
      */
     public function hasCallStaticMethod(CodeBase $code_base): bool
     {
-        return $this->hasMethodWithName($code_base, '__callStatic');
+        return $this->hasMethodWithName($code_base, '__callStatic', true);
     }
 
     /**
@@ -1996,7 +1997,7 @@ class Clazz extends AddressableElement
      */
     public function hasGetMethod(CodeBase $code_base): bool
     {
-        return $this->hasMethodWithName($code_base, '__get');
+        return $this->hasMethodWithName($code_base, '__get', true);
     }
 
     /**
@@ -2009,7 +2010,7 @@ class Clazz extends AddressableElement
      */
     public function hasSetMethod(CodeBase $code_base): bool
     {
-        return $this->hasMethodWithName($code_base, '__set');
+        return $this->hasMethodWithName($code_base, '__set', true);
     }
 
     /**
@@ -2451,7 +2452,7 @@ class Clazz extends AddressableElement
                 // Skip __invoke, and private/protected methods
                 continue;
             }
-            if ($this->hasMethodWithName($code_base, $name)) {
+            if ($this->hasMethodWithName($code_base, $name, true)) {
                 continue;
             }
             // Treat it as if all of the methods were added, with their real and phpdoc union types.
@@ -2852,7 +2853,7 @@ class Clazz extends AddressableElement
     ): void {
         foreach ($trait_adaptations->alias_methods ?? [] as $alias_method_name => $original_trait_alias_source) {
             $source_method_name = $original_trait_alias_source->getSourceMethodName();
-            if ($class->hasMethodWithName($code_base, $source_method_name)) {
+            if ($class->hasMethodWithName($code_base, $source_method_name, true)) {
                 $source_method = $class->getMethodByName($code_base, $source_method_name);
             } else {
                 $source_method = null;
@@ -3607,7 +3608,7 @@ class Clazz extends AddressableElement
         $ancestor_class = $code_base->getClassByFQSEN($ancestor_fqsen);
         $name = $element->getName();
         if ($element instanceof Method) {
-            if (!$ancestor_class->hasMethodWithName($code_base, $name)) {
+            if (!$ancestor_class->hasMethodWithName($code_base, $name, true)) {
                 return null;
             }
             return $ancestor_class->getMethodByName($code_base, $name);

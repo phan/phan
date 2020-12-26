@@ -2354,7 +2354,7 @@ class Type
         // Given an IteratorAggregate implementation with getIterator, determine the class of the Iterator if possible.
         if ($expanded_types->hasTypeWithFQSEN($iterator_aggregate_fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
-            if (!$class->hasMethodWithName($code_base, 'getIterator')) {
+            if (!$class->hasMethodWithName($code_base, 'getIterator', true)) {
                 // Should be impossible
                 return null;
             }
@@ -2380,7 +2380,7 @@ class Type
         // Given an Iterator, return the type of the key
         if ($expanded_types->hasTypeWithFQSEN($iterator_fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
-            if (!$class->hasMethodWithName($code_base, 'key')) {
+            if (!$class->hasMethodWithName($code_base, 'key', true)) {
                 // Should be impossible
                 return null;
             }
@@ -2431,7 +2431,7 @@ class Type
         // Given an IteratorAggregate implementation with getIterator, determine the class of the Iterator if possible.
         if ($expanded_types->hasTypeWithFQSEN($iterator_aggregate_fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
-            if (!$class->hasMethodWithName($code_base, 'getIterator')) {
+            if (!$class->hasMethodWithName($code_base, 'getIterator', true)) {
                 // Should be impossible
                 return null;
             }
@@ -2457,7 +2457,7 @@ class Type
         // Given an Iterator, return the type of the value (from ->current())
         if ($expanded_types->hasTypeWithFQSEN($iterator_fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
-            if (!$class->hasMethodWithName($code_base, 'current')) {
+            if (!$class->hasMethodWithName($code_base, 'current', true)) {
                 // Should be impossible
                 return null;
             }
@@ -3962,7 +3962,7 @@ class Type
             return null;
         }
         $class = $code_base->getClassByFQSEN($fqsen);
-        if (!$class->hasMethodWithName($code_base, '__invoke')) {
+        if (!$class->hasMethodWithName($code_base, '__invoke', true)) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

@@ -998,7 +998,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
             if ($code_base->hasClassWithFQSEN($fqsen)) {
                 $class = $code_base->getClassByFQSEN($fqsen);
-                if ($class->hasMethodWithName($code_base, $method_name)) {
+                if ($class->hasMethodWithName($code_base, $method_name, true)) {
                     return $class->getMethodByName($code_base, $method_name);
                 }
             }
