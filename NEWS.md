@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 202?, Phan 4.0.1 (dev)
+-----------------------
+
+Bug fixes
++ Fix false positive InvalidConstantExpression for named properties in attributes (#4334)
+
 Dec 23 2020, Phan 4.0.0
 -----------------------
 

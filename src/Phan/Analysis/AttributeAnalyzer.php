@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\CodeBase;
@@ -250,6 +251,13 @@ class AttributeAnalyzer
                 if ($attribute_node) {
 
                     foreach ($attribute_node->children['args']->children ?? [] as $arg_node) {
+                        if (!$arg_node instanceof Node) {
+                            continue;
+                        }
+                        if ($arg_node->kind === ast\AST_NAMED_ARG) {
+                            $arg_node = $arg_node->children['expr'];
+                        }
+
                         if ($arg_node instanceof Node && !ParseVisitor::isConstExpr($arg_node)) {
                             Issue::maybeEmit(
                                 $code_base,
