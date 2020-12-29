@@ -291,7 +291,7 @@ contributor is required to adhere to our [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 # Online Demo
 
-**This requires an up to date version of Firefox/Chrome and at least 4 GB of free RAM.** (this is a 10 MB download)
+**This requires an up to date version of Firefox/Chrome and at least 4 GB of free RAM.** (this is a 15 MB download)
 
 [Run Phan entirely in your browser](https://phan.github.io/demo/).
 
