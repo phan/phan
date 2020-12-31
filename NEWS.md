@@ -1,17 +1,18 @@
 Phan NEWS
 
-??? ?? 202?, Phan 3.2.10 (dev)
------------------------
+Dec 31 2020, Phan 3.2.10
+------------------------
 
 Phan 4 is out (requires php-ast 1.0.7+ to run),
 and that release line will contain all of Phan's new features, bug fixes, and crash fixes.
 
 Maintenance:
 
-+ Recommend using Phan 4 when analyzing code (#4189)
++ Recommend using Phan 4 when analyzing code as a line printed to `STDERR`. (#4189)
 + Mention that Phan 4 has been released in `--help`, `--version`, and crash reports. (#4189)
   The environment variable `PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1` can be set to disable this notice.
 + Warn if attempting to execute Phan 3.x with PHP 8.1-dev or newer (A future release of Phan 4+ will fully support 8.1)
+  PHP 8.1 may contain changes to syntax that are unsupported by Phan 3 or the native/polyfill parsers.
 
 Bug fixes
 + Fix false positive PhanPossiblyFalseTypeReturn with strict type checking for substr when target php version is 8.0+ (#4335)
