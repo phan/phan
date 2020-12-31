@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 202?, Phan 3.2.10 (dev)
+-----------------------
+
+Bug fixes
++ Fix false positive PhanPossiblyFalseTypeReturn with strict type checking for substr when target php version is 8.0+ (#4335)
+
 Dec 26 2020, Phan 3.2.9
 -----------------------
 
