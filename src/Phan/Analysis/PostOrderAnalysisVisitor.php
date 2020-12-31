@@ -57,6 +57,7 @@ use Phan\Language\UnionType;
 use function end;
 use function implode;
 use function sprintf;
+use function strtolower;
 
 /**
  * PostOrderAnalysisVisitor is where we do the post-order part of the analysis
@@ -2943,28 +2944,36 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitFuncDecl(Node $node): Context
     {
-        $method =
+        $function =
             $this->context->getFunctionLikeInScope($this->code_base);
 
-        if (\strcasecmp($method->getName(), '__autoload') === 0) {
-            $this->emitIssue(
-                Issue::CompatibleAutoload,
-                $node->lineno
-            );
+        switch (strtolower($function->getName())) {
+            case '__autoload':
+                $this->emitIssue(
+                    Issue::CompatibleAutoload,
+                    $node->lineno
+                );
+                break;
+            case 'assert':
+                $this->emitIssue(
+                    Issue::CompatibleAssertDeclaration,
+                    $node->lineno
+                );
+                break;
         }
 
-        $return_type = $method->getUnionType();
+        $return_type = $function->getUnionType();
 
         if (!$return_type->isEmpty()
-            && !$method->hasReturn()
+            && !$function->hasReturn()
             && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
-            $this->warnTypeMissingReturn($method, $node);
+            $this->warnTypeMissingReturn($function, $node);
         }
 
-        $this->checkForFunctionInterfaceIssues($node, $method);
+        $this->checkForFunctionInterfaceIssues($node, $function);
 
         return $this->context;
     }

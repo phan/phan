@@ -558,6 +558,7 @@ class Issue
     public const CompatibleNonCapturingCatch        = 'PhanCompatibleNonCapturingCatch';
     public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
+    public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
     public const CompatibleSyntaxNotice             = 'PhanCompatibleSyntaxNotice';
     public const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
@@ -4955,6 +4956,14 @@ class Issue
                 "Cannot use named arguments before php 8.0 in argument ({CODE})",
                 self::REMEDIATION_B,
                 3035
+            ),
+            new Issue(
+                self::CompatibleAssertDeclaration,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.",
+                self::REMEDIATION_B,
+                3041
             ),
             // NOTE: The fact that the native php-ast does not track trailing commas is by design.
             // It exposes the information that php's implementation stores internally,

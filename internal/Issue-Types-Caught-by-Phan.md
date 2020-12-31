@@ -427,6 +427,14 @@ Cannot use arrow functions before php 7.4 in {CODE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/php80_files/src/032_variadic_promoted_property.php#L9).
 
+## PhanCompatibleAssertDeclaration
+
+```
+Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php80_files/expected/038_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php80_files/src/038_assert.php#L3).
+
 ## PhanCompatibleAttributeGroupOnMultipleLines
 
 NOTE: This is done on a best effort basis - The native php-ast parser does not provide the actual end line numbers for attribute groups.

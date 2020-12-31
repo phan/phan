@@ -3,7 +3,10 @@ Phan NEWS
 ??? ?? 202?, Phan 4.0.1 (dev)
 -----------------------
 
-Bug fixes
+New Features:
++ Emit `PhanCompatibleAssertDeclaration` when declaring a function called `assert`. (#4333)
+
+Bug fixes:
 + Fix false positive InvalidConstantExpression for named properties in attributes (#4334)
 
 Merge changes from Phan 3.2.10-dev
