@@ -50,6 +50,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     public static function getReturnTypeOverridesStatic(CodeBase $code_base): array
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
+        $string_union_type_real = StringType::instance(false)->asRealUnionType();
         $string_union_type_with_false_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', 'string|false');
         $string_union_type_with_null_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', '?string');
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
@@ -110,7 +111,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $string_union_type
         ): UnionType {
             //PHP 8 will throw a DivisionByZero error instead of returning null
-            if (Config::getValue('target_php_version') >= 80000) {
+            if (Config::get_closest_target_php_version_id() >= 80000) {
                 return $string_union_type;
             }
             if (count($args) <= 1) {
@@ -249,8 +250,17 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use (
             $string_or_false,
-            $string_union_type_with_false_in_real
-): UnionType {
+            $string_union_type_with_false_in_real,
+            $string_union_type_real
+        ): UnionType {
+            if (Config::get_closest_target_php_version_id() >= 80000) {
+                if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
+                    // Avoid false positive PhanRedundantCondition in projects that need to support php versions before 8.0
+                    return $string_union_type_real;
+                }
+                // Avoid false positives with strict type checking and assume phpdoc type of string.
+                return $string_union_type_with_false_in_real;
+            }
             if (count($args) >= 2 && is_int($args[1]) && $args[1] <= 0) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type_with_false_in_real;
