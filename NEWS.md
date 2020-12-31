@@ -73,10 +73,10 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 202?, Phan 3.2.10 (dev)
+Dec 31 2020, Phan 3.2.10 (dev)
 -----------------------
 
-Bug fixes
+Bug fixes:
 + Fix false positive PhanPossiblyFalseTypeReturn with strict type checking for substr when target php version is 8.0+ (#4335)
 
 Dec 26 2020, Phan 3.2.9
