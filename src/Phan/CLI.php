@@ -43,6 +43,7 @@ use function array_values;
 use function count;
 use function escapeshellarg;
 use function fwrite;
+use function fprintf;
 use function getenv;
 use function in_array;
 use function is_array;
@@ -382,6 +383,9 @@ class CLI
             $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
             printf("php-ast %s" . PHP_EOL, $ast_version_repr);
             printf("PHP version used to run Phan: %s" . PHP_EOL, \PHP_VERSION);
+            if (!\getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                fwrite(STDERR, "(Consider upgrading to Phan 4, which has the latest features and bug fixes)\n");
+            }
             throw new ExitException('', EXIT_SUCCESS);
         }
         self::restartWithoutProblematicExtensions();
@@ -994,6 +998,9 @@ class CLI
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
         }
+        if (!\getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+            fprintf(STDERR, "(Consider upgrading from Phan %s to Phan 4, which has the latest features and bug fixes. This notice can be disabled with PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1))\n", CLI::PHAN_VERSION);
+        }
         self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();
     }
@@ -1450,6 +1457,9 @@ EOT;
             self::printHelpSection("Type {$argv[0]} --help (or --extended-help) for usage.\n");
             if ($exit_code === null) {
                 return;
+            }
+            if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+                \fprintf(STDERR, "\nPhan %s is installed, but Phan 4 has the latest features and bug fixes.\n", CLI::PHAN_VERSION);
             }
             exit($exit_code);
         }
