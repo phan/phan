@@ -1,15 +1,15 @@
 Phan NEWS
 
-??? ?? 202?, Phan 4.0.1 (dev)
+Dec 31 2020, Phan 4.0.1
 -----------------------
 
 New Features:
 + Emit `PhanCompatibleAssertDeclaration` when declaring a function called `assert`. (#4333)
 
 Bug fixes:
-+ Fix false positive InvalidConstantExpression for named properties in attributes (#4334)
++ Fix false positive `PhanInvalidConstantExpression` for named arguments in attributes (#4334)
 
-Merge changes from Phan 3.2.10-dev
+Merge changes from Phan 3.2.10
 
 Dec 23 2020, Phan 4.0.0
 -----------------------
@@ -73,10 +73,10 @@ Backwards incompatible changes:
 Miscellaneous:
 + Make various classes from Phan implement `Stringable`.
 
-??? ?? 202?, Phan 3.2.10 (dev)
+Dec 31 2020, Phan 3.2.10 (dev)
 -----------------------
 
-Bug fixes
+Bug fixes:
 + Fix false positive PhanPossiblyFalseTypeReturn with strict type checking for substr when target php version is 8.0+ (#4335)
 
 Dec 26 2020, Phan 3.2.9
