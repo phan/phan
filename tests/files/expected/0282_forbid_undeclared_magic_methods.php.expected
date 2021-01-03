@@ -1,4 +1,4 @@
-%s:23 PhanUndeclaredThis Variable $this is undeclared
+%s:23 PhanUndeclaredThis Variable $this is undeclared (Did you mean (function instead of static function for __callStatic() at line 17))
 %s:32 PhanTypeMismatchArgumentProbablyReal Argument 1 ($arg) is 'str' of type 'str' but \Magic282::instanceMethod() takes ?int (no real type) defined at %s:4 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:33 PhanUndeclaredMethod Call to undeclared method \Magic282::missingMethod
 %s:34 PhanParamTooFew Call with 0 arg(s) to \Magic282::instanceMethod(?int $arg) which requires 1 arg(s) defined at %s:4

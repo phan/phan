@@ -1,1 +1,1 @@
-%s:6 PhanUndeclaredThis Variable $this is undeclared
+%s:6 PhanUndeclaredThis Variable $this is undeclared (Did you mean (function instead of static function for f() at line 5))

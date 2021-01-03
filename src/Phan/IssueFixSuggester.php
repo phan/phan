@@ -666,6 +666,12 @@ class IssueFixSuggester
         $did_suggest_use_in_closure = false;
         while ($scope->isInFunctionLikeScope()) {
             $function = $context->withScope($scope)->getFunctionLikeInScope($code_base);
+            if ($variable_name === 'this') {
+                if ($function->isStatic()) {
+                    $suggestions[] = "(function instead of static function for {$function->getNameForIssue()} at line {$function->getContext()->getLineNumberStart()})";
+                }
+                break;
+            }
             if (!($function instanceof Func) || !$function->isClosure()) {
                 break;
             }

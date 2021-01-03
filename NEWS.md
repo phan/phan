@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 4.0.2 (dev)
+-----------------------
+
+New Features:
++ Improve suggestions for `PhanUndeclaredThis` inside of static methods/closures (#4336)
+
 Dec 31 2020, Phan 4.0.1
 -----------------------
 

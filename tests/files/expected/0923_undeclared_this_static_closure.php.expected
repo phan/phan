@@ -1,0 +1,1 @@
+%s:7 PhanUndeclaredThis Variable $this is undeclared (Did you mean (function instead of static function for Closure() at line 6))

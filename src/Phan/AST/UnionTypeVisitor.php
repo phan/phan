@@ -2366,6 +2366,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($variable_name === 'this') {
                     return ObjectType::instance(false)->asRealUnionType();
                 }
+                // Be more certain that unknown variables are not set inside of function scopes than the global scope.
                 return NullType::instance(false)->asRealUnionType();
             }
             if ($variable_name === 'this') {
