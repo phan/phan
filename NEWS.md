@@ -6,6 +6,9 @@ Phan NEWS
 New Features:
 + Improve suggestions for `PhanUndeclaredThis` inside of static methods/closures (#4336)
 
+Bug fixes:
++ Fix false positive `PhanParamSignatureMismatch` for variadic overriding a function using `func_get_args()` (#4340)
+
 Dec 31 2020, Phan 4.0.1
 -----------------------
 

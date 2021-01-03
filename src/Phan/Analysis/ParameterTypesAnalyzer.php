@@ -609,13 +609,13 @@ class ParameterTypesAnalyzer
         $signatures_match = true;
 
         // Make sure the count of parameters matches
-        if ($method->getNumberOfRequiredParameters()
-            > $o_method->getNumberOfRequiredParameters()
+        if ($method->getNumberOfRequiredRealParameters()
+            > $o_method->getNumberOfRequiredRealParameters()
         ) {
             $signatures_match = false;
             $mismatch_details = 'Saw more required parameters in the override';
-        } elseif ($method->getNumberOfParameters()
-            < $o_method->getNumberOfParameters()
+        } elseif ($method->getNumberOfRealParameters()
+            < $o_method->getNumberOfRealParameters()
         ) {
             $signatures_match = false;
             $mismatch_details = 'Saw fewer optional parameters in the override';
