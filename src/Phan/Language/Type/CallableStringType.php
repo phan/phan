@@ -136,9 +136,11 @@ final class CallableStringType extends StringType implements CallableInterface
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
+        // TODO: check if literal string is possibly callable
         return $other instanceof StringType ||
             $other instanceof MixedType ||
             $other instanceof TemplateType ||
+            $other instanceof CallableDeclarationType ||
             $other instanceof CallableType;
     }
 }

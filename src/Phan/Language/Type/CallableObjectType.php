@@ -27,7 +27,10 @@ final class CallableObjectType extends ObjectType
     protected function canCastToNonNullableType(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
-        if ($type instanceof CallableType) {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
+        if ($type instanceof CallableInterface) {
             return true;
         }
         return parent::canCastToNonNullableType($type);
@@ -36,7 +39,10 @@ final class CallableObjectType extends ObjectType
     protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
     {
         // Inverse of check in Type->canCastToNullableType
-        if ($type instanceof CallableType) {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
+        if ($type instanceof CallableInterface) {
             return true;
         }
         return parent::canCastToNonNullableTypeWithoutConfig($type);

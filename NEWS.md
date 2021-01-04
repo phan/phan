@@ -9,6 +9,8 @@ New Features:
 Bug fixes:
 + Fix false positive `PhanParamSignatureMismatch` for variadic overriding a function using `func_get_args()` (#4340)
 + Don't emit PhanTypeNoPropertiesForeach for the Countable interface on its own. (#4342)
++ Fix false positive type mismatch warning for casts from callable-object/callable-array/callable-string
+  to `function(paramtypes):returntype` (#4343)
 
 Dec 31 2020, Phan 4.0.1
 -----------------------

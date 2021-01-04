@@ -60,11 +60,16 @@ class CallableArrayType extends ArrayType
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
+        if ($other->isDefiniteNonCallableType()) {
+            return false;
+        }
         if ($other instanceof IterableType) {
-            return !$other->isDefiniteNonCallableType();
+            return true;
         }
         // TODO: More specific.
+        // e.g. can't cast to certain array shapes or arrays with string keys.
         return $other instanceof CallableType
+            || $other instanceof CallableDeclarationType
             || parent::canCastToDeclaredType($code_base, $context, $other);
     }
 }
