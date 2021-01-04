@@ -1194,8 +1194,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
             return;
         }
-        if ($fqsen->__toString() === '\stdClass') {
+        if (\in_array($fqsen->__toString(), ['\stdClass', '\Countable'], true)) {
             // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
+            // Countable as the only known interface is a common false positive. (`if (count(x)) {foreach...}`)
             return;
         }
         $class = $this->code_base->getClassByFQSEN($fqsen);

@@ -1,0 +1,1 @@
+%s:10 PhanTypeNoPropertiesForeach Class \SubCountable was passed to foreach, but it does not extend Traversable and doesn't have any declared properties. (This check excludes dynamic properties)
