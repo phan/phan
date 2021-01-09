@@ -6,6 +6,10 @@ Phan NEWS
 New Features:
 + Improve suggestions for `PhanUndeclaredThis` inside of static methods/closures (#4336)
 
+Language Server/Daemon mode:
++ Properly generate code completions for `::` and `->` at the end of a line on files using Windows line endings(`\r\n`) instead of Unix newlines(`\n`) on any OS (#4345)
+  Previously, those were not completed.
+
 Bug fixes:
 + Fix false positive `PhanParamSignatureMismatch` for variadic overriding a function using `func_get_args()` (#4340)
 + Don't emit PhanTypeNoPropertiesForeach for the Countable interface on its own. (#4342)
