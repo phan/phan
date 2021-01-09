@@ -61,7 +61,9 @@ function phan_output_ast_installation_instructions(): void
         $extension_dir .= ' (extension directory does not exist and may need to be changed)';
     }
     if (DIRECTORY_SEPARATOR === '\\') {
-        if (PHP_VERSION_ID < 70500 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+        if (PHP_VERSION_ID < 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.10/php_ast-1.0.10-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
+            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.10/php_ast-1.0.10-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
             fprintf(
                 STDERR,
                 PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
@@ -69,7 +71,7 @@ function phan_output_ast_installation_instructions(): void
                 LATEST_KNOWN_PHP_AST_VERSION,
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
                 PHP_ZTS ? 'ts' : 'nts',
-                'vc15',
+                PHP_VERSION_ID >= 80100 ? 'vc16' : 'vc15',
                 PHP_INT_SIZE == 4 ? 'x86' : 'x64'
             );
             fwrite(STDERR, "(if that link doesn't work, check https://windows.php.net/downloads/pecl/releases/ast/ )" . PHP_EOL);
