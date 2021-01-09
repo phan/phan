@@ -38,7 +38,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @return resource the result of msg_get_queue()
      * @throws AssertionError if this could not create a resource with msg_get_queue.
      * @internal
-     * @suppress PhanTypeMismatchReturnProbablyReal different type in php 8.0+
+     * @suppress PhanTypeMismatchReturnProbablyReal, PhanTypeMismatchReturn different type in php 8.0+, the emitted issue depends on whether sysvmsg is installed
      */
     public static function getQueueForProcessGroup()
     {
