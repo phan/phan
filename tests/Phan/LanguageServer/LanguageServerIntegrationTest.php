@@ -907,6 +907,7 @@ EOT;
         // TODO: Extract the parameter defaults from php 8.0's stub files
         // so they can be used in error messages for php 7?
         $parse_code_default = \PHP_VERSION_ID >= 80000 ? "'string code'" : 'unknown';
+        $error_default_message = \PHP_VERSION_ID >= 80000 ? "''" : 'unknown';
         $error_default_code = \PHP_VERSION_ID >= 80000 ? "0" : 'unknown';
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
@@ -1144,7 +1145,7 @@ EOT
                 new Position(28, 45),  // AssertionError
                 <<<"EOT"
 ```php
-public function __construct(string \$message = unknown, int \$code = $error_default_code, ?\Error|?\Throwable \$previous = null): void
+public function __construct(string \$message = $error_default_message, int \$code = $error_default_code, ?\Error|?\Throwable \$previous = null): void
 ```
 
 Construct an instance of `\AssertionError`.
