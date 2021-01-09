@@ -352,8 +352,12 @@ EOT;
         array $expected_completions,
         bool $for_vscode,
         string $file_contents,
-        bool $pcntl_enabled
+        bool $pcntl_enabled,
+        bool $windows_newlines = false
     ): void {
+        if ($windows_newlines) {
+            $file_contents = \preg_replace("/\r?\n/", "\r\n", $file_contents);
+        }
         $this->messageId = 0;
         [$proc, $proc_in, $proc_out] = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
         try {
@@ -395,21 +399,21 @@ EOT;
     /**
      * @param list<array> $expected_completions
      */
-    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents): void
+    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents, bool $windows_newlines = false): void
     {
         if (\function_exists('pcntl_fork')) {
-            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true);
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true, $windows_newlines);
         }
-        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false);
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false, $windows_newlines);
     }
 
     /**
      * @param list<array> $expected_completions
      * @dataProvider completionBasicProvider
      */
-    public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false): void
+    public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false, bool $use_windows_newlines = true): void
     {
-        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_BASIC_FILE_CONTENTS);
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_BASIC_FILE_CONTENTS, $use_windows_newlines);
     }
 
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
@@ -624,9 +628,11 @@ EOT;
             [new Position(10, 17), $static_property_completions, $for_vscode],
             [new Position(11, 19), $static_property_completions_substr, $for_vscode],
             [new Position(12, 16), $all_static_completions, $for_vscode],
+            [new Position(12, 16), $all_static_completions, $for_vscode, true],
             [new Position(20, 7), $all_constant_completions, $for_vscode],
             [new Position(41, 25), $all_static_completions, $for_vscode],
             [new Position(44, 26), $all_instance_completions, $for_vscode],
+            [new Position(44, 26), $all_instance_completions, $for_vscode, true],
         ];
     }
     /**
@@ -901,6 +907,7 @@ EOT;
         // TODO: Extract the parameter defaults from php 8.0's stub files
         // so they can be used in error messages for php 7?
         $parse_code_default = \PHP_VERSION_ID >= 80000 ? "'string code'" : 'unknown';
+        $error_default_message = \PHP_VERSION_ID >= 80000 ? "''" : 'unknown';
         $error_default_code = \PHP_VERSION_ID >= 80000 ? "0" : 'unknown';
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
@@ -1138,7 +1145,7 @@ EOT
                 new Position(28, 45),  // AssertionError
                 <<<"EOT"
 ```php
-public function __construct(string \$message = unknown, int \$code = $error_default_code, ?\Error|?\Throwable \$previous = null): void
+public function __construct(string \$message = $error_default_message, int \$code = $error_default_code, ?\Error|?\Throwable \$previous = null): void
 ```
 
 Construct an instance of `\AssertionError`.

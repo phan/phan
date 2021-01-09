@@ -1,10 +1,14 @@
 Phan NEWS
 
-??? ?? 2021, Phan 4.0.2 (dev)
+Jan 09 2021, Phan 4.0.2
 -----------------------
 
 New Features:
 + Improve suggestions for `PhanUndeclaredThis` inside of static methods/closures (#4336)
+
+Language Server/Daemon mode:
++ Properly generate code completions for `::` and `->` at the end of a line on files using Windows line endings(`\r\n`) instead of Unix newlines(`\n`) on any OS (#4345)
+  Previously, those were not completed.
 
 Bug fixes:
 + Fix false positive `PhanParamSignatureMismatch` for variadic overriding a function using `func_get_args()` (#4340)
