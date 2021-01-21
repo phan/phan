@@ -34,6 +34,8 @@
             <file>tests/Phan/PhanTest4.php</file>
             <file>tests/Phan/PhanTest5.php</file>
             <file>tests/Phan/PhanTest6.php</file>
+            <file>tests/Phan/PhanTest7.php</file>
+            <file>tests/Phan/PhanTest8.php</file>
             <file>tests/Phan/PhanTestNew.php</file>
         </testsuite>
         <testsuite name="RasmusTest">
