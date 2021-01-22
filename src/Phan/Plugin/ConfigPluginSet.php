@@ -118,8 +118,8 @@ final class ConfigPluginSet extends PluginV3 implements
     /** @var list<PluginV3>|null - Cached plugin set for this instance. Lazily generated. */
     private $plugin_set;
 
-    /** @var list<PluginV3>|null - Shared cache of plugin instances to avoid requiring class files more than once. */
-    private static $plugin_instances_cache;
+    /** @var array<string,PluginV3> - Shared cache of plugin instances to avoid requiring class files more than once. */
+    private static $plugin_instances_cache = [];
 
     /**
      * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float):void> - plugins to analyze nodes in pre-order
