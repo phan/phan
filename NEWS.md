@@ -15,6 +15,7 @@ Bug fixes:
 + Don't emit PhanTypeNoPropertiesForeach for the Countable interface on its own. (#4342)
 + Fix false positive type mismatch warning for casts from callable-object/callable-array/callable-string
   to `function(paramtypes):returntype` (#4343)
++ Fix crash when rendering `[...$x]` in an issue message (#4351)
 
 Dec 31 2020, Phan 4.0.1
 -----------------------
