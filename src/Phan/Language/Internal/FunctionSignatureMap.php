@@ -245,7 +245,7 @@ return [
 'apache_getenv' => ['string|false', 'variable'=>'string', 'walk_to_top='=>'bool'],
 'apache_lookup_uri' => ['object', 'filename'=>'string'],
 'apache_note' => ['string|false', 'note_name'=>'string', 'note_value='=>'string'],
-'apache_request_headers' => ['array<string,mixed>'],
+'apache_request_headers' => ['array<string,mixed>|false'],
 'apache_reset_timeout' => ['bool'],
 'apache_response_headers' => ['array<string,mixed>'],
 'apache_setenv' => ['bool', 'variable'=>'string', 'value'=>'string', 'walk_to_top='=>'bool'],
