@@ -1,2 +1,3 @@
 %s:20 PhanRedundantCondition Redundant attempt to cast $this->some_acl['acl']['set'] of type array{foo:20} to isset
-%s:26 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $this->some_acl['acl']['other'] of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:23 PhanImpossibleCondition Impossible attempt to cast $this->some_acl['acl']['other'] of type null to isset
+%s:26 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $this->some_acl['acl']['other'] of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S

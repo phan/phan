@@ -1,2 +1,5 @@
-%s:10 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-mixed to truthy
-%s:24 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-associative-array<mixed> to truthy
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type non-null-mixed(real=non-null-mixed)
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type non-empty-mixed(real=non-empty-mixed)
+%s:11 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-mixed to truthy
+%s:25 PhanRedundantCondition Redundant attempt to cast $result of type non-empty-associative-array<mixed> to truthy
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type non-empty-associative-array<mixed>(real=non-empty-associative-array<mixed>)

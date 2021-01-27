@@ -93,7 +93,7 @@ final class NonEmptyMixedType extends MixedType
 
     public function asNonFalseyType(): Type
     {
-        return $this->withIsNullable(false);
+        return $this->is_nullable ? $this->withIsNullable(false) : $this;
     }
 
     /** @override */

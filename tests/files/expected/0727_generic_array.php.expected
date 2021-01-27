@@ -1,1 +1,1 @@
-%s:45 PhanTypeMismatchArgument Argument 1 ($item) is $base->getArray() of type string[] but \Main::one() takes string defined at %s:51
+%s:48 PhanTypeMismatchArgument Argument 1 ($item) is $base->getArray() of type string[] but \Main::one() takes string defined at %s:54

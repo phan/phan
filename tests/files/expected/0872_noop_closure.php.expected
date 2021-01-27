@@ -1,1 +1,2 @@
+%s:3 PhanPossiblyInfiniteLoop The loop condition $count does not seem to change within the loop and nothing seems to exit the loop
 %s:4 PhanParamNameIndicatingUnusedInClosure Saw a parameter named $_. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.

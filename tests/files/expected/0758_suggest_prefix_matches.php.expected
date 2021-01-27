@@ -1,7 +1,12 @@
+%s:4 PhanTypeSuspiciousEcho Suspicious argument $long_var_f of type null= for an echo/print statement
 %s:4 PhanUndeclaredVariable Variable $long_var_f is undeclared (Did you mean $long_var_first)
+%s:5 PhanTypeSuspiciousEcho Suspicious argument $long_var_ of type null= for an echo/print statement
 %s:5 PhanUndeclaredVariable Variable $long_var_ is undeclared (Did you mean $long_var_first or $long_var_second)
+%s:6 PhanTypeSuspiciousEcho Suspicious argument $l of type null= for an echo/print statement
 %s:6 PhanUndeclaredVariable Variable $l is undeclared (Did you mean $long_var_first or $long_var_second)
+%s:7 PhanTypeSuspiciousEcho Suspicious argument $_G of type null= for an echo/print statement
 %s:7 PhanUndeclaredVariable Variable $_G is undeclared (Did you mean $_GET)
+%s:8 PhanTypeSuspiciousEcho Suspicious argument $_S of type null= for an echo/print statement
 %s:8 PhanUndeclaredVariable Variable $_S is undeclared (Did you mean $_SERVER or $_SESSION)
 %s:10 PhanUndeclaredFunction Call to undeclared function \ast\pa() (Did you mean \ast\parse_code() or \ast\parse_file())
 %s:11 PhanUndeclaredFunction Call to undeclared function \ast\pa() (Did you mean \ast\parse_code() or \ast\parse_file())

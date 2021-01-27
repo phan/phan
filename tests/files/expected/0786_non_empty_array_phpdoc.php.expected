@@ -1,5 +1,5 @@
 %s:9 PhanTypeMismatchReturn Returning [] of type array{} but bad786() is declared to return non-empty-array<mixed,mixed>
-%s:17 PhanTypeMismatchReturn Returning null of type null but bad786() is declared to return non-empty-array<mixed,mixed>
+%s:17 PhanTypeMismatchReturnProbablyReal Returning null of type null but bad786() is declared to return non-empty-array<mixed,mixed> (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:24 PhanTypeMismatchDefault Default value for non-empty-array<string,string> $p2 can't be array{}
 %s:31 PhanTypeMismatchArgument Argument 1 ($values) is [] of type array{} but \accept_non_empty_array() takes non-empty-array<int,string> defined at %s:24
 %s:35 PhanTypeMismatchArgument Argument 1 ($values) is ['first'=>'x'] of type array{first:'x'} but \accept_non_empty_array() takes non-empty-array<int,string> defined at %s:24

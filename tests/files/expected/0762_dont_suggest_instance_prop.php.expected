@@ -1,3 +1,3 @@
-%s:7 PhanUndeclaredVariable Variable $prop1 is undeclared (Did you mean $this->prop1)
+%s:7 PhanUndeclaredVariable Variable $prop1 is undeclared
 %s:10 PhanUndeclaredVariable Variable $prop2 is undeclared
 %s:13 PhanUndeclaredStaticProperty Static property 'prop3' on \C762 is undeclared (Did you mean expr::$prop2)

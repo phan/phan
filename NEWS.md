@@ -16,6 +16,8 @@ Bug fixes:
 + Fix false positive type mismatch warning for casts from callable-object/callable-array/callable-string
   to `function(paramtypes):returntype` (#4343)
 + Fix crash when rendering `[...$x]` in an issue message (#4351)
++ Infer that `if ($x)` `converts non-null-mixed` to `non-empty-mixed`
++ Fix false positive warning case for PhanParamSignaturePHPDocMismatchParamType when a phpdoc parameter has a default value (#4357)
 
 Dec 31 2020, Phan 4.0.1
 -----------------------

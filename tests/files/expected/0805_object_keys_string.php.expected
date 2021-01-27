@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $k of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $k of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S

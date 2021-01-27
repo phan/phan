@@ -6,12 +6,16 @@
 %s:7 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
 %s:7 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:8 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
+%s:8 PhanPossiblyInfiniteLoop The loop condition 1 does not seem to change within the loop and nothing seems to exit the loop
 %s:8 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:9 PhanInfiniteLoop The loop condition 1 of type 1 is always truthy and nothing seems to exit the loop
 %s:10 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:10 PhanPossiblyInfiniteLoop The loop condition new stdClass() does not seem to change within the loop and nothing seems to exit the loop
 %s:10 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
 %s:11 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:11 PhanPossiblyInfiniteLoop The loop condition new stdClass() does not seem to change within the loop and nothing seems to exit the loop
 %s:11 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
 %s:12 PhanInfiniteLoop The loop condition new stdClass() of type \stdClass is always truthy and nothing seems to exit the loop
+%s:12 PhanPossiblyInfiniteLoop The loop condition new stdClass() does not seem to change within the loop and nothing seems to exit the loop
 %s:17 PhanInfiniteLoop The loop condition true of type true is always truthy and nothing seems to exit the loop
 %s:17 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects

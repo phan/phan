@@ -1170,8 +1170,9 @@ final class ArgumentType
                 // Record that the most severe issue type suppression was used and don't emit any issue.
                 return null;
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            if ($argument_type_expanded_resolved->isNull() || !$argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type)) {
+            // @phan-suppress-next-next-line PhanAccessMethodInternal
+            if ($argument_type_expanded_resolved->isNull() ||
+                    !($argument_type_expanded_resolved->containsNullable() && $argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type))) {
                 if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {
                     $real_arg_type = $argument_type->getRealUnionType();
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
@@ -1181,6 +1182,7 @@ final class ArgumentType
                 }
                 return $issue_type;
             }
+            // Intended postcondition: The expanded argument type contains null but isn't exclusively null, or the nullability doesn't affect the issue.
             if (Issue::shouldSuppressIssue($code_base, $context, $issue_type, $lineno, [])) {
                 return null;
             }

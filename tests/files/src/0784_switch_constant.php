@@ -38,7 +38,7 @@ class Main {
 
     function testFalse(bool $arg, ?array $values) {
         switch (false) {
-            // Check that Phan won't crash. It can't analyze this to infer that $x would be null
+            // Check that Phan won't crash. It can't analyze this to infer that $x would be null. TODO: Fix inference here for assignment.
             case [$x] = $values:
                 var_export(is_string($x));
                 break;

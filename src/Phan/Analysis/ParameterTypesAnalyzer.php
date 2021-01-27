@@ -935,6 +935,8 @@ class ParameterTypesAnalyzer
             // If both have types, make sure they are identical.
             // Non-nullable param types can be substituted with the nullable equivalents.
             // E.g. A::foo(?int $x) can override BaseClass::foo(int $x)
+            $o_parameter_union_type = $o_parameter_union_type->asNormalizedTypes();
+            $parameter_union_type = $parameter_union_type->asNormalizedTypes();
             if (!$parameter_union_type->isEmptyOrMixed()) {
                 if (!$o_parameter_union_type->isEqualTo($parameter_union_type) &&
                     !($parameter_union_type->containsNullable() && $o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))

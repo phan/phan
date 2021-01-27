@@ -1,1 +1,1 @@
-%s:2 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($num1) is [...([2])] of type array{0:2} but \intdiv() takes int
+%s:2 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is [...([2])] of type array{0:2} but \intdiv() takes int

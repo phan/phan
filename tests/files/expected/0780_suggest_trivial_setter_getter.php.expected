@@ -1,5 +1,7 @@
 %s:13 PhanNoopStringLiteral Unused result of a string literal "x" near this line
+%s:13 PhanParamNameIndicatingUnused Saw a parameter named $unused_value. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
 %s:16 PhanNoopNumericLiteral Unused result of a numeric literal 0 near this line
+%s:16 PhanParamNameIndicatingUnused Saw a parameter named $unused_value. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
 %s:16 PhanTypeMissingReturnReal Method \HasGetter780::badMethod2 is declared to return string in its real type signature but has no return value
 %s:20 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression 'this' with type string
 %s:22 PhanTypeMissingReturnReal Method \HasGetter780::badMethod4 is declared to return string in its real type signature but has no return value

@@ -9,6 +9,6 @@ class X {
 class X {
     const DEFAULT_VALUE2 = 'x';
     public function f2() {
-        return self::DEFAULT_VALUE2;
+        return self::DEFAULT_VALUE2;  // TODO mitigate if possible
     }
 }

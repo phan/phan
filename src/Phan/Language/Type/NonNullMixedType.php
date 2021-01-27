@@ -81,19 +81,19 @@ final class NonNullMixedType extends MixedType
 
     public function asNonFalseyType(): Type
     {
-        return $this;
+        return NonEmptyMixedType::instance(false);
     }
 
     /** @override */
     public function isNullable(): bool
     {
-        return $this->is_nullable;
+        return false;
     }
 
     /** @override */
     public function __toString(): string
     {
-        return $this->is_nullable ? '?non-null-mixed' : 'non-null-mixed';
+        return 'non-null-mixed';
     }
 
     public function weaklyOverlaps(Type $other): bool

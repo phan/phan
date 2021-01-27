@@ -1,1 +1,1 @@
-%s:10 PhanTypeMismatchReturn Returning $file of type 'somefile.txt' but read() is declared to return array
+%s:10 PhanTypeMismatchReturnProbablyReal Returning $file of type 'somefile.txt' but read() is declared to return array (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

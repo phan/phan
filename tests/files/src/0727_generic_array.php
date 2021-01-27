@@ -24,6 +24,9 @@ class Base {
         return [$this->item, $this->item];
     }
 
+    /**
+     * @return T
+     */
     public function getOne() {
         return $this->item;
     }

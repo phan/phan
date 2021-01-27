@@ -1,1 +1,3 @@
+%s:21 PhanPossiblyInfiniteLoop The loop condition ($j < $i) does not seem to change within the loop and nothing seems to exit the loop
+%s:30 PhanPossiblyInfiniteLoop The loop condition ($j < $w) does not seem to change within the loop and nothing seems to exit the loop
 %s:30 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $j of type 0 to $w of type 1 with operator '<' in a loop (likely a false positive)

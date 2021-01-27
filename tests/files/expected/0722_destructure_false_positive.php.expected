@@ -3,4 +3,4 @@
 %s:10 PhanImpossibleCondition Impossible attempt to cast null of type null to truthy
 %s:10 PhanTypeInvalidExpressionArrayDestructuring Invalid value null of type null in an array destructuring assignment, expected array|ArrayAccess
 %s:12 PhanImpossibleCondition Impossible attempt to cast [] of type array{} to truthy
-%s:12 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 0 of (unknown) of array type array{} in an array destructuring assignment
+%s:12 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 0 of $e of array type array{} in an array destructuring assignment

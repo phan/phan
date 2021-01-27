@@ -1,4 +1,4 @@
-%s:2 PhanUndeclaredConstant Reference to undeclared constant \PHP_VERSION_I (Did you mean \PHP_VERSION_ID)
-%s:3 PhanUndeclaredConstant Reference to undeclared constant \php_version_id (Did you mean \PHP_VERSION_ID)
-%s:4 PhanUndeclaredConstant Reference to undeclared constant \fals (Did you mean \false)
-%s:5 PhanUndeclaredConstant Reference to undeclared constant \NUL (Did you mean %S\null)
+%s:2 PhanUndeclaredConstant Reference to undeclared constant \PHP_VERSION_I. This will cause a thrown Error in php 8.0+. (Did you mean \PHP_VERSION_ID)
+%s:3 PhanUndeclaredConstant Reference to undeclared constant \php_version_id. This will cause a thrown Error in php 8.0+. (Did you mean \PHP_VERSION_ID)
+%s:4 PhanUndeclaredConstant Reference to undeclared constant \fals. This will cause a thrown Error in php 8.0+. (Did you mean \false)
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \NUL. This will cause a thrown Error in php 8.0+. (Did you mean \null)

@@ -10,7 +10,7 @@ class Test840 {
         $result = null;
         foreach (['e1', 'e2'] as $value) {
             if (isset($result)) {
-                // Should infer that $result must be a string and warn.
+                // Should infer that $result must be a string and warn. TODO: No longer empty union type - this is non-empty-mixed
                 echo spl_object_hash($result);
                 $result .= $value;
                 continue;

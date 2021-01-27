@@ -1,3 +1,4 @@
+%s:5 PhanParamNameIndicatingUnused Saw a parameter named $_. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
 %s:11 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 %s:26 PhanTypeMismatchArgument Argument 1 ($object) is $c of type callable but \NS781\accepts_object() takes object defined at %s:10
 %s:27 PhanTypeMismatchArgument Argument 2 ($i) is $c of type callable but \NS781\accepts_object() takes iterable defined at %s:10

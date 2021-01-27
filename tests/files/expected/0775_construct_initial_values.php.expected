@@ -1,1 +1,1 @@
-%s:9 PhanTypeMismatchProperty Assigning $this->x of type null to property but \X->y is array
+%s:9 PhanTypeMismatchPropertyProbablyReal Assigning $this->x of type null to property but \X->y is array (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

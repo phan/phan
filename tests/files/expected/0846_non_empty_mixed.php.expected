@@ -1,10 +1,11 @@
 %s:6 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type non-empty-mixed(real=non-empty-mixed)
 %s:8 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-mixed to truthy
+%s:10 PhanImpossibleTypeComparison Impossible attempt to check if $x of type non-empty-mixed is identical to 0 of type 0
 %s:23 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-mixed to truthy
 %s:26 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=?''|?'0'|?0|?0.0|?array{}|?false)
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type null but \strlen() takes string
 %s:31 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
-%s:34 PhanTypeMismatchArgument Argument 1 ($x) is null of type null but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
+%s:34 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is null of type null but \expect_non_empty_mixed() takes non-empty-mixed (no real type) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:35 PhanTypeMismatchArgument Argument 1 ($x) is false of type false but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
 %s:36 PhanTypeMismatchArgument Argument 1 ($x) is '' of type '' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
 %s:37 PhanTypeMismatchArgument Argument 1 ($x) is '0' of type '0' but \expect_non_empty_mixed() takes non-empty-mixed defined at %s:5
