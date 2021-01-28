@@ -1,0 +1,6 @@
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \Y
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $k - it has union type int
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \X
+%s:19 PhanUnusedVariable Unused definition of variable $k
+%s:21 PhanDeprecatedProperty Reference to deprecated property \X->x defined at %s:4
+%s:28 PhanDeprecatedProperty Reference to deprecated property \X->x defined at %s:4

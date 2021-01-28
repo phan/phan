@@ -2379,8 +2379,18 @@ class Type implements Stringable
                     break;
                 }
             }
-            if (!$new_expanded_types) {
+            if (!$new_expanded_types || !$iterator_type) {
                 return null;
+            }
+            if ($iterator_type->getNamespace() === '\\') {
+                $inner_name = strtolower($iterator_type->getName());
+                if ($inner_name === 'traversable' || $inner_name === 'iterator') {
+                    return $iterator_type->keyTypeOfTraversable();
+                }
+                // TODO: Abstract this out for all internal classes
+                if ($inner_name === 'generator') {
+                    return $iterator_type->keyTypeOfGenerator();
+                }
             }
             $expanded_types = $new_expanded_types;
         }
@@ -2445,6 +2455,8 @@ class Type implements Stringable
             // Find the class of the iterator
             $method = $class->getMethodByName($code_base, 'getIterator');
             $new_expanded_types = null;
+            // TODO: Support getIterator returning a union type with more than one type.
+            // Be sure to keep guarding against infinite recursion, e.g. analyzing getIterator returning another IteratorAggregate or subclass.
             foreach ($method->getUnionType()->getTypeSet() as $iterator_type) {
                 if ($iterator_type->isObjectWithKnownFQSEN()) {
                     $new_fqsen = FullyQualifiedClassName::fromType($iterator_type);
@@ -2456,8 +2468,18 @@ class Type implements Stringable
                     break;
                 }
             }
-            if (!$new_expanded_types) {
+            if (!$new_expanded_types || !$iterator_type) {
                 return null;
+            }
+            if ($iterator_type->getNamespace() === '\\') {
+                $inner_name = strtolower($iterator_type->getName());
+                if ($inner_name === 'traversable' || $inner_name === 'iterator') {
+                    return $iterator_type->valueTypeOfTraversable();
+                }
+                // TODO: Abstract this out for all internal classes
+                if ($inner_name === 'generator') {
+                    return $iterator_type->valueTypeOfGenerator();
+                }
             }
             $expanded_types = $new_expanded_types;
         }
