@@ -17,6 +17,7 @@
  */
 return [
 'new' => [
+'apache_request_headers' => ['array<string,mixed>'],
 'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
 'array_key_exists' => ['bool', 'key'=>'string|int', 'array'=>'array'],
 'bcdiv' => ['string', 'num1'=>'string', 'num2'=>'string', 'scale='=>'int'],
@@ -460,6 +461,7 @@ return [
 'xmlwriter_write_raw' => ['bool', 'writer'=>'XMLWriter', 'content'=>'string'],
 ],
 'old' => [
+'apache_request_headers' => ['array<string,mixed>|false'],
 'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
 'array_key_exists' => ['bool', 'key'=>'string|int', 'array'=>'array|ArrayObject'],
 'bcdiv' => ['?string', 'num1'=>'string', 'num2'=>'string', 'scale='=>'int'],
