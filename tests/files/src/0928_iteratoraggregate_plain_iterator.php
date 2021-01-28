@@ -7,7 +7,7 @@ class X {
 class Y implements IteratorAggregate {
     /** @var list<X> */
     public $xs;
-    /** @return Iterator<X> */
+    /** @return Iterator<int, X> */
     function getIterator() {
         return new ArrayIterator($this->xs);
     }
@@ -16,8 +16,8 @@ class Y implements IteratorAggregate {
 /** @param Y $y */
 function f1($y) {
     '@phan-debug-var $y';
-    foreach ($y as $x) {
-        '@phan-debug-var $x';
+    foreach ($y as $k => $x) {
+        '@phan-debug-var $k, $x';
         echo $x->x;
     }
 }
