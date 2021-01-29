@@ -5,8 +5,8 @@
 %s:9 PhanUnreferencedPublicMethod Possibly zero references to public method \Base9B::test()
 %s:19 PhanUnreferencedPublicMethod Possibly zero references to public method \Base9B::mixedParam()
 %s:24 PhanUnreferencedClass Possibly zero references to class \Other9B
-%s:25 PhanParamSignatureRealMismatchReturnType Declaration of function test() should be compatible with function test() : mixed (method returning '' cannot override method returning 'mixed') defined in %s:9
+%s:25 PhanParamSignatureRealMismatchReturnType Declaration of function test() should be compatible with function test() : mixed (method where the return type in the real signature is '' cannot override method where the return type in the real signature is 'mixed') defined in %s:9
 %s:25 PhanPluginUnknownMethodReturnType Method \Other9B::test() has no declared or inferred return type (Types inferred after analysis: string)
 %s:29 PhanParamSignatureMismatch Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) : ?mixed defined in %s:19 (Cannot use int $a with a real type to override parameter mixed $a without a real type)
-%s:29 PhanParamSignatureRealMismatchHasParamType Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) (parameter #1 has type 'int' which cannot replace original parameter with no type) defined in %s:19
+%s:29 PhanParamSignatureRealMismatchHasParamType Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) (parameter #1 has type 'int' in the real signature which cannot replace original parameter with no type in the real signature) defined in %s:19
 %s:29 PhanPluginUnknownMethodReturnType Method \Other9B::mixedParam() has no declared or inferred return type (Types inferred after analysis: int)

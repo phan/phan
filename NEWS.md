@@ -20,6 +20,7 @@ Bug fixes:
 + Infer that `if ($x)` `converts non-null-mixed` to `non-empty-mixed`
 + Fix false positive warning case for PhanParamSignaturePHPDocMismatchParamType when a phpdoc parameter has a default value (#4357)
 + Properly warn about accessing a private class constant as `self::CONST_NAME` from inside of a subclass of the constant's declaring class (#4360)
++ Properly infer `allow_method_param_type_widening` from `minimum_target_php_version` to avoid false positive `PhanParamSignatureRealMismatchHasNoParamType`.
 
 Dec 31 2020, Phan 4.0.1
 -----------------------

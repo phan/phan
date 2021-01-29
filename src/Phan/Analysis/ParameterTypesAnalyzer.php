@@ -900,6 +900,7 @@ class ParameterTypesAnalyzer
             if ($parameter_union_type->isEmptyOrMixed() != $o_parameter_union_type->isEmptyOrMixed()) {
                 if ($parameter_union_type->isEmptyOrMixed()) {
                     // Don't warn about mixed
+                    // allow_method_param_type_widening is implied by minimum_target_php_version >= php 7.2
                     if (Config::getValue('allow_method_param_type_widening') === false) {
                         $is_possibly_compatible = false;
                         self::emitSignatureRealMismatchIssue(

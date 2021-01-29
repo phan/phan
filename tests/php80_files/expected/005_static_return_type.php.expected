@@ -10,7 +10,7 @@
 %s:18 PhanPluginUnknownMethodReturnType Method \MyInvalidSubclass::helper() has no declared or inferred return type
 %s:18 PhanPluginUseReturnValueNoopVoid The function/method \MyInvalidSubclass::helper() is declared to return (empty union type) and it has no side effects
 %s:18 PhanUnreferencedPublicMethod Possibly zero references to public method \MyInvalidSubclass::helper()
-%s:21 PhanParamSignatureRealMismatchReturnType Declaration of function getInstance() : \MyInvalidSubclass should be compatible with function getInstance() : static (method returning '\MyInvalidSubclass' cannot override method returning 'static') defined in %s:8
+%s:21 PhanParamSignatureRealMismatchReturnType Declaration of function getInstance() : \MyInvalidSubclass should be compatible with function getInstance() : static (method where the return type in the real signature is '\MyInvalidSubclass' cannot override method where the return type in the real signature is 'static') defined in %s:8
 %s:27 PhanCompatibleStaticType Cannot use static return types before php 8.0
 %s:34 PhanUndeclaredMethod Call to undeclared method \MySubclass::helper2 (Did you mean expr->helper())
 %s:35 PhanUndeclaredMethod Call to undeclared method \MyValidSubclass::helper2

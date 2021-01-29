@@ -49,7 +49,7 @@ return [
     // If that could not be determined, then Phan assumes `target_php_version`.
     //
     // For analyzing Phan 3.x, this is determined to be `'7.2'` from `"version": "^7.2.0"`.
-    'minimum_target_php_version' => null,
+    'minimum_target_php_version' => '7.2',
 
     // Default: true. If this is set to true,
     // and target_php_version is newer than the version used to run Phan,
@@ -177,12 +177,6 @@ return [
     // can add quite a bit of time to the analysis.
     // This will also check if final methods are overridden, etc.
     'analyze_signature_compatibility' => true,
-
-    // Set this to true to allow contravariance in real parameter types of method overrides (Introduced in php 7.2)
-    // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
-    // (Users may enable this if analyzing projects that support only php 7.2+)
-    // This is false by default. (Will warn if real parameter types are omitted in an override)
-    'allow_method_param_type_widening' => false,
 
     // Set this to true to make Phan guess that undocumented parameter types
     // (for optional parameters) have the same type as default values

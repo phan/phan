@@ -59,7 +59,7 @@ class NamespaceMapEntry implements \Serializable
     /**
      * @param string $representation
      * @suppress PhanAccessReadOnlyProperty TODO fix #3179
-     * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
+     * TODO add implementation of __serialize/__unserialize to ensure compatibility with php 7.4
      */
     public function unserialize($representation): void
     {

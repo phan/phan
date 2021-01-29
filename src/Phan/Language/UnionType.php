@@ -4536,7 +4536,6 @@ class UnionType implements Serializable, Stringable
      *
      * @see \Serializable
      * @suppress PhanAccessReadOnlyProperty this unserializes
-     * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
     public function unserialize($serialized): void
     {

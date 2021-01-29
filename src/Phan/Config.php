@@ -1225,6 +1225,7 @@ class Config
                 break;
             case 'allow_method_param_type_widening':
                 self::$configuration['allow_method_param_type_widening_original'] = $value;
+                self::$configuration['original_allow_method_param_type_widening_original'] = $value;
                 if ($value === null) {
                     // If this setting is set to null, infer it based on the closest php version id.
                     self::$configuration[$name] = self::$closest_minimum_target_php_version_id >= 70200;
@@ -1278,7 +1279,7 @@ class Config
             $min_value_id = self::computeClosestTargetPHPVersionId(PHP_VERSION);
         }
         self::$closest_minimum_target_php_version_id = (int) \min(self::$closest_target_php_version_id, $min_value_id);
-        if (!isset(self::$configuration['allow_method_param_type_widening_original'])) {
+        if (!isset(self::$configuration['original_allow_method_param_type_widening_original'])) {
             self::$configuration['allow_method_param_type_widening'] = self::$closest_minimum_target_php_version_id >= 70200;
         }
     }

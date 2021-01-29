@@ -194,7 +194,6 @@ class FileRef implements \Serializable
 
     /**
      * @param string $serialized
-     * @suppress PhanParamSignatureRealMismatchHasNoParamTypeInternal, PhanUnusedSuppression parameter type widening was allowed in php 7.2, signature changed in php 8
      */
     public function unserialize($serialized): void
     {

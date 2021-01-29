@@ -1946,7 +1946,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ## PhanParamSignatureRealMismatchHasNoParamType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature) defined in {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0126_override_signature.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0126_override_signature.php#L12).
@@ -1954,14 +1954,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ## PhanParamSignatureRealMismatchHasNoParamTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)
 ```
 
 
 ## PhanParamSignatureRealMismatchHasParamType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type) defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' in the real signature which cannot replace original parameter with no type in the real signature) defined in {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/php80_files/expected/009_mixed_error.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/php80_files/src/009_mixed_error.php#L29).
@@ -1969,7 +1969,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/php80_files/expe
 ## PhanParamSignatureRealMismatchHasParamTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} has type '{TYPE}' in the real signature which cannot replace original parameter with no type in the real signature)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0631_internal_signature_mismatch.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0631_internal_signature_mismatch.php#L9).
@@ -2019,7 +2019,7 @@ Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #
 ## PhanParamSignatureRealMismatchParamType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of real signature type '{TYPE}' cannot replace original parameter of real signature type '{TYPE}') defined in {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0126_override_signature.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0126_override_signature.php#L16).
@@ -2049,7 +2049,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ## PhanParamSignatureRealMismatchReturnType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (method where the return type in the real signature is '{TYPE}' cannot override method where the return type in the real signature is '{TYPE}') defined in {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0278_should_differentiate_phpdoc_return_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0278_should_differentiate_phpdoc_return_type.php#L10).
@@ -2057,7 +2057,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ## PhanParamSignatureRealMismatchReturnTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}')
+Declaration of {METHOD} should be compatible with internal {METHOD} (method where the return type in the real signature is '{TYPE}' cannot override method where the return type in the real signature is '{TYPE}')
 ```
 
 ## PhanParamSignatureRealMismatchTooFewParameters

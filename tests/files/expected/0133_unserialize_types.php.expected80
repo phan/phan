@@ -1,1 +1,1 @@
-%s:8 PhanParamSignatureRealMismatchHasNoParamTypeInternal Declaration of function unserialize($serialized) should be compatible with internal function unserialize(string $data) (parameter #1 with no type cannot replace original parameter with type 'string')
+%s:8 PhanParamSignatureRealMismatchHasNoParamTypeInternal Declaration of function unserialize($serialized) should be compatible with internal function unserialize(string $data) (parameter #1 with no type in the real signature cannot replace original parameter with type 'string' in the real signature)
