@@ -1607,15 +1607,8 @@ class Clazz extends AddressableElement
 
         // Visibility checks for private/protected class constants:
 
-        // Are we within a class referring to the class
-        // itself?
-        $is_local_access = (
-            $context->isInClassScope()
-            && $context->getClassInScope($code_base) === $constant->getClass($code_base)
-        );
-
-        if ($is_local_access) {
-            // Classes can always access constants declared in the same class
+        $accessing_class = $context->getClassFQSENOrNull();
+        if ($accessing_class && $constant->isAccessibleFromClass($code_base, $accessing_class)) {
             return $constant;
         }
 
@@ -1635,33 +1628,17 @@ class Clazz extends AddressableElement
         }
 
         // We now know that $constant is a protected constant
-
-        // Are we within a class or an extending sub-class
-        // referring to the class?
-        $is_remote_access = $context->isInClassScope()
-            && $context->getClassInScope($code_base)
-            ->getUnionType()->canCastToExpandedUnionType(
-                $this->getUnionType(),
-                $code_base
-            );
-
-        if (!$is_remote_access) {
-            // And the access is not from anywhere on the class hierarchy, so throw
-            throw new IssueException(
-                Issue::fromType(Issue::AccessClassConstantProtected)(
-                    $context->getFile(),
-                    $context->getLineNumberStart(),
-                    [
-                        (string)$constant_fqsen,
-                        $constant->getContext()->getFile(),
-                        $constant->getContext()->getLineNumberStart()
-                    ]
-                )
-            );
-        }
-
-        // Valid access to a protected constant.
-        return $constant;
+        throw new IssueException(
+            Issue::fromType(Issue::AccessClassConstantProtected)(
+                $context->getFile(),
+                $context->getLineNumberStart(),
+                [
+                    (string)$constant_fqsen,
+                    $constant->getContext()->getFile(),
+                    $constant->getContext()->getLineNumberStart()
+                ]
+            )
+        );
     }
 
     /**

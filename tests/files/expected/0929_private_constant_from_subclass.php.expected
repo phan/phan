@@ -1,0 +1,2 @@
+%s:8 PhanAccessClassConstantPrivate Cannot access private class constant \B::FOO defined at %s:3
+%s:9 PhanAccessClassConstantPrivate Cannot access private class constant \A::FOO defined at %s:3
