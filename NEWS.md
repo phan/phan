@@ -1,11 +1,23 @@
 Phan NEWS
 
+Jan 29 2021, Phan 4.0.3
+-----------------------
+
+New Features:
++ Support inferring iterable value types/keys from `getIterator` returning an ordinary `Iterator<X>` (previously only inferred types for subclasses of Iterator)
+
+Bug fixes:
++ Fix crash when rendering `[...$x]` in an issue message (#4351)
++ Infer that `if ($x)` `converts non-null-mixed` to `non-empty-mixed`
++ Fix false positive warning case for PhanParamSignaturePHPDocMismatchParamType when a phpdoc parameter has a default value (#4357)
++ Properly warn about accessing a private class constant as `self::CONST_NAME` from inside of a subclass of the constant's declaring class (#4360)
++ Properly infer `allow_method_param_type_widening` from `minimum_target_php_version` to avoid false positive `PhanParamSignatureRealMismatchHasNoParamType`.
+
 Jan 09 2021, Phan 4.0.2
 -----------------------
 
 New Features:
 + Improve suggestions for `PhanUndeclaredThis` inside of static methods/closures (#4336)
-+ Support inferring iterable value types/keys from `getIterator` returning an ordinary `Iterator<X>` (previously only inferred types for subclasses of Iterator)
 
 Language Server/Daemon mode:
 + Properly generate code completions for `::` and `->` at the end of a line on files using Windows line endings(`\r\n`) instead of Unix newlines(`\n`) on any OS (#4345)
@@ -16,11 +28,6 @@ Bug fixes:
 + Don't emit PhanTypeNoPropertiesForeach for the Countable interface on its own. (#4342)
 + Fix false positive type mismatch warning for casts from callable-object/callable-array/callable-string
   to `function(paramtypes):returntype` (#4343)
-+ Fix crash when rendering `[...$x]` in an issue message (#4351)
-+ Infer that `if ($x)` `converts non-null-mixed` to `non-empty-mixed`
-+ Fix false positive warning case for PhanParamSignaturePHPDocMismatchParamType when a phpdoc parameter has a default value (#4357)
-+ Properly warn about accessing a private class constant as `self::CONST_NAME` from inside of a subclass of the constant's declaring class (#4360)
-+ Properly infer `allow_method_param_type_widening` from `minimum_target_php_version` to avoid false positive `PhanParamSignatureRealMismatchHasNoParamType`.
 
 Dec 31 2020, Phan 4.0.1
 -----------------------
