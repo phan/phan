@@ -46,6 +46,9 @@ Usage: $prog_name [--opts]
  -e, --extension extension_name
   Print stubs for only the given PECL or built in extension (e.g. 'ast', 'pcntl')
 
+ -d, --doc-comment
+  Include doc comments from the comment summaries bundled with Phan.
+
  -o, --output path/to/file
   Save the stubs to a file instead of printing them to stdout.
 
@@ -59,9 +62,12 @@ EOT;
      */
     public static function main() : void
     {
-        $options = getopt('he:o:', ['help', 'extension:', 'output:']);
+        $options = getopt('he:o:d', ['help', 'extension:', 'output:', 'doc-comment']);
         if (isset($options['h']) || isset($options['help'])) {
             self::printHelpAndExit('', 0);
+        }
+        if (isset($options['d']) || isset($options['doc-comment'])) {
+            $_ENV['PHAN_STUB_INCLUDE_DOC'] = '1';
         }
 
         $code_base = require(dirname(__DIR__) . '/src/codebase.php');

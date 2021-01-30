@@ -140,7 +140,12 @@ class ClassConstant extends ClassElement implements ConstantInterface
      */
     public function toStub(): string
     {
-        $string = '    ';
+        $string = '';
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            $string .= MarkupDescription::convertStringToDocComment($description, '    ');
+        }
+        $string .= '    ';
         if ($this->isPrivate()) {
             $string .= 'private ';
         } elseif ($this->isProtected()) {

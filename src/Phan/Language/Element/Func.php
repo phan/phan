@@ -437,7 +437,12 @@ class Func extends AddressableElement implements FunctionInterface
     public function toStubInfo(): array
     {
         $fqsen = $this->getFQSEN();
-        $stub = 'function ';
+        $stub = '';
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            $stub .= MarkupDescription::convertStringToDocComment($description);
+        }
+        $stub .= 'function ';
         if ($this->returnsRef()) {
             $stub .= '&';
         }

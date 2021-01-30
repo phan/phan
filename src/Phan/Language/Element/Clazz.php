@@ -3078,7 +3078,12 @@ class Clazz extends AddressableElement
     {
         $signature = $this->toStubSignature($code_base);
 
-        $stub = $signature;
+        $stub = '';
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            $stub .= MarkupDescription::convertStringToDocComment($description);
+        }
+        $stub .= $signature;
 
         $stub .= " {";
 
@@ -3104,10 +3109,7 @@ class Clazz extends AddressableElement
                 return false;
             }
             $reflection_method = $reflection_class->getMethod($method->getName());
-            if ($reflection_method->class !== $reflection_class->name) {
-                return false;
-            }
-            return true;
+            return $reflection_method->class === $reflection_class->name;
         });
         if (count($method_map) > 0) {
             $stub .= "\n\n    // methods\n";

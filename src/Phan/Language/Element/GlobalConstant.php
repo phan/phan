@@ -158,6 +158,10 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             // Internal extension defined a constant with an invalid identifier.
             $string = \sprintf("define(%s, %s);%s\n", \var_export($name, true), $repr, $comment);
         }
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            $string = MarkupDescription::convertStringToDocComment($description) . $string;
+        }
         return [$namespace, $string];
     }
 

@@ -3,6 +3,9 @@ Phan NEWS
 ??? ?? 202?, Phan 4.0.4 (dev)
 -----------------------
 
+New Features:
++ Support `--doc-comment` flag on `tool/make_stubs`.
+
 Jan 29 2021, Phan 4.0.3
 -----------------------
 

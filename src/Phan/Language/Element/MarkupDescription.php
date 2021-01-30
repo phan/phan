@@ -39,6 +39,31 @@ class MarkupDescription
     }
 
     /**
+     * Convert a string description to a newline-terminated doc comment
+     */
+    public static function convertStringToDocComment(string $description, string $indent = ''): string {
+        $description = \trim($description);
+        if ($description === '') {
+            return '';
+        }
+        $description = \str_replace('*/', '*\/', \trim($description));
+        if (\strpos($description, "\n") !== false) {
+            $result = "$indent/**\n";
+            foreach (\explode("\n", $description) as $line) {
+                $line = \rtrim($line);
+                $result .= "$indent *";
+                if ($line !== '') {
+                    $result .= " $line";
+                }
+                $result .= "\n";
+            }
+            $result .= "$indent */\n";
+            return $result;
+        }
+        return "$indent/** $description */\n";
+    }
+
+    /**
      * @template T
      * @param array<string,T> $signatures
      * @return array<string,T>

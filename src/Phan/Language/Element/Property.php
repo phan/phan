@@ -223,7 +223,17 @@ class Property extends ClassElement
      */
     public function toStub(): string
     {
-        $string = '    ' . $this->getVisibilityName() . ' ';
+        $string = '';
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            if ($description !== '') {
+                if ($this->real_union_type->isEmptyOrMixed() && !$this->getUnionType()->isEmptyOrMixed()) {
+                    $description = "@var {$this->getUnionType()} $description";
+                }
+                $string .= MarkupDescription::convertStringToDocComment($description, '    ');
+            }
+        }
+        $string .= '    ' . $this->getVisibilityName() . ' ';
 
         if ($this->isStatic()) {
             $string .= 'static ';

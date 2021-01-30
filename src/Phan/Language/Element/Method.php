@@ -902,7 +902,14 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function toStub(bool $class_is_interface = false): string
     {
-        $string = '    ';
+        $string = '';
+        if (self::shouldAddDescriptionsToStubs()) {
+            $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
+            if ($description !== '') {
+                $string .= MarkupDescription::convertStringToDocComment($description, '    ');
+            }
+        }
+        $string .= '    ';
         if ($this->isFinal()) {
             $string .= 'final ';
         }
