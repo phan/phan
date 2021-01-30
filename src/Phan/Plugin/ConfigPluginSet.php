@@ -118,6 +118,9 @@ final class ConfigPluginSet extends PluginV3 implements
     /** @var list<PluginV3>|null - Cached plugin set for this instance. Lazily generated. */
     private $plugin_set;
 
+    /** @var array<string,PluginV3> - Shared cache of plugin instances to avoid requiring class files more than once. */
+    private static $plugin_instances_cache = [];
+
     /**
      * @var associative-array<int, Closure(CodeBase,Context,Node|int|string|float):void> - plugins to analyze nodes in pre-order
      */
@@ -920,6 +923,10 @@ final class ConfigPluginSet extends PluginV3 implements
             }
             $loaded_plugin_files[$plugin_file_name] = true;
 
+            if (isset(self::$plugin_instances_cache[$plugin_file_name])) {
+                return clone(self::$plugin_instances_cache[$plugin_file_name]);
+            }
+
             try {
                 $plugin_instance = require($plugin_file_name);
             } catch (UnloadablePluginException $e) {
@@ -949,6 +956,7 @@ final class ConfigPluginSet extends PluginV3 implements
                 throw new AssertionError("Plugins must extend \Phan\PluginV3. The plugin at $plugin_file_name does not.");
             }
 
+            self::$plugin_instances_cache[$plugin_file_name] = $plugin_instance;
             return $plugin_instance;
         };
         // Add user-defined plugins.
