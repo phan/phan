@@ -31,6 +31,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\GlobalVariable;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -593,8 +594,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($scope->hasGlobalVariableWithName($variable_name)) {
                 // TODO: Support @global, add a clone to the method context?
                 $actual_global_variable = clone($scope->getGlobalVariableByName($variable_name));
-                $actual_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
-                $this->context->addScopeVariable($actual_global_variable);
+                $scope_global_variable = new GlobalVariable($actual_global_variable);
+                $scope_global_variable->setUnionType($actual_global_variable->getUnionType());
+                $this->context->addScopeVariable($scope_global_variable);
                 return $this->context;
             }
         }
