@@ -593,9 +593,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $scope = $this->context->getScope();
             if ($scope->hasGlobalVariableWithName($variable_name)) {
                 // TODO: Support @global, add a clone to the method context?
-                $actual_global_variable = clone($scope->getGlobalVariableByName($variable_name));
+                $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
                 $scope_global_variable = new GlobalVariable($actual_global_variable);
-                $scope_global_variable->setUnionType($actual_global_variable->getUnionType());
+                $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
                 $this->context->addScopeVariable($scope_global_variable);
                 return $this->context;
             }

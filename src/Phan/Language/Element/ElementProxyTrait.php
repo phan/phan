@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
-use Phan\Analysis\AssignmentVisitor;
-use Phan\CodeBase;
-use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -32,36 +29,59 @@ trait ElementProxyTrait
         $this->type = $element->getUnionType();
     }
 
+    /**
+     * @return int
+     */
     public function getFlags(): int
     {
         return $this->element->getFlags();
     }
 
+    /**
+     * @param int $bits
+     * @return bool
+     */
     public function getFlagsHasState(int $bits): bool
     {
         return $this->element->getFlagsHasState($bits);
     }
 
+    /**
+     * @param int $flags
+     */
     public function setFlags(int $flags): void
     {
         $this->element->setFlags($flags);
     }
 
+    /**
+     * @return int
+     */
     public function getPhanFlags(): int
     {
         return $this->element->getPhanFlags();
     }
 
+    /**
+     * @param int $bits
+     * @return bool
+     */
     public function getPhanFlagsHasState(int $bits): bool
     {
         return $this->element->getPhanFlagsHasState($bits);
     }
 
+    /**
+     * @param int $phan_flags
+     */
     public function setPhanFlags(int $phan_flags): void
     {
         $this->element->setPhanFlags($phan_flags);
     }
 
+    /**
+     * @return FileRef
+     */
     public function getFileRef(): FileRef
     {
         return $this->element->getFileRef();

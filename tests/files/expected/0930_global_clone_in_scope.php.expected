@@ -1,0 +1,8 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'(real='definitely not foo')
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'not guaranteed'
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'not guaranteed'(real='not guaranteed')
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'not guaranteed'
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'foo'(real='foo')
+%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'(real='definitely not foo')
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'foo'|'definitely not foo'
