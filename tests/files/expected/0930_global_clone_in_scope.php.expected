@@ -1,8 +1,11 @@
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'(real='definitely not foo')
-%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'
-%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'not guaranteed'
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'foo'
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'foo'|'not guaranteed'
 %s:17 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'not guaranteed'(real='not guaranteed')
-%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'not guaranteed'
-%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'foo'(real='foo')
-%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'(real='definitely not foo')
-%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'foo'|'definitely not foo'
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $myGlobal - it has union type 'definitely not foo'|'foo'|'not guaranteed'
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'foo'(real='foo')
+%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'definitely not foo'(real='definitely not foo')
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'definitely not foo'|'foo'
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'another value'|'definitely not foo'|'foo'
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'another value'|'definitely not foo'|'foo'
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $secondGlobal - it has union type 'another value'|'definitely not foo'|'foo'

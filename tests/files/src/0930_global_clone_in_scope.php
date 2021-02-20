@@ -40,3 +40,17 @@ function alterSecondGlobal() {
 alterSecondGlobal();
 
 '@phan-debug-var $secondGlobal';//No real type
+
+function alterSecondGlobal2() {// Intentionally not called
+    global $secondGlobal;
+    $secondGlobal = 'another value';
+}
+
+'@phan-debug-var $secondGlobal';//No real type, 'another value' is included although in actuality it's impossible
+
+if ( rand() ) {
+    setSecondGlobal();
+    '@phan-debug-var $secondGlobal';// No real type
+}
+echo $secondGlobal;
+'@phan-debug-var $secondGlobal';//Also no real type

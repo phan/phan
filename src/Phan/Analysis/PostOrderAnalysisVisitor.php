@@ -589,21 +589,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
         if ($optional_global_variable_type) {
             $variable->setUnionType($optional_global_variable_type);
+            $scope_global_variable = $variable;
         } else {
             $scope = $this->context->getScope();
-            if ($scope->hasGlobalVariableWithName($variable_name)) {
-                // TODO: Support @global, add a clone to the method context?
-                $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
-                $scope_global_variable = new GlobalVariable($actual_global_variable);
-                $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
-                $this->context->addScopeVariable($scope_global_variable);
-                return $this->context;
+            if (!$scope->hasGlobalVariableWithName($variable_name)) {
+                $this->context->addGlobalScopeVariable( clone $variable );
             }
+            // TODO: Support @global?
+            $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
+            $scope_global_variable = new GlobalVariable($actual_global_variable);
+            $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
         }
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
-        $this->context->addScopeVariable($variable);
+        $this->context->addScopeVariable($scope_global_variable);
 
         return $this->context;
     }

@@ -22,7 +22,8 @@ class GlobalVariable extends Variable
     public function setUnionType(UnionType $type): void
     {
         $this->type = $type;
-        $this->element->setUnionType($type->eraseRealTypeSetRecursively());
+        // Always merge the type on the actual global.
+        $this->element->setUnionType($this->element->getUnionType()->withUnionType($type->eraseRealTypeSetRecursively()));
     }
 
 }
