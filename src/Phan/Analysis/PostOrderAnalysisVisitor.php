@@ -597,7 +597,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             // TODO: Support @global?
             $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
-            $scope_global_variable = new GlobalVariable($actual_global_variable);
+            $scope_global_variable = $actual_global_variable instanceof GlobalVariable ? clone($actual_global_variable) : new GlobalVariable($actual_global_variable);
             $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
         }
 
