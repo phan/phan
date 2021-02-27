@@ -1,0 +1,1 @@
+%s:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $values of type associative-array<mixed,'C'>|associative-array<mixed,'X'>|associative-array<mixed,'a'>|associative-array<mixed,'b'>|associative-array<mixed,'bar'>|associative-array<mixed,100> (real type 'C'[]|'X'[]|'a'[]|'b'[]|'bar'[]|100[]) but \strlen() takes string

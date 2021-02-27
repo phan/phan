@@ -1078,6 +1078,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // XXX is this slow for extremely large arrays because of in_array check in UnionTypeBuilder?
             $is_definitely_non_empty = false;
             $has_key = false;
+            $has_unpack_string_key = false;
             foreach ($children as $child) {
                 if (!($child instanceof Node)) {
                     // Skip this, we already emitted a syntax error.
@@ -1087,7 +1088,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 if ($child->kind === ast\AST_UNPACK) {
                     // Analyze PHP 7.4's array spread operator, e.g. `[$a, ...$array, $b]`
-                    $new_union_type = $this->analyzeUnpack($child, true);
+                    [$new_union_type, $new_union_type_has_string_keys] = $this->analyzeUnpack($child, true);
+                    if ($new_union_type_has_string_keys) {
+                        $has_key = true;
+                        $has_unpack_string_key = true;
+                    }
+
+                    $has_key = $has_key || $new_union_type_has_string_keys;
                     $value_types_builder->addUnionType($new_union_type);
                     $record_real_union_type($new_union_type);
                     continue;
@@ -1133,7 +1140,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $result = $result->asNonEmptyListTypes();
             }
-            $result = $result->withRealTypeSet($this->arrayTypeFromRealTypeBuilder($real_value_types_builder, $node, $has_key));
+            $result = $result->withRealTypeSet($this->arrayTypeFromRealTypeBuilder($real_value_types_builder, $node, $has_key, $has_unpack_string_key));
             if ($is_definitely_non_empty) {
                 return $result->nonFalseyClone();
             }
@@ -1148,22 +1155,21 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return list<ArrayType>
      */
-    private function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, Node $node, bool $has_key): array
+    private function arrayTypeFromRealTypeBuilder(?UnionTypeBuilder $builder, Node $node, bool $has_key, bool $has_unpack_string_key): array
     {
         // Here, we only check for the real type being an integer.
         // Unknown strings such as '0' will cast to integers when used as array keys,
         // and if we knew all of the array keys were literals we would have generated an array shape instead.
-        $has_int_keys = true;
-        if ($has_key) {
+        $has_exclusively_int_keys = !$has_unpack_string_key;
+        if ($has_key && $has_exclusively_int_keys) {
             foreach ($node->children as $child_node) {
                 $key = $child_node->children['key'] ?? null;
                 if (!isset($key)) {
-                    // unpacking an array with string keys is a runtime error so these must be ints.
                     continue;
                 }
                 $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key);
                 if (!$key_type->getRealUnionType()->isIntTypeOrNull()) {
-                    $has_int_keys = false;
+                    $has_exclusively_int_keys = false;
                     break;
                 }
             }
@@ -1172,7 +1178,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!$has_key) {
                 return UnionType::typeSetFromString('list');
             }
-            return UnionType::typeSetFromString($has_int_keys ? 'array<int,mixed>' : 'array');
+            return UnionType::typeSetFromString($has_exclusively_int_keys ? 'array<int,mixed>' : 'array');
         }
         $real_types = [];
         foreach ($builder->getTypeSet() as $type) {
@@ -1181,7 +1187,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $real_types[] = GenericArrayType::fromElementType(
                     $type,
                     false,
-                    $has_int_keys ? GenericArrayType::KEY_INT : GenericArrayType::KEY_MIXED
+                    $has_exclusively_int_keys ? GenericArrayType::KEY_INT : GenericArrayType::KEY_MIXED
                 );
             } else {
                 $real_types[] = ListType::fromElementType($type, false, GenericArrayType::KEY_MIXED);
@@ -2119,7 +2125,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      *
      * @return UnionType
      * The set of types that are possibly produced by the
-     * given node
+     * given node (the type of a value OF the unpacked iterable)
      *
      * @throws IssueException
      * if the unpack is on an invalid expression
@@ -2127,7 +2133,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitUnpack(Node $node): UnionType
     {
-        return $this->analyzeUnpack($node, isset($node->is_in_array));
+        return $this->analyzeUnpack($node, isset($node->is_in_array))[0];
     }
 
     /**
@@ -2141,14 +2147,15 @@ class UnionTypeVisitor extends AnalysisVisitor
      * If true, this is the array spread operator,
      * which tolerates integers that aren't consecutive.
      *
-     * @return UnionType
+     * @return array{0:UnionType, 1:bool}
      * The set of types that are possibly produced by the
-     * given node
+     * given node (the type of a value OF the unpacked iterable),
+     * as well as whether this is likely to contain non-integer keys (imperfect check).
      *
      * @throws IssueException
      * if the unpack is on an invalid expression
      */
-    private function analyzeUnpack(Node $node, bool $is_array_spread): UnionType
+    private function analyzeUnpack(Node $node, bool $is_array_spread): array
     {
         $union_type = self::unionTypeFromNode(
             $this->code_base,
@@ -2158,7 +2165,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         )->withStaticResolvedInContext($this->context);
 
         if ($union_type->isEmpty()) {
-            return $union_type;
+            return [$union_type, false];
         }
 
         // Figure out what the types of accessed array
@@ -2181,19 +2188,27 @@ class UnionTypeVisitor extends AnalysisVisitor
                         )
                     );
                 }
-                return $generic_types;
+                return [$generic_types, false];
             }
             $this->checkInvalidUnpackKeyType($node, $union_type, $is_array_spread);
+            foreach ($union_type->iterableKeyUnionType($this->code_base)->getTypeSet() as $key_type) {
+                if ($key_type instanceof StringType) {
+                    return [$generic_types, true];
+                }
+            }
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
+            return [$generic_types, true];
         }
-        return $generic_types;
+        return [$generic_types, false];
     }
 
     private function checkInvalidUnpackKeyType(Node $node, UnionType $union_type, bool $is_array_spread): void
     {
         $is_invalid_because_associative = false;
-        if (!$is_array_spread) {
+        $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
+        // Treat foo(...$associativeArgs) as invalid unless the minimum target php version is 8.0 (i.e. array unpacking is supported)
+        if (!$is_array_spread && $minimum_target_php_version_id < 80000) {
             foreach ($union_type->getTypeSet() as $type) {
                 if ($type->isIterable()) {
                     if ($type instanceof AssociativeArrayType) {
@@ -2209,10 +2224,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
         // TODO: Warn if key_type contains nullable types (excluding VoidType)
         // TODO: Warn about union types that are partially invalid.
-        if ($is_invalid_because_associative || !$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type instanceof IntType || $type instanceof MixedType;
-        })
-        ) {
+        if ($is_invalid_because_associative || (!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type) use ($minimum_target_php_version_id, $is_array_spread) : bool {
+            if ($type instanceof IntType || $type instanceof MixedType) {
+                return true;
+            }
+            if ($type instanceof StringType) {
+                // TODO: Forbid invalid parameter identifiers such as 'foo-bar' in the overall array shape?
+                return ($is_array_spread ? $minimum_target_php_version_id >= 80100 : $minimum_target_php_version_id >= 80000);
+            }
+            return false;
+        }))) {
             throw new IssueException(
                 Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
                     $this->context->getFile(),

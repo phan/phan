@@ -16,7 +16,7 @@ $invalidLiteral = [...['dos' => 2]];
  */
 function expects_stringmap(array $x) {
     return array(
-        $x,  // should warn
+        $x,  // should warn. NOTE: PHP 8.1 allows string keys in array unpacking, so list<...> isn't inferred for forward compatibility.
         ...$x,
     );
 }

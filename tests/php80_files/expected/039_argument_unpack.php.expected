@@ -1,0 +1,2 @@
+%s:3 PhanPluginUnknownFunctionParamType Function foo() has no declared or inferred return type for $bar (Types inferred after analysis: int)
+%s:7 PhanTypeMismatchUnpackKey When unpacking a value of type array{bar:123}, the value's keys were of type string, but the keys should be consecutive integers starting from 0

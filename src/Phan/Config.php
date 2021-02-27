@@ -130,7 +130,8 @@ class Config
         // (Phan relies on Reflection for some types, param counts,
         // and checks for undefined classes/methods/functions)
         //
-        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
+        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
+        // `'8.0'`, `'8.1'`, `null`.
         // If this is set to `null`,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute Phan.
@@ -141,7 +142,8 @@ class Config
 
         // The PHP version that will be used for feature/syntax compatibility warnings.
         //
-        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`, `null`.
+        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
+        // `'8.0'`, `'8.1'`, `null`.
         // If this is set to `null`, Phan will first attempt to infer the value from
         // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
         // If that could not be determined, then Phan assumes `target_php_version`.
@@ -1380,23 +1382,25 @@ class Config
         return '@^(\./)*(' . \implode('|', $parts) . ')([/\\\\]|$)@';
     }
 
+    private const CLOSEST_TARGET_PHP_VERSION_ID_RANGES = [
+        '6.0' => 50600,
+        '7.1' => 70000,
+        '7.2' => 70100,
+        '7.3' => 70200,
+        '7.4' => 70300,
+        '8.0' => 70400,
+        '8.1' => 80000,
+    ];
+
     private static function computeClosestTargetPHPVersionId(string $version): int
     {
-        if (\version_compare($version, '6.0') < 0) {
-            return 50600;
-        } elseif (\version_compare($version, '7.1') < 0) {
-            return 70000;
-        } elseif (\version_compare($version, '7.2') < 0) {
-            return 70100;
-        } elseif (\version_compare($version, '7.3') < 0) {
-            return 70200;
-        } elseif (\version_compare($version, '7.4') < 0) {
-            return 70300;
-        } elseif (\version_compare($version, '8.0') < 0) {
-            return 70400;
-        } else {
-            return 80000;
+        // for 7.4.11 or 7.4.0 or 7.4 return 7.4, etc.
+        foreach (self::CLOSEST_TARGET_PHP_VERSION_ID_RANGES as $compared_version_string => $resulting_version_id) {
+            if (\version_compare($version, $compared_version_string) < 0) {
+                return $resulting_version_id;
+            }
         }
+        return 80100;
     }
 
     /**

@@ -542,6 +542,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof GenericArrayType) {
+                // e.g. ListType, GenericArrayType
                 $key_types |= $type->key_type;
             } elseif ($type instanceof ArrayShapeType) {
                 if ($type->isNotEmptyArrayShape()) {
@@ -549,6 +550,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                 }
             }
             // Treating ArrayType as mixed or excluding ArrayType would both cause false positives. Ignore ArrayType.
+            // TODO: Support IterableType for non-arrays?
         }
         // int|string corresponds to KEY_MIXED (KEY_INT|KEY_STRING)
         // And if we're unable to find any types, return KEY_MIXED.
@@ -637,7 +639,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             }
             if ($child->kind === \ast\AST_UNPACK) {
                 // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
-                $key_type_enum |= GenericArrayType::KEY_INT;
+                // In php 8.1, this will also add string keys.
+                $key_type_enum |= self::keyTypeFromUnionTypeKeys(UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $child->children['expr'],
+                    $should_catch_issue_exception
+                ));
                 continue;
             }
             // Don't bother recursing more than one level to iterate over possible types.

@@ -1,0 +1,1 @@
+%s:9 PhanTypeMismatchArgumentReal Argument 1 ($bar) is ...($other) of type 'invalid' but \foo() takes int defined at %s:3
