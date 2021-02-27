@@ -593,7 +593,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             $scope = $this->context->getScope();
             if (!$scope->hasGlobalVariableWithName($variable_name)) {
-                $this->context->addGlobalScopeVariable( clone $variable );
+                $this->context->addGlobalScopeVariable(clone $variable);
             }
             // TODO: Support @global?
             $actual_global_variable = $scope->getGlobalVariableByName($variable_name);

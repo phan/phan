@@ -18,7 +18,6 @@ use Phan\Language\UnionType;
  */
 class PassByReferenceVariable extends Variable
 {
-
     use ElementProxyTrait;
 
     /**

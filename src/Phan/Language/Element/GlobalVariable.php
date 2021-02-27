@@ -12,10 +12,10 @@ use Phan\Language\UnionType;
  */
 class GlobalVariable extends Variable
 {
-
     use ElementProxyTrait;
 
-    public function getName() : string {
+    public function getName(): string
+    {
         return $this->element->getName();
     }
 
@@ -25,5 +25,4 @@ class GlobalVariable extends Variable
         // Always merge the type on the actual global.
         $this->element->setUnionType($this->element->getUnionType()->withUnionType($type->eraseRealTypeSetRecursively()));
     }
-
 }

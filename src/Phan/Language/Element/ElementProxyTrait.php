@@ -26,7 +26,8 @@ trait ElementProxyTrait
     /**
      * @param TypedElement|UnaddressableTypedElement $element
      */
-    public function __construct($element) {
+    public function __construct($element)
+    {
         $this->element = $element;
         $this->type = $element->getUnionType();
     }
