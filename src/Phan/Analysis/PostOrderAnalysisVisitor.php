@@ -31,6 +31,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\GlobalVariable;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -588,20 +589,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
         if ($optional_global_variable_type) {
             $variable->setUnionType($optional_global_variable_type);
+            $scope_global_variable = $variable;
         } else {
             $scope = $this->context->getScope();
-            if ($scope->hasGlobalVariableWithName($variable_name)) {
-                // TODO: Support @global, add a clone to the method context?
-                $actual_global_variable = clone($scope->getGlobalVariableByName($variable_name));
-                $actual_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
-                $this->context->addScopeVariable($actual_global_variable);
-                return $this->context;
+            if (!$scope->hasGlobalVariableWithName($variable_name)) {
+                $this->context->addGlobalScopeVariable( clone $variable );
             }
+            // TODO: Support @global?
+            $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
+            $scope_global_variable = $actual_global_variable instanceof GlobalVariable ? clone($actual_global_variable) : new GlobalVariable($actual_global_variable);
+            $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
         }
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
-        $this->context->addScopeVariable($variable);
+        $this->context->addScopeVariable($scope_global_variable);
 
         return $this->context;
     }
