@@ -367,7 +367,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * Returns true if Phan should include doc comments in the output of tool/make_stubs
      */
-    public static function shouldAddDescriptionsToStubs(): bool {
+    public static function shouldAddDescriptionsToStubs(): bool
+    {
         return (bool)($_ENV['PHAN_STUB_INCLUDE_DOC'] ?? false);
     }
 }

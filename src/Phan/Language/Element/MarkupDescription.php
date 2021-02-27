@@ -41,7 +41,8 @@ class MarkupDescription
     /**
      * Convert a string description to a newline-terminated doc comment
      */
-    public static function convertStringToDocComment(string $description, string $indent = ''): string {
+    public static function convertStringToDocComment(string $description, string $indent = ''): string
+    {
         $description = \trim($description);
         if ($description === '') {
             return '';

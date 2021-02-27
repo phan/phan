@@ -9,18 +9,18 @@ use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Attribute;
-use Phan\Language\Element\Clazz;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Parse\ParseVisitor;
-use Phan\Issue;
 
 /**
  * Analyzer of the attributes of declarations.
@@ -249,7 +249,6 @@ class AttributeAnalyzer
                 $attribute_node = $attribute->getNode();
 
                 if ($attribute_node) {
-
                     foreach ($attribute_node->children['args']->children ?? [] as $arg_node) {
                         if (!$arg_node instanceof Node) {
                             continue;
@@ -314,5 +313,4 @@ class AttributeAnalyzer
             }
         }
     }
-
 }

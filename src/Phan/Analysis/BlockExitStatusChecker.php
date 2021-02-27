@@ -586,6 +586,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!\is_string($name)) {
             return self::STATUS_PROCEED;
         }
+        // The returned code for exit() is 'return', e.g. E_USER_ERROR makes trigger_error emit an error then abort execution.
         if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'], true)) {
             return self::STATUS_RETURN;
         }
