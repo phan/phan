@@ -45,7 +45,7 @@ sed -i \
     -e "/069_invalid_coalesce_assign.php:2 PhanNoopBinaryOperator/d" \
     -e "/069_invalid_coalesce_assign.php:2 PhanInvalidNode Invalid left hand side for ??=/d" \
     -e "/077_invalid_attribute.php:3 PhanSyntaxError/d" \
-    -e "s/'o17' (T_STRING), expecting ',' or ')'/'o17' (T_STRING), expecting  ')'/g" \
+    -e "s/'o17' (T_STRING), expecting ',' or ')'/'o17' (T_STRING), expecting ')'/g" \
     -e "s@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting function (T_FUNCTION) or const (T_CONST)@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE)@" \
     $ACTUAL_PATH
 
