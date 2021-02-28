@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 /**
  * Phan's representation for types such as `list` and `list<MyClass>`
@@ -101,5 +102,13 @@ class ListType extends GenericArrayType
     public function convertIntegerKeyArrayToList(): ArrayType
     {
         return $this;
+    }
+
+    /**
+     * Returns the equivalent (possibly nullable) list type for this type.
+     */
+    public function castToListTypes(): UnionType
+    {
+        return $this->asPHPDocUnionType();
     }
 }

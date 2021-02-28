@@ -204,6 +204,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'array_intersect_assoc' => true,
     'array_intersect_key' => true,
     'array_intersect' => true,
+    'array_is_list' => true,
     'arrayiterator::current' => true,
     'arrayiterator::key' => true,
     'arrayiterator::valid' => true,

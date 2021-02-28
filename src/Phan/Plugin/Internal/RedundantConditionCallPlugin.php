@@ -291,6 +291,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
         }, 'countable');
         $object_callback = $make_simple_first_arg_checker('objectTypesStrictAllowEmpty', 'object');
         $array_callback = $make_simple_first_arg_checker('arrayTypesStrictCastAllowEmpty', 'array');
+        $array_is_list_callback = $make_simple_first_arg_checker('listTypesStrictCastAllowEmpty', 'list');
         $string_callback = $make_simple_first_arg_checker('stringTypes', 'string');
 
         // TODO: Implement checks for the commented out conditions.
@@ -315,6 +316,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             'is_scalar' => $scalar_callback,
             'is_string' => $string_callback,
 
+            'array_is_list' => $array_is_list_callback,
             'class_exists' => $class_exists_callback,
             'intval' => $intval_callback,
             'boolval' => $boolval_callback,

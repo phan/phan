@@ -3,13 +3,16 @@ Phan NEWS
 ??? ?? 202?, Phan 4.0.4 (dev)
 -----------------------
 
-New Features:
+New Features (CLI, Config):
 + Support `--doc-comment` flag on `tool/make_stubs` to emit the doc comments Phan
   is using for internal elements along with the stubs.
   (these are the doc comments Phan would use for hover text in the language server)
 + Allow `target_php_version` and `minimum_target_php_version` to be 8.1 or newer.
+
+New Features (Analysis):
 + Support the php 8.1 array unpacking with string keys RFC (#4358).
-  Don't emit warnings when `minimum_target_php_version` is '8.1' or newer.
+  Don't emit warnings about array unpacking with string keys when `minimum_target_php_version` is '8.1' or newer.
++ Support php 8.1 `array_is_list(array $array): bool` conditional and its negation. (#4348)
 
 Plugins:
 + Cache plugin instances in `ConfigPluginSet`. This is useful for unit testing stateless plugins which declare the plugin class in the same file returning the plugin instance. (#4352)

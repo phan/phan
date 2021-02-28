@@ -798,6 +798,16 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         /**
          * @param list<Node|mixed> $args
          */
+        $list_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args): void {
+            // Change the type to match the array_is_list relationship
+            // If we already have generic array types, then keep those
+            // (E.g. T[]|false becomes T[], ?array|null becomes array, callable becomes callable-array)
+            $variable->setUnionType($variable->getUnionType()->listTypesStrictCast());
+        };
+
+        /**
+         * @param list<Node|mixed> $args
+         */
         $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args): void {
             self::analyzeIsObjectAssertion($variable);
         };
@@ -922,6 +932,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             'interface_exists' => $class_exists_callback,  // Currently, there's just class-string, not trait-string or interface-string.
             'trait_exists' => $class_exists_callback,
             'method_exists' => $method_exists_callback,
+            'array_is_list' => $list_callback,
             'is_a' => $is_a_callback,
             'is_array' => $array_callback,
             'is_bool' => $bool_callback,

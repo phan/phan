@@ -42,6 +42,7 @@ use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NonEmptyArrayInterface;
+use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
@@ -3799,6 +3800,54 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * This is the union type Phan infers from `assert(array_is_list($x))`
+     * Converts `iterable<key,value>` to `list<value>`
+     * Takes `` and returns `list`
+     * @suppress PhanUnreferencedPublicMethod called dynamically
+     */
+    public function listTypesStrictCast(): UnionType
+    {
+        return UnionType::of(
+            self::castToListTypesStrict($this->type_set) ?: UnionType::typeSetFromString('list'),
+            self::castToListTypesStrict($this->real_type_set) ?: UnionType::typeSetFromString('list')
+        );
+    }
+
+    /**
+     * This is the union type Phan infers from `assert(array_is_list($x))`
+     * Converts `iterable<key,value>` to `list<value>`
+     * Takes `A[]|ArrayAccess` and returns `list<A>`
+     * Takes `callable` and returns `list<object|string>` (callable arrays permit any key order)
+     * Takes `` and returns ``
+     * @suppress PhanUnreferencedPublicMethod called dynamically
+     */
+    public function listTypesStrictCastAllowEmpty(): UnionType
+    {
+        return UnionType::of(
+            self::castToListTypesStrict($this->type_set),
+            self::castToListTypesStrict($this->real_type_set)
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return list<Type>
+     */
+    private static function castToListTypesStrict(array $type_list): array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            $type = $type->asArrayType();
+            if ($type instanceof ArrayType) {
+                foreach ($type->castToListTypes()->getTypeSet() as $sub_type) {
+                    $result[] = $sub_type;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
      * @return bool
      * True if this is exclusively generic types
      */
@@ -4325,7 +4374,7 @@ class UnionType implements Serializable, Stringable
         }
         $result = $this->asMappedUnionType(
             static function (Type $type) use ($key_type): Type {
-                return AssociativeArrayType::fromElementType($type, false, $key_type);
+                return NonEmptyAssociativeArrayType::fromElementType($type, false, $key_type);
             }
         );
         if (!$result->hasRealTypeSet()) {
@@ -4593,14 +4642,21 @@ class UnionType implements Serializable, Stringable
             if (!$php74_map) {
                 $php74_map = self::computePHP74FunctionSignatureMap($php73_map);
             }
-            if ($target_php_version >= 80000) {
-                static $php80_map = [];
-                if (!$php80_map) {
-                    $php80_map = self::computePHP80FunctionSignatureMap($php74_map);
-                }
+            if ($target_php_version < 80000) {
+                return $php74_map;
+            }
+            static $php80_map = [];
+            if (!$php80_map) {
+                $php80_map = self::computePHP80FunctionSignatureMap($php74_map);
+            }
+            if ($target_php_version < 80100) {
                 return $php80_map;
             }
-            return $php74_map;
+            static $php81_map = [];
+            if (!$php81_map) {
+                $php81_map = self::computePHP81FunctionSignatureMap($php80_map);
+            }
+            return $php81_map;
         }
         if ($target_php_version >= 70300) {
             return $php73_map;
@@ -4676,6 +4732,16 @@ class UnionType implements Serializable, Stringable
             $map[\strtolower($key)] = $value;
         }
         return $map;
+    }
+
+    /**
+     * @param array<string,associative-array<int|string,string>> $php80_map
+     * @return array<string,associative-array<int|string,string>>
+     */
+    private static function computePHP81FunctionSignatureMap(array $php80_map): array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php81_delta.php');
+        return self::applyDeltaToGetNewerSignatures($php80_map, $delta_raw);
     }
 
     /**

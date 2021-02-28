@@ -1,0 +1,12 @@
+%s:4 PhanRedundantCondition Redundant attempt to cast $values of type list<float> to list
+%s:5 PhanTypeMismatchReturnReal Returning $values of type list<float> but example3() is declared to return int
+%s:7 PhanTypeMismatchReturnReal Returning $values of type non-empty-associative-array<list<float>> but example3() is declared to return int
+%s:9 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \example3() defined at %s:3
+%s:10 PhanPluginUnknownArrayFunctionParamType Function example3b() has a parameter type of array for $values, but does not specify any key types or value types
+%s:10 PhanUnreferencedFunction Possibly zero references to function \example3b()
+%s:11 PhanTypeMismatchArgumentNullableInternal Argument 1 ($array) is $values of type ?array but \array_is_list() takes array (expected type to be non-nullable)
+%s:12 PhanTypeMismatchReturnReal Returning $values of type list<mixed> but example3b() is declared to return int
+%s:14 PhanTypeMismatchReturnReal Returning $values of type non-empty-associative-array<array> but example3b() is declared to return int
+%s:17 PhanRedundantCondition Redundant attempt to cast [1,2] of type array{0:1,1:2} to list
+%s:18 PhanRedundantCondition Redundant attempt to cast [] of type array{} to list
+%s:19 PhanImpossibleCondition Impossible attempt to cast ['key'=>'value'] of type array{key:'value'} to list
