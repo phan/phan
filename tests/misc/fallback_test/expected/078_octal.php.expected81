@@ -1,0 +1,3 @@
+src/078_octal.php:2 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+src/078_octal.php:3 PhanTypeMismatchArgument Argument 1 ($x) is 15 of type 15 but \expect_string() takes string defined at src/078_octal.php:2
+src/078_octal.php:4 PhanSyntaxError syntax error, unexpected end of file

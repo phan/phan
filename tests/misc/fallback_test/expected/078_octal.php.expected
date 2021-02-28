@@ -1,0 +1,5 @@
+src/078_octal.php:2 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+src/078_octal.php:3 PhanNoopConstant Unused constant
+src/078_octal.php:3 PhanSyntaxError syntax error, unexpected 'o17' (T_STRING), expecting ')' (at column 16)
+src/078_octal.php:3 PhanTypeMismatchArgument Argument 1 ($x) is 0 of type 0 but \expect_string() takes string defined at src/078_octal.php:2
+src/078_octal.php:3 PhanUndeclaredConstant Reference to undeclared constant \o17. This will cause a thrown Error in php 8.0+.

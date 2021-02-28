@@ -5,12 +5,19 @@ if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/misc/fallback_test folder" 1>&2
 	exit 1
 fi
-PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION;")
-echo "PHP_VERSION=$PHP_VERSION\n";
+PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID;")
+echo "PHP_VERSION_ID=$PHP_VERSION_ID";
 
 for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
-    if [[ "$PHP_VERSION" -ge 8 ]]; then
-        alternate_path=${path/.expected/.expected80}
+    original_path="$path"
+    if [[ "$PHP_VERSION_ID" -ge 80000 ]]; then
+        alternate_path=${original_path/.expected/.expected80}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
+    if [[ "$PHP_VERSION_ID" -ge 80100 ]]; then
+        alternate_path=${original_path/.expected/.expected81}
         if [ -f "$alternate_path" ]; then
             path="$alternate_path"
         fi
