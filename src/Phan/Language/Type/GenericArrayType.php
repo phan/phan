@@ -286,7 +286,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * @return UnionType returns the array value's union type
      * @phan-override
      */
-    public function iterableValueUnionType(CodeBase $code_base): UnionType
+    public function iterableValueUnionType(CodeBase $code_base = null): UnionType
     {
         return $this->element_type->asPHPDocUnionType();
     }
@@ -927,4 +927,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         yield $this;
         yield from $this->element_type->getTypesRecursively();
     }
+
+    /**
+     * Returns the equivalent (possibly nullable) list type (or array shape type) for this type.
+     */
+    public function castToListTypes(): UnionType
+    {
+        return ListType::fromElementType($this->element_type, $this->is_nullable)->asPHPDocUnionType();
+    }
+
 }

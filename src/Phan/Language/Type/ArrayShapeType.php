@@ -1119,11 +1119,30 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * @override
      * @unused-param $can_reduce_size
      */
     public function asAssociativeArrayType(bool $can_reduce_size): ArrayType
     {
         return $this;
+    }
+
+    /**
+     * @override
+     */
+    public function castToListTypes(): UnionType
+    {
+        if ($this->canCastToList()) {
+            // NOTE: This is a bad approximation for array{0:T1, 1?:T2, 2?:T3}
+            return $this->asPHPDocUnionType();
+        }
+        // If this has at least one string type the condition array_is_list does not hold
+        foreach ($this->field_types as $k => $v) {
+            if (\is_string($k) && !$v->isPossiblyUndefined()) {
+                return UnionType::empty();
+            }
+        }
+        return $this->genericArrayElementUnionType()->asListTypes();
     }
 
     public function getTypesRecursively(): Generator

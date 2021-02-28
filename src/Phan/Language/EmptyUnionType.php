@@ -1587,7 +1587,17 @@ final class EmptyUnionType extends UnionType
         return ArrayType::instance(false)->asRealUnionType();
     }
 
+    public function listTypesStrictCast(): UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('list');
+    }
+
     public function arrayTypesStrictCastAllowEmpty(): UnionType
+    {
+        return $this;
+    }
+
+    public function listTypesStrictCastAllowEmpty(): UnionType
     {
         return $this;
     }

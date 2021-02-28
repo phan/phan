@@ -407,8 +407,18 @@ class ArrayType extends IterableType
     }
 
     /**
+     * Returns the equivalent (possibly nullable) list type (or array shape type) for this type.
+     * Note that this returns the empty union type if it is known to be impossible for this to be a list.
+     */
+    public function castToListTypes(): UnionType
+    {
+        return ListType::fromElementType(MixedType::instance(false), $this->is_nullable)->asPHPDocUnionType();
+    }
+
+    /**
      * Convert ArrayTypes with integer-only keys to ListType.
      * Calling withFlattenedArrayShapeTypeInstances first is recommended.
+     * @see asListType
      */
     public function convertIntegerKeyArrayToList(): ArrayType
     {
