@@ -13,6 +13,7 @@ New Features (Analysis):
 + Support the php 8.1 array unpacking with string keys RFC (#4358).
   Don't emit warnings about array unpacking with string keys when `minimum_target_php_version` is '8.1' or newer.
 + Support php 8.1 `array_is_list(array $array): bool` conditional and its negation. (#4348)
++ Fix some false positive issues when trying to eagerly evaluate expressions without emitting issues (#4377)
 
 Plugins:
 + Cache plugin instances in `ConfigPluginSet`. This is useful for unit testing stateless plugins which declare the plugin class in the same file returning the plugin instance. (#4352)
