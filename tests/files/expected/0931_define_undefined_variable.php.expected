@@ -1,0 +1,1 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 ($string) is CONST_1 of type true but \strlen() takes string
