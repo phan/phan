@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 202?, Phan 4.0.4 (dev)
+Apr 14 2021, Phan 4.0.4
 -----------------------
 
 New Features (CLI, Config):
