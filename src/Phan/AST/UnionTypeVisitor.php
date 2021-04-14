@@ -713,7 +713,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $types[] = $this->visitType($c);
             } elseif ($kind === ast\AST_NAME) {
                 if ($this->context->getScope()->isInTraitScope()) {
-                    $name = \strtolower($node->children['name']);
+                    $name = \strtolower($c->children['name']);
                     if ($name === 'self') {
                         $types[] = SelfType::instance(false)->asRealUnionType();
                         continue;
