@@ -69,6 +69,7 @@ class Restarter extends XdebugHandler
     }
 
     /**
+     * @param list<string> $command
      * @return void
      * @override
      */

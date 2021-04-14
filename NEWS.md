@@ -15,6 +15,12 @@ New Features (Analysis):
 + Support php 8.1 `array_is_list(array $array): bool` conditional and its negation. (#4348)
 + Fix some false positive issues when trying to eagerly evaluate expressions without emitting issues (#4377)
 
+Bug fixes:
++ Fix crash analyzing union type in trait (#4383)
+
+Maintenance:
++ Update from xdebug-handler 1.x to 2.0.0 to support Xdebug 3 (#4382)
+
 Plugins:
 + Cache plugin instances in `ConfigPluginSet`. This is useful for unit testing stateless plugins which declare the plugin class in the same file returning the plugin instance. (#4352)
 
