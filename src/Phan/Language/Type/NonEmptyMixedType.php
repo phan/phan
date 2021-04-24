@@ -25,6 +25,14 @@ final class NonEmptyMixedType extends MixedType
     }
 
     /**
+     * @override
+     */
+    public function canCastToTypeWithoutConfig(Type $type): bool
+    {
+        return $this->canCastToType($type);
+    }
+
+    /**
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
      * @override
      */

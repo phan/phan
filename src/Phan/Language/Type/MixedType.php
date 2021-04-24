@@ -44,6 +44,16 @@ class MixedType extends NativeType
     }
 
     /**
+     * Overridden in NonNullMixedType and NonEmptyMixedType
+     * @unused-param $type
+     * @override
+     */
+    public function canCastToTypeWithoutConfig(Type $type): bool
+    {
+        return true;
+    }
+
+    /**
      * mixed or ?mixed can cast to/from anything even if nullable.
      * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
      *
