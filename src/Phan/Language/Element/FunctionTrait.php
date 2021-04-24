@@ -1524,7 +1524,7 @@ trait FunctionTrait
     {
         if ($this->comment) {
             // Template types are identical if they have the same name. See TemplateType::instanceForId.
-            return \in_array($template_type, $this->comment->getTemplateTypeList(), true);
+            return \in_array($template_type->withIsNullable(false), $this->comment->getTemplateTypeList(), true);
         }
         return false;
     }

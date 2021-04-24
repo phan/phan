@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 4.0.5 (dev)
+-----------------------
+
+Bug fixes:
++ Allow `?T` to be used in parameter/property types with `@template T` (#4388)
+
 Apr 14 2021, Phan 4.0.4
 -----------------------
 

@@ -133,7 +133,11 @@ final class TemplateType extends Type
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
-        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asPHPDocUnionType();
+        $type = $template_parameter_type_map[$this->template_type_identifier] ?? $this->asPHPDocUnionType();
+        if ($this->is_nullable) {
+            return $type->withIsNullable(true);
+        }
+        return $type;
     }
 
     /**
@@ -167,9 +171,16 @@ final class TemplateType extends Type
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
+        // For `@param T $param`, if passed a union type such as `int`, then `T` must be `int|false`
         if ($this === $template_type) {
             return static function (UnionType $type, Context $_): UnionType {
                 return $type;
+            };
+        }
+        // For `@param ?T $param`, if passed `?int|false`, then `T` must be `int|false`
+        if ($this->withIsNullable(false) === $template_type) {
+            return static function (UnionType $type, Context $_): UnionType {
+                return $type->withIsNullable(false);
             };
         }
         // Overridden in subclasses

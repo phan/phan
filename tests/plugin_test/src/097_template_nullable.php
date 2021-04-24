@@ -28,7 +28,7 @@ class NullableTemplate
         if (rand() % 2 > 0) {
             return $this->x;
         }
-        return false;
+        return false; // wrong type
     }
 }
-echo (new NullableTemplate(new stdClass()))->getX();
+echo (new NullableTemplate(new stdClass()))->getX();  // should infer ?stdClass from phpdoc

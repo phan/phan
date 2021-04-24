@@ -1,0 +1,3 @@
+%s:45 PhanTypeMismatchReturn Returning new Test((rand(0, 1) ? new \stdClass() : null))->value of type \stdClass but example() is declared to return ?int
+%s:47 PhanTypeMismatchReturn Returning $t->value of type string but example() is declared to return ?int
+%s:49 PhanTypeMismatchReturn Returning Test::notNull($s) of type string but example() is declared to return ?int
