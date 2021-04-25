@@ -9,6 +9,7 @@ New Features (Analysis):
   PHP 8.1 deprecates the `Serializable` interface when `__serialize` and `__unserialize` aren't also implemented to be used instead of `serialize`/`unserialize`.
 
 Maintenance:
++ Warn about running phan with multiple processes without pcntl before the analysis phase starts.
 + Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
 + Use different static variables in different subclasses of `Phan\Language\Type` to account for changes in static variable inheritance in php 8.1. (#4379)
 
