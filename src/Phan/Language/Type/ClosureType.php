@@ -18,6 +18,8 @@ use Phan\Language\Type;
  */
 final class ClosureType extends Type
 {
+    use NativeTypeTrait;
+
     /** Not an override */
     public const NAME = 'Closure';
 
@@ -124,39 +126,6 @@ final class ClosureType extends Type
         }
 
         return parent::canCastToNonNullableTypeWithoutConfig($type);
-    }
-
-    /**
-     * @param bool $is_nullable
-     * If true, returns a nullable instance of this closure type
-     *
-     * @return static an instance of this closure type with appropriate nullability
-     */
-    public static function instance(bool $is_nullable)
-    {
-        if ($is_nullable) {
-            static $nullable_instance = null;
-
-            if (!$nullable_instance) {
-                $nullable_instance = self::make('\\', self::NAME, [], true, Type::FROM_NODE);
-            }
-            if (!($nullable_instance instanceof self)) {
-                throw new AssertionError("Expected ClosureType::make to return ClosureType");
-            }
-
-            return $nullable_instance;
-        }
-
-        static $instance = null;
-
-        if ($instance === null) {
-            $instance = self::make('\\', self::NAME, [], false, Type::FROM_NODE);
-        }
-
-        if (!($instance instanceof self)) {
-            throw new AssertionError("Expected ClosureType::make to return ClosureType");
-        }
-        return $instance;
     }
 
     /**

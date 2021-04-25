@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 class ListType extends GenericArrayType
 {
+    use NativeTypeTrait;
+
     protected function __construct(Type $type, bool $is_nullable)
     {
         parent::__construct($type, $is_nullable, GenericArrayType::KEY_INT);

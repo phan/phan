@@ -45,6 +45,8 @@ final class EmptyUnionTypeTest extends BaseTest
         'unserialize',  // throws
         '__construct',
         '__clone',
+        '__serialize',
+        '__unserialize',
         // UnionType implementation can't be optimized
         'withIsPossiblyUndefined',
         'isPossiblyUndefined',

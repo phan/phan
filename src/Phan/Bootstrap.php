@@ -336,6 +336,11 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler
         return true;
     }
+    if ($errno === E_DEPRECATED && preg_match('/^stream_select.*should be null instead of 0/i', $errstr)) {
+        // TODO: Remove after bumping the minimum sabre/event version to a release that fixes this
+        // https://github.com/sabre-io/event/pull/88
+        return true;
+    }
     if ($errno === E_USER_DEPRECATED && preg_match('/(^Passing a command as string when creating a |method is deprecated since Symfony 4\.4)/', $errstr)) {
         // Suppress deprecation notices running `vendor/bin/paratest`.
         // Don't execute the PHP internal error handler.
@@ -345,6 +350,13 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Suppress deprecation notices running `vendor/bin/paratest` in php 8
         // Constants such as ENCHANT can be deprecated when calling constant()
         return true;
+    }
+    if ($errno === E_DEPRECATED && preg_match('/^The Serializable interface is deprecated/', $errstr)) {
+        if (preg_match('@/vendor/phpunit/@', $errfile)) {
+            // Suppress deprecation notices running phpunit in php 8.1 with the Serializable interface.
+            // phpunit 8 stopped being maintained before Serializable was deprecated.
+            return true;
+        }
     }
     if ($errno === E_NOTICE && preg_match('/^(iconv_strlen)/', $errstr)) {
         // Suppress deprecation notices in symfony/polyfill-mbstring

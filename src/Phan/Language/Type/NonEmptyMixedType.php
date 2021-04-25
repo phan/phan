@@ -16,12 +16,22 @@ use Phan\Language\Type;
  */
 final class NonEmptyMixedType extends MixedType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'non-empty-mixed';
 
     public function canCastToType(Type $type): bool
     {
         return $type->isPossiblyTruthy() || ($this->is_nullable && $type->is_nullable);
+    }
+
+    /**
+     * @override
+     */
+    public function canCastToTypeWithoutConfig(Type $type): bool
+    {
+        return $this->canCastToType($type);
     }
 
     /**

@@ -14,6 +14,8 @@ namespace Phan\Language\Type;
  */
 final class ScalarRawType extends ScalarType implements MultiType
 {
+    use NativeTypeTrait;
+
     /** @override */
     public const NAME = 'scalar';
 

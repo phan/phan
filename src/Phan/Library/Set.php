@@ -211,6 +211,7 @@ class Set extends \SplObjectStorage
             /**
              * @param T $element
              * @return object
+             * @suppress PhanTypePossiblyInvalidCloneNotObject phan does not support base types of template types yet.
              */
             static function ($element) {
                 return clone($element);

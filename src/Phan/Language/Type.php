@@ -2990,6 +2990,8 @@ class Type implements Stringable
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly without config settings.
+     *
+     * Overrides handle MixedType and subclasses
      */
     public function canCastToTypeWithoutConfig(Type $type): bool
     {
@@ -2999,8 +3001,12 @@ class Type implements Stringable
         }
 
         if ($type instanceof MixedType) {
-            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
-            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
+            if ($type instanceof NonEmptyMixedType) {
+                return $this->isPossiblyTruthy();
+            } elseif ($type instanceof NonNullMixedType) {
+                return !$this->isNullable();
+            }
+            return true;
         }
 
         if ($this->is_nullable) {

@@ -19,6 +19,8 @@ use function class_exists;
  */
 class MixedType extends NativeType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'mixed';
 
@@ -39,6 +41,16 @@ class MixedType extends NativeType
      * @override
      */
     public function canCastToAnyTypeInSet(array $target_type_set): bool
+    {
+        return true;
+    }
+
+    /**
+     * Overridden in NonNullMixedType and NonEmptyMixedType
+     * @unused-param $type
+     * @override
+     */
+    public function canCastToTypeWithoutConfig(Type $type): bool
     {
         return true;
     }

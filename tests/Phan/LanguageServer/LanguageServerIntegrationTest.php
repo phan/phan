@@ -20,6 +20,7 @@ use RuntimeException;
 use stdClass;
 
 use function is_array;
+use function ksort;
 use function strlen;
 
 /**
@@ -301,7 +302,7 @@ EOT;
             // NOTE: Line numbers are 0-based for Position
             $assert_has_definition = function (Position $position, int $line) use ($proc_in, $proc_out, &$id): void {
                 $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
-                $this->assertSame([
+                $this->assertSameUnorderedArray([
                     'result' => [
                         [
                             'uri' => self::getDefaultFileURI(),
@@ -386,8 +387,7 @@ EOT;
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ];
-            $this->assertSame($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
-            $this->assertSame($expected_completion_response, $completion_response);
+            $this->assertSameUnorderedArray($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -1271,7 +1271,7 @@ EOT
 
             $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"' . ' at "' . \substr($cur_line, $position->character, 10) . '"';
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_definition_response, $definition_response, $message);
+            $this->assertSameUnorderedArray($expected_definition_response, $definition_response, $message);
 
             // This operation should be idempotent.
             // If it's repeated, it should give the same response
@@ -1280,7 +1280,7 @@ EOT
 
             $definition_response = $perform_definition_request();
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_definition_response, $definition_response, $message);
+            $this->assertSameUnorderedArray($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -1354,7 +1354,7 @@ EOT
                 (string)\substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_definition_response, $definition_response, $message);
+            $this->assertSameUnorderedArray($expected_definition_response, $definition_response, $message);
 
             // This operation should be idempotent.
             // If it's repeated, it should give the same response
@@ -1363,7 +1363,7 @@ EOT
 
             $definition_response = $perform_definition_request();
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_definition_response, $definition_response, $message);
+            $this->assertSameUnorderedArray($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -1433,7 +1433,7 @@ EOT
                 (string)\substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_hover_response, $hover_response, $message);
+            $this->assertSameUnorderedArray($expected_hover_response, $hover_response, $message);
 
             // This operation should be idempotent.
             // If it's repeated, it should give the same response
@@ -1443,7 +1443,7 @@ EOT
 
             $hover_response = $perform_hover_request(true);
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
-            $this->assertSame($expected_hover_response, $hover_response, $message);
+            $this->assertSameUnorderedArray($expected_hover_response, $hover_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -1786,7 +1786,21 @@ EOT;
             'id' => 1,
             'jsonrpc' => '2.0'
         ];
-        $this->assertSame($expected_response, $response);
+        $this->assertSameUnorderedArray($expected_response, $response);
+    }
+
+    /**
+     * Assert that an array has the same fields.
+     * Note that the order of json_encode on class properties changed in php 8.1 to save memory
+     *
+     * @param array<string,mixed> $expected_response
+     * @param array<string,mixed> $response
+     */
+    private function assertSameUnorderedArray(array $expected_response, array $response, string $message = ''): void
+    {
+        ksort($expected_response);
+        ksort($response);
+        $this->assertSame($expected_response, $response, $message);
     }
 
     /**
@@ -1916,7 +1930,7 @@ EOT;
             'id' => $this->messageId,
             'jsonrpc' => '2.0'
         ];
-        $this->assertSame($expected_response, $response);
+        $this->assertSameUnorderedArray($expected_response, $response);
     }
 
     /**

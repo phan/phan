@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 class IterableType extends NativeType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'iterable';
 

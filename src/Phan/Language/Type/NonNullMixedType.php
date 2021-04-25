@@ -16,6 +16,8 @@ use Phan\Language\Type;
  */
 final class NonNullMixedType extends MixedType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'non-null-mixed';
 
@@ -48,7 +50,15 @@ final class NonNullMixedType extends MixedType
                 return true;
             }
         }
-        return (bool)$target_type_set;
+        return \count($target_type_set) === 0;
+    }
+
+    /**
+     * @override
+     */
+    public function canCastToTypeWithoutConfig(Type $type): bool
+    {
+        return !$type->isNullable();
     }
 
     public function asGenericArrayType(int $key_type): Type
@@ -99,5 +109,12 @@ final class NonNullMixedType extends MixedType
     public function weaklyOverlaps(Type $other): bool
     {
         return !$other instanceof NullType && !$other instanceof VoidType;
+    }
+
+    /**
+     * @override
+     */
+    public function withIsNullable(bool $is_nullable): Type {
+        return $is_nullable ? MixedType::instance(true) : $this;
     }
 }

@@ -1,3 +1,5 @@
-%s:45 PhanTypeMismatchReturn Returning new Test((rand(0, 1) ? new \stdClass() : null))->value of type \stdClass but example() is declared to return ?int
-%s:47 PhanTypeMismatchReturn Returning $t->value of type string but example() is declared to return ?int
-%s:49 PhanTypeMismatchReturn Returning Test::notNull($s) of type string but example() is declared to return ?int
+%s:55 PhanImpossibleTypeComparison Impossible attempt to check if null of type null is identical to $subject of type non-null-mixed
+%s:66 PhanTypeMismatchReturn Returning new Test((rand(0, 1) ? new \stdClass() : null))->value of type \stdClass but example() is declared to return ?int
+%s:68 PhanTypeMismatchReturn Returning $t->value of type string but example() is declared to return ?int
+%s:71 PhanTypeMismatchReturn Returning Test::notNullV2($s) of type ?string but example() is declared to return ?int
+%s:73 PhanTypeMismatchReturn Returning Test::notNull($s) of type string but example() is declared to return ?int

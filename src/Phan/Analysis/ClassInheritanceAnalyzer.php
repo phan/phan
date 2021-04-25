@@ -152,6 +152,7 @@ class ClassInheritanceAnalyzer
                 (string)$target_class->getFileRef()->getLineNumberStart()
             );
         }
+        $target_class_fqsen = $target_class->getFQSEN();
         if ($target_class->isDeprecated()) {
             if ($target_class->isTrait()) {
                 $issue_type = Issue::DeprecatedTrait;
@@ -165,11 +166,25 @@ class ClassInheritanceAnalyzer
                 $source_class->getInternalContext(),
                 $issue_type,
                 $source_class->getFileRef()->getLineNumberStart(),
-                $target_class->getFQSEN(),
+                $target_class_fqsen,
                 $target_class->getContext()->getFile(),
                 $target_class->getContext()->getLineNumberStart(),
                 $target_class->getDeprecationReason()
             );
+        }
+        // TODO: Make this also work for classes implementing an interface that extends Serializable.
+        if (!$source_class->isInterface() &&
+            $target_class_fqsen->getName() === 'Serializable' && $target_class_fqsen->getNamespace() === '\\') {
+            // Must define both __serialize and __unserialize to suppress php 8.1's warning.
+            if (!$source_class->hasMethodWithName($code_base, '__serialize', true) || !$source_class->hasMethodWithName($code_base, '__unserialize', true)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $source_class->getInternalContext(),
+                    Issue::CompatibleSerializeInterfaceDeprecated,
+                    $source_class->getFileRef()->getLineNumberStart(),
+                    $target_class_fqsen
+                );
+            }
         }
     }
 }

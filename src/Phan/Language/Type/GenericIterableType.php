@@ -25,6 +25,8 @@ use function json_encode;
  */
 final class GenericIterableType extends IterableType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'iterable';
 

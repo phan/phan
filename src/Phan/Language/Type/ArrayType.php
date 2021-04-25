@@ -17,6 +17,8 @@ use Phan\Language\UnionType;
  */
 class ArrayType extends IterableType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'array';
 

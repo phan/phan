@@ -624,6 +624,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names
 ```
 
+## PhanCompatibleSerializeInterfaceDeprecated
+
+```
+The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {{CLASS}} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/files/expected/0133_unserialize_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/files/src/0133_unserialize_types.php#L3).
+
 ## PhanCompatibleShortArrayAssignPHP70
 
 ```
@@ -1957,6 +1965,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/files/expected/0133_unserialize_types.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/files/src/0133_unserialize_types.php#L8).
 
 ## PhanParamSignatureRealMismatchHasParamType
 

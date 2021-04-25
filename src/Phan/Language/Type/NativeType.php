@@ -25,34 +25,6 @@ abstract class NativeType extends Type
     /** @phan-override */
     public const KEY_PREFIX = '!';
 
-    /**
-     * @param bool $is_nullable
-     * If true, returns a nullable instance of this native type
-     *
-     * @return static
-     * Returns a nullable/non-nullable instance of this native type (possibly unchanged)
-     */
-    public static function instance(bool $is_nullable)
-    {
-        if ($is_nullable) {
-            static $nullable_instance = null;
-
-            if ($nullable_instance === null) {
-                $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_NODE);
-            }
-
-            return $nullable_instance;
-        }
-
-        static $instance = null;
-
-        if ($instance === null) {
-            $instance = static::make('\\', static::NAME, [], false, Type::FROM_NODE);
-        }
-
-        return $instance;
-    }
-
     public function isNativeType(): bool
     {
         return true;

@@ -18,6 +18,8 @@ use Phan\Language\UnionType;
  */
 final class StaticType extends StaticOrSelfType
 {
+    use NativeTypeTrait;
+
     /** Not an override */
     public const NAME = 'static';
 

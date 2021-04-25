@@ -986,9 +986,10 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        if (Config::getValue('processes') !== 1
-            && Config::getValue('dead_code_detection')) {
-            throw new AssertionError("We cannot run dead code detection on more than one core.");
+        if (Config::getValue('processes') !== 1) {
+            if (Config::getValue('dead_code_detection')) {
+                throw new AssertionError("We cannot run dead code detection on more than one core.");
+            }
         }
         self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();

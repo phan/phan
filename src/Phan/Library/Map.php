@@ -85,6 +85,7 @@ class Map extends SplObjectStorage
             /**
              * @param K|V $element
              * @return K|V
+             * @suppress PhanTypePossiblyInvalidCloneNotObject phan does not support base types of template types yet.
              */
             static function ($element) {
                 return clone($element);

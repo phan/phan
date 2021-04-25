@@ -14,6 +14,8 @@ use Phan\Language\Type;
  */
 class ObjectType extends NativeType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'object';
 

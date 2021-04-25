@@ -16,6 +16,8 @@ use Phan\Language\Type;
  */
 final class CallableObjectType extends ObjectType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'callable-object';
 

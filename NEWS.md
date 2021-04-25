@@ -3,6 +3,16 @@ Phan NEWS
 ??? ?? 2021, Phan 4.0.5 (dev)
 -----------------------
 
+New Features (Analysis):
++ Fix handling of some redundant condition checks involving `non-null-mixed` and `null` (#4388)
++ Emit `PhanCompatibleSerializeInterfaceDeprecated` when a class implements Serializable without also implementing the `__serialize` and `__unserialize` methods as well. (#4387)
+  PHP 8.1 deprecates the `Serializable` interface when `__serialize` and `__unserialize` aren't also implemented to be used instead of `serialize`/`unserialize`.
+
+Maintenance:
++ Warn about running phan with multiple processes without pcntl before the analysis phase starts.
++ Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
++ Use different static variables in different subclasses of `Phan\Language\Type` to account for changes in static variable inheritance in php 8.1. (#4379)
+
 Bug fixes:
 + Allow `?T` to be used in parameter/property types with `@template T` (#4388)
 

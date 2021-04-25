@@ -18,6 +18,8 @@ use Phan\Language\Type;
  */
 final class TrueType extends ScalarType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'true';
 

@@ -15,6 +15,8 @@ use Phan\Language\Type;
  */
 final class ClosureDeclarationType extends FunctionLikeDeclarationType
 {
+    use NativeTypeTrait;
+
     /** @override */
     public const NAME = 'Closure';
 

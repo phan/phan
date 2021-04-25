@@ -47,23 +47,39 @@ class NamespaceMapEntry implements \Serializable
 
     public function serialize(): string
     {
-        return \serialize([
-            \get_class($this->fqsen),
-            (string)$this->fqsen,
-            $this->original_name,
-            $this->lineno,
-            $this->is_used
-        ]);
+        return \serialize($this->__serialize());
     }
 
     /**
      * @param string $representation
-     * @suppress PhanAccessReadOnlyProperty TODO fix #3179
      * TODO add implementation of __serialize/__unserialize to ensure compatibility with php 7.4
      */
     public function unserialize($representation): void
     {
-        [$fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used] = \unserialize($representation);
+        $this->__unserialize(\unserialize($representation));
+    }
+
+    /**
+     * @return array{0:string, 1:string, 2:string, 3:int, 4:bool}
+     */
+    public function __serialize(): array
+    {
+        return [
+            \get_class($this->fqsen),
+            (string)$this->fqsen,
+            $this->original_name,
+            $this->lineno,
+            $this->is_used,
+        ];
+    }
+
+
+    /**
+     * @param array{0:string, 1:string, 2:string, 3:int, 4:bool} $representation
+     * @suppress PhanAccessReadOnlyProperty TODO fix #3179
+     */
+    public function __unserialize(array $representation): void {
+        [$fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used] = $representation;
         if (!\is_string($fqsen_class)) {
             throw new RuntimeException("Failed to unserialize a string from the representation");
         }

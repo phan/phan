@@ -15,6 +15,8 @@ use Phan\Language\Type;
  */
 final class NonZeroIntType extends IntType
 {
+    use NativeTypeTrait;
+
     public const NAME = 'non-zero-int';
 
     /** @var int $value */

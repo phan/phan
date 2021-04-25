@@ -14,6 +14,8 @@ use Phan\Language\Type;
  */
 final class ResourceType extends NativeType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'resource';
 

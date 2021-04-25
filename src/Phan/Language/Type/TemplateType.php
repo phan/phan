@@ -244,4 +244,20 @@ final class TemplateType extends Type
     {
         return true;
     }
+
+    public function isNullable(): bool
+    {
+        return true;
+    }
+
+    public function isNullableLabeled(): bool
+    {
+        return $this->is_nullable;
+    }
+
+    /** @unused-param $other */
+    public function weaklyOverlaps(Type $other): bool
+    {
+        return true;
+    }
 }

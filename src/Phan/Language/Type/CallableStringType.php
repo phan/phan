@@ -17,6 +17,8 @@ use Phan\Language\UnionType;
  */
 final class CallableStringType extends StringType implements CallableInterface
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'callable-string';
 

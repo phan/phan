@@ -36,6 +36,27 @@ class Test
         }
         return $subject;
     }
+
+    /**
+     * @template T
+     *
+     * @param T $subject
+     * @return T not able to narrow - need to add null to param type to filter it out
+     * @throws TypeError
+     */
+    public static function notNullV2($subject)
+    {
+        if (null === $subject) {
+            throw new TypeError(sprintf(
+                '%s must not be null.',
+                gettype($subject)
+            ));
+        }
+        if (null === $subject) {
+            throw new \Error('redundant');
+        }
+        return $subject;
+    }
 }
 
 function example(?string $s): ?int {
@@ -45,6 +66,9 @@ function example(?string $s): ?int {
             return (new Test(rand(0, 1) ? new \stdClass() : null))->value;
         }
         return $t->value;
+    }
+    if (rand(0, 1)) {
+        return Test::notNullV2($s);
     }
     return Test::notNull($s);  // should infer string, not ?string
 }

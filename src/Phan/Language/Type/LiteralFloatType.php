@@ -16,6 +16,8 @@ use RuntimeException;
  */
 final class LiteralFloatType extends FloatType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
+
     /** @var float $value */
     private $value;
 

@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 final class VoidType extends NativeType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'void';
 
