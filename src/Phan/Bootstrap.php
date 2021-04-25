@@ -346,6 +346,13 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Constants such as ENCHANT can be deprecated when calling constant()
         return true;
     }
+    if ($errno === E_DEPRECATED && preg_match('/^The Serializable interface is deprecated/', $errstr)) {
+        if (preg_match('@/vendor/phpunit/@', $errfile)) {
+            // Suppress deprecation notices running phpunit in php 8.1 with the Serializable interface.
+            // phpunit 8 stopped being maintained before Serializable was deprecated.
+            return true;
+        }
+    }
     if ($errno === E_NOTICE && preg_match('/^(iconv_strlen)/', $errstr)) {
         // Suppress deprecation notices in symfony/polyfill-mbstring
         return true;
