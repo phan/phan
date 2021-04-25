@@ -580,7 +580,8 @@ class Issue
     public const CompatibleTrailingCommaParameterList = 'PhanCompatibleTrailingCommaParameterList';
     public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
     public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
-    public const CompatibleConstructorPropertyPromotion = 'PhanCompatibleConstructorPropertyPromotion';
+    public const CompatibleConstructorPropertyPromotion  = 'PhanCompatibleConstructorPropertyPromotion';
+    public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -5007,6 +5008,14 @@ class Issue
                 "Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable",
                 self::REMEDIATION_B,
                 3040
+            ),
+            new Issue(
+                self::CompatibleSerializeInterfaceDeprecated,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {{CLASS}} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
+                self::REMEDIATION_B,
+                3042
             ),
 
             // Issue::CATEGORY_GENERIC

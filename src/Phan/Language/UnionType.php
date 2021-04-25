@@ -4602,6 +4602,35 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * @return array{0: string, 1?: string}
+     */
+    public function __serialize(): array
+    {
+        if ($this->real_type_set) {
+            return [(string)$this, \implode('|', $this->real_type_set)];
+        }
+        return [(string)$this];
+    }
+
+    /**
+     * @param array{0: string, 1?: string} $data
+     * @suppress PhanAccessReadOnlyProperty this unserializes
+     */
+    public function __unserialize(array $data): void
+    {
+        if (isset($data[1])) {
+            $result = UnionType::fromFullyQualifiedPHPDocAndRealString(
+                $data[0],
+                $data[1]
+            );
+            $this->type_set = $result->getTypeSet();
+            $this->real_type_set = $result->getRealTypeSet();
+            return;
+        }
+        $this->type_set = UnionType::fromFullyQualifiedPHPDocString($data[0])->getTypeSet();
+    }
+
+    /**
      * @return string
      * A human-readable string representation of this union
      * type

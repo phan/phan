@@ -5,6 +5,11 @@ Phan NEWS
 
 New Features (Analysis):
 + Fix handling of some redundant condition checks involving `non-null-mixed` and `null` (#4388)
++ Emit `PhanCompatibleSerializeInterfaceDeprecated` when a class implements Serializable without also implementing the `__serialize` and `__unserialize` methods as well. (#4387)
+  PHP 8.1 deprecates the `Serializable` interface when `__serialize` and `__unserialize` aren't also implemented to be used instead of `serialize`/`unserialize`.
+
+  Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
+
 
 Bug fixes:
 + Allow `?T` to be used in parameter/property types with `@template T` (#4388)
