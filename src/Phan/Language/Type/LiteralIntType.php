@@ -16,6 +16,8 @@ use RuntimeException;
  */
 final class LiteralIntType extends IntType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
+
     /** @var int $value */
     private $value;
 

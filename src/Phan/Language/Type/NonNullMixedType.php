@@ -16,6 +16,8 @@ use Phan\Language\Type;
  */
 final class NonNullMixedType extends MixedType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'non-null-mixed';
 

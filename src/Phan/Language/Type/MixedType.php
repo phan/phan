@@ -19,6 +19,8 @@ use function class_exists;
  */
 class MixedType extends NativeType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'mixed';
 

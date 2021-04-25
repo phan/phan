@@ -8,8 +8,9 @@ New Features (Analysis):
 + Emit `PhanCompatibleSerializeInterfaceDeprecated` when a class implements Serializable without also implementing the `__serialize` and `__unserialize` methods as well. (#4387)
   PHP 8.1 deprecates the `Serializable` interface when `__serialize` and `__unserialize` aren't also implemented to be used instead of `serialize`/`unserialize`.
 
-  Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
-
+Maintenance:
++ Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
++ Use different static variables in different subclasses of `Phan\Language\Type` to account for changes in static variable inheritance in php 8.1.
 
 Bug fixes:
 + Allow `?T` to be used in parameter/property types with `@template T` (#4388)

@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 final class NullType extends ScalarType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'null';
 

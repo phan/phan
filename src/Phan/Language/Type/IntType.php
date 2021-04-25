@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 class IntType extends ScalarType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'int';
 

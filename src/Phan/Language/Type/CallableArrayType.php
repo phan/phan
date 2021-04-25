@@ -17,6 +17,8 @@ use Phan\Language\UnionType;
  */
 class CallableArrayType extends ArrayType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'callable-array';
 

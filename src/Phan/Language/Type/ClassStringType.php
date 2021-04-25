@@ -18,6 +18,8 @@ use Phan\Language\UnionType;
  */
 final class ClassStringType extends StringType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'class-string';
 

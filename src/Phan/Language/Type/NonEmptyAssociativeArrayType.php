@@ -15,6 +15,8 @@ use Phan\Language\Type;
  */
 final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements NonEmptyArrayInterface
 {
+    use NativeTypeTrait;
+
     /**
      * @override
      */

@@ -15,6 +15,8 @@ use Phan\Language\Type;
  */
 final class NonEmptyGenericArrayType extends GenericArrayType implements NonEmptyArrayInterface
 {
+    use NativeTypeTrait;
+
     /**
      * @override
      * @return NonEmptyGenericArrayType

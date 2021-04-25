@@ -18,6 +18,8 @@ use Phan\Language\Type;
  */
 final class BoolType extends ScalarType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'bool';
     public function isPossiblyFalsey(): bool

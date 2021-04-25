@@ -17,6 +17,8 @@ use Phan\Language\UnionType;
  */
 class StringType extends ScalarType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'string';
 

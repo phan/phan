@@ -14,6 +14,8 @@ use Phan\Language\Type;
  */
 final class NonEmptyStringType extends StringType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'non-empty-string';
 

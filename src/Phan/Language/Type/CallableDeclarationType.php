@@ -12,6 +12,8 @@ use Phan\Language\Type;
  */
 final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {
+    use NativeTypeTrait;
+
     /** @override */
     public const NAME = 'callable';
 

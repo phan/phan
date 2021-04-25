@@ -15,6 +15,8 @@ use Phan\Language\Type;
  */
 final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
 {
+    use NativeTypeTrait;
+
     /**
      * @override
      * @unused-param $key_type

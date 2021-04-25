@@ -16,6 +16,8 @@ use Phan\Language\UnionType;
  */
 class FloatType extends ScalarType
 {
+    use NativeTypeTrait;
+
     /** @phan-override */
     public const NAME = 'float';
 

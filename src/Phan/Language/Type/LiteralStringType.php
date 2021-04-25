@@ -26,6 +26,7 @@ use const FILTER_VALIDATE_INT;
  */
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
+    use NativeTypeTrait;
 
     public const MINIMUM_MAX_STRING_LENGTH = 50;
 

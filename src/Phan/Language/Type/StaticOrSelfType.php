@@ -13,7 +13,7 @@ use Phan\Language\Type;
  * @see self::withStaticResolvedInContext()
  * @phan-pure
  */
-class StaticOrSelfType extends Type
+abstract class StaticOrSelfType extends Type
 {
     /**
      * @unused-param $code_base

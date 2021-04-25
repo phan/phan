@@ -17,6 +17,8 @@ use Phan\Language\UnionType;
  */
 abstract class ScalarType extends NativeType
 {
+    use NativeTypeTrait;
+
     public function isScalar(): bool
     {
         return true;
