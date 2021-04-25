@@ -10,7 +10,7 @@ New Features (Analysis):
 
 Maintenance:
 + Start implementing `__serialize`/`__unserialize` in Phan itself in places that use `Serializable`.
-+ Use different static variables in different subclasses of `Phan\Language\Type` to account for changes in static variable inheritance in php 8.1.
++ Use different static variables in different subclasses of `Phan\Language\Type` to account for changes in static variable inheritance in php 8.1. (#4379)
 
 Bug fixes:
 + Allow `?T` to be used in parameter/property types with `@template T` (#4388)
