@@ -987,9 +987,6 @@ class CLI
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
         if (Config::getValue('processes') !== 1) {
-            if (!\extension_loaded('pcntl')) {
-                throw new AssertionError('The pcntl extension must be loaded in order for Phan to be able to fork.');
-            }
             if (Config::getValue('dead_code_detection')) {
                 throw new AssertionError("We cannot run dead code detection on more than one core.");
             }

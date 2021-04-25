@@ -236,6 +236,11 @@ class Phan implements IgnoredFilesFilterInterface
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         Config::warnIfInvalid();
+        if (Config::getValue('processes') !== 1) {
+            if (!\extension_loaded('pcntl')) {
+                throw new AssertionError('The pcntl extension must be loaded in order for Phan to be able to fork.');
+            }
+        }
         self::loadConfiguredPHPExtensionStubs($code_base);
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
         $language_server_config = Config::getValue('language_server_config');
