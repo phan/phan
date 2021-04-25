@@ -86,24 +86,28 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         );
 
         // NOTE: This is done to avoid ParseError in php-ast
+        $suffixes = [];
         if (\PHP_VERSION_ID < 70200) {
-            $suffix = '71';
+            $suffixes[] = '71';
         } elseif (\PHP_VERSION_ID >= 80000) {
-            $suffix = '80';
+            if (\PHP_VERSION_ID >= 80100) {
+                $suffixes[] = '81';
+            }
+            $suffixes[] = '80';
         } elseif (\PHP_VERSION_ID >= 70400) {
-            $suffix = '74';
+            $suffixes[] = '74';
         } else {
-            $suffix = '72';
+            $suffixes[] = '72';
         }
 
         return \array_combine(
             $files,
             \array_map(
                 /** @return array{0:array{0:string},1:string} */
-                static function (string $filename) use ($source_dir, $expected_dir, $suffix): array {
+                static function (string $filename) use ($source_dir, $expected_dir, $suffixes): array {
                     return [
-                        [self::getFileForPHPVersion($source_dir . \DIRECTORY_SEPARATOR . $filename, $suffix)],
-                        self::getFileForPHPVersion($expected_dir . \DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
+                        [self::getFileForPHPVersion($source_dir . \DIRECTORY_SEPARATOR . $filename, ...$suffixes)],
+                        self::getFileForPHPVersion($expected_dir . \DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, ...$suffixes),
                     ];
                 },
                 $files
@@ -111,11 +115,13 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         );
     }
 
-    protected static function getFileForPHPVersion(string $path, string $suffix): string
+    protected static function getFileForPHPVersion(string $path, string... $suffixes): string
     {
-        $suffix_path = $path . $suffix;
-        if (\file_exists($suffix_path)) {
-            return $suffix_path;
+        foreach ($suffixes as $suffix) {
+            $suffix_path = $path . $suffix;
+            if (\file_exists($suffix_path)) {
+                return $suffix_path;
+            }
         }
         return $path;
     }
