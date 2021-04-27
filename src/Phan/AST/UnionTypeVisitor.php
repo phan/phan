@@ -1748,7 +1748,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             if (!$dim_type->isEmpty()) {
                 try {
-                    $should_check = !$union_type->hasMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess();
+                    $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess();
                 } catch (RecursionDepthException $_) {
                     $should_check = false;
                 }
@@ -1815,7 +1815,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
         if ($union_type->isNonNullStringType()
-            || ($union_type->canCastToUnionType($string_union_type) && !$union_type->hasMixedType())
+            || ($union_type->canCastToUnionType($string_union_type) && !$union_type->hasMixedOrNonEmptyMixedType())
         ) {
             if (Config::get_closest_minimum_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
                 $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
@@ -1857,7 +1857,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // ignore
             }
 
-            if (!$union_type->hasArrayLike() && !$union_type->hasMixedType()) {
+            if (!$union_type->hasArrayLike() && !$union_type->hasMixedOrNonEmptyMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
                     $node->lineno,

@@ -1988,7 +1988,7 @@ class UnionType implements Serializable, Stringable
         if ($other->isEmpty()) {
             return true;
         }
-        if ($this->isEmpty() || $this->hasMixedType()) {
+        if ($this->isEmpty() || $this->hasMixedTypeStrict()) {
             return false;
         }
         foreach ($this->type_set as $type) {
@@ -5244,8 +5244,34 @@ class UnionType implements Serializable, Stringable
 
     /**
      * @return bool true if at least one of the types in this type set is `mixed` or `?mixed`
+     *              Returns true for `non-null-mixed` and `non-empty-mixed` as well.
+     * @deprecated this function was added before `non-null-mixed`
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasMixedType(): bool
+    {
+        return $this->hasMixedOrNonEmptyMixedType();
+    }
+
+    /**
+     * @return bool true if at least one of the types in this type set is `mixed` or `?mixed`
+     *              Returns false for `non-null-mixed` and `non-empty-mixed` because those exclude some types.
+     */
+    public function hasMixedTypeStrict(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if (\get_class($type) === MixedType::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool true if at least one of the types in this type set is `mixed` or `?mixed`
+     *              Returns true for `non-null-mixed` and `non-empty-mixed` as well.
+     */
+    public function hasMixedOrNonEmptyMixedType(): bool
     {
         foreach ($this->type_set as $type) {
             if ($type instanceof MixedType) {

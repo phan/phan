@@ -1,0 +1,2 @@
+%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type array{}|non-null-mixed(real=array{}|non-null-mixed)
+%s:7 PhanImpossibleCondition Impossible attempt to cast $var of type array{}|non-null-mixed to null

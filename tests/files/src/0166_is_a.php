@@ -19,6 +19,8 @@ function check($var) {
 		emitType($var);
 	} elseif (is_integer($var)) {
 		emitType($var);
+	} elseif (rand(0, 1)) {
+		'@phan-debug-var $var';
 	} elseif (is_bool($var)) {
 		emitType($var);
 	} elseif (is_long($var)) {
@@ -33,8 +35,10 @@ function check($var) {
 		emitType($var);
 	} elseif (is_resource($var)) {
 		emitResourceType($var);
+	} elseif (rand(0, 1)) {
+		'@phan-debug-var $var';
 	} elseif (is_scalar($var)) {
-		emitType($var);
+		'@phan-debug-var $var'; emitType($var);
 	} elseif (is_string($var)) {
 		emitType($var);
 	} elseif (is_iterable($var)) {

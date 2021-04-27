@@ -52,11 +52,11 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
          * @param string $expected_type
          * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
          */
-        $make_first_arg_checker = static function (Closure $checker, string $expected_type): Closure {
+        $make_first_arg_checker = static function (Closure $checker, string $expected_type, bool $fail_early_on_non_empty_mixed = true): Closure {
             /**
              * @param list<Node|int|float|string> $args
              */
-            return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($checker, $expected_type): void {
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($checker, $expected_type, $fail_early_on_non_empty_mixed): void {
                 if (count($args) < 1) {
                     return;
                 }
@@ -70,7 +70,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                     return;
                 }
                 $real_union_type = $union_type->getRealUnionType()->withStaticResolvedInContext($context);
-                if ($real_union_type->hasMixedType()) {
+                if ($fail_early_on_non_empty_mixed ? $real_union_type->hasMixedOrNonEmptyMixedType() : $real_union_type->hasMixedTypeStrict()) {
                     return;
                 }
                 $result = $checker($real_union_type);
@@ -164,7 +164,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_REDUNDANT;
             }
             return self::_IS_REASONABLE_CONDITION;
-        }, 'null');
+        }, 'null', false);
         $numeric_callback = $make_first_arg_checker(static function (UnionType $union_type): int {
             $has_non_numeric = false;
             $has_numeric = false;

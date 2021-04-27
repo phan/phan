@@ -1,1 +1,1 @@
-%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $uri - it has union type array{host:''|mixed,scheme:''|mixed}|non-empty-array<mixed,mixed>(real=array{host:''|mixed,scheme:''|mixed}|non-empty-array<mixed,mixed>)
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $uri - it has union type array{host:''|non-null-mixed,scheme:''|non-null-mixed}|non-empty-array<mixed,mixed>(real=array{host:''|non-null-mixed,scheme:''|non-null-mixed}|non-empty-array<mixed,mixed>)

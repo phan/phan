@@ -238,6 +238,11 @@ class MixedType extends NativeType
         }
         return NonNullMixedType::instance(false);
     }
+
+    public function asScalarType(): ?Type
+    {
+        return ScalarType::instance(false);
+    }
 }
 class_exists(NonEmptyMixedType::class);
 class_exists(NonNullMixedType::class);

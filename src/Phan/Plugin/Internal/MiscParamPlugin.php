@@ -131,7 +131,7 @@ final class MiscParamPlugin extends PluginV3 implements
             return false;
         }
         $key_type = $key_type->asRealUnionType();
-        if ($key_type->hasMixedType()) {
+        if ($key_type->hasMixedOrNonEmptyMixedType()) {
             return false;
         }
         $key_can_be_int = $key_type->hasIntType();

@@ -5,15 +5,18 @@
 %s:17 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type float but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:19 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type int but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:21 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type int but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:23 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type bool but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:25 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type int but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:27 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type null but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type float|int|string(real=float|int|string)
-%s:29 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type float|int|string but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:31 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type object but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:33 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type float but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:35 PhanTypeMismatchArgumentReal Argument 1 ($var) is $var of type resource but \emitResourceType() takes string defined at %s:5
-%s:37 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type bool|float|int|string but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:39 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type string but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:41 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type iterable but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:42 PhanUnusedVariable Unused definition of variable $v
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type (empty union type)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type null
+%s:25 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type bool but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:27 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type int but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:29 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type null but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type float|int|string(real=float|int|string)
+%s:31 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type float|int|string but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:33 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type object but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:35 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type float but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:37 PhanTypeMismatchArgumentReal Argument 1 ($var) is $var of type resource but \emitResourceType() takes string defined at %s:5
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type non-null-mixed(real=non-null-mixed)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type non-null-mixed(real=non-null-mixed)
+%s:43 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type string but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:45 PhanTypeMismatchArgumentProbablyReal Argument 1 ($var) is $var of type iterable but \emitType() takes resource (no real type) defined at %s:3 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:46 PhanUnusedVariable Unused definition of variable $v

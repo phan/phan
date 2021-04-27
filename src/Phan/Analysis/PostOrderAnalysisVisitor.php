@@ -276,7 +276,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             $resolved_union_type = $union_type->withStaticResolvedInContext($this->context);
-            if (!$resolved_union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$resolved_union_type->hasMixedType()) {
+            if (!$resolved_union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$resolved_union_type->hasMixedOrNonEmptyMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
                     $node->lineno,
