@@ -227,6 +227,17 @@ class MixedType extends NativeType
     {
         return true;
     }
+
+    public function withIsNullable(bool $is_nullable): Type
+    {
+        if ($is_nullable) {
+            if ($this->is_nullable) {
+                return $this;
+            }
+            return static::instance(false);
+        }
+        return NonNullMixedType::instance(false);
+    }
 }
 class_exists(NonEmptyMixedType::class);
 class_exists(NonNullMixedType::class);

@@ -122,4 +122,15 @@ final class NonEmptyMixedType extends MixedType
     {
         return $other->isPossiblyTruthy();
     }
+
+    public function withIsNullable(bool $is_nullable): Type
+    {
+        if ($is_nullable) {
+            if ($this->is_nullable) {
+                return $this;
+            }
+            return static::instance(false);
+        }
+        return NonNullMixedType::instance(false);
+    }
 }
