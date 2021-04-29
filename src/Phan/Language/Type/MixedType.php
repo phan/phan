@@ -241,7 +241,7 @@ class MixedType extends NativeType
 
     public function asScalarType(): ?Type
     {
-        return ScalarType::instance(false);
+        return ScalarRawType::instance(false);
     }
 }
 class_exists(NonEmptyMixedType::class);
