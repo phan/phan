@@ -108,6 +108,8 @@ Shim::load();
  */
 class TolerantASTConverter
 {
+    use TolerantASTConverterTrait;
+
     // The latest stable version of php-ast.
     // For something != 80, update the library's release.
     public const AST_VERSION = 80;
@@ -130,6 +132,93 @@ class TolerantASTConverter
     public const INCOMPLETE_PROPERTY = '__INCOMPLETE_PROPERTY__';
     public const INCOMPLETE_VARIABLE = '__INCOMPLETE_VARIABLE__';
 
+    private const CAST_EXPRESSION_TYPE_LOOKUP = [
+        // From Parser->parseCastExpression()
+        TokenKind::ArrayCastToken   => flags\TYPE_ARRAY,
+        TokenKind::BoolCastToken    => flags\TYPE_BOOL,
+        TokenKind::DoubleCastToken  => flags\TYPE_DOUBLE,
+        TokenKind::IntCastToken     => flags\TYPE_LONG,
+        TokenKind::ObjectCastToken  => flags\TYPE_OBJECT,
+        TokenKind::StringCastToken  => flags\TYPE_STRING,
+        TokenKind::UnsetCastToken   => flags\TYPE_NULL,
+
+        // From Parser->parseCastExpressionGranular()
+        // This is a syntax error, but try to match what the intent was
+        TokenKind::ArrayKeyword         => flags\TYPE_ARRAY,
+        TokenKind::BinaryReservedWord   => flags\TYPE_STRING,
+        TokenKind::BoolReservedWord     => flags\TYPE_BOOL,
+        TokenKind::BooleanReservedWord  => flags\TYPE_BOOL,
+        TokenKind::DoubleReservedWord   => flags\TYPE_DOUBLE,
+        TokenKind::IntReservedWord      => flags\TYPE_LONG,
+        TokenKind::IntegerReservedWord  => flags\TYPE_LONG,
+        TokenKind::FloatReservedWord    => flags\TYPE_DOUBLE,
+        TokenKind::ObjectReservedWord   => flags\TYPE_OBJECT,
+        TokenKind::RealReservedWord     => flags\TYPE_DOUBLE,
+        TokenKind::StringReservedWord   => flags\TYPE_STRING,
+        TokenKind::UnsetKeyword         => flags\TYPE_NULL,
+        TokenKind::StaticKeyword        => flags\TYPE_STATIC,
+    ];
+
+    private const UNARY_OP_EXPRESSION_LOOKUP = [
+        TokenKind::TildeToken                   => flags\UNARY_BITWISE_NOT,
+        TokenKind::MinusToken                   => flags\UNARY_MINUS,
+        TokenKind::PlusToken                    => flags\UNARY_PLUS,
+        TokenKind::ExclamationToken             => flags\UNARY_BOOL_NOT,
+        // ErrorControlExpression is separate from UnaryOpExpression
+    ];
+
+    private const BINARY_EXPRESSION_LOOKUP = [
+        TokenKind::AmpersandAmpersandToken              => flags\BINARY_BOOL_AND,
+        TokenKind::AmpersandToken                       => flags\BINARY_BITWISE_AND,
+        TokenKind::AndKeyword                           => flags\BINARY_BOOL_AND,
+        TokenKind::AsteriskAsteriskToken                => flags\BINARY_POW,
+        TokenKind::AsteriskToken                        => flags\BINARY_MUL,
+        TokenKind::BarBarToken                          => flags\BINARY_BOOL_OR,
+        TokenKind::BarToken                             => flags\BINARY_BITWISE_OR,
+        TokenKind::CaretToken                           => flags\BINARY_BITWISE_XOR,
+        TokenKind::DotToken                             => flags\BINARY_CONCAT,
+        TokenKind::EqualsEqualsEqualsToken              => flags\BINARY_IS_IDENTICAL,
+        TokenKind::EqualsEqualsToken                    => flags\BINARY_IS_EQUAL,
+        TokenKind::ExclamationEqualsEqualsToken         => flags\BINARY_IS_NOT_IDENTICAL,
+        TokenKind::ExclamationEqualsToken               => flags\BINARY_IS_NOT_EQUAL,
+        TokenKind::GreaterThanEqualsToken               => flags\BINARY_IS_GREATER_OR_EQUAL,
+        TokenKind::GreaterThanGreaterThanToken          => flags\BINARY_SHIFT_RIGHT,
+        TokenKind::GreaterThanToken                     => flags\BINARY_IS_GREATER,
+        TokenKind::LessThanEqualsGreaterThanToken       => flags\BINARY_SPACESHIP,
+        TokenKind::LessThanEqualsToken                  => flags\BINARY_IS_SMALLER_OR_EQUAL,
+        TokenKind::LessThanLessThanToken                => flags\BINARY_SHIFT_LEFT,
+        TokenKind::LessThanToken                        => flags\BINARY_IS_SMALLER,
+        TokenKind::MinusToken                           => flags\BINARY_SUB,
+        TokenKind::OrKeyword                            => flags\BINARY_BOOL_OR,
+        TokenKind::PercentToken                         => flags\BINARY_MOD,
+        TokenKind::PlusToken                            => flags\BINARY_ADD,
+        TokenKind::QuestionQuestionToken                => flags\BINARY_COALESCE,
+        TokenKind::SlashToken                           => flags\BINARY_DIV,
+        TokenKind::XorKeyword                           => flags\BINARY_BOOL_XOR,
+    ];
+
+    private const BINARY_ASSIGN_EXPRESSION_LOOKUP = [
+        TokenKind::AmpersandEqualsToken                 => flags\BINARY_BITWISE_AND,
+        TokenKind::AsteriskAsteriskEqualsToken          => flags\BINARY_POW,
+        TokenKind::AsteriskEqualsToken                  => flags\BINARY_MUL,
+        TokenKind::BarEqualsToken                       => flags\BINARY_BITWISE_OR,
+        TokenKind::CaretEqualsToken                     => flags\BINARY_BITWISE_XOR,
+        TokenKind::DotEqualsToken                       => flags\BINARY_CONCAT,
+        TokenKind::MinusEqualsToken                     => flags\BINARY_SUB,
+        TokenKind::PercentEqualsToken                   => flags\BINARY_MOD,
+        TokenKind::PlusEqualsToken                      => flags\BINARY_ADD,
+        TokenKind::SlashEqualsToken                     => flags\BINARY_DIV,
+        TokenKind::GreaterThanGreaterThanEqualsToken    => flags\BINARY_SHIFT_RIGHT,
+        TokenKind::LessThanLessThanEqualsToken          => flags\BINARY_SHIFT_LEFT,
+        TokenKind::QuestionQuestionEqualsToken          => flags\BINARY_COALESCE,
+    ];
+
+    /**
+     * @var FilePositionMap maps byte offsets of the currently parsed file to line numbers.
+     * @internal
+     */
+    public static $file_position_map;
+
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
      */
@@ -145,9 +234,6 @@ class TolerantASTConverter
 
     /** @var string the contents of the file currently being parsed */
     protected static $file_contents = '';
-
-    /** @var FilePositionMap maps byte offsets of the currently parsed file to line numbers */
-    protected static $file_position_map;
 
     /** @var bool Sets equivalent static option in self::_start_parsing() */
     protected $instance_should_add_placeholders = false;
@@ -289,8 +375,9 @@ class TolerantASTConverter
     /**
      * @param null|bool|int|string|PhpParser\Node|Token|(PhpParser\Node|Token)[] $n
      * @throws Exception if node is invalid
+     * @internal
      */
-    protected static function debugDumpNodeOrToken($n): string
+    public static function debugDumpNodeOrToken($n): string
     {
         if (\is_scalar($n)) {
             return var_export($n, true);
@@ -477,37 +564,6 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
-     *                                                          This does not convert names to ast\AST_CONST.
-     * @throws InvalidArgumentException if Phan doesn't know what $n is
-     */
-    protected static function phpParserNonValueNodeToAstNode($n)
-    {
-        static $callback_map;
-        static $fallback_closure;
-        if (\is_null($callback_map)) {
-            $callback_map = static::initHandleMap();
-            /**
-             * @param PhpParser\Node|Token $n
-             * @return ast\Node - Not a real node, but a node indicating the TODO
-             * @throws InvalidArgumentException for invalid node classes
-             * @throws Error if the environment variable AST_THROW_INVALID is set (for debugging)
-             */
-            $fallback_closure = static function ($n, int $unused_start_line): \ast\Node {
-                if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    // @phan-suppress-next-line PhanThrowTypeMismatchForCall debugDumpNodeOrToken can throw
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
-                }
-                return static::astStub($n);
-            };
-        }
-        $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        // @phan-suppress-next-line PhanThrowTypeMismatch
-        return $callback($n, self::getStartLine($n));
-    }
-
-    /**
-     * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
      *                                                          Generates a valid placeholder for invalid nodes if $should_add_placeholders is true.
      * @throws InvalidNodeException when self::$should_add_placeholders is false, like many of these methods.
      */
@@ -521,39 +577,6 @@ class TolerantASTConverter
         } catch (InvalidNodeException $_) {
             return static::newPlaceholderExpression($n);
         }
-    }
-
-    /**
-     * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
-     */
-    protected static function phpParserNodeToAstNode($n)
-    {
-        static $callback_map;
-        static $fallback_closure;
-        if (\is_null($callback_map)) {
-            $callback_map = static::initHandleMap();
-            /**
-             * @param PhpParser\Node|Token $n
-             * @return ast\Node - Not a real node, but a node indicating the TODO
-             * @throws InvalidArgumentException|Exception for invalid node classes
-             * @throws Error if the environment variable AST_THROW_INVALID is set to debug.
-             */
-            $fallback_closure = static function ($n, int $unused_start_line): \ast\Node {
-                if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
-                }
-
-                return static::astStub($n);
-            };
-        }
-        $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        // @phan-suppress-next-line PhanThrowTypeAbsent
-        $result = $callback($n, self::$file_position_map->getStartLine($n));
-        if (($result instanceof ast\Node) && $result->kind === ast\AST_NAME) {
-            return new ast\Node(ast\AST_CONST, 0, ['name' => $result], $result->lineno);
-        }
-        return $result;
     }
 
     /**
@@ -592,6 +615,8 @@ class TolerantASTConverter
      * - There are a lot of local variables to look at.
      *
      * @return array<string,Closure(object,int):(\ast\Node|int|string|float|null)>
+     *
+     * NOTE: Make sure that the only caller of this is TolerantASTConverterTrait
      */
     protected static function initHandleMap(): array
     {
@@ -653,50 +678,6 @@ class TolerantASTConverter
              * @return ast\Node|string|float|int (can return a non-Node if the left or right-hand side could not be parsed
              */
             'Microsoft\PhpParser\Node\Expression\BinaryExpression' => static function (PhpParser\Node\Expression\BinaryExpression $n, int $start_line) {
-                static $lookup = [
-                    TokenKind::AmpersandAmpersandToken              => flags\BINARY_BOOL_AND,
-                    TokenKind::AmpersandToken                       => flags\BINARY_BITWISE_AND,
-                    TokenKind::AndKeyword                           => flags\BINARY_BOOL_AND,
-                    TokenKind::AsteriskAsteriskToken                => flags\BINARY_POW,
-                    TokenKind::AsteriskToken                        => flags\BINARY_MUL,
-                    TokenKind::BarBarToken                          => flags\BINARY_BOOL_OR,
-                    TokenKind::BarToken                             => flags\BINARY_BITWISE_OR,
-                    TokenKind::CaretToken                           => flags\BINARY_BITWISE_XOR,
-                    TokenKind::DotToken                             => flags\BINARY_CONCAT,
-                    TokenKind::EqualsEqualsEqualsToken              => flags\BINARY_IS_IDENTICAL,
-                    TokenKind::EqualsEqualsToken                    => flags\BINARY_IS_EQUAL,
-                    TokenKind::ExclamationEqualsEqualsToken         => flags\BINARY_IS_NOT_IDENTICAL,
-                    TokenKind::ExclamationEqualsToken               => flags\BINARY_IS_NOT_EQUAL,
-                    TokenKind::GreaterThanEqualsToken               => flags\BINARY_IS_GREATER_OR_EQUAL,
-                    TokenKind::GreaterThanGreaterThanToken          => flags\BINARY_SHIFT_RIGHT,
-                    TokenKind::GreaterThanToken                     => flags\BINARY_IS_GREATER,
-                    TokenKind::LessThanEqualsGreaterThanToken       => flags\BINARY_SPACESHIP,
-                    TokenKind::LessThanEqualsToken                  => flags\BINARY_IS_SMALLER_OR_EQUAL,
-                    TokenKind::LessThanLessThanToken                => flags\BINARY_SHIFT_LEFT,
-                    TokenKind::LessThanToken                        => flags\BINARY_IS_SMALLER,
-                    TokenKind::MinusToken                           => flags\BINARY_SUB,
-                    TokenKind::OrKeyword                            => flags\BINARY_BOOL_OR,
-                    TokenKind::PercentToken                         => flags\BINARY_MOD,
-                    TokenKind::PlusToken                            => flags\BINARY_ADD,
-                    TokenKind::QuestionQuestionToken                => flags\BINARY_COALESCE,
-                    TokenKind::SlashToken                           => flags\BINARY_DIV,
-                    TokenKind::XorKeyword                           => flags\BINARY_BOOL_XOR,
-                ];
-                static $assign_lookup = [
-                    TokenKind::AmpersandEqualsToken                 => flags\BINARY_BITWISE_AND,
-                    TokenKind::AsteriskAsteriskEqualsToken          => flags\BINARY_POW,
-                    TokenKind::AsteriskEqualsToken                  => flags\BINARY_MUL,
-                    TokenKind::BarEqualsToken                       => flags\BINARY_BITWISE_OR,
-                    TokenKind::CaretEqualsToken                     => flags\BINARY_BITWISE_XOR,
-                    TokenKind::DotEqualsToken                       => flags\BINARY_CONCAT,
-                    TokenKind::MinusEqualsToken                     => flags\BINARY_SUB,
-                    TokenKind::PercentEqualsToken                   => flags\BINARY_MOD,
-                    TokenKind::PlusEqualsToken                      => flags\BINARY_ADD,
-                    TokenKind::SlashEqualsToken                     => flags\BINARY_DIV,
-                    TokenKind::GreaterThanGreaterThanEqualsToken    => flags\BINARY_SHIFT_RIGHT,
-                    TokenKind::LessThanLessThanEqualsToken          => flags\BINARY_SHIFT_LEFT,
-                    TokenKind::QuestionQuestionEqualsToken          => flags\BINARY_COALESCE,
-                ];
                 $kind = $n->operator->kind;
                 if ($kind === TokenKind::InstanceOfKeyword) {
                     return new ast\Node(ast\AST_INSTANCEOF, 0, [
@@ -704,9 +685,9 @@ class TolerantASTConverter
                         'class' => static::phpParserNonValueNodeToAstNode($n->rightOperand),
                     ], $start_line);
                 }
-                $ast_kind = $lookup[$kind] ?? null;
+                $ast_kind = self::BINARY_EXPRESSION_LOOKUP[$kind] ?? null;
                 if ($ast_kind === null) {
-                    $ast_kind = $assign_lookup[$kind] ?? null;
+                    $ast_kind = self::BINARY_ASSIGN_EXPRESSION_LOOKUP[$kind] ?? null;
                     if ($ast_kind === null) {
                         throw new AssertionError("missing $kind (" . Token::getTokenKindNameFromValue($kind) . ")");
                     }
@@ -715,14 +696,8 @@ class TolerantASTConverter
                 return static::astNodeBinaryop($ast_kind, $n, $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\UnaryOpExpression' => static function (PhpParser\Node\Expression\UnaryOpExpression $n, int $start_line): ast\Node {
-                static $lookup = [
-                    TokenKind::TildeToken                   => flags\UNARY_BITWISE_NOT,
-                    TokenKind::MinusToken                   => flags\UNARY_MINUS,
-                    TokenKind::PlusToken                    => flags\UNARY_PLUS,
-                    TokenKind::ExclamationToken             => flags\UNARY_BOOL_NOT,
-                ];
                 $kind = $n->operator->kind;
-                $ast_kind = $lookup[$kind] ?? null;
+                $ast_kind = self::UNARY_OP_EXPRESSION_LOOKUP[$kind] ?? null;
                 if ($ast_kind === null) {
                     throw new AssertionError("missing $kind(" . Token::getTokenKindNameFromValue($kind) . ")");
                 }
@@ -734,34 +709,8 @@ class TolerantASTConverter
                 );
             },
             'Microsoft\PhpParser\Node\Expression\CastExpression' => static function (PhpParser\Node\Expression\CastExpression $n, int $start_line): ast\Node {
-                static $lookup = [
-                    // From Parser->parseCastExpression()
-                    TokenKind::ArrayCastToken   => flags\TYPE_ARRAY,
-                    TokenKind::BoolCastToken    => flags\TYPE_BOOL,
-                    TokenKind::DoubleCastToken  => flags\TYPE_DOUBLE,
-                    TokenKind::IntCastToken     => flags\TYPE_LONG,
-                    TokenKind::ObjectCastToken  => flags\TYPE_OBJECT,
-                    TokenKind::StringCastToken  => flags\TYPE_STRING,
-                    TokenKind::UnsetCastToken   => flags\TYPE_NULL,
-
-                    // From Parser->parseCastExpressionGranular()
-                    // This is a syntax error, but try to match what the intent was
-                    TokenKind::ArrayKeyword         => flags\TYPE_ARRAY,
-                    TokenKind::BinaryReservedWord   => flags\TYPE_STRING,
-                    TokenKind::BoolReservedWord     => flags\TYPE_BOOL,
-                    TokenKind::BooleanReservedWord  => flags\TYPE_BOOL,
-                    TokenKind::DoubleReservedWord   => flags\TYPE_DOUBLE,
-                    TokenKind::IntReservedWord      => flags\TYPE_LONG,
-                    TokenKind::IntegerReservedWord  => flags\TYPE_LONG,
-                    TokenKind::FloatReservedWord    => flags\TYPE_DOUBLE,
-                    TokenKind::ObjectReservedWord   => flags\TYPE_OBJECT,
-                    TokenKind::RealReservedWord     => flags\TYPE_DOUBLE,
-                    TokenKind::StringReservedWord   => flags\TYPE_STRING,
-                    TokenKind::UnsetKeyword         => flags\TYPE_NULL,
-                    TokenKind::StaticKeyword        => flags\TYPE_STATIC,
-                ];
                 $kind = $n->castType->kind;
-                $ast_kind = $lookup[$kind] ?? null;
+                $ast_kind = self::CAST_EXPRESSION_TYPE_LOOKUP[$kind] ?? null;
                 if ($ast_kind === null) {
                     throw new AssertionError("missing $kind");
                 }
@@ -2115,8 +2064,9 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node|PhpParser\Token $parser_node
      * @suppress UnusedSuppression, TypeMismatchProperty
+     * @internal
      */
-    protected static function astStub($parser_node): ast\Node
+    public static final function astStub(object $parser_node): ast\Node
     {
         // Debugging code.
         if (\getenv(self::ENV_AST_THROW_INVALID)) {
@@ -3425,4 +3375,3 @@ class TolerantASTConverter
         return $outer;
     }
 }
-class_exists(TolerantASTConverterWithNodeMapping::class);

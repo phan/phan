@@ -2463,6 +2463,14 @@ class C19 { function f() {} }
 C19::f();
 ```
 
+## PhanStaticClassAccessWithStaticVariable
+
+```
+Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. The behavior of static variables will change to consistently use one set of static variables per method declaration in php 8.1 and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/plugin_test/expected/198_static_variable_suspicious.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/plugin_test/src/198_static_variable_suspicious.php#L6).
+
 ## PhanStaticPropIsStaticType
 
 ```

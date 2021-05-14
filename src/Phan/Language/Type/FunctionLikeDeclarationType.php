@@ -752,6 +752,20 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    /**
+     * @override
+     * @unused-param $has_static_variable
+     */
+    public function setHasStaticVariable(bool $has_static_variable): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function hasStaticVariable(): bool
+    {
+        return false;
+    }
+
     public function setInternalScope(ClosedScope $scope): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);

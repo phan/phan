@@ -49,29 +49,31 @@ class ForkPool
     /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
     private $did_have_error = false;
 
+    /** @var float the previous update time */
+    private $previous_update_time = 0.0;
+
     private function updateProgress(int $i, Progress $progress): void
     {
         // fwrite(STDERR, "Received progress from $i " . json_encode($progress) . "\n");
         $this->progress[$i] = $progress;
 
-        static $previous_update_time = 0.0;
         $time = \microtime(true);
 
         // If not enough time has elapsed, then don't update the progress bar.
         // Making the update frequency based on time (instead of the number of files)
         // prevents the terminal from rapidly flickering while processing small files.
         $interval = Config::getValue('progress_bar_sample_interval');
-        if ($time - $previous_update_time < $interval) {
+        if ($time - $this->previous_update_time < $interval) {
             // Make sure to output 100%, to avoid confusion.
             // https://github.com/phan/phan/issues/2694
             if ($progress->progress < 1.0) {
                 return;
             }
         }
-        if ($previous_update_time) {
-            $previous_update_time += $interval;
+        if ($this->previous_update_time) {
+            $this->previous_update_time += $interval;
         } else {
-            $previous_update_time = $time;
+            $this->previous_update_time = $time;
         }
         $this->renderAggregateProgress();
     }

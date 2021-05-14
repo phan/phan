@@ -2470,6 +2470,8 @@ class UnionType implements Serializable, Stringable
      *
      * i.e. array -> iterable is allowed, but iterable -> array is not
      * i.e. MyClass -> mixed is allowed, but mixed -> MyClass is not
+     *
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function hasSubtypeOf(
         UnionType $target
@@ -2670,10 +2672,6 @@ class UnionType implements Serializable, Stringable
         if ($matches) {
             return true;
         }
-        static $null_type;
-        if ($null_type === null) {
-            $null_type  = NullType::instance(false);
-        }
 
         // Check conversion on the cross product of all
         // type combinations and see if any can cast to
@@ -2690,7 +2688,10 @@ class UnionType implements Serializable, Stringable
         }
 
         // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
-        if (\in_array($null_type, $target_type_set, true)) {
+        foreach ($target_type_set as $type) {
+            if (!$type instanceof NullType) {
+                continue;
+            }
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->hasSubtypeOf($target)) {
@@ -3288,6 +3289,7 @@ class UnionType implements Serializable, Stringable
     /**
      * A union type after asserting is_scalar($x)
      *
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function scalarTypesStrict(bool $allow_empty = false): UnionType
     {
@@ -3372,6 +3374,7 @@ class UnionType implements Serializable, Stringable
      *
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function countableTypesStrictCast(CodeBase $code_base): UnionType
     {
@@ -4005,6 +4008,7 @@ class UnionType implements Serializable, Stringable
      * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
@@ -4064,6 +4068,7 @@ class UnionType implements Serializable, Stringable
      * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @param bool $add_real_types if true, this adds the real types that would be possible for `$x[$offset]`
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function genericArrayElementTypes(bool $add_real_types = false): UnionType
     {
@@ -4338,6 +4343,7 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'int[]|float[]'.
      *
      * If $this is an empty UnionType, this method will produce 'array'
+     * @suppress PhanStaticClassAccessWithStaticVariable array elements are initialized without depending on inherited class
      */
     public function asNonEmptyGenericArrayTypes(int $key_type): UnionType
     {
@@ -4364,6 +4370,7 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'associative-array<int>|associative-array<float>'.
      *
      * If $this is an empty UnionType, this method will produce 'associative-array<mixed>'
+     * @suppress PhanStaticClassAccessWithStaticVariable array elements are initialized without depending on inherited class
      */
     public function asNonEmptyAssociativeArrayTypes(int $key_type): UnionType
     {
@@ -4390,23 +4397,24 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'list<int>|list<float>'.
      *
      * If $this is an empty UnionType, this method will produce 'list<mixed>'
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function asNonEmptyListTypes(): UnionType
     {
-        static $type = null;
-        if ($type === null) {
-            $type = ListType::fromElementType(MixedType::instance(false), false);
+        static $list_of_mixed_type = null;
+        if ($list_of_mixed_type === null) {
+            $list_of_mixed_type = ListType::fromElementType(MixedType::instance(false), false);
         }
         if (\count($this->type_set) === 0) {
-            return $type->asRealUnionType();
+            return $list_of_mixed_type->asRealUnionType();
         }
         $result = $this->asMappedUnionType(
-            static function (Type $type): Type {
-                return ListType::fromElementType($type, false);
+            static function (Type $element_type): Type {
+                return ListType::fromElementType($element_type, false);
             }
         );
         if (!$result->hasRealTypeSet()) {
-            return $result->withRealType($type);
+            return $result->withRealType($list_of_mixed_type);
         }
         return $result;
     }

@@ -421,6 +421,7 @@ class ContextNode
      *
      * TODO: Deprecate this and use more precise ways to locate the desired element
      * TODO: Distinguish between the empty string and the lack of a name
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function getVariableName(): string
     {
@@ -1248,6 +1249,8 @@ class ContextNode
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
+     *
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter): Variable
     {

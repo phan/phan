@@ -297,6 +297,7 @@ class Issue
     public const AbstractStaticMethodCall         = 'PhanAbstractStaticMethodCall';
     public const AbstractStaticMethodCallInStatic = 'PhanAbstractStaticMethodCallInStatic';
     public const AbstractStaticMethodCallInTrait  = 'PhanAbstractStaticMethodCallInTrait';
+    public const StaticClassAccessWithStaticVariable = 'PhanStaticClassAccessWithStaticVariable';
 
     // Issue::CATEGORY_CONTEXT
     public const ContextNotObject           = 'PhanContextNotObject';
@@ -2923,6 +2924,14 @@ class Issue
                 "Potentially calling an abstract static method {METHOD} on a trait in {CODE}, if the caller's method is called on the trait instead of a concrete class using the trait",
                 self::REMEDIATION_B,
                 9004
+            ),
+            new Issue(
+                self::StaticClassAccessWithStaticVariable,
+                self::CATEGORY_STATIC,
+                self::SEVERITY_LOW,
+                "Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. The behavior of static variables will change to consistently use one set of static variables per method declaration in php 8.1 and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)",
+                self::REMEDIATION_B,
+                9005
             ),
 
             // Issue::CATEGORY_CONTEXT

@@ -414,6 +414,15 @@ trait FunctionTrait
     }
 
     /**
+     * @return bool
+     * True if this method has static variables
+     */
+    public function hasStaticVariable(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_STATIC_VARIABLE);
+    }
+
+    /**
      * @param bool $has_return
      * Set to true to mark this method as having a
      * return value
@@ -440,6 +449,22 @@ trait FunctionTrait
             $this->getPhanFlags(),
             Flags::HAS_YIELD,
             $has_yield
+        ));
+    }
+
+    /**
+     * @param bool $has_static_variable
+     * Set to true to mark this method as having a
+     * static variable
+     */
+    public function setHasStaticVariable(bool $has_static_variable): void
+    {
+        // TODO: In a future release of php-ast, this information will be part of the function node's flags.
+        // (PHP 7.1+ only, not supported in PHP 7.0)
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::HAS_STATIC_VARIABLE,
+            $has_static_variable
         ));
     }
 

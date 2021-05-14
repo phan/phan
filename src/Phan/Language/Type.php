@@ -2417,6 +2417,7 @@ class Type implements Stringable
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      *
      * This is overridden by the array subclasses
+     * @suppress PhanStaticClassAccessWithStaticVariable micro-optimization, not using static to initialize these values
      */
     public function iterableValueUnionType(CodeBase $code_base): ?UnionType
     {
