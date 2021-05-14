@@ -79,6 +79,7 @@ class Colorizing
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',
         'DETAILS'       => 'light_green',
+        'ENUM'          => 'green',
         'FILE'          => 'light_cyan',
         'FUNCTIONLIKE'  => 'light_yellow',
         'FUNCTION'      => 'light_yellow',

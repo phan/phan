@@ -15,6 +15,7 @@ use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -51,6 +52,8 @@ use ReflectionProperty;
 use RuntimeException;
 
 use function count;
+use function is_int;
+use function is_object;
 use function is_string;
 
 /**
@@ -142,6 +145,23 @@ class Clazz extends AddressableElement
      * @var list<Type>
      */
     private $mixin_types = [];
+
+    /**
+     * @var array<mixed,string> maps value to the name of the case declaring that value
+     * (for backed enums)
+     */
+    private $enum_case_map = [];
+
+    /**
+     * @var list<string> list of enum case names with values that could not be determined
+     */
+    private $enum_case_map_unknown = [];
+
+    /**
+     * @var list<string> list of enum case names
+     * (for unit enums)
+     */
+    private $enum_case_list = [];
 
     /**
      * @param Context $context
@@ -236,6 +256,12 @@ class Clazz extends AddressableElement
         }
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
+        }
+        if (\PHP_VERSION_ID >= 80100) {
+            // @phan-suppress-next-line PhanUndeclaredMethod this was added in 8.1
+            if ($class->isEnum()) {
+                $flags |= \ast\flags\CLASS_ENUM;
+            }
         }
 
         $context = new Context();
@@ -1502,6 +1528,64 @@ class Clazz extends AddressableElement
         }
     }
 
+    /**
+     * Add an enum case (this is a specialization of a class constant)
+     */
+    public function addEnumCase(CodeBase $code_base, ClassConstant $constant): void {
+        $this->addConstant($code_base, $constant);
+
+        // TODO need to update minimum enum version to get enum's declared type
+        $value = $constant->getNodeForValue();
+        $name = $constant->getName();
+        if ($value !== null) {
+            if ($value instanceof Node) {
+                // TODO: Phan has a limit on how long of a string it will evaluate.
+                $value = UnionTypeVisitor::unionTypeFromNode($code_base, $this->getContext(), $value)->asSingleScalarValueOrNullOrSelf();
+            }
+            if (is_int($value) || is_string($value)) {
+                $old_name = $this->enum_case_map[$value] ?? null;
+                if (is_string($old_name)) {
+                    $old_constant_fqsen = FullyQualifiedClassConstantName::make($this->getFQSEN(), $old_name);
+                    $old_constant = $code_base->getClassConstantByFQSEN($old_constant_fqsen);
+                    Issue::maybeEmit(
+                        $code_base,
+                        $constant->getContext(),
+                        Issue::ReusedEnumCaseValue,
+                        $constant->getContext()->getLineNumberStart(),
+                        $name,
+                        ASTReverter::toShortString($value),
+                        $old_name,
+                        $old_constant->getFileRef()->getFile(),
+                        $old_constant->getFileRef()->getLineNumberStart()
+                    );
+                    return;
+                }
+                $this->enum_case_map[$value] = $name;
+            } elseif (!is_object($value)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $constant->getContext(),
+                    Issue::TypeInvalidEnumCaseType,
+                    $constant->getContext()->getLineNumberStart(),
+                    $name,
+                    ASTReverter::toShortString($value),
+                    'int|string'
+                );
+                $this->enum_case_map_unknown[] = $name;
+            }
+        } else {
+            $this->enum_case_list[] = $name;
+        }
+        if (count($this->enum_case_list) > 0 && (count($this->enum_case_map) > 0 || count($this->enum_case_map_unknown) > 0)) {
+            Issue::maybeEmit(
+                $code_base,
+                $this->getContext(),
+                Issue::SyntaxInconsistentEnum,
+                $this->getContext()->getLineNumberStart(),
+                $this->getFQSEN()
+            );
+        }
+    }
 
     /**
      * Add a class constant
@@ -2183,6 +2267,15 @@ class Clazz extends AddressableElement
     public function isAbstract(): bool
     {
         return $this->getFlagsHasState(\ast\flags\CLASS_ABSTRACT);
+    }
+
+    /**
+     * @return bool
+     * True if this is an enum
+     */
+    public function isEnum(): bool
+    {
+        return $this->getFlagsHasState(\ast\flags\CLASS_ENUM);
     }
 
     /**

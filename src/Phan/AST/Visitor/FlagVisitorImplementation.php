@@ -150,6 +150,11 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    public function visitClassEnum(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitClassFinal(Node $node)
     {
         return $this->visit($node);

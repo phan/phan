@@ -76,6 +76,7 @@ class Element
         ast\AST_ECHO               => 'visitEcho',
         ast\AST_EMPTY              => 'visitEmpty',
         ast\AST_ENCAPS_LIST        => 'visitEncapsList',
+        ast\AST_ENUM_CASE          => 'visitEnumCase',
         ast\AST_EXIT               => 'visitExit',
         ast\AST_EXPR_LIST          => 'visitExprList',
         ast\AST_FOREACH            => 'visitForeach',
@@ -225,7 +226,12 @@ class Element
      */
     public function acceptClassFlagVisitor(FlagVisitor $visitor)
     {
-        switch ($this->node->flags) {
+        $flags = $this->node->flags;
+        if ($flags & flags\CLASS_ENUM) {
+            // ENUM is combined with abstract
+            return $visitor->visitClassEnum($this->node);
+        }
+        switch ($flags) {
             case flags\CLASS_ABSTRACT:
                 return $visitor->visitClassAbstract($this->node);
             case flags\CLASS_FINAL:

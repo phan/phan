@@ -1,0 +1,25 @@
+%s:8 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\X::Baz
+%s:9 PhanRedefineClassConstant Class constant Baz defined at %s:9 was previously defined at %s:8
+%s:11 PhanImpossibleTypeComparison Impossible attempt to check if X::Foo of type \Enums\X is identical to 2 of type 2
+%s:12 PhanUndeclaredStaticMethod Static call to undeclared method \Enums\X::Bar
+%s:13 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\Enums\X'
+%s:14 PhanAccessExtendsFinalClass Attempting to extend from final class \Enums\X defined at %s:5
+%s:14 PhanUnreferencedClass Possibly zero references to class \Enums\Invalid
+%s:17 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_EMPTY
+%s:18 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_ZERO
+%s:19 PhanReusedEnumCaseValue Enum case IS_ALSO_ZERO has the same value('0') as a previous declared enum case IS_ZERO defined at %s:18
+%s:19 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_ALSO_ZERO
+%s:20 PhanReusedEnumCaseValue Enum case IS_ALSO_EMPTY has the same value('') as a previous declared enum case IS_EMPTY defined at %s:17
+%s:20 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_ALSO_EMPTY
+%s:21 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:21 PhanUndeclaredGlobalVariable Global variable $var is undeclared
+%s:21 PhanUndeclaredVariable Variable $var is undeclared
+%s:21 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::Invalid
+%s:23 PhanNoopNewNoSideEffects Unused result of new object creation expression in new HasDuplicate() (this is likely free of side effects - there is no known non-empty constructor or destructor)
+%s:23 PhanTypeInstantiateEnum Saw instantiation of enum \Enums\HasDuplicate
+%s:25 PhanClassContainsAbstractMethod non-abstract class \Enums\InvalidEnum contains abstract method \Enums\InvalidEnum::mustNotBeAbstract() declared at %s:29
+%s:25 PhanSyntaxInconsistentEnum Syntax error: Enum \Enums\InvalidEnum unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
+%s:25 PhanUnreferencedClass Possibly zero references to class \Enums\InvalidEnum
+%s:26 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\InvalidEnum::Valid
+%s:27 PhanTypeInvalidEnumCaseType Saw enum case Foo with a value(null) that did not match expected type int|string (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
+%s:27 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\InvalidEnum::Foo

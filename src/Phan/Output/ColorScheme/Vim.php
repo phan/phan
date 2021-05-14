@@ -20,6 +20,7 @@ class Vim
         'CONST'         => 'magenta',
         'COUNT'         => 'red',
         'DETAILS'       => 'none',
+        'ENUM'          => 'green',
         'FILE'          => 'light_blue',
         'FUNCTIONLIKE'  => 'magenta',
         'FUNCTION'      => 'magenta',

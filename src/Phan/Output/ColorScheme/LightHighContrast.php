@@ -19,6 +19,7 @@ class LightHighContrast
         'CONST'         => 'blue',
         'COUNT'         => 'blue',
         'DETAILS'       => 'dark_gray',
+        'ENUM'          => 'blue',
         'FILE'          => 'light_magenta',
         'FUNCTIONLIKE'  => 'green',
         'FUNCTION'      => 'green',

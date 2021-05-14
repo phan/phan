@@ -41,6 +41,7 @@ class Issue
     public const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
     public const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
     public const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
+    public const SyntaxInconsistentEnum         = 'PhanSyntaxInconsistentEnum';
 
     // Issue::CATEGORY_UNDEFINED
     public const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -118,6 +119,7 @@ class Issue
     public const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     public const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     public const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
+    public const TypeInstantiateEnum       = 'PhanTypeInstantiateEnum';
     public const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
     public const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
     public const TypeInstantiateTraitStaticOrSelf = 'PhanTypeInstantiateTraitStaticOrSelf';
@@ -278,6 +280,7 @@ class Issue
     public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
     public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
     public const AttributeWrongTarget = 'PhanAttributeWrongTarget';
+    public const TypeInvalidEnumCaseType = 'PhanTypeInvalidEnumCaseType';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -493,6 +496,7 @@ class Issue
     public const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
     public const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
     public const RedefinedClassReference       = 'PhanRedefinedClassReference';
+    public const ReusedEnumCaseValue           = 'PhanReusedEnumCaseValue';
 
     // Issue::CATEGORY_ACCESS
     public const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
@@ -704,7 +708,7 @@ class Issue
     // type id constants.
     public const TYPE_ID_UNKNOWN = 999;
 
-    // Keep sorted and in sync with Colorizing::default_color_for_template
+    // Keep sorted and in sync with Colorizing::DEFAULT_COLOR_FOR_TEMPLATE
     public const UNCOLORED_FORMAT_STRING_FOR_TEMPLATE = [
         'CLASS'         => '%s',
         'CLASSLIKE'     => '%s',
@@ -713,6 +717,7 @@ class Issue
         'CONST'         => '%s',
         'COUNT'         => '%d',
         'DETAILS'       => '%s',  // additional details about an error
+        'ENUM'          => '%s',
         'FILE'          => '%s',
         'FUNCTIONLIKE'  => '%s',
         'FUNCTION'      => '%s',
@@ -961,6 +966,15 @@ class Issue
                 'Syntax error: Function {FUNCTIONLIKE} with return type {TYPE} must return a value (did you mean "{CODE}" instead of "{CODE}"?)',
                 self::REMEDIATION_A,
                 17015
+            ),
+            new Issue(
+                self::SyntaxInconsistentEnum,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
+                "Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type",
+                self::REMEDIATION_A,
+                17016
             ),
 
             // Issue::CATEGORY_UNDEFINED
@@ -1831,6 +1845,14 @@ class Issue
                 "Potential instantiation of abstract class {CLASS} (not an issue if this method is only called from a non-abstract subclass)",
                 self::REMEDIATION_B,
                 10111
+            ),
+            new Issue(
+                self::TypeInstantiateEnum,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Saw instantiation of enum {ENUM}",
+                self::REMEDIATION_B,
+                10174
             ),
             new Issue(
                 self::TypeInstantiateInterface,
@@ -2841,6 +2863,14 @@ class Issue
                 'Saw use of attribute {CLASS} declared at {FILE}:{LINE} which supports being declared on {DETAILS} but it was declared on {CODE} which requires an attribute declared to support {DETAILS}',
                 self::REMEDIATION_B,
                 10173
+            ),
+            new Issue(
+                self::TypeInvalidEnumCaseType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)',
+                self::REMEDIATION_B,
+                10175
             ),
 
             // Issue::CATEGORY_VARIABLE
@@ -4383,6 +4413,14 @@ class Issue
                 'Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 8011
+            ),
+            new Issue(
+                self::ReusedEnumCaseValue,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                'Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}' ,
+                self::REMEDIATION_B,
+                8013
             ),
 
             // Issue::CATEGORY_ACCESS

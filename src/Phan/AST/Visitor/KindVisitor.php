@@ -175,6 +175,11 @@ interface KindVisitor
     public function visitEncapsList(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_ENUM_CASE`
+     */
+    public function visitEnumCase(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_EXIT`
      */
     public function visitExit(Node $node);

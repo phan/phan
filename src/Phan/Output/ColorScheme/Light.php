@@ -20,6 +20,7 @@ class Light
         'CONST'         => 'red',
         'COUNT'         => 'magenta',
         'DETAILS'       => 'green',
+        'ENUM'          => 'green',
         'FILE'          => 'cyan',
         'FUNCTIONLIKE'  => 'yellow',
         'FUNCTION'      => 'yellow',
