@@ -18,6 +18,7 @@
 return [
 'new' => [
 'array_is_list' => ['bool', 'array'=>'array'],
+'fsync' => ['bool', 'stream'=>'resource'],
 ],
 'old' => [
 ],

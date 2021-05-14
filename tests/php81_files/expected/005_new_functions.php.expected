@@ -1,0 +1,2 @@
+%s:3 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($stream) is 123 of type 123 but \fsync() takes resource
+%s:3 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is fsync(123) of type bool but \intdiv() takes int
