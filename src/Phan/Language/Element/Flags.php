@@ -22,7 +22,8 @@ class Flags
     public const IS_OVERRIDE                  = (1 << 6);
     public const HAS_YIELD                    = (1 << 7);
 
-    public const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);
+    public const HAS_STATIC_VARIABLE          = (1 << 8);  // used on function-likes
+    public const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);  // used on classes
     public const IS_CLONE_OF_VARIADIC         = (1 << 9);
     public const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
     public const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);

@@ -155,5 +155,6 @@ return [
         'UnsafeCodePlugin',
         'DeprecateAliasPlugin',
         'PHPDocInWrongCommentPlugin',
+        'StaticVariableMisusePlugin',
     ],
 ];

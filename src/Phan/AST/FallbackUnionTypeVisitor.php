@@ -437,6 +437,8 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function visitNew(Node $node): UnionType
     {

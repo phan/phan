@@ -43,8 +43,10 @@ use function preg_match;
  * The logging to STDERR can be uncommented if you have issues debugging why
  * Phan can't locate a given node's definition.
  */
-class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
+final class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 {
+    use TolerantASTConverterTrait;
+
     /**
      * @var PhpParser\Node|Token|null
      * This is the closest node or token from tolerant-php-parser

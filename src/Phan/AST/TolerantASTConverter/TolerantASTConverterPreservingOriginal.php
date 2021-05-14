@@ -18,6 +18,8 @@ use Microsoft\PhpParser\Token;
  */
 class TolerantASTConverterPreservingOriginal extends TolerantASTConverter
 {
+    use TolerantASTConverterTrait;
+
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.

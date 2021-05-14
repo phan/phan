@@ -55,6 +55,7 @@ abstract class CodeBaseAwareTest extends BaseTest
             );
         }
 
+        // @phan-suppress-next-line PhanStaticClassAccessWithStaticVariable this is deliberately writing the same value to different test subclasses
         $this->setCodeBase($code_base->shallowClone());
     }
 

@@ -1000,7 +1000,17 @@ class ParseVisitor extends ScopeVisitor
         if ($default instanceof Node) {
             $this->checkNodeIsConstExpr($default);
         }
-        return $this->context;
+        $context = $this->context;
+        // Make sure we're actually returning from a method.
+        if ($context->isInFunctionLikeScope()) {
+            // Get the method/function/closure we're in
+            $method = $context->getFunctionLikeInScope($this->code_base);
+
+            // Mark the method as having a static variable
+            $method->setHasStaticVariable(true);
+        }
+
+        return $context;
     }
 
     private function checkNodeIsConstExpr(Node $node): void

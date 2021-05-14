@@ -144,7 +144,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Set to true to mark this method as having a
      * yield statement (Only through `yield`)
      * This implies that it has a return value of \Generator.
-     * (or a parent interface)
+     * (or a parent interface or type)
      */
     public function setHasYield(bool $has_yield): void;
 
@@ -153,6 +153,20 @@ interface FunctionInterface extends AddressableElementInterface
      * True if this method yields any value(i.e. it is a \Generator)
      */
     public function hasYield(): bool;
+
+    /**
+     * @param bool $has_static_variable
+     * Set to true to mark this method as having a
+     * static variable.
+     */
+    public function setHasStaticVariable(bool $has_static_variable): void;
+
+    /**
+     * @return bool
+     * True if this method has any static variables
+     */
+    public function hasStaticVariable(): bool;
+
 
     /**
      * @return list<Parameter>

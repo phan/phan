@@ -40,6 +40,9 @@ use const WNOHANG;
 
 /**
  * Represents the state of a client request to a daemon, and contains methods for sending formatted responses.
+ *
+ * Overridden by subclasses such as ParseRequest.
+ *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Request
@@ -314,17 +317,19 @@ class Request
         return $printer;
     }
 
+    /** @var ?bool */
+    private static $original_color;
+
     /**
      * Handle a request created by the client with `phan_client --color`
      */
     private function handleClientColorOutput(): void
     {
         // Back up the original state: If pcntl isn't used, we don't want subsequent requests to be accidentally colorized.
-        static $original_color = null;
-        if ($original_color === null) {
-            $original_color = (bool)Config::getValue('color_issue_messages');
+        if (self::$original_color === null) {
+            self::$original_color = (bool)Config::getValue('color_issue_messages');
         }
-        $new_color = $this->request_config[self::PARAM_COLOR] ?? $original_color;
+        $new_color = $this->request_config[self::PARAM_COLOR] ?? self::$original_color;
         Config::setValue('color_issue_messages', $new_color);
     }
 

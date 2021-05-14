@@ -24,8 +24,9 @@ use Throwable;
  * see tool/pdep for an intelligent wrapper for it
  *
  * @phan-file-suppress PhanPluginRemoveDebugAny outputting is deliberate
+ * @phan-file-suppress PhanStaticClassAccessWithStaticVariable if anyone actually overrides this, only use one subclass
  */
-class DependencyGraphPlugin extends PluginV3 implements
+final class DependencyGraphPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     PostAnalyzeNodeCapability,
     FinalizeProcessCapability
