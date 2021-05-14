@@ -19,6 +19,7 @@ class EclipseDark
         'CONST'         => 'light_blue',
         'COUNT'         => 'light_blue',
         'DETAILS'       => 'light_gray',
+        'ENUM'          => 'light_blue',
         'FILE'          => 'light_cyan',
         'FUNCTIONLIKE'  => 'light_green',
         'FUNCTION'      => 'light_green',

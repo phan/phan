@@ -67,6 +67,9 @@ class Shim
         if (!defined('ast\AST_NULLSAFE_METHOD_CALL')) {
             define('ast\AST_NULLSAFE_METHOD_CALL', 0x3ff);
         }
+        if (!defined('ast\AST_ENUM_CASE')) {
+            define('ast\AST_ENUM_CASE', 0x4ff);
+        }
         // Define flags
         if (!defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {
             define('ast\flags\DIM_ALTERNATIVE_SYNTAX', 1 << 1);
@@ -92,6 +95,9 @@ class Shim
         }
         if (!defined('ast\flags\TYPE_MIXED')) {
             define('ast\flags\TYPE_MIXED', \PHP_MAJOR_VERSION >= 80000 ? 16 : 21);
+        }
+        if (!defined('ast\flags\CLASS_ENUM')) {
+            define('ast\flags\CLASS_ENUM', 0x10000000);
         }
     }
 }

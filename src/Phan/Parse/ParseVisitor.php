@@ -817,11 +817,11 @@ class ParseVisitor extends ScopeVisitor
                 $doc_comment,
                 $this->code_base,
                 $this->context,
-                $child_node->lineno ?? 0,
+                $child_node->lineno,
                 Comment::ON_CONST
             );
 
-            $line_number_start = $child_node->lineno ?? 0;
+            $line_number_start = $child_node->lineno;
             $constant = new ClassConstant(
                 $this->context
                     ->withLineNumberStart($line_number_start)
@@ -882,6 +882,109 @@ class ParseVisitor extends ScopeVisitor
                     );
                     break;
                 }
+            }
+        }
+
+        return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_ENUM_CASE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitEnumCase(Node $node): Context
+    {
+        $class = $this->getContextClass();
+        $attributes = Attribute::fromNodeForAttributeList(
+            $this->code_base,
+            $this->context,
+            $node->children['attributes']
+        );
+
+        // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
+        $name = $node->children['name'];
+        if (!\is_string($name)) {
+            throw new AssertionError('expected class const name to be a string');
+        }
+
+        $fqsen = FullyQualifiedClassConstantName::make($class->getFQSEN(), $name);
+        $lineno = $node->lineno;
+
+        if ($this->code_base->hasClassConstantWithFQSEN($fqsen)) {
+            $old_constant = $this->code_base->getClassConstantByFQSEN($fqsen);
+            if ($old_constant->getDefiningFQSEN() === $fqsen) {
+                $this->emitIssue(
+                    Issue::RedefineClassConstant,
+                    $lineno,
+                    $name,
+                    $this->context->getFile(),
+                    $lineno,
+                    $this->context->getFile(),
+                    $old_constant->getContext()->getLineNumberStart()
+                );
+                return $this->context;
+            }
+        }
+
+        // Get a comment on the declaration
+        $doc_comment = $node->children['docComment'] ?? '';
+        $comment = Comment::fromStringInContext(
+            $doc_comment,
+            $this->code_base,
+            $this->context,
+            $lineno,
+            Comment::ON_CONST
+        );
+
+        $constant = new ClassConstant(
+            $this->context
+                ->withLineNumberStart($lineno)
+                ->withLineNumberEnd($node->endLineno ?? $lineno),
+            $name,
+            UnionType::empty(),
+            $node->flags,
+            $fqsen
+        );
+
+        $constant->setDocComment($doc_comment);
+        $constant->setAttributeList($attributes);
+        $constant->setIsDeprecated($comment->isDeprecated());
+        $constant->setIsNSInternal($comment->isNSInternal());
+        $constant->setIsOverrideIntended($comment->isOverrideIntended());
+        $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
+        $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
+        $value_node = $node->children['expr'];
+        if (!self::isConstExpr($value_node)) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::InvalidConstantExpression,
+                $value_node->lineno
+            );
+        }
+        $constant->setUnionType($class->getFQSEN()->asType()->asRealUnionType());
+        // TODO: Maybe add a fake node type to instantiate an enum
+        $constant->setNodeForValue($value_node);
+        $constant->setComment($comment);
+
+        $class->addEnumCase(
+            $this->code_base,
+            $constant
+        );
+        foreach ($comment->getVariableList() as $var) {
+            if ($var->getUnionType()->hasTemplateTypeRecursive()) {
+                $this->emitIssue(
+                    Issue::TemplateTypeConstant,
+                    $constant->getFileRef()->getLineNumberStart(),
+                    (string)$constant->getFQSEN()
+                );
+                break;
             }
         }
 
@@ -1509,7 +1612,9 @@ class ParseVisitor extends ScopeVisitor
         $constant = new GlobalConstant(
             $context->withLineNumberStart($lineno),
             $name,
-            UnionType::fromFullyQualifiedRealString('array|bool|float|int|string|resource|null'),
+            // NOTE: With php 8.1 enums, global constants can be assigned to enums,
+            // so this can be any valid type starting in php 8.1.
+            UnionType::fromFullyQualifiedRealString('mixed'),
             $flags,
             $fqsen
         );

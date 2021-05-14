@@ -201,6 +201,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitEnumCase(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitEncapsList(Node $node)
     {
         return $this->visit($node);

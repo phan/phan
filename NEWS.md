@@ -1,5 +1,14 @@
 Phan NEWS
 
+??? ?? 2021, Phan 4.0.6 (dev)
+-----------------------
+
+New Features (Analysis):
++ Partially support php 8.1 enums (#4313)
+  (infer the real type is the class type, that they cannot be instantiated, that enum values cannot be reused, and that class constants will exist for enum cases)
+
+  New issue types: `PhanReusedEnumCaseValue`, `PhanTypeInstantiateEnum`, `PhanTypeInvalidEnumCaseType`, `PhanSyntaxInconsistentEnum`
+
 Apr 29 2021, Phan 4.0.5
 -----------------------
 

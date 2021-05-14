@@ -118,6 +118,11 @@ interface FlagVisitor
     public function visitClassAbstract(Node $node);
 
     /**
+     * Visit a node with flag `\ast\flags\CLASS_ENUM`
+     */
+    public function visitClassEnum(Node $node);
+
+    /**
      * Visit a node with flag `\ast\flags\CLASS_FINAL`
      */
     public function visitClassFinal(Node $node);

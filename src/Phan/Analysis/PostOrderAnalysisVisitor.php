@@ -2422,7 +2422,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
 
             foreach ($class_list as $class) {
-                if ($class->isAbstract() || $class->isInterface() || $class->isTrait()) {
+                if ($class->isEnum() || $class->isAbstract() || $class->isInterface() || $class->isTrait()) {
                     // Check the full list of classes if any of the classes
                     // are abstract or interfaces.
                     $this->checkForInvalidNewType($node, $class_list);
@@ -2534,7 +2534,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         // Make sure we're not instantiating an abstract
         // class
-        if ($class->isAbstract()) {
+        if ($class->isEnum()) {
+            $this->emitIssue(Issue::TypeInstantiateEnum, $node->lineno, (string)$class->getFQSEN());
+        } elseif ($class->isAbstract()) {
             $this->emitIssue(
                 self::isStaticNameNode($node, false) ? Issue::TypeInstantiateAbstractStatic : Issue::TypeInstantiateAbstract,
                 $node->lineno,

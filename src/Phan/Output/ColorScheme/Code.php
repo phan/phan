@@ -20,6 +20,7 @@ class Code
         'CONST'         => 'none',
         'COUNT'         => 'light_yellow',
         'DETAILS'       => 'none',
+        'ENUM'          => 'light_green',
         'FILE'          => 'light_gray',
         'FUNCTIONLIKE'  => 'light_yellow',
         'FUNCTION'      => 'light_yellow',

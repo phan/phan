@@ -2418,6 +2418,12 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0493_inherit_redefined.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0493_inherit_redefined.php#L12).
 
+## PhanReusedEnumCaseValue
+
+```
+Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}
+```
+
 # StaticCallError
 
 ## PhanAbstractStaticMethodCall
@@ -3115,6 +3121,12 @@ Potential instantiation of abstract class {CLASS} (not an issue if this method i
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0679_static_from_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0679_static_from_type.php#L4).
 
+## PhanTypeInstantiateEnum
+
+```
+Saw instantiation of enum {ENUM}
+```
+
 ## PhanTypeInstantiateInterface
 
 ```
@@ -3230,6 +3242,12 @@ Invalid offset {SCALAR} of {CODE} of array type {TYPE} in an array destructuring
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0402_array_destructuring.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0402_array_destructuring.php#L4).
+
+## PhanTypeInvalidEnumCaseType
+
+```
+Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
+```
 
 ## PhanTypeInvalidEval
 
@@ -4993,6 +5011,12 @@ Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError
 Note: If the native parser is used, the reported column is a guess. Phan will use the column of the error reported by the **polyfill** if the errors are on the same line.
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/plugin_test/src/136_unexpected_bracket.php#L2).
+
+## PhanSyntaxInconsistentEnum
+
+```
+Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
+```
 
 ## PhanSyntaxMixedKeyNoKeyArrayDestructuring
 
