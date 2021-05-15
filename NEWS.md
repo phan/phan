@@ -14,6 +14,10 @@ New Features (Analysis):
 + Support casting `iterable<K, V>` to `Traversable<K, V>` with `is_object` or `!is_array` checks
 + Detect more types of expressions that never return when inferring types (e.g. when analyzing `?:`, `??` opertors)
 
+Dead code detection:
++ Infer that functions with a return type of `never` (or phpdoc aliases such as `no-return`) are unreachable when performing control flow analysis.
+  This can be disabled by setting `dead_code_detection_treat_never_type_as_unreachable` to false
+
 Plugins:
 + In `UseReturnValuePlugin`, also start warning about when using the result of an expression that evaluates to `never`
   New issue types: `PhanUseReturnValueOfNever`

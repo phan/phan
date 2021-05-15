@@ -1,0 +1,3 @@
+%s:10 PhanUnreferencedFunction Possibly zero references to function \test8()
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $unknown - it has union type string(real=string)
+%s:19 PhanPluginUnreachableCode Unreachable statement detected

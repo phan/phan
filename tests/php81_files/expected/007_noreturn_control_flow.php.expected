@@ -1,0 +1,2 @@
+%s:15 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $x of type array but \spl_object_hash() takes object
+%s:18 PhanPluginUnreachableCode Unreachable statement detected

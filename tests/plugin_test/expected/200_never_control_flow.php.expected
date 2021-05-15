@@ -1,0 +1,2 @@
+src/200_never_control_flow.php:13 PhanPluginUnreachableCode Unreachable statement detected
+src/200_never_control_flow.php:15 PhanTypeMismatchReturnReal Returning $x of type int but test200() is declared to return string

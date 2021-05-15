@@ -545,6 +545,12 @@ class Config
         // have to be made about what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
+        // When this is true, treat a phpdoc or real type
+        // of 'never' as unreachable.
+        //
+        // Disabling this may avoid some false positives.
+        'dead_code_detection_treat_never_type_as_unreachable' => true,
+
         // If true, then before analysis, try to simplify AST into a form
         // which improves Phan's type inference in edge cases.
         //
@@ -1562,6 +1568,7 @@ class Config
             'daemonize_tcp_port' => $is_int_strict,
             'dead_code_detection' => $is_bool,
             'dead_code_detection_prefer_false_negative' => $is_bool,
+            'dead_code_detection_treat_never_type_as_unreachable' => $is_bool,
             'directory_list' => $is_string_list,
             'disable_line_based_suppression' => $is_bool,
             'disable_suggestions' => $is_bool,

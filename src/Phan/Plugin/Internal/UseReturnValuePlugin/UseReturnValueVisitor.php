@@ -7,8 +7,10 @@ namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 use ast;
 use ast\Node;
 use Exception;
+use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -146,11 +148,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitCall(Node $node): void
     {
-        [$parent, $used] = $this->findNonUnaryParentNode($node);
-        if (!$parent) {
-            //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
-            return;
-        }
+        $used = $this->findNonUnaryParentNode($node)[1];
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $expression = $node->children['expr'];
@@ -161,15 +159,13 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 $expression
             ))->getFunctionFromNode();
 
-            if ($used) {
-                // Convert the generator to an array so that iterating over it will not consume the elements
-                if (!is_array($function_list_generator)) {
-                    $function_list_generator = iterator_to_array($function_list_generator, false);
-                }
-                $this->checkIfUsingFunctionThatNeverReturns($function_list_generator, $node);
-                if (!UseReturnValuePlugin::$use_dynamic) {
-                    return;
-                }
+            // Convert the generator to an array so that iterating over it will not consume the elements
+            if (!is_array($function_list_generator)) {
+                $function_list_generator = iterator_to_array($function_list_generator, false);
+            }
+            $this->checkIfUsingFunctionThatNeverReturns($function_list_generator, $node);
+            if ($used && !UseReturnValuePlugin::$use_dynamic) {
+                return;
             }
 
             foreach ($function_list_generator as $function) {
@@ -209,17 +205,23 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$function_list) {
             return;
         }
+        foreach ($function_list as $function) {
+            if (!$function->getUnionType()->isNeverType()) {
+                return;
+            }
+        }
+        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable')) {
+            // We now know that this is AST_CALL, AST_STATIC_CALL, or AST_METHOD_CALL
+            // Mark this to affect BlockExitStatusChecker
+            $node->flags = (($node->flags & ~BlockExitStatusChecker::STATUS_PROCEED) | BlockExitStatusChecker::STATUS_THROW);
+        }
+
         $used = $this->findParentNodeForCheckingNeverType($node)[1];
         if (!$used) {
             // Don't warn about $x = value() ?? exit('expected non-null')
             return;
         }
-        foreach ($function_list as $function) {
-            $return_type = $function->getUnionType();
-            if (!$return_type->isNeverType()) {
-                return;
-            }
-        }
+
         // To reduce false positives, only emit this issue if all functions have the same return type
         $this->emitPluginIssue(
             $this->code_base,
@@ -328,11 +330,9 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
-        if ($used) {
-            $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
-            if (!UseReturnValuePlugin::$use_dynamic) {
-                return;
-            }
+        $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
+        if ($used && !UseReturnValuePlugin::$use_dynamic) {
+            return;
         }
         $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
@@ -378,12 +378,12 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
-        if ($used) {
-            $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
-            if (!UseReturnValuePlugin::$use_dynamic) {
-                return;
-            }
+
+        $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
+        if ($used && !UseReturnValuePlugin::$use_dynamic) {
+            return;
         }
+
         $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if ($this->quickWarn($method, $fqsen, $node)) {

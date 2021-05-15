@@ -902,6 +902,15 @@ have to be made about what references what.
 
 (Default: `true`)
 
+## dead_code_detection_treat_never_type_as_unreachable
+
+When this is true, treat a phpdoc or real type
+of 'never' as unreachable.
+
+Disabling this may avoid some false positives.
+
+(Default: `true`)
+
 ## force_tracking_references
 
 Set to true in order to force tracking references to elements

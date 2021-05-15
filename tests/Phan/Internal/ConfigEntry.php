@@ -98,6 +98,7 @@ class ConfigEntry
         'force_tracking_references' => self::CATEGORY_DEAD_CODE_DETECTION,
         'constant_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'dead_code_detection_prefer_false_negative' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'dead_code_detection_treat_never_type_as_unreachable' => self::CATEGORY_DEAD_CODE_DETECTION,
         'warn_about_redundant_use_namespaced_class' => self::CATEGORY_DEAD_CODE_DETECTION,
         'redundant_condition_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'assume_real_types_for_internal_functions' => self::CATEGORY_DEAD_CODE_DETECTION,
