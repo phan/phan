@@ -1324,6 +1324,10 @@ class ParameterTypesAnalyzer
      */
     public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type): ?UnionType
     {
+        if ($phpdoc_param_union_type->isNeverType()) {
+            // Return the phpdoc 'never' type so that it can override the nullable type.
+            return $phpdoc_param_union_type;
+        }
         // "@param null $x" is almost always a mistake. Forbid it for now.
         // But allow "@param T|null $x"
         $has_null = $phpdoc_param_union_type->hasType(NullType::instance(false));

@@ -1,5 +1,6 @@
 src/199_never_type_and_plugins.php:3 PhanUnreferencedFunction Possibly zero references to function \exitMisuse()
 src/199_never_type_and_plugins.php:5 PhanPluginNonBoolInLogicalArith Non bool value of type never in logical arithmetic
+src/199_never_type_and_plugins.php:6 PhanPluginConstantVariableBool Variable $z is probably constant with a value of true
 src/199_never_type_and_plugins.php:6 PhanUnusedVariable Unused definition of variable $y
 src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $x1 - it has union type non-zero-int(real=non-zero-int)
 src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type true(real=true)

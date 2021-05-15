@@ -2650,7 +2650,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
-            if ($right_node->kind === ast\AST_THROW) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node)) {
                 return $this->postOrderAnalyze($context_with_false_left_condition, $node);
             }
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
@@ -2719,7 +2719,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
-            if ($right_node->kind === ast\AST_THROW) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node)) {
                 return $this->postOrderAnalyze($context_with_true_left_condition, $node);
             }
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {

@@ -18,7 +18,7 @@ function shouldReturnNever($value) {
 /**
  * @return never this is valid
  */
-function neverExceptional() {
+function neverExceptional(): void {
     throw new \RuntimeException();
 }
 
