@@ -250,9 +250,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
         $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
@@ -269,6 +266,12 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             ))->getMethod($method_name, false, true);
         } catch (Exception $_) {
             return;
+        }
+        if ($used) {
+            $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
+            if (!UseReturnValuePlugin::$use_dynamic) {
+                return;
+            }
         }
         $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
@@ -298,10 +301,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $method_name = $node->children['method'];
@@ -318,6 +317,12 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
+        if ($used) {
+            $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
+            if (!UseReturnValuePlugin::$use_dynamic) {
+                return;
+            }
+        }
         $this->checkUseReturnValueGenerator($method, $node);
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if ($this->quickWarn($method, $fqsen, $node)) {
@@ -330,6 +335,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$counter) {
             UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
         }
+        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         if ($used) {
             $counter->used_locations[$key] = $this->context;
         } else {
