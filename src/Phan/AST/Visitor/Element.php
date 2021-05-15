@@ -38,11 +38,11 @@ class Element
     }
 
     // TODO: Revert this change back to the switch statement
-    // when php 7.2 is released and Phan supports php 7.2.
+    // in commonly used places if performance is better - php 7.2 optimizes this when opcache is enabled.
     // TODO: Also look into initializing mappings of ast\Node->kind to ReflectionMethod->getClosure for those methods,
     // it may be more efficient.
     // See https://github.com/php/php-src/pull/2427/files
-    // This decreased the duration of running phan by about 4%
+    // This decreased the duration of running phan by about 4% prior to 7.2
     public const VISIT_LOOKUP_TABLE = [
         ast\AST_ARG_LIST           => 'visitArgList',
         ast\AST_ARRAY              => 'visitArray',

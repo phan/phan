@@ -79,6 +79,46 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return [$parent, true];
     }
 
+    /**
+     * Find the parent node for the purpose of checking if the usage is safe
+     *
+     * @return array{0:?Node,1:bool} - [$parent, $used]
+     * $used is whether the expression is used - it should only be checked if the parent is known.
+     *
+     * (Also return the parent node to make debugging easier)
+     */
+    private function findParentNodeForCheckingNeverType(Node $node): array
+    {
+        $parent = \end($this->parent_node_list);
+        if (!$parent) {
+            return [null, true];
+        }
+        while (true) {
+            switch ($parent->kind) {
+                case ast\AST_CONDITIONAL:
+                    return [$parent, $node === $parent->children['cond']];
+                case ast\AST_BINARY_OP:
+                    return [$parent, !\in_array($parent->flags, [ast\flags\BINARY_COALESCE, ast\flags\BINARY_BOOL_OR, ast\flags\BINARY_BOOL_AND], true) || $node !== $parent->children['right']];
+                default:
+                    break 2;
+            }
+
+            $node = $parent;
+            $parent = \prev($this->parent_node_list);
+            if (!$parent) {
+                return [null, true];
+            }
+        }
+        // @phan-suppress-next-line PhanPluginUnreachableCode Phan can't analyze `break 2;`
+        switch ($parent->kind) {
+            case ast\AST_STMT_LIST:
+                return [$parent, false];
+            case ast\AST_EXPR_LIST:
+                return [$parent, $this->isUsedExpressionInExprList($node, $parent)];
+        }
+        return [$parent, true];
+    }
+
     private function isUsedExpressionInExprList(Node $node, Node $parent): bool
     {
         return $node === \end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
@@ -86,17 +126,18 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 
     public function visitExit(Node $node): void
     {
-        [, $used] = $this->findNonUnaryParentNode($node);
-        if ($used) {
-            // To reduce false positives, only emit this issue if all functions have the same return type
-            $this->emitPluginIssue(
-                $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
-                UseReturnValuePlugin::UseReturnValueOfNever,
-                "Saw use of value of expression {CODE} which likely uses the {CODE} statement with a return type of '{TYPE}' - this will not return normally",
-                [ASTReverter::toShortString($node), 'exit', 'never']
-            );
+        $used = $this->findParentNodeForCheckingNeverType($node)[1];
+        if (!$used) {
+            return;
         }
+        // To reduce false positives, only emit this issue if all functions have the same return type
+        $this->emitPluginIssue(
+            $this->code_base,
+            (clone($this->context))->withLineNumberStart($node->lineno),
+            UseReturnValuePlugin::UseReturnValueOfNever,
+            "Saw use of value of expression {CODE} which likely uses the {CODE} statement with a return type of '{TYPE}' - this will not return normally",
+            [ASTReverter::toShortString($node), 'exit', 'never']
+        );
     }
 
     /**
@@ -166,6 +207,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     private function checkIfUsingFunctionThatNeverReturns(array $function_list, Node $node): void
     {
         if (!$function_list) {
+            return;
+        }
+        $used = $this->findParentNodeForCheckingNeverType($node)[1];
+        if (!$used) {
+            // Don't warn about $x = value() ?? exit('expected non-null')
             return;
         }
         foreach ($function_list as $function) {

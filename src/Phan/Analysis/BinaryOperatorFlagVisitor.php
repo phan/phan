@@ -445,6 +445,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryBoolAnd(Node $node): UnionType
     {
+        // TODO: This might be useful when at least one side is a constant expression or at least one side is `never`
+        // e.g. `const X = Y || Z;`
         return BoolType::instance(false)->asRealUnionType();
     }
 
@@ -1030,16 +1032,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return $left_type;
         }
 
-        $right_node = $node->children['right'];
-        if ($right_node instanceof Node && $right_node->kind === ast\AST_THROW) {
-            return $left_type->nonNullableClone();
-        }
         $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $right_node,
+            $node->children['right'],
             $this->should_catch_issue_exception
         );
+        if ($right_type->isNeverType()) {
+            return $left_type->nonNullableClone();
+        }
         if ($left_type->isEmpty()) {
             if ($right_type->isEmpty()) {
                 return MixedType::instance(false)->asPHPDocUnionType();

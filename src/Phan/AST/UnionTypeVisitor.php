@@ -1001,10 +1001,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['false'],
             $this->should_catch_issue_exception
         );
-        if ($false_node instanceof Node && $false_node->kind === ast\AST_THROW) {
+        if ($false_type->isNeverType()) {
             return $true_type;
         }
-        if ($true_node instanceof Node && $true_node->kind === ast\AST_THROW) {
+        if ($true_type->isNeverType()) {
             return $false_type;
         }
 

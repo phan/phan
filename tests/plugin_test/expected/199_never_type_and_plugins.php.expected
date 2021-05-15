@@ -1,6 +1,15 @@
-src/199_never_type_and_plugins.php:3 PhanCompatibleNeverType Return type 'never' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'
-src/199_never_type_and_plugins.php:3 PhanPluginAlwaysReturnFunction Function \up has a return type of never, but may fail to return a value
-src/199_never_type_and_plugins.php:3 PhanTypeMissingReturnReal Method \up is declared to return never in its real type signature but has no return value
-src/199_never_type_and_plugins.php:4 PhanUnusedVariable Unused definition of variable $x
-src/199_never_type_and_plugins.php:4 PhanUseReturnValueOfNever Saw use of value of expression exit($message) which likely uses the exit statement with a return type of 'never' - this will not return normally
-src/199_never_type_and_plugins.php:6 PhanUseReturnValueOfNever Saw use of value of expression up('goodbye') which likely uses the function \up(string $message) with a return type of 'never' - this will not return normally
+src/199_never_type_and_plugins.php:3 PhanUnreferencedFunction Possibly zero references to function \exitMisuse()
+src/199_never_type_and_plugins.php:5 PhanPluginNonBoolInLogicalArith Non bool value of type never in logical arithmetic
+src/199_never_type_and_plugins.php:6 PhanUnusedVariable Unused definition of variable $y
+src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $x1 - it has union type non-zero-int(real=non-zero-int)
+src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type true(real=true)
+src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $y3 - it has union type 0|int(real=0|int)
+src/199_never_type_and_plugins.php:7 PhanDebugAnnotation @phan-debug-var requested for variable $z2 - it has union type bool(real=bool)
+src/199_never_type_and_plugins.php:9 PhanTypeInvalidRightOperandOfAdd Invalid operator: right operand of + is never (expected array or number)
+src/199_never_type_and_plugins.php:9 PhanUseReturnValueOfNever Saw use of value of expression exit('fail') which likely uses the exit statement with a return type of 'never' - this will not return normally
+src/199_never_type_and_plugins.php:13 PhanCompatibleNeverType Return type 'never' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'
+src/199_never_type_and_plugins.php:13 PhanPluginAlwaysReturnFunction Function \up has a return type of never, but may fail to return a value
+src/199_never_type_and_plugins.php:13 PhanTypeMissingReturnReal Method \up is declared to return never in its real type signature but has no return value
+src/199_never_type_and_plugins.php:14 PhanUnusedVariable Unused definition of variable $x
+src/199_never_type_and_plugins.php:14 PhanUseReturnValueOfNever Saw use of value of expression exit($message) which likely uses the exit statement with a return type of 'never' - this will not return normally
+src/199_never_type_and_plugins.php:16 PhanUseReturnValueOfNever Saw use of value of expression up('goodbye') which likely uses the function \up(string $message) with a return type of 'never' - this will not return normally

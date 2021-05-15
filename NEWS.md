@@ -12,7 +12,11 @@ New Features (Analysis):
 + Add initial support for the php 8.1 `never` type (in real return types and phpdoc). (#4380)
   Also add support for the phpdoc aliases `no-return`, `never-return`, and `never-returns`
 + Support casting `iterable<K, V>` to `Traversable<K, V>` with `is_object` or `!is_array` checks
++ Detect more types of expressions that never return when inferring types (e.g. when analyzing `?:`, `??` opertors)
 
+Plugins:
++ In `UseReturnValuePlugin`, also start warning about when using the result of an expression that evaluates to `never`
+  New issue types: `PhanUseReturnValueOfNever`
 Bug fixes:
 + As part of the work on php 7.4 contravariant parameter types,
   don't automatically inherit inferred parameter types from ancestor classlikes when (1) there is no `@param` tag with a type for the parameter on the overriding method and (2) the ancestor parameter types are a subtype of the real parameter types unless
