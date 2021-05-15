@@ -56,11 +56,12 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         return parent::getUnionType();
     }
 
-    // TODO: Make callers check for object types. Those are impossible.
     public function setUnionType(UnionType $type): void
     {
-        if ($this->isDynamicConstant() || !$type->hasRealTypeSet()) {
-            $type = $type->withRealTypeSet(UnionType::typeSetFromString('array|bool|float|int|string|resource|null'));
+        // Note: in php 8.1, constants can also be objects if those objects are enums.
+        // So the real type set includes every type.
+        if ($this->isDynamicConstant()) {
+            $type = $type->eraseRealTypeSet();
         }
         parent::setUnionType($type);
     }
