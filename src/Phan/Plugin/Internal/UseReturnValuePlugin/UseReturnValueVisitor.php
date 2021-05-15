@@ -84,6 +84,21 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         return $node === \end($parent->children) && $parent === (\prev($this->parent_node_list)->children['cond'] ?? null);
     }
 
+    public function visitExit(Node $node): void
+    {
+        [, $used] = $this->findNonUnaryParentNode($node);
+        if ($used) {
+            // To reduce false positives, only emit this issue if all functions have the same return type
+            $this->emitPluginIssue(
+                $this->code_base,
+                (clone($this->context))->withLineNumberStart($node->lineno),
+                UseReturnValuePlugin::UseReturnValueOfNever,
+                "Saw use of value of expression {CODE} which likely uses the {CODE} statement with a return type of '{TYPE}' - this will not return normally",
+                [ASTReverter::toShortString($node), 'exit', 'never']
+            );
+        }
+    }
+
     /**
      * @param Node $node a node of type AST_CALL
      * @override

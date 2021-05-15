@@ -162,7 +162,11 @@ and the absolute path `/usr/bin/php7.4`. (see `phan --extended-help`)
 This plugin warns when code fails to use the return value of internal functions/methods such as `sprintf` or `array_merge` or `Exception->getCode()`.
 (functions/methods where the return value should almost always be used)
 
-- **PhanPluginUseReturnValueInternalKnown**: `Expected to use the return value of the internal function/method {FUNCTION}`,
+This also warns when using a return value of a function that returns the type `never`.
+
+- **PhanPluginUseReturnValueInternalKnown**: `Expected to use the return value of the internal function/method {FUNCTION}` (and similar issues),
+- **PhanPluginUseReturnValueGenerator**: `Expected to use the return value of the function/method {FUNCTION} returning a generator of type {TYPE}`,
+- **PhanUseReturnValueOfNever**: `Saw use of value of expression {CODE} which likely uses the function {FUNCTIONLIKE} with a return type of '{TYPE}' - this will not return normally`,
 
 `'plugin_config' => ['infer_pure_method' => true]` will make this plugin automatically infer which methods are pure, recursively.
 This is a best-effort heuristic.

@@ -4187,4 +4187,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         return UnionType::merge($types);
     }
+
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitExit(Node $node): UnionType
+    {
+        return NeverType::instance(false)->asRealUnionType();
+    }
 }

@@ -538,6 +538,9 @@ class ASTReverter
             ast\AST_SWITCH_CASE => static function (Node $_): string {
                 return '(switch case statement)';
             },
+            ast\AST_EXIT => static function (Node $node): string {
+                return 'exit(' . self::toShortString($node->children['expr']) . ')';
+            }
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

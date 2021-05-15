@@ -1,6 +1,6 @@
 <?php
 
 function up(string $message): never {
-    exit($message);
+    $x = exit($message);
 }
 throw up('goodbye');

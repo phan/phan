@@ -19,6 +19,8 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * A plugin that checks for invocations of functions/methods where the return value should be used.
  * Also, gathers statistics on how often those functions/methods are used.
  *
+ * This also warns when the return value of an expression returning `never` is used.
+ *
  * This can be configured by fields of 'plugin_config', or by setting environment variables.
  *
  * Note: When this is using dynamic checks of the whole codebase, the run should be limited to a single process. That check is memory intensive.
