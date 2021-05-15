@@ -1,0 +1,2 @@
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 1(real=1)
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type 83(real=83)

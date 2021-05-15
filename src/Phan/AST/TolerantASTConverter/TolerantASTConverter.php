@@ -1970,6 +1970,9 @@ class TolerantASTConverter
                 case 'static':
                     $flags = flags\TYPE_STATIC;
                     break;
+                case 'never':
+                    $flags = flags\TYPE_NEVER;
+                    break;
                 default:
                     // TODO: Refactor this into a function accepting a QualifiedName
                     if ($original_type instanceof PhpParser\Node\QualifiedName) {
