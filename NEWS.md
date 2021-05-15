@@ -18,6 +18,8 @@ Dead code detection:
 + Infer that functions with a return type of `never` (or phpdoc aliases such as `no-return`) are unreachable when performing control flow analysis.
   This can be disabled by setting `dead_code_detection_treat_never_type_as_unreachable` to false
 
+  Note that control flow is only affected when `UseReturnValuePlugin` is enabled.
+
 Plugins:
 + In `UseReturnValuePlugin`, also start warning about when using the result of an expression that evaluates to `never`
   New issue types: `PhanUseReturnValueOfNever`
