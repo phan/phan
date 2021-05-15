@@ -1,0 +1,4 @@
+%s:11 PhanTypeMismatchReturn Returning $value of type mixed but shouldReturnNever() is declared to return never
+%s:13 PhanTypeMismatchReturnProbablyReal Returning void of type void but shouldReturnNever() is declared to return never (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:15 PhanTypeMismatchReturnProbablyReal Returning null of type null but shouldReturnNever() is declared to return never (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:30 PhanTypeMismatchReturn Returning $value of type mixed but shouldReturnVoid() is declared to return void

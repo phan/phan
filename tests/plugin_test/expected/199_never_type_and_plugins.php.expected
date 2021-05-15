@@ -1,0 +1,2 @@
+src/199_never_type_and_plugins.php:3 PhanCompatibleNeverType Return type 'never' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'
+src/199_never_type_and_plugins.php:6 PhanUseReturnValueOfNever Saw use of value of expression up('goodbye') which likely uses the function \up(string $message) with a return type of 'never' - this will not return normally

@@ -41,6 +41,7 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NonEmptyArrayInterface;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
@@ -6223,6 +6224,19 @@ class UnionType implements Serializable, Stringable
             return false;
         }
         return \reset($type_set) instanceof VoidType;
+    }
+
+    /**
+     * @return bool
+     * True if this is the never type
+     */
+    public function isNeverType(): bool
+    {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return false;
+        }
+        return \reset($type_set) instanceof NeverType;
     }
 
     /**

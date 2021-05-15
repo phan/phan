@@ -486,4 +486,15 @@ final class GenericIterableType extends IterableType
         yield from $this->key_union_type->getReferencedClasses();
         yield from $this->element_union_type->getReferencedClasses();
     }
+
+    public function asObjectType(): ?Type
+    {
+        return Type::make(
+            '\\',
+            'Traversable',
+            $this->key_union_type->isEmpty() ? [$this->element_union_type] : [$this->key_union_type, $this->element_union_type],
+            false,
+            Type::FROM_TYPE
+        );
+    }
 }

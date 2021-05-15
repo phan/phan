@@ -96,6 +96,9 @@ class Shim
         if (!defined('ast\flags\TYPE_MIXED')) {
             define('ast\flags\TYPE_MIXED', \PHP_MAJOR_VERSION >= 80000 ? 16 : 21);
         }
+        if (!defined('ast\flags\TYPE_NEVER')) {
+            define('ast\flags\TYPE_NEVER', \PHP_MAJOR_VERSION >= 80000 ? 17 : 22);
+        }
         if (!defined('ast\flags\CLASS_ENUM')) {
             define('ast\flags\CLASS_ENUM', 0x10000000);
         }

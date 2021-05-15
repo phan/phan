@@ -1,4 +1,4 @@
-%s:21 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $orderBy of type array<string,string>|null but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $orderBy of type array<string,string>|null (real type ?array) but \strlen() takes string
 %s:45 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type \stdClass[] (real type array) but \strlen() takes string
 %s:46 PhanTypeMismatchReturn Returning ['key'=>2] of type array{key:2} but acceptList() is declared to return array<int,\stdClass>
 %s:53 PhanTypeMismatchReturn Returning [count($x)] of type array{0:int} but acceptList() is declared to return array<int,\stdClass>

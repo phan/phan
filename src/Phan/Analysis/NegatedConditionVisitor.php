@@ -711,9 +711,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
             $has_other_nullable_types = $has_other_nullable_types || $type->isNullable();
 
-            if (\get_class($type) === IterableType::class) {
+            if ($type instanceof IterableType) {
                 // An iterable that is not an object must be an array
-                $new_types[] = Type::traversableInstance()->withIsNullable($type->isNullable());
+                $has_null = $has_null || $type->isNullable();
+                $new_types[] = $type->asObjectType();
                 continue;
             }
             $new_types[] = $type;

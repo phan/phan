@@ -114,7 +114,8 @@ final class NonNullMixedType extends MixedType
     /**
      * @override
      */
-    public function withIsNullable(bool $is_nullable): Type {
+    public function withIsNullable(bool $is_nullable): Type
+    {
         return $is_nullable ? MixedType::instance(true) : $this;
     }
 }

@@ -1534,7 +1534,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method = $context->getFunctionLikeInScope($code_base);
 
         // Mark the method as returning something (even if void)
-        if (null !== $node->children['expr']) {
+        $expr = $node->children['expr'];
+        if (null !== $expr) {
             $method->setHasReturn(true);
         }
 
@@ -1550,36 +1551,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType()->withAddedClassForResolvedSelf($method->getContext()) : $method->getUnionType();
-        $expr = $node->children['expr'];
 
         // Check for failing to return a value, or returning a value in a void method.
-        if ($expr !== null) {
-            if ($method_return_type->hasRealTypeSet() && $method_return_type->asRealUnionType()->isVoidType()) {
-                $this->emitIssue(
-                    Issue::SyntaxReturnValueInVoid,
-                    $expr->lineno ?? $node->lineno,
-                    'void',
-                    $method->getNameForIssue(),
-                    'return;',
-                    'return ' . ASTReverter::toShortString($expr) . ';'
-                );
-                return $context;
-            }
-        } else {
-            // `function test() : ?string { return; }` is a fatal error. (We already checked for generators)
-            if ($method_return_type->hasRealTypeSet() && !$method_return_type->asRealUnionType()->isVoidType()) {
-                $this->emitIssue(
-                    Issue::SyntaxReturnExpectedValue,
-                    $node->lineno,
-                    $method->getNameForIssue(),
-                    $method_return_type,
-                    'return null',
-                    'return'
-                );
+        if ($method_return_type->hasRealTypeSet()) {
+            if (!$this->checkIsValidReturnExpressionForType($node, $method_return_type->asRealUnionType(), $method)) {
                 return $context;
             }
         }
-
 
         // This leaves functions which aren't syntactically generators.
 
@@ -1628,6 +1606,47 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    private function checkIsValidReturnExpressionForType(Node $node, UnionType $real_type, FunctionInterface $method): bool
+    {
+        $expr = $node->children['expr'];
+        if ($real_type->isNeverType()) {
+            $this->emitIssue(
+                Issue::SyntaxReturnStatementInNever,
+                $expr->lineno ?? $node->lineno,
+                $method->getNameForIssue(),
+                'never'
+            );
+            return false;
+        }
+        if ($expr !== null) {
+            if ($real_type->isVoidType()) {
+                $this->emitIssue(
+                    Issue::SyntaxReturnValueInVoid,
+                    $expr->lineno ?? $node->lineno,
+                    'void',
+                    $method->getNameForIssue(),
+                    'return;',
+                    'return ' . ASTReverter::toShortString($expr) . ';'
+                );
+                return false;
+            }
+        } else {
+            // `function test() : ?string { return; }` is a fatal error. (We already checked for generators)
+            if (!$real_type->isVoidType()) {
+                $this->emitIssue(
+                    Issue::SyntaxReturnExpectedValue,
+                    $node->lineno,
+                    $method->getNameForIssue(),
+                    $real_type,
+                    'return null',
+                    'return'
+                );
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1962,6 +1981,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     private function checkCanCastToReturnType(UnionType $expression_type, UnionType $method_return_type): bool
     {
+        if ($method_return_type->isVoidType()) {
+            // Allow returning null (or void) expressions from phpdoc return void - the callers can't tell
+            return $expression_type->isNull();
+        }
+        if ($method_return_type->isNeverType()) {
+            return $expression_type->isNeverType();
+        }
         if ($expression_type->hasRealTypeSet() && $method_return_type->hasRealTypeSet()) {
             $real_expression_type = $expression_type->getRealUnionType();
             $real_method_return_type = $method_return_type->getRealUnionType();

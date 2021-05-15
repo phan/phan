@@ -8,6 +8,18 @@ New Features (Analysis):
   (infer the real type is the class type, that they cannot be instantiated, that enum values cannot be reused, and that class constants will exist for enum cases)
 
   New issue types: `PhanReusedEnumCaseValue`, `PhanTypeInstantiateEnum`, `PhanTypeInvalidEnumCaseType`, `PhanSyntaxInconsistentEnum`
++ Support php 7.4 covariant return types and contravariant parameter types when the configured or inferred `minimum_target_php_version` is `'7.4'` or newer (#3795)
++ Add initial support for the php 8.1 `never` type (in real return types and phpdoc). (#4380)
+  Also add support for the phpdoc aliases `no-return`, `never-return`, and `never-returns`
++ Support casting `iterable<K, V>` to `Traversable<K, V>` with `is_object` or `!is_array` checks
+
+Bug fixes:
++ As part of the work on php 7.4 contravariant parameter types,
+  don't automatically inherit inferred parameter types from ancestor classlikes when (1) there is no `@param` tag with a type for the parameter on the overriding method and (2) the ancestor parameter types are a subtype of the real parameter types unless
+
+  1. `@inheritDoc` is used.
+  2. This is a generic array type such as `array<string,mixed>` that is a specialization of an array type.
+     If you want to indicate that the overriding method can be any array type, add `@param array $paramName`.
 
 Apr 29 2021, Phan 4.0.5
 -----------------------

@@ -6,8 +6,8 @@ namespace Phan\AST\TolerantASTConverter;
 
 use ast;
 use Closure;
-use Exception;
 use Error;
+use Exception;
 use InvalidArgumentException;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\Token;
@@ -20,7 +20,7 @@ trait TolerantASTConverterTrait
     /**
      * @return array<string,Closure(object,int):(\ast\Node|int|string|float|null)>
      */
-    protected static abstract function initHandleMap(): array;
+    abstract protected static function initHandleMap(): array;
 
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
@@ -91,5 +91,4 @@ trait TolerantASTConverterTrait
         }
         return $result;
     }
-
 }

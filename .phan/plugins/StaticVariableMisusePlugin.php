@@ -6,8 +6,8 @@ use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\Issue;
 use Phan\PluginV3;
-use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -31,11 +31,13 @@ final class StaticVariableMisusePlugin extends PluginV3 implements
  * Checks node kinds that can be used to access the inherited class
  * for conflicts with uses of static variables.
  */
-final class StaticVariableMisuseVisitor extends PluginAwarePostAnalysisVisitor {
+final class StaticVariableMisuseVisitor extends PluginAwarePostAnalysisVisitor
+{
     /**
      * @override
      */
-    public function visitVar(Node $node): void {
+    public function visitVar(Node $node): void
+    {
         $name = $node->children['name'];
         if ($name !== 'this') {
             return;
@@ -46,7 +48,8 @@ final class StaticVariableMisuseVisitor extends PluginAwarePostAnalysisVisitor {
     /**
      * @override
      */
-    public function visitName(Node $node): void {
+    public function visitName(Node $node): void
+    {
         $context = $this->context;
         if (!$context->isInClassScope() || !$context->isInFunctionLikeScope()) {
             return;

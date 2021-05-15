@@ -56,6 +56,7 @@ use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -675,6 +676,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return StaticType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_MIXED:
                 return MixedType::instance(false)->asRealUnionType();
+            case \ast\flags\TYPE_NEVER:
+                return NeverType::instance(false)->asRealUnionType();
             default:
                 \Phan\Debug::printNode($node);
                 throw new AssertionError("All flags must match. Found ($node->flags) "
@@ -3332,7 +3335,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitThrow(Node $node): UnionType
     {
-        return VoidType::instance(false)->asRealUnionType();
+        return NeverType::instance(false)->asRealUnionType();
     }
 
     private function classTypesForNonName(Node $node): UnionType

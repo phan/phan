@@ -1533,6 +1533,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function isNeverType(): bool
+    {
+        return false;
+    }
+
     public function withRealType(Type $type): UnionType
     {
         return $type->asRealUnionType();

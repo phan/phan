@@ -935,5 +935,4 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return ListType::fromElementType($this->element_type, $this->is_nullable)->asPHPDocUnionType();
     }
-
 }

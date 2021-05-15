@@ -562,6 +562,14 @@ Using negative string offsets is not supported before PHP 7.1 (emits an 'Uniniti
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/php70_files/expected/009_negative_string_offset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/php70_files/src/009_negative_string_offset.php#L5).
 
+## PhanCompatibleNeverType
+
+```
+Return type '{TYPE}' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/plugin_test/expected/199_never_type_and_plugins.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/plugin_test/src/199_never_type_and_plugins.php#L3).
+
 ## PhanCompatibleNonCapturingCatch
 
 ```
@@ -5041,6 +5049,12 @@ Syntax error: Function {FUNCTIONLIKE} with return type {TYPE} must return a valu
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0242_void_71.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0242_void_71.php#L6).
+
+## PhanSyntaxReturnStatementInNever
+
+```
+Syntax error: function {FUNCTIONLIKE} has return type {TYPE}, meaning it must not contain return statements (it should exit, throw, or run forever)
+```
 
 ## PhanSyntaxReturnValueInVoid
 

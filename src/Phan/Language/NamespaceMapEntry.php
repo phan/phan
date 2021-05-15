@@ -78,7 +78,8 @@ class NamespaceMapEntry implements \Serializable
      * @param array{0:string, 1:string, 2:string, 3:int, 4:bool} $representation
      * @suppress PhanAccessReadOnlyProperty TODO fix #3179
      */
-    public function __unserialize(array $representation): void {
+    public function __unserialize(array $representation): void
+    {
         [$fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used] = $representation;
         if (!\is_string($fqsen_class)) {
             throw new RuntimeException("Failed to unserialize a string from the representation");
