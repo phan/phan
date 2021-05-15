@@ -115,7 +115,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         );
     }
 
-    protected static function getFileForPHPVersion(string $path, string... $suffixes): string
+    protected static function getFileForPHPVersion(string $path, string...$suffixes): string
     {
         foreach ($suffixes as $suffix) {
             $suffix_path = $path . $suffix;

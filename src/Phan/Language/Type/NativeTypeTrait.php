@@ -70,7 +70,7 @@ trait NativeTypeTrait
      *
      * Overridden in some subclasses but not others.
      */
-    protected abstract static function make(
+    abstract protected static function make(
         string $namespace,
         string $type_name,
         array $template_parameter_type_list,

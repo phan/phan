@@ -2066,7 +2066,7 @@ class TolerantASTConverter
      * @suppress UnusedSuppression, TypeMismatchProperty
      * @internal
      */
-    public static final function astStub(object $parser_node): ast\Node
+    final public static function astStub(object $parser_node): ast\Node
     {
         // Debugging code.
         if (\getenv(self::ENV_AST_THROW_INVALID)) {

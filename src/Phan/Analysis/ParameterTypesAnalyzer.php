@@ -22,6 +22,7 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarType;
@@ -296,6 +297,15 @@ class ParameterTypesAnalyzer
         }
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
             $type_class = \get_class($type);
+            if ($type_class === NeverType::class && $minimum_target_php_version < 80100) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::CompatibleNeverType,
+                    $method->getFileRef()->getLineNumberStart(),
+                    (string)$type
+                );
+            }
             if ($php70_checks) {
                 if ($minimum_target_php_version < 70000) {
                     Issue::maybeEmit(
@@ -450,7 +460,7 @@ class ParameterTypesAnalyzer
         // E.g. if the subclass, the parent class, and an interface the subclass implements implement a method,
         //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
         try {
-            $o_method_list = $method->getOverriddenMethods($code_base);
+            $overridden_method_list = $method->getOverriddenMethods($code_base);
         } catch (CodeBaseException $_) {
             if (strcasecmp($method->getDefiningFQSEN()->getName(), $method->getFQSEN()->getName()) !== 0) {
                 // Give up, this is probably a renamed trait method that overrides another trait method.
@@ -466,8 +476,8 @@ class ParameterTypesAnalyzer
             );
             return;
         }
-        foreach ($o_method_list as $o_method) {
-            self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $o_method);
+        foreach ($overridden_method_list as $overridden_method) {
+            self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
         }
     }
 
@@ -497,24 +507,24 @@ class ParameterTypesAnalyzer
      * @param CodeBase $code_base
      * @param Method $method the overriding method.
      * @param Clazz  $class the subclass where the overrides take place.
-     * @param Method $o_method the overridden method.
+     * @param Method $overridden_method the overridden method.
      */
     private static function analyzeOverrideSignatureForOverriddenMethod(
         CodeBase $code_base,
         Method $method,
         Clazz $class,
-        Method $o_method
+        Method $overridden_method
     ): void {
-        if ($o_method->isFinal()) {
+        if ($overridden_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
             // TODO: different warning for trait (#1126)
-            self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
+            self::warnOverridingFinalMethod($code_base, $method, $class, $overridden_method);
         }
 
         $construct_access_signature_mismatch_thrown = false;
         if ($method->getName() === '__construct') {
             // flip the switch on so we don't throw both ConstructAccessSignatureMismatch now and AccessSignatureMismatch later
-            $construct_access_signature_mismatch_thrown = Config::get_closest_minimum_target_php_version_id() < 70200 && !$o_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $o_method->isStrictlyMoreVisibleThan($method);
+            $construct_access_signature_mismatch_thrown = Config::get_closest_minimum_target_php_version_id() < 70200 && !$overridden_method->getPhanFlagsHasState(Flags::IS_FAKE_CONSTRUCTOR) && $overridden_method->isStrictlyMoreVisibleThan($method);
 
             if ($construct_access_signature_mismatch_thrown) {
                 Issue::maybeEmit(
@@ -523,33 +533,33 @@ class ParameterTypesAnalyzer
                     Issue::ConstructAccessSignatureMismatch,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method,
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
+                    $overridden_method,
+                    $overridden_method->getFileRef()->getFile(),
+                    $overridden_method->getFileRef()->getLineNumberStart()
                 );
             }
 
-            if (!$o_method->isAbstract()) {
+            if (!$overridden_method->isAbstract()) {
                 return;
             }
         }
 
         // Don't bother warning about incompatible signatures for private methods.
         // (But it is an error to override a private final method)
-        if ($o_method->isPrivate()) {
+        if ($overridden_method->isPrivate()) {
             return;
         }
         // Inherit (at)phan-pure annotations by default.
-        if ($o_method->isPure()) {
+        if ($overridden_method->isPure()) {
             $method->setIsPure();
         }
 
         // Get the class that the overridden method lives on
-        $o_class = $o_method->getClass($code_base);
+        $o_class = $overridden_method->getClass($code_base);
 
         // A lot of analyzeOverrideRealSignature is redundant.
         // However, phan should consistently emit both issue types if one of them is suppressed.
-        self::analyzeOverrideRealSignature($code_base, $method, $class, $o_method, $o_class);
+        self::analyzeOverrideRealSignature($code_base, $method, $class, $overridden_method, $o_class);
 
         // Phan needs to complain in some cases, such as a trait existing for an abstract method defined in the class.
         // PHP also checks if a trait redefines a method in the class.
@@ -561,7 +571,7 @@ class ParameterTypesAnalyzer
         $mismatch_details = '';
 
         // Get the parameters for that method
-        $o_parameter_list = $o_method->getParameterList();
+        $overridden_parameter_list = $overridden_method->getParameterList();
 
         // If we have a parent type defined, map the method's
         // return type and parameter types through it
@@ -570,7 +580,7 @@ class ParameterTypesAnalyzer
         // Map overridden method parameter types through any
         // template type parameters we may have
         if ($type_option->isDefined()) {
-            $o_parameter_list =
+            $overridden_parameter_list =
                 \array_map(static function (Parameter $parameter) use ($type_option, $code_base): Parameter {
 
                     if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
@@ -588,17 +598,17 @@ class ParameterTypesAnalyzer
                     );
 
                     return $mapped_parameter;
-                }, $o_parameter_list);
+                }, $overridden_parameter_list);
         }
 
         // Map overridden method return type through any template
         // type parameters we may have
-        $o_return_union_type = $o_method->getUnionType();
+        $overridden_return_union_type = $overridden_method->getUnionType();
         if ($type_option->isDefined()
-            && $o_return_union_type->hasTemplateTypeRecursive()
+            && $overridden_return_union_type->hasTemplateTypeRecursive()
         ) {
-            $o_return_union_type =
-                $o_return_union_type->withTemplateParameterTypeMap(
+            $overridden_return_union_type =
+                $overridden_return_union_type->withTemplateParameterTypeMap(
                     $type_option->get()->getTemplateParameterTypeMap(
                         $code_base
                     )
@@ -610,12 +620,12 @@ class ParameterTypesAnalyzer
 
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredRealParameters()
-            > $o_method->getNumberOfRequiredRealParameters()
+            > $overridden_method->getNumberOfRequiredRealParameters()
         ) {
             $signatures_match = false;
             $mismatch_details = 'Saw more required parameters in the override';
         } elseif ($method->getNumberOfRealParameters()
-            < $o_method->getNumberOfRealParameters()
+            < $overridden_method->getNumberOfRealParameters()
         ) {
             $signatures_match = false;
             $mismatch_details = 'Saw fewer optional parameters in the override';
@@ -623,27 +633,27 @@ class ParameterTypesAnalyzer
         // If parameter counts match, check their types
         } else {
             $real_parameter_list = $method->getRealParameterList();
-            $o_real_parameter_list = $o_method->getRealParameterList();
+            $o_real_parameter_list = $overridden_method->getRealParameterList();
 
             foreach ($method->getParameterList() as $i => $parameter) {
-                if (!isset($o_parameter_list[$i])) {
+                if (!isset($overridden_parameter_list[$i])) {
                     continue;
                 }
 
-                $o_parameter = $o_parameter_list[$i];
+                $overridden_parameter = $overridden_parameter_list[$i];
 
                 // Changing pass by reference is not ok
                 // @see https://3v4l.org/Utuo8
-                if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
+                if ($parameter->isPassByReference() != $overridden_parameter->isPassByReference()) {
                     $signatures_match = false;
-                    $mismatch_details = "Difference in passing by reference in override $parameter of parameter $o_parameter";
+                    $mismatch_details = "Difference in passing by reference in override $parameter of parameter $overridden_parameter";
                     break;
                 }
 
                 // Variadic parameters must match up.
-                if ($o_parameter->isVariadic() !== $parameter->isVariadic()) {
+                if ($overridden_parameter->isVariadic() !== $parameter->isVariadic()) {
                     $signatures_match = false;
-                    $mismatch_details = "Difference in being variadic in override $parameter of parameter $o_parameter";
+                    $mismatch_details = "Difference in being variadic in override $parameter of parameter $overridden_parameter";
                     break;
                 }
 
@@ -653,7 +663,7 @@ class ParameterTypesAnalyzer
                 if ($o_real_parameter !== null && $real_parameter !== null && !$real_parameter->getUnionType()->isEmptyOrMixed() && $o_real_parameter->getUnionType()->isEmptyOrMixed()
                     && (!$method->isFromPHPDoc() || $parameter->getUnionType()->isEmptyOrMixed())) {
                     $signatures_match = false;
-                    $mismatch_details = "Cannot use $parameter with a real type to override parameter $o_parameter without a real type";
+                    $mismatch_details = "Cannot use $parameter with a real type to override parameter $overridden_parameter without a real type";
                     break;
                 }
 
@@ -662,7 +672,7 @@ class ParameterTypesAnalyzer
                     continue;
                 }
 
-                if ($o_parameter->getUnionType()->isEmptyOrMixed()) {
+                if ($overridden_parameter->getUnionType()->isEmptyOrMixed()) {
                     // XXX Not sure why this check was here but there are better checks elsewhere for real mismatches
                     continue;
                 }
@@ -675,13 +685,13 @@ class ParameterTypesAnalyzer
 
                 // If we have types, make sure they line up
                 //
-                // TODO: should we be expanding the types on $o_parameter
+                // TODO: should we be expanding the types on $overridden_parameter
                 //       via ->asExpandedTypes($code_base)?
                 //
                 //       @see https://3v4l.org/ke3kp
-                if (!self::canWeakCast($code_base, $o_parameter->getUnionType(), $parameter->getUnionType())) {
+                if (!self::canWeakCast($code_base, $overridden_parameter->getUnionType(), $parameter->getUnionType())) {
                     $signatures_match = false;
-                    $mismatch_details = "Expected $parameter to have the same type as $o_parameter or a supertype";
+                    $mismatch_details = "Expected $parameter to have the same type as $overridden_parameter or a supertype";
                     break;
                 }
             }
@@ -692,23 +702,23 @@ class ParameterTypesAnalyzer
         // The return type should be stricter than or identical to the overridden union type.
         // E.g. there is no issue if the overridden return type is empty.
         // See https://github.com/phan/phan/issues/1397
-        if (!$o_return_union_type->isEmptyOrMixed()) {
+        if (!$overridden_return_union_type->isEmptyOrMixed()) {
             if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
-                $o_return_union_type
+                $overridden_return_union_type
             )) {
                 $signatures_match = false;
             }
         }
 
         // Static or non-static should match
-        if ($method->isStatic() != $o_method->isStatic()) {
-            if ($o_method->isStatic()) {
+        if ($method->isStatic() != $overridden_method->isStatic()) {
+            if ($overridden_method->isStatic()) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
                     Issue::AccessStaticToNonStatic,
                     $method->getFileRef()->getLineNumberStart(),
-                    $o_method->getFQSEN()
+                    $overridden_method->getFQSEN()
                 );
             } else {
                 Issue::maybeEmit(
@@ -716,25 +726,25 @@ class ParameterTypesAnalyzer
                     $method->getContext(),
                     Issue::AccessNonStaticToStatic,
                     $method->getFileRef()->getLineNumberStart(),
-                    $o_method->getFQSEN()
+                    $overridden_method->getFQSEN()
                 );
             }
         }
 
 
-        if ($o_method->returnsRef() && !$method->returnsRef()) {
+        if ($overridden_method->returnsRef() && !$method->returnsRef()) {
             $signatures_match = false;
         }
 
         if (!$signatures_match) {
-            if ($o_method->isPHPInternal()) {
+            if ($overridden_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
                     Issue::ParamSignatureMismatchInternal,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method,
+                    $overridden_method,
                     $mismatch_details !== '' ? " ($mismatch_details)" : ''
                 );
             } else {
@@ -744,24 +754,24 @@ class ParameterTypesAnalyzer
                     Issue::ParamSignatureMismatch,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method,
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart(),
+                    $overridden_method,
+                    $overridden_method->getFileRef()->getFile(),
+                    $overridden_method->getFileRef()->getLineNumberStart(),
                     $mismatch_details !== '' ? " ($mismatch_details)" : ''
                 );
             }
         }
 
         // Access must be compatible
-        if (!$construct_access_signature_mismatch_thrown && $o_method->isStrictlyMoreVisibleThan($method)) {
-            if ($o_method->isPHPInternal()) {
+        if (!$construct_access_signature_mismatch_thrown && $overridden_method->isStrictlyMoreVisibleThan($method)) {
+            if ($overridden_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
                     Issue::AccessSignatureMismatchInternal,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method
+                    $overridden_method
                 );
             } else {
                 Issue::maybeEmit(
@@ -770,9 +780,9 @@ class ParameterTypesAnalyzer
                     Issue::AccessSignatureMismatch,
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
-                    $o_method,
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
+                    $overridden_method,
+                    $overridden_method->getFileRef()->getFile(),
+                    $overridden_method->getFileRef()->getLineNumberStart()
                 );
             }
         }
@@ -791,14 +801,14 @@ class ParameterTypesAnalyzer
      *
      * @param $code_base
      * @param $method - The overriding method
-     * @param $o_method - The overridden method. E.g. if a subclass overrid a base class implementation, then $o_method would be from the base class.
+     * @param $overridden_method - The overridden method. E.g. if a subclass overrid a base class implementation, then $overridden_method would be from the base class.
      * @param $o_class the overridden class
      */
     private static function analyzeOverrideRealSignature(
         CodeBase $code_base,
         Method $method,
         Clazz $class,
-        Method $o_method,
+        Method $overridden_method,
         Clazz $o_class
     ): void {
         if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
@@ -810,37 +820,37 @@ class ParameterTypesAnalyzer
         // Get the parameters for that method
         // NOTE: If the overriding method is from an (at)method tag, then compare the phpdoc types instead here to emit FromPHPDoc issue equivalents.
         // TODO: Track magic and real methods separately so that subclasses of subclasses get properly analyzed
-        $o_parameter_list = $method->isFromPHPDoc() ? $o_method->getParameterList() : $o_method->getRealParameterList();
+        $overridden_parameter_list = $method->isFromPHPDoc() ? $overridden_method->getParameterList() : $overridden_method->getRealParameterList();
 
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredRealParameters()
-            > $o_method->getNumberOfRequiredRealParameters()
+            > $overridden_method->getNumberOfRequiredRealParameters()
         ) {
             self::emitSignatureRealMismatchIssue(
                 $code_base,
                 $method,
-                $o_method,
+                $overridden_method,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParameters,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooManyRequiredParameters,
                 null,
                 $method->getNumberOfRequiredRealParameters(),
-                $o_method->getNumberOfRequiredRealParameters()
+                $overridden_method->getNumberOfRequiredRealParameters()
             );
             return;
         } elseif ($method->getNumberOfRealParameters()
-            < $o_method->getNumberOfRealParameters()
+            < $overridden_method->getNumberOfRealParameters()
         ) {
             self::emitSignatureRealMismatchIssue(
                 $code_base,
                 $method,
-                $o_method,
+                $overridden_method,
                 Issue::ParamSignatureRealMismatchTooFewParameters,
                 Issue::ParamSignatureRealMismatchTooFewParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooFewParameters,
                 null,
                 $method->getNumberOfRealParameters(),
-                $o_method->getNumberOfRealParameters()
+                $overridden_method->getNumberOfRealParameters()
             );
             return;
             // If parameter counts match, check their types
@@ -852,21 +862,21 @@ class ParameterTypesAnalyzer
         foreach ($method->isFromPHPDoc() ? $method->getParameterList() : $method->getRealParameterList() as $i => $parameter) {
             $offset = $i + 1;
             // TODO: check if variadic
-            if (!isset($o_parameter_list[$i])) {
+            if (!isset($overridden_parameter_list[$i])) {
                 continue;
             }
 
             // TODO: check that the variadic types match up?
-            $o_parameter = $o_parameter_list[$i];
+            $overridden_parameter = $overridden_parameter_list[$i];
 
             // Changing pass by reference is not ok
             // @see https://3v4l.org/Utuo8
-            if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
+            if ($parameter->isPassByReference() != $overridden_parameter->isPassByReference()) {
                 $is_reference = $parameter->isPassByReference();
                 self::emitSignatureRealMismatchIssue(
                     $code_base,
                     $method,
-                    $o_method,
+                    $overridden_method,
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReference         : Issue::ParamSignatureRealMismatchParamIsNotReference),
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
                     ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
@@ -878,12 +888,12 @@ class ParameterTypesAnalyzer
 
             // Changing variadic to/from non-variadic is not ok?
             // (Not absolutely sure about that)
-            if ($parameter->isVariadic() != $o_parameter->isVariadic()) {
+            if ($parameter->isVariadic() != $overridden_parameter->isVariadic()) {
                 $is_variadic = $parameter->isVariadic();
                 self::emitSignatureRealMismatchIssue(
                     $code_base,
                     $method,
-                    $o_method,
+                    $overridden_method,
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadic         : Issue::ParamSignatureRealMismatchParamNotVariadic),
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
                     ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
@@ -894,10 +904,10 @@ class ParameterTypesAnalyzer
             }
 
             // Either 0 or both of the params must have types for the signatures to be compatible.
-            $o_parameter_union_type = $o_parameter->getUnionType();
+            $overridden_parameter_union_type = $overridden_parameter->getUnionType();
             $parameter_union_type = $parameter->getUnionType();
             // Mixed and empty parameter types are interchangeable in php 8
-            if ($parameter_union_type->isEmptyOrMixed() != $o_parameter_union_type->isEmptyOrMixed()) {
+            if ($parameter_union_type->isEmptyOrMixed() != $overridden_parameter_union_type->isEmptyOrMixed()) {
                 if ($parameter_union_type->isEmptyOrMixed()) {
                     // Don't warn about mixed
                     // allow_method_param_type_widening is implied by minimum_target_php_version >= php 7.2
@@ -906,13 +916,13 @@ class ParameterTypesAnalyzer
                         self::emitSignatureRealMismatchIssue(
                             $code_base,
                             $method,
-                            $o_method,
+                            $overridden_method,
                             Issue::ParamSignatureRealMismatchHasNoParamType,
                             Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchHasNoParamType,
                             self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
-                            (string)$o_parameter_union_type
+                            (string)$overridden_parameter_union_type
                         );
                     }
                     continue;
@@ -921,7 +931,7 @@ class ParameterTypesAnalyzer
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
                         $method,
-                        $o_method,
+                        $overridden_method,
                         Issue::ParamSignatureRealMismatchHasParamType,
                         Issue::ParamSignatureRealMismatchHasParamTypeInternal,
                         Issue::ParamSignaturePHPDocMismatchHasParamType,
@@ -936,32 +946,36 @@ class ParameterTypesAnalyzer
             // If both have types, make sure they are identical.
             // Non-nullable param types can be substituted with the nullable equivalents.
             // E.g. A::foo(?int $x) can override BaseClass::foo(int $x)
-            $o_parameter_union_type = $o_parameter_union_type->asNormalizedTypes();
+            $overridden_parameter_union_type = $overridden_parameter_union_type->asNormalizedTypes();
             $parameter_union_type = $parameter_union_type->asNormalizedTypes();
             if (!$parameter_union_type->isEmptyOrMixed()) {
-                if (!$o_parameter_union_type->isEqualTo($parameter_union_type) &&
-                    !($parameter_union_type->containsNullable() && $o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
+                if (!$overridden_parameter_union_type->isEqualTo($parameter_union_type) &&
+                    !($parameter_union_type->containsNullable() && $overridden_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
                 ) {
                     // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                     // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
-                    $is_exception_to_rule = $parameter_union_type->hasIterable() &&
-                        $o_parameter_union_type->hasIterable() &&
-                        ($parameter_union_type->hasType(IterableType::instance(true)) ||
-                         $parameter_union_type->hasType(IterableType::instance(false)) && !$o_parameter_union_type->containsNullable());
+                    // php 7.4 adds https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.type-variance
+                    //
+                    // For example, allow `foo(): SubClass` to override `foo(): BaseClass`
+                    // in php 8.1, allow `foo(): never` to override any base type
+                    $is_exception_to_rule = (Config::get_closest_minimum_target_php_version_id() >= 70400 && $overridden_parameter_union_type->isStrictSubtypeOf($code_base, $parameter_union_type)) ||
+                        ($parameter_union_type->hasIterable() && $overridden_parameter_union_type->hasIterable() &&
+                            ($parameter_union_type->hasType(IterableType::instance(true)) ||
+                             $parameter_union_type->hasType(IterableType::instance(false)) && !$overridden_parameter_union_type->containsNullable()));
 
                     if (!$is_exception_to_rule) {
                         $is_possibly_compatible = false;
                         self::emitSignatureRealMismatchIssue(
                             $code_base,
                             $method,
-                            $o_method,
+                            $overridden_method,
                             Issue::ParamSignatureRealMismatchParamType,
                             Issue::ParamSignatureRealMismatchParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchParamType,
                             self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
                             (string)$parameter_union_type,
-                            (string)$o_parameter_union_type
+                            (string)$overridden_parameter_union_type
                         );
                         continue;
                     }
@@ -969,42 +983,48 @@ class ParameterTypesAnalyzer
             }
         }
 
-        $o_return_union_type = $o_method->getRealReturnType();
+        $overridden_return_union_type = $overridden_method->getRealReturnType();
 
         $return_union_type = $method->isFromPHPDoc() ? $method->getUnionType() : $method->getRealReturnType();
         // If the parent has a return type, then return types should be equal.
         // A non-nullable return type can override a nullable return type of the same type.
         // Be sure to handle `void`, which contains nullable types
-        if (!$o_return_union_type->isEmpty()) {
-            if (!($o_return_union_type->isEqualTo($return_union_type) || (
-                ($o_return_union_type->containsNullable() && !$o_return_union_type->isNull()) && ($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
+        if (!$overridden_return_union_type->isEmpty()) {
+            if (!($overridden_return_union_type->isEqualTo($return_union_type) || (
+                ($overridden_return_union_type->containsNullable() && !$overridden_return_union_type->isNull()) && ($overridden_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
                 // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                 // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
-                $is_exception_to_rule = $return_union_type->hasIterable() &&
-                    $o_return_union_type->hasIterable() &&
-                    ($o_return_union_type->hasType(IterableType::instance(true)) ||
-                     $o_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable());
+                //
+                // php 7.4 adds https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.type-variance
+                //
+                // For example, allow `foo(): SubClass` to override `foo(): BaseClass`
+                // in php 8.1, allow `foo(): never` to override any base type
+                $is_exception_to_rule = (Config::get_closest_minimum_target_php_version_id() >= 70400 && $return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type)) ||
+                    ($return_union_type->hasIterable() &&
+                    $overridden_return_union_type->hasIterable() &&
+                    ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
+                     $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
                 if (!$is_exception_to_rule) {
                     $is_possibly_compatible = false;
 
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
                         $method,
-                        $o_method,
+                        $overridden_method,
                         Issue::ParamSignatureRealMismatchReturnType,
                         Issue::ParamSignatureRealMismatchReturnTypeInternal,
                         Issue::ParamSignaturePHPDocMismatchReturnType,
                         null,
                         (string)$return_union_type,
-                        (string)$o_return_union_type
+                        (string)$overridden_return_union_type
                     );
                 }
             }
         }
         if ($is_possibly_compatible) {
             if (Config::getValue('inherit_phpdoc_types')) {
-                self::inheritPHPDoc($code_base, $method, $o_method);
+                self::inheritPHPDoc($code_base, $method, $overridden_method);
             }
         }
     }
@@ -1018,13 +1038,13 @@ class ParameterTypesAnalyzer
         return $comment ? $comment->getParameterMap() : [];
     }
     /**
-     * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
+     * Inherit any missing phpdoc types for (at)return and (at)param of $method from $overridden_method.
      * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
      */
     private static function inheritPHPDoc(
         CodeBase $code_base,
         Method $method,
-        Method $o_method
+        Method $overridden_method
     ): void {
         // The method was already from phpdoc.
         if ($method->isFromPHPDoc()) {
@@ -1032,11 +1052,11 @@ class ParameterTypesAnalyzer
         }
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
-        $o_phpdoc_parameter_list = $o_method->getParameterList();
+        $o_phpdoc_parameter_list = $overridden_method->getParameterList();
         $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
-            // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $o_method
+            // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $overridden_method
             if (!$parameter_type->isEmpty()) {
                 $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
                 $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
@@ -1047,19 +1067,26 @@ class ParameterTypesAnalyzer
                     }
                 }
             }
+            // There is no phpdoc parameter for this type
+
             $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
             if ($parent_parameter) {
                 $parent_parameter_type = $parent_parameter->getNonVariadicUnionType();
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
-                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively());
+                // Allow @inheritDoc to be used to indicate that phpdoc parent parameter types
+                // should override inferred contravariant parameter types.
+                if ($parameter_type->isEmpty() ||
+                        ($parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type) &&
+                        ($parameter_type->isExclusivelyArray() || \stripos((string) $method->getDocComment(), '@inheritDoc') !== false))) {
+                    $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($parameter_type->getRealTypeSet()));
+                    continue;
                 }
             }
         }
 
-        $parent_phpdoc_return_type = $o_method->getUnionType();
+        $parent_phpdoc_return_type = $overridden_method->getUnionType();
         if (!$parent_phpdoc_return_type->isEmpty()) {
             $phpdoc_return_type = $method->getUnionType();
             if ($phpdoc_return_type->isEmpty()) {
@@ -1094,7 +1121,7 @@ class ParameterTypesAnalyzer
      *
      * @param CodeBase $code_base
      * @param Method $method
-     * @param Method $o_method the overridden method
+     * @param Method $overridden_method the overridden method
      * @param string $issue_type the ParamSignatureRealMismatch* (issue type if overriding user-defined method)
      * @param string $internal_issue_type the ParamSignatureRealMismatch* (issue type if overriding internal method)
      * @param string $phpdoc_issue_type the ParamSignaturePHPDocMismatch* (issue type if overriding internal method)
@@ -1104,34 +1131,34 @@ class ParameterTypesAnalyzer
     private static function emitSignatureRealMismatchIssue(
         CodeBase $code_base,
         Method $method,
-        Method $o_method,
+        Method $overridden_method,
         string $issue_type,
         string $internal_issue_type,
         string $phpdoc_issue_type,
         ?int $lineno,
         ...$args
     ): void {
-        if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
+        if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 $phpdoc_issue_type,
                 $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
-                $o_method->toRealSignatureString(),
+                $overridden_method->toRealSignatureString(),
                 ...array_merge($args, [
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart(),
+                    $overridden_method->getFileRef()->getFile(),
+                    $overridden_method->getFileRef()->getLineNumberStart(),
                 ])
             );
-        } elseif ($o_method->isPHPInternal()) {
+        } elseif ($overridden_method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 $internal_issue_type,
                 $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
-                $o_method->toRealSignatureString(),
+                $overridden_method->toRealSignatureString(),
                 ...$args
             );
         } else {
@@ -1141,10 +1168,10 @@ class ParameterTypesAnalyzer
                 $issue_type,
                 $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
-                $o_method->toRealSignatureString(),
+                $overridden_method->toRealSignatureString(),
                 ...array_merge($args, [
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart(),
+                    $overridden_method->getFileRef()->getFile(),
+                    $overridden_method->getFileRef()->getLineNumberStart(),
                 ])
             );
         }
@@ -1319,7 +1346,7 @@ class ParameterTypesAnalyzer
     /**
      * Warns if a method is overriding a final method
      */
-    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method): void
+    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $overridden_method): void
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods
@@ -1332,24 +1359,24 @@ class ParameterTypesAnalyzer
                 Issue::AccessOverridesFinalMethodPHPDoc,
                 $method->getFileRef()->getLineNumberStart(),
                 $method->getFQSEN(),
-                $o_method->getFQSEN(),
-                $o_method->getFileRef()->getFile(),
-                $o_method->getFileRef()->getLineNumberStart()
+                $overridden_method->getFQSEN(),
+                $overridden_method->getFileRef()->getFile(),
+                $overridden_method->getFileRef()->getLineNumberStart()
             );
-        } elseif ($o_method->isPHPInternal()) {
+        } elseif ($overridden_method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
                 Issue::AccessOverridesFinalMethodInternal,
                 $method->getFileRef()->getLineNumberStart(),
                 $method->getFQSEN(),
-                $o_method->getFQSEN()
+                $overridden_method->getFQSEN()
             );
         } else {
             $issue_type = Issue::AccessOverridesFinalMethod;
 
             try {
-                $o_clazz = $o_method->getDefiningClass($code_base);
+                $o_clazz = $overridden_method->getDefiningClass($code_base);
                 if ($o_clazz->isTrait()) {
                     $issue_type = Issue::AccessOverridesFinalMethodInTrait;
                 }
@@ -1362,9 +1389,9 @@ class ParameterTypesAnalyzer
                 $issue_type,
                 $method->getFileRef()->getLineNumberStart(),
                 $method->getFQSEN(),
-                $o_method->getFQSEN(),
-                $o_method->getFileRef()->getFile(),
-                $o_method->getFileRef()->getLineNumberStart()
+                $overridden_method->getFQSEN(),
+                $overridden_method->getFileRef()->getFile(),
+                $overridden_method->getFileRef()->getLineNumberStart()
             );
         }
     }

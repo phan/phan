@@ -1,0 +1,7 @@
+%s:17 PhanUnreferencedClass Possibly zero references to class \Point\Of\Up
+%s:23 PhanUnreferencedClass Possibly zero references to class \Point\Of\BadJoke
+%s:24 PhanParamSignatureMismatch Declaration of function joke() : string should be compatible with function joke() : never defined in %s:12
+%s:24 PhanParamSignatureRealMismatchReturnType Declaration of function joke() : string should be compatible with function joke() : never (method where the return type in the real signature is 'string' cannot override method where the return type in the real signature is 'never') defined in %s:12
+%s:29 PhanUnreferencedFunction Possibly zero references to function \Point\Of\up()
+%s:31 PhanSyntaxReturnStatementInNever Syntax error: function up() has return type never, meaning it must not contain return statements (it should exit, throw, or run forever)
+%s:33 PhanSyntaxReturnStatementInNever Syntax error: function up() has return type never, meaning it must not contain return statements (it should exit, throw, or run forever)

@@ -41,6 +41,7 @@ class Issue
     public const SyntaxMixedKeyNoKeyArrayDestructuring = 'PhanSyntaxMixedKeyNoKeyArrayDestructuring';
     public const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
     public const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
+    public const SyntaxReturnStatementInNever   = 'PhanSyntaxReturnStatementInNever';
     public const SyntaxInconsistentEnum         = 'PhanSyntaxInconsistentEnum';
 
     // Issue::CATEGORY_UNDEFINED
@@ -552,6 +553,7 @@ class Issue
     public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
     public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
+    public const CompatibleNeverType                 = 'PhanCompatibleNeverType';
     public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
     public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
     public const CompatibleMixedType                = 'PhanCompatibleMixedType';
@@ -959,6 +961,14 @@ class Issue
                 'Syntax error: {TYPE} function {FUNCTIONLIKE} must not return a value (did you mean "{CODE}" instead of "{CODE}"?)',
                 self::REMEDIATION_A,
                 17014
+            ),
+            new Issue(
+                self::SyntaxReturnStatementInNever,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Syntax error: function {FUNCTIONLIKE} has return type {TYPE}, meaning it must not contain return statements (it should exit, throw, or run forever)',
+                self::REMEDIATION_A,
+                17017
             ),
             new Issue(
                 self::SyntaxReturnExpectedValue,
@@ -4427,7 +4437,7 @@ class Issue
                 self::ReusedEnumCaseValue,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_CRITICAL,
-                'Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}' ,
+                'Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 8013
             ),
@@ -4762,6 +4772,14 @@ class Issue
                 "Return type '{TYPE}' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
                 self::REMEDIATION_B,
                 3005
+            ),
+            new Issue(
+                self::CompatibleNeverType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Return type '{TYPE}' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'",
+                self::REMEDIATION_B,
+                3043
             ),
             new Issue(
                 self::CompatibleIterableTypePHP70,

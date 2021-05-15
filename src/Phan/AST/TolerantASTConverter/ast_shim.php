@@ -177,6 +177,7 @@ const TYPE_VOID = 14;
 const TYPE_ITERABLE = 13;
 const TYPE_STATIC = 15;
 const TYPE_MIXED = 16;
+const TYPE_NEVER = 17;
 const UNARY_BOOL_NOT = 14;
 const UNARY_BITWISE_NOT = 13;
 const UNARY_SILENCE = 260;

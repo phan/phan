@@ -51,6 +51,7 @@ use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NativeType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
@@ -257,6 +258,10 @@ class Type implements Stringable
         'string'          => true,
         'true'            => true,
         'void'            => true,
+        'never'           => true,
+        'no-return'       => true,
+        'never-return'    => true,
+        'never-returns'   => true,
     ];
 
     /**
@@ -784,10 +789,8 @@ class Type implements Stringable
             );
         }
 
-        $type_name =
-            self::canonicalNameFromName($type_name);
+        $type_name = self::canonicalNameFromName($type_name);
 
-        // TODO: Is this worth optimizing into a lookup table?
         switch (strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
@@ -847,6 +850,11 @@ class Type implements Stringable
                 return TrueType::instance($is_nullable);
             case 'void':
                 return VoidType::instance(false);
+            case 'never':
+            case 'no-return':
+            case 'never-return':
+            case 'never-returns':
+                return NeverType::instance(false);
             case 'iterable':
                 return IterableType::instance($is_nullable);
             case 'static':
@@ -2131,7 +2139,6 @@ class Type implements Stringable
     {
         return $this->withIsNullable(false);
     }
-
 
     /**
      * @return bool

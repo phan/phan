@@ -1531,7 +1531,8 @@ class Clazz extends AddressableElement
     /**
      * Add an enum case (this is a specialization of a class constant)
      */
-    public function addEnumCase(CodeBase $code_base, ClassConstant $constant): void {
+    public function addEnumCase(CodeBase $code_base, ClassConstant $constant): void
+    {
         $this->addConstant($code_base, $constant);
 
         // TODO need to update minimum enum version to get enum's declared type

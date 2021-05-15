@@ -7,6 +7,7 @@ namespace Phan\Plugin\Internal\UseReturnValuePlugin;
 use ast;
 use ast\Node;
 use Exception;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Func;
@@ -15,11 +16,17 @@ use Phan\Language\Element\Method;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 
+use function is_array;
+use function iterator_to_array;
+
 /**
-* Checks for invocations of functions/methods where the return value should be used.
-* Also, gathers statistics on how often those functions/methods are used.
-* @phan-file-suppress PhanAccessPropertyInternal
-*/
+ * 1. Checks for invocations of functions/methods where the return value should be used.
+ *    Also, gathers statistics on how often those functions/methods are used.
+ * 2. Checks for invocations of functions/methods that return 'never' but the return value gets used.
+ *    e.g. $x = alwaysExits();
+ *
+ * @phan-file-suppress PhanAccessPropertyInternal
+ */
 class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 {
     /** @var list<Node> set by plugin framework */
@@ -88,10 +95,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        if ($used && !UseReturnValuePlugin::$use_dynamic) {
-            return;
-        }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $expression = $node->children['expr'];
@@ -101,6 +104,17 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $expression
             ))->getFunctionFromNode();
+
+            if ($used) {
+                // Convert the generator to an array so that iterating over it will not consume the elements
+                if (!is_array($function_list_generator)) {
+                    $function_list_generator = iterator_to_array($function_list_generator, false);
+                }
+                $this->checkIfUsingFunctionThatNeverReturns($function_list_generator, $node);
+                if (!UseReturnValuePlugin::$use_dynamic) {
+                    return;
+                }
+            }
 
             foreach ($function_list_generator as $function) {
                 $this->checkUseReturnValueGenerator($function, $node);
@@ -120,6 +134,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 if (!$counter) {
                     UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($function);
                 }
+                $key = $this->context->__toString();
                 if ($used) {
                     $counter->used_locations[$key] = $this->context;
                 } else {
@@ -128,6 +143,30 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             }
         } catch (CodeBaseException $_) {
         }
+    }
+
+    /**
+     * @param list<FunctionInterface> $function_list
+     */
+    private function checkIfUsingFunctionThatNeverReturns(array $function_list, Node $node): void
+    {
+        if (!$function_list) {
+            return;
+        }
+        foreach ($function_list as $function) {
+            $return_type = $function->getUnionType();
+            if (!$return_type->isNeverType()) {
+                return;
+            }
+        }
+        // To reduce false positives, only emit this issue if all functions have the same return type
+        $this->emitPluginIssue(
+            $this->code_base,
+            (clone($this->context))->withLineNumberStart($node->lineno),
+            UseReturnValuePlugin::UseReturnValueOfNever,
+            "Saw use of value of expression {CODE} which likely uses the function {FUNCTIONLIKE} with a return type of '{TYPE}' - this will not return normally",
+            [ASTReverter::toShortString($node), $function->getRepresentationForIssue(true), 'never']
+        );
     }
 
     /**
