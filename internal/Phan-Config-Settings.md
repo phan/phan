@@ -668,6 +668,12 @@ This still helps with some edge cases such as assignments in compound conditions
 
 (Default: `true`)
 
+## use_tentative_return_type
+
+If enabled, Phan will use the php 8.1+ tentative return types available for PHP and extensions.
+
+(Default: `true`)
+
 ## warn_about_relative_include_statement
 
 Enable this to warn about the use of relative paths in `require_once`, `include`, etc.

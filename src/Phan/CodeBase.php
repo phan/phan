@@ -1570,7 +1570,7 @@ class CodeBase
                     if ($reflection_function->isDeprecated()) {
                         $function->setIsDeprecated(true);
                     }
-                    $real_return_type = UnionType::fromReflectionType($reflection_function->getReturnType());
+                    $real_return_type = FunctionFactory::getRealReturnTypeFromReflection($reflection_function);
                     if (Config::getValue('assume_real_types_for_internal_functions')) {
                         // @phan-suppress-next-line PhanAccessMethodInternal
                         $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$name] ?? null;

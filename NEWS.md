@@ -13,6 +13,9 @@ New Features (Analysis):
   Also add support for the phpdoc aliases `no-return`, `never-return`, and `never-returns`
 + Support casting `iterable<K, V>` to `Traversable<K, V>` with `is_object` or `!is_array` checks
 + Detect more types of expressions that never return when inferring types (e.g. when analyzing `?:`, `??` opertors)
++ Use php 8.1's tentative return types from reflection (`hasTentativeReturnType`, `getTentativeReturnType`) to assume real return types of internal functions/methods (#4400)
+
+  This can be disabled by setting `use_tentative_return_type` to `false` (e.g. when using subclasses of internal classes that return incompatible types).
 
 Dead code detection:
 + Infer that functions with a return type of `never` (or phpdoc aliases such as `no-return`) are unreachable when performing control flow analysis.
