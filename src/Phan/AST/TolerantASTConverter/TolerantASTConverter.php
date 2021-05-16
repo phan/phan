@@ -1367,12 +1367,8 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Statement\DeclareStatement' => static function (PhpParser\Node\Statement\DeclareStatement $n, int $start_line): ast\Node {
                 $doc_comment = $n->getDocCommentText();
-                $directive = $n->declareDirective;
-                if (!($directive instanceof PhpParser\Node\DeclareDirective)) {
-                    throw new AssertionError("Unexpected type for directive");
-                }
                 return static::astStmtDeclare(
-                    static::phpParserDeclareListToAstDeclares($directive, $start_line, $doc_comment),
+                    static::phpParserDeclareListToAstDeclares($n, $start_line, $doc_comment),
                     $n->statements !== null ? static::phpParserStmtlistToAstNode($n->statements, $start_line, true) : null,
                     $start_line
                 );
@@ -2878,22 +2874,34 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_CONST_DECL, 0, $const_elems, $const_elems[0]->lineno ?? $start_line);
     }
 
-    private static function phpParserDeclareListToAstDeclares(PhpParser\Node\DeclareDirective $declare, int $start_line, ?string $first_doc_comment): ast\Node
+    private static function phpParserDeclareListToAstDeclares(PhpParser\Node\Statement\DeclareStatement $declareStatement, int $start_line, ?string $first_doc_comment): ast\Node
     {
+        $declare = $declareStatement->declareDirective;
+        if (!($declare instanceof PhpParser\Node\DeclareDirective)) {
+            throw new AssertionError("Unexpected type for directive");
+        }
         $ast_declare_elements = [];
         if ($declare->name->length > 0 && $declare->literal->length > 0) {
-            // Skip SkippedToken or MissingToken
-            $children = [
-                'name' => static::tokenToString($declare->name),
-                'value' => static::tokenToScalar($declare->literal),
-            ];
-            $doc_comment = static::extractPhpdocComment($declare) ?? $first_doc_comment;
-            // $first_doc_comment = null;
-            $children['docComment'] = $doc_comment;
-            $node = new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));
-            $ast_declare_elements[] = $node;
+            $ast_declare_elements[] = self::phpParserDeclareDirectiveToAstNode($declare, $first_doc_comment);
+        }
+        foreach ($declareStatement->otherDeclareDirectives->children ?? [] as $other_declare) {
+            if ($other_declare instanceof PhpParser\Node\DeclareDirective) {
+                $ast_declare_elements[] = self::phpParserDeclareDirectiveToAstNode($other_declare, $first_doc_comment);
+            }
         }
         return new ast\Node(ast\AST_CONST_DECL, 0, $ast_declare_elements, $start_line);
+    }
+
+    private static function phpParserDeclareDirectiveToAstNode(PhpParser\Node\DeclareDirective $declare, ?string $first_doc_comment): ast\Node
+    {
+        $children = [
+            'name' => static::tokenToString($declare->name),
+            'value' => static::tokenToScalar($declare->literal),
+        ];
+        $doc_comment = static::extractPhpdocComment($declare) ?? $first_doc_comment;
+        // $first_doc_comment = null;
+        $children['docComment'] = $doc_comment;
+        return new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));
     }
 
     private static function astStmtDeclare(ast\Node $declares, ?\ast\Node $stmts, int $start_line): ast\Node

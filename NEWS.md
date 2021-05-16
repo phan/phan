@@ -39,6 +39,7 @@ Bug fixes:
   2. This is a generic array type such as `array<string,mixed>` that is a specialization of an array type.
      If you want to indicate that the overriding method can be any array type, add `@param array $paramName`.
 + Change composer.json dependency on `composer/xdebug-handler` from `^2.0` to `^1.1|2.0` to avoid conflicting with other libraries or applications that depend on xdebug-handler 1.x (#4382)
++ Support parsing multiple declare directives in the polyfill/fallback parser (#4160)
 
 Apr 29 2021, Phan 4.0.5
 -----------------------

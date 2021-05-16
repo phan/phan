@@ -210,7 +210,7 @@ final class ConversionTest extends BaseTest
             return;  // unreachable
         }
         try {
-            $ast = ast\parse_code($contents, $ast_version, $file_name);
+            $ast = @ast\parse_code($contents, $ast_version, $file_name);
         } catch (\ParseError $e) {
             $this->fail("Failed for $file_name:{$e->getLine()}: {$e->getMessage()}");
             return;  // unreachable
