@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.10';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.12';
 
 /**
  * Dump instructions on how to install php-ast
@@ -121,10 +121,15 @@ foreach ([
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     $ast_version = (string)phpversion('ast');
-    $did_warn = false;
-    if (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.10') < 0) {
+    if ($ast_version === '') {
+        // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
+        CLI::printErrorToStderr("extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
+    }
+    $phan_output_ast_too_old_and_exit = /** @return never */ static function (string $minimum_ast_version, string $php_version_bound) use ($ast_version): void {
         $error_message = sprintf(
-            "Phan 4.x requires php-ast 1.0.10+ to properly analyze ASTs for php 8.0+. php-ast %s and php %s is installed." . PHP_EOL,
+            "Phan 4.x requires php-ast %s+ to properly analyze ASTs for php %s+. php-ast %s and php %s is installed." . PHP_EOL,
+            $minimum_ast_version,
+            $php_version_bound,
             $ast_version,
             PHP_VERSION
         );
@@ -132,8 +137,13 @@ if (extension_loaded('ast')) {
         phan_output_ast_installation_instructions();
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
+    };
+
+    if (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.12') < 0) {
+        $phan_output_ast_too_old_and_exit('1.0.12', '8.1');
+    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.10') < 0) {
+        $phan_output_ast_too_old_and_exit('1.0.10', '8.0');
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
-        $did_warn = true;
         fprintf(
             STDERR,
             "WARNING: Phan 4.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.10+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
@@ -142,10 +152,6 @@ if (extension_loaded('ast')) {
         );
         phan_output_ast_installation_instructions();
     } elseif (version_compare($ast_version, '1.0.0') <= 0) {
-        if ($ast_version === '') {
-            // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
-            CLI::printErrorToStderr("extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
-        }
         $error_message = sprintf(
             "Phan 4.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
             Config::MINIMUM_AST_EXTENSION_VERSION,
@@ -161,7 +167,6 @@ if (extension_loaded('ast')) {
     if (PHP_VERSION_ID >= 80000 && version_compare(PHP_VERSION, '8.0.0') < 0) {
         fwrite(STDERR, "WARNING: Phan may not work properly in PHP 8 versions before PHP 8.0.0. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
-    unset($did_warn);
     unset($ast_version);
 }
 unset($file);

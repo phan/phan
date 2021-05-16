@@ -51,10 +51,15 @@ use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
 
+use function array_key_exists;
+use function array_merge;
+use function array_values;
 use function count;
+use function in_array;
 use function is_int;
 use function is_object;
 use function is_string;
+use function strtolower;
 
 /**
  * Clazz represents the information Phan knows about a class, trait, or interface,
@@ -2291,6 +2296,8 @@ class Clazz extends AddressableElement
     /**
      * @return bool
      * True if this is a class (i.e. neither a trait nor an interface)
+     *
+     * This also returns true for classes - enums are a specialization of a class.
      */
     public function isClass(): bool
     {
@@ -2304,6 +2311,22 @@ class Clazz extends AddressableElement
     public function isTrait(): bool
     {
         return $this->getFlagsHasState(\ast\flags\CLASS_TRAIT);
+    }
+
+    /**
+     * Returns a string representing which type of classlike type this is, for issue messages
+     */
+    public function getClasslikeType(): string
+    {
+        $flags = $this->getFlags();
+        if ($flags & ast\flags\CLASS_TRAIT) {
+            return 'trait';
+        } elseif ($flags & ast\flags\CLASS_INTERFACE) {
+            return 'interface';
+        } elseif ($flags & ast\flags\CLASS_ENUM) {
+            return 'enum';
+        }
+        return 'class';
     }
 
     /**
@@ -3061,6 +3084,9 @@ class Clazz extends AddressableElement
             $string .= 'Interface ';
         } elseif ($this->isTrait()) {
             $string .= 'Trait ';
+        } elseif ($this->isEnum()) {
+            // Remove the 'final' qualifier.
+            $string = 'Enum ';
         } else {
             $string .= 'Class ';
         }
@@ -3086,6 +3112,9 @@ class Clazz extends AddressableElement
             $string .= 'interface ';
         } elseif ($this->isTrait()) {
             $string .= 'trait ';
+        } elseif ($this->isEnum()) {
+            // Remove the 'final' qualifier
+            $string = 'enum ';
         } else {
             $string .= 'class ';
         }
@@ -3385,6 +3414,8 @@ class Clazz extends AddressableElement
         );
 
         $this->analyzeInheritedMethods($code_base);
+
+        $this->checkIsValidEnum($code_base);
 
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
@@ -3823,5 +3854,63 @@ class Clazz extends AddressableElement
             }
             return Attribute::TARGET_ALL;
         });
+    }
+
+    private function checkIsValidEnum(CodeBase $code_base): void
+    {
+        if (!$this->isEnum()) {
+            return;
+        }
+        // Inherit properties from traits
+        $this->hydrate($code_base);
+
+        $fqsen = $this->getFQSEN();
+        foreach ($this->getPropertyMap($code_base) as $property) {
+            $context = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $property->getContext() : $this->getContext();
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::EnumCannotHaveProperties,
+                $context->getLineNumberStart(),
+                $this->getFQSEN(),
+                $property->getName(),
+                $property->getContext()->getFile(),
+                $property->getContext()->getLineNumberStart()
+            );
+        }
+        $cases = array_merge(array_values($this->enum_case_map), $this->enum_case_map_unknown, $this->enum_case_list);
+        if (!$cases) {
+            foreach ($this->getMethodMap($code_base) as $method) {
+                $method_name_lc = strtolower($method->getName());
+                $context = $method->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $method->getContext() : $this->getContext();
+                if (array_key_exists($method_name_lc, FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET)) {
+                    if (!in_array($method_name_lc, ['__call', '__callstatic', '__invoke'], true)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::EnumForbiddenMagicMethod,
+                            $context->getLineNumberStart(),
+                            $this->getFQSEN(),
+                            $method->getName() . '()',
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+                if ($method->isStatic()) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::InstanceMethodWithNoEnumCases,
+                    $context->getLineNumberStart(),
+                    $this->getFQSEN(),
+                    $method->getName() . '()',
+                    $method->getContext()->getFile(),
+                    $method->getContext()->getLineNumberStart()
+                );
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use AssertionError;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\CodeBase\ClassMap;
@@ -13,6 +14,7 @@ use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\EnumCase;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -94,6 +96,7 @@ class ReferenceCountsAnalyzer
 
         static $issue_types = [
             ClassConstant::class => Issue::UnreferencedPublicClassConstant,  // This is overridden
+            EnumCase::class      => Issue::UnreferencedEnumCase,  // enum cases are always public
             Method::class        => Issue::UnreferencedPublicMethod,  // This is overridden
             Property::class      => Issue::UnreferencedPublicProperty,  // This is overridden
         ];
@@ -381,6 +384,20 @@ class ReferenceCountsAnalyzer
             }
         }
         // If there are duplicate declarations, display issues for unreferenced elements on each declaration.
+        if ($issue_type === Issue::UnreferencedClass) {
+            if (!$element instanceof Clazz) {
+                throw new AssertionError('Expected ' . Clazz::class . ' instance but got ' . \get_class($element));
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $element->getContext(),
+                $issue_type,
+                $element->getFileRef()->getLineNumberStart(),
+                $element->getClasslikeType(),
+                $element->getRepresentationForIssue()
+            );
+            return;
+        }
         Issue::maybeEmit(
             $code_base,
             $element->getContext(),

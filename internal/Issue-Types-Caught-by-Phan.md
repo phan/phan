@@ -1312,7 +1312,7 @@ Similar issues exist for PhanUnreferencedProperty, PhanUnreferencedConstant, Pha
 This issue is disabled by default, but can be enabled by setting `dead_code_detection` to enabled. It indicates that the given element is (possibly) unused.
 
 ```
-Possibly zero references to class {CLASS}
+Possibly zero references to {TYPE} {CLASS}
 ```
 
 This will be emitted for the following code so long as `dead_code_detection` is enabled.
@@ -2432,6 +2432,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/004_enum.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/004_enum.php#L19).
+
 # StaticCallError
 
 ## PhanAbstractStaticMethodCall
@@ -2587,6 +2589,22 @@ Saw {CODE} with a divisor of type {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0761_division_by_zero.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0761_division_by_zero.php#L5).
 
+## PhanEnumCannotHaveProperties
+
+```
+Enum {ENUM} is not allowed to declare instance or static properties but it contains property ${PROPERTY} declared at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/011_enum_error_cases.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/011_enum_error_cases.php#L17).
+
+## PhanEnumForbiddenMagicMethod
+
+```
+Enum {ENUM} is not allowed to have the magic method {METHOD} declared at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/011_enum_error_cases.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/011_enum_error_cases.php#L17).
+
 ## PhanImpossibleCondition
 
 ```
@@ -2660,6 +2678,14 @@ This checks for a functionlike directly calling itself in a way that seems to be
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/rasmus_files/expected/0007_self_call.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/rasmus_files/src/0007_self_call.php#L8).
+
+## PhanInstanceMethodWithNoEnumCases
+
+```
+Saw enum {ENUM} that declares no enum cases but contains instance method {METHOD} declared at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/011_enum_error_cases.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/011_enum_error_cases.php#L17).
 
 ## PhanInvalidMixin
 
@@ -3143,6 +3169,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 Saw instantiation of enum {ENUM}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/004_enum.php.expected#L19) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/004_enum.php#L23).
+
 ## PhanTypeInstantiateInterface
 
 ```
@@ -3264,6 +3292,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ```
 Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/004_enum.php.expected#L24) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/004_enum.php#L27).
 
 ## PhanTypeInvalidEval
 
@@ -5034,6 +5064,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/plugin_test/expe
 Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/004_enum.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/004_enum.php#L25).
+
 ## PhanSyntaxMixedKeyNoKeyArrayDestructuring
 
 ```
@@ -5055,6 +5087,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0
 ```
 Syntax error: function {FUNCTIONLIKE} has return type {TYPE}, meaning it must not contain return statements (it should exit, throw, or run forever)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/006_noreturn.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/006_noreturn.php#L31).
 
 ## PhanSyntaxReturnValueInVoid
 

@@ -1,8 +1,8 @@
 %s:2 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute in an attribute
 %s:4 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute2 in an attribute
 %s:4 PhanUndeclaredClassAttribute Reference to undeclared class \MissingAttribute3 in an attribute
-%s:11 PhanUnreferencedClass Possibly zero references to class \TraitAttribute
-%s:13 PhanUnreferencedClass Possibly zero references to class \InterfaceAttribute
+%s:11 PhanUnreferencedClass Possibly zero references to trait \TraitAttribute
+%s:13 PhanUnreferencedClass Possibly zero references to interface \InterfaceAttribute
 %s:23 PhanEmptyFunction Empty function \goodExample31()
 %s:23 PhanPluginUseReturnValueNoopVoid The function/method \goodExample31() is declared to return void and it has no side effects
 %s:26 PhanAttributeNonAttribute Saw attribute \SubGoodAttribute31 which was declared without #[\Attribute(...)]
