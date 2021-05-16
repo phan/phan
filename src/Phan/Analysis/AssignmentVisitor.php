@@ -936,7 +936,7 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    // TODO: visitNullsafeProp should not be possible on the left hand side?
+    // TODO: visitNullsafeProp should not be possible on the left hand side? Emit Issue::InvalidNode
 
     /**
      * @param Node $node
@@ -980,6 +980,10 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         foreach ($class_list as $clazz) {
+            if ($clazz->isImmutableAtRuntime()) {
+                $this->emitTypeModifyImmutableObjectPropertyIssue($clazz, $property_name, $node);
+                return $this->context;
+            }
             // Check to see if this class has the property or
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
@@ -1274,12 +1278,14 @@ class AssignmentVisitor extends AnalysisVisitor
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void
     {
-        $is_from_phpdoc = $property->isFromPHPDoc();
+        $class_fqsen = $property->getClassFQSEN();
         $context = $property->getContext();
+
+        $is_from_phpdoc = $property->isFromPHPDoc();
         if (!$is_from_phpdoc && $this->context->isInFunctionLikeScope()) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
             if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
-                $class_type = $method->getClassFQSEN()->asType();
+                $class_type = $class_fqsen->asType();
                 if ($class_type->asExpandedTypes($this->code_base)->hasType($property->getClassFQSEN()->asType())) {
                     // This is a constructor setting its own properties or a base class's properties.
                     // TODO: Could support private methods
@@ -1289,7 +1295,7 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $this->emitIssue(
             $is_from_phpdoc ? Issue::AccessReadOnlyMagicProperty : Issue::AccessReadOnlyProperty,
-            $node->lineno ?? 0,
+            $node->lineno,
             $property->asPropertyFQSENString(),
             $context->getFile(),
             $context->getLineNumberStart()
@@ -1577,6 +1583,42 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    private function emitTypeModifyImmutableObjectPropertyIssue(Clazz $clazz, string $property_name, Node $node): void
+    {
+        if (!$clazz->isPHPInternal() && $clazz->hasPropertyWithName($this->code_base, $property_name)) {
+            try {
+                // Look for static properties with that $property_name
+                $property = $clazz->getPropertyByNameInContext(
+                    $this->code_base,
+                    $property_name,
+                    $this->context,
+                    false, // is_static
+                    null,
+                    true
+                );
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return;
+            }
+            $property_context = $property->getContext();
+        } else {
+            $property_context = $clazz->getContext();
+        }
+        $this->emitIssue(
+            Issue::TypeModifyImmutableObjectProperty,
+            $node->lineno,
+            $clazz->getClasslikeType(),
+            $clazz->getFQSEN(),
+            $property_name,
+            $property_context->getFile(),
+            $property_context->getLineNumberStart()
+        );
     }
 
     /**

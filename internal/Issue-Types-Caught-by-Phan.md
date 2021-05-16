@@ -3913,6 +3913,14 @@ Method {METHOD} is declared to return {TYPE} in its real type signature but has 
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0242_void_71.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0242_void_71.php#L4).
 
+## PhanTypeModifyImmutableObjectProperty
+
+```
+Saw attempt to modify {TYPE} {CLASS}'s property ${PROPERTY} declared at {FILE}:{LINE} (immutability of properties is enforced at runtime)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v4/tests/php81_files/expected/012_enum_properties.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v4/tests/php81_files/src/012_enum_properties.php#L15).
+
 ## PhanTypeNoAccessiblePropertiesForeach
 
 ```
@@ -3954,7 +3962,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/php74_files/expe
 ## PhanTypeObjectUnsetDeclaredProperty
 
 ```
-Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+Suspicious attempt to unset class {TYPE}'s property ${PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0541_unset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0541_unset.php#L7).

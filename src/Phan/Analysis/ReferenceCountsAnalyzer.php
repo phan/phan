@@ -15,6 +15,7 @@ use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\EnumCase;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -197,6 +198,7 @@ class ReferenceCountsAnalyzer
                 // which aren't exactly internal to PHP.
                 continue;
             }
+
             // Currently, deferred analysis is only needed for class elements, which can be inherited
             // (And we may track the references to the inherited version of the original)
             if (!$element instanceof ClassElement) {
@@ -207,8 +209,14 @@ class ReferenceCountsAnalyzer
                 continue;
             }
             $fqsen = $element->getFQSEN();
-            if ($element instanceof Method || $element instanceof Property) {
+            if ($element instanceof Method) {
                 $defining_fqsen = $element->getRealDefiningFQSEN();
+            } elseif ($element instanceof Property) {
+                $defining_fqsen = $element->getRealDefiningFQSEN();
+                if ($element->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
+                    // Don't warn about immutable enum properties automatically created by php itself.
+                    continue;
+                }
             } else {
                 $defining_fqsen = $element->getDefiningFQSEN();
             }

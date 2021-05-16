@@ -1,0 +1,6 @@
+%s:4 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Closure's property $prop declared at internal:0 (immutability of properties is enforced at runtime)
+%s:4 PhanUndeclaredProperty Reference to undeclared property \Closure->prop
+%s:5 PhanUndeclaredProperty Reference to undeclared property \Closure->other
+%s:6 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class Closure():void's property $xyz declared at internal:0 (immutability of properties is enforced at runtime)
+%s:6 PhanUndeclaredProperty Reference to undeclared property \Closure->xyz
+%s:7 PhanUndeclaredProperty Reference to undeclared property \Closure->bar

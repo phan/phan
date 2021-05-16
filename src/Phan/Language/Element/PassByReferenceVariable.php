@@ -6,6 +6,7 @@ namespace Phan\Language\Element;
 
 use Phan\Analysis\AssignmentVisitor;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 
@@ -52,7 +53,38 @@ class PassByReferenceVariable extends Variable
         if ($element instanceof Property) {
             $this->code_base = $code_base;
             $this->context_of_created_reference = $context_of_created_reference;
+            if ($code_base && $context_of_created_reference) {
+                self::checkCanMutateProperty($code_base, $context_of_created_reference, $element);
+            }
         }
+    }
+
+    /**
+     * This detects uses of `pass_by_ref($enum_case->immutableProperty)` or `$a = &$enum_case->name;`
+     *
+     * TODO: This approach in general does not detect getting array offsets of immutable properties?
+     */
+    private static function checkCanMutateProperty(CodeBase $code_base, Context $context, Property $property): void
+    {
+        $class_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$class->isImmutableAtRuntime()) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::TypeModifyImmutableObjectProperty,
+            $context->getLineNumberStart(),
+            $class->getClasslikeType(),
+            $class_fqsen,
+            $property->getName(),
+            $property->getContext()->getFile(),
+            $property->getContext()->getLineNumberStart()
+        );
     }
 
     public function getName(): string

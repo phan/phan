@@ -115,6 +115,7 @@ class Issue
     public const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
     public const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
     public const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
+    public const TypeModifyImmutableObjectProperty            = 'PhanTypeModifyImmutableObjectProperty';
     public const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     public const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     public const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
@@ -2346,9 +2347,17 @@ class Issue
                 self::TypeObjectUnsetDeclaredProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,  // There are valid reasons to do this, e.g. for the typed properties V2 RFC or to change serialization
-                "Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
+                "Suspicious attempt to unset class {TYPE}'s property \${PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
+            ),
+            new Issue(
+                self::TypeModifyImmutableObjectProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Saw attempt to modify {TYPE} {CLASS}'s property \${PROPERTY} declared at {FILE}:{LINE} (immutability of properties is enforced at runtime)",
+                self::REMEDIATION_B,
+                10181
             ),
             new Issue(
                 self::TypeNoAccessiblePropertiesForeach,

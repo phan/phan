@@ -12,9 +12,31 @@ use Phan\AST\ASTReverter;
  */
 class EnumCase extends ClassConstant
 {
+    /** @var string|int|null the case value, if known */
+    private $enum_case_value;
+
     public function __toString(): string
     {
         return 'case ' . $this->name;
+    }
+
+    /**
+     * If the enum case value exists and could be evaluated, this contains that value
+     * @param int|string|null $value
+     */
+    public function setEnumCaseValue($value): void
+    {
+        $this->enum_case_value = $value;
+    }
+
+    /**
+     * Gets the value for this enum case, if one existed AND could be evaluated.
+     * @see ClassConstant::getNodeForValue() for checking if the enum case has a value
+     * @return int|string|null
+     */
+    public function getEnumCaseValue()
+    {
+        return $this->enum_case_value;
     }
 
     public function getMarkupDescription(): string

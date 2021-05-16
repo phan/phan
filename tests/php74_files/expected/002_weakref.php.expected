@@ -1,3 +1,4 @@
+%s:5 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \WeakReference's property $disallow declared at internal:0 (immutability of properties is enforced at runtime)
 %s:5 PhanUndeclaredProperty Reference to undeclared property \WeakReference->disallow
 %s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $wr->get() of type ?object but \strlen() takes string
 %s:10 PhanUndeclaredMethod Call to undeclared method \WeakReference::missingMethod
