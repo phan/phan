@@ -158,6 +158,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // right side of the equation and the kind of item
         // on the left.
         // (AssignmentVisitor converts possibly undefined types to nullable)
+        //
+        // TODO: For assignment by reference, also check Clazz->isImmutableAtRuntime for properties
         $context = (new AssignmentVisitor(
             $this->code_base,
             $this->context,
@@ -356,6 +358,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
             $class = $this->code_base->getClassByFQSEN($fqsen);
+            if ($class->isImmutableAtRuntime()) {
+                if ($class->hasPropertyWithName($this->code_base, $prop_name)) {
+                    // NOTE: We deliberately emit this issue whether or not the access is to a public or private variable,
+                    // because unsetting a private variable at runtime is also a (failed) attempt to unset a declared property.
+                    $prop_context = $class->getPropertyByName($this->code_base, $prop_name)->getFileRef();
+                } else {
+                    $prop_context = $class->getContext();
+                }
+                $this->emitIssue(
+                    Issue::TypeModifyImmutableObjectProperty,
+                    $node->lineno,
+                    $class->getClasslikeType(),
+                    (string)$type,
+                    $prop_name,
+                    $prop_context->getFile(),
+                    $prop_context->getLineNumberStart()
+                );
+                continue;
+            }
             if ($class->hasPropertyWithName($this->code_base, $prop_name)) {
                 // NOTE: We deliberately emit this issue whether or not the access is to a public or private variable,
                 // because unsetting a private variable at runtime is also a (failed) attempt to unset a declared property.

@@ -1,0 +1,10 @@
+%s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is UnitEnum::FIRST->name of type string but \spl_object_hash() takes object
+%s:15 PhanTypeModifyImmutableObjectProperty Saw attempt to modify enum \NS12\UnitEnum's property $name declared at %s:5 (immutability of properties is enforced at runtime)
+%s:16 PhanUndeclaredProperty Reference to undeclared property \NS12\UnitEnum->value
+%s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is BackedEnum::ABC->name of type string but \spl_object_hash() takes object
+%s:19 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is BackedEnum::ABC->value of type string but \spl_object_hash() takes object
+%s:21 PhanTypeModifyImmutableObjectProperty Saw attempt to modify enum \NS12\BackedEnum's property $value declared at %s:9 (immutability of properties is enforced at runtime)
+%s:24 PhanTypeModifyImmutableObjectProperty Saw attempt to modify enum \NS12\BackedEnum's property $undeclaredProperty declared at %s:9 (immutability of properties is enforced at runtime)
+%s:24 PhanUndeclaredProperty Reference to undeclared property \NS12\BackedEnum->undeclaredProperty
+%s:25 PhanTypeModifyImmutableObjectProperty Saw attempt to modify enum \NS12\BackedEnum's property $otherProperty declared at %s:9 (immutability of properties is enforced at runtime)
+%s:25 PhanUndeclaredProperty Reference to undeclared property \NS12\BackedEnum->otherProperty
