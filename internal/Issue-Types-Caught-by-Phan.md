@@ -1312,7 +1312,7 @@ Similar issues exist for PhanUnreferencedProperty, PhanUnreferencedConstant, Pha
 This issue is disabled by default, but can be enabled by setting `dead_code_detection` to enabled. It indicates that the given element is (possibly) unused.
 
 ```
-Possibly zero references to {CODE} {CLASS}
+Possibly zero references to {TYPE} {CLASS}
 ```
 
 This will be emitted for the following code so long as `dead_code_detection` is enabled.
