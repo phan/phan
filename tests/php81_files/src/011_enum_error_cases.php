@@ -33,3 +33,8 @@ var_dump(Mu::$publicStaticProperty);
 class NotEnum {
     case FOO;
 }
+
+enum Suit {
+    case HEARTS = 'H';
+}
+var_dump(clone Suit::HEARTS);  // cannot clone

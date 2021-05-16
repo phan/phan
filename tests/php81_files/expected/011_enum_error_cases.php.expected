@@ -12,3 +12,4 @@
 %s:21 PhanUnreferencedPublicMethod Possibly zero references to public method \Mu::instanceMethod()
 %s:33 PhanUnreferencedClass Possibly zero references to class \NotEnum
 %s:34 PhanInvalidNode Cannot declare an enum case statement in a non-enum
+%s:40 PhanTypeInstantiateEnum Saw instantiation of enum \Suit

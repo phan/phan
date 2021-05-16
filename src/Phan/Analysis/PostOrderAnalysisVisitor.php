@@ -3544,6 +3544,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node->children['expr']->lineno ?? $node->lineno,
                 $type
             );
+            return $this->context;
         } elseif (Config::get_strict_param_checking()) {
             if ($type->containsNullable() || !$type->canStrictCastToUnionType($this->code_base, ObjectType::instance(false)->asPHPDocUnionType())) {
                 $this->emitIssue(
@@ -3553,8 +3554,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         }
+        foreach ($type->getTypeSet() as $type_part) {
+            if (!$type_part->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            // Surprisingly, many types in php can be cloned, even closures
+            if ($this->isTypeEnum($type_part)) {
+                $this->emitIssue(Issue::TypeInstantiateEnum, $node->lineno, $type_part);
+            }
+        }
 
         return $this->context;
+    }
+
+    private function isTypeEnum(Type $type): bool
+    {
+        if (!$type->isObjectWithKnownFQSEN()) {
+            return false;
+        }
+
+        $fqsen = $type->asFQSEN();
+        if (!$fqsen instanceof FullyQualifiedClassName || !$this->code_base->hasClassWithFQSEN($fqsen)) {
+            return false;
+        }
+        $class = $this->code_base->getClassByFQSEN($fqsen);
+        return $class->isEnum();
     }
 
     /**
