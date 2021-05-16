@@ -2,6 +2,11 @@
 
 trait TT {
     public $traitProperty;
+
+    public function __construct() { }  // forbidden
+    public function __destruct() { }  // forbidden
+    public function __set(string $name, $value) { var_dump($name, $value); }  // forbidden
+    public function __invoke() { }  // allowed
     public function traitInstanceMethod() {
         return 42;
     }

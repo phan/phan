@@ -8,7 +8,8 @@ New Features (Analysis):
   (infer the real type is the class type, that they cannot be instantiated, that enum values cannot be reused, and that class constants will exist for enum cases)
 
   New issue types: `PhanReusedEnumCaseValue`, `PhanTypeInstantiateEnum`, `PhanTypeInvalidEnumCaseType`, `PhanSyntaxInconsistentEnum`,
-  `PhanInstanceMethodWithNoEnumCases`, `PhanInstanceMethodWithNoEnumCases`, `PhanEnumCannotHaveProperties`, `PhanUnreferencedEnumCase`.
+  `PhanInstanceMethodWithNoEnumCases`, `PhanInstanceMethodWithNoEnumCases`, `PhanEnumCannotHaveProperties`, `PhanUnreferencedEnumCase`,
+  `PhanEnumForbiddenMagicMethod`.
 + Support php 7.4 covariant return types and contravariant parameter types when the configured or inferred `minimum_target_php_version` is `'7.4'` or newer (#3795)
 + Add initial support for the php 8.1 `never` type (in real return types and phpdoc). (#4380)
   Also add support for the phpdoc aliases `no-return`, `never-return`, and `never-returns`

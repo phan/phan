@@ -51,12 +51,15 @@ use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
 
+use function array_key_exists;
 use function array_merge;
 use function array_values;
 use function count;
+use function in_array;
 use function is_int;
 use function is_object;
 use function is_string;
+use function strtolower;
 
 /**
  * Clazz represents the information Phan knows about a class, trait, or interface,
@@ -3853,6 +3856,12 @@ class Clazz extends AddressableElement
         });
     }
 
+    private const ENUM_PERMITTED_MAGIC_METHODS = [
+        '__call' => true,
+        '__callStatic' => true,
+        '__invoke' => true,
+    ];
+
     private function checkIsValidEnum(CodeBase $code_base): void
     {
         if (!$this->isEnum()) {
@@ -3874,22 +3883,36 @@ class Clazz extends AddressableElement
                 $property->getContext()->getFile(),
                 $property->getContext()->getLineNumberStart()
             );
-
         }
         $cases = array_merge(array_values($this->enum_case_map), $this->enum_case_map_unknown, $this->enum_case_list);
         if (!$cases) {
             foreach ($this->getMethodMap($code_base) as $method) {
+                $method_name_lc = strtolower($method->getName());
+                $context = $method->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $method->getContext() : $this->getContext();
+                if (array_key_exists($method_name_lc, FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET)) {
+                    if (!in_array($method_name_lc, ['__call', '__callstatic', '__invoke'], true)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::EnumForbiddenMagicMethod,
+                            $context->getLineNumberStart(),
+                            $this->getFQSEN(),
+                            $method->getName() . '()',
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
                 if ($method->isStatic()) {
                     continue;
                 }
-                $context = $method->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $method->getContext() : $this->getContext();
                 Issue::maybeEmit(
                     $code_base,
                     $context,
                     Issue::InstanceMethodWithNoEnumCases,
                     $context->getLineNumberStart(),
                     $this->getFQSEN(),
-                    $method->getName(),
+                    $method->getName() . '()',
                     $method->getContext()->getFile(),
                     $method->getContext()->getLineNumberStart()
                 );

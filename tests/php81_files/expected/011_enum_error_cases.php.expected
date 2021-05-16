@@ -1,15 +1,27 @@
 %s:4 PhanPluginUnknownPropertyType Property \TT->traitProperty has an initial type that cannot be inferred
 %s:4 PhanUnreferencedPublicProperty Possibly zero references to public property \TT->traitProperty
-%s:5 PhanPluginUnknownMethodReturnType Method \TT::traitInstanceMethod() has no declared or inferred return type
-%s:5 PhanUnreferencedPublicMethod Possibly zero references to public method \TT::traitInstanceMethod()
-%s:12 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $traitProperty declared at %s:4
-%s:12 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method traitInstanceMethod declared at %s:5
-%s:14 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Mu::SIC
-%s:18 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicStaticProperty declared at %s:18
-%s:19 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicProperty declared at %s:19
-%s:19 PhanUnreferencedPublicProperty Possibly zero references to public property \Mu->publicProperty
-%s:21 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method instanceMethod declared at %s:21
-%s:21 PhanUnreferencedPublicMethod Possibly zero references to public method \Mu::instanceMethod()
-%s:33 PhanUnreferencedClass Possibly zero references to class \NotEnum
-%s:34 PhanInvalidNode Cannot declare an enum case statement in a non-enum
-%s:40 PhanTypeInstantiateEnum Saw instantiation of enum \Suit
+%s:6 PhanEmptyPublicMethod Empty public method \TT::__construct()
+%s:7 PhanEmptyPublicMethod Empty public method \TT::__destruct()
+%s:8 PhanPluginUnknownMethodParamType Method \TT::__set has no declared or inferred parameter type for $value
+%s:9 PhanEmptyPublicMethod Empty public method \TT::__invoke()
+%s:9 PhanPluginUnknownMethodReturnType Method \TT::__invoke() has no declared or inferred return type
+%s:10 PhanPluginUnknownMethodReturnType Method \TT::traitInstanceMethod() has no declared or inferred return type
+%s:10 PhanUnreferencedPublicMethod Possibly zero references to public method \TT::traitInstanceMethod()
+%s:17 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $traitProperty declared at %s:4
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __construct() declared at %s:6
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __destruct() declared at %s:7
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __set() declared at %s:8
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __construct() declared at %s:6
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __destruct() declared at %s:7
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __invoke() declared at %s:9
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __set() declared at %s:8
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method traitInstanceMethod() declared at %s:10
+%s:19 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Mu::SIC
+%s:23 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicStaticProperty declared at %s:23
+%s:24 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicProperty declared at %s:24
+%s:24 PhanUnreferencedPublicProperty Possibly zero references to public property \Mu->publicProperty
+%s:26 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method instanceMethod() declared at %s:26
+%s:26 PhanUnreferencedPublicMethod Possibly zero references to public method \Mu::instanceMethod()
+%s:38 PhanUnreferencedClass Possibly zero references to class \NotEnum
+%s:39 PhanInvalidNode Cannot declare an enum case statement in a non-enum
+%s:45 PhanTypeInstantiateEnum Saw instantiation of enum \Suit
