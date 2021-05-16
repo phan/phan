@@ -26,6 +26,7 @@ Dead code detection:
 Plugins:
 + In `UseReturnValuePlugin`, also start warning about when using the result of an expression that evaluates to `never`
   New issue types: `PhanUseReturnValueOfNever`
+
 Bug fixes:
 + As part of the work on php 7.4 contravariant parameter types,
   don't automatically inherit inferred parameter types from ancestor classlikes when (1) there is no `@param` tag with a type for the parameter on the overriding method and (2) the ancestor parameter types are a subtype of the real parameter types unless
@@ -33,6 +34,7 @@ Bug fixes:
   1. `@inheritDoc` is used.
   2. This is a generic array type such as `array<string,mixed>` that is a specialization of an array type.
      If you want to indicate that the overriding method can be any array type, add `@param array $paramName`.
++ Change composer.json dependency on `composer/xdebug-handler` from `^2.0` to `^1.1|2.0` to avoid conflicting with other libraries or applications that depend on xdebug-handler 1.x (#4382)
 
 Apr 29 2021, Phan 4.0.5
 -----------------------
