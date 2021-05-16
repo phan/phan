@@ -947,6 +947,8 @@ class Config
 
         // Set this to true to make Phan store a full Context inside variables, instead of a FileRef. This could provide more useful info to plugins,
         // but will increase the memory usage by roughly 2.5%.
+        //
+        // TODO: This can be cleaned up in a new major version if nothing is using it (#4386)
         'record_variable_context_and_scope' => false,
 
         // If a literal string type exceeds this length,
