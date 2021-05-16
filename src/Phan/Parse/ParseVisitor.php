@@ -24,6 +24,7 @@ use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\EnumCase;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\FunctionInterface;
@@ -834,11 +835,9 @@ class ParseVisitor extends ScopeVisitor
 
             $constant->setDocComment($doc_comment);
             $constant->setAttributeList($attributes);
-            $constant->setIsDeprecated($comment->isDeprecated());
-            $constant->setIsNSInternal($comment->isNSInternal());
-            $constant->setIsOverrideIntended($comment->isOverrideIntended());
-            $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
-            $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
+
+            $this->handleClassConstantComment($constant, $comment);
+
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {
                 try {
@@ -867,22 +866,8 @@ class ParseVisitor extends ScopeVisitor
                 $constant->setUnionType(Type::fromObject($value_node)->asRealUnionType());
             }
             $constant->setNodeForValue($value_node);
-            $constant->setComment($comment);
 
-            $class->addConstant(
-                $this->code_base,
-                $constant
-            );
-            foreach ($comment->getVariableList() as $var) {
-                if ($var->getUnionType()->hasTemplateTypeRecursive()) {
-                    $this->emitIssue(
-                        Issue::TemplateTypeConstant,
-                        $constant->getFileRef()->getLineNumberStart(),
-                        (string)$constant->getFQSEN()
-                    );
-                    break;
-                }
-            }
+            $class->addConstant($this->code_base, $constant);
         }
 
         return $this->context;
@@ -910,11 +895,15 @@ class ParseVisitor extends ScopeVisitor
         // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
         $name = $node->children['name'];
         if (!\is_string($name)) {
-            throw new AssertionError('expected class const name to be a string');
+            throw new AssertionError('expected enum case name to be a string');
         }
-
         $fqsen = FullyQualifiedClassConstantName::make($class->getFQSEN(), $name);
         $lineno = $node->lineno;
+
+        if (!$class->isEnum()) {
+            $this->emitIssue(Issue::InvalidNode, $lineno, 'Cannot declare an enum case statement in a non-enum');
+            return $this->context;
+        }
 
         if ($this->code_base->hasClassConstantWithFQSEN($fqsen)) {
             $old_constant = $this->code_base->getClassConstantByFQSEN($fqsen);
@@ -942,7 +931,7 @@ class ParseVisitor extends ScopeVisitor
             Comment::ON_CONST
         );
 
-        $constant = new ClassConstant(
+        $constant = new EnumCase(
             $this->context
                 ->withLineNumberStart($lineno)
                 ->withLineNumberEnd($node->endLineno ?? $lineno),
@@ -954,13 +943,16 @@ class ParseVisitor extends ScopeVisitor
 
         $constant->setDocComment($doc_comment);
         $constant->setAttributeList($attributes);
-        $constant->setIsDeprecated($comment->isDeprecated());
-        $constant->setIsNSInternal($comment->isNSInternal());
-        $constant->setIsOverrideIntended($comment->isOverrideIntended());
-        $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
-        $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
+
+        $this->handleClassConstantComment($constant, $comment);
+
         $value_node = $node->children['expr'];
         if (!self::isConstExpr($value_node)) {
+            // NOTE: In php itself, the same types of operations are allowed as other constant expressions (i.e. isConstExpr is the correct check).
+            //
+            // However, const expressions for enum cases are evaluated when compiling an enum,
+            // including looking up global constants and class constants,
+            // and if that can't be evaluated then it's a fatal compile error.
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
@@ -969,14 +961,10 @@ class ParseVisitor extends ScopeVisitor
             );
         }
         $constant->setUnionType($class->getFQSEN()->asType()->asRealUnionType());
-        // TODO: Maybe add a fake node type to instantiate an enum
         $constant->setNodeForValue($value_node);
-        $constant->setComment($comment);
 
-        $class->addEnumCase(
-            $this->code_base,
-            $constant
-        );
+        $class->addEnumCase($this->code_base, $constant);
+
         foreach ($comment->getVariableList() as $var) {
             if ($var->getUnionType()->hasTemplateTypeRecursive()) {
                 $this->emitIssue(
@@ -989,6 +977,26 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    private function handleClassConstantComment(ClassConstant $constant, Comment $comment): void
+    {
+        $constant->setIsDeprecated($comment->isDeprecated());
+        $constant->setIsNSInternal($comment->isNSInternal());
+        $constant->setIsOverrideIntended($comment->isOverrideIntended());
+        $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
+        $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
+        $constant->setComment($comment);
+        foreach ($comment->getVariableList() as $var) {
+            if ($var->getUnionType()->hasTemplateTypeRecursive()) {
+                $this->emitIssue(
+                    Issue::TemplateTypeConstant,
+                    $constant->getFileRef()->getLineNumberStart(),
+                    (string)$constant->getFQSEN()
+                );
+                break;
+            }
+        }
     }
 
     /**

@@ -282,6 +282,8 @@ class Issue
     public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
     public const AttributeWrongTarget = 'PhanAttributeWrongTarget';
     public const TypeInvalidEnumCaseType = 'PhanTypeInvalidEnumCaseType';
+    public const InstanceMethodWithNoEnumCases = 'PhanInstanceMethodWithNoEnumCases';
+    public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -426,6 +428,7 @@ class Issue
     public const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     public const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     public const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
+    public const UnreferencedEnumCase          = 'PhanUnreferencedEnumCase';
     public const UnreferencedClosure           = 'PhanUnreferencedClosure';
     public const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
     public const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
@@ -2883,6 +2886,23 @@ class Issue
                 self::REMEDIATION_B,
                 10175
             ),
+            new Issue(
+                self::InstanceMethodWithNoEnumCases,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Saw enum {ENUM} that declares no enum cases but contains instance method {METHOD} declared at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                10178
+            ),
+            // NOTE: This is not considered a syntax error because enums can use traits and traits can also have properties.
+            new Issue(
+                self::EnumCannotHaveProperties,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Enum {ENUM} is not allowed to declare instance or static properties but it contains property ${PROPERTY} declared at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                10179
+            ),
 
             // Issue::CATEGORY_VARIABLE
             new Issue(
@@ -3660,11 +3680,12 @@ class Issue
                 self::REMEDIATION_B,
                 6031
             ),
+            // This is used for all classlikes
             new Issue(
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to class {CLASS}",
+                "Possibly zero references to {TYPE} {CLASS}",
                 self::REMEDIATION_B,
                 6005
             ),

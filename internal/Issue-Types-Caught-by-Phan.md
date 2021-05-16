@@ -1312,7 +1312,7 @@ Similar issues exist for PhanUnreferencedProperty, PhanUnreferencedConstant, Pha
 This issue is disabled by default, but can be enabled by setting `dead_code_detection` to enabled. It indicates that the given element is (possibly) unused.
 
 ```
-Possibly zero references to class {CLASS}
+Possibly zero references to {CODE} {CLASS}
 ```
 
 This will be emitted for the following code so long as `dead_code_detection` is enabled.
@@ -2587,6 +2587,12 @@ Saw {CODE} with a divisor of type {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/files/expected/0761_division_by_zero.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/files/src/0761_division_by_zero.php#L5).
 
+## PhanEnumCannotHaveProperties
+
+```
+Enum {ENUM} is not allowed to declare instance or static properties but it contains property ${PROPERTY} declared at {FILE}:{LINE}
+```
+
 ## PhanImpossibleCondition
 
 ```
@@ -2660,6 +2666,12 @@ This checks for a functionlike directly calling itself in a way that seems to be
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/4.0.0/tests/rasmus_files/expected/0007_self_call.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/4.0.0/tests/rasmus_files/src/0007_self_call.php#L8).
+
+## PhanInstanceMethodWithNoEnumCases
+
+```
+Saw enum {ENUM} that declares no enum cases but contains instance method {METHOD} declared at {FILE}:{LINE}
+```
 
 ## PhanInvalidMixin
 
