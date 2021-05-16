@@ -3856,12 +3856,6 @@ class Clazz extends AddressableElement
         });
     }
 
-    private const ENUM_PERMITTED_MAGIC_METHODS = [
-        '__call' => true,
-        '__callStatic' => true,
-        '__invoke' => true,
-    ];
-
     private function checkIsValidEnum(CodeBase $code_base): void
     {
         if (!$this->isEnum()) {
