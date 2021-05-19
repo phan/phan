@@ -49,6 +49,7 @@ use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
@@ -59,6 +60,7 @@ use Phan\Language\Type\VoidType;
 use Serializable;
 use Stringable;
 
+use function array_push;
 use function is_int;
 use function substr;
 
@@ -2716,8 +2718,23 @@ class UnionType implements Serializable, Stringable
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other): bool
     {
-        return $this->canAnyTypeStrictCastToUnionType($code_base, $other, false) ||
-            $other->canAnyTypeStrictCastToUnionType($code_base, $this, false);
+        // Note that ?int and non-null-mixed are not permitted to cast to each other,
+        // but they do have the type overlap of 'int'.
+        // So check if types have null in common, then check if the non-null versions of the types can cast to each other.
+        if ($this->containsNullableOrUndefined() || $this->isEmpty()) {
+            if ($other->containsNullableOrUndefined() || $other->isEmpty()) {
+                return true;
+            }
+            if ($this->isNull()) {
+                return false;
+            }
+        } else if ($other->isNull()) {
+            return false;
+        }
+        $this_nonnull = $this->withIsNullable(false);
+        $other_nonnull = $other->withIsNullable(false);
+        return $this_nonnull->canAnyTypeStrictCastToUnionType($code_base, $other_nonnull, false) ||
+            $other_nonnull->canAnyTypeStrictCastToUnionType($code_base, $this_nonnull, false);
     }
 
     /**
@@ -3321,6 +3338,10 @@ class UnionType implements Serializable, Stringable
         $result = [];
         foreach ($type_list as $type) {
             $type = $type->asScalarType();
+            if ($type instanceof ScalarRawType) {
+                array_push($result, ...$type->asIndividualTypeInstances());
+                continue;
+            }
             if ($type) {
                 $result[] = $type;
             }
