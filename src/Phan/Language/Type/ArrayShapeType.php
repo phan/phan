@@ -254,7 +254,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @override
      * @param Type[] $target_type_set
      */
-    public function canCastToAnyTypeInSet(array $target_type_set): bool
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         $element_union_types = null;
         foreach ($target_type_set as $target_type) {
@@ -270,12 +270,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 }
                 continue;
             }
-            if ($this->canCastToType($target_type)) {
+            if ($this->canCastToType($target_type, $code_base)) {
                 return true;
             }
         }
         if ($element_union_types) {
-            return $this->canEachFieldTypeCastToExpectedUnionType($element_union_types);
+            return $this->canEachFieldTypeCastToExpectedUnionType($element_union_types, $code_base);
         }
         return false;
     }
@@ -285,12 +285,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
                 return $this->canCastToGenericArrayKeys($type) &&
-                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
+                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType(), $code_base);
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -303,7 +303,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                         return false;
                     }
                     // can't cast {a:int} to {a:string} or {a:string=}
-                    if (!$this_field_type->canCastToUnionType($field_type)) {
+                    if (!$this_field_type->canCastToUnionType($field_type, $code_base)) {
                         return false;
                     }
                 }
@@ -318,7 +318,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return true;
         }
         if ($type instanceof GenericIterableType) {
-            return $this->canCastToGenericIterableType($type);
+            return $this->canCastToGenericIterableType($type, $code_base);
         }
 
         $d = \strtolower($type->__toString());
@@ -326,10 +326,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
-            return !$this->isDefiniteNonCallableType();
+            return !$this->isDefiniteNonCallableType($code_base);
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -337,13 +337,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ArrayType) {
             if ($type instanceof GenericArrayType) {
                 // TODO: WithoutConfig here as well?
                 return $this->canCastToGenericArrayKeys($type) &&
-                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
+                    $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType(), $code_base);
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -356,7 +356,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                         return false;
                     }
                     // can't cast {a:int} to {a:string} or {a:string=}
-                    if (!$this_field_type->canCastToUnionTypeWithoutConfig($field_type)) {
+                    if (!$this_field_type->canCastToUnionTypeWithoutConfig($field_type, $code_base)) {
                         return false;
                     }
                 }
@@ -371,7 +371,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return true;
         }
         if ($type instanceof GenericIterableType) {
-            return $this->canCastToGenericIterableType($type);
+            return $this->canCastToGenericIterableType($type, $code_base);
         }
 
         $d = \strtolower($type->__toString());
@@ -379,10 +379,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
-            return !$this->isDefiniteNonCallableType();
+            return !$this->isDefiniteNonCallableType($code_base);
         }
 
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
     /**
@@ -459,13 +459,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return \count($this->field_types) === 0;
     }
 
-    private function canCastToGenericIterableType(GenericIterableType $iterable_type): bool
+    private function canCastToGenericIterableType(GenericIterableType $iterable_type, CodeBase $code_base): bool
     {
-        if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType())) {
+        if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType(), $code_base)) {
             // TODO: Use the scalar_array_key_cast config
             return false;
         }
-        return $this->canEachFieldTypeCastToExpectedUnionType($iterable_type->getElementUnionType());
+        return $this->canEachFieldTypeCastToExpectedUnionType($iterable_type->getElementUnionType(), $code_base);
     }
 
     /** @return list<UnionType> */
@@ -496,14 +496,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * We reject casts of array{key:string,otherKey:int} to string[] because otherKey is there and incompatible
      *
      * We accept casts of array{key:string,otherKey:?int} to string[] because otherKey is possibly absent (to reduce
-     *
-     * TODO: Consider ways to implement a strict mode
-     *
      */
-    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type): bool
+    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type, CodeBase $code_base): bool
     {
         foreach ($this->getUniqueValueUnionTypes() as $value_union_type) {
-            if (!$value_union_type->canCastToUnionType($expected_type)) {
+            if (!$value_union_type->canCastToUnionType($expected_type, $code_base)) {
                 return false;
             }
         }
@@ -846,16 +843,16 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         if (\array_keys($this->field_types) !== [0, 1]) {
             return true;
         }
-        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|object'))) {
+        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('string|object'), $code_base)) {
             // First field of callable array should be a string or object. (the expression or class)
             return true;
         }
-        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
             // Second field of callable array should be the method name.
             return true;
         }
@@ -977,7 +974,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (!\is_string($method_name)) {
             return null;
         }
-        foreach ($this->field_types[0]->getTypeSet() as $type) {
+        foreach ($this->field_types[0]->getUniqueFlattenedTypeSet() as $type) {
             $class = null;
             if ($type instanceof LiteralStringType) {
                 try {
@@ -1097,9 +1094,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         });
     }
 
-    public function asCallableType(): ?Type
+    public function asCallableType(CodeBase $code_base): ?Type
     {
-        if ($this->isDefiniteNonCallableType()) {
+        if ($this->isDefiniteNonCallableType($code_base)) {
             return null;
         }
         return $this->withIsNullable(false);

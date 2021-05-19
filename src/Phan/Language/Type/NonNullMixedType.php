@@ -34,7 +34,10 @@ final class NonNullMixedType extends MixedType
         return $instance ?? ($instance = static::make('\\', self::NAME, [], false, Type::FROM_NODE));
     }
 
-    public function canCastToType(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
         return !($type instanceof NullType || $type instanceof VoidType);
     }
@@ -43,10 +46,10 @@ final class NonNullMixedType extends MixedType
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
      * @override
      */
-    public function canCastToAnyTypeInSet(array $target_type_set): bool
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         foreach ($target_type_set as $t) {
-            if ($this->canCastToType($t)) {
+            if ($this->canCastToType($t, $code_base)) {
                 return true;
             }
         }
@@ -55,8 +58,9 @@ final class NonNullMixedType extends MixedType
 
     /**
      * @override
+     * @unused-param $code_base
      */
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return !$type->isNullable();
     }
@@ -72,7 +76,7 @@ final class NonNullMixedType extends MixedType
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return $this->canCastToType($other);
+        return $this->canCastToType($other, $code_base);
     }
 
     public function asObjectType(): ?Type

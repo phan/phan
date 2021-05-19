@@ -102,6 +102,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
         throw new NodeException($node);
     }
 
+    // TODO: Return all classes in union and intersection types instead
     protected function getClassForVariable(Node $expr): Clazz
     {
         if ($expr->kind !== ast\AST_VAR) {
@@ -120,7 +121,8 @@ class InferPureSnippetVisitor extends InferPureVisitor
 
             $union_type = $variable->getUnionType()->asNormalizedTypes();
             $known_fqsen = null;
-            foreach ($union_type->getTypeSet() as $type) {
+
+            foreach ($union_type->getUniqueFlattenedTypeSet() as $type) {
                 if (!$type->isObjectWithKnownFQSEN()) {
                     continue;
                 }

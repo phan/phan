@@ -437,6 +437,7 @@ class Property extends ClassElement
     {
         $union_type = $this->getUnionType();
         foreach ($union_type->getTypeSet() as $type) {
+            // TODO: Replace $old in intersection types as well?
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
             }

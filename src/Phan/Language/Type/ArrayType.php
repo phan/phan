@@ -298,16 +298,16 @@ class ArrayType extends IterableType
         ];
     }
 
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
-        return parent::canCastToNonNullableType($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+        return parent::canCastToNonNullableType($type, $code_base) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
-        return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
     /**
@@ -320,7 +320,7 @@ class ArrayType extends IterableType
         if ($other instanceof IterableType || $other instanceof MixedType || $other instanceof TemplateType) {
             return true;
         }
-        if ($this->isDefiniteNonCallableType()) {
+        if ($this->isDefiniteNonCallableType($code_base)) {
             return false;
         }
         return $other instanceof CallableDeclarationType || $other instanceof CallableType;
@@ -365,8 +365,11 @@ class ArrayType extends IterableType
         return parent::performComparison([], $scalar, $flags);
     }
 
-    // There are more specific checks in GenericArrayType and ArrayShapeType
-    public function asCallableType(): ?Type
+    /**
+     * There are more specific checks in GenericArrayType and ArrayShapeType
+     * @unused-param $code_base
+     */
+    public function asCallableType(CodeBase $code_base): ?Type
     {
         return CallableArrayType::instance(false);
     }

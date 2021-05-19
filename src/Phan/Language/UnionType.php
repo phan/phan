@@ -33,6 +33,7 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -61,6 +62,9 @@ use Serializable;
 use Stringable;
 
 use function array_push;
+use function count;
+use function implode;
+use function in_array;
 use function is_int;
 use function substr;
 
@@ -496,15 +500,18 @@ class UnionType implements Serializable, Stringable
     private static function extractTypeParts(string $type_string): array
     {
         $parts = [];
-        foreach (\preg_split('@[|&]@', $type_string) as $part) {
-            $parts[] = \trim($part);
+        // @phan-suppress-next-line PhanTypeInvalidExpressionArrayDestructuring FIXME: Fix preg_split type inference
+        foreach (\preg_split('@[|&]@', $type_string, -1, \PREG_SPLIT_OFFSET_CAPTURE) as [$part, $offset]) {
+            $parts[] = new TypePart(\trim($part), $offset > 0 ? $type_string[$offset - 1] : '|');
         }
 
         if (\count($parts) <= 1) {
-            return $parts;
+            return $parts ? [$parts[0]->type] : [];
         }
-        if (!\preg_match('/[<({]/', $type_string)) {
-            return $parts;
+        if (!\preg_match('/[<({&]/', $type_string)) {
+            return \array_map(static function (TypePart $part): string {
+                return $part->type;
+            }, $parts);
         }
         return self::mergeTypeParts($parts);
     }
@@ -529,8 +536,8 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param string[] $parts (already trimmed)
-     * @return string[]
+     * @param list<TypePart> $parts (already trimmed)
+     * @return list<string>
      * @see Type::extractTemplateParameterTypeNameList() (Similar method)
      */
     private static function mergeTypeParts(array $parts): array
@@ -539,12 +546,13 @@ class UnionType implements Serializable, Stringable
         $delta = 0;
         $results = [];
         foreach ($parts as $part) {
+            $type = $part->type;
             if (\count($prev_parts) > 0) {
                 $prev_parts[] = $part;
-                $delta += \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{') - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+                $delta += \substr_count($type, '<') + \substr_count($type, '(') + \substr_count($type, '{') - \substr_count($type, '>') - \substr_count($type, ')') - \substr_count($type, '}');
                 if ($delta <= 0) {
                     if ($delta === 0) {
-                        $results[] = \implode('|', $prev_parts);
+                        $results[] = TypePart::combine($prev_parts);
                     }  // ignore unparsable data such as "<T,T2>>"
                     $prev_parts = [];
                     $delta = 0;
@@ -552,19 +560,42 @@ class UnionType implements Serializable, Stringable
                 }
                 continue;
             }
-            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{');
+            $bracket_count = \substr_count($type, '<') + \substr_count($type, '(') + \substr_count($type, '{');
             if ($bracket_count === 0) {
                 $results[] = $part;
                 continue;
             }
-            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+            $delta = $bracket_count - \substr_count($type, '>') - \substr_count($type, ')') - \substr_count($type, '}');
             if ($delta === 0) {
                 $results[] = $part;
             } elseif ($delta > 0) {
                 $prev_parts[] = $part;
             }  // otherwise ignore unparsable data such as ">" (should be impossible)
         }
-        return $results;
+        return self::convertTypePartsToParseableStrings($results);
+    }
+
+    /**
+     * @param list<TypePart> $parts
+     * @return list<string>
+     */
+    private static function convertTypePartsToParseableStrings(array $parts): array {
+        $union = [];
+        $intersection = [];
+        foreach ($parts as $part) {
+            if ($part->separator === '&') {
+                $intersection[] = $part->type;
+                continue;
+            }
+            if ($intersection) {
+                $union[] = count($intersection) >= 2 ? 'and<' . implode(',', $intersection) . '>' : $intersection[0];
+            }
+            $intersection = [$part->type];
+        }
+        if ($intersection) {
+            $union[] = count($intersection) >= 2 ? 'and<' . implode(',', $intersection) . '>' : $intersection[0];
+        }
+        return $union;
     }
 
     /**
@@ -718,6 +749,29 @@ class UnionType implements Serializable, Stringable
     public function getTypeSet(): array
     {
         return $this->type_set;
+    }
+
+    /**
+     * @return list<Type>
+     * The list of simple types associated with this
+     * union type. Keys are consecutive. Intersection types are flattened.
+     */
+    public function getUniqueFlattenedTypeSet(): array
+    {
+        if (!$this->hasTypeMatchingCallback(static function (Type $type): bool {
+            return $type instanceof IntersectionType;
+        })) {
+            return $this->type_set;
+        }
+        $new_types = [];
+        foreach ($this->type_set as $inner) {
+            foreach ($inner instanceof IntersectionType ? $inner->getTypeParts() : [$inner] as $part) {
+                if (!in_array($part, $new_types, true)) {
+                    $new_types[] = $part;
+                }
+            }
+        }
+        return $new_types;
     }
 
     /**
@@ -2137,16 +2191,9 @@ class UnionType implements Serializable, Stringable
         CodeBase $code_base
     ): bool {
 
-        $this_expanded =
-            $this->asExpandedTypes($code_base);
+        $target_expanded = $target->asExpandedTypes($code_base);
 
-        $target_expanded =
-            $target->asExpandedTypes($code_base);
-
-        return
-            $this_expanded->canCastToUnionType(
-                $target_expanded
-            );
+        return $this->canCastToUnionType($target_expanded, $code_base);
     }
 
     /**
@@ -2155,7 +2202,7 @@ class UnionType implements Serializable, Stringable
      *
      * This allows casting Some<\MyClass> to cast to Option<\MyClass>, but not Option<\UnrelatedClass>
      */
-    public function canCastToUnionTypeHandlingTemplates(
+    public function canCastToUnionType(
         UnionType $target,
         CodeBase $code_base
     ): bool {
@@ -2221,7 +2268,7 @@ class UnionType implements Serializable, Stringable
         // type combinations and see if any can cast to
         // any.
         foreach ($type_set as $source_type) {
-            if ($source_type->canCastToAnyTypeInSetHandlingTemplates($target_type_set, $code_base)) {
+            if ($source_type->canCastToAnyTypeInSet($target_type_set, $code_base)) {
                 return true;
             }
         }
@@ -2232,101 +2279,7 @@ class UnionType implements Serializable, Stringable
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->isNullable()) {
                     // TODO: Add unit tests of nullable templates
-                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSetHandlingTemplates($target_type_set, $code_base);
-                }
-            }
-        }
-
-        // Only if no source types can be cast to any target
-        // types do we say that we cannot perform the cast
-        return false;
-    }
-
-    /**
-     * @param UnionType $target
-     * A type to check to see if this can cast to it
-     *
-     * @return bool
-     * True if this type is allowed to cast to the given type
-     * i.e. int->float is allowed  while float->int is not.
-     */
-    public function canCastToUnionType(
-        UnionType $target
-    ): bool {
-        // Fast-track most common cases first
-        $type_set = $this->type_set;
-        // If either type is unknown, we can't call it
-        // a success
-        if (\count($type_set) === 0) {
-            return true;
-        }
-        $target_type_set = $target->type_set;
-        if (\count($target_type_set) === 0) {
-            return true;
-        }
-
-        // T overlaps with T, a future call to Type->canCastToType will pass.
-        $target = $target->asNormalizedTypes();
-        if ($this->hasCommonType($target)) {
-            return true;
-        }
-
-        static $float_type;
-        static $int_type;
-        static $mixed_type;
-        static $null_type;
-        if ($null_type === null) {
-            $int_type   = IntType::instance(false);
-            $float_type = FloatType::instance(false);
-            $mixed_type = MixedType::instance(false);
-            $null_type  = NullType::instance(false);
-        }
-
-        if (Config::get_null_casts_as_any_type()) {
-            // null <-> null
-            // (this fork has weaker type casting rules than phan/phan, using hasType instead of isType)
-            if ($this->hasType(NullType::instance(false))
-                || $target->isType(NullType::instance(false))
-            ) {
-                return true;
-            }
-        } elseif (Config::get_null_casts_as_array() && $this->hasType(NullType::instance(false)) && $target->hasArrayLike()) {
-            // null->array
-            return true;
-        } elseif (Config::get_array_casts_as_null() && $target->isType(NullType::instance(false)) && $this->hasArrayLike()) {
-            // array -> null
-            return true;
-        }
-
-        // mixed <-> mixed
-        if (\in_array($mixed_type, $type_set, true)
-            || \in_array($mixed_type, $target_type_set, true)
-        ) {
-            return true;
-        }
-
-        // int -> float
-        if (\in_array($int_type, $type_set, true)
-            && \in_array($float_type, $target_type_set, true)
-        ) {
-            return true;
-        }
-
-        // Check conversion on the cross product of all
-        // type combinations and see if any can cast to
-        // any.
-        foreach ($type_set as $source_type) {
-            if ($source_type->canCastToAnyTypeInSet($target_type_set)) {
-                return true;
-            }
-        }
-
-        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
-        if (\in_array($null_type, $target_type_set, true)) {
-            foreach ($type_set as $source_type) {
-                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                if ($source_type->isNullable()) {
-                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSet($target_type_set);
+                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSet($target_type_set, $code_base);
                 }
             }
         }
@@ -2345,9 +2298,7 @@ class UnionType implements Serializable, Stringable
      * (intended to ignore any permissive config settings, such as null_casts_as_any_type)
      * i.e. int->float is allowed  while float->int is not.
      */
-    public function canCastToUnionTypeWithoutConfig(
-        UnionType $target
-    ): bool {
+    public function canCastToUnionTypeWithoutConfig(UnionType $target, CodeBase $code_base): bool {
         // Fast-track most common cases first
         $type_set = $this->type_set;
         // If either type is unknown, we can't call it
@@ -2395,7 +2346,7 @@ class UnionType implements Serializable, Stringable
         // type combinations and see if any can cast to
         // any.
         foreach ($type_set as $source_type) {
-            if ($source_type->canCastToAnyTypeInSetWithoutConfig($target_type_set)) {
+            if ($source_type->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
                 return true;
             }
         }
@@ -2405,7 +2356,9 @@ class UnionType implements Serializable, Stringable
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->isNullable()) {
-                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set);
+                    if ($source_type->withIsNullable(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -2422,7 +2375,7 @@ class UnionType implements Serializable, Stringable
      *
      * @internal
      */
-    public function canCastToUnionTypeIfNonNull(UnionType $target): bool
+    public function canCastToUnionTypeIfNonNull(UnionType $target, CodeBase $code_base): bool
     {
         $non_null = $this->nonNullableClone();
         if ($non_null === $this) {
@@ -2433,7 +2386,7 @@ class UnionType implements Serializable, Stringable
             // This was exclusively null - It should be a full TypeMismatch
             return false;
         }
-        return $non_null->canCastToUnionType($target);
+        return $non_null->canCastToUnionType($target, $code_base);
     }
 
     /**
@@ -2476,9 +2429,7 @@ class UnionType implements Serializable, Stringable
      *
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function hasSubtypeOf(
-        UnionType $target
-    ): bool {
+    public function hasSubtypeOf(UnionType $target, CodeBase $code_base): bool {
         // Fast-track most common cases first
         $type_set = $this->type_set;
         // If either type is unknown, we can't call it
@@ -2514,6 +2465,7 @@ class UnionType implements Serializable, Stringable
         }
 
         // int -> float
+        // TODO: This should go in IntType->isSubtypeOf?
         if (\in_array($int_type, $type_set, true)
             && \in_array($float_type, $target_type_set, true)
         ) {
@@ -2524,7 +2476,7 @@ class UnionType implements Serializable, Stringable
         // type combinations and see if any can cast to
         // any.
         foreach ($type_set as $source_type) {
-            if ($source_type->isSubtypeOfAnyTypeInSet($target_type_set)) {
+            if ($source_type->isSubtypeOfAnyTypeInSet($target_type_set, $code_base)) {
                 return true;
             }
         }
@@ -2534,7 +2486,7 @@ class UnionType implements Serializable, Stringable
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->isNullable()) {
-                    if ($source_type->withIsNullable(false)->isSubtypeOfAnyTypeInSet($target_type_set)) {
+                    if ($source_type->withIsNullable(false)->isSubtypeOfAnyTypeInSet($target_type_set, $code_base)) {
                         return true;
                     }
                 }
@@ -2613,7 +2565,7 @@ class UnionType implements Serializable, Stringable
         // any.
         $matches = true;
         foreach ($type_set as $source_type) {
-            if (!$source_type->asExpandedTypes($code_base)->canCastToUnionTypeWithoutConfig($target)) {
+            if (!$source_type->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($target, $code_base)) {
                 $matches = false;
                 break;
             }
@@ -2626,7 +2578,7 @@ class UnionType implements Serializable, Stringable
         if (\in_array($null_type, $target_type_set, true)) {
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->canCastToUnionTypeWithoutConfig($target)) {
+                if (!$source_type->withIsNullable(false)->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($target, $code_base)) {
                     return false;
                 }
             }
@@ -2659,7 +2611,7 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) === 0) {
             return true;
         }
-        $target_type_set = $target->type_set;
+        $target_type_set = $target->asNormalizedTypes()->type_set;
         if (\count($target_type_set) === 0) {
             return true;
         }
@@ -2681,26 +2633,12 @@ class UnionType implements Serializable, Stringable
         // any.
         $matches = true;
         foreach ($type_set as $source_type) {
-            if (!$source_type->asExpandedTypes($code_base)->hasSubtypeOf($target)) {
+            if (!$source_type->isSubtypeOfAnyTypeInSet($target->getTypeSet(), $code_base)) {
                 $matches = false;
                 break;
             }
         }
         if ($matches) {
-            return true;
-        }
-
-        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
-        foreach ($target_type_set as $type) {
-            if (!$type instanceof NullType) {
-                continue;
-            }
-            foreach ($type_set as $source_type) {
-                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->hasSubtypeOf($target)) {
-                    return false;
-                }
-            }
             return true;
         }
 
@@ -3040,7 +2978,7 @@ class UnionType implements Serializable, Stringable
     ): Generator {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($this->type_set as $class_type) {
+        foreach ($this->getUniqueFlattenedTypeSet() as $class_type) {
             if ($class_type->isNativeType()) {
                 continue;
             }
@@ -3073,6 +3011,10 @@ class UnionType implements Serializable, Stringable
                     );
                 }
                 yield $context->getClassInScope($code_base);
+                continue;
+            }
+
+            if (!$class_type->isObjectWithKnownFQSEN()) {
                 continue;
             }
             // Get the class FQSEN
@@ -3225,7 +3167,7 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * Takes `MyClass|int|array|?object` and returns `MyClass`
+     * Takes `\MyClass|int|array|?object|\A&\B` and returns `\MyClass|\A&\B`
      *
      * @return UnionType
      * A UnionType with known object types with known FQSENs kept, other types filtered out.
@@ -3235,7 +3177,7 @@ class UnionType implements Serializable, Stringable
     public function objectTypesWithKnownFQSENs(): UnionType
     {
         return $this->makeFromFilter(static function (Type $type): bool {
-            return $type->isObjectWithKnownFQSEN();
+            return $type->hasObjectWithKnownFQSEN();
         });
     }
 
@@ -3361,11 +3303,11 @@ class UnionType implements Serializable, Stringable
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function callableTypes(): UnionType
+    public function callableTypes(CodeBase $code_base): UnionType
     {
         return UnionType::of(
-            self::castTypeListToCallable($this->type_set),
-            self::castTypeListToCallable($this->real_type_set)
+            self::castTypeListToCallable($this->type_set, $code_base),
+            self::castTypeListToCallable($this->real_type_set, $code_base)
         );
     }
 
@@ -3373,11 +3315,11 @@ class UnionType implements Serializable, Stringable
      * @param Type[] $type_list
      * @return list<Type> possibly containing duplicates
      */
-    private static function castTypeListToCallable(array $type_list): array
+    private static function castTypeListToCallable(array $type_list, CodeBase $code_base): array
     {
         $result = [];
         foreach ($type_list as $type) {
-            $type = $type->asCallableType();
+            $type = $type->asCallableType($code_base);
             if ($type) {
                 $result[] = $type;
             }
@@ -3425,7 +3367,7 @@ class UnionType implements Serializable, Stringable
                     $result[] = Type::countableInstance();
                 }
                 continue;
-            } elseif ($type->isObjectWithKnownFQSEN()) {
+            } elseif ($type->hasObjectWithKnownFQSEN()) {
                 $type = $type->withIsNullable(false);
                 $expanded_type = $type->asExpandedTypes($code_base);
                 foreach ($expanded_type->getTypeSet() as $part_type) {
@@ -3435,22 +3377,26 @@ class UnionType implements Serializable, Stringable
                     }
                 }
                 if ($assume_subclass_implements_countable) {
-                    try {
-                        $fqsen = $type->asFQSEN();
-                        if (!($fqsen instanceof FullyQualifiedClassName)) {
-                            // This is a closure
-                            continue;
-                        }
-                        if ($code_base->hasClassWithFQSEN($fqsen)) {
-                            if ($code_base->getClassByFQSEN($fqsen)->isFinal()) {
-                                // This is a final class and can't implement Countable
-                                continue;
+                    if ($type->allTypePartsMatchCallback(static function (Type $part) use ($code_base): bool {
+                        try {
+                            $fqsen = $part->asFQSEN();
+                            if (!($fqsen instanceof FullyQualifiedClassName)) {
+                                // This is a closure
+                                return false;
                             }
+                            if ($code_base->hasClassWithFQSEN($fqsen)) {
+                                if ($code_base->getClassByFQSEN($fqsen)->isFinal()) {
+                                    // This is a final class and can't implement Countable
+                                    return false;
+                                }
+                            }
+                        } catch (Exception $_) {
+                            // ignore it
                         }
-                    } catch (Exception $_) {
-                        // ignore it
+                        return true;
+                    })) {
+                        $result[] = Type::countableInstance();
                     }
-                    $result[] = Type::countableInstance();
                 }
                 continue;
             } else {
@@ -3698,10 +3644,10 @@ class UnionType implements Serializable, Stringable
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function hasCallableType(): bool
+    public function hasCallableType(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isCallable();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+            return $type->isCallable($code_base);
         });
     }
 
@@ -3718,10 +3664,10 @@ class UnionType implements Serializable, Stringable
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod not used right now.
      */
-    public function isExclusivelyCallable(): bool
+    public function isExclusivelyCallable(CodeBase $code_base): bool
     {
-        return $this->allTypesMatchCallback(static function (Type $type): bool {
-            return $type->isCallable();
+        return $this->allTypesMatchCallback(static function (Type $type) use($code_base): bool {
+            return $type->isCallable($code_base);
         });
     }
 
@@ -3936,6 +3882,7 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * @param Closure(Type): bool $matcher_callback
      * @return bool
      * True if each of the types in this UnionType made $matcher_callback return true
      */
@@ -6170,10 +6117,10 @@ class UnionType implements Serializable, Stringable
     /**
      * Returns true if at least one type in this union type definitely can't be cast to `callable`
      */
-    public function containsDefiniteNonCallableType(): bool
+    public function containsDefiniteNonCallableType(CodeBase $code_base): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullableLabeled() || $type->isDefiniteNonCallableType()) {
+            if ($type->isNullableLabeled() || $type->isDefiniteNonCallableType($code_base)) {
                 return true;
             }
         }
@@ -6183,10 +6130,10 @@ class UnionType implements Serializable, Stringable
     /**
      * Returns true if either (1) this is the empty type, or (2) at least one type in this union type can't be ruled out as being callable.
      */
-    public function hasPossiblyCallableType(): bool
+    public function hasPossiblyCallableType(CodeBase $code_base): bool
     {
         foreach ($this->type_set as $type) {
-            if (!$type->isDefiniteNonCallableType()) {
+            if (!$type->isDefiniteNonCallableType($code_base)) {
                 return true;
             }
         }

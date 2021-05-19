@@ -138,10 +138,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
+     * @unused-param $code_base
      * @return bool
      * True if this type is a callable or a Closure or a FunctionLikeDeclarationType
      */
-    public function isCallable(): bool
+    public function isCallable(CodeBase $code_base): bool
     {
         return true;
     }
@@ -166,7 +167,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      *
      * -e.g. `Closure(mixed):SubClass` can be used when a `Closure(int):BaseClass` is expected.
      */
-    public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type): bool
+    public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type, CodeBase $code_base): bool
     {
         if ($this->required_param_count > $type->required_param_count) {
             return false;
@@ -178,7 +179,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return false;
         }
         // TODO: Allow nullable/null to cast to void?
-        if (!$this->return_type->canCastToUnionType($type->return_type)) {
+        if (!$this->return_type->canCastToUnionType($type->return_type, $code_base)) {
             return false;
         }
         foreach ($this->params as $i => $param) {
@@ -186,7 +187,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             if (!$other_param) {
                 break;
             }
-            if (!$param->canCastToParameterIgnoringVariadic($other_param)) {
+            if (!$param->canCastToParameterIgnoringVariadic($other_param, $code_base)) {
                 return false;
             }
         }
@@ -205,11 +206,8 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {
-        if (parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base)) {
-            return true;
-        }
         if (!($type instanceof FunctionLikeDeclarationType)) {
-            return false;
+            return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
         }
         if ($this->required_param_count > $type->required_param_count) {
             return false;
@@ -221,7 +219,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return false;
         }
         // TODO: Allow nullable/null to cast to void?
-        if (!$this->return_type->asExpandedTypes($code_base)->canCastToUnionTypeHandlingTemplates($type->return_type, $code_base)) {
+        if (!$this->return_type->asExpandedTypes($code_base)->canCastToUnionType($type->return_type, $code_base)) {
             return false;
         }
         foreach ($this->params as $i => $param) {
@@ -292,7 +290,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return false;
     }
@@ -1092,7 +1090,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        return !$other->isDefiniteNonCallableType();
+        return !$other->isDefiniteNonCallableType($code_base);
     }
 
     public function setAttributeList(array $attribute_list): void

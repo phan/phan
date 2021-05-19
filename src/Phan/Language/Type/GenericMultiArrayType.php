@@ -170,11 +170,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof GenericArrayType) {
             return $this->genericArrayElementUnionType()->canCastToUnionType(
-                $type->genericArrayElementUnionType()
+                $type->genericArrayElementUnionType(),
+                $code_base
             );
         }
 
@@ -192,14 +193,15 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             return true;
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof GenericArrayType) {
             return $this->genericArrayElementUnionType()->canCastToUnionType(
-                $type->genericArrayElementUnionType()
+                $type->genericArrayElementUnionType(),
+                $code_base
             );
         }
 
@@ -217,7 +219,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             return true;
         }
 
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
     public function isGenericArray(): bool

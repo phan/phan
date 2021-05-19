@@ -676,8 +676,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
             try {
-                $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator', false)->asPHPDocUnionType(),
+                $func_return_type_can_cast = Type::fromNamespaceAndName('\\', 'Generator', false)->asPHPDocUnionType()->canCastToUnionType(
+                    $func_return_type,
                     $this->code_base
                 );
             } catch (RecursionDepthException $_) {

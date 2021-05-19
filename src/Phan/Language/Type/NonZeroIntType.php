@@ -56,7 +56,7 @@ final class NonZeroIntType extends IntType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -96,7 +96,7 @@ final class NonZeroIntType extends IntType
             }
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -104,7 +104,7 @@ final class NonZeroIntType extends IntType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -123,14 +123,14 @@ final class NonZeroIntType extends IntType
             }
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
      * @return bool
      * True if this Type is a subtype of the given type
      */
-    protected function isSubtypeOfNonNullableType(Type $type): bool
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             if ($type instanceof IntType) {
@@ -142,7 +142,7 @@ final class NonZeroIntType extends IntType
             return false;
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     public function asSignatureType(): Type

@@ -199,7 +199,8 @@ class RedundantCondition
         }
         if ($node->kind === ast\AST_DIM) {
             // Surprisingly, $str[$invalidOffset] is the empty string instead of null, and isset($str[$invalid]) is false.
-            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr'], false)->canCastToUnionType(StringType::instance(true)->asPHPDocUnionType());
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr'], false)
+                ->canCastToUnionType(StringType::instance(true)->asPHPDocUnionType(), $code_base);
         }
         return false;
     }

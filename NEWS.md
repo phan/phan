@@ -1,5 +1,10 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.0 (dev)
+-----------------------
+
+Support intersection types
+
 May 19 2021, Phan 4.0.7 (dev)
 -----------------------
 

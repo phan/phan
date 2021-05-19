@@ -50,12 +50,12 @@ final class NullType extends ScalarType implements LiteralTypeInterface
         );
     }
 
-    public function canCastToNonNullableType(Type $type): bool
+    public function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         return Config::get_null_casts_as_any_type()
             || (Config::get_null_casts_as_array() && $type->isArrayLike())
-            || parent::canCastToNonNullableType($type);
+            || parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -68,16 +68,20 @@ final class NullType extends ScalarType implements LiteralTypeInterface
         return $other->isNullable() || $other instanceof TemplateType;
     }
 
-    public function isSubtypeOf(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
         return $type->isNullable();
     }
 
     /**
      * @unused-param $type
+     * @unused-param $code_base
      * @override
      */
-    public function isSubtypeOfNonNullableType(Type $type): bool
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return false;
     }
@@ -86,45 +90,9 @@ final class NullType extends ScalarType implements LiteralTypeInterface
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
+     * @unused-param $code_base
      */
-    public function canCastToType(Type $type): bool
-    {
-        // Check to see if we have an exact object match
-        if ($this === $type) {
-            return true;
-        }
-
-        // Null can cast to a nullable type.
-        if ($type->isNullable()) {
-            return true;
-        }
-
-        if (Config::get_null_casts_as_any_type()) {
-            return true;
-        }
-
-        // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
-        if ($type->isScalar()) {
-            if (Config::getValue('scalar_implicit_cast')) {
-                return true;
-            }
-            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
-            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
-            if (\count($scalar_implicit_partial) > 0 &&
-                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return bool
-     * True if this Type can be cast to the given Type
-     * cleanly
-     */
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // Check to see if we have an exact object match
         if ($this === $type) {
@@ -138,9 +106,10 @@ final class NullType extends ScalarType implements LiteralTypeInterface
     /**
      * @return bool
      * True if this Type can be cast to the given Type
-     * cleanly (accounting for templates)
+     * cleanly (accounting for templates, intersection types, etc.)
+     * @unused-param $code_base
      */
-    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
         // Check to see if we have an exact object match
         if ($this === $type) {
@@ -171,7 +140,7 @@ final class NullType extends ScalarType implements LiteralTypeInterface
 
         // Test to see if we can cast to the non-nullable version
         // of the target type.
-        return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+        return false;
     }
 
     /**

@@ -567,6 +567,7 @@ class InferPureVisitor extends AnalysisVisitor
         } catch (Exception $_) {
             throw new NodeException($class, 'could not get type');
         }
+        // TODO: Check all classes in union and intersection types instead up to a limit?
         if ($union_type->typeCount() !== 1) {
             throw new NodeException($class);
         }

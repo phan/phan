@@ -1765,10 +1765,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
 
-                    if (!$dim_type->canCastToUnionType($expected_key_type)) {
+                    if (!$dim_type->canCastToUnionType($expected_key_type, $this->code_base)) {
                         $issue_type = Issue::TypeMismatchDimFetch;
 
-                        if ($dim_type->containsNullable() && $dim_type->nonNullableClone()->canCastToUnionType($expected_key_type)) {
+                        if ($dim_type->containsNullable() && $dim_type->nonNullableClone()->canCastToUnionType($expected_key_type, $this->code_base)) {
                             $issue_type = Issue::TypeMismatchDimFetchNullable;
                         }
 
@@ -1818,14 +1818,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
         if ($union_type->isNonNullStringType()
-            || ($union_type->canCastToUnionType($string_union_type) && !$union_type->hasMixedOrNonEmptyMixedType())
+            || ($union_type->canCastToUnionType($string_union_type, $this->code_base) && !$union_type->hasMixedOrNonEmptyMixedType())
         ) {
             if (Config::get_closest_minimum_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
                 $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
             }
             $this->checkIsValidStringOffset($union_type, $node, $dim_type);
 
-            if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
+            if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type, $this->code_base)) {
                 // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
                 if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
                     $this->emitIssue(
@@ -2345,7 +2345,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($int_or_string_type === null) {
                 $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string|null');
             }
-            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
+            if (!$name_node_type->canCastToUnionType($int_or_string_type, $this->code_base)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno, (string)$name_node_type);
                 return MixedType::instance(false)->asPHPDocUnionType();
             }
@@ -3593,7 +3593,10 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($union_type->nonNativeTypes()->getTypeSet() as $class_type) {
+        foreach ($union_type->nonNativeTypes()->getUniqueFlattenedTypeSet() as $class_type) {
+            if (!$class_type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
             // Get the class FQSEN
             try {
                 $class_fqsen = FullyQualifiedClassName::fromType($class_type);
@@ -3753,7 +3756,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $object_types = $union_type->objectTypes();
         if ($object_types->isEmpty()) {
-            if (!$union_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+            if (!$union_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
                 $this->emitIssue(
                     Issue::TypeInvalidCallableObjectOfMethod,
                     $context->getLineNumberStart(),
@@ -3897,12 +3900,12 @@ class UnionTypeVisitor extends AnalysisVisitor
             $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
             if (!is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name, $this->should_catch_issue_exception);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
                     Issue::maybeEmit(
-                        $this->code_base,
-                        $this->context,
+                        $code_base,
+                        $context,
                         Issue::TypeInvalidCallableMethodName,
-                        $method_name->lineno ?? $this->context->getLineNumberStart(),
+                        $method_name->lineno ?? $context->getLineNumberStart(),
                         $method_name_type
                     );
                 }

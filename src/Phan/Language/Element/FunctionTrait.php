@@ -887,7 +887,8 @@ trait FunctionTrait
             // issue.
             if (!$default_is_null) {
                 if (!$default_type->canCastToUnionType(
-                    $parameter->getUnionType()
+                    $parameter->getUnionType(),
+                    $code_base
                 )) {
                     Issue::maybeEmit(
                         $code_base,
@@ -1511,7 +1512,7 @@ trait FunctionTrait
                 }
             }
         }
-        foreach ($real_return_type->getTypeSet() as $type) {
+        foreach ($real_return_type->getUniqueFlattenedTypeSet() as $type) {
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
             }

@@ -44,6 +44,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -97,6 +98,9 @@ use function trim;
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return types.
+ *
+ * NOTE: In Phan 5, several type casting checks were merged in a backwards incompatible way.
+ *
  */
 class Type implements Stringable
 {
@@ -227,6 +231,7 @@ class Type implements Stringable
      * @var array<string,bool> - For checking if a string is an internal type. This is used for case-insensitive lookup.
      */
     public const _internal_type_set = [
+        'and'             => true,
         'associative-array' => true,
         'array'           => true,
         'bool'            => true,
@@ -1017,6 +1022,9 @@ class Type implements Stringable
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-list');
                     case 'iterable':
                         return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                    case 'and':
+                        // and<A, B, C> is an alias for A&B&C for parsing simplicity
+                        return self::parseIntersectionTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, null, null);
                 }
             }
             return self::fromInternalTypeName(
@@ -1253,6 +1261,21 @@ class Type implements Stringable
         }
         return IterableType::instance($is_nullable);
     }
+
+    /**
+     * @param list<UnionType> $template_parameter_type_list
+     * @param bool $is_nullable
+     */
+    private static function parseIntersectionTypeFromTemplateParameterList(
+        array $template_parameter_type_list,
+        bool $is_nullable,
+        ?CodeBase $code_base,
+        ?Context $context
+    ): Type {
+        $result = IntersectionType::createFromTypes($template_parameter_type_list, $code_base, $context);
+        return $is_nullable ? $result->withIsNullable(true) : $result;
+    }
+
 
     /**
      * @param list<UnionType> $template_parameter_type_list
@@ -1495,6 +1518,9 @@ class Type implements Stringable
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                     case 'non-empty-list':
                         return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, true);
+                    case 'and':
+                        // and<A, B, C> is an alias for A&B&C for parsing simplicity
+                        return self::parseIntersectionTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $code_base, $context);
                 }
                 // TODO: Warn about unrecognized types.
             }
@@ -2116,9 +2142,11 @@ class Type implements Stringable
     /**
      * @return bool
      * True if this type is a callable or a Closure.
+     * @unused-param $code_base
      */
-    public function isCallable(): bool
+    public function isCallable(CodeBase $code_base): bool
     {
+        // TODO: Can load the class to check?
         return false;  // Overridden in subclass CallableType, ClosureType, FunctionLikeDeclarationType
     }
 
@@ -2142,11 +2170,22 @@ class Type implements Stringable
 
     /**
      * @return bool
-     * True if this type is an object (and not the phpdoc `object` or a template)
+     * True if this type has an object with a known fqsen (and not the phpdoc `object` or a template)
      */
     public function isObjectWithKnownFQSEN(): bool
     {
         return true;  // Overridden in various subclasses
+    }
+
+    /**
+     * @return bool
+     * True if this type has an object with a known fqsen (and not the phpdoc `object` or a template)
+     *
+     * This differs from isObjectWithKnownFQSEN for intersection types.
+     */
+    public function hasObjectWithKnownFQSEN(): bool
+    {
+        return $this->isObjectWithKnownFQSEN();  // Overridden in IntersectionType
     }
 
     /**
@@ -2170,10 +2209,11 @@ class Type implements Stringable
         if ($other->isPossiblyObject() && $this->canPossiblyCastToClass($code_base, $other->withIsNullable(false))) {
             return true;
         }
-        return $this->canCastToType($other);
+        return $this->canCastToType($other, $code_base);
     }
     /**
      * Check if there is any way this type or a subclass could cast to $other.
+     * TODO: Handle intersection types?
      * (does not check for mixed)
      */
     public function canPossiblyCastToClass(CodeBase $code_base, Type $other): bool
@@ -2660,7 +2700,7 @@ class Type implements Stringable
         return $this->memoized_data['expanded_types'] = $this->computeExpandedTypes($code_base, $recursion_depth);
     }
 
-    private function computeExpandedTypes(CodeBase $code_base, int $recursion_depth): UnionType
+    protected function computeExpandedTypes(CodeBase $code_base, int $recursion_depth): UnionType
     {
         $union_type = $this->asPHPDocUnionType();
 
@@ -2838,10 +2878,10 @@ class Type implements Stringable
      * True if this Type can be cast to the given Type cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
-    public function canCastToAnyTypeInSet(array $target_type_set): bool
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         foreach ($target_type_set as $target_type) {
-            if ($this->canCastToType($target_type)) {
+            if ($this->canCastToType($target_type, $code_base)) {
                 return true;
             }
         }
@@ -2854,10 +2894,10 @@ class Type implements Stringable
      * True if this Type can be cast to the given Type cleanly, ignoring permissive config settings.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
-    public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set): bool
+    public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
     {
         foreach ($target_type_set as $target_type) {
-            if ($this->canCastToTypeWithoutConfig($target_type)) {
+            if ($this->canCastToTypeWithoutConfig($target_type, $code_base)) {
                 return true;
             }
         }
@@ -2866,85 +2906,19 @@ class Type implements Stringable
 
     /**
      * @param Type[] $target_type_set 1 or more types
+     * @param CodeBase $code_base
      * @return bool
      * True if this Type can be cast to the given set of types cleanly.
      * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
      */
-    public function isSubtypeOfAnyTypeInSet(array $target_type_set): bool
+    public function isSubtypeOfAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         foreach ($target_type_set as $target_type) {
-            if ($this->isSubtypeOf($target_type)) {
+            if ($this->isSubtypeOf($target_type, $code_base)) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * @param Type[] $target_type_set 1 or more types
-     * @return bool
-     * True if this Type can be cast to the given set of Types cleanly (accounting for templates)
-     * TODO: Override this in ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
-     */
-    public function canCastToAnyTypeInSetHandlingTemplates(array $target_type_set, CodeBase $code_base): bool
-    {
-        foreach ($target_type_set as $target_type) {
-            if ($this->canCastToTypeHandlingTemplates($target_type, $code_base)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return bool
-     * True if this Type can be cast to the given Type
-     * cleanly
-     */
-    public function canCastToType(Type $type): bool
-    {
-        // Check to see if we have an exact object match
-        if ($this === $type) {
-            return true;
-        }
-
-        if ($type instanceof MixedType) {
-            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
-            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
-        }
-
-        if ($this->is_nullable) {
-            // A nullable type cannot cast to a non-nullable type (Except when null_casts_as_any_type is true)
-            if (Config::get_null_casts_as_any_type()) {
-                return true;
-            } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
-                return true;
-            } elseif ($type->isScalar() && (
-                    Config::getValue('scalar_implicit_cast') ||
-                    in_array($type->getName(), Config::getValue('scalar_implicit_partial')['null'] ?? [], true))) {
-                // e.g. allow casting ?string to string if scalar_implicit_cast or 'null' => ['string'] is in scalar_implicit_partial.
-                return true;
-            }
-
-            if (!$type->isNullable()) {
-                return false;
-            }
-        }
-
-        // Get a non-null version of the type we're comparing
-        // against.
-        if ($type->is_nullable) {
-            $type = $type->withIsNullable(false);
-
-            // Check one more time to see if the types are equal
-            if ($this === $type) {
-                return true;
-            }
-        }
-
-        // Test to see if we can cast to the non-nullable version
-        // of the target type.
-        return $this->canCastToNonNullableType($type);
     }
 
     /**
@@ -2952,10 +2926,13 @@ class Type implements Stringable
      * True if this Type can be cast to the given Type
      * cleanly (accounting for templates)
      */
-    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
         // Check to see if we have an exact object match
         if ($this === $type) {
+            return true;
+        }
+        if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
         }
 
@@ -2970,12 +2947,12 @@ class Type implements Stringable
             // configured nulls to cast as anything (or as arrays), ignore
             // the nullable part.
             if (Config::get_null_casts_as_any_type()) {
-                return $this->withIsNullable(false)->canCastToType($type);
+                return $this->withIsNullable(false)->canCastToType($type, $code_base);
             } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
-                return $this->withIsNullable(false)->canCastToType($type);
+                return $this->withIsNullable(false)->canCastToType($type, $code_base);
+            } else {
+                return false;
             }
-
-            return false;
         }
 
         // Get a non-null version of the type we're comparing
@@ -3001,10 +2978,13 @@ class Type implements Stringable
      *
      * Overrides handle MixedType and subclasses
      */
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // Check to see if we have an exact object match
         if ($this === $type) {
+            return true;
+        }
+        if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
         }
 
@@ -3037,7 +3017,7 @@ class Type implements Stringable
 
         // Test to see if we can cast to the non-nullable version
         // of the target type.
-        return $this->canCastToNonNullableTypeWithoutConfig($type);
+        return $this->canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
     /**
@@ -3049,12 +3029,23 @@ class Type implements Stringable
      * True if this not nullable Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
+        if ($type instanceof IntersectionType) {
+            // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
+            // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
+            return self::matchesAllOtherTypeParts(function (Type $part) use($code_base): bool {
+                // @phan-suppress-next-line PhanDeprecatedFunction
+                return $this->canCastToNonNullableType($part, $code_base);
+            }, $type);
+        }
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
         if ($type instanceof ObjectType
             && !$this->isNativeType()
         ) {
+            return true;
+        }
+        if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
         }
 
@@ -3073,12 +3064,56 @@ class Type implements Stringable
                 if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }
-                return $this->canCastTraversableToIterable($type);
+                return $this->canCastTraversableToIterable($type, $code_base);
             }
         } elseif (\get_class($type) === CallableType::class) {
             return $this->namespace === '\\' && $this->name === 'Closure';
         }
         return false;
+    }
+
+    /**
+     * Returns true if this type (the only type part) made $matcher_callback return true for all parts of $other
+     * @param Closure(Type): bool $matcher_callback
+     * @param Type $other (can be IntersectionType)
+     */
+    public static function matchesAllOtherTypeParts(Closure $matcher_callback, Type $other): bool
+    {
+        if ($other instanceof IntersectionType) {
+            foreach ($other->type_parts as $other_part) {
+                if (!$matcher_callback($other_part)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return $matcher_callback($other);
+    }
+
+    /**
+     * Returns true if this type (the only type part) matches $matcher_callback
+     * (true for all parts)
+     *
+     * Overridden in IntersectionType
+     *
+     * @param Closure(Type): bool $matcher_callback
+     */
+    public function allTypePartsMatchCallback(Closure $matcher_callback): bool
+    {
+        return $matcher_callback($this);
+    }
+
+    /**
+     * Returns true if this type (the only type part) matches $matcher_callback
+     * (true for at least one part)
+     *
+     * Overridden in IntersectionType
+     *
+     * @param Closure(Type): bool $matcher_callback
+     */
+    public function anyTypePartsMatchCallback(Closure $matcher_callback): bool
+    {
+        return $matcher_callback($this);
     }
 
     /**
@@ -3089,9 +3124,11 @@ class Type implements Stringable
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly, ignoring permissive config casting rules
+     * @suppress PhanUnusedProtectedMethodParameter
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
+        // TODO: Expand $this when checking against $type
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
         if ($type instanceof ObjectType
             && !$this->isNativeType()
@@ -3114,7 +3151,7 @@ class Type implements Stringable
                 if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }
-                return $this->canCastTraversableToIterable($type);
+                return $this->canCastTraversableToIterable($type, $code_base);
             }
         } elseif (\get_class($type) === CallableType::class) {
             return $this->namespace === '\\' && $this->name === 'Closure';
@@ -3130,10 +3167,12 @@ class Type implements Stringable
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly, accounting for template types.
+     *
+     * @suppress PhanDeprecatedFunction
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {
-        if ($this->canCastToNonNullableType($type)) {
+        if ($this->canCastToNonNullableType($type, $code_base)) {
             return true;
         }
         if ($this->isObjectWithKnownFQSEN() && $type->isObjectWithKnownFQSEN()) {
@@ -3148,10 +3187,13 @@ class Type implements Stringable
      * @return bool
      * True if this Type is a subtype of the other type.
      */
-    public function isSubtypeOf(Type $type): bool
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
         // Check to see if we have an exact object match
         if ($this === $type) {
+            return true;
+        }
+        if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
         }
 
@@ -3181,7 +3223,7 @@ class Type implements Stringable
 
         // Test to see if we are a subtype of the non-nullable version
         // of the target type.
-        return $this->isSubtypeOfNonNullableType($type);
+        return $this->isSubtypeOfNonNullableType($type, $code_base);
     }
 
     /**
@@ -3192,9 +3234,9 @@ class Type implements Stringable
      *
      * TODO: Override everywhere else
      */
-    protected function isSubtypeOfNonNullableType(Type $type): bool
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $this->canCastToNonNullableType($type);
+        return $this->canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -3205,7 +3247,7 @@ class Type implements Stringable
         foreach ($this->template_parameter_type_list as $i => $param) {
             $other_param = $other_template_parameter_type_list[$i] ?? null;
             if ($other_param !== null) {
-                if (!$param->asExpandedTypes($code_base)->canCastToUnionType($other_param)) {
+                if (!$param->canCastToUnionType($other_param, $code_base)) {
                     return false;
                 }
             }
@@ -3216,7 +3258,7 @@ class Type implements Stringable
     /**
      * Precondition: $this represents \Traversable, \Iterator, or \Generator
      */
-    private function canCastTraversableToIterable(GenericIterableType $type): bool
+    private function canCastTraversableToIterable(GenericIterableType $type, CodeBase $code_base): bool
     {
         $template_types = $this->template_parameter_type_list;
         $count = count($template_types);
@@ -3227,11 +3269,11 @@ class Type implements Stringable
                 // No idea what this means, assume it passes.
                 return true;
             }
-            if (!$this->template_parameter_type_list[$count - 1]->canCastToUnionType($type->getElementUnionType())) {
+            if (!$this->template_parameter_type_list[$count - 1]->canCastToUnionType($type->getElementUnionType(), $code_base)) {
                 return false;
             }
             if ($count === 2) {
-                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
+                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType(), $code_base)) {
                     return false;
                 }
             }
@@ -3249,11 +3291,11 @@ class Type implements Stringable
                 return true;
             }
 
-            if (!$this->template_parameter_type_list[\min(1, $count - 1)]->canCastToUnionType($type->getElementUnionType())) {
+            if (!$this->template_parameter_type_list[\min(1, $count - 1)]->canCastToUnionType($type->getElementUnionType(), $code_base)) {
                 return false;
             }
             if ($count >= 2) {
-                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
+                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType(), $code_base)) {
                     return false;
                 }
             }
@@ -3312,7 +3354,7 @@ class Type implements Stringable
         // Test to see if this (or any ancestor types) can cast to the given union type.
         $expanded_types = $this_resolved->asExpandedTypes($code_base);
         foreach ($expanded_types->getTypeSet() as $type) {
-            if ($type->isSubtypeOfAnyTypeInSet($union_type->getTypeSet())) {
+            if ($type->isSubtypeOfAnyTypeInSet($union_type->getTypeSet(), $code_base)) {
                 return true;
             }
         }
@@ -3784,8 +3826,9 @@ class Type implements Stringable
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
+     * @unused-param $code_base
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         // Any non-final class could be extended with a callable type.
         // TODO: Check if final
@@ -4056,9 +4099,9 @@ class Type implements Stringable
     /**
      * Convert this to a subtype that satisfies is_callable(), or return null
      */
-    public function asCallableType(): ?Type
+    public function asCallableType(CodeBase $code_base): ?Type
     {
-        if ($this->isCallable()) {
+        if ($this->isCallable($code_base)) {
             return $this->withIsNullable(false);
         }
         return null;

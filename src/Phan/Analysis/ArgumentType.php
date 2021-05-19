@@ -1020,9 +1020,12 @@ final class ArgumentType
             $alternate_parameter = $candidate_alternate_parameter;
             $alternate_parameter_type = $alternate_parameter->getNonVariadicUnionType()->withStaticResolvedInFunctionLike($alternate_method);
 
-            // See if the argument can be cast to the
-            // parameter
-            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type)) {
+            // See if the argument can be cast to the parameter.
+            // TODO: In order for intersection types to work (e.g. casting ArrayObject to ArrayAccess&Countable),
+            // the codebase must be passed into canCastToUnionType (instead of expanding types), because ArrayAccess|Countable is not a type that casts to ArrayAccess&Countable
+            //
+            // TODO: Stop expanding the argument type
+            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
                 if ($alternate_parameter_type->hasRealTypeSet() && $argument_type->hasRealTypeSet()) {
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
                     $real_argument_type = $argument_type->getRealUnionType();
@@ -1072,10 +1075,11 @@ final class ArgumentType
             // TODO: Warn about the type without the templates?
             return;
         }
+        // FIXME: This may be obsolete after changing canCastToDeclaredType
         if ($alternate_parameter_type->hasTemplateParameterTypes()) {
             // TODO: Make the check for templates recursive
             $argument_type_expanded_templates = $argument_type->asExpandedTypesPreservingTemplate($code_base);
-            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($alternate_parameter_type, $code_base)) {
+            if ($argument_type_expanded_templates->canCastToUnionType($alternate_parameter_type, $code_base)) {
                 // - can cast MyClass<\stdClass> to MyClass<mixed>
                 // - can cast Some<\stdClass> to Option<\stdClass>
                 // - cannot cast Some<\SomeOtherClass> to Option<\stdClass>
@@ -1172,7 +1176,7 @@ final class ArgumentType
             }
             // @phan-suppress-next-next-line PhanAccessMethodInternal
             if ($argument_type_expanded_resolved->isNull() ||
-                    !($argument_type_expanded_resolved->containsNullable() && $argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type))) {
+                    !($argument_type_expanded_resolved->containsNullable() && $argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type, $code_base))) {
                 if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {
                     $real_arg_type = $argument_type->getRealUnionType();
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
@@ -1335,7 +1339,8 @@ final class ArgumentType
             // See if the argument can be cast to the
             // parameter
             if (!$individual_type_expanded->canCastToUnionType(
-                $parameter_type
+                $parameter_type,
+                $code_base
             )) {
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter

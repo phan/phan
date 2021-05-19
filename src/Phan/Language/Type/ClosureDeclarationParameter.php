@@ -101,7 +101,7 @@ final class ClosureDeclarationParameter
      *
      * @see \Phan\Analysis\ParameterTypesAnalyzer::analyzeOverrideSignatureForOverriddenMethod() - Similar logic using LSP
      */
-    public function canCastToParameterIgnoringVariadic(ClosureDeclarationParameter $other): bool
+    public function canCastToParameterIgnoringVariadic(ClosureDeclarationParameter $other, CodeBase $code_base): bool
     {
         if ($this->is_reference !== $other->is_reference) {
             return false;
@@ -111,7 +111,7 @@ final class ClosureDeclarationParameter
             return false;
         }
         // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
-        return $this->type->canCastToUnionType($other->type);
+        return $this->type->canCastToUnionType($other->type, $code_base);
     }
 
     /**
@@ -132,7 +132,7 @@ final class ClosureDeclarationParameter
             return false;
         }
         // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
-        return $this->type->canCastToUnionTypeHandlingTemplates($other->type, $code_base);
+        return $this->type->canCastToUnionType($other->type, $code_base);
     }
 
     /**

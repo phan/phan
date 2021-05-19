@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Type;
 
 /**
@@ -22,30 +23,27 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType implemen
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    public function canCastToNonNullableType(Type $type): bool
+    public function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        if ($type->isCallable()) {
-            if ($type instanceof FunctionLikeDeclarationType) {
-                // TODO: Weaker mode to allow callable to cast to Closure
-                return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type);
-            }
-            return true;
-        }
-
-        return parent::canCastToNonNullableType($type);
+        return $this->isCompatibleCallable($type, $code_base) ?? parent::canCastToNonNullableType($type, $code_base);
     }
 
-    public function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    public function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        if ($type->isCallable()) {
+        return $this->isCompatibleCallable($type, $code_base) ?? parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
+    }
+
+    private function isCompatibleCallable(Type $type, CodeBase $code_base): ?bool
+    {
+        if ($type->isCallable($code_base)) {
+            // TODO: More precise intersection type support
             if ($type instanceof FunctionLikeDeclarationType) {
                 // TODO: Weaker mode to allow callable to cast to Closure
-                return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type);
+                return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
             }
             return true;
         }
-
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return null;
     }
 
     /**

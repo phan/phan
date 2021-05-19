@@ -21,7 +21,10 @@ final class NonEmptyMixedType extends MixedType
     /** @phan-override */
     public const NAME = 'non-empty-mixed';
 
-    public function canCastToType(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
         return $type->isPossiblyTruthy() || ($this->is_nullable && $type->is_nullable);
     }
@@ -29,31 +32,37 @@ final class NonEmptyMixedType extends MixedType
     /**
      * @override
      */
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        return $this->canCastToType($type);
+        return $this->canCastToType($type, $code_base);
     }
 
     /**
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
      * @override
      */
-    public function canCastToAnyTypeInSet(array $target_type_set): bool
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         foreach ($target_type_set as $t) {
-            if ($this->canCastToType($t)) {
+            if ($this->canCastToType($t, $code_base)) {
                 return true;
             }
         }
         return (bool)$target_type_set;
     }
 
-    protected function canCastToNonNullableType(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return $type->isPossiblyTruthy();
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return $type->isPossiblyTruthy();
     }

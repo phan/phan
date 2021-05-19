@@ -193,7 +193,7 @@ class ParameterTypesAnalyzer
             }
             $union_type = $parameter->getUnionType();
 
-            foreach ($union_type->getTypeSet() as $type) {
+            foreach ($union_type->getUniqueFlattenedTypeSet() as $type) {
                 if (!$type->isObjectWithKnownFQSEN()) {
                     continue;
                 }
@@ -703,8 +703,9 @@ class ParameterTypesAnalyzer
         // E.g. there is no issue if the overridden return type is empty.
         // See https://github.com/phan/phan/issues/1397
         if (!$overridden_return_union_type->isEmptyOrMixed()) {
-            if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
-                $overridden_return_union_type
+            if (!$method->getUnionType()->canCastToUnionType(
+                $overridden_return_union_type,
+                $code_base
             )) {
                 $signatures_match = false;
             }
@@ -791,7 +792,7 @@ class ParameterTypesAnalyzer
     private static function canWeakCast(CodeBase $code_base, UnionType $overridden_type, UnionType $type): bool
     {
         $expanded_overridden_type = $overridden_type->asExpandedTypes($code_base);
-        return $expanded_overridden_type->canCastToUnionType($type) &&
+        return $expanded_overridden_type->canCastToUnionType($type, $code_base) &&
                     $expanded_overridden_type->hasAnyTypeOverlap($code_base, $type);
     }
     /**

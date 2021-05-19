@@ -86,7 +86,7 @@ abstract class NativeType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // Anything can cast to mixed or ?mixed
         // Not much of a distinction in nullable mixed, except to emphasize in comments that it definitely can be null.
@@ -99,7 +99,7 @@ abstract class NativeType extends Type
             || $this instanceof GenericArrayType
             || $type instanceof GenericArrayType
         ) {
-            return parent::canCastToNonNullableType($type);
+            return parent::canCastToNonNullableType($type, $code_base);
         }
 
         static $matrix;
@@ -109,7 +109,7 @@ abstract class NativeType extends Type
 
         // Both this and $type are NativeType and getName() isn't needed
         return $matrix[$this->name][$type->name]
-            ?? parent::canCastToNonNullableType($type);
+            ?? parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -117,7 +117,7 @@ abstract class NativeType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // Anything can cast to mixed or ?mixed
         // Not much of a distinction in nullable mixed, except to emphasize in comments that it definitely can be null.
@@ -130,7 +130,7 @@ abstract class NativeType extends Type
             || $this instanceof GenericArrayType
             || $type instanceof GenericArrayType
         ) {
-            return parent::canCastToNonNullableTypeWithoutConfig($type);
+            return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
         }
 
         static $matrix;
@@ -140,10 +140,10 @@ abstract class NativeType extends Type
 
         // Both this and $type are NativeType and getName() isn't needed
         return $matrix[$this->name][$type->name]
-            ?? parent::canCastToNonNullableTypeWithoutConfig($type);
+            ?? parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
-    protected function isSubtypeOfNonNullableType(Type $type): bool
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // Anything is a subtype of mixed or ?mixed
         if ($type instanceof MixedType) {
@@ -154,7 +154,7 @@ abstract class NativeType extends Type
             || $this instanceof GenericArrayType
             || $type instanceof GenericArrayType
         ) {
-            return parent::canCastToNonNullableType($type);
+            return parent::canCastToNonNullableType($type, $code_base);
         }
 
         static $matrix;
@@ -164,7 +164,7 @@ abstract class NativeType extends Type
 
         // Both this and $type are NativeType and getName() isn't needed
         return $matrix[$this->name][$type->name]
-            ?? parent::canCastToNonNullableType($type);
+            ?? parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**

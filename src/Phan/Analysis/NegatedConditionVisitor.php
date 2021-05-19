@@ -509,7 +509,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return null;
         }
         $right_hand_type = $right_hand_union_type->getTypeSet()[0];
-        if (!$right_hand_type->isObjectWithKnownFQSEN()) {
+        if (!$right_hand_type->hasObjectWithKnownFQSEN()) {
             return null;
         }
         return $union_type->withoutSubclassesOf($this->code_base, $right_hand_type);
@@ -599,9 +599,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $type->isInBoolFamily();
         });
         /** @param list<Node|mixed> $unused_args */
-        $remove_callable_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
-            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type): array {
-                if ($type->isCallable()) {
+        $remove_callable_callback = static function (CodeBase $code_base, Context $unused_context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) use ($code_base): array {
+                if ($type->isCallable($code_base)) {
                     if ($type->isNullable()) {
                         static $null_type_set;
                         return $null_type_set ?? ($null_type_set = UnionType::typeSetFromString('null'));

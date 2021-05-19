@@ -976,6 +976,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $expected_type = $defining_fqsen->asType();
 
+        // TODO: Handle intersection types?
         foreach ($object_union_type->getTypeSet() as $type) {
             if (!$type->hasTemplateParameterTypes()) {
                 continue;
