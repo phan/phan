@@ -441,6 +441,48 @@ class ArrayType extends IterableType
         }
         return parent::weaklyOverlaps($other);
     }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+        if (\in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
+            return true;
+        }
+        if ($type instanceof ArrayShapeType && \get_class($this) === ArrayType::class) {
+            return false;
+        }
+
+        $other_is_nullable = $type->isNullable();
+        // A nullable type is not a subtype of a non-nullable type
+        if ($this->isNullable() && !$other_is_nullable) {
+            return false;
+        }
+
+        if ($type instanceof MixedType) {
+            // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed
+            // (check isNullable first)
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
+        }
+
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($other_is_nullable) {
+            $type = $type->withIsNullable(false);
+
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
+        }
+
+        // Test to see if we are a subtype of the non-nullable version
+        // of the target type.
+        return $this->isSubtypeOfNonNullableType($type, $code_base);
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

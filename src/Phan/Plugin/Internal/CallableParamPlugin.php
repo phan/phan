@@ -131,7 +131,7 @@ final class CallableParamPlugin extends PluginV3 implements
 
     /**
      * @return array<string,\Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base): array
     {

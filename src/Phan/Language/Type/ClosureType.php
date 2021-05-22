@@ -34,7 +34,10 @@ final class ClosureType extends Type
      */
     private $func;
 
-    // Same as instance(), but guaranteed not to have memoized state.
+    /**
+     * Same as instance(), but guaranteed not to have memoized state.
+     * @suppress PhanTypeMismatchReturn
+     */
     private static function closureInstance(): ClosureType
     {
         static $instance = null;

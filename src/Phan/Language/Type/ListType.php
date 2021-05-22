@@ -26,6 +26,7 @@ class ListType extends GenericArrayType
 
     /**
      * @unused-param $key_type
+     * @return ListType
      */
     public static function fromElementType(
         Type $type,

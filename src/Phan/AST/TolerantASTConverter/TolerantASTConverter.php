@@ -617,6 +617,7 @@ class TolerantASTConverter
      * @return array<string,Closure(object,int):(\ast\Node|int|string|float|null)>
      *
      * NOTE: Make sure that the only caller of this is TolerantASTConverterTrait
+     * @suppress PhanTypeMismatchReturn todo: why?
      */
     protected static function initHandleMap(): array
     {

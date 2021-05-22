@@ -1201,8 +1201,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if (!$builder || $builder->isEmpty()) {
             if (!$has_key) {
+                // @phan-suppress-next-line PhanTypeMismatchReturn
                 return UnionType::typeSetFromString('list');
             }
+            // @phan-suppress-next-line PhanTypeMismatchReturn
             return UnionType::typeSetFromString($has_exclusively_int_keys ? 'array<int,mixed>' : 'array');
         }
         $real_types = [];

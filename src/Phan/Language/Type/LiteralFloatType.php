@@ -39,7 +39,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     }
 
     /**
-     * @return LiteralFloatType a unique LiteralFloatType for $value (and the nullability)
+     * @return FloatType a unique LiteralFloatType for $value if $value is finite (and sets nullability)
      */
     public static function instanceForValue(float $value, bool $is_nullable): FloatType
     {

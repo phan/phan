@@ -34,8 +34,17 @@ class IterableType extends NativeType
     {
         // TODO: Check if $other is final and non-iterable
         return $other instanceof IterableType ||
+            $other instanceof GenericIterableType ||
             $other instanceof CallableDeclarationType ||
             $other->isPossiblyObject();
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        return \get_class($type) === IterableType::class || $type instanceof MixedType;
     }
 
     /**

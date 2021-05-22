@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phan\PluginV3;
 
-use ast\Node;
 use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
@@ -19,7 +18,7 @@ use Phan\Language\Element\FunctionInterface;
 interface AnalyzeFunctionCallCapability
 {
     /**
-     * @return array<string,Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node)>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,list<mixed>,array)>
      * maps FQSEN of function or method to a closure used to analyze the function in question.
      * '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.
      * Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args, ?Node $node) : void {...}

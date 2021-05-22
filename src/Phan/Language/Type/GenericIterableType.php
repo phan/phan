@@ -499,4 +499,13 @@ final class GenericIterableType extends IterableType
             Type::FROM_TYPE
         );
     }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof GenericIterableType) {
+            return $this->key_union_type->isStrictSubtypeOf($code_base, $type->key_union_type) &&
+                $this->element_union_type->isStrictSubtypeOf($code_base, $type->element_union_type);
+        }
+        return \get_class($type) === IterableType::class || $type instanceof MixedType;
+    }
 }

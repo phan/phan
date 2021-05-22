@@ -585,6 +585,11 @@ final class TypeTest extends CodeBaseAwareTest
             [true, 'ArrayObject<int>', 'ArrayObject'],
             [false, 'ArrayObject<int>', 'ArrayObject<string>'],
             [false, 'Traversable<int,int>', 'Traversable<string,int>'],
+            [true, 'iterable<string>', 'iterable'],
+            [true, 'array{}', 'array'],
+            [true, 'string[]', 'array'],
+            [true, 'array{}', 'iterable'],
+            [true, 'iterable<string>', 'iterable<mixed>'],
         ];
     }
 

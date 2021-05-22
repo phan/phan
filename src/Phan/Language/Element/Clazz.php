@@ -2394,6 +2394,7 @@ class Clazz extends AddressableElement
 
     /**
      * @return FullyQualifiedClassName
+     * @suppress PhanTypeMismatchReturn (FQSEN on declaration)
      */
     public function getFQSEN()
     {

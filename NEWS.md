@@ -3,7 +3,8 @@ Phan NEWS
 ??? ?? 2021, Phan 5.0.0 (dev)
 -----------------------
 
-Support intersection types
++ Support parsing intersection types in phpdoc and checking if intersection types satisfy type comparisons
++ Support intersection types
 
 May 19 2021, Phan 4.0.7 (dev)
 -----------------------
