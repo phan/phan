@@ -62,7 +62,7 @@ final class NonNullMixedType extends MixedType
      */
     public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        return !$type->isNullable();
+        return !($type instanceof NullType || $type instanceof VoidType);
     }
 
     public function asGenericArrayType(int $key_type): Type
@@ -121,5 +121,21 @@ final class NonNullMixedType extends MixedType
     public function withIsNullable(bool $is_nullable): Type
     {
         return $is_nullable ? MixedType::instance(true) : $this;
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof MixedType && !($type instanceof NonEmptyMixedType);
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof MixedType && !($type instanceof NonEmptyMixedType);
     }
 }

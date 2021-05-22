@@ -136,4 +136,20 @@ final class NonEmptyMixedType extends MixedType
     {
         return $is_nullable === $this->is_nullable ? $this : self::instance($is_nullable);
     }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof MixedType;
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof MixedType;
+    }
 }

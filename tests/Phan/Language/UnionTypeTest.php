@@ -848,6 +848,9 @@ final class UnionTypeTest extends BaseTest
             [true, 'ArrayObject', 'Countable'],
             [true, 'ArrayObject', 'object'],
             [false, 'ArrayAccess', 'ArrayObject'],
+            [true, 'Closure(int):int', 'Closure'],
+            [false, 'Closure', 'Closure(int):int'],
+            [false, 'Closure(string):int', 'Closure(int):int'],
         ];
     }
 
@@ -858,7 +861,7 @@ final class UnionTypeTest extends BaseTest
     {
         $from_type = self::makePHPDocUnionType($from_type_string);
         $to_type = self::makePHPDocUnionType($to_type_string);
-        $this->assertSame($expected, $from_type->isStrictSubtypeOf(self::$code_base, $to_type), "unexpected isStrictSubtypeOf result for $from_type_string to $to_type_string");
+        $this->assertSame($expected, $from_type->isStrictSubtypeOf(self::$code_base, $to_type), "unexpected isStrictSubtypeOf result for checking if $from_type_string isStrictSubtypeOf $to_type_string");
     }
 
 }

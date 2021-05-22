@@ -567,6 +567,42 @@ final class TypeTest extends CodeBaseAwareTest
         $this->assertSame($expected, $from_type->canCastToDeclaredType($this->code_base, new Context(), $to_type), "unexpected canCastToDeclaredType result for $from_type_string to $to_type_string");
     }
 
+    /** @return list<list> */
+    public function isSubtypeOfProvider(): array
+    {
+        return [
+            [false, 'ArrayObject', 'stdClass'],
+            [true, 'ArrayObject', 'mixed'],
+            [true, 'non-null-mixed', 'mixed'],
+            [true, 'non-empty-mixed', 'non-null-mixed'],
+            [false, 'false', 'true'],
+            [true, 'false', 'bool'],
+            [true, 'true', 'bool'],
+            [true, 'false', '?bool'],
+            [true, "Closure(int):int", 'Closure'],
+            [false, "Closure(int):int", 'Closure(string):int'],
+            [true, 'never', 'Closure(int):int'],
+            [true, 'ArrayObject<int>', 'ArrayObject'],
+            [false, 'ArrayObject<int>', 'ArrayObject<string>'],
+            [false, 'Traversable<int,int>', 'Traversable<string,int>'],
+        ];
+    }
+
+    /**
+     * @dataProvider isSubtypeOfProvider
+     */
+    public function testIsSubtypeOf(bool $expected, string $from_type_string, string $to_type_string): void
+    {
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertTrue($from_type->isSubtypeOf($from_type, $this->code_base), "unexpected result for $from_type_string isSubtypeOf itself");
+        $this->assertSame($expected, $from_type->isSubtypeOf($to_type, $this->code_base), "unexpected result for $from_type_string isSubtypeOf $to_type_string");
+        $this->assertSame($expected, $from_type->canCastToType($to_type, $this->code_base), "unexpected result for $from_type_string canCastToType $to_type_string");
+        $this->assertSame($expected, $from_type->canCastToTypeWithoutConfig($to_type, $this->code_base), "unexpected result for $from_type_string canCastToTypeWithoutConfig $to_type_string");
+        if ($expected) {
+            $this->assertFalse($to_type->isSubtypeOf($from_type, $this->code_base), "unexpected result for $to_type_string isSubtypeOf $from_type_string");
+        }
+    }
     /**
      * @dataProvider arrayShapeProvider
      */

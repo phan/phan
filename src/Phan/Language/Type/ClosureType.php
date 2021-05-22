@@ -130,6 +130,26 @@ final class ClosureType extends Type
 
     /**
      * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
+    {
+        if ($type->isCallable($code_base)) {
+            if ($type instanceof FunctionLikeDeclarationType) {
+                // Check if the function declaration is known and available. It's not available for the generic \Closure.
+                if ($this->func) {
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
+                }
+            }
+            return true;
+        }
+
+        return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+    }
+
+    /**
+     * @return bool
      * True if this type is a callable or a Closure.
      * @unused-param $code_base
      */
@@ -188,5 +208,13 @@ final class ClosureType extends Type
             });
         }
         return true;
+    }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof FunctionLikeDeclarationType) {
+            return false;
+        }
+        return parent::isSubtypeOf($type, $code_base);
     }
 }

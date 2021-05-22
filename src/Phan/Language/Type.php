@@ -2834,7 +2834,7 @@ class Type implements Stringable
         }
 
         $representation = $this->__toString();
-        $recursive_union_type_builder = new UnionTypeBuilder();
+        $recursive_union_type_builder = new UnionTypeBuilder([$this]);
         // Recurse up the tree to include all types
         if (count($this->template_parameter_type_list) > 0) {
             $recursive_union_type_builder->addUnionType(
@@ -3172,13 +3172,18 @@ class Type implements Stringable
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {
+        if ($this->isObjectWithKnownFQSEN() && $type->isObjectWithKnownFQSEN()) {
+            foreach ($this->asExpandedTypesPreservingTemplate($code_base)->getTypeSet() as $part) {
+                if (!$part->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                if ($part->name === $type->name && $part->namespace === $type->namespace) {
+                    return $part->canTemplateTypesCast($type->template_parameter_type_list, $code_base);
+                }
+            }
+        }
         if ($this->canCastToNonNullableType($type, $code_base)) {
             return true;
-        }
-        if ($this->isObjectWithKnownFQSEN() && $type->isObjectWithKnownFQSEN()) {
-            if ($this->name === $type->name && $this->namespace === $type->namespace) {
-                return $this->canTemplateTypesCast($type->template_parameter_type_list, $code_base);
-            }
         }
         return false;
     }

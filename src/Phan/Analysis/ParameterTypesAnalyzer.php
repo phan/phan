@@ -791,9 +791,8 @@ class ParameterTypesAnalyzer
 
     private static function canWeakCast(CodeBase $code_base, UnionType $overridden_type, UnionType $type): bool
     {
-        $expanded_overridden_type = $overridden_type->asExpandedTypes($code_base);
-        return $expanded_overridden_type->canCastToUnionType($type, $code_base) &&
-                    $expanded_overridden_type->hasAnyTypeOverlap($code_base, $type);
+        return $overridden_type->canCastToUnionType($type, $code_base) &&
+                    $overridden_type->hasAnyTypeOverlap($code_base, $type);
     }
     /**
      * Previously, Phan bases the analysis off of phpdoc.

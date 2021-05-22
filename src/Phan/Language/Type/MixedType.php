@@ -90,7 +90,7 @@ class MixedType extends NativeType
      */
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof MixedType;
+        return \get_class($type) === MixedType::class;
     }
 
     /**
@@ -98,7 +98,7 @@ class MixedType extends NativeType
      */
     public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof MixedType;
+        return \get_class($type) === MixedType::class;
     }
 
     /**

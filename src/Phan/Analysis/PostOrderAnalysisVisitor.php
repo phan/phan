@@ -2016,11 +2016,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return false;
             }
         }
-        // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
-        // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
         try {
-            return $expression_type->asExpandedTypes($this->code_base)->canCastToUnionType($method_return_type, $this->code_base) ||
-                $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($this->code_base), $this->code_base);
+            // Stop allowing base classes to cast to subclasses
+            return $expression_type->canCastToUnionType($method_return_type, $this->code_base);
         } catch (RecursionDepthException $_) {
             return false;
         }

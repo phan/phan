@@ -105,6 +105,15 @@ final class BoolType extends ScalarType
         return self::performComparison(false, $scalar, $flags) ||
             self::performComparison(true, $scalar, $flags);
     }
+
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof BoolType || $type instanceof ScalarRawType || $type instanceof MixedType;
+    }
+
 }
 
 // Temporary hack to load FalseType and TrueType before BoolType::instance() is called

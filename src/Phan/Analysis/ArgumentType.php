@@ -985,8 +985,8 @@ final class ArgumentType
     {
         // Expand it to include all parent types up the chain
         try {
-            $argument_type_expanded_resolved =
-                $argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
+            $argument_type_resolved = $argument_type->withStaticResolvedInContext($context);
+            $argument_type_expanded_resolved = $argument_type_resolved->asExpandedTypes($code_base);
         } catch (RecursionDepthException $_) {
             return;
         }
@@ -1025,15 +1025,15 @@ final class ArgumentType
             // the codebase must be passed into canCastToUnionType (instead of expanding types), because ArrayAccess|Countable is not a type that casts to ArrayAccess&Countable
             //
             // TODO: Stop expanding the argument type
-            if ($argument_type_expanded_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
+            if ($argument_type_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
                 if ($alternate_parameter_type->hasRealTypeSet() && $argument_type->hasRealTypeSet()) {
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
                     $real_argument_type = $argument_type->getRealUnionType();
-                    $real_argument_type_expanded_resolved = $real_argument_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
-                    if (!$real_argument_type_expanded_resolved->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
-                        $real_argument_type_expanded_resolved_nonnull = $real_argument_type_expanded_resolved->nonNullableClone();
-                        if ($real_argument_type_expanded_resolved_nonnull->isEmpty() ||
-                            !$real_argument_type_expanded_resolved_nonnull->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
+                    $real_argument_type_resolved = $real_argument_type->withStaticResolvedInContext($context);
+                    if (!$real_argument_type_resolved->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
+                        $real_argument_type_resolved_nonnull = $real_argument_type_resolved->nonNullableClone();
+                        if ($real_argument_type_resolved_nonnull->isEmpty() ||
+                            !$real_argument_type_resolved_nonnull->canCastToDeclaredType($code_base, $context, $real_parameter_type)) {
                             // We know that the inferred real types don't match with the strict_types setting of the caller
                             // (e.g. null -> any non-null type)
                             // Try checking any other alternates, and emit PhanTypeMismatchArgumentReal if that fails.
@@ -1093,7 +1093,7 @@ final class ArgumentType
             // and the argument we are passing has a __toString method then it is ok
             if (!$context->isStrictTypes() && $alternate_parameter_type->hasNonNullStringType()) {
                 try {
-                    foreach ($argument_type_expanded_resolved->asClassList($code_base, $context) as $clazz) {
+                    foreach ($argument_type_resolved->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                             return;
                         }

@@ -115,8 +115,9 @@ final class NeverType extends NativeType
      */
     public function canCastToType(Type $type, CodeBase $code_base): bool
     {
-        // Check to see if we have an exact object match
-        return $this === $type;
+        // never can cast to any type.
+        // Plugins should be used to warn about using the result of an expression returning never
+        return true;
     }
 
     /**
