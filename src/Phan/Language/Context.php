@@ -7,6 +7,7 @@ namespace Phan\Language;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Exception;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -734,7 +735,11 @@ class Context extends FileRef
             return false;
         }
 
-        $element = $this->getElementInScope($code_base);
+        try {
+            $element = $this->getElementInScope($code_base);
+        } catch (Exception $_) {
+            return false;
+        }
         if ($element instanceof ClassElement) {
             $defining_fqsen = $element->getRealDefiningFQSEN();
             if ($defining_fqsen !== $element->getFQSEN()) {

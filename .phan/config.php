@@ -598,11 +598,11 @@ return [
     // NOTE: values can be the base name without the extension for plugins bundled with Phan (E.g. 'AlwaysReturnPlugin')
     // or relative/absolute paths to the plugin (Relative to the project root).
     'plugins' => [
-        'AlwaysReturnPlugin',
+        'AlwaysReturnPlugin',  // i.e. '.phan/plugin/AlwaysReturnPlugin.php' in phan itself
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
         'DuplicateArrayKeyPlugin',
-        '.phan/plugins/PregRegexCheckerPlugin.php',
+        'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
         'PHPUnitAssertionPlugin',  // analyze assertSame/assertInstanceof/assertTrue/assertFalse
         'UseReturnValuePlugin',

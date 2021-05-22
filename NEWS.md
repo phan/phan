@@ -1,5 +1,11 @@
 Phan NEWS
 
+May 19 2021, Phan 4.0.7 (dev)
+-----------------------
+
+Language Server/Daemon mode:
++ Fix an uncaught exception sometimes seen checking for issue suppressions when pcntl is unavailable.
+
 May 19 2021, Phan 4.0.6
 -----------------------
 
