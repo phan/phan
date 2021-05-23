@@ -8,6 +8,7 @@ use AssertionError;
 use Closure;
 use Generator;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -22,7 +23,6 @@ use function reset;
 /**
  * Represents the intersection of two or more object types
  * TODO: Forbid non-object types when creating this IntersectionType?
- * @phan-pure
  */
 final class IntersectionType extends Type
 {
@@ -162,6 +162,33 @@ final class IntersectionType extends Type
         return $this->memoize(__METHOD__, function (): string {
             return implode('&', $this->type_parts);
         });
+    }
+
+    /**
+     * Emit an issue and return true if this intersection type contains an impossible combination
+     */
+    public function checkImpossibleCombination(CodeBase $code_base, Context $context): bool
+    {
+        foreach ($this->type_parts as $i => $type) {
+            foreach ($this->type_parts as $j => $other) {
+                if ($j === $i) {
+                    continue;
+                }
+                if ($context && !$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, (clone $context)->withStrictTypes(1), $other->asPHPDocUnionType())) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ImpossibleIntersectionType,
+                        $context->getLineNumberStart(),
+                        $this,
+                        $type,
+                        $other
+                    );
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

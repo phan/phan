@@ -1,0 +1,2 @@
+%s:11 PhanRedundantCondition Redundant attempt to cast $value of type \NS937\I3&\NS937\I2 to \NS937\I2
+%s:17 PhanRedundantCondition Redundant attempt to cast $value of type \NS937\I3&\NS937\I2 to \NS937\I1

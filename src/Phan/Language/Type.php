@@ -2214,6 +2214,7 @@ class Type implements Stringable
     /**
      * Check if there is any way this type or a subclass could cast to $other.
      * TODO: Handle intersection types?
+     * TODO: Override this for IntersectionType source
      * (does not check for mixed)
      */
     public function canPossiblyCastToClass(CodeBase $code_base, Type $other): bool
