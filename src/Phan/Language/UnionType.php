@@ -2243,9 +2243,9 @@ class UnionType implements Serializable, Stringable
             }
         } else {
             // If null_casts_as_any_type isn't set, then try the other two fallbacks.
-            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike()) {
+            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike($code_base)) {
                 return true;
-            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
+            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike($code_base)) {
                 return true;
             }
         }
@@ -2771,10 +2771,10 @@ class UnionType implements Serializable, Stringable
      * True if this union has array-like types (is of type array, is
      * a generic array, or implements ArrayAccess).
      */
-    public function hasArrayLike(): bool
+    public function hasArrayLike(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isArrayLike();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
+            return $type->isArrayLike($code_base);
         });
     }
 
@@ -2805,12 +2805,11 @@ class UnionType implements Serializable, Stringable
     /**
      * @return bool
      * True if this union contains the ArrayAccess type.
-     * (Call asExpandedTypes() first to check for subclasses of ArrayAccess)
      */
-    public function hasArrayAccess(): bool
+    public function hasArrayAccess(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isArrayAccess();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+            return $type->isArrayAccess($code_base);
         });
     }
 
@@ -2849,14 +2848,14 @@ class UnionType implements Serializable, Stringable
      * array-like, and nothing else (e.g. can't be null).
      * If any of the array-like types are nullable, this returns false.
      */
-    public function isExclusivelyArrayLike(): bool
+    public function isExclusivelyArrayLike(CodeBase $code_base): bool
     {
         if ($this->isEmpty()) {
             return false;
         }
 
-        return $this->allTypesMatchCallback(static function (Type $type): bool {
-            return $type->isArrayLike() && !$type->isNullable();
+        return $this->allTypesMatchCallback(static function (Type $type) use ($code_base): bool {
+            return $type->isArrayLike($code_base) && !$type->isNullable();
         });
     }
 
@@ -4039,7 +4038,7 @@ class UnionType implements Serializable, Stringable
      * @param bool $add_real_types if true, this adds the real types that would be possible for `$x[$offset]`
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function genericArrayElementTypes(bool $add_real_types = false): UnionType
+    public function genericArrayElementTypes(bool $add_real_types, CodeBase $code_base): UnionType
     {
         // This is frequently called, and has been optimized
         $result = [];
@@ -4078,7 +4077,7 @@ class UnionType implements Serializable, Stringable
             $result[] = $mixed_type;
         }
         if ($add_real_types && $result && $this->real_type_set) {
-            return UnionType::of($result, self::computeRealElementTypesForDimAccess($this->real_type_set));
+            return UnionType::of($result, self::computeRealElementTypesForDimAccess($this->real_type_set, $code_base));
         }
 
         return UnionType::of($result);
@@ -4090,7 +4089,7 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
      * @internal
      */
-    public static function computeRealElementTypesForDimAccess(array $real_type_set): array
+    public static function computeRealElementTypesForDimAccess(array $real_type_set, CodeBase $code_base): array
     {
         $result = [];
         foreach ($real_type_set as $type) {
@@ -4103,9 +4102,11 @@ class UnionType implements Serializable, Stringable
             if ($type->isPossiblyObject()) {
                 // e.g. Mixed, \MyClass, iterable, etc.
                 // We don't know some of the real types, so return the empty list as the set of real types.
+                //
+                // TODO: use offsetGet signature?
                 return [];
             }
-            if (!$type->isArrayLike()) {
+            if (!$type->isArrayLike($code_base)) {
                 continue;
             }
             if (!$type instanceof ArrayType) {
@@ -4131,7 +4132,7 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
      * @internal
      */
-    public static function computeRealElementTypesForDestructuringAccess(array $real_type_set): array
+    public static function computeRealElementTypesForDestructuringAccess(array $real_type_set, CodeBase $code_base): array
     {
         $result = [];
         foreach ($real_type_set as $type) {
@@ -4144,9 +4145,11 @@ class UnionType implements Serializable, Stringable
             if ($type->isPossiblyObject()) {
                 // e.g. Mixed, \MyClass, iterable, etc.
                 // We don't know some of the real types, so return the empty list as the set of real types.
+                //
+                // TODO: Use iterableValueUnionType?
                 return [];
             }
-            if (!$type->isArrayLike()) {
+            if (!$type->isArrayLike($code_base)) {
                 continue;
             }
             if (!$type instanceof ArrayType) {

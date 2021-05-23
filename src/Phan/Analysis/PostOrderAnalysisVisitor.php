@@ -277,8 +277,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($union_type->isEmpty()) {
                 return;
             }
-            $resolved_union_type = $union_type->withStaticResolvedInContext($this->context);
-            if (!$resolved_union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$resolved_union_type->hasMixedOrNonEmptyMixedType()) {
+            $resolved_union_type = $union_type->withStaticResolvedInContext($context);
+            if (!$resolved_union_type->hasArrayLike($this->code_base) && !$resolved_union_type->hasMixedOrNonEmptyMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
                     $node->lineno,
@@ -287,7 +287,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
             $dim_node = $node->children['dim'];
-            $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+            $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
             // unset($x[$i]) should convert a list<T> or non-empty-list<T> to an array<Y>
             $union_type = $union_type->withAssociativeArrays(true)->asMappedUnionType(static function (Type $type): Type {
                 if ($type instanceof NonEmptyMixedType) {
@@ -521,7 +521,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             // Check for __toString(), stringable variables/expressions in encapsulated strings work whether or not strict_types is set
             try {
-                foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                foreach ($type->withStaticResolvedInContext($context)->asClassList($code_base, $context) as $clazz) {
                     if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                         return;
                     }
@@ -718,7 +718,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if (!$context->isStrictTypes()) {
                 try {
-                    foreach ($type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                    foreach ($type->withStaticResolvedInContext($context)->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString", true)) {
                             return $context;
                         }
@@ -1854,7 +1854,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
         try {
-            if (!$yield_value_type->withStaticResolvedInContext($context)->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type->withStaticResolvedInContext($context), $code_base)) {
+            if (!$yield_value_type->withStaticResolvedInContext($context)->canCastToUnionType($expected_value_type->withStaticResolvedInContext($context), $code_base)) {
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldValue,
                     $node->lineno,
@@ -1912,16 +1912,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method = $context->getFunctionLikeInScope($this->code_base);
         $code_base = $this->code_base;
 
-        $yield_from_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
+        $expr = $node->children['expr'];
+        $yield_from_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
         if ($yield_from_type->isEmpty()) {
             return $context;
         }
-        $yield_from_expanded_type = $yield_from_type->withStaticResolvedInContext($this->context)->asExpandedTypes($code_base);
-        if (!$yield_from_expanded_type->hasIterable($code_base) && !$yield_from_expanded_type->hasTraversable()) {
+        $yield_from_resolved_type = $yield_from_type->withStaticResolvedInContext($context);
+        if (!$yield_from_resolved_type->hasIterable($code_base)) {
             $this->emitIssue(
                 Issue::TypeInvalidYieldFrom,
                 $node->lineno,
-                ASTReverter::toShortString($node),
+                ASTReverter::toShortString($expr),
                 (string)$yield_from_type
             );
             return $context;
@@ -1929,9 +1930,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (BlockAnalysisVisitor::isEmptyIterable($yield_from_type)) {
             RedundantCondition::emitInstance(
-                $node->children['expr'],
+                $expr,
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                (clone($this->context))->withLineNumberStart($expr->lineno ?? $node->lineno),
                 Issue::EmptyYieldFrom,
                 [(string)$yield_from_type],
                 Closure::fromCallable([BlockAnalysisVisitor::class, 'isEmptyIterable'])
@@ -1973,7 +1974,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::TypeMismatchGeneratorYieldValue,
                 $node->lineno,
-                sprintf('(values of %s)', ASTReverter::toShortString($node)),
+                sprintf('(values of %s)', ASTReverter::toShortString($node->children['expr'])),
                 (string)$yield_value_type,
                 $method->getNameForIssue(),
                 (string)$expected_value_type,
@@ -1989,7 +1990,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
-                    sprintf('(keys of %s)', ASTReverter::toShortString($node)),
+                    sprintf('(keys of %s)', ASTReverter::toShortString($node->children['expr'])),
                     (string)$yield_key_type,
                     $method->getNameForIssue(),
                     (string)$expected_key_type,

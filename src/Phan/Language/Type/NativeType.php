@@ -35,7 +35,10 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function isArrayAccess(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isArrayAccess(CodeBase $code_base): bool
     {
         return false;
     }

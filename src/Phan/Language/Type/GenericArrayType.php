@@ -788,8 +788,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             return null;
         }
         // If a function expects T[], then T is the generic array element type of the passed in union type
-        return static function (UnionType $array_type, Context $context) use ($closure): UnionType {
-            return $closure($array_type->genericArrayElementTypes(), $context);
+        return static function (UnionType $array_type, Context $context) use ($closure, $code_base): UnionType {
+            return $closure($array_type->genericArrayElementTypes(false, $code_base), $context);
         };
     }
 

@@ -626,7 +626,7 @@ final class EmptyUnionType extends UnionType
      * True if this union has array-like types (is of type array, is
      * a generic array, or implements ArrayAccess).
      */
-    public function hasArrayLike(): bool
+    public function hasArrayLike(CodeBase $code_base): bool
     {
         return false;
     }
@@ -655,7 +655,7 @@ final class EmptyUnionType extends UnionType
      * True if this union contains the ArrayAccess type.
      * (Call asExpandedTypes() first to check for subclasses of ArrayAccess)
      */
-    public function hasArrayAccess(): bool
+    public function hasArrayAccess(CodeBase $code_base): bool
     {
         return false;
     }
@@ -676,7 +676,7 @@ final class EmptyUnionType extends UnionType
      * array-like, and nothing else (e.g. can't be null).
      * If any of the array-like types are nullable, this returns false.
      */
-    public function isExclusivelyArrayLike(): bool
+    public function isExclusivelyArrayLike(CodeBase $code_base): bool
     {
         return false;
     }
@@ -1029,7 +1029,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * The subset of types in this
      */
-    public function genericArrayElementTypes(bool $add_real_types = false): UnionType
+    public function genericArrayElementTypes(bool $add_real_types, CodeBase $code_base): UnionType
     {
         return $this; // empty
     }

@@ -355,8 +355,8 @@ class AssignmentVisitor extends AnalysisVisitor
         /** @suppress PhanAccessMethodInternal */
         $get_fallback_element_type = function () use (&$fallback_element_type): UnionType {
             return $fallback_element_type ?? ($fallback_element_type = (
-                $this->right_type->genericArrayElementTypes()
-                                 ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($this->right_type->getRealTypeSet()))));
+                $this->right_type->genericArrayElementTypes(false, $this->code_base)
+                                 ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($this->right_type->getRealTypeSet(), $this->code_base))));
         };
 
         $expect_string_keys_lineno = false;
@@ -419,7 +419,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             if (\is_scalar($key_value)) {
-                $element_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($this->right_type, $key_value);
+                $element_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($this->right_type, $key_value, false, $this->code_base);
                 if ($element_type === null) {
                     $element_type = $get_fallback_element_type();
                 } elseif ($element_type === false) {
@@ -433,8 +433,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     $element_type = $get_fallback_element_type();
                 } else {
                     if ($element_type->hasRealTypeSet()) {
-                        $element_type = self::withComputedRealUnionType($element_type, $this->right_type, static function (UnionType $new_right_type) use ($key_value): UnionType {
-                            return UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($new_right_type, $key_value) ?: UnionType::empty();
+                        $element_type = self::withComputedRealUnionType($element_type, $this->right_type, function (UnionType $new_right_type) use ($key_value): UnionType {
+                            return UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($new_right_type, $key_value, false, $this->code_base) ?: UnionType::empty();
                         });
                     }
                 }
@@ -667,8 +667,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
             }
             $element_type =
-                $array_access_types->genericArrayElementTypes()
-                                   ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($right_type->getRealTypeSet()));
+                $array_access_types->genericArrayElementTypes(false, $this->code_base)
+                                   ->withRealTypeSet(UnionType::computeRealElementTypesForDestructuringAccess($right_type->getRealTypeSet(), $this->code_base));
             // @phan-suppress-previous-line PhanAccessMethodInternal
         }
 
@@ -1087,7 +1087,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 if (Config::get_strict_property_checking() && $resolved_right_type->typeCount() > 1) {
                     $this->analyzePropertyAssignmentStrict($property, $resolved_right_type, $node);
                 }
-            } elseif ($property_union_type->asExpandedTypes($code_base)->hasArrayAccess()) {
+            } elseif ($property_union_type->hasArrayAccess($code_base)) {
                 // Add any type if this is a subclass with array access.
                 $this->addTypesToProperty($property, $node);
             } else {
@@ -1873,7 +1873,7 @@ class AssignmentVisitor extends AnalysisVisitor
         // unless it has 1 or more array types and all are list<T>
         $right_type = self::normalizeListTypesInDimAssignment($assign_type, $right_type);
 
-        if ($assign_type->isEmpty() || ($assign_type->hasGenericArray() && !$assign_type->asExpandedTypes($this->code_base)->hasArrayAccess())) {
+        if ($assign_type->isEmpty() || ($assign_type->hasGenericArray() && !$assign_type->hasArrayAccess($this->code_base))) {
             // For empty union types or 'array', expect the provided dimension to be able to cast to int|string
             if ($dim_type && !$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_type, $this->code_base)) {
                 $this->emitIssue(
@@ -1886,15 +1886,15 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        $assign_type_expanded = $assign_type->withStaticResolvedInContext($this->context)->asExpandedTypes($this->code_base);
+        $assign_type_resolved = $assign_type->withStaticResolvedInContext($this->context);
         //echo "$assign_type_expanded : " . json_encode($assign_type_expanded->hasArrayLike()) . "\n";
 
         // TODO: Better heuristic to deal with false positives on ArrayAccess subclasses
-        if ($assign_type_expanded->hasArrayAccess() && !$assign_type_expanded->hasGenericArray()) {
+        if ($assign_type_resolved->hasArrayAccess($this->code_base) && !$assign_type_resolved->hasGenericArray()) {
             return UnionType::empty();
         }
 
-        if (!$assign_type_expanded->hasArrayLike()) {
+        if (!$assign_type_resolved->hasArrayLike($this->code_base)) {
             if ($assign_type->hasNonNullStringType()) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {

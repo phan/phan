@@ -43,7 +43,10 @@ class ArrayType extends IterableType
         return false;  // Overrides IterableType returning true
     }
 
-    public function isArrayLike(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isArrayLike(CodeBase $code_base): bool
     {
         return true;  // Overrides Type
     }

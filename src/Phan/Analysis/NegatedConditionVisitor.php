@@ -817,7 +817,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $union_type;
         }
 
-        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
+        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
         if (!$dim_union_type) {
             // There are other types, this dimension does not exist yet.
             // Whether or not the union type already has array shape types, don't change the type
@@ -910,7 +910,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 }
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
                     $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
-                    if (!$new_type || !$new_type->hasArrayLike()) {
+                    if (!$new_type || !$new_type->hasArrayLike($this->code_base)) {
                         $new_type = ArrayType::instance(false)->asPHPDocUnionType();
                     }
                     $new_type = $new_type->nonFalseyClone();
@@ -954,7 +954,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
 
         $union_type = $variable->getUnionType();
-        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
+        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
         if (!$dim_union_type) {
             // There are other types, this dimension does not exist yet
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {

@@ -1260,7 +1260,6 @@ final class Builder
                 // TODO: Would need to use a different approach if templates were ever supported
                 //       e.g. The magic method parsing doesn't support commas?
                 $params_strings = self::extractMethodParts($arg_list);
-                $failed = false;
                 foreach ($params_strings as $i => $param_string) {
                     $param = $this->magicParamFromMagicMethodParamString($param_string, $i, $comment_line_offset);
                     if ($param === null) {
@@ -1270,13 +1269,9 @@ final class Builder
                             \trim($line),
                             $param_string
                         );
-                        $failed = true;
+                        return null;
                     }
                     $comment_params[] = $param;
-                }
-                if ($failed) {
-                    // Emit everything that was wrong with the parameters of the @method annotation at once, then reject it.
-                    return null;
                 }
             }
 

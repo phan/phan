@@ -1021,6 +1021,7 @@ final class ConfigPluginSet extends PluginV3 implements
                 \fwrite(STDERR, CLI::colorizeHelpSectionIfSupported("WARNING: ") . "Could not load baseline from file '$load_baseline_path'" . PHP_EOL);
             }
         }
+        $plugin_set = \array_values(\array_filter($plugin_set));
 
         // Register the entire set.
         $this->plugin_set = $plugin_set;

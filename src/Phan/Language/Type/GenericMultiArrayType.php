@@ -181,7 +181,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
 
         // TODO: More precise about checking if can cast to ArrayShapeType
 
-        if ($type->isArrayLike()) {
+        if ($type->isArrayLike($code_base)) {
             return true;
         }
 
@@ -207,7 +207,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
 
         // TODO: More precise about checking if can cast to ArrayShapeType
 
-        if ($type->isArrayLike()) {
+        if ($type->isArrayLike($code_base)) {
             return true;
         }
 

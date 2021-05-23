@@ -516,22 +516,24 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function visitBinaryOpCommon(Node $node): UnionType
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
         $left = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
+            $code_base,
+            $context,
             $node->children['left'],
             $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
+            $code_base,
+            $context,
             $node->children['right'],
             $this->should_catch_issue_exception
         );
 
-        $left_is_array_like = $left->isExclusivelyArrayLike();
-        $right_is_array_like = $right->isExclusivelyArrayLike();
+        $left_is_array_like = $left->isExclusivelyArrayLike($code_base);
+        $right_is_array_like = $right->isExclusivelyArrayLike($code_base);
 
         $left_can_cast_to_array = $left->canCastToUnionType(
             ArrayType::instance(false)->asPHPDocUnionType(),
@@ -544,7 +546,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         if ($left_is_array_like
-            && !$right->hasArrayLike()
+            && !$right->hasArrayLike($code_base)
             && !$right_can_cast_to_array
             && !$right->isEmpty()
             && !$right->containsNullable()
@@ -556,7 +558,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 (string)$right->asNonLiteralType()
             );
         } elseif ($right_is_array_like
-            && !$left->hasArrayLike()
+            && !$left->hasArrayLike($code_base)
             && !$left_can_cast_to_array
             && !$left->isEmpty()
             && !$left->containsNullable()
@@ -750,7 +752,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         // If both left and right union types are arrays, then this is array
         // concatenation. (`$left + $right`)
         if ($left->isGenericArray() && $right->isGenericArray()) {
-            self::checkInvalidArrayShapeCombination($this->code_base, $this->context, $node, $left, $right);
+            self::checkInvalidArrayShapeCombination($code_base, $context, $node, $left, $right);
             if ($left->isEqualTo($right)) {
                 return $left;
             }
@@ -777,12 +779,12 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
 
         $left_is_array = (
-            !$left->genericArrayElementTypes()->isEmpty()
+            !$left->genericArrayElementTypes(false, $code_base)->isEmpty()
             && $left->nonArrayTypes()->isEmpty()
         ) || $left->isType($array_type);
 
         $right_is_array = (
-            !$right->genericArrayElementTypes()->isEmpty()
+            !$right->genericArrayElementTypes(false, $code_base)->isEmpty()
             && $right->nonArrayTypes()->isEmpty()
         ) || $right->isType($array_type);
 
