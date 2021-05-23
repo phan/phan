@@ -1,6 +1,6 @@
 language: php
 
-# The 4.0 releases can be used with any PHP version from 7.2 to 8.0
+# The 5.0 releases can be used with any PHP version from 7.2 to 8.0
 php:
   - 7.2
   - 7.3

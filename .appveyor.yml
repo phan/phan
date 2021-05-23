@@ -52,6 +52,7 @@ branches:
   only:
     - master
     - v4
+    - v5
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
