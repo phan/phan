@@ -6369,6 +6369,7 @@ class UnionType implements Serializable, Stringable
 
     /**
      * Check if this union type contains any intersection types
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasIntersectionTypes(): bool
     {
