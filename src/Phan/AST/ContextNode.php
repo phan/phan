@@ -814,7 +814,7 @@ class ContextNode
             $method = $call_method;
         }
         if ($method) {
-            if ($class_without_method && Config::get_strict_method_checking()) {
+            if ($class_without_method && Config::get_strict_method_checking() && !$this->isDefinitelyPossiblyUndeclaredMethod($node, $method_name, $is_direct)) {
                 $this->emitIssue(
                     Issue::PossiblyUndeclaredMethod,
                     $node->lineno,
@@ -855,6 +855,42 @@ class ContextNode
                 IssueFixSuggester::suggestSimilarMethod($this->code_base, $this->context, $first_class, $method_name, $is_static)
             )
         );
+    }
+
+    /**
+     * @throws IssueException
+     */
+    private function isDefinitelyPossiblyUndeclaredMethod(Node $node, string $method_name, bool $is_direct): bool {
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr']
+                    ?? $node->children['class']
+            );
+        } catch (FQSENException $e) {
+            throw new IssueException(
+                Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
+                    $this->context->getFile(),
+                    $node->lineno,
+                    [$e->getFQSEN()]
+                )
+            );
+        }
+        // Typically, this should only return false for intersection types that include a mix of types that have and don't have the method.
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->hasObjectWithKnownFQSEN()) {
+                continue;
+            }
+            foreach ($type->asPHPDocUnionType()->asClassList($this->code_base, $this->context) as $class) {
+                if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                    continue 2;
+                }
+            }
+            // Part of the union type includes a type or intersection type that does not have that method.
+            return false;
+        }
+        return true;
     }
 
     /**

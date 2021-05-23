@@ -28,6 +28,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
@@ -694,6 +695,13 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     private static function calculateNarrowedUnionType(CodeBase $code_base, Context $context, UnionType $old_type, UnionType $asserted_object_type): UnionType
     {
+        $asserted_object_type_instance = null;
+        if ($asserted_object_type->typeCount() === 1) {
+            $asserted_object_type_instance = $asserted_object_type->getTypeSet()[0];
+            if (!$asserted_object_type_instance || !$asserted_object_type_instance->isObjectWithKnownFQSEN()) {
+                $asserted_object_type_instance = null;
+            }
+        }
         $new_type_set = [];
         foreach ($old_type->getTypeSet() as $type) {
             if ($type instanceof MixedType) {
@@ -715,10 +723,18 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 continue;
             }
             if (!$type->asPHPDocUnionType()->canCastToUnionType($asserted_object_type, $code_base)) {
-                // The variable includes a base class of the asserted type.
-                return $asserted_object_type;
+                if (!$asserted_object_type_instance) {
+                    return $asserted_object_type; // same as $intersection
+                }
+                $intersection = IntersectionType::createFromTypes([$type, $asserted_object_type_instance], $code_base, $context);
+                if (!$intersection instanceof IntersectionType) {
+                    // The variable includes a base class of the asserted type.
+                    return $asserted_object_type; // same as $intersection
+                }
+                $new_type_set[] = $intersection;
+            } else {
+                $new_type_set[] = $type;
             }
-            $new_type_set[] = $type;
         }
         if (!$new_type_set) {
             return $asserted_object_type;
@@ -742,10 +758,23 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             $type = $type->withIsNullable(false);
-            if (!$type->asPHPDocUnionType()->canCastToUnionType($asserted_object_type, $code_base)) {
+            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, $context, $asserted_object_type)) {
+                // This isn't on a common type hierarchy
                 continue;
             }
-            $new_real_type_set[] = $type;
+            if (!$type->asPHPDocUnionType()->canCastToUnionType($asserted_object_type, $code_base)) {
+                if (!$asserted_object_type_instance) {
+                    continue;
+                }
+                $intersection = IntersectionType::createFromTypes([$type, $asserted_object_type_instance], $code_base, $context);
+                if (!$intersection instanceof IntersectionType) {
+                    // The variable includes a base class of the asserted type.
+                    continue;
+                }
+                $new_real_type_set[] = $intersection;
+            } else {
+                $new_real_type_set[] = $type;
+            }
         }
         return UnionType::of($new_type_set, $new_real_type_set ?: $asserted_object_type->getRealTypeSet());
     }

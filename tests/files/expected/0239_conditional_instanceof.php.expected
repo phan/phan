@@ -1,1 +1,2 @@
-%s:7 PhanTypeMismatchArgumentReal Argument 1 ($p) is $v of type \B but \f() takes \A defined at %s:4
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type \B(real=\B)
+%s:8 PhanTypeMismatchArgumentReal Argument 1 ($p) is $v of type \B but \f() takes \A defined at %s:4

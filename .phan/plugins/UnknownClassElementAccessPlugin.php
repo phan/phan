@@ -88,7 +88,7 @@ class UnknownClassElementAccessPlugin extends PluginV3 implements
     /**
      * Prevent this plugin from warning about $node_string at this file and line
      */
-    public static function blacklistMethodIssue(Context $context, Node $node): void
+    public static function preventMethodIssueWarning(Context $context, Node $node): void
     {
         $node_string = ASTReverter::toShortString($node);
         $key = self::generateKey($context, $node->lineno, $node_string);
@@ -143,8 +143,8 @@ class UnknownClassElementAccessVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type->isObjectWithKnownFQSEN()) {
-                UnknownClassElementAccessPlugin::blacklistMethodIssue($this->context, $node);
+            if ($type->hasObjectWithKnownFQSEN()) {
+                UnknownClassElementAccessPlugin::preventMethodIssueWarning($this->context, $node);
                 return;
             }
         }
