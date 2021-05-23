@@ -383,4 +383,21 @@ final class IntersectionType extends Type
         }
         return false;
     }
+
+    /**
+     * @return Type
+     * Either this or 'static' resolved in the given context.
+     */
+    public function withStaticResolvedInContext(
+        Context $context
+    ): Type {
+        $type_parts = $this->type_parts;
+        foreach ($type_parts as $i => $type) {
+            $type_parts[$i] = $type->withStaticResolvedInContext($context);
+        }
+        if ($type_parts === $this->type_parts) {
+            return $this;
+        }
+        return new self($type_parts);
+    }
 }

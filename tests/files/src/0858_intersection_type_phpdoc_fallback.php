@@ -25,7 +25,7 @@ function test($param) {
 // This tests that the fallback does something reasonable, and doesn't crash.
 function test_infer(MyClass858 $x) {
     if ($x instanceof Countable) {
-        test($x); // should warn
+        test($x); // should not warn
     } elseif ($x instanceof ArrayAccess) {
         test($x); // should warn
     } // TODO: Type combinations should narrow

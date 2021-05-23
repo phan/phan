@@ -1,0 +1,5 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type \ArrayAccess&\I936(real=\ArrayAccess&\I936)
+%s:9 PhanUndeclaredMethod Call to undeclared method \ArrayAccess::count
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $t->returnsString() of type string but \intdiv() takes int
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type \ArrayAccess|\ArrayAccess&\I936(real=\ArrayAccess|\ArrayAccess&\I936)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type static&\C936(real=static&\C936)
