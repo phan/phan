@@ -540,7 +540,20 @@ class ASTReverter
             },
             ast\AST_EXIT => static function (Node $node): string {
                 return 'exit(' . self::toShortString($node->children['expr']) . ')';
-            }
+            },
+            ast\AST_YIELD => static function (Node $node): string {
+                ['value' => $value, 'key' => $key] = $node->children;
+                if ($value !== null) {
+                    return '(yield)';
+                }
+                if ($key !== null) {
+                    return sprintf('(yield %s => %s)', self::toShortString($key), self::toShortString($value));
+                }
+                return sprintf('(yield %s)', self::toShortString($value));
+            },
+            ast\AST_YIELD_FROM => static function (Node $node): string {
+                return '(yield from ' . self::toShortString($node->children['expr']) . ')';
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

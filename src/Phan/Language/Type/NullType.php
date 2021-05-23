@@ -54,7 +54,7 @@ final class NullType extends ScalarType implements LiteralTypeInterface
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         return Config::get_null_casts_as_any_type()
-            || (Config::get_null_casts_as_array() && $type->isArrayLike())
+            || (Config::get_null_casts_as_array() && $type->isArrayLike($code_base))
             || parent::canCastToNonNullableType($type, $code_base);
     }
 

@@ -22,6 +22,7 @@ class Builder {
 $x = new Builder(new stdClass());
 '@phan-debug-var $x';  // type=Builder<\stdClass>
 $y = $x->foo();
-'@phan-debug-var $y';  // type=Builder
+'@phan-debug-var $y';  // type=Builder<\stdClass>
 $z = $x->foo2();
-'@phan-debug-var $z';  // TODO: Remove \Builder from \Builder|\Builder<\stdClass>, probably missing a check in resolving static types
+'@phan-debug-var $z';  // type=Builder<\stdClass>
+

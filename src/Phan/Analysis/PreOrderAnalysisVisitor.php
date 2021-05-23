@@ -781,15 +781,19 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $throwable_type = Type::throwableInstance();
-        if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
-            $union_type = $union_type->withType($throwable_type);
-        }
         $var_node = $node->children['var'];
         if (!$var_node instanceof Node) {
-            // Impossible
+            // The catch variable is optional in newer php versions
             return $this->context;
         }
+        // Calculate the intersection type of the class statement
+        // (E.g. MyInterface&Throwable)
+        $union_type = ConditionVisitor::calculateNarrowedUnionType(
+            $this->code_base,
+            $this->context,
+            $union_type,
+            Type::throwableInstance()->asPHPDocUnionType()
+        );
 
         $variable_name = (new ContextNode(
             $this->code_base,

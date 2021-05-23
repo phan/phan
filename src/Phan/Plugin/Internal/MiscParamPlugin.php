@@ -1308,6 +1308,6 @@ final class MiscParamPlugin extends PluginV3 implements
         )) {
             return true;
         }
-        return $union_type->genericArrayElementTypes()->hasClassWithToStringMethod($code_base, $context);
+        return $union_type->genericArrayElementTypes(false, $code_base)->hasClassWithToStringMethod($code_base, $context);
     }
 }
