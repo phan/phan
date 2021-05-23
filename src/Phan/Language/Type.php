@@ -2292,11 +2292,11 @@ class Type implements Stringable
      * True if this type is array-like (is of type array, is
      * a generic array, or implements ArrayAccess).
      */
-    public function isArrayLike(): bool
+    public function isArrayLike(CodeBase $code_base): bool
     {
         // includes both nullable and non-nullable ArrayAccess/array
         // (Overridden by ArrayType)
-        return $this->isArrayAccess();
+        return $this->isArrayAccess($code_base);
     }
 
     /**
@@ -2311,12 +2311,16 @@ class Type implements Stringable
     }
 
     /**
-     * @return bool - Returns true if this is `\ArrayAccess` (nullable or not)
+     * @return bool - Returns true if this is `\ArrayAccess` or a subtype (nullable or not)
      */
-    public function isArrayAccess(): bool
+    public function isArrayAccess(CodeBase $code_base): bool
     {
-        return (\strcasecmp($this->getName(), 'ArrayAccess') === 0
-            && $this->getNamespace() === '\\');
+        foreach ($this->asExpandedTypes($code_base)->getTypeSet() as $part) {
+            if (strcasecmp($part->name,'ArrayAccess') === 0 && $part->namespace === '\\') {
+                return true;
+            }
+        }
+        return false;  // Overridden in subclass IterableType (with subclass ArrayType)
     }
 
     /**
@@ -2343,7 +2347,7 @@ class Type implements Stringable
      */
     public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
     {
-        return $this->asExpandedTypes($code_base)->hasArrayAccess();
+        return $this->isArrayAccess($code_base);
     }
 
     /**
@@ -2955,7 +2959,7 @@ class Type implements Stringable
             // the nullable part.
             if (Config::get_null_casts_as_any_type()) {
                 return $this->withIsNullable(false)->canCastToType($type, $code_base);
-            } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
+            } elseif (Config::get_null_casts_as_array() && $type->isArrayLike($code_base)) {
                 return $this->withIsNullable(false)->canCastToType($type, $code_base);
             } else {
                 return false;

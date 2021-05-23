@@ -1329,16 +1329,16 @@ final class ArgumentType
         }
 
         $mismatch_type_set = UnionType::empty();
-        $mismatch_expanded_types = null;
+        $mismatch_resolved_types = null;
 
         // For the strict
         foreach ($type_set as $type) {
             // Expand it to include all parent types up the chain
-            $individual_type_expanded = $type->withStaticResolvedInContext($context)->asExpandedTypes($code_base);
+            $type_resolved = $type->withStaticResolvedInContext($context)->asPHPDocUnionType();
 
             // See if the argument can be cast to the
             // parameter
-            if (!$individual_type_expanded->canCastToUnionType(
+            if (!$type_resolved->canCastToUnionType(
                 $parameter_type,
                 $code_base
             )) {
@@ -1346,21 +1346,21 @@ final class ArgumentType
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if (!$context->isStrictTypes() && $parameter_type->hasNonNullStringType()) {
-                        if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
+                        if ($type_resolved->hasClassWithToStringMethod($code_base, $context)) {
                             continue;  // don't warn about $type
                         }
                     }
                 }
                 $mismatch_type_set = $mismatch_type_set->withType($type);
-                if ($mismatch_expanded_types === null) {
+                if ($mismatch_resolved_types === null) {
                     // Warn about the first type
-                    $mismatch_expanded_types = $individual_type_expanded;
+                    $mismatch_resolved_types = $type_resolved;
                 }
             }
         }
 
 
-        if ($mismatch_expanded_types === null) {
+        if ($mismatch_resolved_types === null) {
             // No mismatches
             return;
         }
@@ -1377,7 +1377,7 @@ final class ArgumentType
                 $argument_type,
                 $method->getRepresentationForIssue(),
                 (string)$parameter_type,
-                $mismatch_expanded_types
+                $mismatch_resolved_types->asExpandedTypes($code_base)
             );
             return;
         }
@@ -1392,7 +1392,7 @@ final class ArgumentType
             $argument_type,
             $method->getRepresentationForIssue(),
             (string)$parameter_type,
-            $mismatch_expanded_types,
+            $mismatch_resolved_types->asExpandedTypes($code_base),
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );

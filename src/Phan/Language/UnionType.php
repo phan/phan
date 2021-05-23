@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Language;
 
 use Closure;
-use Exception;
 use Generator;
 use InvalidArgumentException;
 use Phan\CodeBase;
@@ -2243,9 +2242,9 @@ class UnionType implements Serializable, Stringable
             }
         } else {
             // If null_casts_as_any_type isn't set, then try the other two fallbacks.
-            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike()) {
+            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike($code_base)) {
                 return true;
-            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
+            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike($code_base)) {
                 return true;
             }
         }
@@ -2771,10 +2770,10 @@ class UnionType implements Serializable, Stringable
      * True if this union has array-like types (is of type array, is
      * a generic array, or implements ArrayAccess).
      */
-    public function hasArrayLike(): bool
+    public function hasArrayLike(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isArrayLike();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
+            return $type->isArrayLike($code_base);
         });
     }
 
@@ -2805,12 +2804,11 @@ class UnionType implements Serializable, Stringable
     /**
      * @return bool
      * True if this union contains the ArrayAccess type.
-     * (Call asExpandedTypes() first to check for subclasses of ArrayAccess)
      */
-    public function hasArrayAccess(): bool
+    public function hasArrayAccess(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isArrayAccess();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+            return $type->isArrayAccess($code_base);
         });
     }
 
@@ -2849,14 +2847,14 @@ class UnionType implements Serializable, Stringable
      * array-like, and nothing else (e.g. can't be null).
      * If any of the array-like types are nullable, this returns false.
      */
-    public function isExclusivelyArrayLike(): bool
+    public function isExclusivelyArrayLike(CodeBase $code_base): bool
     {
         if ($this->isEmpty()) {
             return false;
         }
 
-        return $this->allTypesMatchCallback(static function (Type $type): bool {
-            return $type->isArrayLike() && !$type->isNullable();
+        return $this->allTypesMatchCallback(static function (Type $type) use ($code_base): bool {
+            return $type->isArrayLike($code_base) && !$type->isNullable();
         });
     }
 
@@ -3340,15 +3338,15 @@ class UnionType implements Serializable, Stringable
      * @suppress PhanUnreferencedPublicMethod
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function countableTypesStrictCast(CodeBase $code_base): UnionType
+    public function countableTypesStrictCast(CodeBase $code_base, Context $context): UnionType
     {
         static $default_types;
         if (\is_null($default_types)) {
             $default_types = [ArrayType::instance(false), Type::countableInstance()];
         }
         return UnionType::of(
-            self::castTypeListToCountable($code_base, $this->type_set, false) ?: $default_types,
-            self::castTypeListToCountable($code_base, $this->real_type_set, false) ?: $default_types
+            self::castTypeListToCountable($code_base, $this->type_set, $context) ?: $default_types,
+            self::castTypeListToCountable($code_base, $this->real_type_set, $context) ?: $default_types
         );
     }
 
@@ -3357,48 +3355,34 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> a list of countable subclasses and array types, possibly containing duplicates
      * @internal
      */
-    public static function castTypeListToCountable(CodeBase $code_base, array $type_list, bool $assume_subclass_implements_countable): array
+    public static function castTypeListToCountable(CodeBase $code_base, array $type_list, Context $context): array
     {
         $result = [];
+        $countable = Type::countableInstance();
         foreach ($type_list as $type) {
             if ($type instanceof IterableType) {
                 $result[] = $type->asArrayType();
-                if ($assume_subclass_implements_countable && $type->isPossiblyObject()) {
-                    $result[] = Type::countableInstance();
+                if ($type->isPossiblyObject()) {
+                    $object_type = $type->withIsNullable(false)->asObjectType();
+                    if ($object_type) {
+                        // TODO: Convert iterable with template types to Traversable with template types
+                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                        $result[] = IntersectionType::createFromTypes([$object_type, $countable], $code_base, $context);
+                    } else {
+                        $result[] = $countable;
+                    }
                 }
                 continue;
             } elseif ($type->hasObjectWithKnownFQSEN()) {
                 $type = $type->withIsNullable(false);
-                $expanded_type = $type->asExpandedTypes($code_base);
-                foreach ($expanded_type->getTypeSet() as $part_type) {
-                    if ($part_type->getName() === 'Countable' && $part_type->getNamespace() === '\\') {
-                        $result[] = $type;
-                        continue 2;
-                    }
+                if ($type->isSubtypeOf($countable, $code_base)) {
+                    $result[] = $type;
+                    continue;
                 }
-                if ($assume_subclass_implements_countable) {
-                    if ($type->allTypePartsMatchCallback(static function (Type $part) use ($code_base): bool {
-                        try {
-                            $fqsen = $part->asFQSEN();
-                            if (!($fqsen instanceof FullyQualifiedClassName)) {
-                                // This is a closure
-                                return false;
-                            }
-                            if ($code_base->hasClassWithFQSEN($fqsen)) {
-                                if ($code_base->getClassByFQSEN($fqsen)->isFinal()) {
-                                    // This is a final class and can't implement Countable
-                                    return false;
-                                }
-                            }
-                        } catch (Exception $_) {
-                            // ignore it
-                        }
-                        return true;
-                    })) {
-                        $result[] = Type::countableInstance();
-                    }
+                if (!$type->canCastToDeclaredType($code_base, $context, $countable)) {
+                    continue;
                 }
-                continue;
+                $result[] = IntersectionType::createFromTypes([$type, $countable], $code_base, $context);
             } else {
                 if ($type->isPossiblyObject()) {
                     // e.g. object/mixed/callable-object can also be Countable
@@ -4039,7 +4023,7 @@ class UnionType implements Serializable, Stringable
      * @param bool $add_real_types if true, this adds the real types that would be possible for `$x[$offset]`
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function genericArrayElementTypes(bool $add_real_types = false): UnionType
+    public function genericArrayElementTypes(bool $add_real_types, CodeBase $code_base): UnionType
     {
         // This is frequently called, and has been optimized
         $result = [];
@@ -4078,7 +4062,7 @@ class UnionType implements Serializable, Stringable
             $result[] = $mixed_type;
         }
         if ($add_real_types && $result && $this->real_type_set) {
-            return UnionType::of($result, self::computeRealElementTypesForDimAccess($this->real_type_set));
+            return UnionType::of($result, self::computeRealElementTypesForDimAccess($this->real_type_set, $code_base));
         }
 
         return UnionType::of($result);
@@ -4090,7 +4074,7 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
      * @internal
      */
-    public static function computeRealElementTypesForDimAccess(array $real_type_set): array
+    public static function computeRealElementTypesForDimAccess(array $real_type_set, CodeBase $code_base): array
     {
         $result = [];
         foreach ($real_type_set as $type) {
@@ -4103,9 +4087,11 @@ class UnionType implements Serializable, Stringable
             if ($type->isPossiblyObject()) {
                 // e.g. Mixed, \MyClass, iterable, etc.
                 // We don't know some of the real types, so return the empty list as the set of real types.
+                //
+                // TODO: use offsetGet signature?
                 return [];
             }
-            if (!$type->isArrayLike()) {
+            if (!$type->isArrayLike($code_base)) {
                 continue;
             }
             if (!$type instanceof ArrayType) {
@@ -4131,7 +4117,7 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> possibly empty, possibly with duplicates. These types are nullable to indicate that array accesses can fail.
      * @internal
      */
-    public static function computeRealElementTypesForDestructuringAccess(array $real_type_set): array
+    public static function computeRealElementTypesForDestructuringAccess(array $real_type_set, CodeBase $code_base): array
     {
         $result = [];
         foreach ($real_type_set as $type) {
@@ -4144,9 +4130,11 @@ class UnionType implements Serializable, Stringable
             if ($type->isPossiblyObject()) {
                 // e.g. Mixed, \MyClass, iterable, etc.
                 // We don't know some of the real types, so return the empty list as the set of real types.
+                //
+                // TODO: Use iterableValueUnionType?
                 return [];
             }
-            if (!$type->isArrayLike()) {
+            if (!$type->isArrayLike($code_base)) {
                 continue;
             }
             if (!$type instanceof ArrayType) {

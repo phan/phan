@@ -214,8 +214,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             );
         }
         foreach ($union_type->getTypeSet() as $type) {
-            $expanded_type = $type->asExpandedTypes($this->code_base);
-            if (!$this->shouldWarnAboutThrowType($expanded_type)) {
+            if (!$this->shouldWarnAboutThrowType($type)) {
                 continue;
             }
             if ($type->hasTemplateTypeRecursive()) {
@@ -242,7 +241,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 continue;
             }
-            if (!$expanded_type->canCastToUnionType($throws_union_type, $this->code_base)) {
+            if (!$union_type->canCastToUnionType($throws_union_type, $this->code_base)) {
                 if ($call !== null) {
                     $this->emitIssue(
                         Issue::ThrowTypeMismatchForCall,
@@ -310,13 +309,13 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Check if the user wants to warn about a given throw type.
      */
-    protected function shouldWarnAboutThrowType(UnionType $expanded_type): bool
+    protected function shouldWarnAboutThrowType(Type $type): bool
     {
         $ignore_union_type = $this->getConfiguredIgnoreThrowsUnionType();
         if ($ignore_union_type->isEmpty()) {
             return true;
         }
-        return !$expanded_type->canCastToUnionType($ignore_union_type, $this->code_base);
+        return !$type->isSubtypeOfAnyTypeInSet($ignore_union_type->getTypeSet(), $this->code_base);
     }
 }
 

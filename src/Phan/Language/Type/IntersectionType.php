@@ -427,4 +427,36 @@ final class IntersectionType extends Type
         }
         return new self($type_parts);
     }
+
+    /**
+     * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     * TODO: Return an intersection of the iterable value types instead?
+     * @override
+     */
+    public function iterableValueUnionType(CodeBase $code_base): ?UnionType
+    {
+        foreach ($this->type_parts as $part) {
+            $value = $part->iterableValueUnionType($code_base);
+            if ($value !== null) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return ?UnionType returns the iterable key's union type if this is a subtype of iterable, null otherwise.
+     * TODO: Return an intersection of the iterable value types instead if all union types have a single type?
+     * @override
+     */
+    public function iterableKeyUnionType(CodeBase $code_base): ?UnionType
+    {
+        foreach ($this->type_parts as $part) {
+            $value = $part->iterableKeyUnionType($code_base);
+            if ($value !== null) {
+                return $value;
+            }
+        }
+        return null;
+    }
 }

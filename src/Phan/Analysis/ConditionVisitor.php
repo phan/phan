@@ -455,10 +455,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
 
         // This is $x['field'] or $x[$i][something]
+        // NOTE: Not great for isset on string offsets
 
         if (!$context->getScope()->hasVariableWithName($var_name)) {
             $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope());
-            if (!$new_type || !$new_type->hasArrayLike()) {
+            if (!$new_type || !$new_type->hasArrayLike($this->code_base)) {
                 $new_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
             // Support analyzing cases such as `if (isset($x['key'])) { use($x); }`, or `assert(isset($x['key']))`
@@ -521,7 +522,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $union_type;
         }
 
-        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
+        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
         if (!$dim_union_type) {
             // There are other types, this dimension does not exist yet
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
@@ -693,7 +694,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * E.g. Given subclass1|subclass2|false and base_class/base_interface, returns subclass1|subclass2
      * E.g. Given subclass1|mixed|false and base_class/base_interface, returns base_class/base_interface
      */
-    private static function calculateNarrowedUnionType(CodeBase $code_base, Context $context, UnionType $old_type, UnionType $asserted_object_type): UnionType
+    public static function calculateNarrowedUnionType(CodeBase $code_base, Context $context, UnionType $old_type, UnionType $asserted_object_type): UnionType
     {
         $asserted_object_type_instance = null;
         if ($asserted_object_type->typeCount() === 1) {
@@ -924,7 +925,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // Change the type to match the is_countable relationship
             // If we already have possible countable types, then keep those
             // (E.g. ?ArrayObject|false becomes ArrayObject)
-            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base));
+            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base, $context));
         };
         /**
          * @param list<Node|mixed> $args
@@ -936,7 +937,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable->setUnionType(
                 $variable->getUnionType()
                 ->withStaticResolvedInContext($context)
-                ->countableTypesStrictCast($code_base)
+                ->countableTypesStrictCast($code_base, $context)
                 ->nonFalseyClone()
             );
         };

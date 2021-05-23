@@ -1,0 +1,13 @@
+%s:4 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Traversable&\Countable|array(real=\Traversable&\Countable|array)
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Traversable&\Countable(real=\Traversable&\Countable)
+%s:9 PhanRedundantCondition Redundant attempt to cast $x of type \Traversable&\Countable to \Traversable
+%s:12 PhanTypeMismatchReturnReal Returning $x of type array but test_iterable941() is declared to return object
+%s:14 PhanTypeMismatchReturn Returning $x of type iterable but test_iterable941() is declared to return object
+%s:17 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Traversable<string,\stdClass>&\Countable|array<string,\stdClass>(real=\Traversable&\Countable|array)
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Traversable<string,\stdClass>&\Countable(real=\Traversable&\Countable)
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $key of type string but \intdiv() takes int
+%s:23 PhanTypeMismatchArgumentInternal Argument 2 ($num2) is $value of type \stdClass but \intdiv() takes int
+%s:27 PhanTypeMismatchReturnReal Returning $x of type array<string,\stdClass> (real type array) but test_iterable941b() is declared to return object
+%s:29 PhanTypeMismatchReturn Returning $x of type iterable<string,\stdClass> but test_iterable941b() is declared to return object

@@ -42,7 +42,10 @@ abstract class ScalarType extends NativeType
         return false;
     }
 
-    public function isArrayLike(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isArrayLike(CodeBase $code_base): bool
     {
         return false;
     }

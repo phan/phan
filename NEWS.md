@@ -4,9 +4,10 @@ Phan NEWS
 -----------------------
 
 + Support parsing intersection types in phpdoc and checking if intersection types satisfy type comparisons
-+ Support intersection types
++ Support inferring intersection types from conditions such as `instanceof`
 + Warn about impossible type combinations in phpdoc intersection types.
   New issue types: `PhanImpossibleIntersectionType`
++ Improve type checking precision
 
 May 19 2021, Phan 4.0.7 (dev)
 -----------------------
