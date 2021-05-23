@@ -2262,9 +2262,15 @@ class Type implements Stringable
     /**
      * @return bool
      * True if this type is iterable. Does not check ancestor types.
+     * Called by UnionType->hasTraversable()
      */
-    public function isIterable(): bool
+    public function isIterable(CodeBase $code_base): bool
     {
+        foreach ($this->asExpandedTypes($code_base)->getTypeSet() as $part) {
+            if ($part->name === 'Traversable' && $part->namespace === '\\') {
+                return true;
+            }
+        }
         return false;  // Overridden in subclass IterableType (with subclass ArrayType)
     }
 
@@ -2274,7 +2280,7 @@ class Type implements Stringable
      */
     public function asIterable(CodeBase $code_base): ?Type
     {
-        if ($this->asExpandedTypes($code_base)->hasIterable()) {
+        if ($this->isIterable($code_base)) {
             return $this->withIsNullable(false);
         }
         return null;
@@ -3060,7 +3066,9 @@ class Type implements Stringable
 
         // Check for allowable type conversions from object types to native types
         if ($type::NAME === 'iterable') {
-            if ($this->namespace === '\\' && in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
+            // Check if Traversable objects (and subtypes) can cast to iterable
+            if ($this->isObjectWithKnownFQSEN() && $this->isIterable($code_base)) {
+                // Allow Traversable to cast to iterable<string>, allow Traversable<K, V> to cast to iterable
                 if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }

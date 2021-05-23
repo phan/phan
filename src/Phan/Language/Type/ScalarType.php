@@ -42,11 +42,6 @@ abstract class ScalarType extends NativeType
         return false;
     }
 
-    public function isIterable(): bool
-    {
-        return false;
-    }
-
     public function isArrayLike(): bool
     {
         return false;

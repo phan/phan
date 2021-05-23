@@ -487,8 +487,9 @@ final class EmptyUnionType extends UnionType
     /**
      * @return bool
      * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     * @unused-param $code_base
      */
-    public function hasIterable(): bool
+    public function hasIterable(CodeBase $code_base): bool
     {
         return false;
     }

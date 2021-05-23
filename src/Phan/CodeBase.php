@@ -649,7 +649,7 @@ class CodeBase
     }
 
     /**
-     * @param array{clone:CodeBase,callbacks:?(Closure():void)[]} $restore_point
+     * @param array{clone:CodeBase,callbacks:(?Closure():void)[]} $restore_point
      */
     public function restoreFromRestorePoint(array $restore_point): void
     {
@@ -1183,7 +1183,7 @@ class CodeBase
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
-            // @phan-suppress-next-line PhanTypeMismatchArgument deliberately adding different class instances to an existing set
+            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
             $set->attach($value);
         }
         return $set;

@@ -37,6 +37,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -1101,7 +1102,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($union_type->isEmpty()) {
             return;
         }
-        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable()) {
+        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable($this->code_base)) {
             $this->emitIssue(
                 Issue::TypeMismatchForeach,
                 $node->children['expr']->lineno ?? $node->lineno,
@@ -1176,7 +1177,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($type->isPossiblyObject()) {
                 return false;
             }
-            if (!$type->isIterable()) {
+            if (!$type instanceof IterableType) {
                 continue;
             }
             if ($type->isPossiblyTruthy()) {

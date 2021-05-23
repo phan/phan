@@ -21,7 +21,10 @@ class IterableType extends NativeType
     /** @phan-override */
     public const NAME = 'iterable';
 
-    public function isIterable(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isIterable(CodeBase $code_base): bool
     {
         return true;
     }
@@ -34,7 +37,6 @@ class IterableType extends NativeType
     {
         // TODO: Check if $other is final and non-iterable
         return $other instanceof IterableType ||
-            $other instanceof GenericIterableType ||
             $other instanceof CallableDeclarationType ||
             $other->isPossiblyObject();
     }

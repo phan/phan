@@ -26,6 +26,7 @@ class FunctionFactory
      * One or more (alternate) functions begotten from
      * reflection info and internal functions data
      * @suppress PhanUndeclaredMethod
+     * @suppress PhanTypeMismatchReturn FunctionInterface->Method
      */
     public static function functionListFromReflectionFunction(
         FullyQualifiedFunctionName $fqsen,
@@ -76,6 +77,7 @@ class FunctionFactory
      * @return list<Func>
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
+     * @suppress PhanTypeMismatchReturn FunctionInterface->Method
      */
     public static function functionListFromSignature(
         FullyQualifiedFunctionName $fqsen,
@@ -107,6 +109,7 @@ class FunctionFactory
     /**
      * @return list<Method> a list of 1 or more method signatures from a ReflectionMethod
      * and Phan's alternate signatures for that method's FQSEN in FunctionSignatureMap.
+     * @suppress PhanTypeMismatchReturn FunctionInterface->Method
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,

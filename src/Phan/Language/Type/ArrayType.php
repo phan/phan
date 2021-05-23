@@ -451,13 +451,14 @@ class ArrayType extends IterableType
         if (\in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
         }
-        if ($type instanceof ArrayShapeType && \get_class($this) === ArrayType::class) {
+        if ($type instanceof ArrayShapeType) {
+            // isSubtypeOf is overridden by ArrayShapeType
             return false;
         }
 
         $other_is_nullable = $type->isNullable();
         // A nullable type is not a subtype of a non-nullable type
-        if ($this->isNullable() && !$other_is_nullable) {
+        if ($this->is_nullable && !$other_is_nullable) {
             return false;
         }
 

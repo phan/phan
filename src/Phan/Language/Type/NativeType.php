@@ -43,6 +43,15 @@ abstract class NativeType extends Type
     /**
      * @unused-param $code_base
      */
+    public function isIterable(CodeBase $code_base): bool
+    {
+        // overridden in subclasses
+        return false;
+    }
+
+    /**
+     * @unused-param $code_base
+     */
     public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
     {
         return false;

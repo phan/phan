@@ -1917,7 +1917,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $context;
         }
         $yield_from_expanded_type = $yield_from_type->withStaticResolvedInContext($this->context)->asExpandedTypes($code_base);
-        if (!$yield_from_expanded_type->hasIterable() && !$yield_from_expanded_type->hasTraversable()) {
+        if (!$yield_from_expanded_type->hasIterable($code_base) && !$yield_from_expanded_type->hasTraversable()) {
             $this->emitIssue(
                 Issue::TypeInvalidYieldFrom,
                 $node->lineno,

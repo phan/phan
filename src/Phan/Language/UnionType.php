@@ -2082,10 +2082,10 @@ class UnionType implements Serializable, Stringable
      * @return bool
      * True if this type has any subtype of the `iterable` type (e.g. `Traversable`, `Array`).
      */
-    public function hasIterable(): bool
+    public function hasIterable(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isIterable();
+        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+            return $type->isIterable($code_base);
         });
     }
 
@@ -5700,6 +5700,8 @@ class UnionType implements Serializable, Stringable
     {
         if (!$type_set) {
             // Can be int|string
+            // TODO: Add a plugin to infer the result of typeSetFromString on union types of literals
+            // @phan-suppress-next-line PhanTypeMismatchReturn
             return UnionType::typeSetFromString($is_real ? 'int|string' : 'int');
         }
         $result = [];
@@ -5886,6 +5888,7 @@ class UnionType implements Serializable, Stringable
             }
         }
         if (!$result) {
+            // @phan-suppress-next-line PhanTypeMismatchReturn
             return UnionType::typeSetFromString('int|float');
         }
         return $result;

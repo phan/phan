@@ -1216,8 +1216,7 @@ final class MiscParamPlugin extends PluginV3 implements
 
     /**
      * @param Codebase $code_base @phan-unused-param
-     * @return array<string,Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {

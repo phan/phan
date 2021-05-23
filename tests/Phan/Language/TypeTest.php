@@ -204,6 +204,22 @@ final class TypeTest extends CodeBaseAwareTest
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('?string')));
     }
 
+    public function testIterableType(): void
+    {
+        $iterable_type = self::makePHPDocType('iterable');
+        $iterable_template_type = self::makePHPDocType('iterable<string,int>');
+        $traversable_type = self::makePHPDocType('Traversable');
+        $spl_object_storage_type = self::makePHPDocType('SplObjectStorage');
+        $this->assertCanCastToType($iterable_type, $iterable_template_type);
+        $this->assertCanCastToType($iterable_template_type, $iterable_type);
+        $this->assertCanCastToType($traversable_type, $iterable_type);
+        $this->assertCanCastToType($traversable_type, $iterable_template_type);
+        $this->assertTrue($traversable_type->isIterable($this->code_base));
+        $this->assertTrue($spl_object_storage_type->isIterable($this->code_base));
+        $this->assertCanCastToType($spl_object_storage_type, $iterable_type);
+        $this->assertCanCastToType($spl_object_storage_type, $iterable_template_type);
+    }
+
     /**
      * Regression test - Phan parses ?int[] as ?(int[])
      */
@@ -590,6 +606,9 @@ final class TypeTest extends CodeBaseAwareTest
             [true, 'string[]', 'array'],
             [true, 'array{}', 'iterable'],
             [true, 'iterable<string>', 'iterable<mixed>'],
+            [true, 'array{foo:ArrayObject}', 'array{foo:Traversable}'],
+            [true, 'array{foo:ArrayObject}', 'array{}'],
+            [false, 'array{foo:ArrayObject}', 'array{foo:SplObjectStorage}'],
         ];
     }
 
@@ -739,9 +758,9 @@ final class TypeTest extends CodeBaseAwareTest
         $this->assertFalse($source->canCastToType($target, $this->code_base), "expected type $source not to be able to cast to type $target when $details");
     }
 
-    private function assertCanCastToType(Type $source, Type $target, string $details): void
+    private function assertCanCastToType(Type $source, Type $target, string $details = ''): void
     {
-        $this->assertTrue($source->canCastToType($target, $this->code_base), "expected type $source to be able to cast to type $target when $details");
+        $this->assertTrue($source->canCastToType($target, $this->code_base), "expected type $source to be able to cast to type $target" . ($details !== '' ? "when $details" : ""));
     }
 
     public function testCastingLiteralStringToInt(): void

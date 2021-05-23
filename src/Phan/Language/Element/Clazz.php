@@ -3708,14 +3708,14 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return list<Closure(list<mixed>, Context):UnionType>
+     * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
      */
     public function getGenericConstructorBuilder(CodeBase $code_base): array
     {
         return $this->memoize(
             'template_type_resolvers',
             /**
-             * @return list<Closure(list<mixed>):UnionType>
+             * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
              */
             function () use ($code_base): array {
                 // Get the constructor so that we can figure out what

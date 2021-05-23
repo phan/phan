@@ -197,6 +197,7 @@ class Property extends ClassElement
      * @return FullyQualifiedPropertyName
      * The fully-qualified structural element name of this
      * structural element
+     * @suppress PhanTypeMismatchReturn
      */
     public function getFQSEN(): FullyQualifiedPropertyName
     {

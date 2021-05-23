@@ -38,22 +38,24 @@ class StrictComparisonPlugin extends PluginV3 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string, Closure(CodeBase,Context,Func,array):void>
+     * @return array<string, Closure(CodeBase,Context,Func,array,?Node=):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         /**
-         * @return Closure(CodeBase,Context,Func,array):void
+         * @return Closure(CodeBase,Context,Func,array,?Node=):void
          */
         $make_callback = static function (int $index, string $index_name, int $min_args): Closure {
             /**
              * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
+             * @unused-param $node
              */
             return static function (
                 CodeBase $code_base,
                 Context $context,
                 Func $func,
-                array $args
+                array $args,
+                ?Node $node = null
             ) use (
                 $index,
                 $index_name,

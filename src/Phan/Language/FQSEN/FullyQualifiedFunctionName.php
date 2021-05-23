@@ -70,6 +70,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $fqsen_string)) {
+            // @phan-suppress-next-line PhanTypeMismatchReturn
             return $context->getNamespaceMapFor(
                 static::getNamespaceMapType(),
                 $fqsen_string

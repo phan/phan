@@ -698,6 +698,7 @@ class Method extends ClassElement implements FunctionInterface
         return parent::getUnionType();
     }
 
+    /** @suppress PhanTypeMismatchReturn */
     public function getFQSEN(): FullyQualifiedMethodName
     {
         return $this->fqsen;

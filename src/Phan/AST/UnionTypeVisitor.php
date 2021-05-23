@@ -2206,7 +2206,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If we have generics, we're all set
         try {
             if ($generic_types->isEmpty()) {
-                if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                if (!$union_type->hasIterable($this->code_base) && !$union_type->hasTypeMatchingCallback(static function (Type $type): bool {
                     return !$type->isNullableLabeled() && $type instanceof MixedType;
                 })) {
                     throw new IssueException(
@@ -2239,7 +2239,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Treat foo(...$associativeArgs) as invalid unless the minimum target php version is 8.0 (i.e. array unpacking is supported)
         if (!$is_array_spread && $minimum_target_php_version_id < 80000) {
             foreach ($union_type->getTypeSet() as $type) {
-                if ($type->isIterable()) {
+                if ($type->isIterable($this->code_base)) {
                     if ($type instanceof AssociativeArrayType) {
                         $is_invalid_because_associative = true;
                     } else {

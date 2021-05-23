@@ -16,7 +16,7 @@ use Microsoft\PhpParser\Diagnostic;
  */
 class PhpParserNodeEntry
 {
-    /** @var PhpParser\Node the node generated for the given file contents */
+    /** @var PhpParser\Node\SourceFileNode the node generated for the given file contents */
     public $node;
     /** @var Diagnostic[] the list of diagnostics generated for the given file contents */
     public $errors;
@@ -24,7 +24,7 @@ class PhpParserNodeEntry
     /**
      * @param Diagnostic[] $errors
      */
-    public function __construct(PhpParser\Node $node, array $errors)
+    public function __construct(PhpParser\Node\SourceFileNode $node, array $errors)
     {
         $this->node = $node;
         $this->errors = $errors;
