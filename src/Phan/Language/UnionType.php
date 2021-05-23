@@ -6352,6 +6352,34 @@ class UnionType implements Serializable, Stringable
             yield from $type->getTypesRecursively();
         }
     }
+
+    /**
+     * Emit an issue and return true if this intersection type contains an impossible combination
+     */
+    public function checkImpossibleCombination(CodeBase $code_base, Context $context): bool
+    {
+        $result = false;
+        foreach ($this->type_set as $type) {
+            if ($type instanceof IntersectionType && $type->checkImpossibleCombination($code_base, $context)) {
+                $result = true;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Check if this union type contains any intersection types
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function hasIntersectionTypes(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof IntersectionType) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 UnionType::init();

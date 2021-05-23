@@ -527,7 +527,7 @@ A list of plugin files to execute.
 
 Plugins which are bundled with Phan can be added here by providing their name (e.g. `'AlwaysReturnPlugin'`)
 
-Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v4/.phan/plugins).
+Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v5/.phan/plugins).
 
 Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. `'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'`)
 

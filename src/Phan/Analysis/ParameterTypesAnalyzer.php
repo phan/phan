@@ -107,6 +107,8 @@ class ParameterTypesAnalyzer
                 }
             }
             $union_type = $parameter->getUnionType();
+            // @phan-suppress-next-line PhanPluginUseReturnValueKnown
+            $union_type->checkImpossibleCombination($code_base, $parameter->createContext($method));
 
             if ($parameter->isOptional()) {
                 $is_optional_seen = true;
@@ -228,6 +230,9 @@ class ParameterTypesAnalyzer
             }
             self::analyzeOverrideSignature($code_base, $method);
         }
+
+        // @phan-suppress-next-line PhanPluginUseReturnValueKnown this is invoked to emit issues
+        $method->getUnionType()->checkImpossibleCombination($code_base, $method->getContext());
     }
 
     /**

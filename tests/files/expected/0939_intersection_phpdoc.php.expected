@@ -1,0 +1,8 @@
+%s:10 PhanCompatibleObjectTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:10 PhanImpossibleIntersectionType Intersection type \SplObjectStorage&\Error contains part \SplObjectStorage which cannot cast to the declared type \Error
+%s:10 PhanImpossibleIntersectionType Intersection type \stdClass&\ArrayObject contains part \stdClass which cannot cast to the declared type \ArrayObject
+%s:10 PhanImpossibleIntersectionType Intersection type int&bool contains part int which cannot cast to the declared type bool
+%s:11 PhanTypeMismatchReturn Returning $value of type int&bool but test939() is declared to return \SplObjectStorage&\Error
+%s:13 PhanTypeMismatchArgumentProbablyReal Argument 1 ($value) is 123 of type 123 but \test939() takes int&bool (no real type) defined at %s:10 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:13 PhanTypeMismatchArgument Argument 2 ($object) is new stdClass() of type \stdClass but \test939() takes \stdClass&\ArrayObject defined at %s:10
+%s:17 PhanImpossibleIntersectionType Intersection type \stdClass&false contains part \stdClass which cannot cast to the declared type false

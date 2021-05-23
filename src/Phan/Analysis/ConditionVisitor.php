@@ -718,7 +718,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return $asserted_object_type;
             }
             $type = $type->withIsNullable(false);
-            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, $context, $asserted_object_type)) {
+            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, (clone $context)->withStrictTypes(1), $asserted_object_type)) {
                 // This isn't on a common type hierarchy
                 continue;
             }
@@ -758,7 +758,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             $type = $type->withIsNullable(false);
-            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, $context, $asserted_object_type)) {
+            if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, (clone $context)->withStrictTypes(1), $asserted_object_type)) {
                 // This isn't on a common type hierarchy
                 continue;
             }

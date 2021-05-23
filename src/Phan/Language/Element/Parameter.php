@@ -851,7 +851,7 @@ class Parameter extends Variable
      */
     public function createContext(FunctionInterface $function): Context
     {
-        return clone($function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
+        return (clone $function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
     }
 
     /**

@@ -25,6 +25,7 @@ class PropertyTypesAnalyzer
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz): void
     {
         foreach ($clazz->getPropertyMap($code_base) as $property) {
+            $property_context = $property->getContext();
             // This phase is done before the analysis phase, so there aren't any dynamic properties to filter out.
 
             // Get the union type of this property. This may throw (e.g. it can refers to missing elements).
@@ -33,11 +34,13 @@ class PropertyTypesAnalyzer
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $code_base,
-                    $property->getContext(),
+                    $property_context,
                     $exception->getIssueInstance()
                 );
                 continue;
             }
+            // @phan-suppress-next-line PhanPluginUseReturnValueKnown this is invoked to emit issues
+            $union_type->checkImpossibleCombination($code_base, $property_context);
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
@@ -51,9 +54,9 @@ class PropertyTypesAnalyzer
                         if ($property->isStatic()) {
                             Issue::maybeEmit(
                                 $code_base,
-                                $property->getContext(),
+                                $property_context,
                                 Issue::TemplateTypeStaticProperty,
-                                $property->getFileRef()->getLineNumberStart(),
+                                $property_context->getLineNumberStart(),
                                 $property->asPropertyFQSENString()
                             );
                         }
@@ -73,18 +76,18 @@ class PropertyTypesAnalyzer
                         if ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
                             UnionType::emitRedefinedClassReferenceWarning(
                                 $code_base,
-                                $property->getContext(),
+                                $property_context,
                                 $type_fqsen
                             );
                         }
                     } else {
                         Issue::maybeEmitWithParameters(
                             $code_base,
-                            $property->getContext(),
+                            $property_context,
                             Issue::UndeclaredTypeProperty,
-                            $property->getFileRef()->getLineNumberStart(),
+                            $property_context->getLineNumberStart(),
                             [$property->asPropertyFQSENString(), (string)$outer_type],
-                            IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
+                            IssueFixSuggester::suggestSimilarClass($code_base, $property_context, $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
                         );
                     }
                 }

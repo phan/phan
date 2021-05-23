@@ -286,6 +286,7 @@ class Issue
     public const InstanceMethodWithNoEnumCases = 'PhanInstanceMethodWithNoEnumCases';
     public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
     public const EnumForbiddenMagicMethod = 'PhanEnumForbiddenMagicMethod';
+    public const ImpossibleIntersectionType = 'PhanImpossibleIntersectionType';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -2920,6 +2921,14 @@ class Issue
                 'Enum {ENUM} is not allowed to have the magic method {METHOD} declared at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10180
+            ),
+            new Issue(
+                self::ImpossibleIntersectionType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Intersection type {TYPE} contains part {TYPE} which cannot cast to the declared type {TYPE}',
+                self::REMEDIATION_B,
+                10182
             ),
 
             // Issue::CATEGORY_VARIABLE

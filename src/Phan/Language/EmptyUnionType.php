@@ -1722,4 +1722,14 @@ final class EmptyUnionType extends UnionType
             yield;
         }
     }
+
+    public function checkImpossibleCombination(CodeBase $code_base, Context $context): bool
+    {
+        return false;
+    }
+
+    public function hasIntersectionTypes(): bool
+    {
+        return false;
+    }
 }
