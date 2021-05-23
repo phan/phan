@@ -54,7 +54,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
 
         if (!\is_string($path)) {
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
-            if (!$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+            if (!$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
                 $this->emitIssue(
                     Issue::TypeInvalidRequire,
                     $expr->lineno ?? $node->lineno,
@@ -70,7 +70,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
     {
         $expr = $node->children['expr'];
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
-        if (!$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+        if (!$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
             $this->emitIssue(
                 Issue::TypeInvalidEval,
                 $expr->lineno ?? $node->lineno,

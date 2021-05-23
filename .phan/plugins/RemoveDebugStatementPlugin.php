@@ -34,7 +34,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string, Closure(CodeBase,Context,Func,array):void>
+     * @return array<string, Closure(CodeBase,Context,Func,array,?Node=):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
@@ -54,7 +54,8 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $unused_args
+            array $unused_args,
+            ?Node $unused_node = null
         ) use ($warn_remove_debug_call): void {
             if (self::shouldSuppressDebugIssues($code_base, $context)) {
                 return;
@@ -69,7 +70,8 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $unused_node = null
         ) use ($warn_remove_debug_call): void {
             if (self::shouldSuppressDebugIssues($code_base, $context)) {
                 return;
@@ -92,7 +94,8 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $unused_node = null
         ) use ($warn_remove_debug_call): void {
             $file = $args[0] ?? null;
             // @phan-suppress-next-line PhanPossiblyUndeclaredProperty

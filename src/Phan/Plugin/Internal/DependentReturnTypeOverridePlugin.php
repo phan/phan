@@ -220,7 +220,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
             $has_array = $union_type->hasArray();
-            if ($union_type->canCastToUnionType($string_union_type)) {
+            if ($union_type->canCastToUnionType($string_union_type, $code_base)) {
                 return $has_array ? $str_replace_types : $string_union_type;
             }
             return $has_array ? $str_array_type : $str_replace_types;

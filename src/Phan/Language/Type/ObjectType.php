@@ -19,25 +19,26 @@ class ObjectType extends NativeType
     /** @phan-override */
     public const NAME = 'object';
 
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if (!$type->isNativeType() && !($type instanceof ArrayType)) {
             return true;
         }
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // Inverse of check in Type->canCastToNullableType
         if (!$type->isNativeType() && !($type instanceof ArrayType)) {
             return true;
         }
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
-    protected function isSubtypeOfNonNullableType(Type $type): bool
+    /** @unused-param $code_base */
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return $type instanceof ObjectType || $type instanceof MixedType;
     }
@@ -92,7 +93,10 @@ class ObjectType extends NativeType
         return $this->withIsNullable(false);
     }
 
-    public function asCallableType(): ?Type
+    /**
+     * @unused-param $code_base
+     */
+    public function asCallableType(CodeBase $code_base): ?Type
     {
         return CallableObjectType::instance(false);
     }

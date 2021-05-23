@@ -503,7 +503,8 @@ final class MiscParamPlugin extends PluginV3 implements
                 if ($arg1_type->isExclusivelyArray()) {
                     $did_warn = false;
                     if (!$arg2_type->canCastToUnionType(
-                        StringType::instance(false)->asPHPDocUnionType()
+                        StringType::instance(false)->asPHPDocUnionType(),
+                        $code_base
                     )) {
                         $did_warn = true;
                         Issue::maybeEmit(
@@ -549,7 +550,8 @@ final class MiscParamPlugin extends PluginV3 implements
                     throw $stop_exception;
                 } elseif ($arg1_type->isNonNullStringType()) {
                     if (!$arg2_type->canCastToUnionType(
-                        ArrayType::instance(false)->asPHPDocUnionType()
+                        ArrayType::instance(false)->asPHPDocUnionType(),
+                        $code_base
                     )) {
                         Issue::maybeEmit(
                             $code_base,
@@ -1214,8 +1216,7 @@ final class MiscParamPlugin extends PluginV3 implements
 
     /**
      * @param Codebase $code_base @phan-unused-param
-     * @return array<string,Closure>
-     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
@@ -1248,9 +1249,7 @@ final class MiscParamPlugin extends PluginV3 implements
         );
 
         // See if it can be cast to the given type
-        $can_cast = $node_type->canCastToUnionType(
-            $cast_type
-        );
+        $can_cast = $node_type->canCastToUnionType($cast_type, $code_base);
 
         // If it can't, emit the log message
         if (!$can_cast) {
@@ -1304,7 +1303,8 @@ final class MiscParamPlugin extends PluginV3 implements
     private static function canCastToStringArrayLike(CodeBase $code_base, Context $context, UnionType $union_type): bool
     {
         if ($union_type->canCastToUnionType(
-            UnionType::fromFullyQualifiedPHPDocString('string[]|int[]')
+            UnionType::fromFullyQualifiedPHPDocString('string[]|int[]'),
+            $code_base
         )) {
             return true;
         }

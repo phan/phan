@@ -679,10 +679,11 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
+            // XXX during the parse phase, parent classes may be missing.
             if ($default_node !== null &&
                 !$original_union_type->isType(NullType::instance(false)) &&
-                !$variable->getUnionType()->asExpandedTypes($this->code_base)->canCastToUnionType($original_union_type) &&
-                !$original_union_type->asExpandedTypes($this->code_base)->canCastToUnionType($variable->getUnionType()) &&
+                !$variable->getUnionType()->canCastToUnionType($original_union_type, $this->code_base) &&
+                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base) &&
                 !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
             ) {
                 $this->emitIssue(

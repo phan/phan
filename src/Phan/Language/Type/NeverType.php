@@ -68,7 +68,7 @@ final class NeverType extends NativeType
      * `never` is a subtype of every type
      * @unused-param $type
      */
-    public function isSubtypeOf(Type $type): bool
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -78,7 +78,7 @@ final class NeverType extends NativeType
      *
      * @unused-param $type
      */
-    public function isSubtypeOfNonNullableType(Type $type): bool
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -93,19 +93,7 @@ final class NeverType extends NativeType
         return true;
     }
 
-    /**
-     * @return bool
-     * True if this Type can be cast to the given Type
-     * cleanly
-     *
-     * never can cast to any type, but other types cannot cast to never
-     */
-    public function canCastToType(Type $type): bool
-    {
-        return true;
-    }
-
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -115,7 +103,7 @@ final class NeverType extends NativeType
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return true;
     }
@@ -123,19 +111,20 @@ final class NeverType extends NativeType
     /**
      * @return bool
      * True if this Type can be cast to the given Type
-     * cleanly (accounting for templates)
+     * cleanly.
      */
-    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
-        // Check to see if we have an exact object match
-        return $this === $type;
+        // never can cast to any type.
+        // Plugins should be used to warn about using the result of an expression returning never
+        return true;
     }
 
     /**
      * @unused-param $type
      * @override
      */
-    public function canCastToNonNullableType(Type $type): bool
+    public function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -144,7 +133,7 @@ final class NeverType extends NativeType
      * @unused-param $type
      * @override
      */
-    public function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    public function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return true;
     }

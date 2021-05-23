@@ -205,8 +205,8 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 return self::_IS_REASONABLE_CONDITION;
             }, $expected_type);
         };
-        $callable_callback = $make_first_arg_checker(static function (UnionType $type): int {
-            $new_real_type = $type->callableTypes();
+        $callable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $type, CodeBase $code_base): int {
+            $new_real_type = $type->callableTypes($code_base);
             if ($new_real_type->isEmpty()) {
                 return self::_IS_IMPOSSIBLE;
             }

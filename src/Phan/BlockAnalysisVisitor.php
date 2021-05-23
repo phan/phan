@@ -37,6 +37,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
@@ -1101,7 +1102,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($union_type->isEmpty()) {
             return;
         }
-        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable()) {
+        if (!$union_type->hasPossiblyObjectTypes() && !$union_type->hasIterable($this->code_base)) {
             $this->emitIssue(
                 Issue::TypeMismatchForeach,
                 $node->children['expr']->lineno ?? $node->lineno,
@@ -1111,10 +1112,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         $has_object = false;
         foreach ($union_type->getTypeSet() as $type) {
-            if (!$type->isObjectWithKnownFQSEN()) {
+            if (!$type->hasObjectWithKnownFQSEN()) {
                 continue;
             }
             try {
+                // e.g. don't warn about ArrayObject&CustomInterface because the expanded type set includes Traversable
                 if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
                     continue;
                 }
@@ -1175,7 +1177,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($type->isPossiblyObject()) {
                 return false;
             }
-            if (!$type->isIterable()) {
+            if (!$type instanceof IterableType) {
                 continue;
             }
             if ($type->isPossiblyTruthy()) {
@@ -2550,7 +2552,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             $catch_line = $catch_node->lineno;
 
-            foreach ($union_type->getTypeSet() as $type) {
+            foreach ($union_type->getUniqueFlattenedTypeSet() as $type) {
                 foreach ($type->asExpandedTypes($code_base)->getTypeSet() as $ancestor_type) {
                     // Check if any of the ancestors were already caught by a previous catch statement
                     $line = $caught_union_types[\spl_object_id($ancestor_type)] ?? null;

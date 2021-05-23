@@ -29,18 +29,20 @@ class MixedType extends NativeType
      * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
      *
      * @unused-param $type
+     * @unused-param $code_base
      * @override
      */
-    public function canCastToType(Type $type): bool
+    public function canCastToType(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
 
     /**
      * @param Type[] $target_type_set 1 or more types @phan-unused-param
+     * @unused-param $code_base
      * @override
      */
-    public function canCastToAnyTypeInSet(array $target_type_set): bool
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
     {
         return true;
     }
@@ -48,9 +50,10 @@ class MixedType extends NativeType
     /**
      * Overridden in NonNullMixedType and NonEmptyMixedType
      * @unused-param $type
+     * @unused-param $code_base
      * @override
      */
-    public function canCastToTypeWithoutConfig(Type $type): bool
+    public function canCastToTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -60,9 +63,10 @@ class MixedType extends NativeType
      * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
      *
      * @unused-param $type
+     * @unused-param $code_base
      * @override
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
@@ -72,22 +76,29 @@ class MixedType extends NativeType
      * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
      *
      * @unused-param $type
+     * @unused-param $code_base
      * @override
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return true;
     }
 
     // FIXME: non-empty-mixed/non-null-mixed is a subtype of mixed, but not vice versa?
-    public function isSubtypeOf(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof MixedType;
+        return \get_class($type) === MixedType::class;
     }
 
-    public function isSubtypeOfNonNullableType(Type $type): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof MixedType;
+        return \get_class($type) === MixedType::class;
     }
 
     /**
@@ -160,7 +171,10 @@ class MixedType extends NativeType
         return false;
     }
 
-    public function isDefiniteNonCallableType(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return false;
     }

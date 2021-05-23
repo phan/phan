@@ -267,18 +267,20 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string, Closure(CodeBase,Context,Func,array):void>
+     * @return array<string, Closure(CodeBase,Context,Func,array,?Node):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
         /**
          * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @unused-param $node
          */
         $preg_pattern_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $node = null
         ): void {
             if (count($args) < 1) {
                 return;
@@ -294,12 +296,14 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param list<Node|int|string|float> $args
+         * @unused-param $node
          */
         $preg_pattern_or_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $node = null
         ): void {
             if (count($args) < 1) {
                 return;
@@ -312,12 +316,14 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param list<Node|int|string|float> $args
+         * @unused-param $node
          */
         $preg_pattern_and_replacement_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $node = null
         ): void {
             if (count($args) < 1) {
                 return;
@@ -338,12 +344,14 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
         /**
          * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
+         * @unused-param $node
          */
         $preg_replace_callback_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
-            array $args
+            array $args,
+            ?Node $node = null
         ): void {
             if (count($args) < 1) {
                 return;

@@ -27,7 +27,7 @@ final class CompactPlugin extends PluginV3 implements
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * @return array<string,Closure(CodeBase,Context,FunctionInterface,array,?Node):void>
+     * @return array<string,Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {

@@ -110,9 +110,10 @@ class CompositionAnalyzer
                     // No need to warn about incompatible composition of trait with another ancestor if the property's default was overridden
                     continue;
                 }
+                // TODO: Why expand?
                 $can_cast =
-                    $property_union_type->canCastToExpandedUnionType(
-                        $inherited_property_union_type,
+                    $property_union_type->canCastToUnionType(
+                        $inherited_property_union_type->asExpandedTypes($code_base),
                         $code_base
                     );
 

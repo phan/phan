@@ -388,7 +388,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
                 if ($left_is_array
                     && !$right->canCastToUnionType(
-                        ArrayType::instance(false)->asPHPDocUnionType()
+                        ArrayType::instance(false)->asPHPDocUnionType(),
+                        $code_base
                     )
                 ) {
                     $this->emitIssue(
@@ -396,7 +397,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                         $node->lineno ?? 0
                     );
                     return UnionType::empty();
-                } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asPHPDocUnionType())) {
+                } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asPHPDocUnionType(), $code_base)) {
                     $this->emitIssue(
                         Issue::TypeInvalidLeftOperand,
                         $node->lineno ?? 0

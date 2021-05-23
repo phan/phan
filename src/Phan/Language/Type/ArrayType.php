@@ -298,16 +298,16 @@ class ArrayType extends IterableType
         ];
     }
 
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
-        return parent::canCastToNonNullableType($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+        return parent::canCastToNonNullableType($type, $code_base) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         // CallableDeclarationType is not a native type, we check separately here
-        return parent::canCastToNonNullableTypeWithoutConfig($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 
     /**
@@ -320,7 +320,7 @@ class ArrayType extends IterableType
         if ($other instanceof IterableType || $other instanceof MixedType || $other instanceof TemplateType) {
             return true;
         }
-        if ($this->isDefiniteNonCallableType()) {
+        if ($this->isDefiniteNonCallableType($code_base)) {
             return false;
         }
         return $other instanceof CallableDeclarationType || $other instanceof CallableType;
@@ -365,8 +365,11 @@ class ArrayType extends IterableType
         return parent::performComparison([], $scalar, $flags);
     }
 
-    // There are more specific checks in GenericArrayType and ArrayShapeType
-    public function asCallableType(): ?Type
+    /**
+     * There are more specific checks in GenericArrayType and ArrayShapeType
+     * @unused-param $code_base
+     */
+    public function asCallableType(CodeBase $code_base): ?Type
     {
         return CallableArrayType::instance(false);
     }
@@ -437,6 +440,49 @@ class ArrayType extends IterableType
             }
         }
         return parent::weaklyOverlaps($other);
+    }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+        if (\in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
+            return true;
+        }
+        if ($type instanceof ArrayShapeType) {
+            // isSubtypeOf is overridden by ArrayShapeType
+            return false;
+        }
+
+        $other_is_nullable = $type->isNullable();
+        // A nullable type is not a subtype of a non-nullable type
+        if ($this->is_nullable && !$other_is_nullable) {
+            return false;
+        }
+
+        if ($type instanceof MixedType) {
+            // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed
+            // (check isNullable first)
+            // This is not NullType; it has to be truthy to cast to non-empty-mixed.
+            return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
+        }
+
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($other_is_nullable) {
+            $type = $type->withIsNullable(false);
+
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
+        }
+
+        // Test to see if we are a subtype of the non-nullable version
+        // of the target type.
+        return $this->isSubtypeOfNonNullableType($type, $code_base);
     }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called

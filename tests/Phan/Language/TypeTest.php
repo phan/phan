@@ -37,7 +37,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\CodeBaseAwareTest;
 
 use function get_class;
 
@@ -45,7 +45,7 @@ use function get_class;
  * Unit tests of Type
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class TypeTest extends BaseTest
+final class TypeTest extends CodeBaseAwareTest
 {
     private function makePHPDocType(string $type_string): Type
     {
@@ -204,6 +204,22 @@ final class TypeTest extends BaseTest
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('?string')));
     }
 
+    public function testIterableType(): void
+    {
+        $iterable_type = self::makePHPDocType('iterable');
+        $iterable_template_type = self::makePHPDocType('iterable<string,int>');
+        $traversable_type = self::makePHPDocType('Traversable');
+        $spl_object_storage_type = self::makePHPDocType('SplObjectStorage');
+        $this->assertCanCastToType($iterable_type, $iterable_template_type);
+        $this->assertCanCastToType($iterable_template_type, $iterable_type);
+        $this->assertCanCastToType($traversable_type, $iterable_type);
+        $this->assertCanCastToType($traversable_type, $iterable_template_type);
+        $this->assertTrue($traversable_type->isIterable($this->code_base));
+        $this->assertTrue($spl_object_storage_type->isIterable($this->code_base));
+        $this->assertCanCastToType($spl_object_storage_type, $iterable_type);
+        $this->assertCanCastToType($spl_object_storage_type, $iterable_template_type);
+    }
+
     /**
      * Regression test - Phan parses ?int[] as ?(int[])
      */
@@ -343,8 +359,8 @@ final class TypeTest extends BaseTest
         $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type), "expected closure/callable class for $normalized_type_string");
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
         $this->assertSame($normalized_type_string, (string)$expected_closure_type, "Bad precondition for $expected_closure_type");
-        $this->assertTrue($expected_closure_type->canCastToType($parsed_closure_type), "failed casting $union_type_string");
-        $this->assertTrue($parsed_closure_type->canCastToType($expected_closure_type), "failed casting $union_type_string");
+        $this->assertTrue($expected_closure_type->canCastToType($parsed_closure_type, $this->code_base), "failed casting $union_type_string");
+        $this->assertTrue($parsed_closure_type->canCastToType($expected_closure_type, $this->code_base), "failed casting $union_type_string");
     }
 
     public function testClosureAnnotation(): void
@@ -461,7 +477,7 @@ final class TypeTest extends BaseTest
     {
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
-        $this->assertTrue($from_type->canCastToType($to_type), "expected $from_type_string to be able to cast to $to_type_string");
+        $this->assertTrue($from_type->canCastToType($to_type, $this->code_base), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
     /** @return list<list> */
@@ -480,6 +496,13 @@ final class TypeTest extends BaseTest
             ["?'a string'", "?'a string'"],
             ['int', 'float'],
             ['int', 'mixed'],
+            ['ArrayObject', 'Countable'],
+            ['ArrayObject', 'ArrayObject'],
+            ['ArrayObject', 'iterable'],
+            ['ArrayObject', '?iterable'],
+            ['ArrayObject', '?Countable'],
+            ['?ArrayObject', '?Countable'],
+            ['?Exception', '?Throwable'],
             ['mixed', 'int'],
             ['null', 'mixed'],
             ['null[]', 'mixed[]'],
@@ -489,6 +512,7 @@ final class TypeTest extends BaseTest
             ['?Closure(\'0,2\'):int', '?Closure(string):int'],
             ['?callable(int):int', '?callable'],
             ['?callable', '?callable(int):int'],
+            ['\'literal\'', 'string'],
         ];
     }
 
@@ -499,7 +523,7 @@ final class TypeTest extends BaseTest
     {
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
-        $this->assertFalse($from_type->canCastToType($to_type), "expected $from_type_string to be unable to cast to $to_type_string");
+        $this->assertFalse($from_type->canCastToType($to_type, $this->code_base), "expected $from_type_string to be unable to cast to $to_type_string");
     }
 
     /** @return list<list> */
@@ -530,10 +554,79 @@ final class TypeTest extends BaseTest
             ['?object', 'object'],
             ['?iterable', 'iterable'],
             ['?array', 'array'],
+            ['Countable', 'ArrayObject'],
+            ['iterable', 'ArrayObject'],
+            ['?iterable', '?ArrayObject'],
+            ['?Countable', '?ArrayObject'],
+            ['\'literal\'', '?int'],
             // not sure about desired semantics of ['?mixed', 'mixed'],
         ];
     }
 
+    /** @return list<list> */
+    public function declaredTypeProvider(): array
+    {
+        return [
+            [false, "'literal'", '?int'],
+            [true, "'literal'", '?string'],
+            [true, "'literal'", 'mixed'],
+        ];
+    }
+
+    /**
+     * @dataProvider declaredTypeProvider
+     */
+    public function testCanCastToDeclaredType(bool $expected, string $from_type_string, string $to_type_string): void
+    {
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertSame($expected, $from_type->canCastToDeclaredType($this->code_base, new Context(), $to_type), "unexpected canCastToDeclaredType result for $from_type_string to $to_type_string");
+    }
+
+    /** @return list<list> */
+    public function isSubtypeOfProvider(): array
+    {
+        return [
+            [false, 'ArrayObject', 'stdClass'],
+            [true, 'ArrayObject', 'mixed'],
+            [true, 'non-null-mixed', 'mixed'],
+            [true, 'non-empty-mixed', 'non-null-mixed'],
+            [false, 'false', 'true'],
+            [true, 'false', 'bool'],
+            [true, 'true', 'bool'],
+            [true, 'false', '?bool'],
+            [true, "Closure(int):int", 'Closure'],
+            [false, "Closure(int):int", 'Closure(string):int'],
+            [true, 'never', 'Closure(int):int'],
+            [true, 'ArrayObject<int>', 'ArrayObject'],
+            [false, 'ArrayObject<int>', 'ArrayObject<string>'],
+            [false, 'Traversable<int,int>', 'Traversable<string,int>'],
+            [true, 'iterable<string>', 'iterable'],
+            [true, 'array{}', 'array'],
+            [true, 'string[]', 'array'],
+            [true, 'array{}', 'iterable'],
+            [true, 'iterable<string>', 'iterable<mixed>'],
+            [true, 'array{foo:ArrayObject}', 'array{foo:Traversable}'],
+            [true, 'array{foo:ArrayObject}', 'array{}'],
+            [false, 'array{foo:ArrayObject}', 'array{foo:SplObjectStorage}'],
+        ];
+    }
+
+    /**
+     * @dataProvider isSubtypeOfProvider
+     */
+    public function testIsSubtypeOf(bool $expected, string $from_type_string, string $to_type_string): void
+    {
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertTrue($from_type->isSubtypeOf($from_type, $this->code_base), "unexpected result for $from_type_string isSubtypeOf itself");
+        $this->assertSame($expected, $from_type->isSubtypeOf($to_type, $this->code_base), "unexpected result for $from_type_string isSubtypeOf $to_type_string");
+        $this->assertSame($expected, $from_type->canCastToType($to_type, $this->code_base), "unexpected result for $from_type_string canCastToType $to_type_string");
+        $this->assertSame($expected, $from_type->canCastToTypeWithoutConfig($to_type, $this->code_base), "unexpected result for $from_type_string canCastToTypeWithoutConfig $to_type_string");
+        if ($expected) {
+            $this->assertFalse($to_type->isSubtypeOf($from_type, $this->code_base), "unexpected result for $to_type_string isSubtypeOf $from_type_string");
+        }
+    }
     /**
      * @dataProvider arrayShapeProvider
      */
@@ -662,12 +755,12 @@ final class TypeTest extends BaseTest
 
     private function assertCannotCastToType(Type $source, Type $target, string $details): void
     {
-        $this->assertFalse($source->canCastToType($target), "expected type $source not to be able to cast to type $target when $details");
+        $this->assertFalse($source->canCastToType($target, $this->code_base), "expected type $source not to be able to cast to type $target when $details");
     }
 
-    private function assertCanCastToType(Type $source, Type $target, string $details): void
+    private function assertCanCastToType(Type $source, Type $target, string $details = ''): void
     {
-        $this->assertTrue($source->canCastToType($target), "expected type $source to be able to cast to type $target when $details");
+        $this->assertTrue($source->canCastToType($target, $this->code_base), "expected type $source to be able to cast to type $target" . ($details !== '' ? "when $details" : ""));
     }
 
     public function testCastingLiteralStringToInt(): void

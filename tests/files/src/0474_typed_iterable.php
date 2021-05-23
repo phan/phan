@@ -28,7 +28,7 @@ function expect_traversables(Traversable $tii, Traversable $tsi, Traversable $ts
     expect_traversable_string_int($tii);
     expect_traversable_string_int($tsi);
     expect_traversable_string_int($tss);
-    // TODO: Make a subset of the below casts to iterable<TKey,TValue> emit appropriate warnings
+    // These also warn
     expect_iterable_string_int($tii);
     expect_iterable_string_int($tsi);
     expect_iterable_string_int($tss);

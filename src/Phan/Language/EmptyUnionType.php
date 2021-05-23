@@ -58,6 +58,17 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return list<Type>
+     * The list of simple types associated with this
+     * union type. Keys are consecutive. Intersection types are flattened.
+     */
+    public function getUniqueFlattenedTypeSet(): array
+    {
+        return [];
+    }
+
+
+    /**
      * Add a type name to the list of types
      * @override
      */
@@ -476,8 +487,9 @@ final class EmptyUnionType extends UnionType
     /**
      * @return bool
      * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     * @unused-param $code_base
      */
-    public function hasIterable(): bool
+    public function hasIterable(CodeBase $code_base): bool
     {
         return false;
     }
@@ -555,13 +567,15 @@ final class EmptyUnionType extends UnionType
      * i.e. int->float is allowed  while float->int is not.
      */
     public function canCastToUnionType(
-        UnionType $target
+        UnionType $target,
+        CodeBase $code_base
     ): bool {
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
     public function canCastToUnionTypeWithoutConfig(
-        UnionType $target
+        UnionType $target,
+        CodeBase $code_base
     ): bool {
         return true;  // Empty can cast to anything. See parent implementation.
     }
@@ -574,17 +588,10 @@ final class EmptyUnionType extends UnionType
      * @internal
      * @override
      */
-    public function canCastToUnionTypeIfNonNull(UnionType $target): bool
+    public function canCastToUnionTypeIfNonNull(UnionType $target, CodeBase $code_base): bool
     {
         // TODO: Better check for isPossiblyNonNull
-        return UnionType::fromFullyQualifiedRealString('non-null-mixed')->canCastToUnionType($target);
-    }
-
-    public function canCastToUnionTypeHandlingTemplates(
-        UnionType $target,
-        CodeBase $code_base
-    ): bool {
-        return true;
+        return UnionType::fromFullyQualifiedRealString('non-null-mixed')->canCastToUnionType($target, $code_base);
     }
 
     /**
@@ -859,8 +866,9 @@ final class EmptyUnionType extends UnionType
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
+     * @unused-param $code_base
      */
-    public function callableTypes(): UnionType
+    public function callableTypes(CodeBase $code_base): UnionType
     {
         return $this;
     }
@@ -875,10 +883,11 @@ final class EmptyUnionType extends UnionType
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see self::callableTypes()
+     * @unused-param $code_base
      *
      * @override
      */
-    public function hasCallableType(): bool
+    public function hasCallableType(CodeBase $code_base): bool
     {
         return false;  // has no types
     }
@@ -942,8 +951,9 @@ final class EmptyUnionType extends UnionType
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
+     * @unused-param $code_base
      */
-    public function isExclusivelyCallable(): bool
+    public function isExclusivelyCallable(CodeBase $code_base): bool
     {
         return true; // !$this->hasTypeMatchingCallback(empty)
     }
@@ -1503,12 +1513,18 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
-    public function containsDefiniteNonCallableType(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function containsDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return false;
     }
 
-    public function hasPossiblyCallableType(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function hasPossiblyCallableType(CodeBase $code_base): bool
     {
         return true;
     }
@@ -1665,7 +1681,7 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
-    public function hasSubtypeOf(UnionType $type): bool
+    public function hasSubtypeOf(UnionType $type, CodeBase $code_base): bool
     {
         return true;
     }

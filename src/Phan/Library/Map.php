@@ -15,7 +15,7 @@ use SplObjectStorage;
  * @template V
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignaturePHPDocMismatchParamType, PhanParamSignatureMismatchInternal
- * TODO: Add a way to indicate in Phan that T is subtype of object
+ * TODO: Add a way to indicate in Phan that T is subtype of object for keys K
  *
  * @method void attach(K $object,V $data = null)
  * @method void detach(K $object)

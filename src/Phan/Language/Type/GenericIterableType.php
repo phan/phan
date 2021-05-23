@@ -115,33 +115,33 @@ final class GenericIterableType extends IterableType
         return $cache[$key] ?? ($cache[$key] = new self($key_union_type, $element_union_type, $is_nullable));
     }
 
-    public function canCastToNonNullableType(Type $type): bool
+    public function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof GenericIterableType) {
             // TODO: Account for scalar key casting config?
-            if (!$this->key_union_type->canCastToUnionType($type->key_union_type)) {
+            if (!$this->key_union_type->canCastToUnionType($type->key_union_type, $code_base)) {
                 return false;
             }
-            if (!$this->element_union_type->canCastToUnionType($type->element_union_type)) {
+            if (!$this->element_union_type->canCastToUnionType($type->element_union_type, $code_base)) {
                 return false;
             }
             return true;
         }
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
-    public function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    public function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof GenericIterableType) {
-            if (!$this->key_union_type->canCastToUnionTypeWithoutConfig($type->key_union_type)) {
+            if (!$this->key_union_type->canCastToUnionTypeWithoutConfig($type->key_union_type, $code_base)) {
                 return false;
             }
-            if (!$this->element_union_type->canCastToUnionTypeWithoutConfig($type->element_union_type)) {
+            if (!$this->element_union_type->canCastToUnionTypeWithoutConfig($type->element_union_type, $code_base)) {
                 return false;
             }
             return true;
         }
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
     /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
@@ -306,6 +306,7 @@ final class GenericIterableType extends IterableType
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
+            // TODO: convert (A&B)[] to (A&B)[]|A[]|B[]
             $element_types = $this->element_union_type->getTypeSet();
             if (count($element_types) >= 2) {
                 $union_type_builder = new UnionTypeBuilder();
@@ -399,6 +400,7 @@ final class GenericIterableType extends IterableType
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
+            // TODO: convert (A&B)[] to (A&B)[]|A[]|B[]
             $element_types = $this->element_union_type->getTypeSet();
             if (count($element_types) >= 2) {
                 $union_type_builder = new UnionTypeBuilder();
@@ -496,5 +498,14 @@ final class GenericIterableType extends IterableType
             false,
             Type::FROM_TYPE
         );
+    }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof GenericIterableType) {
+            return $this->key_union_type->isStrictSubtypeOf($code_base, $type->key_union_type) &&
+                $this->element_union_type->isStrictSubtypeOf($code_base, $type->element_union_type);
+        }
+        return \get_class($type) === IterableType::class || $type instanceof MixedType;
     }
 }

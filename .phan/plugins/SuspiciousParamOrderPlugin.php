@@ -183,7 +183,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 $j = $cycle[($array_index + 1) % count($cycle)];
                 $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $args[$i]);
                 // echo "Checking if $type can cast to $parameters[$j]\n";
-                if (!$type->asExpandedTypes($this->code_base)->canCastToUnionType($parameters[$j]->getUnionType())) {
+                if (!$type->canCastToUnionType($parameters[$j]->getUnionType(), $this->code_base)) {
                     continue 2;
                 }
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -25,6 +26,7 @@ class ListType extends GenericArrayType
 
     /**
      * @unused-param $key_type
+     * @return ListType
      */
     public static function fromElementType(
         Type $type,
@@ -59,16 +61,16 @@ class ListType extends GenericArrayType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         return $this->canCastToTypeCommon($type) &&
-            parent::canCastToNonNullableType($type);
+            parent::canCastToNonNullableType($type, $code_base);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         return $this->canCastToTypeCommon($type) &&
-            parent::canCastToNonNullableTypeWithoutConfig($type);
+            parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
     private function canCastToTypeCommon(Type $type): bool

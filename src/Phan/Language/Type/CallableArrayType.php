@@ -64,7 +64,7 @@ class CallableArrayType extends ArrayType
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        if ($other->isDefiniteNonCallableType()) {
+        if ($other->isDefiniteNonCallableType($code_base)) {
             return false;
         }
         if ($other instanceof IterableType) {

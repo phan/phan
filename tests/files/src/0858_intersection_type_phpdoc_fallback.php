@@ -4,7 +4,7 @@ class MyClass858 {
     }
 }
 
-class MyCountableClass implements Countable {
+class MyCountableClass extends MyClass858 implements Countable {
     public function count() {
         return 0;
     }
@@ -25,10 +25,10 @@ function test($param) {
 // This tests that the fallback does something reasonable, and doesn't crash.
 function test_infer(MyClass858 $x) {
     if ($x instanceof Countable) {
-        test($x);
+        test($x); // should warn
     } elseif ($x instanceof ArrayAccess) {
-        test($x);
-    }
+        test($x); // should warn
+    } // TODO: Type combinations should narrow
 }
 
 /**
@@ -41,5 +41,9 @@ function test_list(array $values) {
         $value->otherMissingMethod();
     }
 }
+test(new stdClass());
+test(new MyClass858());
+test(new MyCountableClass()); // This is a valid cast.
 test_list([new stdClass()]);
-test_list([new MyCountableClass()]);
+test_list([new MyClass858()]);
+test_list([new MyCountableClass()]); // This is a valid cast.

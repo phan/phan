@@ -34,7 +34,10 @@ final class ClosureType extends Type
      */
     private $func;
 
-    // Same as instance(), but guaranteed not to have memoized state.
+    /**
+     * Same as instance(), but guaranteed not to have memoized state.
+     * @suppress PhanTypeMismatchReturn
+     */
     private static function closureInstance(): ClosureType
     {
         static $instance = null;
@@ -98,41 +101,62 @@ final class ClosureType extends Type
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        if ($type->isCallable()) {
+        if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
                 }
             }
             return true;
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        if ($type->isCallable()) {
+        if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
                 }
             }
             return true;
         }
 
-        return parent::canCastToNonNullableTypeWithoutConfig($type);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
+    {
+        if ($type->isCallable($code_base)) {
+            if ($type instanceof FunctionLikeDeclarationType) {
+                // Check if the function declaration is known and available. It's not available for the generic \Closure.
+                if ($this->func) {
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
+                }
+            }
+            return true;
+        }
+
+        return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
     }
 
     /**
      * @return bool
      * True if this type is a callable or a Closure.
+     * @unused-param $code_base
      */
-    public function isCallable(): bool
+    public function isCallable(CodeBase $code_base): bool
     {
         return true;
     }
@@ -152,8 +176,9 @@ final class ClosureType extends Type
      * Returns true if this contains a type that is definitely non-callable
      * e.g. returns true for false, array, int
      *      returns false for callable, array, object, iterable, T, etc.
+     * @unused-param $code_base
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return false;
     }
@@ -179,9 +204,20 @@ final class ClosureType extends Type
         if (!$other->isPossiblyObject()) {
             return false;
         }
-        if ($other->isObjectWithKnownFQSEN()) {
-            return $other instanceof FunctionLikeDeclarationType || $other instanceof ClosureType || $other->asFQSEN()->__toString() === '\Closure';
+        if ($other->hasObjectWithKnownFQSEN()) {
+            // Probably overkill to check for intersection types for closure
+            return $other->anyTypePartsMatchCallback(static function (Type $part): bool {
+                return $part instanceof FunctionLikeDeclarationType || $part instanceof ClosureType || $part->asFQSEN()->__toString() === '\Closure';
+            });
         }
         return true;
+    }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof FunctionLikeDeclarationType) {
+            return false;
+        }
+        return parent::isSubtypeOf($type, $code_base);
     }
 }

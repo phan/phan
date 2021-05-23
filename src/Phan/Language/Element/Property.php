@@ -197,6 +197,7 @@ class Property extends ClassElement
      * @return FullyQualifiedPropertyName
      * The fully-qualified structural element name of this
      * structural element
+     * @suppress PhanTypeMismatchReturn
      */
     public function getFQSEN(): FullyQualifiedPropertyName
     {
@@ -437,6 +438,7 @@ class Property extends ClassElement
     {
         $union_type = $this->getUnionType();
         foreach ($union_type->getTypeSet() as $type) {
+            // TODO: Replace $old in intersection types as well?
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
             }

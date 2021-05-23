@@ -42,11 +42,6 @@ abstract class ScalarType extends NativeType
         return false;
     }
 
-    public function isIterable(): bool
-    {
-        return false;
-    }
-
     public function isArrayLike(): bool
     {
         return false;
@@ -62,7 +57,7 @@ abstract class ScalarType extends NativeType
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // Scalars may be configured to always cast to each other.
         // NOTE: This deliberately includes NullType, which doesn't satisfy `is_scalar()`
@@ -80,7 +75,7 @@ abstract class ScalarType extends NativeType
             }
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     // inherit canCastToNonNullableTypeWithoutConfig
@@ -95,7 +90,7 @@ abstract class ScalarType extends NativeType
         Context $context,
         CodeBase $code_base
     ): bool {
-        return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type);
+        return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type, $code_base);
     }
 
     /**
@@ -160,8 +155,9 @@ abstract class ScalarType extends NativeType
      * Returns true if this contains a type that is definitely nullable or a non-object.
      * e.g. returns true false, array, int
      *      returns false for callable, object, iterable, T, etc.
+     * @unused-param $code_base
      */
-    public function isDefiniteNonCallableType(): bool
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return true;
     }

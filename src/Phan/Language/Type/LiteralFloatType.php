@@ -39,7 +39,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     }
 
     /**
-     * @return LiteralFloatType a unique LiteralFloatType for $value (and the nullability)
+     * @return FloatType a unique LiteralFloatType for $value if $value is finite (and sets nullability)
      */
     public static function instanceForValue(float $value, bool $is_nullable): FloatType
     {
@@ -136,7 +136,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function canCastToNonNullableType(Type $type): bool
+    protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -175,7 +175,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
             }
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -183,7 +183,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly, ignoring permissive config casting rules
      */
-    protected function canCastToNonNullableTypeWithoutConfig(Type $type): bool
+    protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
@@ -197,7 +197,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
             }
         }
 
-        return parent::canCastToNonNullableType($type);
+        return parent::canCastToNonNullableType($type, $code_base);
     }
 
     /**
@@ -205,7 +205,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    protected function isSubtypeOfNonNullableType(Type $type): bool
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
             if ($type::NAME === 'float') {
@@ -217,7 +217,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
             return false;
         }
 
-        return parent::isSubtypeOfNonNullableType($type);
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 
     /**

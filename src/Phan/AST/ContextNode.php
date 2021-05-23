@@ -465,7 +465,7 @@ class ContextNode
             if ($int_or_string_type === null) {
                 $int_or_string_type = UnionType::fromFullyQualifiedPHPDocString('int|string|null');
             }
-            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
+            if (!$name_node_type->canCastToUnionType($int_or_string_type, $this->code_base)) {
                 $this->emitIssue(Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
             }
 
@@ -582,6 +582,7 @@ class ContextNode
         }
 
         // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
+        // TODO: Improve for intersection types
         if (\count($class_list) === 0) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories): bool {
                 if ($this->node instanceof Node) {
@@ -928,7 +929,7 @@ class ContextNode
             }
         }
         if (!$has_type) {
-            if (!$union_type->hasPossiblyCallableType()) {
+            if (!$union_type->hasPossiblyCallableType($code_base)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -939,7 +940,7 @@ class ContextNode
                 return;
             }
         }
-        if (Config::get_strict_method_checking() && $union_type->containsDefiniteNonCallableType()) {
+        if (Config::get_strict_method_checking() && $union_type->containsDefiniteNonCallableType($code_base)) {
             Issue::maybeEmit(
                 $code_base,
                 $context,
@@ -1598,7 +1599,7 @@ class ContextNode
     private function throwExceptionForInvalidPropertyName(Node $node, bool $is_static): void
     {
         $property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['prop']);
-        if ($property_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+        if ($property_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
             // If we know it can be a string, throw a NodeException instead of a specific issue
             throw new NodeException(
                 $node,

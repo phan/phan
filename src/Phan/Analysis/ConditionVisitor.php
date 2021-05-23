@@ -674,7 +674,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         } else {
             // We know that variable is some sort of object if this condition is true.
             if ($class_node->kind !== ast\AST_NAME &&
-                    !$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType())) {
+                    !$type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,
@@ -704,7 +704,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // ignore non-object types
                 continue;
             }
-            if (!$type->isObjectWithKnownFQSEN()) {
+            if (!$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
                 // TODO: Handle isPossiblyObject/iterable
                 return $asserted_object_type;
@@ -714,7 +714,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // This isn't on a common type hierarchy
                 continue;
             }
-            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type)) {
+            if (!$type->asPHPDocUnionType()->canCastToUnionType($asserted_object_type, $code_base)) {
                 // The variable includes a base class of the asserted type.
                 return $asserted_object_type;
             }
@@ -736,13 +736,13 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // ignore non-object types
                 continue;
             }
-            if (!$type->isObjectWithKnownFQSEN()) {
+            if (!$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
                 // TODO: Handle isPossiblyObject/iterable
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             $type = $type->withIsNullable(false);
-            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type)) {
+            if (!$type->asPHPDocUnionType()->canCastToUnionType($asserted_object_type, $code_base)) {
                 continue;
             }
             $new_real_type_set[] = $type;
@@ -911,10 +911,36 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 ->nonFalseyClone()
             );
         };
+        /**
+         * TODO: Combine with $make_callback
+         * @param list<Node|mixed> $args
+         */
+        $callable_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args): void {
+            // Change the type to match the is_countable relationship
+            // If we already have possible countable types, then keep those
+            // (E.g. ?ArrayObject|false becomes ArrayObject)
+            $new_type = $variable->getUnionType()->callableTypes($code_base);
+            $default_if_empty = CallableType::instance(false)->asRealUnionType();
+            if ($new_type->isEmpty()) {
+                // If there are no inferred types, or the only type we saw was 'null',
+                // assume there this can be any possible scalar.
+                // (Excludes `resource`, which is technically a scalar)
+                //
+                // FIXME move this to PostOrderAnalysisVisitor so that all expressions can be analyzed, not just variables?
+                $new_type = $default_if_empty;
+            } else {
+                // Add the missing type set before making the non-nullable clone.
+                // Otherwise, it'd have the real type set non-null-mixed.
+                if (!$new_type->hasRealTypeSet()) {
+                    $new_type = $new_type->withRealTypeSet($default_if_empty->getRealTypeSet());
+                }
+                $new_type = $new_type->nonNullableClone()->withIsPossiblyUndefined(false);
+            }
+            $variable->setUnionType($new_type);
+        };
         $class_exists_callback = $make_callback('classStringTypes', ClassStringType::instance(false)->asRealUnionType());
         $method_exists_callback = $make_callback('classStringOrObjectTypes', UnionType::fromFullyQualifiedRealString('class-string|object'));
         /** @return void */
-        $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asRealUnionType());
         $bool_callback = $make_callback('boolTypes', BoolType::instance(false)->asRealUnionType());
         $int_callback = $make_callback('intTypes', IntType::instance(false)->asRealUnionType());
         $string_callback = $make_callback('stringTypes', StringType::instance(false)->asRealUnionType());

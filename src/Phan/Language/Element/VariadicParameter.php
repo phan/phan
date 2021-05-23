@@ -88,10 +88,9 @@ class VariadicParameter extends Parameter
      *
      * If this parameter is not variadic, returns $this.
      *
-     * @return static
      * @override
      */
-    public function asNonVariadic()
+    public function asNonVariadic(): Parameter
     {
         // TODO: Is it possible to cache this while maintaining
         //       correctness? PostOrderAnalysisVisitor clones the

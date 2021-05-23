@@ -180,7 +180,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                                 return $result;
 
                             case 'callable':
-                                $result = $original_type->callableTypes();
+                                $result = $original_type->callableTypes($code_base);
                                 if ($result->isEmpty()) {
                                     return UnionType::fromFullyQualifiedPHPDocString('callable');
                                 }

@@ -19,6 +19,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
@@ -761,33 +762,106 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame('', $errors);
     }
 
+    public function testIntersectionTypeExplicit(): void
+    {
+        $type = self::makePHPDocUnionType('and<MyClass, MyInterfaceUTT>');
+        $this->assertSame(1, $type->typeCount());
+        $this->assertSame('\MyClass&\MyInterfaceUTT', (string)$type);
+        $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[0]);
+    }
+
     public function testIntersectionTypeFallback(): void
     {
         $type = self::makePHPDocUnionType('MyClass&MyInterfaceUTT');
+        $this->assertSame(1, $type->typeCount());
+        $this->assertSame('\MyClass&\MyInterfaceUTT', (string)$type);
+        $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[0]);
+    }
+
+    public function testIntersectionTypeWithUnionType(): void
+    {
+        $type = self::makePHPDocUnionType('int|MyClass&MyInterfaceUTT');
         $this->assertSame(2, $type->typeCount());
-        $this->assertSame('\MyClass|\MyInterfaceUTT', (string)$type);
+        $this->assertSame('\MyClass&\MyInterfaceUTT|int', (string)$type);
+        $this->assertInstanceOf(IntType::class, $type->getTypeSet()[0]);
+        $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[1]);
     }
 
     public function testIntersectionTypeInArrayFallback(): void
     {
         $type = self::makePHPDocUnionType('(MyClass&MyInterfaceUTT)[]');
-        $this->assertSame(2, $type->typeCount());
-        $this->assertSame('\MyClass[]|\MyInterfaceUTT[]', (string)$type);
+        $this->assertSame(1, $type->typeCount());
+        $this->assertSame('(\MyClass&\MyInterfaceUTT)[]', (string)$type);
+        // @phan-suppress-next-line PhanUndeclaredMethod
+        $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[0]->genericArrayElementType());
     }
+
     public function testIntersectionTypeInShapeFallback(): void
     {
         $type = self::makePHPDocUnionType('array{keyName:MyClass&MyInterfaceUTT,other:array}');
         $this->assertSame(1, $type->typeCount());
-        $this->assertSame('array{keyName:\MyClass|\MyInterfaceUTT,other:array}', (string)$type);
+        $this->assertSame('array{keyName:\MyClass&\MyInterfaceUTT,other:array}', (string)$type);
         $array_shape_type = $type->getTypeSet()[0];
         $this->assertInstanceof(ArrayShapeType::class, $array_shape_type);
         $this->assertSame(2, \count($array_shape_type->getFieldTypes()));
+        $this->assertInstanceOf(IntersectionType::class, $array_shape_type->getFieldTypes()['keyName']->getTypeSet()[0]);
     }
 
-    public function testIntersectionTypeInAngleBracketsFallback(): void
+    public function testIntersectionTypeCasting(): void
     {
-        $type = self::makePHPDocUnionType('list<\MyClass&NS\MyInterfaceUTT>');
-        $this->assertSame(2, $type->typeCount());
-        $this->assertSame('list<\MyClass>|list<\NS\MyInterfaceUTT>', (string)$type);
+        $code_base = self::$code_base;
+        $intersection1 = self::makePHPDocUnionType('Countable&ArrayAccess');
+        $intersection2 = self::makePHPDocUnionType('\ArrayAccess&\Countable');
+        $this->assertSame(1, $intersection1->typeCount());
+        $this->assertSame('\ArrayAccess|\Countable|\Countable&\ArrayAccess', $intersection1->asExpandedTypes($code_base)->__toString());
+
+        $this->assertTrue($intersection1->canCastToUnionType($intersection2, $code_base), 'expected intersection type to cast to itself');
+        $this->assertTrue($intersection1->hasSubtypeOf($intersection2, $code_base), 'expect hasSubtypeOf to be true for intersection type');
+        $this->assertTrue($intersection1->canStrictCastToUnionType($code_base, $intersection2), 'expected intersection type to strictly cast to itself');
+
+        $countable = self::makePHPDocUnionType('Countable');
+        $this->assertTrue($intersection1->canCastToUnionType($countable, $code_base), 'expected intersection type to cast to component');
+        $this->assertTrue($intersection1->hasSubtypeOf($countable, $code_base), 'expect hasSubtypeOf to be true for component type');
+        $this->assertTrue($intersection1->canStrictCastToUnionType($code_base, $countable), 'expected intersection type to strictly cast to component');
+
+        $traversable = self::makePHPDocUnionType('Traversable');
+        $this->assertFalse($intersection1->canCastToUnionType($traversable, $code_base), 'expected intersection type not to cast to non-component');
+        $this->assertFalse($intersection1->hasSubtypeOf($traversable, $code_base), 'expect hasSubtypeOf to be false for unrelated type');
+        $this->assertFalse($intersection1->canStrictCastToUnionType($code_base, $traversable));
+
+        $intersection_narrowed = self::makePHPDocUnionType('\ArrayAccess&\Countable&\Traversable');
+        $this->assertTrue($intersection_narrowed->canCastToUnionType($intersection1, $code_base));
+        $this->assertFalse($intersection1->canCastToUnionType($intersection_narrowed, $code_base));
     }
+
+    /** @return list<list> */
+    public function isStrictSubtypeOfProvider(): array
+    {
+        return [
+            [false, "'literal'", '?int'],
+            [false, 'int|string', 'int'],
+            [true, "'literal'", '?string'],
+            [true, "'literal'", 'mixed'],
+            [true, 'ArrayObject', 'ArrayAccess'],
+            [true, 'ArrayObject', 'ArrayAccess&Countable'],
+            [false, 'ArrayAccess&Countable', 'ArrayObject'],
+            [true, 'ArrayObject', 'Countable'],
+            [true, 'ArrayObject', 'object'],
+            [false, 'ArrayAccess', 'ArrayObject'],
+            [true, 'Closure(int):int', 'Closure'],
+            [false, 'Closure', 'Closure(int):int'],
+            [false, 'Closure(string):int', 'Closure(int):int'],
+        ];
+    }
+
+    /**
+     * @dataProvider isStrictSubtypeOfProvider
+     */
+    public function testIsStrictSubtypeOf(bool $expected, string $from_type_string, string $to_type_string): void
+    {
+        $from_type = self::makePHPDocUnionType($from_type_string);
+        $to_type = self::makePHPDocUnionType($to_type_string);
+        $this->assertSame($expected, $from_type->isStrictSubtypeOf(self::$code_base, $to_type), "unexpected isStrictSubtypeOf result for checking if $from_type_string isStrictSubtypeOf $to_type_string");
+    }
+
 }

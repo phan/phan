@@ -319,7 +319,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 
         if ($left_is_array
             && !$right->canCastToUnionType(
-                ArrayType::instance(false)->asPHPDocUnionType()
+                ArrayType::instance(false)->asPHPDocUnionType(),
+                $this->code_base
             )
         ) {
             Issue::maybeEmit(
@@ -330,7 +331,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
             return $unknown_type;
         } elseif ($right_is_array
-            && !$left->canCastToUnionType(ArrayType::instance(false)->asPHPDocUnionType())
+            && !$left->canCastToUnionType(
+                ArrayType::instance(false)->asPHPDocUnionType(),
+                $this->code_base
+            )
         ) {
             Issue::maybeEmit(
                 $this->code_base,

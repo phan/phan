@@ -1,4 +1,8 @@
 %s:20 PhanUndeclaredMethod Call to undeclared method \MyClass858::missingMethod
-%s:30 PhanTypeMismatchArgument Argument 1 ($param) is $x of type \ArrayAccess but \test() takes \Countable|\MyClass858 defined at %s:17
+%s:28 PhanTypeMismatchArgument Argument 1 ($param) is $x of type \Countable but \test() takes \MyClass858&\Countable defined at %s:17
+%s:30 PhanTypeMismatchArgument Argument 1 ($param) is $x of type \ArrayAccess but \test() takes \MyClass858&\Countable defined at %s:17
 %s:41 PhanUndeclaredMethod Call to undeclared method \MyClass858::otherMissingMethod
-%s:44 PhanTypeMismatchArgument Argument 1 ($values) is [new stdClass()] of type array{0:\stdClass} but \test_list() takes list<\Countable>|list<\MyClass858> defined at %s:37
+%s:44 PhanTypeMismatchArgument Argument 1 ($param) is new stdClass() of type \stdClass but \test() takes \MyClass858&\Countable defined at %s:17
+%s:45 PhanTypeMismatchArgument Argument 1 ($param) is new MyClass858() of type \MyClass858 but \test() takes \MyClass858&\Countable defined at %s:17
+%s:47 PhanTypeMismatchArgument Argument 1 ($values) is [new stdClass()] of type array{0:\stdClass} but \test_list() takes list<\MyClass858&\Countable> defined at %s:37
+%s:48 PhanTypeMismatchArgument Argument 1 ($values) is [new MyClass858()] of type array{0:\MyClass858} but \test_list() takes list<\MyClass858&\Countable> defined at %s:37

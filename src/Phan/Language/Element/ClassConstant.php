@@ -82,6 +82,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * @return FullyQualifiedClassConstantName
      * The fully-qualified structural element name of this
      * structural element
+     * @suppress PhanTypeMismatchReturn (FQSEN on declaration)
      */
     public function getFQSEN(): FQSEN
     {
