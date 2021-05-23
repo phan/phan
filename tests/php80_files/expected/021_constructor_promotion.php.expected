@@ -4,7 +4,7 @@
 %s:5 PhanUndeclaredTypeProperty Property \ConstructorPromotion21->other has undeclared type ?\MissingClass
 %s:5 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \ConstructorPromotion21->other
 %s:7 PhanTypeArraySuspicious Suspicious array access to $value of type int
-%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \ConstructorPromotion21::__construct() takes int defined at %s:5
+%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \ConstructorPromotion21::__construct() takes int defined at %s:4
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x->value of type int but \strlen() takes string
 %s:13 PhanUnreferencedClass Possibly zero references to class \DuplicatePromotedProperty
 %s:14 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type int
