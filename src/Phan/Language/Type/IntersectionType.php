@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
@@ -229,6 +230,20 @@ final class IntersectionType extends Type
         $recursive_union_type_builder->addType($this);
         foreach ($this->type_parts as $type) {
             $recursive_union_type_builder->addUnionType($type->asExpandedTypes($code_base, $recursion_depth + 1));
+        }
+
+        return $recursive_union_type_builder->getPHPDocUnionType();
+    }
+
+    /**
+     * @override
+     */
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
+        $recursive_union_type_builder = new UnionTypeBuilder();
+        $recursive_union_type_builder->addType($this);
+        foreach ($this->type_parts as $type) {
+            $recursive_union_type_builder->addUnionType($type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1));
         }
 
         return $recursive_union_type_builder->getPHPDocUnionType();
@@ -693,6 +708,66 @@ final class IntersectionType extends Type
     {
         return $this->mapTypePartsToOptionalType(static function (Type $type) use ($code_base): ?Type {
             return $type->asIterable($code_base);
+        });
+    }
+
+    /**
+     * @return FQSEN
+     * A fully-qualified structural element name derived
+     * from this type
+     *
+     * @see FullyQualifiedClassName::fromType() for a method that always returns FullyQualifiedClassName
+     */
+    public function asFQSEN(): FQSEN
+    {
+        foreach ($this->type_parts as $part) {
+            if ($part->isObjectWithKnownFQSEN()) {
+                return $part->asFQSEN();
+            }
+        }
+        throw new AssertionError("Unexpected call to " . __METHOD__);
+    }
+
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        yield from $this->type_parts;
+    }
+
+    public function asSignatureType(): Type
+    {
+        return $this->mapTypeParts(static function (Type $part): Type {
+            return $part->asSignatureType();
+        });
+    }
+
+    public function asCallableType(CodeBase $code_base): ?Type
+    {
+        return $this->mapTypePartsToOptionalType(static function (Type $part) use ($code_base): ?Type {
+            return $part->asCallableType($code_base);
+        });
+    }
+
+    public function weaklyOverlaps(Type $other): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $other);
+    }
+
+    // TODO not implemented for intersection type to intersection type cast
+    public function isTemplateSubtypeOf(Type $other): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $other);
+    }
+
+    public function isDefiniteNonCallableType(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function withErasedUnionTypes(): Type
+    {
+        return $this->mapTypeParts(static function (Type $part): Type {
+            return $part->withErasedUnionTypes();
         });
     }
 }
