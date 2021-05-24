@@ -3742,7 +3742,7 @@ class Clazz extends AddressableElement
                             );
                         }
                         /** @param list<\ast\Node|mixed> $unused_arg_list */
-                        $template_type_resolver = static function (array $unused_arg_list): UnionType {
+                        $template_type_resolver = static function (array $unused_arg_list, Context $unused_context): UnionType {
                             return MixedType::instance(false)->asPHPDocUnionType();
                         };
                     }

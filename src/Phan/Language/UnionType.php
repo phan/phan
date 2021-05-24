@@ -1393,7 +1393,7 @@ class UnionType implements Serializable, Stringable
             if ($type->isNullableLabeled()) {
                 $is_nullable = true;
             }
-            if ($type->withIsNullable(false)->asExpandedTypes($code_base)->hasType($object_type)) {
+            if ($type->withIsNullable(false)->isSubclassOf($object_type, $code_base)) {
                 continue;
             }
             $new_type_set[] = $type;
@@ -3223,7 +3223,7 @@ class UnionType implements Serializable, Stringable
     public function isExclusivelySubclassesOf(CodeBase $code_base, Type $class_type): bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->isNullable() || !$type->asExpandedTypes($code_base)->hasType($class_type)) {
+            if ($type->isNullable() || !$type->isSubclassOf($class_type, $code_base)) {
                 return false;
             }
         }
@@ -4409,7 +4409,7 @@ class UnionType implements Serializable, Stringable
             return \reset($type_set)->asExpandedTypes(
                 $code_base,
                 $recursion_depth + 1
-            );
+            )->withRealTypeSet($this->real_type_set);
         }
         // 2 or more union types to merge
 
@@ -4454,7 +4454,7 @@ class UnionType implements Serializable, Stringable
             return \reset($type_set)->asExpandedTypesPreservingTemplate(
                 $code_base,
                 $recursion_depth + 1
-            );
+            )->withRealTypeSet($this->real_type_set);
         }
         // 2 or more union types to merge
 

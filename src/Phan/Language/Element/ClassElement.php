@@ -276,16 +276,12 @@ abstract class ClassElement extends AddressableElement
         // If the definition of the property is protected,
         // then the subclasses of the defining class can access it.
         try {
-            foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-                if ($type->canCastToType($type_of_class_of_property, $code_base)) {
-                    return true;
-                }
+            if ($accessing_class_type->isSubclassOf($type_of_class_of_property, $code_base)) {
+                return true;
             }
             // and base classes of the defining class can access it
-            foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
-                if ($type->canCastToType($accessing_class_type, $code_base)) {
-                    return true;
-                }
+            if ($type_of_class_of_property->isSubclassOf($accessing_class_type, $code_base)) {
+                return true;
             }
         } catch (RecursionDepthException $_) {
         }

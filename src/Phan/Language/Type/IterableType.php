@@ -78,7 +78,7 @@ class IterableType extends NativeType
         return Type::traversableInstance();
     }
 
-    public function asArrayType(): ?Type
+    public function asArrayType(): Type
     {
         return ArrayType::instance(false);
     }

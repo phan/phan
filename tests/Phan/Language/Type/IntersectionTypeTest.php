@@ -36,6 +36,7 @@ final class IntersectionTypeTest extends BaseTest
         'isArrayLike', // uses asExpandedTypes
         'isArrayOrArrayAccessSubType', // uses asExpandedTypes
         'isSubtypeOfAnyTypeInSet', // uses isSubtypeOf
+        'isSubclassOf', // uses asExpandedTypes
         'canCastToAnyTypeInSet', // uses canCastToType
         'canCastToAnyTypeInSetWithoutConfig',
         'hasSameNamespaceAndName',  // callers should avoid calling this on intersection type
@@ -98,10 +99,13 @@ final class IntersectionTypeTest extends BaseTest
                 continue;
             }
             $method_name = $method->getName();
+            $actual_class = $method->class;
             if (\in_array($method_name, self::SKIPPED_METHOD_NAMES, true)) {
+                if (IntersectionType::class === $actual_class) {
+                    $failures .= "no longer need to skip $method_name\n";
+                }
                 continue;
             }
-            $actual_class = $method->class;
             if (IntersectionType::class !== $actual_class) {
                 $method_set[$method_name] = $method;
             }

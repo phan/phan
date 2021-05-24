@@ -1287,7 +1287,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $method = $this->context->getFunctionLikeInScope($this->code_base);
             if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
                 $class_type = $class_fqsen->asType();
-                if ($class_type->asExpandedTypes($this->code_base)->hasType($property->getClassFQSEN()->asType())) {
+                if ($property->getClassFQSEN()->asType()->isSubtypeOf($class_type, $this->code_base)) {
                     // This is a constructor setting its own properties or a base class's properties.
                     // TODO: Could support private methods
                     return;
@@ -1311,9 +1311,6 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         $property_union_type = $property->getUnionType();
-        if ($property_union_type->hasTemplateTypeRecursive()) {
-            $property_union_type = $property_union_type->asExpandedTypes($this->code_base);
-        }
 
         $mismatch_type_set = UnionType::empty();
         $mismatch_expanded_types = null;
@@ -1324,7 +1321,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $individual_type_expanded = $type->asExpandedTypes($this->code_base);
 
             // See if the argument can be cast to the
-            // parameter
+            // property
             if (!$individual_type_expanded->canCastToUnionType(
                 $property_union_type,
                 $this->code_base

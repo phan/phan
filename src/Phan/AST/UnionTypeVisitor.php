@@ -1755,7 +1755,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             if (!$dim_type->isEmpty()) {
                 try {
-                    $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->asExpandedTypes($code_base)->hasArrayAccess($code_base);
+                    $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->hasArrayAccess($code_base);
                 } catch (RecursionDepthException $_) {
                     $should_check = false;
                 }
@@ -1830,7 +1830,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->checkIsValidStringOffset($union_type, $node, $dim_type);
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type, $code_base)) {
-                if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike($code_base)) {
+                if (!$union_type->isEmpty() && !$union_type->hasArrayLike($code_base)) {
                     $this->emitIssue(
                         Issue::TypeMismatchDimFetch,
                         $node->lineno,

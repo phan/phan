@@ -689,11 +689,6 @@ class ParameterTypesAnalyzer
                 // https://3v4l.org/XTm3P
 
                 // If we have types, make sure they line up
-                //
-                // TODO: should we be expanding the types on $overridden_parameter
-                //       via ->asExpandedTypes($code_base)?
-                //
-                //       @see https://3v4l.org/ke3kp
                 if (!self::canWeakCast($code_base, $overridden_parameter->getUnionType(), $parameter->getUnionType())) {
                     $signatures_match = false;
                     $mismatch_details = "Expected $parameter to have the same type as $overridden_parameter or a supertype";
