@@ -4609,8 +4609,12 @@ class UnionType implements Serializable, Stringable
         // representations of each type
         $types = $this->type_set;
         $type_name_list =
-            \array_map(static function (Type $type): string {
-                return (string)$type;
+            \array_map(static function (Type $type) use ($types): string {
+                if (count($types) > 1 && $type instanceof IntersectionType) {
+                    // Avoid ambiguity such as (Closure():A&B)
+                    return '(' . $type->__toString() . ')';
+                }
+                return $type->__toString();
             }, $types);
 
         // Sort the types so that we get a stable

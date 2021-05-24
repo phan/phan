@@ -2821,7 +2821,7 @@ class Type implements Stringable
         return $this->memoized_data['expanded_types_preserving_template'] = $this->computeExpandedTypesPreservingTemplate($code_base, $recursion_depth);
     }
 
-    private function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
     {
         $union_type = $this->asPHPDocUnionType();
 
@@ -3861,9 +3861,16 @@ class Type implements Stringable
      */
     public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
-        // Any non-final class could be extended with a callable type.
-        // TODO: Check if final
-        return false;
+        if (static::class !== self::class) {
+            // Overridden in other subclasses
+            return false;
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($fqsen);
+        return $class->isFinal() && !$class->hasMethodWithName($code_base, '__invoke', true);
     }
 
     /**

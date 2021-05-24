@@ -2,6 +2,6 @@
 %s:18 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x->xProp of type \stdClass but \strlen() takes string
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x->iProp of type int but \strlen() takes string
 %s:28 PhanSyntaxReturnExpectedValue Syntax error: Function test_exclude() with return type \NS938\X must return a value (did you mean "return null" instead of "return"?)
-%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type \NS938\X&\NS938\I|\stdClass(real=\NS938\X&\NS938\I|\stdClass)
-%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type \NS938\X&\NS938\I|\stdClass&\NS938\I(real=\NS938\X&\NS938\I|\stdClass&\NS938\I)
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type (\NS938\X&\NS938\I)|\stdClass(real=(\NS938\X&\NS938\I)|\stdClass)
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type (\NS938\X&\NS938\I)|(\stdClass&\NS938\I)(real=(\NS938\X&\NS938\I)|(\stdClass&\NS938\I))
 %s:36 PhanTypeMismatchReturnReal Returning $z of type \stdClass but test_exclude() is declared to return \NS938\X

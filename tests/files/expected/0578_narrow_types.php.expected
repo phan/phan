@@ -4,4 +4,4 @@
 %s:28 PhanTypeSuspiciousEcho Suspicious argument $c of type \Subclass578A for an echo/print statement
 %s:31 PhanTypeSuspiciousEcho Suspicious argument $d of type \Subclass578A for an echo/print statement
 %s:34 PhanTypeSuspiciousEcho Suspicious argument $e of type \SubInterface578|\Subclass578A for an echo/print statement
-%s:39 PhanTypeSuspiciousEcho Suspicious argument $f of type \SubInterface578|\Subclass578A|\stdClass&\BaseInterface578 for an echo/print statement
+%s:39 PhanTypeSuspiciousEcho Suspicious argument $f of type (\stdClass&\BaseInterface578)|\SubInterface578|\Subclass578A for an echo/print statement

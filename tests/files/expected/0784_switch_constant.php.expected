@@ -1,6 +1,6 @@
 %s:26 PhanUndeclaredMethod Call to undeclared method \NSConstantSwitch\T1::f2 (Did you mean expr->f1())
 %s:30 PhanUndeclaredMethod Call to undeclared method \NSConstantSwitch\T2::f1 (Did you mean expr->f2())
-%s:34 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $arg of type \NSConstantSwitch\I|\NSConstantSwitch\I&\Traversable|\NSConstantSwitch\I&\Traversable&\stdClass|\NSConstantSwitch\I&\stdClass|\Traversable|\stdClass|iterable (real type \NSConstantSwitch\I&\Traversable|\NSConstantSwitch\I&\Traversable&\stdClass|\NSConstantSwitch\I&\stdClass) but \intdiv() takes int
+%s:34 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $arg of type (\NSConstantSwitch\I&\Traversable&\stdClass)|(\NSConstantSwitch\I&\Traversable)|(\NSConstantSwitch\I&\stdClass)|\NSConstantSwitch\I|\Traversable|\stdClass|iterable (real type (\NSConstantSwitch\I&\Traversable&\stdClass)|(\NSConstantSwitch\I&\Traversable)|(\NSConstantSwitch\I&\stdClass)) but \intdiv() takes int
 %s:42 PhanImpossibleCondition Impossible attempt to cast [$x] of type array{0:mixed|null} to falsey
 %s:46 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $arg of type true but \strlen() takes string
 %s:48 PhanImpossibleCondition Impossible attempt to cast $arg of type false to truthy

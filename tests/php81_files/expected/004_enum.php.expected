@@ -2,6 +2,7 @@
 %s:9 PhanRedefineClassConstant Class constant Baz defined at %s:9 was previously defined at %s:8
 %s:11 PhanImpossibleTypeComparison Impossible attempt to check if X::Foo of type \Enums\X is identical to 2 of type 2
 %s:12 PhanUndeclaredStaticMethod Static call to undeclared method \Enums\X::Bar
+%s:13 PhanTypeInvalidCallable Saw type \Enums\X which cannot be a callable
 %s:13 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\Enums\X'
 %s:14 PhanAccessExtendsFinalClass Attempting to extend from final class \Enums\X defined at %s:5
 %s:14 PhanUnreferencedClass Possibly zero references to class \Enums\Invalid
