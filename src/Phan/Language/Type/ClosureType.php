@@ -189,8 +189,9 @@ final class ClosureType extends Type
      * TODO: Uses of this may keep outdated data in language server mode.
      * @param CodeBase $code_base @unused-param
      * @param Context $context @unused-param
+     * @unused-param $warn
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         return $this->func;
     }

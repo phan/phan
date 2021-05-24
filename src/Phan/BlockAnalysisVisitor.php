@@ -1117,7 +1117,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
             try {
                 // e.g. don't warn about ArrayObject&CustomInterface because the expanded type set includes Traversable
-                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
+                if ($type->isTraversable($this->code_base)) {
                     continue;
                 }
             } catch (RecursionDepthException $_) {

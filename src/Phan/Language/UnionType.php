@@ -2831,14 +2831,17 @@ class UnionType implements Serializable, Stringable
     /**
      * @return bool
      * True if this union contains the Traversable type.
-     * (Call asExpandedTypes() first to check for subclasses of Traversable)
+     * (Calls asExpandedTypes() to check for subclasses of Traversable)
      * @suppress PhanUnreferencedPublicMethod not used right now.
      */
-    public function hasTraversable(): bool
+    public function hasTraversable(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isTraversable();
-        });
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->isTraversable($code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

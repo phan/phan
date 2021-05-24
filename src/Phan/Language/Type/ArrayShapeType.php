@@ -945,8 +945,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * Returns the function interface this references
+     * @unused-param $warn
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         if (\count($this->field_types) !== 2) {
             Issue::maybeEmit(

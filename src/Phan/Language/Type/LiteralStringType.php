@@ -402,8 +402,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * Returns the function interface that would be used if this type's string were a callable, or null.
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues)
+     * @unused-param $warn
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         // parse 'function_name' or 'class_name::method_name'
         // NOTE: In other subclasses of Type, calling this might recurse.

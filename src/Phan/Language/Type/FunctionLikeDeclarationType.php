@@ -299,7 +299,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @param CodeBase $code_base @unused-param
      * @param Context $context @unused-param
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         return $this;
     }

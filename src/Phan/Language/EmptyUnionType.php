@@ -665,7 +665,7 @@ final class EmptyUnionType extends UnionType
      * True if this union contains the Traversable type.
      * (Call asExpandedTypes() first to check for subclasses of Traversable)
      */
-    public function hasTraversable(): bool
+    public function hasTraversable(CodeBase $code_base): bool
     {
         return false;
     }
