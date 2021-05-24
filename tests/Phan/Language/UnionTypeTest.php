@@ -782,7 +782,7 @@ final class UnionTypeTest extends BaseTest
     {
         $type = self::makePHPDocUnionType('int|MyClass&MyInterfaceUTT');
         $this->assertSame(2, $type->typeCount());
-        $this->assertSame('\MyClass&\MyInterfaceUTT|int', (string)$type);
+        $this->assertSame('(\MyClass&\MyInterfaceUTT)|int', (string)$type);
         $this->assertInstanceOf(IntType::class, $type->getTypeSet()[0]);
         $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[1]);
     }
@@ -813,7 +813,7 @@ final class UnionTypeTest extends BaseTest
         $intersection1 = self::makePHPDocUnionType('Countable&ArrayAccess');
         $intersection2 = self::makePHPDocUnionType('\ArrayAccess&\Countable');
         $this->assertSame(1, $intersection1->typeCount());
-        $this->assertSame('\ArrayAccess|\Countable|\Countable&\ArrayAccess', $intersection1->asExpandedTypes($code_base)->__toString());
+        $this->assertSame('(\Countable&\ArrayAccess)|\ArrayAccess|\Countable', $intersection1->asExpandedTypes($code_base)->__toString());
 
         $this->assertTrue($intersection1->canCastToUnionType($intersection2, $code_base), 'expected intersection type to cast to itself');
         $this->assertTrue($intersection1->hasSubtypeOf($intersection2, $code_base), 'expect hasSubtypeOf to be true for intersection type');
