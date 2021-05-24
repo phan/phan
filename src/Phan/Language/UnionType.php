@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Language;
 
 use Closure;
-use Exception;
 use Generator;
 use InvalidArgumentException;
 use Phan\CodeBase;
@@ -2832,14 +2831,17 @@ class UnionType implements Serializable, Stringable
     /**
      * @return bool
      * True if this union contains the Traversable type.
-     * (Call asExpandedTypes() first to check for subclasses of Traversable)
+     * (Calls asExpandedTypes() to check for subclasses of Traversable)
      * @suppress PhanUnreferencedPublicMethod not used right now.
      */
-    public function hasTraversable(): bool
+    public function hasTraversable(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->isTraversable();
-        });
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->isTraversable($code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -3339,15 +3341,15 @@ class UnionType implements Serializable, Stringable
      * @suppress PhanUnreferencedPublicMethod
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function countableTypesStrictCast(CodeBase $code_base): UnionType
+    public function countableTypesStrictCast(CodeBase $code_base, Context $context): UnionType
     {
         static $default_types;
         if (\is_null($default_types)) {
             $default_types = [ArrayType::instance(false), Type::countableInstance()];
         }
         return UnionType::of(
-            self::castTypeListToCountable($code_base, $this->type_set, false) ?: $default_types,
-            self::castTypeListToCountable($code_base, $this->real_type_set, false) ?: $default_types
+            self::castTypeListToCountable($code_base, $this->type_set, $context) ?: $default_types,
+            self::castTypeListToCountable($code_base, $this->real_type_set, $context) ?: $default_types
         );
     }
 
@@ -3356,48 +3358,34 @@ class UnionType implements Serializable, Stringable
      * @return list<Type> a list of countable subclasses and array types, possibly containing duplicates
      * @internal
      */
-    public static function castTypeListToCountable(CodeBase $code_base, array $type_list, bool $assume_subclass_implements_countable): array
+    public static function castTypeListToCountable(CodeBase $code_base, array $type_list, Context $context): array
     {
         $result = [];
+        $countable = Type::countableInstance();
         foreach ($type_list as $type) {
             if ($type instanceof IterableType) {
                 $result[] = $type->asArrayType();
-                if ($assume_subclass_implements_countable && $type->isPossiblyObject()) {
-                    $result[] = Type::countableInstance();
+                if ($type->isPossiblyObject()) {
+                    $object_type = $type->withIsNullable(false)->asObjectType();
+                    if ($object_type) {
+                        // TODO: Convert iterable with template types to Traversable with template types
+                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                        $result[] = IntersectionType::createFromTypes([$object_type, $countable], $code_base, $context);
+                    } else {
+                        $result[] = $countable;
+                    }
                 }
                 continue;
             } elseif ($type->hasObjectWithKnownFQSEN()) {
                 $type = $type->withIsNullable(false);
-                $expanded_type = $type->asExpandedTypes($code_base);
-                foreach ($expanded_type->getTypeSet() as $part_type) {
-                    if ($part_type->getName() === 'Countable' && $part_type->getNamespace() === '\\') {
-                        $result[] = $type;
-                        continue 2;
-                    }
+                if ($type->isSubtypeOf($countable, $code_base)) {
+                    $result[] = $type;
+                    continue;
                 }
-                if ($assume_subclass_implements_countable) {
-                    if ($type->allTypePartsMatchCallback(static function (Type $part) use ($code_base): bool {
-                        try {
-                            $fqsen = $part->asFQSEN();
-                            if (!($fqsen instanceof FullyQualifiedClassName)) {
-                                // This is a closure
-                                return false;
-                            }
-                            if ($code_base->hasClassWithFQSEN($fqsen)) {
-                                if ($code_base->getClassByFQSEN($fqsen)->isFinal()) {
-                                    // This is a final class and can't implement Countable
-                                    return false;
-                                }
-                            }
-                        } catch (Exception $_) {
-                            // ignore it
-                        }
-                        return true;
-                    })) {
-                        $result[] = Type::countableInstance();
-                    }
+                if (!$type->canCastToDeclaredType($code_base, $context, $countable)) {
+                    continue;
                 }
-                continue;
+                $result[] = IntersectionType::createFromTypes([$type, $countable], $code_base, $context);
             } else {
                 if ($type->isPossiblyObject()) {
                     // e.g. object/mixed/callable-object can also be Countable

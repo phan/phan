@@ -10,6 +10,7 @@ use Generator;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
@@ -383,6 +384,72 @@ final class IntersectionType extends Type
     }
 
     /**
+     * Creates an optional type or intersection type by transforming this intersection type
+     * @param Closure(Type): (?Type) $mapping_callback
+     */
+    public function mapTypePartsToOptionalType(Closure $mapping_callback): ?Type
+    {
+        $new_types = [];
+        foreach ($this->type_parts as $type) {
+            $new_type = $mapping_callback($type);
+            if ($new_type) {
+                $new_types[] = $new_type;
+            }
+        }
+        if ($new_types === $this->type_parts) {
+            return $this;
+        }
+        return $new_types ? self::createFromTypes($new_types, null, null) : null;
+    }
+
+    public function hasTemplateTypeRecursive(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ): UnionType {
+        return $this->mapTypeParts(static function (Type $part) use ($template_parameter_type_map): Type {
+            $mapped = $part->withTemplateParameterTypeMap($template_parameter_type_map);
+            return $mapped->typeCount() === 1 ? $mapped->getTypeSet()[0] : $part;
+        })->asPHPDocUnionType();
+    }
+
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
+    {
+        foreach ($this->type_parts as $part) {
+            $function = $part->asFunctionInterfaceOrNull($code_base, $context, false);
+            if ($function) {
+                return $function;
+            }
+        }
+        if ($warn && $this->hasObjectWithKnownFQSEN()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UndeclaredInvokeInCallable,
+                $context->getLineNumberStart(),
+                '__invoke',
+                $this
+            );
+        }
+        return null;
+    }
+
+    // TODO Implement getTemplateTypeExtractorClosure? Does it make sense to do that?
+
+    /**
      * Convert `\MyClass<T>` and `\MyClass<\OtherClass>` to just `\MyClass`.
      *
      * TODO: Override in subclasses such as generic arrays, generic iterables, and array shapes.
@@ -426,5 +493,206 @@ final class IntersectionType extends Type
             return $this;
         }
         return new self($type_parts);
+    }
+
+    /**
+     * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     * @override
+     */
+    public function iterableValueUnionType(CodeBase $code_base): ?UnionType
+    {
+        // TODO: Split out into a common helper method
+        $values = [];
+        $real_values = [];
+        foreach ($this->type_parts as $part) {
+            $value = $part->iterableValueUnionType($code_base);
+            if ($value === null) {
+                continue;
+            }
+            if ($value->typeCount() > 1) {
+                return $value;
+            }
+            foreach ($value->getTypeSet() as $inner) {
+                $values[] = $inner;
+            }
+            $real_type_set = $value->getRealTypeSet();
+            if (count($real_type_set) > 1) {
+                return $value;
+            }
+            foreach ($real_type_set as $inner) {
+                $real_values[] = $inner;
+            }
+        }
+        if (!$values) {
+            return null;
+        }
+        $real_type_set = $real_values ? [self::createFromTypes($real_values, $code_base, null)] : [];
+
+        return UnionType::of(
+            [self::createFromTypes($values, $code_base, null)],
+            $real_type_set
+        );
+    }
+
+    /**
+     * @return ?UnionType returns the iterable key's union type if this is a subtype of iterable, null otherwise.
+     * @override
+     */
+    public function iterableKeyUnionType(CodeBase $code_base): ?UnionType
+    {
+        $values = [];
+        $real_values = [];
+        foreach ($this->type_parts as $part) {
+            $value = $part->iterableKeyUnionType($code_base);
+            if ($value === null) {
+                continue;
+            }
+            if ($value->typeCount() > 1) {
+                return $value;
+            }
+            foreach ($value->getTypeSet() as $inner) {
+                $values[] = $inner;
+            }
+            $real_type_set = $value->getRealTypeSet();
+            if (count($real_type_set) > 1) {
+                return $value;
+            }
+            foreach ($real_type_set as $inner) {
+                $real_values[] = $inner;
+            }
+        }
+        if (!$values) {
+            return null;
+        }
+        $real_type_set = $real_values ? [self::createFromTypes($real_values, $code_base, null)] : [];
+
+        return UnionType::of(
+            [self::createFromTypes($values, $code_base, null)],
+            $real_type_set
+        );
+    }
+
+    private function anyTypePartsMatchMethod(string $method_name): bool
+    {
+        foreach ($this->type_parts as $part) {
+            if ($part->{$method_name}()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function anyTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
+    {
+        foreach ($this->type_parts as $part) {
+            if ($part->{$method_name}(...$args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isSelfType(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    public function isStaticType(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function isScalar(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    public function isValidBitwiseOperand(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    /**
+     * @return bool
+     * True if this type is a callable or a Closure.
+     * @unused-param $code_base
+     */
+    public function isCallable(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    /**
+     * @return bool
+     * True if this type is an object (or the phpdoc `object`)
+     */
+    public function isObject(): bool
+    {
+        // Probably always true?
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    /**
+     * Returns this type (or a subtype) converted to a type of an expression satisfying is_object(expr)
+     * Returns null if Phan cannot cast this type to an object type.
+     */
+    public function asObjectType(): ?Type
+    {
+        return $this->mapTypePartsToOptionalType(static function (Type $type): ?Type {
+            return $type->asObjectType();
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this type is possibly an object (or the phpdoc `object`)
+     * This is the same as isObject(), except that it returns true for the exact class of IterableType.
+     */
+    public function isPossiblyObject(): bool
+    {
+        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+    }
+
+    /**
+     * Check if this type can possibly cast to the declared type, ignoring nullability of this type
+     *
+     * Precondition: This is either non-nullable or the type NullType/VoidType
+     * @unused-param $context
+     */
+    public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base, $context, $other);
+    }
+
+    public function canPossiblyCastToClass(CodeBase $code_base, Type $other): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base, $other);
+    }
+
+    public function isIterable(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function isCountable(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function isTraversable(CodeBase $code_base): bool
+    {
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function asIterable(CodeBase $code_base): ?Type
+    {
+        return $this->mapTypePartsToOptionalType(static function (Type $type) use ($code_base): ?Type {
+            return $type->asIterable($code_base);
+        });
     }
 }

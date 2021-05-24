@@ -127,6 +127,23 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 $arg_checker($code_base, $context, $function, $args, $node);
             };
         };
+        /**
+         * @param Closure(UnionType, CodeBase, Context):int $checker returns _IS_IMPOSSIBLE/_IS_REDUNDANT/_IS_REASONABLE_CONDITION
+         * @param string $expected_type
+         * @return Closure(CodeBase, Context, FunctionInterface, list<mixed>, ?Node):void
+         */
+        $make_context_aware_first_arg_checker = static function (Closure $checker, string $expected_type) use ($make_first_arg_checker): Closure {
+            /**
+             * @param list<Node|int|float|string> $args
+             */
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node) use ($checker, $expected_type, $make_first_arg_checker): void {
+                $single_checker = static function (UnionType $type) use ($checker, $code_base, $context): int {
+                    return $checker($type, $code_base, $context);
+                };
+                $arg_checker = $make_first_arg_checker($single_checker, $expected_type);
+                $arg_checker($code_base, $context, $function, $args, $node);
+            };
+        };
 
         $make_simple_first_arg_checker = static function (string $extract_types_method, string $expected_type) use ($make_first_arg_checker): Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types_method);
@@ -276,9 +293,9 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             return self::_IS_REASONABLE_CONDITION;
         }, 'iterable');
         /** @suppress PhanAccessMethodInternal */
-        $countable_callback = $make_codebase_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base): int {
+        $countable_callback = $make_context_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base, Context $context): int {
             $new_real_type = UnionType::of(
-                UnionType::castTypeListToCountable($code_base, $union_type->getTypeSet(), true),
+                UnionType::castTypeListToCountable($code_base, $union_type->getTypeSet(), $context),
                 []
             );
             if ($new_real_type->isEmpty()) {

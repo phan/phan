@@ -2146,8 +2146,16 @@ class Type implements Stringable
      */
     public function isCallable(CodeBase $code_base): bool
     {
-        // TODO: Can load the class to check?
-        return false;  // Overridden in subclass CallableType, ClosureType, FunctionLikeDeclarationType
+        if (static::class !== self::class) {
+            // Overridden in other subclasses
+            return false;
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($fqsen);
+        return $class->hasMethodWithName($code_base, '__invoke', true);
     }
 
     /**
@@ -2353,10 +2361,14 @@ class Type implements Stringable
     /**
      * @return bool - Returns true if this is \Traversable (nullable or not)
      */
-    public function isTraversable(): bool
+    public function isTraversable(CodeBase $code_base): bool
     {
-        return (\strcasecmp($this->getName(), 'Traversable') === 0
-            && $this->getNamespace() === '\\');
+        foreach ($this->asExpandedTypes($code_base)->getTypeSet() as $type) {
+            if ($type->name === 'Traversable' && $type->namespace === '\\') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -3110,6 +3122,7 @@ class Type implements Stringable
      * Overridden in IntersectionType
      *
      * @param Closure(Type): bool $matcher_callback
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function allTypePartsMatchCallback(Closure $matcher_callback): bool
     {
@@ -4055,7 +4068,7 @@ class Type implements Stringable
      * @param CodeBase $code_base the code base in which the function interface is found
      * @param Context $context the context where the function interface is referenced (for emitting issues) @phan-unused-param
      */
-    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context): ?FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         if (static::class !== self::class) {
             // Overridden in other subclasses
@@ -4067,14 +4080,16 @@ class Type implements Stringable
         }
         $class = $code_base->getClassByFQSEN($fqsen);
         if (!$class->hasMethodWithName($code_base, '__invoke', true)) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::UndeclaredInvokeInCallable,
-                $context->getLineNumberStart(),
-                '__invoke',
-                $fqsen
-            );
+            if ($warn) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::UndeclaredInvokeInCallable,
+                    $context->getLineNumberStart(),
+                    '__invoke',
+                    $fqsen
+                );
+            }
             return null;
         }
         return $class->getMethodByName($code_base, '__invoke');

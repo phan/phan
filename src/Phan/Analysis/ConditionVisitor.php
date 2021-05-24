@@ -925,7 +925,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // Change the type to match the is_countable relationship
             // If we already have possible countable types, then keep those
             // (E.g. ?ArrayObject|false becomes ArrayObject)
-            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base));
+            $variable->setUnionType($variable->getUnionType()->withStaticResolvedInContext($context)->countableTypesStrictCast($code_base, $context));
         };
         /**
          * @param list<Node|mixed> $args
@@ -937,7 +937,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable->setUnionType(
                 $variable->getUnionType()
                 ->withStaticResolvedInContext($context)
-                ->countableTypesStrictCast($code_base)
+                ->countableTypesStrictCast($code_base, $context)
                 ->nonFalseyClone()
             );
         };

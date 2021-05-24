@@ -53,6 +53,16 @@ abstract class NativeType extends Type
     }
 
     /**
+     * @return bool
+     * True if this type is a callable or a Closure.
+     * @unused-param $code_base
+     */
+    public function isCallable(CodeBase $code_base): bool
+    {
+        return false;
+    }
+
+    /**
      * @unused-param $code_base
      */
     public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
@@ -68,7 +78,10 @@ abstract class NativeType extends Type
         return false;
     }
 
-    public function isTraversable(): bool
+    /**
+     * @unused-param $code_base
+     */
+    public function isTraversable(CodeBase $code_base): bool
     {
         return false;
     }
@@ -361,7 +374,7 @@ abstract class NativeType extends Type
     /**
      * @suppress PhanUnusedPublicMethodParameter
      */
-    public function asFunctionInterfaceOrNull(CodeBase $codebase, Context $context): ?\Phan\Language\Element\FunctionInterface
+    public function asFunctionInterfaceOrNull(CodeBase $codebase, Context $context, bool $warn = true): ?\Phan\Language\Element\FunctionInterface
     {
         // overridden in subclasses
         return null;
