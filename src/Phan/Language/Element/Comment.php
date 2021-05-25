@@ -581,8 +581,6 @@ class Comment
      * @return Option<Type>
      * An optional Type defined by a (at)phan-closure-scope
      * directive specifying a single type.
-     *
-     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getClosureScopeOption(): Option
     {
@@ -619,7 +617,6 @@ class Comment
     /**
      * @return Option<Type>
      * An optional type declaring what a class extends.
-     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getInheritedTypeOption(): Option
     {

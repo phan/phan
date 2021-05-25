@@ -641,7 +641,6 @@ class Type implements Stringable
      * A map from a template type identifier to a
      * concrete union type
      * @phan-side-effect-free
-     * @suppress PhanThrowTypeAbsentForCall
      */
     public static function fromType(
         Type $type,
@@ -889,8 +888,6 @@ class Type implements Stringable
      * True if this type can be null, false if it cannot
      * be null.
      * @phan-side-effect-free
-     *
-     * @suppress PhanThrowTypeAbsentForCall
      */
     public static function fromNamespaceAndName(
         string $namespace,
@@ -1092,7 +1089,7 @@ class Type implements Stringable
      * @param list<string> $shape_components
      * @param bool $is_nullable
      * @throws AssertionError if creating a closure/callable from the arguments failed
-     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
+     * @suppress PhanPossiblyFalseTypeArgument
      */
     private static function fromFullyQualifiedFunctionLike(
         bool $is_closure_type,
@@ -1539,7 +1536,6 @@ class Type implements Stringable
                 $element_type = self::maybeFindParentType($non_generic_array_type_name[0] === '?', $context, $code_base);
             } else {
                 // Equivalent to getClassFQSEN()->asType() but slightly faster (this is frequently used)
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 $element_type = self::fromFullyQualifiedString(
                     $context->getClassFQSEN()->__toString()
                 );
@@ -1570,7 +1566,6 @@ class Type implements Stringable
                 return SelfType::instance($is_nullable);
             }
             // Equivalent to getClassFQSEN()->asType()->withIsNullable but slightly faster (this is frequently used)
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             $fqsen = $context->getClassFQSEN();
             return self::make(
                 $fqsen->getNamespace(),
@@ -1947,8 +1942,6 @@ class Type implements Stringable
      * @return Type
      * A new type that is a copy of this type but with the
      * given nullability value.
-     *
-     * @suppress PhanThrowTypeAbsentForCall should not happen provided a valid type
      */
     public function withIsNullable(bool $is_nullable): Type
     {
@@ -2487,7 +2480,6 @@ class Type implements Stringable
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      *
      * This is overridden by the array subclasses
-     * @suppress PhanStaticClassAccessWithStaticVariable micro-optimization, not using static to initialize these values
      */
     public function iterableValueUnionType(CodeBase $code_base): ?UnionType
     {
@@ -3058,7 +3050,6 @@ class Type implements Stringable
             // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
             // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
             return self::matchesAllOtherTypeParts(function (Type $part) use($code_base): bool {
-                // @phan-suppress-next-line PhanDeprecatedFunction
                 return $this->canCastToNonNullableType($part, $code_base);
             }, $type);
         }
@@ -3150,7 +3141,6 @@ class Type implements Stringable
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly, ignoring permissive config casting rules
-     * @suppress PhanUnusedProtectedMethodParameter
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
@@ -3193,8 +3183,6 @@ class Type implements Stringable
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly, accounting for template types.
-     *
-     * @suppress PhanDeprecatedFunction
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {

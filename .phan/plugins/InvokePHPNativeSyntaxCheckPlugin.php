@@ -243,7 +243,7 @@ class InvokeExecutionPromise
                 ['pipe', 'wb'],
             ];
             $this->binary = $binary;
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal PHP 7.3 does not accept arrays
             $process = proc_open($cmd, $descriptorspec, $pipes);
             if (!is_resource($process)) {
                 $this->done = true;

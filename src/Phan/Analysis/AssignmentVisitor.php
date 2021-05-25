@@ -979,6 +979,13 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->handleThisPropertyAssignmentInLocalScopeByName($node, $property_name);
         }
 
+        if (Config::get_strict_object_checking()) {
+            ContextNode::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $node, $property_name);
+        }
+
+        $property = null;
+        $class_with_property = null;
+        $class_without_property = null;
         foreach ($class_list as $clazz) {
             if ($clazz->isImmutableAtRuntime()) {
                 $this->emitTypeModifyImmutableObjectPropertyIssue($clazz, $property_name, $node);
@@ -988,6 +995,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
                 if (!$clazz->hasMethodWithName($this->code_base, '__set', true)) {
+                    $class_without_property = $clazz;
                     continue;
                 }
             }
@@ -1001,6 +1009,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node,
                     true
                 );
+                $class_with_property = $clazz;
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $this->code_base,
@@ -1009,8 +1018,24 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
                 return $this->context;
             }
+        }
+
+        if ($property && $class_with_property) {
+            if ($class_without_property && Config::get_strict_object_checking()) {
+                $this->emitIssue(
+                    Issue::PossiblyUndeclaredPropertyOfClass,
+                    $node->lineno,
+                    $property_name,
+                    UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $this->context,
+                        $node->children['expr'] ?? $node->children['class']
+                    ),
+                    $class_without_property->getFQSEN()
+                );
+            }
             try {
-                return $this->analyzePropAssignment($clazz, $property, $node);
+                return $this->analyzePropAssignment($class_with_property, $property, $node);
             } catch (RecursionDepthException $_) {
                 return $this->context;
             }

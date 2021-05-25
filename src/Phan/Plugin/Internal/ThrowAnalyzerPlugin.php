@@ -241,7 +241,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 continue;
             }
-            if (!$union_type->canCastToUnionType($throws_union_type, $this->code_base)) {
+            if (!$type->asPHPDocUnionType()->canCastToUnionType($throws_union_type, $this->code_base)) {
                 if ($call !== null) {
                     $this->emitIssue(
                         Issue::ThrowTypeMismatchForCall,

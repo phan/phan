@@ -701,7 +701,6 @@ class Method extends ClassElement implements FunctionInterface
      * @return \Generator
      * @phan-return \Generator<Method>
      * The set of all alternates to this method
-     * @suppress PhanParamSignatureMismatch
      */
     public function alternateGenerator(CodeBase $code_base): \Generator
     {

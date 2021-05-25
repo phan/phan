@@ -1796,7 +1796,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * The updated context after visiting the node
      *
      * Based on visitSwitchList
-     * @suppress PhanAccessMethodInternal
      */
     public function visitMatchArmList(Node $node): Context
     {
@@ -2817,7 +2816,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $left_node = $node->children['left'];
         $right_node = $node->children['right'];
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal, PhanPossiblyUndeclaredProperty
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         if ($right_node instanceof Node && $right_node->kind === ast\AST_CONST && \strcasecmp($right_node->children['name']->children['name'] ?? '', 'null') === 0) {
             if ($left_node instanceof Node && self::isAlwaysDefined($context, $left_node)) {
                 $this->emitIssue(

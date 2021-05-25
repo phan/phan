@@ -98,8 +98,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             ?Node $unused_node = null
         ) use ($warn_remove_debug_call): void {
             $file = $args[0] ?? null;
-            // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
-            if (!$file instanceof Node || $file->kind !== ast\AST_CONST || !in_array($file->children['name']->children['name'], ['STDOUT', 'STDERR'], true)) {
+            if (!$file instanceof Node || $file->kind !== ast\AST_CONST || !in_array($file->children['name']->children['name'] ?? null, ['STDOUT', 'STDERR'], true)) {
                 // Could resolve the constant, but low priority
                 return;
             }

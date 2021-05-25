@@ -330,7 +330,6 @@ class Func extends AddressableElement implements FunctionInterface
      * @return \Generator
      * @phan-return \Generator<Func>
      * The set of all alternates to this function
-     * @suppress PhanParamSignatureMismatch
      */
     public function alternateGenerator(CodeBase $code_base): \Generator
     {

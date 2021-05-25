@@ -825,7 +825,6 @@ trait ConditionVisitorUtil
             if (!$type->asPHPDocUnionType()->hasAnyWeakTypeOverlap($new_real_union_type)) {
                 continue;
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             // TODO: Implement Type->canWeakCastToUnionType?
             if ($type->isPossiblyFalsey() && !$new_real_union_type->containsFalsey()) {
                 if ($type->isAlwaysFalsey()) {
@@ -853,7 +852,6 @@ trait ConditionVisitorUtil
             $combined_real_types[] = $type;
         }
         if ($combined_real_types) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Remove when intersection types are supported.
             return $new_union_type->withRealTypeSet($combined_real_types);
         }
         return $new_union_type;
@@ -1199,7 +1197,7 @@ trait ConditionVisitorUtil
             }
             $kind = $var->kind;
             if ($kind === ast\AST_VAR) {
-                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+                // @phan-suppress-next-line PhanPossiblyUndeclaredPropertyOfClass
                 $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($tmp);
                 return $condition->analyzeVar($this, $var, $expr_node);
             }

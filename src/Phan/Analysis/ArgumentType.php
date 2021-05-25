@@ -742,7 +742,6 @@ final class ArgumentType
                 true
             );
             if ($argument_type->isVoidType()) {
-                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
                 self::warnVoidTypeArgument($code_base, $context, $argument_expression, $node);
             }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable

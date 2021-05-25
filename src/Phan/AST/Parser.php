@@ -42,7 +42,7 @@ use function error_reporting;
  */
 class Parser
 {
-    /** @var ?Cache<ParseResult> */
+    /** @var ?DiskCache<ParseResult> */
     private static $cache = null;
 
     /**
@@ -62,10 +62,9 @@ class Parser
     }
 
     /**
-     * @return Cache<ParseResult>
-     * @suppress PhanPartialTypeMismatchReturn
+     * @return DiskCache<ParseResult>
      */
-    private static function getCache(): Cache
+    private static function getCache(): DiskCache
     {
         return self::$cache ?? self::$cache = self::makeNewCache();
     }
