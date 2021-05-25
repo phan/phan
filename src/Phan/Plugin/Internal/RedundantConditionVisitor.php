@@ -122,9 +122,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @suppress PhanPossiblyUndeclaredProperty
-     */
-    /**
     public function visitMatch(Node $node): void
     {
         ['cond' => $cond_node, 'stmts' => $stmts_node] = $node->children;
@@ -294,7 +291,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     return $right;
                 };
 
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_args, $context): void {
                     // Give up in any of these cases, for the left or right types
                     // 1. We don't know how to fetch the new type after the loop.
@@ -396,7 +392,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $is_still_issue, $issue_name, $issue_args, $context): void {
                     $left = ($left_type_fetcher ? $left_type_fetcher($context_after_loop) : null) ?? $left;
                     if ($left->isEmpty()) {

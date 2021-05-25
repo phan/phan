@@ -167,7 +167,6 @@ final class MiscParamPlugin extends PluginV3 implements
                     continue;
                 }
                 if ($key_value !== null) {
-                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     if (\array_key_exists($key_value, $type->getFieldTypes())) {
                         return false;
                     }
@@ -256,7 +255,6 @@ final class MiscParamPlugin extends PluginV3 implements
             $needle_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $needle_node);
             $haystack_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $haystack_node);
             if ($needle_type_fetcher || $haystack_type_fetcher) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node, $haystack, $needle, $needle_type_fetcher, $haystack_type_fetcher): void {
                     if ($needle_type_fetcher) {
                         $needle = ($needle_type_fetcher($context_after_loop) ?? $needle);
@@ -312,7 +310,6 @@ final class MiscParamPlugin extends PluginV3 implements
             $key_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $key_node);
             $array_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $array_node);
             if ($key_type_fetcher || $array_type_fetcher) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $context, $args, $issue_args, $node, $key_type, $array_type, $key_type_fetcher, $array_type_fetcher): void {
                     // XXX this will have false positives if variables are unset in the loop.
                     if ($key_type_fetcher) {

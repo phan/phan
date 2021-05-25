@@ -26,7 +26,7 @@ use TypeError;
  * @method void offsetUnset(T $object)
  * @method T current()
  *
- * @phan-file-suppress PhanParamSignatureMismatchInternal, PhanParamSignaturePHPDocMismatchHasParamType for these comment method overrides
+ * @phan-file-suppress PhanParamSignatureMismatchInternal for these comment method overrides
  * TODO: Make suppressions in the class doc comment work for magic methods.
  */
 class Set extends \SplObjectStorage

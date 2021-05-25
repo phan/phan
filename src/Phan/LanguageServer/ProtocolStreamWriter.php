@@ -70,7 +70,6 @@ class ProtocolStreamWriter implements ProtocolWriter
             }
 
             // Determine if this message was completely sent
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             if (\strlen($message) === 0) {
                 \array_shift($this->messages);
 

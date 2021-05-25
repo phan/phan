@@ -180,7 +180,6 @@ call_user_func(static function () : void {
 
     $cwd = \getcwd();
 
-    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
     $cli_builder->setOption('allow-polyfill-parser');
     $cli_builder->setOption('processes', '1');
     $cli_builder->setOption('plugin', dirname($tool_dir) . '/src/Phan/Plugin/Internal/DependencyGraphPlugin.php');

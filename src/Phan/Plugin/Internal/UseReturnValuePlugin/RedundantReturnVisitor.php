@@ -20,8 +20,6 @@ use Phan\Parse\ParseVisitor;
 * Checks for function-likes that have unnecessary branches to equivalent return statements.
 *
 * This does not handle returning variables, and is only run for functions inferred to be pure.
-*
-* @phan-file-suppress PhanAccessPropertyInternal
 */
 class RedundantReturnVisitor
 {
@@ -136,7 +134,6 @@ class RedundantReturnVisitor
         }
         // There are 2 or more possible returned statements. Check if all returned expressions are the same.
 
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument can't understand count() assertions
         if (\count($groups) > 2 && $kind !== ast\AST_SWITCH_LIST) {
             // e.g. warn about the last two groups of returns being the same, for examples such as the following:
             //

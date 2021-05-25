@@ -96,7 +96,6 @@ class ArrayType extends IterableType
                 $result[] = $type_part;
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return UnionType::of($result, $union_type->getRealTypeSet());
     }
 
@@ -196,7 +195,6 @@ class ArrayType extends IterableType
                 }
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return UnionType::getUniqueTypes($result);
         /*
         }
@@ -225,7 +223,6 @@ class ArrayType extends IterableType
     /**
      * @param non-empty-list<Type> $right_types the original types being added to
      * @return list<ArrayType>
-     * @suppress PhanPartialTypeMismatchArgument UnionType::typeSetFromString is list<Type>
      */
     private static function computeRealTypeSetFromArrayTypeLists(array $right_types, bool $is_assignment): array
     {

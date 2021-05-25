@@ -12,7 +12,6 @@ use const ENT_NOQUOTES;
 
 /**
  * This prints `IssueInstance`s in the checkstyle XML format to the configured OutputInterface
- * @phan-file-suppress PhanTypeArraySuspiciousNullable TODO: fix false positive inferred for positive values of $this->files
  */
 final class CheckstylePrinter implements BufferedPrinterInterface
 {

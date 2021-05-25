@@ -535,7 +535,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
                     // @phan-suppress-next-line PhanUndeclaredProperty
                     } elseif (isset($node->is_unset_target)) {
-                        // @phan-suppress-next-line PhanUndeclaredProperty
                         self::$variable_graph->markAsUnset($expr);
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
                     } else {

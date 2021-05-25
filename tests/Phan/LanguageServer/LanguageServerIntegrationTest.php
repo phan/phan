@@ -2084,7 +2084,6 @@ EOT;
 
     /**
      * @suppress PhanImpossibleCondition DEBUG_ENABLED is manually changed if needed.
-     * @suppress PhanPluginRemoveDebugEcho
      */
     private static function debugLog(string $message): void
     {

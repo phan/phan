@@ -550,7 +550,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 RedundantCondition::emitInstance(
                     $args[0],
                     $code_base,
-                    // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
                     (clone($context))->withLineNumberStart($args[0]->lineno),
                     Issue::RedundantArrayValuesCall,
                     [

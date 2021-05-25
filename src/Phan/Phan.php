@@ -22,8 +22,6 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
-use phpDocumentor\Reflection\DocBlock\StandardTagFactory;
-use ReflectionMethod;
 
 use function array_combine;
 use function array_filter;
@@ -55,7 +53,6 @@ use const EXIT_FAILURE;
 use const EXIT_SUCCESS;
 use const JSON_PRETTY_PRINT;
 use const PHP_DEBUG;
-use const PHP_VERSION_ID;
 use const SORT_STRING;
 use const STDERR;
 
@@ -355,7 +352,6 @@ class Phan implements IgnoredFilesFilterInterface
                     exit(2);
                 }
             } else {
-                self::checkLanguageServerDependencies();
                 if (!is_array($language_server_config)) {
                     throw new AssertionError("Language server config must be an array");
                 }
@@ -386,28 +382,6 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
-    }
-
-    /**
-     * @suppress PhanUndeclaredClassConstant, PhanUndeclaredClassReference
-     */
-    private static function checkLanguageServerDependencies(): void
-    {
-        if (PHP_VERSION_ID >= 70200) {
-            return;
-        }
-        if (!\method_exists(StandardTagFactory::class, 'addService')) {
-            return;
-        }
-        $method = new ReflectionMethod(StandardTagFactory::class, 'addService');
-        $first_param = $method->getParameters()[0] ?? null;
-        if (!$first_param) {
-            return;
-        }
-        if (\strpos((string)$first_param, 'object') !== false) {
-            throw new AssertionError('Cannot run the Phan language server with phpdocumentor/reflection-docblock 5.0+ and php 7.1. ' .
-                'Downgrade to phpdocumentor/reflection-docblock=^4.3.4.0 or run Phan with a newer php version.');
-        }
     }
 
     private static function preloadBeforeForkingAnalysisWorkers(CodeBase $code_base): void

@@ -11,7 +11,6 @@ use ReflectionMethod;
 
 /**
  * Checks that IntersectionType overrides methods of Type where appropriate
- * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class IntersectionTypeTest extends BaseTest
 {
