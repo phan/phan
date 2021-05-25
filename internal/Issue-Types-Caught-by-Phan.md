@@ -4198,6 +4198,16 @@ Call to possibly undeclared method {METHOD} on type {TYPE} ({TYPE} does not decl
 Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} ({TYPE} does not declare that property)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/real_types_test/expected/010_possibly_undefined_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/real_types_test/src/010_possibly_undefined_property.php#L11).
+
+## PhanPossiblyUndeclaredPropertyOfClass
+
+```
+Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} (instances of {CLASS} do not declare that property)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/real_types_test/expected/010_possibly_undefined_property.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/real_types_test/src/010_possibly_undefined_property.php#L12).
+
 ## PhanPossiblyUndeclaredVariable
 
 ```

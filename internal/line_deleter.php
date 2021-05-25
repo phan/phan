@@ -1,8 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-// @phan-file-suppress PhanPluginRemoveDebugEcho
-
 declare(strict_types=1);
 
 /**

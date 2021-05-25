@@ -421,7 +421,6 @@ class ContextNode
      *
      * TODO: Deprecate this and use more precise ways to locate the desired element
      * TODO: Distinguish between the empty string and the lack of a name
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function getVariableName(): string
     {
@@ -1286,8 +1285,6 @@ class ContextNode
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
-     *
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function getOrCreateVariableForReferenceParameter(Parameter $parameter, ?Parameter $real_parameter): Variable
     {
@@ -1497,48 +1494,13 @@ class ContextNode
         }
         if (!$is_static && Config::get_strict_object_checking() &&
                 !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
-            $union_type = UnionTypeVisitor::unionTypeFromNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-            );
-            $invalid = UnionType::empty();
-            foreach ($union_type->getTypeSet() as $type) {
-                if (!$type->isPossiblyObject()) {
-                    $invalid = $invalid->withType($type);
-                } elseif ($type->isNullableLabeled()) {
-                    $invalid = $invalid->withType(NullType::instance(false));
-                }
-            }
-            if (!$invalid->isEmpty()) {
-                if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE) {
-                    $invalid = $invalid->nonNullableClone();
-                }
-                if (!$invalid->isEmpty()) {
-                    foreach ($invalid->getTypeset() as $type) {
-                        if (!$type->isNullableLabeled()) {
-                            continue;
-                        }
-                        $this->emitIssue(
-                            Issue::PossiblyUndeclaredProperty,
-                            $node->lineno,
-                            $property_name,
-                            $union_type,
-                            $invalid
-                        );
-                        if ($property) {
-                            return $property;
-                        }
-                        break;
-                    }
-                }
-            }
+            self::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $node, $property_name);
         }
         if ($property) {
             if ($class_without_property && Config::get_strict_object_checking() &&
                     !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                 $this->emitIssue(
-                    Issue::PossiblyUndeclaredProperty,
+                    Issue::PossiblyUndeclaredPropertyOfClass,
                     $node->lineno,
                     $property_name,
                     UnionTypeVisitor::unionTypeFromNode(
@@ -1626,6 +1588,45 @@ class ContextNode
             $node,
             "Cannot figure out property from {$this->context}"
         );
+    }
+
+    /**
+     * Warn if the expression of an AST_PROP is possibly invalid for an instance property
+     * (both for reading and for writing)
+     */
+    public static function checkPossiblyUndeclaredInstanceProperty(CodeBase $code_base, Context $context, Node $node, string $property_name): void
+    {
+        $union_type = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['expr']
+        );
+        $invalid = UnionType::empty();
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->isPossiblyObject()) {
+                $invalid = $invalid->withType($type);
+            } elseif ($type->isNullableLabeled()) {
+                $invalid = $invalid->withType(NullType::instance(false));
+            }
+        }
+        if (!$invalid->isEmpty()) {
+            if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE) {
+                $invalid = $invalid->nonNullableClone();
+            }
+            if (!$invalid->isEmpty()) {
+                // XXX: Previously, this would only warn about null/nullable, not about scalars and arrays.
+                // Probably to reduce false positives.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::PossiblyUndeclaredProperty,
+                    $node->lineno,
+                    $property_name,
+                    $union_type,
+                    $invalid
+                );
+            }
+        }
     }
 
     /**
@@ -2096,25 +2097,24 @@ class ContextNode
         $llnode = $this->node;
 
         if ($kind !== ast\AST_DIM) {
-            if (!($this->node->children['expr'] instanceof Node)) {
+            $expr = $this->node->children['expr'];
+            if (!($expr instanceof Node)) {
                 return;
             }
 
-            if ($this->node->children['expr']->kind !== ast\AST_DIM) {
+            if ($expr->kind !== ast\AST_DIM) {
                 (new ContextNode(
                     $this->code_base,
                     $this->context,
-                    $this->node->children['expr']
+                    $expr
                 ))->analyzeBackwardCompatibility();
                 return;
             }
 
-            $temp = $this->node->children['expr']->children['expr'];
-            $llnode = $this->node->children['expr'];
-            $lnode = $temp;
+            $temp = $expr->children['expr'];
+            $llnode = $expr;
         } else {
             $temp = $this->node->children['expr'];
-            $lnode = $temp;
         }
 
         // Strings can have DIMs, it turns out.
@@ -2128,6 +2128,7 @@ class ContextNode
             return;
         }
 
+        $lnode = $temp;
         while ($temp instanceof Node
             && ($temp->kind === ast\AST_PROP
             || $temp->kind === ast\AST_STATIC_PROP)

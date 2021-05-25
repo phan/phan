@@ -355,7 +355,7 @@ class CompletionResolver
         string $incomplete_constant_name,
         array $parent_node_list
     ): void {
-        if ($node->kind === ast\AST_CONST && $node->children['name']->flags !== ast\flags\NAME_NOT_FQ) {
+        if ($node->kind === ast\AST_CONST && ($node->children['name']->flags ?? null) !== ast\flags\NAME_NOT_FQ) {
             // Don't suggest completions for namespace\keyword or \keyword, it's generally not valid.
             return;
         }

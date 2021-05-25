@@ -25,7 +25,6 @@ class FunctionFactory
      * @return list<Func>
      * One or more (alternate) functions begotten from
      * reflection info and internal functions data
-     * @suppress PhanUndeclaredMethod
      * @suppress PhanTypeMismatchReturn FunctionInterface->Method
      */
     public static function functionListFromReflectionFunction(

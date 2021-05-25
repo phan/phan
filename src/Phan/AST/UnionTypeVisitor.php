@@ -3287,7 +3287,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return StaticType::instance(false)->asRealUnionType();
         }
         if (!Type::isSelfTypeString($class_name)) {
-            // @phan-suppress-next-line PhanThrowTypeMismatchForCall
+            // @phan-suppress-next-line PhanThrowTypeMismatchForCall assuming FQSENException won't be thrown optimistically for valid ASTs
             return self::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,

@@ -37,8 +37,7 @@ use Phan\Language\UnionType;
  * @see UnionTypeVisitor for what should be used for the vast majority of use cases
  * @see FallbackMethodTypesVisitor for the code using this.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable node is complicated
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal, PhanPartialTypeMismatchArgument node is complicated
  */
 class FallbackUnionTypeVisitor extends KindVisitorImplementation
 {
@@ -437,8 +436,6 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
-     *
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function visitNew(Node $node): UnionType
     {

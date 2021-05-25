@@ -97,7 +97,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             return $this;
         }
         return static::make(
-            $fully_qualified_class_name,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            $fully_qualified_class_name,
             $this->name,
             0
         );

@@ -480,7 +480,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @suppress PhanUndeclaredMethod
+     * @suppress PhanUndeclaredMethod properties only have types and reflection types in php 7.4+
      */
     private static function getRealTypeForReflectionProperty(ReflectionProperty $property): UnionType
     {

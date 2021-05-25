@@ -97,7 +97,7 @@ class LoopConditionVisitor extends ConditionVisitor
         if ($last_expression instanceof Node) {
             return $this->__invoke($last_expression);
         } elseif (Config::getValue('redundant_condition_detection')) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             $this->checkRedundantOrImpossibleTruthyCondition($last_expression, $this->context, null, false);
         }
         return $this->context;

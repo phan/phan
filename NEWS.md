@@ -8,6 +8,12 @@ Phan NEWS
 + Warn about impossible type combinations in phpdoc intersection types.
   New issue types: `PhanImpossibleIntersectionType`
 + Improve type checking precision
++ Split out warnings about possibly invalid types for property access (non-object) and possibly invalid classes for property access
+  New issue types: `PhanPossiblyUndeclaredPropertyOfClass`
++ Also check for partially invalid expressions for instance properties during assignment (`PhanPossiblyUndeclaredProperty*`)
+
+Breaking Changes
++ Many internal methods now require a mandatory `CodeBase` instance. This will affect third party plugins.
 
 May 19 2021, Phan 4.0.7 (dev)
 -----------------------

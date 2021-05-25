@@ -835,7 +835,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $flags = $node->flags;
         if ($this->isInNoOpPosition($node)) {
             if (\in_array($flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE], true)) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['right'])) {
                     $this->emitIssue(
                         Issue::NoopBinaryOperator,
@@ -3372,8 +3371,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public function visitConditional(Node $node): Context
     {
@@ -3402,8 +3399,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public function visitMatch(Node $node): Context
     {

@@ -96,8 +96,8 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
         if ($node->kind !== ast\AST_CONST) {
             return null;
         }
-        // @phan-suppress-next-line PhanPossiblyUndeclaredProperty, PhanPartialTypeMismatchArgumentInternal
-        switch (strtolower($node->children['name']->children['name'])) {
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+        switch (strtolower($node->children['name']->children['name'] ?? '')) {
             case 'false':
                 return false;
             case 'true':

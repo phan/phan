@@ -360,7 +360,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     /**
      * @return int the corresponding status code
-     * @suppress PhanTypeMismatchArgumentNullable
      */
     public function visitMatchArm(Node $node): int
     {

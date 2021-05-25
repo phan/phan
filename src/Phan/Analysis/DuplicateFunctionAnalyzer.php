@@ -39,12 +39,10 @@ class DuplicateFunctionAnalyzer
                 $original_fqsen
             );
         } else {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             if (!$code_base->hasMethodWithFQSEN($original_fqsen)) {
                 return;
             }
 
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             $original_method = $code_base->getMethodByFQSEN($original_fqsen);
         }
 

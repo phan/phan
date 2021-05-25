@@ -30,7 +30,6 @@ trait TolerantASTConverterTrait
      *
      * FIXME static will behave differently in php 8.1
      * @suppress PhanAbstractStaticMethodCallInTrait
-     * @suppress PhanStaticClassAccessWithStaticVariable this is deliberate. 'use TolerantASTConverterTrait' is repeated in all subclasses to avoid this issue in practice
      */
     protected static function phpParserNonValueNodeToAstNode($n)
     {
@@ -60,7 +59,6 @@ trait TolerantASTConverterTrait
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
-     * @suppress PhanStaticClassAccessWithStaticVariable this is deliberate. 'use TolerantASTConverterTrait' is repeated in all subclasses to avoid this issue in practice
      * @suppress PhanAbstractStaticMethodCallInTrait
      */
     protected static function phpParserNodeToAstNode($n)

@@ -1,0 +1,5 @@
+src/010_possibly_undefined_property.php:11 PhanPossiblyUndeclaredProperty Reference to possibly undeclared property prop of expression of type \C10|false (false does not declare that property)
+src/010_possibly_undefined_property.php:12 PhanPossiblyUndeclaredPropertyOfClass Reference to possibly undeclared property prop of expression of type \ArrayObject|\C10 (instances of \ArrayObject do not declare that property)
+src/010_possibly_undefined_property.php:13 PhanPossiblyUndeclaredProperty Reference to possibly undeclared property prop of expression of type \C10|false (false does not declare that property)
+src/010_possibly_undefined_property.php:13 PhanTypeMismatchPropertyProbablyReal Assigning 0 of type 0 to property but \C10->prop is array (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+src/010_possibly_undefined_property.php:14 PhanPossiblyUndeclaredPropertyOfClass Reference to possibly undeclared property prop of expression of type \ArrayObject|\C10 (instances of \ArrayObject do not declare that property)

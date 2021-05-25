@@ -66,7 +66,6 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
 
         // NOTE: This is deliberately not using any of Phan's internal stub information.
         $this->code_base = new CodeBase([], [], [], [], []);
-        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall not able to infer type of require
         $this->code_base->eagerlyLoadAllSignatures();
         $this->initStubs();
     }

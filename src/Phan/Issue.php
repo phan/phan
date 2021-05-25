@@ -77,6 +77,7 @@ class Issue
     public const PossiblyUndeclaredMethod  = 'PhanPossiblyUndeclaredMethod';
     public const UndeclaredProperty        = 'PhanUndeclaredProperty';
     public const PossiblyUndeclaredProperty = 'PhanPossiblyUndeclaredProperty';
+    public const PossiblyUndeclaredPropertyOfClass = 'PhanPossiblyUndeclaredPropertyOfClass';
     public const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
     public const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
     public const UndeclaredTrait           = 'PhanUndeclaredTrait';
@@ -1178,6 +1179,14 @@ class Issue
                 "Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} ({TYPE} does not declare that property)",
                 self::REMEDIATION_B,
                 11050
+            ),
+            new Issue(
+                self::PossiblyUndeclaredPropertyOfClass,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to possibly undeclared property {PROPERTY} of expression of type {TYPE} (instances of {CLASS} do not declare that property)",
+                self::REMEDIATION_B,
+                11056
             ),
             new Issue(
                 self::UndeclaredStaticProperty,

@@ -29,7 +29,6 @@ class DuplicateClassAnalyzer
 
         $original_fqsen = $clazz->getFQSEN()->getCanonicalFQSEN();
 
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument static method has ambiguity
         if (!$code_base->hasClassWithFQSEN($original_fqsen)) {
             // If there's a missing class we'll catch that
             // elsewhere
@@ -37,7 +36,6 @@ class DuplicateClassAnalyzer
         }
 
         // Get the original class
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument static method has ambiguity
         $original_class = $code_base->getClassByFQSEN($original_fqsen);
 
         // Check to see if the original definition was from

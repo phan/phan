@@ -783,7 +783,7 @@ class ParseVisitor extends ScopeVisitor
             $node->children['attributes']
         );
 
-        foreach ($node->children['const']->children as $child_node) {
+        foreach ($node->children['const']->children ?? [] as $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected class const element to be a Node');
             }
@@ -946,7 +946,7 @@ class ParseVisitor extends ScopeVisitor
         $this->handleClassConstantComment($constant, $comment);
 
         $value_node = $node->children['expr'];
-        if (!self::isConstExpr($value_node)) {
+        if ($value_node instanceof Node && !self::isConstExpr($value_node)) {
             // NOTE: In php itself, the same types of operations are allowed as other constant expressions (i.e. isConstExpr is the correct check).
             //
             // However, const expressions for enum cases are evaluated when compiling an enum,

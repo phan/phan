@@ -148,7 +148,6 @@ class UnionType implements Serializable, Stringable
         if ($n === 0) {
             if ($real_type_set) {
                 if (\count($real_type_set) === 1) {
-                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                     return \reset($real_type_set)->asRealUnionType();
                 }
                 return new self($real_type_set, false, $real_type_set);

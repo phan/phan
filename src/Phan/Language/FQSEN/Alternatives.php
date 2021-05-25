@@ -68,7 +68,6 @@ trait Alternatives
     /**
      * @return static
      * A FQSEN with the given alternate_id set
-     * @suppress PhanTypeMismatchDeclaredReturn (static vs FQSEN)
      */
     abstract public function withAlternateId(
         int $alternate_id
@@ -78,8 +77,6 @@ trait Alternatives
      * @return static
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
-     *
-     * @suppress PhanTypeMismatchReturn (Alternatives is a trait, cannot directly implement the FQSEN interface. Related to #800)
      */
     public function getCanonicalFQSEN()
     {
