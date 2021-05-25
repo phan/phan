@@ -377,7 +377,7 @@ class ArrayType extends IterableType
         return CallableArrayType::instance(false);
     }
 
-    public function asArrayType(): ?Type
+    public function asArrayType(): Type
     {
         return $this->withIsNullable(false);
     }

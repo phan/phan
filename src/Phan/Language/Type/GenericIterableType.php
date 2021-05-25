@@ -225,7 +225,7 @@ final class GenericIterableType extends IterableType
         return IterableType::instance($this->is_nullable);
     }
 
-    public function asArrayType(): ?Type
+    public function asArrayType(): Type
     {
         $key_type = GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
         if ($this->element_union_type->typeCount() === 1) {
@@ -489,7 +489,7 @@ final class GenericIterableType extends IterableType
         yield from $this->element_union_type->getReferencedClasses();
     }
 
-    public function asObjectType(): ?Type
+    public function asObjectType(): Type
     {
         return Type::make(
             '\\',

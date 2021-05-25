@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use AssertionError;
 use ast;
 use ast\flags;
 use ast\Node;
@@ -702,7 +703,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         $new_types = [];
         $has_null = false;
         $has_other_nullable_types = false;
-        // Add types which are not callable
+        // Add types which are not arrays
         foreach ($type_set as $type) {
             if ($type instanceof ArrayType) {
                 $has_null = $has_null || $type->isNullable();
@@ -714,7 +715,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             if ($type instanceof IterableType) {
                 // An iterable that is not an object must be an array
                 $has_null = $has_null || $type->isNullable();
-                $new_types[] = $type->asObjectType();
+                $new_type = $type->asObjectType();
+                // should always be set
+                if (!$new_type) {
+                    throw new AssertionError("Expected non-array iterable to be able to cast to object");
+                }
+                $new_types[] = $new_type;
                 continue;
             }
             $new_types[] = $type;

@@ -2059,24 +2059,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // For the strict
         foreach ($type_set as $type) {
-            // Expand it to include all parent types up the chain
-            try {
-                $individual_type_expanded = $type->asExpandedTypes($code_base);
-            } catch (RecursionDepthException $_) {
-                continue;
-            }
-
             // See if the argument can be cast to the
             // parameter
-            if (!$individual_type_expanded->canCastToUnionType(
+            if (!$type->asPHPDocUnionType()->canCastToUnionType(
                 $method_return_type,
                 $code_base
             )) {
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->isStrictTypes() && $method_return_type->hasNonNullStringType()) {
-                        if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
+                    if (!$context->isStrictTypes() && $method_return_type->hasStringType()) {
+                        if ($type->asPHPDocUnionType()->hasClassWithToStringMethod($code_base, $context)) {
                             continue;
                         }
                     }
@@ -2084,7 +2077,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $mismatch_type_set = $mismatch_type_set->withType($type);
                 if ($mismatch_expanded_types === null) {
                     // Warn about the first type
-                    $mismatch_expanded_types = $individual_type_expanded;
+                    $mismatch_expanded_types = $type;
                 }
             }
         }

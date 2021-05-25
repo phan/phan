@@ -3215,6 +3215,14 @@ class Type implements Stringable
     }
 
     /**
+     * Checks if this non-null type has any subtypes of a given class type
+     */
+    public function isSubclassOf(Type $type, Codebase $code_base): bool
+    {
+        return $this->asExpandedTypes($code_base)->hasType($type);
+    }
+
+    /**
      * @return bool
      * True if this Type is a subtype of the other type.
      */

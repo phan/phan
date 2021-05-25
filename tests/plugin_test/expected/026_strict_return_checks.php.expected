@@ -3,5 +3,5 @@ src/026_strict_return_checks.php:22 PhanPluginUseReturnValueNoopVoid The functio
 src/026_strict_return_checks.php:23 PhanPartialTypeMismatchReturn Returning $param of type int|null but expectNull() is declared to return null (int is incompatible)
 src/026_strict_return_checks.php:31 PhanPossiblyFalseTypeReturn Returning $param of type false|int but notFalse() is declared to return int (false is incompatible)
 src/026_strict_return_checks.php:39 PhanPartialTypeMismatchReturn Returning $param of type false|int but expectFalse() is declared to return false (int is incompatible)
-src/026_strict_return_checks.php:53 PhanPartialTypeMismatchReturn Returning $param of type \StrictReturnChecks|\ast\Node but partiallyValid() is declared to return \ast\Node (\StrictInterface|\StrictReturnChecks is incompatible)
+src/026_strict_return_checks.php:53 PhanPartialTypeMismatchReturn Returning $param of type \StrictReturnChecks|\ast\Node but partiallyValid() is declared to return \ast\Node (\StrictReturnChecks is incompatible)
 src/026_strict_return_checks.php:56 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \StrictReturnChecks::partiallyValid() defined at src/026_strict_return_checks.php:52
