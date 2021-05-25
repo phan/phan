@@ -859,7 +859,6 @@ final class ConfigPluginSet extends PluginV3 implements
         if ($old_plugin_for_kind) {
             /**
              * @param list<Node> $parent_node_list
-             * @suppress PhanInfiniteRecursion the old plugin is referring to a different closure
              */
             $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin): void {
                 $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);

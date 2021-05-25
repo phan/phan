@@ -23,6 +23,7 @@ final class NonNullMixedType extends MixedType
 
     /**
      * @suppress PhanPartialTypeMismatchArgument static::make() is Type, not mixed
+     * @return MixedType
      */
     public static function instance(bool $is_nullable)
     {

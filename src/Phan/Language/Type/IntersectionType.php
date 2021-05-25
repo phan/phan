@@ -117,7 +117,6 @@ final class IntersectionType extends Type
         // avoid storing an equivalent copy of an array that may already be referenced elsewhere
         // to reduce memory usage
         if ($types !== $new_types) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             return new self($new_types);
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument

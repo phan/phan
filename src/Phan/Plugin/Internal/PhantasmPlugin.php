@@ -77,7 +77,6 @@ final class PhantasmPlugin extends PluginV3 implements
                 }
                 return $result;
             } elseif ($token instanceof Token) {
-                // @phan-suppress-next-line PhanPartialTypeMismatchReturn
                 $token_text = $token->getFullText($file_contents);
                 // echo "token_text='''$token_text'''\n";
                 return $token_text;

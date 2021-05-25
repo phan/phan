@@ -83,7 +83,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @param list<ClosureDeclarationParameter> $params
      * @param UnionType $return_type
-     * @suppress PhanPluginUnknownObjectMethodCall TODO: Figure out how the type is getting overridden in PostOrderAnalysisVisitor->analyzeCallToFunctionLike
      */
     public function __construct(FileRef $file_ref, array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
     {

@@ -783,7 +783,6 @@ class ParseVisitor extends ScopeVisitor
             $node->children['attributes']
         );
 
-        // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
         foreach ($node->children['const']->children as $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected class const element to be a Node');
@@ -893,7 +892,6 @@ class ParseVisitor extends ScopeVisitor
             $node->children['attributes']
         );
 
-        // @phan-suppress-next-line PhanTypeExpectedObjectPropAccess, PhanPossiblyUndeclaredProperty
         $name = $node->children['name'];
         if (!\is_string($name)) {
             throw new AssertionError('expected enum case name to be a string');

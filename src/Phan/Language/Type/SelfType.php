@@ -109,7 +109,6 @@ final class SelfType extends StaticOrSelfType
     /**
      * @return Type
      * Either this or 'self' resolved in the given context.
-     * @suppress PhanAccessReadOnlyProperty
      */
     public function withStaticResolvedInContext(Context $context): Type
     {
@@ -120,7 +119,6 @@ final class SelfType extends StaticOrSelfType
     /**
      * @return Type
      * 'self' resolved in the given context.
-     * @suppress PhanAccessReadOnlyProperty
      *
      * TODO: Handle `(at)return OtherType<self>`
      */

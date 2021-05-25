@@ -180,7 +180,6 @@ class UnionType implements Serializable, Stringable
         if ($n === 0) {
             if ($real_type_set) {
                 if (\count($real_type_set) === 1) {
-                    // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                     return \reset($real_type_set)->asRealUnionType();
                 }
                 return new self($real_type_set, true, $real_type_set);
@@ -3369,7 +3368,6 @@ class UnionType implements Serializable, Stringable
                     $object_type = $type->withIsNullable(false)->asObjectType();
                     if ($object_type) {
                         // TODO: Convert iterable with template types to Traversable with template types
-                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                         $result[] = IntersectionType::createFromTypes([$object_type, $countable], $code_base, $context);
                     } else {
                         $result[] = $countable;
@@ -6256,7 +6254,6 @@ class UnionType implements Serializable, Stringable
         if (!$real_type_set) {
             return UnionType::empty();
         } elseif (\count($real_type_set) === 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($real_type_set)->asRealUnionType();
         }
         return new UnionType($real_type_set, true, $real_type_set);

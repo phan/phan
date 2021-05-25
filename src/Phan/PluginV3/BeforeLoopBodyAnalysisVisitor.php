@@ -15,7 +15,6 @@ namespace Phan\PluginV3;
  * - Public methods from Phan\AST\AnalysisVisitor
  *
  * TODO Parent interface is too broad
- * @phan-file-suppress PhanUnusedPublicFinalMethodParameter
  */
 abstract class BeforeLoopBodyAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {

@@ -9,7 +9,6 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of converting to HTML and the color schemes
- * @phan-file-suppress PhanAccessClassConstantInternal
  */
 final class HTMLTest extends BaseTest
 {
