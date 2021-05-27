@@ -29,6 +29,7 @@ Bug fixes:
 
 Breaking Changes:
 + Many internal methods now require a mandatory `CodeBase` instance. This will affect third party plugins.
++ Remove `--language-server-min-diagnostic-delay-ms`.
 
 May 19 2021, Phan 4.0.7 (dev)
 -----------------------

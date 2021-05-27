@@ -155,7 +155,6 @@ class CLI
         'language-server-enable-hover',
         'language-server-force-missing-pcntl',
         'language-server-hide-category',
-        'language-server-min-diagnostics-delay-ms:',
         'language-server-on-stdin',
         'language-server-require-pcntl',
         'language-server-tcp-connect:',
@@ -689,9 +688,6 @@ class CLI
                     break;  // handled earlier
                 case 'language-server-hide-category':
                     Config::setValue('language_server_hide_category_of_issues', true);
-                    break;
-                case 'language-server-min-diagnostics-delay-ms':
-                    Config::setValue('language_server_min_diagnostics_delay_ms', (float)$value);
                     break;
                 case 'native-syntax-check':
                     if ($value === '') {
@@ -1841,11 +1837,6 @@ Extended help:
 
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
-
- --language-server-min-diagnostics-delay-ms <0..1000>
-  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
-  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
-  Defaults to 0. (no delay)
 
  --native-syntax-check </path/to/php_binary>
   If php_binary (e.g. `php72`, `/usr/bin/php`) can be found in `\$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
