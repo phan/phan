@@ -812,6 +812,8 @@ class Type implements Stringable
                     return self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $type_name === 'non-empty-list');
                 case 'iterable':
                     return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                case 'class-string':
+                    return self::parseClassStringTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 case 'phan-intersection-type':
                     // phan-intersection-type<A, B, C> is an alias for A&B&C for parsing simplicity
                     return self::parseIntersectionTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $code_base, $context);
@@ -3040,13 +3042,26 @@ class Type implements Stringable
             }, $type);
         }
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
-        if ($type instanceof ObjectType
-            && !$this->isNativeType()
-        ) {
+        if ($type instanceof ObjectType) {
+            if (!$this->isPossiblyObject()) {
+                return false;
+            }
+            if ($type instanceof CallableObjectType) {
+                return $this->isCallable($code_base);
+            }
+
             return true;
         }
         if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
             return true;
+        }
+
+        if ($type instanceof FunctionLikeDeclarationType && static::class === Type::class) {
+            $function = $this->asFunctionInterfaceOrNull($code_base, new Context(), false);
+            if (!$function) {
+                return false;
+            }
+            return $function->asFunctionLikeDeclarationType()->canCastToType($type, $code_base);
         }
 
         if (!($type instanceof NativeType)) {
@@ -3132,10 +3147,27 @@ class Type implements Stringable
     {
         // TODO: Expand $this when checking against $type
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
-        if ($type instanceof ObjectType
-            && !$this->isNativeType()
-        ) {
+        if ($type instanceof ObjectType) {
+            if (!$this->isPossiblyObject()) {
+                return false;
+            }
+            if ($type instanceof CallableObjectType) {
+                return $this->isCallable($code_base);
+            }
+
             return true;
+        }
+
+        if (in_array($type, $this->asExpandedTypes($code_base)->getTypeSet(), true)) {
+            return true;
+        }
+
+        if ($type instanceof FunctionLikeDeclarationType && static::class === Type::class) {
+            $function = $this->asFunctionInterfaceOrNull($code_base, new Context(), false);
+            if (!$function) {
+                return false;
+            }
+            return $function->asFunctionLikeDeclarationType()->canCastToTypeWithoutConfig($type, $code_base);
         }
 
         if (!($type instanceof NativeType)) {

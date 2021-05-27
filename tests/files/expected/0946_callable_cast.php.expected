@@ -1,0 +1,1 @@
+%s:36 PhanTypeMismatchArgument Argument 1 ($c) is new A946() of type \A946 but \accepts_incompatible_callable() takes ?callable():?bool defined at %s:29

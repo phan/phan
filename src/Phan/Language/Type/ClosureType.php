@@ -216,6 +216,9 @@ final class ClosureType extends Type
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
+        if ($type instanceof CallableObjectType) {
+            return true;
+        }
         if ($type instanceof FunctionLikeDeclarationType) {
             return false;
         }

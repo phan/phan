@@ -1,0 +1,4 @@
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type callable-object&\Countable
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \Closure
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \A945
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type callable-object&\stdClass

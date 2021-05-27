@@ -440,6 +440,9 @@ final class IntersectionType extends Type
         })->asPHPDocUnionType();
     }
 
+    /**
+     * @suppress PhanUnusedReturnBranchWithoutSideEffects we pretend Issue::maybeEmit doesn't have side effects but it does
+     */
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         foreach ($this->type_parts as $part) {
@@ -449,6 +452,12 @@ final class IntersectionType extends Type
             }
         }
         if ($warn && $this->hasObjectWithKnownFQSEN()) {
+            foreach ($this->type_parts as $part) {
+                if ($part->isCallable($code_base)) {
+                    // don't warn about Countable&callable-object
+                    return null;
+                }
+            }
             Issue::maybeEmit(
                 $code_base,
                 $context,
