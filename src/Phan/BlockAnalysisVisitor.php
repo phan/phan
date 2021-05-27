@@ -1192,37 +1192,44 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     private function warnAboutNonTraversableType(Node $node, Type $type): void
     {
-        $fqsen = FullyQualifiedClassName::fromType($type);
-        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
-            return;
-        }
-        if (\in_array($fqsen->__toString(), ['\stdClass', '\Countable'], true)) {
-            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
-            // Countable as the only known interface is a common false positive. (`if (count(x)) {foreach...}`)
-            return;
-        }
-        $class = $this->code_base->getClassByFQSEN($fqsen);
-        $status = $class->checkCanIterateFromContext(
-            $this->code_base,
-            $this->context
-        );
-        switch ($status) {
-            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
-                $issue = Issue::TypeNoAccessiblePropertiesForeach;
-                break;
-            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
-                $issue = Issue::TypeNoPropertiesForeach;
-                break;
-            default:
-                $issue = Issue::TypeSuspiciousNonTraversableForeach;
-                break;
-        }
+        // @phan-suppress-next-line PhanPluginUseReturnValueKnown
+        $type->anyTypePartsMatchCallback(function (Type $part) use ($node, $type): bool {
+            if (!$part->isObjectWithKnownFQSEN()) {
+                return false;
+            }
+            $fqsen = FullyQualifiedClassName::fromType($part);
+            if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+                return true;
+            }
+            if (\in_array($fqsen->__toString(), ['\stdClass', '\Countable'], true)) {
+                // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
+                // Countable as the only known interface is a common false positive. (`if (count(x)) {foreach...}`)
+                return true;
+            }
+            $class = $this->code_base->getClassByFQSEN($fqsen);
+            $status = $class->checkCanIterateFromContext(
+                $this->code_base,
+                $this->context
+            );
+            switch ($status) {
+                case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
+                    $issue = Issue::TypeNoAccessiblePropertiesForeach;
+                    break;
+                case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
+                    $issue = Issue::TypeNoPropertiesForeach;
+                    break;
+                default:
+                    $issue = Issue::TypeSuspiciousNonTraversableForeach;
+                    break;
+            }
 
-        $this->emitIssue(
-            $issue,
-            $node->children['expr']->lineno ?? $node->lineno,
-            $type
-        );
+            $this->emitIssue(
+                $issue,
+                $node->children['expr']->lineno ?? $node->lineno,
+                $type
+            );
+            return true;
+        });
     }
 
     private function analyzeForeachIteration(Context $context, UnionType $expression_union_type, Node $node): Context
