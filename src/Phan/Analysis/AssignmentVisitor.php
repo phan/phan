@@ -1170,7 +1170,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->emitIssue(
                         Issue::PossiblyNullTypeMismatchProperty,
                         $node->lineno,
-                        ASTReverter::toShortString($node),
+                        $this->getAssignedExpressionString(),
                         (string)$this->right_type->withUnionType($resolved_right_type),
                         $property->getRepresentationForIssue(),
                         (string)$property_union_type,
@@ -1375,7 +1375,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->emitIssue(
             self::getStrictPropertyMismatchIssueType($mismatch_type_set),
             $node->lineno,
-            ASTReverter::toShortString($node),
+            $this->getAssignedExpressionString(),
             (string)$this->right_type,
             $property->getRepresentationForIssue(),
             (string)$property_union_type,
