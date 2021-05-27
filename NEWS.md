@@ -3,6 +3,18 @@ Phan NEWS
 ??? ?? 2021, Phan 5.0.0 (dev)
 -----------------------
 
+Phan 5 introduces support for intersection types, and improves the accuracy of type casting checks and type inference to catch more issues.
+
+This is the unstable branch for alpha releases of Phan 5. Planned/remaining work is described in https://github.com/phan/phan/issues/4413
+
+If you are migrating from Phan 4, it may be useful to set up or update a Phan [baseline file](https://github.com/phan/phan/wiki/Phan-Config-Settings#baseline_path) to catch issues such as nullable type mismatches.
+https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base has other advice on setting up suppressions.
+For example, Phan is now more consistently warning about nullable arguments (i.e. both `\X|null` and `?\X`) in a few cases where it may have not warned about passing `\X|null` to a function that expects a non-null type.
+
+If you are using plugins that are not part of Phan itself, they may have issues in Phan 5 due
+to additional required methods being added to many of Phan's methods.
+
+New Features (Analysis):
 + Support parsing intersection types in phpdoc and checking if intersection types satisfy type comparisons
 + Support inferring intersection types from conditions such as `instanceof`
 + Warn about impossible type combinations in phpdoc intersection types.
@@ -12,7 +24,10 @@ Phan NEWS
   New issue types: `PhanPossiblyUndeclaredPropertyOfClass`
 + Also check for partially invalid expressions for instance properties during assignment (`PhanPossiblyUndeclaredProperty*`)
 
-Breaking Changes
+Bug fixes:
++ Fix wrong expression in issue message for PhanPossiblyNullTypeMismatchProperty (#4427)
+
+Breaking Changes:
 + Many internal methods now require a mandatory `CodeBase` instance. This will affect third party plugins.
 
 May 19 2021, Phan 4.0.7 (dev)
