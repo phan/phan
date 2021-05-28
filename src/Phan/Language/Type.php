@@ -3067,6 +3067,9 @@ class Type implements Stringable
         if (!($type instanceof NativeType)) {
             return false;
         }
+        if ($type instanceof CallableType) {
+            return $this->isCallable($code_base);
+        }
 
         if ($type instanceof MixedType) {
             // This is not NullType; it has to be truthy to cast to non-empty-mixed.
@@ -3145,6 +3148,14 @@ class Type implements Stringable
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
+        if ($type instanceof IntersectionType) {
+            // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
+            // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
+            return self::matchesAllOtherTypeParts(function (Type $part) use($code_base): bool {
+                return $this->canCastToNonNullableTypeWithoutConfig($part, $code_base);
+            }, $type);
+        }
+
         // TODO: Expand $this when checking against $type
         // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
         if ($type instanceof ObjectType) {
@@ -3177,6 +3188,9 @@ class Type implements Stringable
         if ($type instanceof MixedType) {
             // This is not NullType; it has to be truthy to cast to non-empty-mixed.
             return \get_class($type) !== NonEmptyMixedType::class || $this->isPossiblyTruthy();
+        }
+        if ($type instanceof CallableType) {
+            return $this->isCallable($code_base);
         }
 
         // Check for allowable type conversions from object types to native types

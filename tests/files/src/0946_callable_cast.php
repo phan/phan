@@ -32,5 +32,12 @@ function accepts_incompatible_callable($c) {
     }
     return $c();
 }
+
+function accepts_any_callable(callable $c) {
+    $c([2]);
+}
+
 accepts_callable(new A946());
 accepts_incompatible_callable(new A946());
+accepts_any_callable(new A946());
+accepts_any_callable(new ArrayObject());
