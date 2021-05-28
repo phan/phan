@@ -609,6 +609,13 @@ final class TypeTest extends CodeBaseAwareTest
             [true, 'array{foo:ArrayObject}', 'array{foo:Traversable}'],
             [true, 'array{foo:ArrayObject}', 'array{}'],
             [false, 'array{foo:ArrayObject}', 'array{foo:SplObjectStorage}'],
+            [true, 'callable-object', 'object'],
+            [true, 'callable-object', 'mixed'],
+            [true, 'Closure(int):string', 'callable-object'],
+            [true, 'Closure', 'callable-object'],
+            [true, 'stdClass', 'object'],
+            [true, 'Closure', 'object'],
+            [false, 'stdClass', 'callable-object'],
         ];
     }
 

@@ -764,7 +764,7 @@ final class UnionTypeTest extends BaseTest
 
     public function testIntersectionTypeExplicit(): void
     {
-        $type = self::makePHPDocUnionType('and<MyClass, MyInterfaceUTT>');
+        $type = self::makePHPDocUnionType('phan-intersection-type<MyClass, MyInterfaceUTT>');
         $this->assertSame(1, $type->typeCount());
         $this->assertSame('\MyClass&\MyInterfaceUTT', (string)$type);
         $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[0]);

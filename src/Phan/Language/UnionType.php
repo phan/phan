@@ -585,12 +585,12 @@ class UnionType implements Serializable, Stringable
                 continue;
             }
             if ($intersection) {
-                $union[] = count($intersection) >= 2 ? 'and<' . implode(',', $intersection) . '>' : $intersection[0];
+                $union[] = count($intersection) >= 2 ? 'phan-intersection-type<' . implode(',', $intersection) . '>' : $intersection[0];
             }
             $intersection = [$part->type];
         }
         if ($intersection) {
-            $union[] = count($intersection) >= 2 ? 'and<' . implode(',', $intersection) . '>' : $intersection[0];
+            $union[] = count($intersection) >= 2 ? 'phan-intersection-type<' . implode(',', $intersection) . '>' : $intersection[0];
         }
         return $union;
     }

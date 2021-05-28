@@ -401,11 +401,6 @@ Extended help:
  --language-server-require-pcntl
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
- --language-server-min-diagnostics-delay-ms <0..1000>
-  Sets a minimum delay between publishing diagnostics (i.e. Phan issues) to the language client.
-  This can be increased to work around race conditions in clients processing Phan issues (e.g. if your editor/IDE shows outdated diagnostics)
-  Defaults to 0. (no delay)
-
  --native-syntax-check </path/to/php_binary>
   If php_binary (e.g. `php72`, `/usr/bin/php`) can be found in `$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
   and adds `php_binary` (resolved using `$PATH`) to the `php_native_syntax_check_binaries` array of `plugin_config`

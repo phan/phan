@@ -114,6 +114,14 @@ final class CallableObjectType extends ObjectType
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         // TODO: Filter out final classes, etc.
-        return $other->isPossiblyObject();
+        return $other->isPossiblyObject() && !$other->isDefiniteNonCallableType($code_base);
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        return $type instanceof CallableType || $type instanceof ObjectType || $type instanceof MixedType;
     }
 }

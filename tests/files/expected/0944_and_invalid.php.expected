@@ -1,0 +1,2 @@
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type non-empty-list<mixed>
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type mixed

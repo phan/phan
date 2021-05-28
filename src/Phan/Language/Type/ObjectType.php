@@ -40,7 +40,7 @@ class ObjectType extends NativeType
     /** @unused-param $code_base */
     protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof ObjectType || $type instanceof MixedType;
+        return \get_class($type) === ObjectType::class || $type instanceof MixedType;
     }
 
     /**

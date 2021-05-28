@@ -43,7 +43,6 @@ use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
@@ -351,9 +350,6 @@ class ParseVisitor extends ScopeVisitor
                     $this->addPromotedConstructorPropertyFromParam($class, $method, $parameter, $node->children['params']->children[$i]);
                 }
             }
-        } elseif ('__invoke' === $method_name_lower) {
-            // TODO: More precise callable shape
-            $class->addAdditionalType(CallableObjectType::instance(false));
         } elseif ('__tostring' === $method_name_lower
             && !$this->context->isStrictTypes()
         ) {

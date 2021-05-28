@@ -860,39 +860,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (count($diagnostics) === 0) {
             return;
         }
-        self::delayBeforePublishDiagnostics();
         foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
             $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
-        }
-        self::delayAfterPublishDiagnostics();
-    }
-
-    /**
-     * @var float the timestamp when the last group of calls to publishDiagnostics occurred.
-     * This is used for working around issues with language clients that have race conditions processing diagnostics.
-     */
-    private static $last_publish_timestamp = 0;
-
-    private static function delayBeforePublishDiagnostics(): void
-    {
-        $delay = Config::getMinDiagnosticsDelayMs();
-        if ($delay > 0) {
-            $elapsed_ms = 1000 * (\microtime(true) - self::$last_publish_timestamp);
-            $remaining_ms = ($delay - $elapsed_ms);
-            if ($remaining_ms > 0) {
-                \usleep((int)($remaining_ms * 1000));
-            }
-            self::$last_publish_timestamp = \microtime(true);
-        }
-    }
-
-    private static function delayAfterPublishDiagnostics(): void
-    {
-        $delay = Config::getMinDiagnosticsDelayMs();
-        if ($delay > 0) {
-            // Sleep for half of the interval so that when analysis starts,
-            // it's acting on a newer version of the file's contents.
-            \usleep((int)($delay * 1000 / 2));
         }
     }
 

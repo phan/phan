@@ -89,4 +89,12 @@ final class CallableType extends NativeType implements CallableInterface
             || $other instanceof IterableType
             || parent::canCastToDeclaredType($code_base, $context, $other);
     }
+
+    public function isSubtypeOf(Type $type, CodeBase $code_base): bool
+    {
+        if ($type->isCallable($code_base)) {
+            return true;
+        }
+        return parent::isSubtypeOf($type, $code_base);
+    }
 }
