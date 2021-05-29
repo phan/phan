@@ -1181,6 +1181,22 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
             return true;
         }
+        if ($type instanceof GenericArrayType) {
+            if (!$this->canCastToGenericArrayKeys($type)) {
+                return false;
+            }
+            $element_type = $type->iterableValueUnionType();
+            foreach ($this->field_types as $field_type) {
+                if (!$field_type->withIsPossiblyUndefined(false)->canCastToUnionType($element_type, $code_base)) {
+                    return false;
+                }
+            }
+            if ($type->isDefinitelyNonEmptyArray() && !$this->isDefinitelyNonEmptyArray()) {
+                return false;
+            }
+            return true;
+
+        }
 
         if ($type instanceof MixedType) {
             // e.g. ?int is a subtype of mixed, but ?int is not a subtype of non-empty-mixed/non-null-mixed

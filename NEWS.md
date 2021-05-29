@@ -19,7 +19,8 @@ New Features (Analysis):
 + Support inferring intersection types from conditions such as `instanceof`
 + Warn about impossible type combinations in phpdoc intersection types.
   New issue types: `PhanImpossibleIntersectionType`
-+ Improve type checking precision
++ Improve type checking precision for whether a type can cast to another type.
++ Improve precision of checking if a type is a subtype of another type.
 + Split out warnings about possibly invalid types for property access (non-object) and possibly invalid classes for property access
   New issue types: `PhanPossiblyUndeclaredPropertyOfClass`
 + Also check for partially invalid expressions for instance properties during assignment (`PhanPossiblyUndeclaredProperty*`)

@@ -914,12 +914,23 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
+        if ($type instanceof ArrayShapeType) {
+            return false;
+        }
         // TODO more specific
         if (!$this->canCastToType($type, $code_base)) {
             return false;
         }
         // TODO: Also account for iterables
+        // TODO: Check if key types are compatible?
         if ($type instanceof GenericArrayType) {
+            // Allow non-empty-array to cast to array.
+            // Allow non-empty-list or non-empty-associative-array to cast to non-empty-array. and so on.
+            if (!$this instanceof $type) {
+                if (!($type instanceof NonEmptyGenericArrayType && $this->isDefinitelyNonEmptyArray())) {
+                    return false;
+                }
+            }
             if (!$this->element_type->isSubtypeOf($type->element_type, $code_base)) {
                 return false;
             }
