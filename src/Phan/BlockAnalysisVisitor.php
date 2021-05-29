@@ -1281,6 +1281,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Analyze an expression such as `[$a] = $values` or `list('key' => $v) = $values` for backwards compatibility issues
+     * Precondition: minimum_target_php_version_id >-= 70100
      */
     public static function analyzeArrayAssignBackwardsCompatibility(CodeBase $code_base, Context $context, Node $node): void
     {

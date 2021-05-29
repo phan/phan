@@ -750,11 +750,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $node->children['class']
         );
         if (!isset($node->children['var'])) {
-            $this->emitIssue(
-                Issue::CompatibleNonCapturingCatch,
-                $node->lineno,
-                ASTReverter::toShortString($node->children['class'])
-            );
+            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+                $this->emitIssue(
+                    Issue::CompatibleNonCapturingCatch,
+                    $node->lineno,
+                    ASTReverter::toShortString($node->children['class'])
+                );
+            }
         }
 
         try {
