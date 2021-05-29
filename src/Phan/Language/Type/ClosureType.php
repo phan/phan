@@ -103,6 +103,9 @@ final class ClosureType extends Type
      */
     protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
         if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
@@ -118,6 +121,9 @@ final class ClosureType extends Type
 
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
         if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
@@ -138,6 +144,9 @@ final class ClosureType extends Type
      */
     protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
         if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
@@ -216,8 +225,11 @@ final class ClosureType extends Type
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
-        if ($type instanceof CallableObjectType) {
-            return true;
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
+        if ($type->isDefiniteNonCallableType($code_base)) {
+            return false;
         }
         if ($type instanceof FunctionLikeDeclarationType) {
             return false;

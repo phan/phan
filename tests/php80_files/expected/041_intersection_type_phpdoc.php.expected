@@ -1,0 +1,7 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type callable-object
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type callable-array&string[]
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type callable-string
+%s:16 PhanUnreferencedPublicMethod Possibly zero references to public method \A41::method()
+%s:22 PhanTypeMismatchArgumentProbablyReal Argument 1 ($a) is [A41::class,'method'] of type array{0:'A41',1:'method'} but \test41() takes callable-object (no real type) defined at %s:8 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:22 PhanTypeMismatchArgumentProbablyReal Argument 2 ($b) is 'A41::method' of type 'A41::method' but \test41() takes callable-array&string[] (no real type) defined at %s:8 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:22 PhanTypeMismatchArgumentProbablyReal Argument 3 ($c) is (function) of type Closure():void but \test41() takes callable-string (no real type) defined at %s:8 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

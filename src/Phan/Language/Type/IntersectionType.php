@@ -131,7 +131,7 @@ final class IntersectionType extends Type
      * @param non-empty-list<Type|UnionType> $types
      * @return non-empty-list<Type>
      */
-    public static function flattenTypes(array $types): array
+    private static function flattenTypes(array $types): array
     {
         $new_types = [];
         foreach ($types as $type) {
@@ -141,6 +141,9 @@ final class IntersectionType extends Type
                     throw new AssertionError("Expected union type_parts to contain a single type");
                 }
                 $type = reset($type_set);
+                if (!$type instanceof Type) {
+                    throw new AssertionError("Impossible non-type in " . __METHOD__);
+                }
             }
             foreach ($type instanceof IntersectionType ? $type->type_parts : [$type] as $part) {
                 // TODO: if ($type instanceof IntersectionType)
@@ -152,8 +155,28 @@ final class IntersectionType extends Type
         if (!$new_types) {
             throw new AssertionError("Did not expect empty list of types for intersection type");
         }
+        foreach ($new_types as $i => $type) {
+            // Convert callable&object to callable-object, etc.
+            if ($type instanceof CallableType) {
+                foreach ($new_types as $j => $other) {
+                    if ($i === $j) {
+                        continue;
+                    }
+                    if ($other->isObject()) {
+                        $new_types[$i] = CallableObjectType::instance($type->isNullable());
+                        continue 2;
+                    } elseif ($other instanceof StringType) {
+                        $new_types[$i] = CallableStringType::instance($type->isNullable());
+                        continue 2;
+                    } elseif ($other instanceof ArrayType) {
+                        $new_types[$i] = CallableArrayType::instance($type->isNullable());
+                        continue 2;
+                    }
+                }
+            }
+        }
         // @phan-suppress-next-line PhanPartialTypeMismatchReturn
-        return $new_types;
+        return \array_values($new_types);
     }
 
     /**

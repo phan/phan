@@ -914,7 +914,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool
     {
-        if ($type instanceof ArrayShapeType) {
+        if ($type instanceof ArrayShapeType || $type instanceof CallableArrayType) {
             return false;
         }
         // TODO more specific
