@@ -61,9 +61,17 @@ class FloatType extends ScalarType
     {
         // Allow casting scalars to other scalars, but not to null.
         if ($other instanceof ScalarType) {
-            return $other instanceof FloatType || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
+            return $other instanceof FloatType || $other instanceof ScalarRawType || (!$context->isStrictTypes() && parent::canCastToDeclaredType($code_base, $context, $other));
         }
         return $other instanceof TemplateType ||
             $other instanceof MixedType;
+    }
+
+    /**
+     * @unused-param $code_base
+     */
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        return \get_class($type) === self::class || $type instanceof ScalarRawType || $type instanceof MixedType;
     }
 }

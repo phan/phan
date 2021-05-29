@@ -66,6 +66,7 @@ final class NonZeroIntType extends IntType
                     }
                     return true;
                 case 'non-zero-int':
+                case 'scalar':
                     return true;
                 case 'string':
                     if ($type instanceof LiteralStringType) {
@@ -118,6 +119,9 @@ final class NonZeroIntType extends IntType
                         return (bool)$type->getValue();
                     }
                     return true;
+                case 'non-zero-int':
+                case 'scalar':
+                    return true;
                 default:
                     return false;
             }
@@ -135,11 +139,11 @@ final class NonZeroIntType extends IntType
         if ($type instanceof ScalarType) {
             if ($type instanceof IntType) {
                 if ($type instanceof LiteralIntType) {
-                    return (bool)$type->getValue();
+                    return false;
                 }
                 return true;
             }
-            return false;
+            return $type instanceof ScalarRawType;
         }
 
         return parent::canCastToNonNullableType($type, $code_base);
