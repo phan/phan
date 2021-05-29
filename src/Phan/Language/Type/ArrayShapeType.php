@@ -389,7 +389,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * Check if the keys of this array shape can cast to the keys of the generic array type $type
      */
-    public function canCastToGenericArrayKeys(GenericArrayType $type, bool $ignore_config = false): bool
+    public function canCastToGenericArrayKeys(GenericArrayType $type, bool $ignore_config = false, bool $use_associative_heuristic = true): bool
     {
         if ($type instanceof ListType) {
             $i = 0;
@@ -404,11 +404,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     return false;
                 }
             }
-        } elseif ($type instanceof AssociativeArrayType) {
-            if (!$this->canCastToAssociativeArray()) {
-                return false;
-            }
         } else {
+            if ($use_associative_heuristic && $type instanceof AssociativeArrayType) {
+                if (!$this->canCastToAssociativeArray()) {
+                    return false;
+                }
+            }
             if (($this->getKeyType() & ($type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && ($ignore_config || !Config::getValue('scalar_array_key_cast'))) {
                 // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
                 // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
@@ -1182,7 +1183,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return true;
         }
         if ($type instanceof GenericArrayType) {
-            if (!$this->canCastToGenericArrayKeys($type)) {
+            // perform regular checks but allow array{0:string} to cast to associative-array (excluding associative-array<string, ...>)
+            if (!$this->canCastToGenericArrayKeys($type, false, false)) {
                 return false;
             }
             $element_type = $type->iterableValueUnionType();
