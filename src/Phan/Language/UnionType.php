@@ -31,8 +31,8 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\IntersectionType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -576,7 +576,8 @@ class UnionType implements Serializable, Stringable
      * @param list<TypePart> $parts
      * @return list<string>
      */
-    private static function convertTypePartsToParseableStrings(array $parts): array {
+    private static function convertTypePartsToParseableStrings(array $parts): array
+    {
         $union = [];
         $intersection = [];
         foreach ($parts as $part) {
@@ -2081,7 +2082,7 @@ class UnionType implements Serializable, Stringable
      */
     public function hasIterable(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+        return $this->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
             return $type->isIterable($code_base);
         });
     }
@@ -2295,7 +2296,8 @@ class UnionType implements Serializable, Stringable
      * (intended to ignore any permissive config settings, such as null_casts_as_any_type)
      * i.e. int->float is allowed  while float->int is not.
      */
-    public function canCastToUnionTypeWithoutConfig(UnionType $target, CodeBase $code_base): bool {
+    public function canCastToUnionTypeWithoutConfig(UnionType $target, CodeBase $code_base): bool
+    {
         // Fast-track most common cases first
         $type_set = $this->type_set;
         // If either type is unknown, we can't call it
@@ -2426,7 +2428,8 @@ class UnionType implements Serializable, Stringable
      *
      * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
-    public function hasSubtypeOf(UnionType $target, CodeBase $code_base): bool {
+    public function hasSubtypeOf(UnionType $target, CodeBase $code_base): bool
+    {
         // Fast-track most common cases first
         $type_set = $this->type_set;
         // If either type is unknown, we can't call it
@@ -2663,7 +2666,7 @@ class UnionType implements Serializable, Stringable
             if ($this->isNull()) {
                 return false;
             }
-        } else if ($other->isNull()) {
+        } elseif ($other->isNull()) {
             return false;
         }
         $this_nonnull = $this->withIsNullable(false);
@@ -2805,7 +2808,7 @@ class UnionType implements Serializable, Stringable
      */
     public function hasArrayAccess(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+        return $this->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
             return $type->isArrayAccess($code_base);
         });
     }
@@ -3630,7 +3633,7 @@ class UnionType implements Serializable, Stringable
      */
     public function hasCallableType(CodeBase $code_base): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type) use($code_base): bool {
+        return $this->hasTypeMatchingCallback(static function (Type $type) use ($code_base): bool {
             return $type->isCallable($code_base);
         });
     }
@@ -3650,7 +3653,7 @@ class UnionType implements Serializable, Stringable
      */
     public function isExclusivelyCallable(CodeBase $code_base): bool
     {
-        return $this->allTypesMatchCallback(static function (Type $type) use($code_base): bool {
+        return $this->allTypesMatchCallback(static function (Type $type) use ($code_base): bool {
             return $type->isCallable($code_base);
         });
     }

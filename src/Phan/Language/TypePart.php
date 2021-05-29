@@ -8,7 +8,8 @@ namespace Phan\Language;
  * A part of a type extracted from phpdoc
  * @phan-pure
  */
-class TypePart {
+class TypePart
+{
     /** @var string the type string */
     public $type;
     /** @var string the separator before the type string */

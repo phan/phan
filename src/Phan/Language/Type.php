@@ -43,8 +43,8 @@ use Phan\Language\Type\GenericArrayTemplateKeyType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\IntersectionType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -2305,7 +2305,7 @@ class Type implements Stringable
     public function isArrayAccess(CodeBase $code_base): bool
     {
         foreach ($this->asExpandedTypes($code_base)->getTypeSet() as $part) {
-            if (strcasecmp($part->name,'ArrayAccess') === 0 && $part->namespace === '\\') {
+            if (strcasecmp($part->name, 'ArrayAccess') === 0 && $part->namespace === '\\') {
                 return true;
             }
         }
@@ -3037,7 +3037,7 @@ class Type implements Stringable
         if ($type instanceof IntersectionType) {
             // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
             // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
-            return self::matchesAllOtherTypeParts(function (Type $part) use($code_base): bool {
+            return self::matchesAllOtherTypeParts(function (Type $part) use ($code_base): bool {
                 return $this->canCastToNonNullableType($part, $code_base);
             }, $type);
         }
@@ -3151,7 +3151,7 @@ class Type implements Stringable
         if ($type instanceof IntersectionType) {
             // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
             // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
-            return self::matchesAllOtherTypeParts(function (Type $part) use($code_base): bool {
+            return self::matchesAllOtherTypeParts(function (Type $part) use ($code_base): bool {
                 return $this->canCastToNonNullableTypeWithoutConfig($part, $code_base);
             }, $type);
         }

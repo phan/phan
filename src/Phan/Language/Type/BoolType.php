@@ -113,7 +113,6 @@ final class BoolType extends ScalarType
     {
         return $type instanceof BoolType || $type instanceof ScalarRawType || $type instanceof MixedType;
     }
-
 }
 
 // Temporary hack to load FalseType and TrueType before BoolType::instance() is called

@@ -16,10 +16,10 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 
-use function implode;
-use function in_array;
 use function count;
 use function get_debug_type;
+use function implode;
+use function in_array;
 use function reset;
 
 /**
@@ -64,7 +64,8 @@ final class IntersectionType extends Type
      * @return IntersectionType
      * @override
      */
-    public function withIsNullable(bool $is_nullable): Type {
+    public function withIsNullable(bool $is_nullable): Type
+    {
         if ($this->is_nullable === $is_nullable) {
             return $this;
         }
@@ -294,7 +295,7 @@ final class IntersectionType extends Type
     public function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base): bool
     {
         // TODO: Handle intersection -> intersection cast
-        return $this->anyTypePartsMatchOtherTypePartsCallback(static function (Type $part, Type $other_part) use($code_base): bool {
+        return $this->anyTypePartsMatchOtherTypePartsCallback(static function (Type $part, Type $other_part) use ($code_base): bool {
             return $part->canCastToNonNullableTypeHandlingTemplates($other_part, $code_base);
         }, $type);
     }
