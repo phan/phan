@@ -396,7 +396,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -411,7 +411,8 @@ final class Builder
                     $this->maybeParseVarLine($i, $line);
                     break;
                 case 'template':
-                    $this->maybeParseTemplateType($i, $line);
+                case 'template-covariant': // XXX Phan does not actually support @template-covariant semantics, it is just better than treating `T` as a classlike name.
+                    $this->maybeParseTemplateType($i, $line, $type);
                     break;
                 case 'inherits':
                 case 'extends':
@@ -583,11 +584,11 @@ final class Builder
         }
     }
 
-    private function maybeParseTemplateType(int $i, string $line): void
+    private function maybeParseTemplateType(int $i, string $line, string $tag_name): void
     {
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            if ($this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i)) {
+            if ($this->checkCompatible("@$tag_name", Comment::HAS_TEMPLATE_ANNOTATION, $i)) {
                 $template_type = $this->templateTypeFromCommentLine($line);
                 if ($template_type) {
                     $this->template_type_list[$template_type->getName()] = $template_type;
@@ -855,7 +856,7 @@ final class Builder
                 // Do nothing, see BuiltinSuppressionPlugin
                 return;
             case 'phan-template':
-                $this->maybeParseTemplateType($i, $line);
+                $this->maybeParseTemplateType($i, $line, $type);
                 return;
             case 'phan-inherits':
             case 'phan-extends':
@@ -1079,7 +1080,7 @@ final class Builder
         string $line
     ): ?TemplateType {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
-        if (\preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?template(?:-covariant)?\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return TemplateType::instanceForId($template_type_identifier, false);
         }

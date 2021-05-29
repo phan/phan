@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @template T
+ * @template-covariant T (NOTE: Phan is currently treating (at)template-covariant as an alias of (at)template)
  */
 class CA {
     /** @var T */

@@ -23,6 +23,7 @@ New Features (Analysis):
 + Split out warnings about possibly invalid types for property access (non-object) and possibly invalid classes for property access
   New issue types: `PhanPossiblyUndeclaredPropertyOfClass`
 + Also check for partially invalid expressions for instance properties during assignment (`PhanPossiblyUndeclaredProperty*`)
++ Treat `@template-covariant T` as an alias of `@template T` - Previously, that tag was not parsed and `T` would be treated like a (probably undeclared) classlike name. (#4432)
 
 Bug fixes:
 + Fix wrong expression in issue message for PhanPossiblyNullTypeMismatchProperty (#4427)
