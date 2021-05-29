@@ -675,8 +675,6 @@ class Method extends ClassElement implements FunctionInterface
 
         // If the type contains 'static', add this method's class
         // to the return type.
-        //
-        //
         $scope = new ClassScope(new GlobalScope(), $this->getFQSEN()->getFullyQualifiedClassName(), 0);
         $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
         if ($new_union_type !== $union_type) {

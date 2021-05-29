@@ -18,8 +18,8 @@ use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\IntersectionType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
@@ -863,5 +863,4 @@ final class UnionTypeTest extends BaseTest
         $to_type = self::makePHPDocUnionType($to_type_string);
         $this->assertSame($expected, $from_type->isStrictSubtypeOf(self::$code_base, $to_type), "unexpected isStrictSubtypeOf result for checking if $from_type_string isStrictSubtypeOf $to_type_string");
     }
-
 }

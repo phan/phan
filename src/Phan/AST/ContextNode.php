@@ -859,7 +859,8 @@ class ContextNode
     /**
      * @throws IssueException
      */
-    private function isDefinitelyPossiblyUndeclaredMethod(Node $node, string $method_name, bool $is_direct): bool {
+    private function isDefinitelyPossiblyUndeclaredMethod(Node $node, string $method_name, bool $is_direct): bool
+    {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,

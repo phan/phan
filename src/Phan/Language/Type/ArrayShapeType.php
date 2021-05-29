@@ -1195,7 +1195,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 return false;
             }
             return true;
-
         }
 
         if ($type instanceof MixedType) {
