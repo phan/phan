@@ -4158,6 +4158,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return null;
     }
 
+    // Precondition: minimum_target_php_version_id < 70100
     private function analyzeNegativeStringOffsetCompatibility(Node $node, UnionType $dim_type): void
     {
         $dim_value = $dim_type->asSingleScalarValueOrNull();
