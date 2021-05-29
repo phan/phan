@@ -8,9 +8,9 @@
  */
 function test42($value, $other, object $x) {
     $value($x); // should not warn
-    $value(1) // should warn
-    $value(new stdClass()) // should warn
-    $value($other) // should warn
+    $value(1); // should warn
+    $value(new stdClass()); // should warn
+    $value($other); // should warn
     '@phan-debug-var $other';
 }
 test42(
