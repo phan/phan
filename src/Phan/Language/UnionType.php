@@ -6354,7 +6354,7 @@ class UnionType implements Serializable, Stringable
     {
         $result = false;
         foreach ($this->type_set as $type) {
-            if ($type instanceof IntersectionType && $type->checkImpossibleCombination($code_base, $context)) {
+            if ($type->checkImpossibleCombination($code_base, $context)) {
                 $result = true;
             }
         }

@@ -1,0 +1,9 @@
+%s:9 PhanImpossibleIntersectionType Intersection type \stdClass&\ArrayObject contains part \stdClass which cannot cast to the declared type \ArrayObject
+%s:9 PhanImpossibleIntersectionType Intersection type int&null contains part int which cannot cast to the declared type null
+%s:9 PhanImpossibleIntersectionType Intersection type int&string contains part int which cannot cast to the declared type string
+%s:11 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is 1 of type 1 but Closure(int&string):\stdClass&\ArrayObject takes int&string (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:12 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but Closure(int&string):\stdClass&\ArrayObject takes int&string (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type int&null
+%s:13 PhanTypeMismatchArgument Argument 1 ($p0) is $other of type (int&null)|int|null but Closure(int&string):\stdClass&\ArrayObject takes int&string defined at %s:9
+%s:17 PhanTypeMismatchArgument Argument 1 ($value) is (function) of type Closure(int):\stdClass but \test42() takes Closure(int&string):\stdClass&\ArrayObject defined at %s:9
+%s:20 PhanTypeMismatchArgumentProbablyReal Argument 2 ($other) is null of type null but \test42() takes int&null (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
