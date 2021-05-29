@@ -199,7 +199,7 @@ final class IntersectionType extends Type
                 if ($j === $i) {
                     continue;
                 }
-                if ($context && !$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, (clone $context)->withStrictTypes(1), $other->asPHPDocUnionType())) {
+                if (!$type->asPHPDocUnionType()->canCastToDeclaredType($code_base, (clone $context)->withStrictTypes(1), $other->asPHPDocUnionType())) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -211,6 +211,11 @@ final class IntersectionType extends Type
                     );
                     return true;
                 }
+            }
+        }
+        foreach ($this->type_parts as $part) {
+            if ($part->checkImpossibleCombination($code_base, $context)) {
+                return true;
             }
         }
         return false;

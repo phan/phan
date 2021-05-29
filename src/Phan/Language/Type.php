@@ -4230,6 +4230,22 @@ class Type implements Stringable
     }
 
     /**
+     * Emit an issue and return true if this type contains an impossible intersection type
+     */
+    public function checkImpossibleCombination(CodeBase $code_base, Context $context): bool
+    {
+        $result = false;
+        foreach ($this->getTypesRecursively() as $part) {
+            if ($part instanceof IntersectionType) {
+                if ($part->checkImpossibleCombination($code_base, $context)) {
+                    $result = true;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Returns true if this is referring to the throwable interface exactly
      */
     public function isThrowableInterface(): bool
