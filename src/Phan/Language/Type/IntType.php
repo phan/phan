@@ -76,6 +76,12 @@ class IntType extends ScalarType
     {
         return NonZeroIntType::instance(false);
     }
+
+    /**
+     * @unused-param $code_base
+     */
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        return \get_class($type) === self::class || $type instanceof ScalarRawType || $type instanceof MixedType;
+    }
 }
-\class_exists(NonZeroIntType::class);  // Must load this before LiteralIntType
-\class_exists(LiteralIntType::class);

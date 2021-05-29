@@ -1,11 +1,14 @@
 src/064_callable_class_string.php:12 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type callable-string but \intdiv() takes int
 src/064_callable_class_string.php:17 PhanUndeclaredFunctionInCallable Call to undeclared function stdClass in callable
 src/064_callable_class_string.php:18 PhanEmptyFQSENInCallable Possible call to a function '' with an empty FQSEN.
+src/064_callable_class_string.php:18 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '' of type '' but \test_callable_string() takes callable-string (no real type) defined at src/064_callable_class_string.php:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 src/064_callable_class_string.php:20 PhanInvalidFQSENInClasslike Possible use of a classlike '\invalid class name' with an invalid FQSEN.
 src/064_callable_class_string.php:21 PhanUndeclaredClassReference Reference to undeclared class \Some\MissingClass
 src/064_callable_class_string.php:23 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.
 src/064_callable_class_string.php:25 PhanEmptyFQSENInCallable Possible call to a function '' with an empty FQSEN.
+src/064_callable_class_string.php:25 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is '' of type '' but \ReflectionFunction::__construct() takes \Closure|callable-string
 src/064_callable_class_string.php:27 PhanInvalidFQSENInCallable Possible call to a function 'an invalid function name' with an invalid FQSEN.
+src/064_callable_class_string.php:27 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is 'an invalid function name' of type 'an invalid function name' but \ReflectionFunction::__construct() takes \Closure|callable-string
 src/064_callable_class_string.php:28 PhanTypeMismatchArgument Argument 1 ($x) is 2 of type 2 but \test_callable_string() takes callable-string defined at src/064_callable_class_string.php:7
 src/064_callable_class_string.php:38 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type class-string but \intdiv() takes int
 src/064_callable_class_string.php:42 PhanUndeclaredClassReference Reference to undeclared class \strlen

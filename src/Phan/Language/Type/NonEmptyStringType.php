@@ -127,7 +127,7 @@ final class NonEmptyStringType extends StringType
         if ($type instanceof ScalarType) {
             if ($type instanceof StringType) {
                 if ($type instanceof LiteralStringType) {
-                    return (bool)$type->getValue();
+                    return false;
                 }
                 return true;
             }

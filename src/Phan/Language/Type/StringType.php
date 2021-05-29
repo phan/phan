@@ -39,7 +39,7 @@ class StringType extends ScalarType
      */
     protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return \get_class($type) === self::class || $type instanceof MixedType;
+        return \get_class($type) === self::class || $type instanceof ScalarRawType || $type instanceof MixedType;
     }
 
     /** @override */
