@@ -27,6 +27,9 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
      */
     public function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
+        if (!$type->isPossiblyObject() || $type->isDefiniteNonCallableType($code_base)) {
+            return false;
+        }
         if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 return $this->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
@@ -39,6 +42,9 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
 
     public function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
         if ($type->isCallable($code_base)) {
             if ($type instanceof FunctionLikeDeclarationType) {
                 return $this->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
@@ -68,6 +74,9 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
         if (!$other->isPossiblyObject()) {
             return false;
         }
+        if ($other->isDefiniteNonCallableType($code_base)) {
+            return false;
+        }
         if ($other->hasObjectWithKnownFQSEN()) {
             // Probably overkill to check for intersection types for closure
             return $other->anyTypePartsMatchCallback(static function (Type $part): bool {
@@ -75,5 +84,13 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
             });
         }
         return true;
+    }
+
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        if (!$type->isPossiblyObject()) {
+            return false;
+        }
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 }

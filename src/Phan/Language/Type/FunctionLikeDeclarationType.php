@@ -1102,6 +1102,14 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return [];
     }
 
+    public function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        if ($type->isDefiniteNonCallableType($code_base)) {
+            return false;
+        }
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////
