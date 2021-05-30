@@ -431,7 +431,7 @@ class ArrayType extends IterableType
         return $this;
     }
 
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
@@ -439,7 +439,7 @@ class ArrayType extends IterableType
                 return false;
             }
         }
-        return parent::weaklyOverlaps($other);
+        return parent::weaklyOverlaps($other, $code_base);
     }
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool

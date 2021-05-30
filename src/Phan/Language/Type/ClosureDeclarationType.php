@@ -77,6 +77,9 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
         if ($other->isDefiniteNonCallableType($code_base)) {
             return false;
         }
+        if ($other instanceof IterableType) {
+            return false;
+        }
         if ($other->hasObjectWithKnownFQSEN()) {
             // Probably overkill to check for intersection types for closure
             return $other->anyTypePartsMatchCallback(static function (Type $part): bool {

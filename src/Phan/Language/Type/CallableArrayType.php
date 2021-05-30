@@ -27,11 +27,6 @@ class CallableArrayType extends ArrayType
         return !$this->is_nullable;
     }
 
-    public function isPossiblyObject(): bool
-    {
-        return false;  // Overrides IterableType returning true
-    }
-
     public function isPossiblyTruthy(): bool
     {
         return true;

@@ -2211,6 +2211,9 @@ class Type implements Stringable
         if (!$this->isPossiblyObject()) {
             return false;
         }
+        if ($other instanceof IterableType && !$this->isPossiblyIterable($code_base)) {
+            return false;
+        }
         // Check if either side is something we don't know about, e.g. `object`, `iterable`, etc.
         if (!$this->isObjectWithKnownFQSEN()) {
             return true;
@@ -2251,7 +2254,7 @@ class Type implements Stringable
 
     /**
      * @return bool
-     * True if this type is iterable. Does not check ancestor types.
+     * True if this type is iterable. Checks ancestor types.
      * Called by UnionType->hasTraversable()
      */
     public function isIterable(CodeBase $code_base): bool
@@ -2262,6 +2265,30 @@ class Type implements Stringable
             }
         }
         return false;  // Overridden in subclass IterableType (with subclass ArrayType)
+    }
+
+    /**
+     * @return bool
+     * True if this type is possibly iterable. Checks ancestor types and checks for final types.
+     * Called by UnionType->hasTraversable()
+     */
+    public function isPossiblyIterable(CodeBase $code_base): bool
+    {
+        if ($this->isIterable($code_base)) {
+            return true;
+        }
+        if (!$this->isPossiblyObject()) {
+            return false;
+        }
+        if (!$this->isObjectWithKnownFQSEN()) {
+            return true;
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return true;
+        }
+        $class = $code_base->getClassByFQSEN($fqsen);
+        return !$class->isFinal();
     }
 
     /**
@@ -4197,10 +4224,11 @@ class Type implements Stringable
      * Overridden in subclasses
      * @internal
      */
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         // TODO: Finish implementing, check if types are compatible when both are non-null, check for object vs non-object
-        return $this->isPossiblyFalsey() && $other->isPossiblyFalsey();
+        return ($this->isPossiblyFalsey() && $other->isPossiblyFalsey()) ||
+            $this->canCastToDeclaredType($code_base, new Context(), $other);
     }
 
     /**

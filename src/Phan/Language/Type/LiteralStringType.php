@@ -447,7 +447,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return StringType::instance($this->is_nullable);
     }
 
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
@@ -457,7 +457,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             // Allow 0 == null but not 1 == null
             return $this->value ? ($this->is_nullable || $other->isPossiblyTruthy()) : $other->isPossiblyFalsey();
         }
-        return parent::weaklyOverlaps($other);
+        return parent::weaklyOverlaps($other, $code_base);
     }
 
     public function asNonFalseyType(): Type

@@ -154,7 +154,7 @@ final class NonZeroIntType extends IntType
         return IntType::instance($this->is_nullable);
     }
 
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
@@ -166,7 +166,7 @@ final class NonZeroIntType extends IntType
             }
             return true;
         }
-        return parent::weaklyOverlaps($other);
+        return parent::weaklyOverlaps($other, $code_base);
     }
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool

@@ -822,7 +822,7 @@ trait ConditionVisitorUtil
         $new_real_union_type = $new_union_type->getRealUnionType();
         $combined_real_types = [];
         foreach ($old_union_type->getRealTypeSet() as $type) {
-            if (!$type->asPHPDocUnionType()->hasAnyWeakTypeOverlap($new_real_union_type)) {
+            if (!$type->asPHPDocUnionType()->hasAnyWeakTypeOverlap($new_real_union_type, $this->code_base)) {
                 continue;
             }
             // TODO: Implement Type->canWeakCastToUnionType?

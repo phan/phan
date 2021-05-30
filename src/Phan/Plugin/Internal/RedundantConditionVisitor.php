@@ -208,8 +208,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             ($strict || (
                 // Warn about 0 == non-zero-int, but not non-zero-int <= 0
                 \in_array($node->flags, self::EQUALITY_CHECKS, true)
-                ? !$left->hasAnyWeakTypeOverlap($right)
-                : !$left->asNonLiteralType()->hasAnyWeakTypeOverlap($right->asNonLiteralType())
+                ? !$left->hasAnyWeakTypeOverlap($right, $code_base)
+                : !$left->asNonLiteralType()->hasAnyWeakTypeOverlap($right->asNonLiteralType(), $code_base)
             ))
         ) {
             $this->emitIssueForBinaryOp(
@@ -218,7 +218,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 $right,
                 $strict ? Issue::ImpossibleTypeComparison : Issue::SuspiciousWeakTypeComparison,
                 static function (UnionType $new_left_type, UnionType $new_right_type) use ($strict, $code_base): bool {
-                    return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type));
+                    return !$new_left_type->hasAnyTypeOverlap($code_base, $new_right_type) && ($strict || !$new_left_type->hasAnyWeakTypeOverlap($new_right_type, $code_base));
                 }
             );
         }

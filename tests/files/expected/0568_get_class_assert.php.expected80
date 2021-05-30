@@ -10,6 +10,5 @@
 %s:26 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN ','
 %s:29 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\stdClass'
 %s:33 PhanUndeclaredClassMethod Call to method method from undeclared class \int
-%s:38 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare get_class($d) of type string to true of type true
 %s:38 PhanTypeComparisonToInvalidClassType Saw code asserting that an expression has a class, but saw an invalid/impossible union type true (expected false|string)
 %s:41 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN 'Traversable<T>'
