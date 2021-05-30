@@ -35,7 +35,7 @@ function test_class_assert2($a, $b, $c, $d, $e) {
     if (get_class($d) == false) {
         echo $d->method();  // TODO: Phan should warn
     }
-    if (get_class($d) == true) {  // Phan should warn
+    if (get_class($d) == true) {  // XXX Phan's warning could be improved, this is equivalent to `if (get_class($d))`
         echo $d->method();
     }
     if (get_class($e) == 'Traversable<T>') {  // Phan should warn

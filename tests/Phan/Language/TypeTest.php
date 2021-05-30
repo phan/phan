@@ -645,6 +645,7 @@ final class TypeTest extends CodeBaseAwareTest
             [true, 'Closure', 'callable'],
             [true, 'stdClass', 'object'],
             [true, 'Closure', 'object'],
+            [false, 'Closure', 'iterable'],
             [false, 'stdClass', 'callable-object'],
             [true, 'callable-string', 'string'],
             [true, 'callable-string', 'callable'],
@@ -687,22 +688,62 @@ final class TypeTest extends CodeBaseAwareTest
 
     /**
      * @dataProvider isSubtypeOfProvider
+     * @suppress PhanAccessMethodInternal
      */
     public function testIsSubtypeOf(bool $expected, string $from_type_string, string $to_type_string, bool $only_check_subtype = false): void
     {
+        $code_base = $this->code_base;
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
-        $this->assertSame($expected, $from_type->isSubtypeOf($to_type, $this->code_base), "unexpected result for $from_type_string isSubtypeOf $to_type_string");
+        $this->assertSame($expected, $from_type->isSubtypeOf($to_type, $code_base), "unexpected result for $from_type_string isSubtypeOf $to_type_string");
         if (!$only_check_subtype) {
-            $this->assertSame($expected, $from_type->canCastToType($to_type, $this->code_base), "unexpected result for $from_type_string canCastToType $to_type_string");
-            $this->assertSame($expected, $from_type->canCastToTypeWithoutConfig($to_type, $this->code_base), "unexpected result for $from_type_string canCastToTypeWithoutConfig $to_type_string");
+            $this->assertSame($expected, $from_type->canCastToType($to_type, $code_base), "unexpected result for $from_type_string canCastToType $to_type_string");
+            $this->assertSame($expected, $from_type->canCastToTypeWithoutConfig($to_type, $code_base), "unexpected result for $from_type_string canCastToTypeWithoutConfig $to_type_string");
         }
         if ($expected) {
-            $this->assertFalse($to_type->isSubtypeOf($from_type, $this->code_base), "unexpected result for $to_type_string isSubtypeOf $from_type_string");
+            $this->assertFalse($to_type->isSubtypeOf($from_type, $code_base), "unexpected result for $to_type_string isSubtypeOf $from_type_string");
 
-            $this->assertTrue($to_type instanceof NeverType || $from_type->canCastToDeclaredType($this->code_base, new Context(), $to_type), "unexpected result for $from_type_string canCastToDeclaredType $to_type_string");
-            $this->assertTrue($from_type instanceof NeverType || $to_type->canCastToDeclaredType($this->code_base, new Context(), $from_type), "unexpected result for $to_type_string canCastToDeclaredType $from_type_string");
+            $this->assertTrue($to_type instanceof NeverType || $from_type->canCastToDeclaredType($code_base, new Context(), $to_type), "unexpected result for $from_type_string canCastToDeclaredType $to_type_string");
+            $this->assertTrue($from_type instanceof NeverType || $to_type->canCastToDeclaredType($code_base, new Context(), $from_type), "unexpected result for $to_type_string canCastToDeclaredType $from_type_string");
+            $this->assertTrue($to_type instanceof NeverType || $from_type->weaklyOverlaps($to_type, $code_base), "unexpected result for $from_type_string weaklyOverlaps $to_type_string");
+            $this->assertTrue($from_type instanceof NeverType || $to_type->weaklyOverlaps($from_type, $code_base), "unexpected result for $to_type_string weaklyOverlaps $from_type_string");
         }
+    }
+
+    /** @return list<array{0: string, 1: string}> */
+    public function nonWeakOverlappingTypeProvider(): array
+    {
+        return [
+            ['ArrayObject', 'stdClass'],
+            ['non-null-mixed', 'null'],
+            ['non-empty-mixed', 'void'],
+            ['false', 'non-empty-array'],
+            ['null', 'true'],
+            ["'a'", "'b'"],
+            ["''", '1'],
+            ['callable', 'null'],
+            ['resource', 'null'],
+            ['object', 'array'],
+            ['Closure', 'iterable'],
+            ['Closure(int):int', 'iterable'],
+            ['Closure', 'iterable<int>'],
+            ['Closure(int):int', 'iterable<int,string>'],
+            ['Closure(int):int', 'stdClass'],
+        ];
+    }
+
+    /**
+     * @dataProvider nonWeakOverlappingTypeProvider
+     * @suppress PhanAccessMethodInternal
+     */
+    public function testNonWeakOverlappingType(string $from_type_string, string $to_type_string): void
+    {
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertFalse($from_type->canCastToType($to_type, $this->code_base), "canCastToType should be false");
+        $this->assertFalse($from_type->canCastToDeclaredType($this->code_base, new Context(), $to_type), "canCastToDeclaredType should be false");
+        $this->assertFalse($from_type->weaklyOverlaps($to_type, $this->code_base), "$from_type_string weaklyOverlaps $to_type_string should be false");
+        $this->assertFalse($to_type->weaklyOverlaps($from_type, $this->code_base), "$to_type_string weaklyOverlaps $from_type_string should be false");
     }
 
     /** @return list<array{0: string}> */

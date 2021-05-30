@@ -105,7 +105,7 @@ final class MiscParamPlugin extends PluginV3 implements
             if ($needle_type->hasAnyTypeOverlap($code_base, $element_type)) {
                 return false;
             }
-            if (!$is_strict && $needle_type->hasAnyWeakTypeOverlap($element_type)) {
+            if (!$is_strict && $needle_type->hasAnyWeakTypeOverlap($element_type, $code_base)) {
                 return false;
             }
         }

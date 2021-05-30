@@ -1584,7 +1584,7 @@ final class EmptyUnionType extends UnionType
         return true;
     }
 
-    public function hasAnyWeakTypeOverlap(UnionType $other): bool
+    public function hasAnyWeakTypeOverlap(UnionType $other, CodeBase $code_base): bool
     {
         return true;
     }

@@ -10,6 +10,7 @@ use Phan\Language\Type;
 
 /**
  * Phan's representation of the type for `non-empty-string` (a truthy string)
+ * Excludes '' and '0'.
  * @phan-pure
  */
 final class NonEmptyStringType extends StringType
@@ -142,21 +143,15 @@ final class NonEmptyStringType extends StringType
         return StringType::instance($this->is_nullable);
     }
 
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
             if ($other instanceof LiteralTypeInterface) {
-                return (bool)$other->getValue();
-            }
-            if ($other instanceof NullType || $other instanceof FalseType) {
-                // Allow 0 == null but not 1 == null
-                if (!$this->isPossiblyFalsey()) {
-                    return false;
-                }
+                return $other->getValue() ? true : $this->is_nullable;
             }
             return true;
         }
-        return parent::weaklyOverlaps($other);
+        return parent::weaklyOverlaps($other, $code_base);
     }
 }

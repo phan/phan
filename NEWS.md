@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.0a2 (dev)
+-------------------------
+
+New Features (Analysis):
+- Improve accuracy of checks for weak type overlap for redundant condition warnings on `<=`
+
 May 30 2021, Phan 5.0.0a1
 -------------------------
 

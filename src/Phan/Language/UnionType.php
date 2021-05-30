@@ -2506,11 +2506,11 @@ class UnionType implements Serializable, Stringable
      *
      * NOTE: callers should check that
      */
-    protected function canAnyTypeWeakOverlapUnionType(UnionType $target): bool
+    protected function canAnyTypeWeakOverlapUnionType(UnionType $target, CodeBase $code_base): bool
     {
         foreach ($this->type_set as $type) {
             foreach ($target->type_set as $other_type) {
-                if ($type->weaklyOverlaps($other_type)) {
+                if ($type->weaklyOverlaps($other_type, $code_base)) {
                     return true;
                 }
             }
@@ -2681,9 +2681,9 @@ class UnionType implements Serializable, Stringable
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function hasAnyWeakTypeOverlap(UnionType $other): bool
+    public function hasAnyWeakTypeOverlap(UnionType $other, CodeBase $code_base): bool
     {
-        return $this->canAnyTypeWeakOverlapUnionType($other) || $other->canAnyTypeWeakOverlapUnionType($this);
+        return $this->canAnyTypeWeakOverlapUnionType($other, $code_base) || $other->canAnyTypeWeakOverlapUnionType($this, $code_base);
     }
 
     /**

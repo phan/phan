@@ -258,8 +258,11 @@ final class TemplateType extends Type
         return $this->is_nullable;
     }
 
-    /** @unused-param $other */
-    public function weaklyOverlaps(Type $other): bool
+    /**
+     * @unused-param $other
+     * @unused-param $code_base
+     */
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         return true;
     }

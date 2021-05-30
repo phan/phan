@@ -220,7 +220,7 @@ final class ClosureType extends Type
                 return $part instanceof FunctionLikeDeclarationType || $part instanceof ClosureType || $part->asFQSEN()->__toString() === '\Closure';
             });
         }
-        return true;
+        return parent::canCastToDeclaredType($code_base, $context, $other);
     }
 
     public function isSubtypeOf(Type $type, CodeBase $code_base): bool

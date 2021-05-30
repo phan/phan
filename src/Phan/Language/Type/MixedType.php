@@ -236,8 +236,11 @@ class MixedType extends NativeType
         return $this->is_nullable ? '?mixed' : 'mixed';
     }
 
-    /** @unused-param $other */
-    public function weaklyOverlaps(Type $other): bool
+    /**
+     * @unused-param $other
+     * @unused-param $code_base
+     */
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
         return true;
     }

@@ -38,7 +38,7 @@ class IterableType extends NativeType
         // TODO: Check if $other is final and non-iterable
         return $other instanceof IterableType ||
             $other instanceof CallableDeclarationType ||
-            $other->isPossiblyObject();
+            $other->isPossiblyIterable($code_base);
     }
 
     /**

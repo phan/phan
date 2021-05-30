@@ -644,6 +644,16 @@ final class IntersectionType extends Type
         return false;
     }
 
+    private function allTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
+    {
+        foreach ($this->type_parts as $part) {
+            if (!$part->{$method_name}(...$args)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function isSelfType(): bool
     {
         return $this->anyTypePartsMatchMethod(__FUNCTION__);
@@ -785,9 +795,9 @@ final class IntersectionType extends Type
         });
     }
 
-    public function weaklyOverlaps(Type $other): bool
+    public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
-        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $other);
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $other, $code_base);
     }
 
     // TODO not implemented for intersection type to intersection type cast
@@ -799,6 +809,11 @@ final class IntersectionType extends Type
     public function isDefiniteNonCallableType(CodeBase $code_base): bool
     {
         return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
+    }
+
+    public function isPossiblyIterable(CodeBase $code_base): bool
+    {
+        return $this->allTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
     }
 
     public function withErasedUnionTypes(): Type

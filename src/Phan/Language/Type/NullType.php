@@ -253,4 +253,10 @@ final class NullType extends ScalarType implements LiteralTypeInterface
     {
         return $this;
     }
+
+    /** @unused-param $code_base */
+    public function weaklyOverlaps(Type $type, CodeBase $code_base): bool
+    {
+        return $type->isNullable();
+    }
 }
