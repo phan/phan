@@ -1,7 +1,7 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.0.0 (dev)
------------------------
+May 30 2021, Phan 5.0.0a1
+-------------------------
 
 Phan 5 introduces support for intersection types, and improves the accuracy of type casting checks and type inference to catch more issues.
 
