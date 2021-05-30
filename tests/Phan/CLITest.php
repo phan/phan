@@ -281,7 +281,7 @@ final class CLITest extends BaseTest
         foreach ($lines as $i => $line) {
             if (\preg_match('@^-----@', $line)) {
                 $version_line = $lines[$i - 1];
-                if (\preg_match('@\b(\d+\.\d+\.\d+(-\w+)?)(.*\(dev\))?@', $version_line, $matches)) {
+                if (\preg_match('@\b(\d+\.\d+\.\d+(-?\w+)?)(.*\(dev\))?@', $version_line, $matches)) {
                     $version = $matches[1] . (!empty($matches[3]) ? '-dev' : '');
                     $versions[] = $version;
                 } else {
