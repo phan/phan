@@ -5,6 +5,10 @@ Phan NEWS
 
 New Features (Analysis):
 - Improve accuracy of checks for weak type overlap for redundant condition warnings on `<=`
+- Emit `PhanAccessOverridesFinalConstant` when overriding a final class constant. (#4436)
+- Emit `PhanCompatibleFinalClassConstant` if class constants have the final modifier in codebases supporting a minimum target php version older than 8.1 (#4436)
+- Analyze class constants declared in interfaces as if they were final in php versions prior to 8.1. (#4436)
+
 
 May 30 2021, Phan 5.0.0a1
 -------------------------

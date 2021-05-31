@@ -43,6 +43,8 @@ class Issue
     public const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
     public const SyntaxReturnStatementInNever   = 'PhanSyntaxReturnStatementInNever';
     public const SyntaxInconsistentEnum         = 'PhanSyntaxInconsistentEnum';
+    public const PrivateFinalMethod             = 'PhanPrivateFinalMethod';
+    public const PrivateFinalConstant           = 'PhanPrivateFinalConstant';
 
     // Issue::CATEGORY_UNDEFINED
     public const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -550,6 +552,7 @@ class Issue
     public const AccessOverridesFinalMethodInTrait      = 'PhanAccessOverridesFinalMethodInTrait';
     public const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
     public const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
+    public const AccessOverridesFinalConstant           = 'PhanAccessOverridesFinalConstant';
     // TODO: Should probably also warn about the declaration
     public const AccessNonPublicAttribute               = 'PhanAccessNonPublicAttribute';
 
@@ -596,6 +599,7 @@ class Issue
     public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
     public const CompatibleConstructorPropertyPromotion  = 'PhanCompatibleConstructorPropertyPromotion';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
+    public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -993,6 +997,22 @@ class Issue
                 "Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type",
                 self::REMEDIATION_A,
                 17016
+            ),
+            new Issue(
+                self::PrivateFinalConstant,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Private constant is not allowed to be final",
+                self::REMEDIATION_A,
+                17018
+            ),
+            new Issue(
+                self::PrivateFinalMethod,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_NORMAL,
+                "PHP warns about private method {METHOD} being final starting in php 8.0",
+                self::REMEDIATION_A,
+                17019
             ),
 
             // Issue::CATEGORY_UNDEFINED
@@ -4780,6 +4800,14 @@ class Issue
                 self::REMEDIATION_B,
                 1034
             ),
+            new Issue(
+                self::AccessOverridesFinalConstant,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Declaration of class constant {CONST} overrides final constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1035
+            ),
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(
@@ -5135,9 +5163,17 @@ class Issue
                 self::CompatibleSerializeInterfaceDeprecated,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {{CLASS}} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
+                "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
                 self::REMEDIATION_B,
                 3042
+            ),
+            new Issue(
+                self::CompatibleFinalClassConstant,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Final class constants were not supported prior to php 8.1",
+                self::REMEDIATION_B,
+                3044
             ),
 
             // Issue::CATEGORY_GENERIC

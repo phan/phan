@@ -114,6 +114,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
         } elseif ($this->isPrivate()) {
             $string .= 'private ';
         }
+        if ($this->isFinal()) {
+            $string .= 'final ';
+        }
 
         $string .= 'const ' . $this->name . ' = ';
         $value_node = $this->getNodeForValue();
@@ -134,6 +137,14 @@ class ClassConstant extends ClassElement implements ConstantInterface
         } else {
             return 'public';
         }
+    }
+
+    /**
+     * Returns true if this is a final element
+     */
+    public function isFinal(): bool
+    {
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_FINAL);
     }
 
     /**

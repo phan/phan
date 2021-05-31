@@ -1,3 +1,4 @@
 src/082_unused_parameter.php:4 PhanUnusedPublicFinalMethodParameter Parameter $a is never used
 src/082_unused_parameter.php:7 PhanUnusedProtectedFinalMethodParameter Parameter $a is never used
+src/082_unused_parameter.php:10 PhanPrivateFinalMethod PHP warns about private method \C82::h() being final starting in php 8.0
 src/082_unused_parameter.php:10 PhanUnusedPrivateFinalMethodParameter Parameter $a is never used

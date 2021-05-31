@@ -1,0 +1,5 @@
+%s:4 PhanCompatibleFinalClassConstant Final class constants were not supported prior to php 8.1
+%s:6 PhanInvalidNode Invalid modifiers for class constant group
+%s:7 PhanInvalidNode Invalid modifiers for class constant group
+%s:10 PhanAccessOverridesFinalConstant Declaration of class constant \B947::X overrides final constant \A947::X defined at %s:4
+%s:12 PhanAccessClassConstantProtected Cannot access protected class constant \A947::X defined at %s:4
