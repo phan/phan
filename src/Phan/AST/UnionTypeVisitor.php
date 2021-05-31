@@ -2581,6 +2581,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node
             ))->getClassConst();
             $union_type = $constant->getUnionType();
+            if ($constant->isFinal()) {
+                return $union_type;
+            }
             $class_node = $node->children['class'];
             if (!$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
                 // ignore nonsense like (0)::class, and dynamic accesses such as $var::CLASS

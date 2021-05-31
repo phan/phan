@@ -778,6 +778,19 @@ class ParseVisitor extends ScopeVisitor
             $this->context,
             $node->children['attributes']
         );
+        if (($node->flags & ast\flags\MODIFIER_FINAL) && Config::get_closest_minimum_target_php_version_id() < 80100) {
+            $this->emitIssue(
+                Issue::CompatibleFinalClassConstant,
+                $node->lineno
+            );
+        }
+        if ($node->flags & (ast\flags\MODIFIER_STATIC | ast\flags\MODIFIER_ABSTRACT)) {
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno,
+                "Invalid modifiers for class constant group"
+            );
+        }
 
         foreach ($node->children['const']->children ?? [] as $child_node) {
             if (!$child_node instanceof Node) {
@@ -819,13 +832,19 @@ class ParseVisitor extends ScopeVisitor
             );
 
             $line_number_start = $child_node->lineno;
+            $flags = $node->flags;
+            // Prior to php 8.1, it was impossible to override constants declared in interfaces.
+            if ($class->isInterface() && Config::get_closest_minimum_target_php_version_id() < 80100 ) {
+                $flags |= ast\flags\MODIFIER_FINAL;
+            }
+
             $constant = new ClassConstant(
                 $this->context
                     ->withLineNumberStart($line_number_start)
                     ->withLineNumberEnd($child_node->endLineno ?? $line_number_start),
                 $name,
                 UnionType::empty(),
-                $node->flags,
+                $flags,
                 $fqsen
             );
 

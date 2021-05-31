@@ -204,6 +204,7 @@ EOT;
         $base = dirname(realpath(__DIR__), 3);
         $files = array_merge(
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/files/expected/*.php.expected80') ?: [],
             glob($base . '/tests/misc/ast/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/config_override_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/empty_methods_plugin_test/expected/*.php.expected') ?: [],

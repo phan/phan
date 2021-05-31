@@ -132,6 +132,14 @@ Cannot make non static property {PROPERTY} into the static property {PROPERTY}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0492_class_constant_visibility.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0492_class_constant_visibility.php#L25).
 
+## PhanAccessOverridesFinalConstant
+
+```
+Declaration of class constant {CONST} overrides final constant {CONST} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0949_interface_class_const_multiple.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0949_interface_class_const_multiple.php#L11).
+
 ## PhanAccessOverridesFinalMethod
 
 This issue is emitted when a class attempts to override an inherited final method.
@@ -498,6 +506,14 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 {CLASS} expression may not be PHP 7 compatible
 ```
 
+## PhanCompatibleFinalClassConstant
+
+```
+Final class constants were not supported prior to php 8.1
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0947_final_class_const.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0947_final_class_const.php#L3).
+
 ## PhanCompatibleImplodeOrder
 
 ```
@@ -635,7 +651,7 @@ In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like clas
 ## PhanCompatibleSerializeInterfaceDeprecated
 
 ```
-The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {{CLASS}} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed
+The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0133_unserialize_types.php#L3).
@@ -1973,6 +1989,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0126
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0133_unserialize_types.php#L8).
 
 ## PhanParamSignatureRealMismatchHasParamType
 
@@ -5057,6 +5074,22 @@ Cannot use temporary expression ({CODE} of type {TYPE}) in write context
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0518_crash_assignment.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0518_crash_assignment.php#L4).
+
+## PhanPrivateFinalConstant
+
+```
+Private constant is not allowed to be final
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0951_private_final.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0951_private_final.php#L7).
+
+## PhanPrivateFinalMethod
+
+```
+PHP warns about private method {METHOD} being final starting in php 8.0
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0951_private_final.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0951_private_final.php#L4).
 
 ## PhanSyntaxCompileWarning
 

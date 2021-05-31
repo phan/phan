@@ -1359,6 +1359,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
+    public function visitClassConstGroup(Node $node): Context
+    {
+        if (($node->flags & (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) {
+            $this->emitIssue(
+                Issue::PrivateFinalConstant,
+                $node->lineno
+            );
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitClassConstDecl(Node $node): Context
     {
         $class = $this->context->getClassInScope($this->code_base);
@@ -2920,6 +2939,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
+        if (($node->flags & (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) {
+            $this->emitIssue(
+                Issue::PrivateFinalMethod,
+                $node->lineno,
+                $method->getRepresentationForIssue()
+            );
+        }
 
         $return_type = $method->getUnionType();
 

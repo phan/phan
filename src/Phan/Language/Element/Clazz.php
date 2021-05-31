@@ -1464,7 +1464,7 @@ class Clazz extends AddressableElement
             // If the constant with that name already exists, mark it as an override.
             $overriding_constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
             $overriding_constant->setIsOverride(true);
-            self::checkConstantCompatibility(
+            $this->checkConstantCompatibility(
                 $code_base,
                 $constant,
                 $code_base->getClassConstantByFQSEN(
@@ -1499,11 +1499,24 @@ class Clazz extends AddressableElement
         $code_base->addClassConstant($constant);
     }
 
-    private static function checkConstantCompatibility(
+    private function checkConstantCompatibility(
         CodeBase $code_base,
         ClassConstant $inherited_constant,
         ClassConstant $overriding_constant
     ): void {
+        if ($inherited_constant->isFinal() && $inherited_constant->getRealDefiningFQSEN() !== $overriding_constant->getRealDefiningFQSEN()) {
+            $issue_context = $overriding_constant->getFQSEN() === $overriding_constant->getRealDefiningFQSEN() ? $overriding_constant->getContext() : $this->getContext();
+            Issue::maybeEmit(
+                $code_base,
+                $issue_context,
+                Issue::AccessOverridesFinalConstant,
+                $issue_context->getLineNumberStart(),
+                $overriding_constant->getDefiningFQSEN(),
+                $inherited_constant->getDefiningFQSEN(),
+                $inherited_constant->getContext()->getFile(),
+                $inherited_constant->getContext()->getLineNumberStart()
+            );
+        }
         // Traits don't have constants, thankfully, so the logic is simple.
         if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
             if ($inherited_constant->isPHPInternal()) {
