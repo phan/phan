@@ -110,10 +110,14 @@ final class NonNullMixedType extends MixedType
         return 'non-null-mixed';
     }
 
-    /** @unused-param $code_base */
+    /**
+     * @unused-param $other
+     * @unused-param $code_base
+     */
     public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
-        return !$other instanceof NullType && !$other instanceof VoidType;
+        // e.g. false == null, 0 == null for loose equality.
+        return true;
     }
 
     /**

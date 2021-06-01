@@ -715,8 +715,9 @@ final class TypeTest extends CodeBaseAwareTest
     {
         return [
             ['ArrayObject', 'stdClass'],
-            ['non-null-mixed', 'null'],
+            // ['non-null-mixed', 'null'], // null == false
             ['non-empty-mixed', 'void'],
+            ['non-empty-mixed', 'null'],
             ['false', 'non-empty-array'],
             ['null', 'true'],
             ["'a'", "'b'"],
