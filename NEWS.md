@@ -8,6 +8,7 @@ New Features (Analysis):
 - Emit `PhanAccessOverridesFinalConstant` when overriding a final class constant. (#4436)
 - Emit `PhanCompatibleFinalClassConstant` if class constants have the final modifier in codebases supporting a minimum target php version older than 8.1 (#4436)
 - Analyze class constants declared in interfaces as if they were final in php versions prior to 8.1. (#4436)
+- Warn about using $this or superglobals as a parameter or closure use. (#4336)
 
 Bug fixes:
 - Properly warn about referencing $this from a `static fn` declared in an instance method. (#4336)

@@ -347,6 +347,23 @@ class Parameter extends Variable
 
         // Create the skeleton parameter from what we know so far
         $parameter_name = (string)$node->children['name'];
+        if ($parameter_name === 'this') {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidNode,
+                $node->lineno,
+                'Cannot use $this as a parameter'
+            );
+        } elseif (Variable::isSuperglobalVariableWithName($parameter_name)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidNode,
+                $node->lineno,
+                "Cannot re-assign auto-global variable \$$parameter_name"
+            );
+        }
         $parameter = Parameter::create(
             (clone($context))->withLineNumberStart($node->lineno),
             $parameter_name,

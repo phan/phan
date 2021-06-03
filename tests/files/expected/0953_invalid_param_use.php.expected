@@ -1,0 +1,6 @@
+%s:4 PhanInvalidNode Cannot use $this as a lexical variable
+%s:4 PhanInvalidNode Cannot use auto-global $_GET as lexical variable
+%s:4 PhanUndeclaredThis Variable $this is undeclared (Did you mean (function instead of static function for Closure() at line 4))
+%s:4 PhanUndeclaredVariable Variable $_GET is undeclared (Did you mean $_GET or (global $_GET))
+%s:7 PhanInvalidNode Cannot re-assign auto-global variable $_GET
+%s:7 PhanInvalidNode Cannot use $this as a parameter

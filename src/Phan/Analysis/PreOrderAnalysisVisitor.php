@@ -482,6 +482,22 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 if ($variable_name === '') {
                     continue;
                 }
+                if ($variable_name === 'this') {
+                    $this->emitIssue(
+                        Issue::InvalidNode,
+                        $use->lineno,
+                        'Cannot use $this as a lexical variable'
+                    );
+                    continue;
+                } elseif (Variable::isSuperglobalVariableWithName($variable_name)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::InvalidNode,
+                        $node->lineno,
+                        "Cannot use auto-global \$$variable_name as lexical variable"
+                    );
+                }
 
                 // Check to see if the variable exists in this scope
                 if (!$context->getScope()->hasVariableWithName(

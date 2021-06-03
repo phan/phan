@@ -131,7 +131,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Build the class from what we know so far
         $class_context = $this->context
-            ->withLineNumberStart($node->lineno ?? 0)
+            ->withLineNumberStart($node->lineno)
             ->withLineNumberEnd($node->endLineno ?? 0);
 
         $class = new Clazz(
@@ -1194,12 +1194,6 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitArrowFunc(Node $node): Context
     {
-        if (!isset($node->children['params'])) {
-            $msg = "php-ast 1.0.2 or newer is required to correctly parse short arrow functions, but an older version is installed. A short arrow function was seen at $this->context";
-            // @phan-suppress-next-line PhanPluginRemoveDebugCall
-            \fwrite(\STDERR, $msg . \PHP_EOL);
-            throw new AssertionError($msg);
-        }
         return $this->visitClosure($node);
     }
 
