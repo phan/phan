@@ -12,6 +12,7 @@ New Features (Analysis):
 
 Bug fixes:
 - Properly warn about referencing $this from a `static fn` declared in an instance method. (#4336)
+- Fix a crash getting template parameters of intersection types
 
 May 30 2021, Phan 5.0.0a1
 -------------------------

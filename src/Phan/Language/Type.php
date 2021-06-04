@@ -2669,6 +2669,9 @@ class Type implements Stringable
     public function getTemplateParameterTypeMap(CodeBase $code_base): array
     {
         return $this->memoize(__METHOD__, /** @return array<string,UnionType> */ function () use ($code_base): array {
+            if (!$this->isObjectWithKnownFQSEN()) {
+                return [];
+            }
             $fqsen = FullyQualifiedClassName::fromType($this);
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
