@@ -19,6 +19,10 @@ if php -r 'exit(PHP_MAJOR_VERSION < 8 ? 0 : 1);'; then
         -e '/^class JsonException extends/,+8 d' \
         $ACTUAL_PATH
 fi
+# php 8.1 adds tentative return types that can only be declared by internal class methods
+sed -i -e 's/jsonSerialize() : mixed/jsonSerialize()/' \
+    $ACTUAL_PATH
+
 sed -i -e 's,@phan-stub-for-extension json@.*$,@phan-stub-for-extension json@%s,' $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing

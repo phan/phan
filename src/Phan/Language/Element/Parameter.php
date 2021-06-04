@@ -261,6 +261,7 @@ class Parameter extends Variable
         $parameter_type = UnionType::fromReflectionType($reflection_parameter->getType());
         $parameter = self::create(
             new Context(),
+            // @phan-suppress-next-line PhanCoalescingNeverNull
             $reflection_parameter->getName() ?? "arg",
             $parameter_type,
             $flags
