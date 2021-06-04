@@ -5704,8 +5704,12 @@ class UnionType implements Serializable, Stringable
             // ~null is an error, don't check isNullable()
             if ($type instanceof LiteralTypeInterface) {
                 try {
+                    $value = $type->getValue();
+                    if (\is_float($value)) {
+                        $value = (int)$value;
+                    }
                     // throws error for bool/null
-                    $value = ~$type->getValue();
+                    $value = ~$value;
                 } catch (\Error $_) {
                     continue;
                 }
