@@ -60,7 +60,7 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      *       issue type to
      *         unique list of line numbers of suppressions
      */
-    private $plugin_active_suppression_list;
+    private $plugin_active_suppression_list = [];
 
     /**
      * @param CodeBase $code_base

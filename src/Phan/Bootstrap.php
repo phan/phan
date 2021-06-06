@@ -356,6 +356,12 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Constants such as ENCHANT can be deprecated when calling constant()
         return true;
     }
+    // TODO: This will be fixed in a subsequent tolerant-php-parser release such as 0.1.0
+    if ($errno === E_DEPRECATED && preg_match('/PhpParser.*should be compatible with/', $errstr)) {
+        // Suppress deprecation notices running `vendor/bin/paratest` in php 8
+        // Constants such as ENCHANT can be deprecated when calling constant()
+        return true;
+    }
     if ($errno === E_DEPRECATED && preg_match('/^The Serializable interface is deprecated/', $errstr)) {
         if (preg_match('@/vendor/phpunit/@', $errfile)) {
             // Suppress deprecation notices running phpunit in php 8.1 with the Serializable interface.
