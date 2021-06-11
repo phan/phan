@@ -9,7 +9,6 @@ use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
 use Microsoft\PhpParser\Node\MethodDeclaration;
 use Microsoft\PhpParser\Node\Statement\FunctionDeclaration;
-use Microsoft\PhpParser\Token;
 use Phan\AST\TolerantASTConverter\NodeUtils;
 use Phan\CodeBase;
 use Phan\IssueInstance;
@@ -78,7 +77,7 @@ class Fixers
         // Generate an edit to replace the long return type with the shorter return type
         // Long return types are always Nodes instead of Tokens.
         $file_edit = new FileEdit(
-            $return_type_node->getStart(),
+            $return_type_node->getStartPosition(),
             $return_type_node->getEndPosition(),
             $shorter_return_type
         );
@@ -106,12 +105,13 @@ class Fixers
             if ($declaration_name !== $param_name) {
                 continue;
             }
-            $token = $param->typeDeclaration;
+            $token = $param->typeDeclarationList;
             if (!$token) {
                 return null;
             }
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall php-parser is not expected to throw here
-            $start = $token instanceof Token ? $token->start : $token->getStart();
+            $start = $token->getStartPosition();
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall php-parser is not expected to throw here
             $file_edit = new FileEdit($start, $token->getEndPosition(), $shorter_param_type);
             return new FileEditSet([$file_edit]);
         }

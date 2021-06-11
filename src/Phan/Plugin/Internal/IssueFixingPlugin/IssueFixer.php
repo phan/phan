@@ -101,7 +101,7 @@ class IssueFixer
         $end = $declaration->getEndPosition();
         $end = self::skipTrailingWhitespaceAndNewlines($file_contents, $end);
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        return new FileEdit($declaration->getStart(), $end);
+        return new FileEdit($declaration->getStartPosition(), $end);
     }
 
     private static function skipTrailingWhitespaceAndNewlines(string $file_contents, int $end): int

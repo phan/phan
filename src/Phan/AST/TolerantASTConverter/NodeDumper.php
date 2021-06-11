@@ -125,7 +125,7 @@ class NodeDumper
                 $padding,
                 $key !== '' ? $key . ': ' : '',
                 self::dumpClassName($ast_node),
-                $this->include_offset ? ' (@' . $ast_node->getStart() . ')' : ''
+                $this->include_offset ? ' (@' . $ast_node->getStartPosition() . ')' : ''
             );
 
             $result = $first_part;

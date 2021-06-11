@@ -77,6 +77,9 @@ final class StringUtil
      */
     public static function parse(string $str): string
     {
+        if ($str === '') {
+            return '';
+        }
         $c = $str[0];
         if ($c === '<') {
             return self::parseHeredoc($str);
