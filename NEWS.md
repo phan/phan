@@ -10,6 +10,9 @@ New Features (Analysis):
 - Analyze class constants declared in interfaces as if they were final in php versions prior to 8.1. (#4436)
 - Warn about using $this or superglobals as a parameter or closure use. (#4336)
 
+Maintenance:
+- Upgrade tolerant-php-parser from ^0.0.23 to ^0.1.0 to prepare to support new php syntax in the polyfill/fallback parser. (#4449)
+
 Bug fixes:
 - Properly warn about referencing $this from a `static fn` declared in an instance method. (#4336)
 - Fix a crash getting template parameters of intersection types
