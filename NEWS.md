@@ -8,6 +8,9 @@ Language Server/Daemon mode:
 
 Bug fixes:
 + Don't emit `PhanCompatibleNonCapturingCatch` when `minimum_target_php_version` is `'8.0'` or newer. (#4433)
++ Stop ignoring `@return null` and `@param null $paramName` in phpdoc. (#4453)
+
+  Stop special casing `@param null` now that Phan allows many other literal types in param types.
 
 May 19 2021, Phan 4.0.6
 -----------------------

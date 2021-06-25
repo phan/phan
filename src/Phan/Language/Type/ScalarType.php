@@ -8,7 +8,6 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
-use Phan\Language\UnionType;
 
 /**
  * The base class for various scalar types (BoolType, StringType, ScalarRawType,
@@ -84,19 +83,6 @@ abstract class ScalarType extends NativeType
     }
 
     // inherit canCastToNonNullableTypeWithoutConfig
-
-    /**
-     * @override
-     * @unused-param $context
-     * @unused-param $code_base
-     */
-    public function isExclusivelyNarrowedFormOrEquivalentTo(
-        UnionType $union_type,
-        Context $context,
-        CodeBase $code_base
-    ): bool {
-        return $union_type->hasType($this) || $this->asPHPDocUnionType()->canCastToUnionType($union_type);
-    }
 
     /**
      * @override
