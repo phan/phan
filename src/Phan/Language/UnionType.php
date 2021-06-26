@@ -2728,7 +2728,7 @@ class UnionType implements Serializable, Stringable
             if ($this->isNull()) {
                 return false;
             }
-        } else if ($other->isNull()) {
+        } elseif ($other->isNull()) {
             return false;
         }
         $this_nonnull = $this->withIsNullable(false);
