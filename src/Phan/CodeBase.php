@@ -467,7 +467,7 @@ class CodeBase
             // #1015 workaround for empty constant names ('' and '0').
             if (!\is_string($const_name)) {
                 // @phan-suppress-next-line PhanPluginRemoveDebugCall
-                \fprintf(STDERR, "Saw constant with non-string name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
+                \fprintf(STDERR, "Saw constant with non-string name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_representation($const_name));
                 continue;
             }
             try {
@@ -490,7 +490,7 @@ class CodeBase
             return;
         }
         // @phan-suppress-next-line PhanPluginRemoveDebugCall
-        \fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", \var_export($const_name, true), $e->getMessage());
+        \fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", \var_representation($const_name), $e->getMessage());
     }
 
     /**

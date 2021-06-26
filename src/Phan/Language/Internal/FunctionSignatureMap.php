@@ -16712,6 +16712,7 @@ return [
 'V8JsScriptException::getTraceAsString' => ['string'],
 'var_dump' => ['void', 'value'=>'mixed', '...values='=>'mixed'],
 'var_export' => ['?string', 'value'=>'mixed', 'return='=>'bool'],
+'var_representation' => ['string', 'value'=>'mixed', 'flags='=>'int'],
 'variant::__construct' => ['void', 'value='=>'mixed', 'type='=>'int', 'codepage='=>'int'],
 'variant_abs' => ['variant', 'value'=>'mixed'],
 'variant_add' => ['variant', 'left'=>'mixed', 'right'=>'mixed'],

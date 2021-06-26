@@ -2134,7 +2134,7 @@ EOB
                     if (!$file_info->isFile()) {
                         // Handle symlinks to invalid real paths
                         $file_path = $file_info->getRealPath() ?: $file_info->__toString();
-                        CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isFile() is false for SplFileInfo->getType() == " . \var_export(self::getSplFileInfoType($file_info), true) . "\n");
+                        CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isFile() is false for SplFileInfo->getType() == " . \var_representation(self::getSplFileInfoType($file_info)) . "\n");
                         return false;
                     }
                     if (!$file_info->isReadable()) {

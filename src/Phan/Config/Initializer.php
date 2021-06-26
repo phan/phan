@@ -149,7 +149,7 @@ class Initializer
             $source .= "    // $line\n";
         }
         $source .= '    ';
-        $source .= \var_export($setting_name, true) . ' => ';
+        $source .= \var_representation($setting_name) . ' => ';
         if (is_array($setting_value)) {
             if (count($setting_value) > 0) {
                 $source .= "[\n";

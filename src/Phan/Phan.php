@@ -47,7 +47,7 @@ use function realpath;
 use function sort;
 use function sprintf;
 use function str_replace;
-use function var_export;
+use function var_representation;
 
 use const EXIT_FAILURE;
 use const EXIT_SUCCESS;
@@ -825,11 +825,11 @@ class Phan implements IgnoredFilesFilterInterface
                 continue;
             }
             if (!is_string($path_to_extension)) {
-                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_export($path_to_extension, true));
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_representation($path_to_extension));
             }
             $path_to_extension = Config::projectPath($path_to_extension);
             if (!is_file($path_to_extension)) {
-                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a file: value: " . var_export($path_to_extension, true));
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a file: value: " . var_representation($path_to_extension));
             }
             Analysis::parseFile($code_base, $path_to_extension, false, null, true);
         }

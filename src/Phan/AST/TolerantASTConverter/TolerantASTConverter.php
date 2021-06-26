@@ -35,6 +35,7 @@ use function is_string;
 use function sprintf;
 use function substr;
 use function var_export;
+use function var_representation;
 
 use const FILTER_FLAG_ALLOW_HEX;
 use const FILTER_FLAG_ALLOW_OCTAL;
@@ -379,7 +380,7 @@ class TolerantASTConverter
     public static function debugDumpNodeOrToken($n): string
     {
         if (\is_scalar($n)) {
-            return var_export($n, true);
+            return var_representation($n);
         }
         if (!\is_array($n)) {
             $n = [$n];

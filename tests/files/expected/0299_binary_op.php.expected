@@ -1,5 +1,5 @@
 %s:7 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' + '1') of type float|int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
-%s:10 PhanTypeMismatchArgument Argument 1 ($x) is ('0' ^ "\1") of type string but \expect_int_298() takes int defined at %s:4
+%s:10 PhanTypeMismatchArgument Argument 1 ($x) is ('0' ^ "\x01") of type string but \expect_int_298() takes int defined at %s:4
 %s:11 PhanTypeMismatchArgumentReal Argument 1 ($x) is (1 ^ 2) of type 3 but \expect_string_298() takes string defined at %s:3
 %s:12 PhanTypeMismatchArgumentReal Argument 1 ($x) is (1 xor 2) of type bool but \expect_string_298() takes string defined at %s:3
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
@@ -37,7 +37,7 @@
 %s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 >= 7) of type bool but \expect_string_298() takes string defined at %s:3
 %s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($strVar .= 'suffix') of type string but \expect_int_298() takes int defined at %s:4
 %s:40 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar ^= 2) of type int but \expect_string_298() takes string defined at %s:3
-%s:41 PhanTypeMismatchArgument Argument 1 ($x) is ($strVar ^= "\1\2") of type string but \expect_int_298() takes int defined at %s:4
+%s:41 PhanTypeMismatchArgument Argument 1 ($x) is ($strVar ^= "\x01\x02") of type string but \expect_int_298() takes int defined at %s:4
 %s:41 PhanUnusedVariable Unused definition of variable $strVar
 %s:42 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar |= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:43 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar ^= 2) of type int but \expect_string_298() takes string defined at %s:3

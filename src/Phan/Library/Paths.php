@@ -58,7 +58,7 @@ class Paths
     public static function escapePathForIssue(string $path): string
     {
         // If possible, use json_encode.
-        // If json_encode failed (e.g. invalid unicode), then use var_export
-        return \json_encode($path, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) ?: \var_export($path, true);
+        // If json_encode failed (e.g. invalid unicode), then use var_representation
+        return \json_encode($path, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) ?: \var_representation($path);
     }
 }

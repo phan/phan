@@ -863,6 +863,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'urlencode' => true,
     'utf8_decode' => true,
     'utf8_encode' => true,
+    'var_representation' => true,
     'version_compare' => true,
     'vsprintf' => true,
     'weakreference::create' => true,

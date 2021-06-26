@@ -34,14 +34,16 @@
         "sabre/event": "^5.0.3",
         "symfony/console": "^3.2|^4.0|^5.0",
         "symfony/polyfill-mbstring": "^1.11.0",
-        "symfony/polyfill-php80": "^1.20.0"
+        "symfony/polyfill-php80": "^1.20.0",
+        "tysonandre/var_representation_polyfill": "^0.0.2"
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed, 1.0.10+ is recommended.",
         "ext-iconv": "Either iconv or mbstring is needed to ensure issue messages are valid utf-8",
         "ext-igbinary": "Improves performance of polyfill when ext-ast is unavailable",
         "ext-mbstring": "Either iconv or mbstring is needed to ensure issue messages are valid utf-8",
-        "ext-tokenizer": "Needed for fallback/polyfill parser support and file/line-based suppressions."
+        "ext-tokenizer": "Needed for fallback/polyfill parser support and file/line-based suppressions.",
+        "ext-var_representation": "Suggested for converting values to strings in issue messages"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5.0"

@@ -834,7 +834,7 @@ class ParseVisitor extends ScopeVisitor
             $line_number_start = $child_node->lineno;
             $flags = $node->flags;
             // Prior to php 8.1, it was impossible to override constants declared in interfaces.
-            if ($class->isInterface() && Config::get_closest_minimum_target_php_version_id() < 80100 ) {
+            if ($class->isInterface() && Config::get_closest_minimum_target_php_version_id() < 80100) {
                 $flags |= ast\flags\MODIFIER_FINAL;
             }
 

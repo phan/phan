@@ -1361,7 +1361,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitClassConstGroup(Node $node): Context
     {
-        if (($node->flags & (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) {
+        if (($node->flags & (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) {
             $this->emitIssue(
                 Issue::PrivateFinalConstant,
                 $node->lineno
@@ -2939,7 +2939,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
-        if (($node->flags & (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL|ast\flags\MODIFIER_PRIVATE)) {
+        if (($node->flags & (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) {
             $this->emitIssue(
                 Issue::PrivateFinalMethod,
                 $node->lineno,

@@ -15,6 +15,9 @@ use function array_map;
 use function implode;
 use function is_string;
 use function sprintf;
+use function var_representation;
+
+use const VAR_REPRESENTATION_SINGLE_LINE;
 
 Shim::load();
 
@@ -63,35 +66,12 @@ class ASTReverter
     public static function toShortString($node): string
     {
         if (!($node instanceof Node)) {
-            if ($node === null) {
-                // use lowercase 'null' instead of 'NULL'
-                return 'null';
-            }
-            if (\is_string($node)) {
-                return self::escapeString($node);
-            }
             if (\is_resource($node)) {
                 return 'resource(' . \get_resource_type($node) . ')';
             }
-            // TODO: minimal representations for floats, arrays, etc.
-            return \var_export($node, true);
+            return var_representation($node, VAR_REPRESENTATION_SINGLE_LINE);
         }
         return (self::$closure_map[$node->kind] ?? self::$noop)($node);
-    }
-
-    /**
-     * Escapes the inner contents to be suitable for a single-line single or double quoted string
-     *
-     * @see https://github.com/nikic/PHP-Parser/tree/master/lib/PhpParser/PrettyPrinter/Standard.php
-     */
-    public static function escapeString(string $string): string
-    {
-        if (\preg_match('/([\0-\15\16-\37])/', $string)) {
-            // Use double quoted strings if this contains newlines, tabs, control characters, etc.
-            return '"' . self::escapeInnerString($string, '"') . '"';
-        }
-        // Otherwise, use single quotes
-        return \var_export($string, true);
     }
 
     /**

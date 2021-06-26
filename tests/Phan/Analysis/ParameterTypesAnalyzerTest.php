@@ -41,20 +41,6 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         $this->assertTrue($actual_normalized_type->isEqualTo($expected_type), $msg);
     }
 
-    private function assertNullNarrowedType(
-        string $phpdoc_return_type_string,
-        string $real_return_type_string
-    ): void {
-        $phpdoc_return_type = UnionType::fromFullyQualifiedPHPDocString($phpdoc_return_type_string);
-        $real_return_type = UnionType::fromFullyQualifiedPHPDocString($real_return_type_string);
-
-        $actual_normalized_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
-
-
-        $msg = "Expected normalizeNarrowedParamType($phpdoc_return_type, $real_return_type) to be null";
-        $this->assertNull($actual_normalized_type, $msg);
-    }
-
     public function testNormalizeNarrowedParamType(): void
     {
         $this->assertSameNarrowedType('int', 'int', 'int');
@@ -62,6 +48,6 @@ final class ParameterTypesAnalyzerTest extends BaseTest
         $this->assertSameNarrowedType('array<int,string>', 'array<int,string>', 'iterable');
         $this->assertSameNarrowedType('array{0:\stdClass}', 'array{0:\stdClass}', 'array');
         $this->assertSameNarrowedType('array{0:\stdClass}', 'array{0:\stdClass}', 'iterable');
-        $this->assertNullNarrowedType('null', '');
+        $this->assertSameNarrowedType('null', 'null', '?array');
     }
 }

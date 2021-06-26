@@ -368,7 +368,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context,
                 Issue::NoopNumericLiteral,
                 $context->getLineNumberStart() ?: $this->getLineNumberOfParent() ?: $node->lineno,
-                \var_export($child_node, true)
+                \var_representation($child_node)
             );
         }
     }
