@@ -463,6 +463,7 @@ return [
         'vendor/sabre/event/lib',
         'vendor/symfony/console',
         'vendor/symfony/polyfill-php80',
+        'vendor/tysonandre/var_representation_polyfill/src',
         '.phan/plugins',
         '.phan/stubs',
     ],
