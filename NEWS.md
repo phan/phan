@@ -1,10 +1,14 @@
 Phan NEWS
 
-May 19 2021, Phan 4.0.7 (dev)
+Jun 26 2021, Phan 4.0.7
 -----------------------
 
 Language Server/Daemon mode:
 + Fix an uncaught exception sometimes seen checking for issue suppressions when pcntl is unavailable.
+
+Maintenance:
++ Expand allowed netresearch/jsonmapper version ranges to include ^4.0 for php 8.1 support.
++ Update dependencies in composer.lock for compatibility with php 8.1 in published phar files.
 
 Bug fixes:
 + Don't emit `PhanCompatibleNonCapturingCatch` when `minimum_target_php_version` is `'8.0'` or newer. (#4433)
