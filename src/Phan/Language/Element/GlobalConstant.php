@@ -96,7 +96,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         string $name
     ): GlobalConstant {
         if (!\defined($name)) {
-            throw new InvalidArgumentException(\sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", \var_export($name, true)));
+            throw new InvalidArgumentException(\sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", \var_representation($name)));
         }
         $value = \constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
@@ -158,7 +158,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $string = "const $name = $repr;$comment\n";
         } else {
             // Internal extension defined a constant with an invalid identifier.
-            $string = \sprintf("define(%s, %s);%s\n", \var_export($name, true), $repr, $comment);
+            $string = \sprintf("define(%s, %s);%s\n", \var_representation($name), $repr, $comment);
         }
         if (self::shouldAddDescriptionsToStubs()) {
             $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);

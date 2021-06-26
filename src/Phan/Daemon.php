@@ -228,7 +228,7 @@ class Daemon
         \printf(
             "Listening for Phan analysis requests at %s\nAwaiting analysis requests for directory %s\n",
             $listen_url,
-            \var_export(Config::getProjectRootDirectory(), true)
+            \var_representation(Config::getProjectRootDirectory())
         );
         $socket_server = \stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {

@@ -1066,6 +1066,7 @@ return [
 'utf8_encode' => 'string',
 'var_dump' => 'void',
 'var_export' => '?string',
+'var_representation' => 'string',
 'version_compare' => 'bool|int',
 'vfprintf' => 'int',
 'vprintf' => 'int',

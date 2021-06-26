@@ -28,17 +28,15 @@ class StringUtil
     }
 
     /**
-     * Same as var_export($value, true), but converts top-level NULL to null.
-     * Other changes may be made in the future, e.g. shorter list representations.
+     * Encode a scalar value in a compact, unambiguous representation for emitted issues.
+     * The encoder used by encodeValue may change.
+     * This fits on a single line.
      *
      * @param ?(int|bool|string|array|float) $value
      */
     public static function varExportPretty($value): string
     {
-        if ($value === null) {
-            return 'null';  // return lowercase instead of uppercase 'NULL'
-        }
-        return \var_export($value, true);
+        return \var_representation($value, VAR_REPRESENTATION_SINGLE_LINE);
     }
 
     /**
