@@ -35,7 +35,7 @@ This issue comes up when there is an attempt to access a protected class constan
 Cannot access protected class constant {CONST} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0252_class_const_visibility.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0252_class_const_visibility.php#L25).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0947_final_class_const.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0947_final_class_const.php#L12).
 
 ## PhanAccessExtendsFinalClass
 
@@ -433,7 +433,7 @@ In PHP 5.6, return types ({TYPE}) are not supported
 Cannot use arrow functions before php 7.4 in {CODE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/032_variadic_promoted_property.php#L9).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/043_short_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/043_short_use.php#L4).
 
 ## PhanCompatibleAssertDeclaration
 
@@ -448,7 +448,6 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expecte
 NOTE: This is done on a best effort basis - The native php-ast parser does not provide the actual end line numbers for attribute groups.
 
 ```
-Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/032_attributes_repeatable.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/032_attributes_repeatable.php#L11).
@@ -512,7 +511,7 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 Final class constants were not supported prior to php 8.1
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0947_final_class_const.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0947_final_class_const.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0951_private_final.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0951_private_final.php#L7).
 
 ## PhanCompatibleImplodeOrder
 
@@ -616,7 +615,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expecte
 Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/007_use.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/007_use.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/007_use.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/007_use.php#L7).
 
 ## PhanCompatiblePHP7
 
@@ -651,7 +650,6 @@ In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like clas
 ## PhanCompatibleSerializeInterfaceDeprecated
 
 ```
-The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0133_unserialize_types.php#L3).
@@ -753,7 +751,6 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expecte
 Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/007_use.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/007_use.php#L6).
 
 ## PhanCompatibleUseObjectPHP71
 
@@ -1196,7 +1193,6 @@ $a;
 
 ## PhanProvidingUnusedParameter
 
-Note that this issue should be suppressed if there are too many false positives in your project,
 or the naming of `$unused...` or `$_` is not used to indicate unused parameters in your project.
 
 This can also be suppressed on the functionlike's declaration.
@@ -1356,7 +1352,7 @@ YMMV.
 Possibly zero references to {FUNCTION}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/032_variadic_promoted_property.php#L9).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/043_short_use.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/043_short_use.php#L4).
 
 ## PhanUnreferencedConstant
 
@@ -1523,7 +1519,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0648
 Parameter ${PARAMETER} is never used
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/082_unused_parameter.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/082_unused_parameter.php#L10).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/082_unused_parameter.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/082_unused_parameter.php#L10).
 
 ## PhanUnusedPrivateMethodParameter
 
@@ -1989,7 +1985,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0126
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0133_unserialize_types.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected80#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/expected/0133_unserialize_types.php.expected80#L8).
 
 ## PhanParamSignatureRealMismatchHasParamType
 
@@ -2448,7 +2444,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0493
 Enum case {CONST} has the same value({SCALAR}) as a previous declared enum case {CONST} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L19).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L19).
 
 # StaticCallError
 
@@ -2659,7 +2655,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0939
 Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of type {TYPE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0807_int_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0807_int_cast.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/real_types_test/expected/008_substr.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/real_types_test/src/008_substr.php#L3).
 
 ## PhanImpossibleTypeComparisonInGlobalScope
 
@@ -3193,7 +3189,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0679
 Saw instantiation of enum {ENUM}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L19) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L23).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L23).
 
 ## PhanTypeInstantiateInterface
 
@@ -3222,6 +3218,22 @@ Potential instantiation of trait {TRAIT} (not an issue if this method is only ca
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0624_instantiate_abstract.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0624_instantiate_abstract.php#L43).
+
+## PhanTypeInvalidArrayKey
+
+```
+Saw array key {CODE} with key type {TYPE} but expected a value that could cast to int|string
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0954_implicit_float_int_cast.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0954_implicit_float_int_cast.php#L14).
+
+## PhanTypeInvalidArrayKeyLiteral
+
+```
+Saw array key {CODE} with key value {SCALAR} but expected a value that could cast to int|string
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0888_void_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0888_void_expression.php#L5).
 
 ## PhanTypeInvalidBitwiseBinaryOperator
 
@@ -3317,7 +3329,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0402
 Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L24) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L27).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L25) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L27).
 
 ## PhanTypeInvalidEval
 
@@ -4084,7 +4096,7 @@ $a = (new A)->v();
 Suspicious use of void return value {CODE} where a value is expected
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0888_void_expression.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0888_void_expression.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0888_void_expression.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0888_void_expression.php#L6).
 
 # UndefError
 
@@ -4477,7 +4489,7 @@ class C17 implements UndeclaredInterface {}
 Possible attempt to access missing magic method {FUNCTIONLIKE} of '{CLASS}'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0942_intersection_invokable.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0942_intersection_invokable.php#L22).
 
 ## PhanUndeclaredMagicConstant
 
@@ -5122,7 +5134,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expecte
 Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L25).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L25).
 
 ## PhanSyntaxMixedKeyNoKeyArrayDestructuring
 

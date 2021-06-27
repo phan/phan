@@ -1281,19 +1281,32 @@ class UnionTypeVisitor extends AnalysisVisitor
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
                 $elements[] = $child_node;
-            } elseif (is_scalar($key_node)) {
-                $elements[$key_node] = $child_node;  // Check for float?
-            } else {
+                continue;
+            }
+            if (\is_object($key_node)) {
                 if ($context_node === null) {
                     $context_node = new ContextNode($this->code_base, $this->context, null);
                 }
-                $key = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
-                if (is_scalar($key)) {
-                    $elements[$key] = $child_node;
-                } else {
+                $key_node = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
+                if (\is_object($key_node)) {
                     return null;
                 }
             }
+            // TODO: Add a warning elsewhere about implicit float to int conversion when analyzing arrays
+            // PHP 8.1 deprecated implicit float to int conversions
+            if (\is_scalar($key_node)) {
+                if (!\is_string($key_node)) {
+                    $key_node = (int)$key_node;
+                }
+            } elseif (\is_array($key_node)) {
+                return null;
+            } elseif (\is_resource($key_node)) {
+                $key_node = (int)$key_node;
+            } else {
+                // null
+                $key_node = (string)$key_node;
+            }
+            $elements[$key_node] = $child_node;  // Check for float?
         }
         return $elements;
     }

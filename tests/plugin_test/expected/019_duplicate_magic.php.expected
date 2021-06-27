@@ -3,5 +3,9 @@ src/019_duplicate_magic.php:10 PhanPluginDuplicateArrayKey Duplicate/Equivalent 
 src/019_duplicate_magic.php:12 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('Bar') detected in array - the earlier entry __NAME__ at line 11 will be ignored.
 src/019_duplicate_magic.php:13 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('Bar') detected in array - the earlier entry 'Bar' at line 12 will be ignored.
 src/019_duplicate_magic.php:15 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('src') detected in array - the earlier entry __DIR__ at line 14 will be ignored.
+src/019_duplicate_magic.php:16 PhanTypeInvalidArrayKeyLiteral Saw array key false with key value false but expected a value that could cast to int|string
+src/019_duplicate_magic.php:17 PhanTypeInvalidArrayKeyLiteral Saw array key true with key value true but expected a value that could cast to int|string
+src/019_duplicate_magic.php:18 PhanTypeInvalidArrayKeyLiteral Saw array key Null with key value null but expected a value that could cast to int|string
 src/019_duplicate_magic.php:19 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry true at line 17 will be ignored.
+src/019_duplicate_magic.php:19 PhanTypeInvalidArrayKeyLiteral Saw array key true with key value true but expected a value that could cast to int|string
 src/019_duplicate_magic.php:20 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry false at line 16 will be ignored.

@@ -1,5 +1,14 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.0a3 (dev)
+-------------------------
+
+New Features (Analysis):
++ Emit PhanTypeInvalidArrayKey and PhanTypeInvalidArrayKeyValue for invalid array key literal types or values.
+
+Bug fixes:
+- Fix a crash when analyzing array literals with invalid key literal values
+
 Jun 26 2021, Phan 5.0.0a2
 -------------------------
 

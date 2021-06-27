@@ -1,3 +1,2 @@
-%s:5 PhanTypeVoidExpression Suspicious use of void return value do_echo(1) where a value is expected
-%s:5 PhanTypeVoidExpression Suspicious use of void return value do_echo(2) where a value is expected
+%s:5 PhanTypeInvalidArrayKeyLiteral Saw array key do_echo(1) with key value null but expected a value that could cast to int|string
 %s:6 PhanTypeVoidExpression Suspicious use of void return value do_echo(3) where a value is expected
