@@ -1,0 +1,18 @@
+%s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [new MyStringable()=>1] of type non-empty-associative-array<1> (real type non-empty-array<mixed,1>) but \strlen() takes string
+%s:13 PhanTypeInvalidArrayKeyLiteral Saw array key 4.5 with key value 4.5 but expected a value that could cast to int|string
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [4.5=>1] of type array{4:1} but \strlen() takes string
+%s:14 PhanTypeInvalidArrayKey Saw array key (rand(0, 1) === 1) with key type bool but expected a value that could cast to int|string
+%s:14 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [(rand(0, 1) === 1)=>1] of type non-empty-associative-array<1> (real type non-empty-array<mixed,1>) but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [4.0=>1] of type array{4:1} but \strlen() takes string
+%s:16 PhanTypeInvalidArrayKeyLiteral Saw array key false with key value false but expected a value that could cast to int|string
+%s:16 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [false=>0] of type array{0:0} but \strlen() takes string
+%s:17 PhanTypeInvalidArrayKeyLiteral Saw array key true with key value true but expected a value that could cast to int|string
+%s:17 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [true=>1] of type array{1:1} but \strlen() takes string
+%s:18 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
+%s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [null=>'abc'] of type array{:'abc'} but \strlen() takes string
+%s:19 PhanTypeInvalidArrayKey Saw array key new stdClass() with key type \stdClass but expected a value that could cast to int|string
+%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [new stdClass()=>'abc'] of type non-empty-associative-array<'abc'> (real type non-empty-array<mixed,'abc'>) but \strlen() takes string
+%s:21 PhanTypeInvalidArrayKey Saw array key $o with key type array{} but expected a value that could cast to int|string
+%s:21 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [$o=>1] of type non-empty-associative-array<1> (real type non-empty-array<mixed,1>) but \strlen() takes string
+%s:22 PhanTypeInvalidArrayKey Saw array key STDIN with key type resource but expected a value that could cast to int|string
+%s:22 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [STDIN=>'from STDIN'] of type array{1:'from STDIN'} but \strlen() takes string

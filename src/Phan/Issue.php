@@ -290,6 +290,8 @@ class Issue
     public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
     public const EnumForbiddenMagicMethod = 'PhanEnumForbiddenMagicMethod';
     public const ImpossibleIntersectionType = 'PhanImpossibleIntersectionType';
+    public const TypeInvalidArrayKey = 'PhanTypeInvalidArrayKey';
+    public const TypeInvalidArrayKeyLiteral = 'PhanTypeInvalidArrayKeyLiteral';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -2958,6 +2960,22 @@ class Issue
                 'Intersection type {TYPE} contains part {TYPE} which cannot cast to the declared type {TYPE}',
                 self::REMEDIATION_B,
                 10182
+            ),
+            new Issue(
+                self::TypeInvalidArrayKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw array key {CODE} with key type {TYPE} but expected a value that could cast to int|string',
+                self::REMEDIATION_B,
+                10183
+            ),
+            new Issue(
+                self::TypeInvalidArrayKeyLiteral,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw array key {CODE} with key value {SCALAR} but expected a value that could cast to int|string',
+                self::REMEDIATION_B,
+                10184
             ),
 
             // Issue::CATEGORY_VARIABLE

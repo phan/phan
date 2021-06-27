@@ -50,6 +50,7 @@ use function array_map;
 use function count;
 use function end;
 use function explode;
+use function is_object;
 use function is_string;
 use function preg_match;
 use function rtrim;
@@ -316,6 +317,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
+        $key = $node->children['key'];
+        if ($key !== null) {
+            $this->analyzeArrayKeyType($key, $node->lineno);
+        }
+
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -336,6 +342,45 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
         return $context;
+    }
+
+    /**
+     * @param int|string|float|Node $key_node
+     */
+    private function analyzeArrayKeyType($key_node, int $start_line): void
+    {
+        if (is_object($key_node)) {
+            $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
+            $key = $union_type->asSingleScalarValueOrNullOrSelf();
+            if (is_object($key)) {
+                if (!$union_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('?int|?string'), $this->code_base)) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidArrayKey,
+                        $start_line,
+                        ASTReverter::toShortString($key_node),
+                        $union_type
+                    );
+                }
+                return;
+            }
+        } else {
+            $key = $key_node;
+        }
+        if (\is_int($key) || is_string($key)) {
+            return;
+        }
+        if (\is_float($key) && (float)(int)$key === $key) {
+            // php 8.1 deprecates casting floats to integers.
+            return;
+        }
+        // php 8.1 deprecates casting resources to integers implicitly as well
+
+        $this->emitIssue(
+            Issue::TypeInvalidArrayKeyLiteral,
+            $start_line,
+            ASTReverter::toShortString($key_node),
+            \var_representation($key)
+        );
     }
 
     /**
