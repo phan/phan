@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\PluginV3;
@@ -153,6 +154,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         $return_type = $func->getUnionType();
         return ($return_type->isEmpty()
             || $return_type->containsNullableLabeled()
+            || $return_type->hasType(NeverType::instance(false))
             || $return_type->hasType(VoidType::instance(false))
             || $return_type->hasType(NullType::instance(false)));
     }

@@ -47,6 +47,7 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NullType;
@@ -1507,6 +1508,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !self::declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
+            && !$return_type->hasType(NeverType::instance(false))
         ) {
             $this->warnTypeMissingReturn($func, $node);
         }
