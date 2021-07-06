@@ -5,9 +5,10 @@ Phan NEWS
 
 New Features (Analysis):
 + Emit PhanTypeInvalidArrayKey and PhanTypeInvalidArrayKeyValue for invalid array key literal types or values.
++ Fix false positive `PhanTypeMissingReturn`/`PhanPluginAlwaysReturnMethod` for method with phpdoc return type of `@return never`
 
 Bug fixes:
-- Fix a crash when analyzing array literals with invalid key literal values
+- Fix a crash when analyzing array literals with invalid key literal values in php 8.1.
 
 Jun 26 2021, Phan 5.0.0a2
 -------------------------
