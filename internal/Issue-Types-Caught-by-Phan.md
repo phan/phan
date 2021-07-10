@@ -521,6 +521,12 @@ In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Sh
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0511_implode.php#L7).
 
+## PhanCompatibleIntersectionType
+
+```
+Cannot use intersection types ({TYPE}) before php 8.0
+```
+
 ## PhanCompatibleIterableTypePHP70
 
 ```

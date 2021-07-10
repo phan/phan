@@ -3080,6 +3080,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$type) {
             return;
         }
+        if ($type->kind === ast\AST_TYPE_INTERSECTION) {
+            if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+                // TODO: Warn about false|false, false|null, etc in php 8.0.
+                $this->emitIssue(
+                    Issue::CompatibleIntersectionType,
+                    $type->lineno,
+                    ASTReverter::toShortString($type)
+                );
+            }
+            return;
+        }
         if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
             // Don't warn about using union types if the project dropped support for php versions older than 8.0
             return;

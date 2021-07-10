@@ -1214,7 +1214,7 @@ trait FunctionTrait
             if (!($this instanceof FunctionInterface)) {
                 throw new AssertionError('Expected any class using FunctionTrait to implement FunctionInterface');
             }
-            FunctionTrait::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
+            self::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
     }
 

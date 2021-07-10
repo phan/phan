@@ -6,7 +6,7 @@ namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
 use Phan\Analysis\ConditionVisitorInterface;
-use Phan\Analysis\ConditionVisitorUtil;
+use Phan\Analysis\ConditionVisitor;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 
@@ -46,7 +46,7 @@ class NotHasTypeCondition implements BinaryCondition
         // Make a copy of the variable
         $variable = clone($variable);
         $code_base = $visitor->getCodeBase();
-        $result_type = ConditionVisitorUtil::excludeMatchingTypes($code_base, $variable->getUnionType(), $this->type);
+        $result_type = ConditionVisitor::excludeMatchingTypes($code_base, $variable->getUnionType(), $this->type);
 
         $variable->setUnionType($result_type);
 

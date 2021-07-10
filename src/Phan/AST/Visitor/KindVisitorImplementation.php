@@ -406,6 +406,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitTypeIntersection(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitTypeUnion(Node $node)
     {
         return $this->visit($node);

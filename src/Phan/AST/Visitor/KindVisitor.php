@@ -375,6 +375,11 @@ interface KindVisitor
     public function visitType(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_TYPE_INTERSECTION`
+     */
+    public function visitTypeIntersection(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_TYPE_UNION`
      */
     public function visitTypeUnion(Node $node);

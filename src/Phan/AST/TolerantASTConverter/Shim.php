@@ -49,6 +49,9 @@ class Shim
         if (!defined('ast\AST_ATTRIBUTE_GROUP')) {
             define('ast\AST_ATTRIBUTE_GROUP', 251);
         }
+        if (!defined('ast\AST_TYPE_INTERSECTION')) {
+            define('ast\AST_TYPE_INTERSECTION', 250);
+        }
         if (!defined('ast\AST_MATCH')) {
             define('ast\AST_MATCH', 0x2fc);
         }
