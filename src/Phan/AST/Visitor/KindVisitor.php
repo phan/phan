@@ -80,6 +80,11 @@ interface KindVisitor
     public function visitCall(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_CALLABLE_CONVERT`
+     */
+    public function visitCallableConvert(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_CAST`
      */
     public function visitCast(Node $node);

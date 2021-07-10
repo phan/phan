@@ -147,6 +147,9 @@ class ASTReverter
             ast\AST_ARG_LIST => static function (Node $node): string {
                 return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
             },
+            ast\AST_CALLABLE_CONVERT => /** @unused-param $node */ static function (Node $node): string {
+                return '(...)';
+            },
             ast\AST_ATTRIBUTE_LIST => static function (Node $node): string {
                 return implode(' ', array_map('self::toShortString', $node->children));
             },

@@ -111,6 +111,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitCallableConvert(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitCast(Node $node)
     {
         return $this->visit($node);

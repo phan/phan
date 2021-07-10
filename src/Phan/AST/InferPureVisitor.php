@@ -460,7 +460,8 @@ class InferPureVisitor extends AnalysisVisitor
         if (!($name_node instanceof Node && $name_node->kind === ast\AST_NAME)) {
             throw new NodeException($node);
         }
-        $this->visitArgList($node->children['args']);
+        // "Fatal error: Cannot create Closure for new expression" (for AST_CALLABLE_CONVERT) is caught elsewhere
+        $this->__invoke($node->children['args']);
         try {
             $class_list = (new ContextNode($this->code_base, $this->context, $name_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (Exception $_) {
@@ -542,7 +543,7 @@ class InferPureVisitor extends AnalysisVisitor
         if (!$found_function) {
             throw new NodeException($expr, 'not a function');
         }
-        $this->visitArgList($node->children['args']);
+        $this->__invoke($node->children['args']);
     }
 
     public function visitStaticCall(Node $node): void
@@ -592,7 +593,7 @@ class InferPureVisitor extends AnalysisVisitor
         }
 
         $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method));
-        $this->visitArgList($node->children['args']);
+        $this->__invoke($node->children['args']);
     }
 
     public function visitNullsafeMethodCall(Node $node): void
@@ -616,7 +617,7 @@ class InferPureVisitor extends AnalysisVisitor
         }
         $this->checkCalledFunction($node, $class->getMethodByName($this->code_base, $method_name));
 
-        $this->visitArgList($node->children['args']);
+        $this->__invoke($node->children['args']);
     }
 
     protected function getClassForVariable(Node $expr): Clazz
@@ -701,6 +702,14 @@ class InferPureVisitor extends AnalysisVisitor
                 $this->__invoke($x);
             }
         }
+    }
+
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitCallableConvert(Node $node): void
+    {
     }
 
     public function visitNamedArg(Node $node): void

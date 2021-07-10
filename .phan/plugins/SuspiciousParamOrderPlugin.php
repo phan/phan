@@ -49,6 +49,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
         $args = $node->children['args']->children;
         if (count($args) < 1) {
             // Can't have a suspicious param order/position if there are no params
+            // (or for AST_CALLABLE_CONVERT)
             return;
         }
         $expression = $node->children['expr'];
@@ -374,6 +375,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
         $args = $node->children['args']->children;
         if (count($args) < 1) {
             // Can't have a suspicious param order/position if there are no params
+            // (or for AST_CALLABLE_CONVERT)
             return;
         }
 

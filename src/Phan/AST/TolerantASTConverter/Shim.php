@@ -52,6 +52,9 @@ class Shim
         if (!defined('ast\AST_TYPE_INTERSECTION')) {
             define('ast\AST_TYPE_INTERSECTION', 250);
         }
+        if (!defined('ast\AST_CALLABLE_CONVERT')) {
+            define('ast\AST_CALLABLE_CONVERT', 249);
+        }
         if (!defined('ast\AST_MATCH')) {
             define('ast\AST_MATCH', 0x2fc);
         }

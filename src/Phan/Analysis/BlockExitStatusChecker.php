@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 
@@ -102,7 +103,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         if ($cond instanceof Node) {
             // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
-            if ($cond->kind === \ast\AST_CONST) {
+            if ($cond->kind === ast\AST_CONST) {
                 $cond_name_string = $cond->children['name']->children['name'] ?? null;
                 return \is_string($cond_name_string) && \strcasecmp($cond_name_string, 'true') === 0;
             }
@@ -508,7 +509,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     public function visitUnaryOp(Node $node): int
     {
         // Don't modify $node->flags, use unmodified flags here
-        if ($node->flags !== \ast\flags\UNARY_SILENCE) {
+        if ($node->flags !== ast\flags\UNARY_SILENCE) {
             return self::STATUS_PROCEED;
         }
         // Analyze exit status of `@expr` like `expr` (e.g. @trigger_error())
@@ -576,7 +577,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         $expression = $node->children['expr'];
         if ($expression instanceof Node) {
-            if ($expression->kind !== \ast\AST_NAME) {
+            if ($expression->kind !== ast\AST_NAME) {
                 return self::STATUS_PROCEED;  // best guess
             }
             $function_name = $expression->children['name'];
@@ -590,7 +591,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $function_name = $expression;
         }
         if ($function_name === '') {
+            // TODO: Check for all invalid fqsens, allowing 'NS\ClassName::methodName'
             return self::STATUS_THROW;  // nonsense such as ''();
+        }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a closure, not calling it.
+            return self::STATUS_PROCEED;
         }
         if ($function_name[0] === '\\') {
             $function_name = \substr($function_name, 1);
@@ -614,7 +620,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!($constant_ast instanceof Node)) {
             return self::STATUS_PROCEED;
         }
-        if ($constant_ast->kind !== \ast\AST_CONST) {
+        if ($constant_ast->kind !== ast\AST_CONST) {
             return self::STATUS_PROCEED;
         }
         $name = $constant_ast->children['name']->children['name'] ?? null;

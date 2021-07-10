@@ -280,11 +280,17 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitCall(Node $node): Context
     {
+        $args_node = $node->children['args'];
+        if ($args_node->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about `if (!strlen(...))` always being a truthy closure
+            $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+            return $this->context;
+        }
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
             return $this->context;
         }
-        $args = $node->children['args']->children;
+        $args = $args_node->children;
 
         $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
         if ($function_name === 'array_key_exists') {

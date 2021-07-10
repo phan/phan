@@ -57,6 +57,7 @@ class Element
         ast\AST_BINARY_OP          => 'visitBinaryOp',
         ast\AST_BREAK              => 'visitBreak',
         ast\AST_CALL               => 'visitCall',
+        ast\AST_CALLABLE_CONVERT   => 'visitCallableConvert',
         ast\AST_CAST               => 'visitCast',
         ast\AST_CATCH              => 'visitCatch',
         ast\AST_CLASS              => 'visitClass',
