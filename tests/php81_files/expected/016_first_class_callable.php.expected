@@ -1,0 +1,20 @@
+%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $s2 - it has union type Closure(string):int(real=Closure(string):int)
+%s:6 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is new stdClass() of type \stdClass but \strlen() takes string
+%s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is new stdClass() of type \stdClass but \strlen() takes string
+%s:9 PhanUseReturnValueCallableConvert Expected to use the Closure created from $var(...)
+%s:10 PhanUseReturnValueCallableConvert Expected to use the Closure created from var_dump(...)
+%s:13 PhanRedundantConditionInGlobalScope Redundant attempt to cast strlen(...) of type Closure(string):int to truthy in the global scope (likely a false positive)
+%s:18 PhanEmptyPublicMethod Empty public method \C16::staticMethod()
+%s:18 PhanPluginUseReturnValueNoopVoid The function/method \C16::staticMethod() is declared to return bool and it has no side effects
+%s:18 PhanTypeMissingReturnReal Method \C16::staticMethod is declared to return bool in its real type signature but has no return value
+%s:18 PhanUnusedPublicNoOverrideMethodParameter Parameter $arg is never used
+%s:19 PhanEmptyPublicMethod Empty public method \C16::instanceMethod()
+%s:19 PhanPluginUseReturnValueNoopVoid The function/method \C16::instanceMethod() is declared to return \C16 and it has no side effects
+%s:19 PhanTypeMissingReturnReal Method \C16::instanceMethod is declared to return \C16 in its real type signature but has no return value
+%s:19 PhanUnusedPublicNoOverrideMethodParameter Parameter $arg is never used
+%s:22 PhanStaticCallToNonStatic Static call to non-static method \C16::instanceMethod() defined at %s:19. This is an Error in PHP 8.0+.
+%s:22 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 1 of type 1 but \C16::instanceMethod() takes \stdClass defined at %s:19
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is C16::staticMethod(...)(new stdClass()) of type bool but \strlen() takes string
+%s:23 PhanTypeMismatchArgumentReal Argument 1 ($arg) is new stdClass() of type \stdClass but \C16::staticMethod() takes int defined at %s:18
+%s:25 PhanUseReturnValueCallableConvert Expected to use the Closure created from C16::staticMethod(...)
+%s:26 PhanUseReturnValueCallableConvert Expected to use the Closure created from new C16()->instanceMethod(...)

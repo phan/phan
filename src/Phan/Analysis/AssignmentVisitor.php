@@ -171,9 +171,15 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitMethodCall(Node $node): Context
     {
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about this being unanalyzable
+            return $this->visit($node);
+        }
         if ($this->dim_depth >= 2) {
             return $this->context;
         }
@@ -221,9 +227,16 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitCall(Node $node): Context
     {
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about this being unanalyzable
+            return $this->visit($node);
+        }
+        // TODO: Warn about first-class callable conversion
         $expression = $node->children['expr'];
         if ($this->dim_depth < 2) {
             // Get the function.
@@ -289,6 +302,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitStaticCall(Node $node): Context
     {

@@ -58,6 +58,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     public const UseReturnValueNoopVoid = 'PhanPluginUseReturnValueNoopVoid';
     public const UseReturnValueGenerator = 'PhanPluginUseReturnValueGenerator';
     public const UseReturnValueOfNever = 'PhanUseReturnValueOfNever';
+    public const UseReturnValueCallableConvert = 'PhanUseReturnValueCallableConvert';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     public const DEFAULT_THRESHOLD_PERCENTAGE = 98;

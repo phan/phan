@@ -1235,7 +1235,8 @@ class ParseVisitor extends ScopeVisitor
         if (Config::get_backward_compatibility_checks()) {
             $this->analyzeBackwardCompatibility($node);
 
-            foreach ($node->children['args']->children as $arg_node) {
+            // Handle first-class callables which have no args
+            foreach ($node->children['args']->children ?? [] as $arg_node) {
                 if ($arg_node instanceof Node) {
                     $this->analyzeBackwardCompatibility($arg_node);
                 }
@@ -1246,11 +1247,12 @@ class ParseVisitor extends ScopeVisitor
 
     private function analyzeDefine(Node $node): void
     {
-        $args = $node->children['args'];
-        if (\count($args->children) < 2) {
+        $args = $node->children['args']->children ?? [];
+        if (\count($args) < 2) {
+            // Ignore first-class callables and calls with too few arguments.
             return;
         }
-        $name = $args->children[0];
+        $name = $args[0];
         if ($name instanceof Node) {
             try {
                 $name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name, false);
@@ -1269,7 +1271,7 @@ class ParseVisitor extends ScopeVisitor
             $this->context,
             $node->lineno,
             $name,
-            $args->children[1],
+            $args[1],
             0,
             '',
             true,
@@ -1721,7 +1723,7 @@ class ParseVisitor extends ScopeVisitor
      */
     private function recordClassAlias(Node $node): void
     {
-        $args = $node->children['args']->children;
+        $args = $node->children['args']->children ?? [];
         if (\count($args) < 2 || \count($args) > 3) {
             return;
         }
@@ -1776,6 +1778,10 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
     public function visitName(Node $node): Context
+    {
+        return $this->context;
+    }
+    public function visitCallableConvert(Node $node): Context
     {
         return $this->context;
     }

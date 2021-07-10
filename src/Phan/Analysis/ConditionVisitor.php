@@ -1023,6 +1023,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     public function visitCall(Node $node): Context
     {
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about `if (strlen(...))` always being a truthy closure if redundant condition detection is enabled.
+            return $this->visit($node);
+        }
         // Analyze the call to the node, in case it modifies any variables (e.g. count($x = new_value()), if (preg_match(..., $matches), etc.
         // TODO: Limit this to nodes which actually contain variables or properties?
         // TODO: Only call this if the caller is also a ConditionVisitor, since BlockAnalysisVisitor would call this for ternaries and if statements already.

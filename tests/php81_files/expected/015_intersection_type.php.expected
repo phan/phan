@@ -1,0 +1,3 @@
+%s:6 PhanTypeNoPropertiesForeach Class \ArrayAccess&\Countable was passed to foreach, but it does not extend Traversable and doesn't have any declared properties. (This check excludes dynamic properties)
+%s:9 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression $arr with type \ArrayAccess&\Countable
+%s:18 PhanTypeMismatchArgument Argument 1 ($arr) is new Uncountable() of type \Countable|\Uncountable but \example() takes \ArrayAccess&\Countable defined at %s:2
