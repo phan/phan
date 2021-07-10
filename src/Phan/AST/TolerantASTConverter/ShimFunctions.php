@@ -30,6 +30,7 @@ class ShimFunctions
         ast\AST_NAME_LIST => 'AST_NAME_LIST',
         ast\AST_TRAIT_ADAPTATIONS => 'AST_TRAIT_ADAPTATIONS',
         ast\AST_USE => 'AST_USE',
+        ast\AST_TYPE_INTERSECTION => 'AST_TYPE_INTERSECTION',
         ast\AST_TYPE_UNION => 'AST_TYPE_UNION',
         ast\AST_ATTRIBUTE_LIST => 'AST_ATTRIBUTE_LIST',
         ast\AST_MATCH_ARM_LIST => 'AST_MATCH_ARM_LIST',

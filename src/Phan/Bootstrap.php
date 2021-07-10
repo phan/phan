@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.12';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.13';
 
 /**
  * Dump instructions on how to install php-ast
@@ -139,8 +139,8 @@ if (extension_loaded('ast')) {
         exit(1);
     };
 
-    if (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.12') < 0) {
-        $phan_output_ast_too_old_and_exit('1.0.12', '8.1');
+    if (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.13') < 0) {
+        $phan_output_ast_too_old_and_exit('1.0.13', '8.1');
     } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.10') < 0) {
         $phan_output_ast_too_old_and_exit('1.0.10', '8.0');
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {

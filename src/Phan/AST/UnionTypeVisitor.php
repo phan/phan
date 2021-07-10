@@ -51,6 +51,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralIntType;
@@ -686,6 +687,55 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_TYPE_INTERSECTION`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     *
+     * @throws AssertionError if the type flags were unknown
+     */
+    public function visitTypeIntersection(Node $node): UnionType
+    {
+        // TODO: Validate that there aren't any duplicates
+        if (\count($node->children) === 1) {
+            // Might be possible due to the polyfill in the future.
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+            return $this->__invoke($node->children[0]);
+        }
+        $types = [];
+        foreach ($node->children as $c) {
+            if (!$c instanceof Node) {
+                throw new AssertionError("Saw non-node in union type");
+            }
+            $kind = $c->kind;
+            if ($kind === ast\AST_TYPE) {
+                $types[] = $this->visitType($c);
+            } elseif ($kind === ast\AST_NAME) {
+                if ($this->context->getScope()->isInTraitScope()) {
+                    $name = \strtolower($c->children['name']);
+                    if ($name === 'self') {
+                        $types[] = SelfType::instance(false)->asRealUnionType();
+                        continue;
+                    } elseif ($name === 'static') {
+                        $types[] = StaticType::instance(false)->asRealUnionType();
+                        continue;
+                    }
+                }
+                $types[] = $this->visitName($c);
+            } else {
+                throw new AssertionError("Expected union type to be composed of types and names");
+            }
+        }
+        $result = [IntersectionType::createFromTypes($types, $this->code_base, $this->context)];
+        return UnionType::of($result, $result);
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_TYPE_UNION`
      *
      * @param Node $node
@@ -823,8 +873,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             $result = $this->visitName($node);
         } elseif ($kind === ast\AST_TYPE_UNION) {
             $result = $this->visitTypeUnion($node);
+        } elseif ($kind === ast\AST_TYPE_INTERSECTION) {
+            $result = $this->visitTypeIntersection($node);
         } else {
-            throw new AssertionError("Expected a type, union type, or a name in the signature: node: " . Debug::nodeToString($node));
+            throw new AssertionError("Expected a type, union type, intersection type, or a name in the signature: node: " . Debug::nodeToString($node));
         }
         if ($is_nullable) {
             return $result->nullableClone();

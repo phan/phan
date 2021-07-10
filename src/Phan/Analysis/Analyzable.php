@@ -113,7 +113,7 @@ trait Analyzable
         if (!$definition_node) {
             return $context;
         }
-        self::ensureDidAnnotate($definition_node);
+        static::ensureDidAnnotate($definition_node);
 
         // Closures depend on the context surrounding them such
         // as for getting `use(...)` variables. Since we don't

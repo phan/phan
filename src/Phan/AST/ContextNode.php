@@ -10,7 +10,6 @@ use ast\Node;
 use Error;
 use Exception;
 use Phan\Analysis\ConditionVisitor;
-use Phan\Analysis\ConditionVisitorUtil;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -2633,7 +2632,7 @@ class ContextNode
         if (\count($arg_list) !== 1) {
             return $node;
         }
-        $raw_function_name = ConditionVisitorUtil::getFunctionName($node);
+        $raw_function_name = ConditionVisitor::getFunctionName($node);
         if (!is_string($raw_function_name)) {
             return $node;
         }
