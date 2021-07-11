@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
@@ -15,7 +16,8 @@ use const PHP_VERSION_ID;
  *
  * @suppress PhanUndeclaredConstant TODO:
  */
-class CompatiblePhpTokenizer extends PhpTokenizer {
+class CompatiblePhpTokenizer extends PhpTokenizer
+{
     /** @suppress PhanUndeclaredConstant */
     protected const T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG = PHP_VERSION_ID >= 80100 ? \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG : -1;
     /** @suppress PhanUndeclaredConstant */

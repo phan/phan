@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Phan\AST\TolerantASTConverter;
@@ -18,11 +19,13 @@ use const PHP_VERSION_ID;
  * @package Microsoft\PhpParser
  * @suppress PhanUndeclaredConstant TODO: Make it only necessary on the class constant declaration
  */
-class CompatibleParser extends Parser {
+class CompatibleParser extends Parser
+{
     /**
      * Create a parser to accommodate edge cases in the current php minor version and tolerant-php-parser version
      */
-    public static function create(): Parser {
+    public static function create(): Parser
+    {
         if (PHP_VERSION_ID >= 80100) {
             return new self();
         }
