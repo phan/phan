@@ -7,7 +7,7 @@ namespace Phan\Library;
 use AssertionError;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\FilePositionMap;
-use Microsoft\PhpParser\Parser;
+use Phan\AST\TolerantASTConverter\CompatibleParser;
 
 /**
  * Represents the cached contents of a given file, and various ways to access that file.
@@ -60,7 +60,7 @@ class FileCacheEntry
      */
     public function getAST(): PhpParser\Node
     {
-        return $this->ast ?? ($this->ast = (new Parser())->parseSourceFile($this->contents));
+        return $this->ast ?? ($this->ast = CompatibleParser::create()->parseSourceFile($this->contents));
     }
 
     /**

@@ -7,6 +7,7 @@ New Features (Analysis):
 + Support parsing php 8.1 intersection types in php-ast 1.0.13+ (#4469)
   (not yet supported in polyfill)
 + Support parsing php 8.1 first-class callable syntax in unreleased php-ast version (#4464)
++ Support parsing php 8.1 readonly property modifier (#4463)
 + Emit `PhanTypeInvalidArrayKey` and `PhanTypeInvalidArrayKeyValue` for invalid array key literal types or values.
 + Fix false positive `PhanTypeMissingReturn`/`PhanPluginAlwaysReturnMethod` for method with phpdoc return type of `@return never`
 
