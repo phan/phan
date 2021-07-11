@@ -25,6 +25,7 @@ use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\EnumCase;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\FunctionInterface;
@@ -345,7 +346,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Handle constructor property promotion of __construct parameters
             foreach ($method->getParameterList() as $i => $parameter) {
-                if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS) {
+                if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
                     // @phan-suppress-next-line PhanTypeMismatchArgumentNullable kind is AST_PARAM
                     $this->addPromotedConstructorPropertyFromParam($class, $method, $parameter, $node->children['params']->children[$i]);
                 }
@@ -409,7 +410,7 @@ class ParseVisitor extends ScopeVisitor
             $parameter->getUnionType()->getRealUnionType(),
             $variable_comment,
             $lineno,
-            $parameter_node->flags & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS,
+            $parameter_node->flags & Parameter::PARAM_MODIFIER_FLAGS,
             $doc_comment,
             $property_comment,
             $attributes
@@ -628,7 +629,20 @@ class ParseVisitor extends ScopeVisitor
         }
         $property->setDefaultType($default_type);
 
-        $property->setPhanFlags($property_comment->getPhanFlagsForProperty());
+        $phan_flags = $property_comment->getPhanFlagsForProperty();
+        if ($flags & ast\flags\MODIFIER_READONLY) {
+            $phan_flags |= Flags::IS_READ_ONLY;
+            if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $context_for_property,
+                    Issue::CompatibleReadonlyProperty,
+                    $context_for_property->getLineNumberStart(),
+                    $property
+                );
+            }
+        }
+        $property->setPhanFlags($phan_flags);
         $property->setDocComment($doc_comment);
 
         // Add the property to the class

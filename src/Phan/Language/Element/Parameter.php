@@ -51,7 +51,8 @@ class Parameter extends Variable
     public const REFERENCE_IGNORED = 4;
 
     public const PARAM_MODIFIER_VISIBILITY_FLAGS = ast\flags\PARAM_MODIFIER_PUBLIC | ast\flags\PARAM_MODIFIER_PRIVATE | ast\flags\PARAM_MODIFIER_PROTECTED;
-
+    /** NOTE: Currently, any of these flags imply that constructor property promotion is being used */
+    public const PARAM_MODIFIER_FLAGS = self::PARAM_MODIFIER_VISIBILITY_FLAGS | ast\flags\MODIFIER_READONLY;
 
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
@@ -635,6 +636,9 @@ class Parameter extends Variable
         if ($flags & self::PARAM_MODIFIER_VISIBILITY_FLAGS) {
             $string .= $flags & ast\flags\PARAM_MODIFIER_PUBLIC ? 'public ' :
                         ($flags & ast\flags\PARAM_MODIFIER_PROTECTED ? 'protected ' : 'private ');
+        }
+        if ($flags & ast\flags\MODIFIER_READONLY) {
+            $string .= 'readonly ';
         }
 
         $union_type = $this->getNonVariadicUnionType();

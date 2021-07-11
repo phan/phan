@@ -93,6 +93,9 @@ class Shim
         if (!defined('ast\flags\PARAM_MODIFIER_PRIVATE')) {
             define('ast\flags\PARAM_MODIFIER_PRIVATE', $max_param_flag << 3);
         }
+        if (!defined('ast\flags\MODIFIER_READONLY')) {
+            define('ast\flags\MODIFIER_READONLY', $max_param_flag << 4);
+        }
         if (!defined('ast\flags\TYPE_FALSE')) {
             define('ast\flags\TYPE_FALSE', 2);
         }

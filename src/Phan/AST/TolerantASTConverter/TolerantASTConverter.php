@@ -19,7 +19,6 @@ use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression;
 use Microsoft\PhpParser\Node\Expression\TernaryExpression;
 use Microsoft\PhpParser\Node\SourceFileNode;
-use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
 use Phan\CLI;
@@ -336,7 +335,9 @@ class TolerantASTConverter
      */
     public static function phpParserParse(string $file_contents, array &$errors = []): PhpParser\Node\SourceFileNode
     {
-        $parser = new Parser();  // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
+        // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
+        // This may stop being an issue when php 7.2 support is dropped.
+        $parser = CompatibleParser::create();
         $result = $parser->parseSourceFile($file_contents);
         $errors = DiagnosticsProvider::getDiagnostics($result);
         return $result;

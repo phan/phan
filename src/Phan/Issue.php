@@ -588,6 +588,7 @@ class Issue
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
     public const CompatibleScalarTypePHP56          = 'PhanCompatibleScalarTypePHP56';
     public const CompatibleAnyReturnTypePHP56       = 'PhanCompatibleAnyReturnTypePHP56';
+    public const CompatibleReadonlyProperty         = 'PhanCompatibleReadonlyProperty';
     public const CompatibleIntersectionType         = 'PhanCompatibleIntersectionType';
     public const CompatibleUnionType                = 'PhanCompatibleUnionType';
     public const CompatibleStaticType               = 'PhanCompatibleStaticType';
@@ -5201,6 +5202,14 @@ class Issue
                 "Final class constants were not supported prior to php 8.1",
                 self::REMEDIATION_B,
                 3044
+            ),
+            new Issue(
+                self::CompatibleReadonlyProperty,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use readonly modifier on property {PROPERTY} before php 8.1",
+                self::REMEDIATION_B,
+                3046
             ),
 
             // Issue::CATEGORY_GENERIC

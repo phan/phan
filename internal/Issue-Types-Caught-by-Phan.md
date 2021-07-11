@@ -647,6 +647,12 @@ PHP4 constructors will be removed in php 8, and should not be used. __construct(
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0198_list_property.php#L7).
 
+## PhanCompatibleReadonlyProperty
+
+```
+Cannot use readonly modifier on property {PROPERTY} before php 8.1
+```
+
 ## PhanCompatibleScalarTypePHP56
 
 ```

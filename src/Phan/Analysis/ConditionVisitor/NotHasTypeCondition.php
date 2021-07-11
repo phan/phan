@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
-use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 

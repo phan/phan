@@ -4608,7 +4608,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     ($method instanceof Func && $method->isClosure() ? $argument_type : $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances())->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet())
                 );
             }
-            if ($method instanceof Method && ($parameter->getFlags() & Parameter::PARAM_MODIFIER_VISIBILITY_FLAGS)) {
+            if ($method instanceof Method && ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS)) {
                 $this->analyzeArgumentWithConstructorPropertyPromotion($method, $parameter);
             }
         }
