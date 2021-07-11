@@ -165,7 +165,7 @@ class RedundantReturnVisitor
         $remaining_returns = $possible_return_nodes;
         $last_return = \array_pop($remaining_returns);
         $last_expr = $last_return->children['expr'];
-        if (!ParseVisitor::isConstExpr($last_expr)) {
+        if (!ParseVisitor::isConstExpr($last_expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
             return;
         }
         $last_hash = ASTHasher::hash($last_expr);
@@ -173,7 +173,8 @@ class RedundantReturnVisitor
         $last_value = null;
         foreach ($remaining_returns as $return) {
             $expr = $return->children['expr'];
-            if (!ParseVisitor::isConstExpr($expr)) {
+            // TODO: Also warn about `new MyClass(constant arguments)` without warning about compatibility with php 8.1?
+            if (!ParseVisitor::isConstExpr($expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                 return;
             }
             if (ASTHasher::hash($expr) === $last_hash) {

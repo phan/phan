@@ -1134,7 +1134,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 }
                 return true;
             default:
-                return ParseVisitor::isConstExpr($node);
+                return ParseVisitor::isConstExpr($node, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION);
         }
     }
 

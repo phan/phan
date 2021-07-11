@@ -257,13 +257,8 @@ class AttributeAnalyzer
                             $arg_node = $arg_node->children['expr'];
                         }
 
-                        if ($arg_node instanceof Node && !ParseVisitor::isConstExpr($arg_node)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $declaration->getContext(),
-                                Issue::InvalidConstantExpression,
-                                $arg_node->lineno
-                            );
+                        if ($arg_node instanceof Node) {
+                            (new ParseVisitor($code_base, $declaration->getContext()))->checkNodeIsConstExprOrWarn($arg_node, ParseVisitor::CONSTANT_EXPRESSION_IN_ATTRIBUTE);
                         }
                     }
                     ArgumentType::analyze($constructor, $attribute_node, $declaration->getContext(), $code_base);

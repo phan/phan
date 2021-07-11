@@ -389,19 +389,20 @@ class Parameter extends Variable
             $parameter->setDefaultValue($default_node);
             try {
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                ParseVisitor::checkIsAllowedInConstExpr($default_node);
+                ParseVisitor::checkIsAllowedInConstExpr($default_node, ParseVisitor::CONSTANT_EXPRESSION_IN_PARAMETER);
 
                 // We can't figure out default values during the
                 // parsing phase, unfortunately
                 $has_error = false;
-            } catch (InvalidArgumentException $_) {
+            } catch (InvalidArgumentException $e) {
                 // If the parameter default is an invalid constant expression,
                 // then don't use that value elsewhere.
                 Issue::maybeEmit(
                     $code_base,
                     $context,
                     Issue::InvalidConstantExpression,
-                    $default_node->lineno ?? $node->lineno
+                    $default_node->lineno ?? $node->lineno,
+                    $e->getMessage()
                 );
                 $has_error = true;
             }

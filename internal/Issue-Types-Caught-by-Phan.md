@@ -5070,7 +5070,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0723
 ## PhanInvalidConstantExpression
 
 ```
-Constant expression contains invalid operations
+Constant expression contains invalid operations ({CODE})
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/015_class_const_declaration9.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/015_class_const_declaration9.php#L3).

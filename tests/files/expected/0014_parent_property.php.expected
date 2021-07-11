@@ -1,3 +1,3 @@
-%s:10 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:10 PhanInvalidConstantExpression Constant expression contains invalid operations (parent::$alpha)
 %s:11 PhanAccessPropertyNonStaticAsStatic Accessing non static property \A->beta as static
-%s:11 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:11 PhanInvalidConstantExpression Constant expression contains invalid operations (parent::$beta)

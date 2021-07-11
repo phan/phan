@@ -205,7 +205,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $lineno = $arm_expr_cond->lineno ?? $arm_node->lineno;
                 // Skip array entries without literal keys. (Do it before resolving the key value)
-                if (is_object($arm_expr_cond) && ParseVisitor::isConstExpr($arm_expr_cond)) {
+                if (is_object($arm_expr_cond) && ParseVisitor::isConstExpr($arm_expr_cond, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                     // Only infer the value for values not affected by conditions - that will change after the expressions are analyzed
                     $original_cond = $arm_expr_cond;
                     $arm_expr_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arm_expr_cond)->asSingleScalarValueOrNullOrSelf();

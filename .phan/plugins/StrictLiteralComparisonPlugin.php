@@ -58,8 +58,8 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
     private function analyzeEqualityCheck(Node $node): void
     {
         ['left' => $left, 'right' => $right] = $node->children;
-        $left_is_const = ParseVisitor::isConstExpr($left);
-        $right_is_const = ParseVisitor::isConstExpr($right);
+        $left_is_const = ParseVisitor::isConstExpr($left, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION);
+        $right_is_const = ParseVisitor::isConstExpr($right, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION);
         if ($left_is_const === $right_is_const) {
             return;
         }

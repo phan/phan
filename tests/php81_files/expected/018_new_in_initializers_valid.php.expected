@@ -1,0 +1,4 @@
+%s:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS18\ExampleAttribute->values
+%s:15 PhanUnreferencedConstant Possibly zero references to global constant \NS18\Values
+%s:17 PhanInvalidConstantExpression Constant expression contains invalid operations ($values)
+%s:20 PhanUnreferencedClass Possibly zero references to class \NS18\Other
