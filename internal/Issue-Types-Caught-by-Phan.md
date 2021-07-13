@@ -421,6 +421,22 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
+## PhanCompatibleAccessMethodOnTraitDefinition
+
+```
+Calling static method {METHOD} on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in {CODE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0624_instantiate_abstract.php.expected#L16) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0624_instantiate_abstract.php#L50).
+
+## PhanCompatibleAccessPropertyOnTraitDefinition
+
+```
+Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0955_trait_direct_deprecated.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0955_trait_direct_deprecated.php#L9).
+
 ## PhanCompatibleAnyReturnTypePHP56
 
 ```

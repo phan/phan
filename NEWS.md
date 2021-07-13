@@ -11,6 +11,7 @@ New Features (Analysis):
 + Support allowing `new` expressions in php 8.1 readonly property modifier (#4460)
 + Emit `PhanTypeInvalidArrayKey` and `PhanTypeInvalidArrayKeyValue` for invalid array key literal types or values.
 + Fix false positive `PhanTypeMissingReturn`/`PhanPluginAlwaysReturnMethod` for method with phpdoc return type of `@return never`
++ Warn about direct access to static methods or properties on traits (instead of classes using those methods/properties) being deprecated in php 8.1 (#4396)
 
 Bug fixes:
 - Fix a crash when analyzing array literals with invalid key literal values in php 8.1.
