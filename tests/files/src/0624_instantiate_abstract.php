@@ -47,6 +47,7 @@ trait T {
         var_export(new T());  // This is always a bug
         var_export(new self());
         var_export(new static());  // should not emit PhanTypeInstantiateTrait, this is a valid instance of something
+        T::staticTraitMethod();
     }
 }
 T::staticTraitMethod();

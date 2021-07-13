@@ -15,6 +15,7 @@ use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -1100,8 +1101,21 @@ class Clazz extends AddressableElement
             );
         }
         if ($is_static && $property) {
+            $access_class_fqsen = $property->getFQSEN()->getFullyQualifiedClassName();
+            if ($node instanceof Node && !PostOrderAnalysisVisitor::isStaticNameNode($node->children['class'] ?? null, true)) {
+                if ($code_base->hasClassWithFQSEN($access_class_fqsen) && $code_base->getClassByFQSEN($access_class_fqsen)->isTrait()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CompatibleAccessPropertyOnTraitDefinition,
+                        $context->getLineNumberStart(),
+                        $property->getRepresentationForIssue()
+                    );
+                }
+            }
             // If the property is from a trait, the (different) defining FQSEN is the FQSEN of the class using the FQSEN, not the trait.
             $defining_fqsen = $property->getDefiningFQSEN();
+
             if ($defining_fqsen !== $property_fqsen) {
                 if ($code_base->hasPropertyWithFQSEN($defining_fqsen)) {
                     $property = $code_base->getPropertyByFQSEN($defining_fqsen);
@@ -1121,7 +1135,6 @@ class Clazz extends AddressableElement
             $method = $this->getMethodByName($code_base, '__get');
 
             // Make sure the magic method is accessible
-            // TODO: Add defined at %s:%d for the property definition
             if ($method->isPrivate()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(

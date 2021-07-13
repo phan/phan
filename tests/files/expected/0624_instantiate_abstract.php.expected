@@ -13,3 +13,5 @@
 %s:44 PhanTypeInstantiateTraitStaticOrSelf Potential instantiation of trait \NS624\T (not an issue if this method is only called from a non-abstract class using the trait)
 %s:47 PhanTypeInstantiateTrait Instantiation of trait \NS624\T
 %s:48 PhanTypeInstantiateTraitStaticOrSelf Potential instantiation of trait \NS624\T (not an issue if this method is only called from a non-abstract class using the trait)
+%s:50 PhanCompatibleAccessMethodOnTraitDefinition Calling static method \NS624\T::staticTraitMethod on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in T::staticTraitMethod())
+%s:53 PhanCompatibleAccessMethodOnTraitDefinition Calling static method \NS624\T::staticTraitMethod on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in T::staticTraitMethod())

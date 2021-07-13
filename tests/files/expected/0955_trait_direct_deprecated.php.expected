@@ -1,0 +1,2 @@
+%s:9 PhanCompatibleAccessPropertyOnTraitDefinition Accessing static property \N955\T1::$property on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait
+%s:20 PhanCompatibleAccessMethodOnTraitDefinition Calling static method \N955\T2::main on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in T2::main())

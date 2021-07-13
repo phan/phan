@@ -2468,7 +2468,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             $this->analyzeMethodVisibility(
                 $method,
-                $node
+                $node,
+                false
             );
 
             $this->analyzeCallToFunctionLike(
@@ -2573,8 +2574,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return !$method->isStatic();
     }
 
-    private static function isStaticNameNode(Node $node, bool $allow_self): bool
+    /**
+     * Checks if this is referring to the `static` class name (also allows `self` if $allow_self is true)
+     *
+     * @param Node|int|string|float|null $node
+     */
+    public static function isStaticNameNode($node, bool $allow_self): bool
     {
+        if (!$node instanceof Node) {
+            return false;
+        }
         if ($node->kind !== ast\AST_NAME) {
             return false;
         }
@@ -2738,7 +2747,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             $this->analyzeMethodVisibility(
                 $method,
-                $node
+                $node,
+                true
             );
 
             // Make sure the parameters look good
@@ -3228,7 +3238,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $this->analyzeMethodVisibility(
             $method,
-            $node
+            $node,
+            false
         );
 
         // Check the call for parameter and argument types
@@ -3847,11 +3858,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Method $method
      * @param Node $node
+     * @param bool $is_static_call
      */
     private function analyzeMethodVisibility(
         Method $method,
-        Node $node
+        Node $node,
+        bool $is_static_call
     ): void {
+        if ($is_static_call && $method->isStatic()) {
+            $class_node = $node->children['class'] ?? null;
+            if (!self::isStaticNameNode($class_node, true)) {
+                $class_fqsen = $method->getFQSEN()->getFullyQualifiedClassName();
+                if ($this->code_base->hasClassWithFQSEN($class_fqsen) && $this->code_base->getClassByFQSEN($class_fqsen)->isTrait()) {
+                    $this->emitIssue(
+                        Issue::CompatibleAccessMethodOnTraitDefinition,
+                        $node->lineno,
+                        (string)$method->getFQSEN(),
+                        ASTReverter::toShortString($node)
+                    );
+                }
+            }
+        }
         if ($method->isPublic()) {
             return;
         }

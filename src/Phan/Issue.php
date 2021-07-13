@@ -604,6 +604,8 @@ class Issue
     public const CompatibleConstructorPropertyPromotion  = 'PhanCompatibleConstructorPropertyPromotion';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
     public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
+    public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
+    public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -5210,6 +5212,22 @@ class Issue
                 "Cannot use readonly modifier on property {PROPERTY} before php 8.1",
                 self::REMEDIATION_B,
                 3046
+            ),
+            new Issue(
+                self::CompatibleAccessMethodOnTraitDefinition,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Calling static method {METHOD} on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in {CODE})",
+                self::REMEDIATION_B,
+                3047
+            ),
+            new Issue(
+                self::CompatibleAccessPropertyOnTraitDefinition,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait",
+                self::REMEDIATION_B,
+                3048
             ),
 
             // Issue::CATEGORY_GENERIC
