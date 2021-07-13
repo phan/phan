@@ -413,7 +413,8 @@ class ParseVisitor extends ScopeVisitor
             $parameter_node->flags & Parameter::PARAM_MODIFIER_FLAGS,
             $doc_comment,
             $property_comment,
-            $attributes
+            $attributes,
+            true
         );
         if (!$property) {
             return;
@@ -514,7 +515,8 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags,
                 $doc_comment,
                 $comment,
-                $attributes
+                $attributes,
+                false
             );
         }
 
@@ -526,7 +528,7 @@ class ParseVisitor extends ScopeVisitor
      * @param ?(ast\Node|string|float|int) $default_node
      * @param list<Attribute> $attributes
      */
-    private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes): ?Property
+    private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes, bool $from_parameter): ?Property
     {
         $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
 
@@ -546,7 +548,10 @@ class ParseVisitor extends ScopeVisitor
             $default_type = NullType::instance(false)->asRealUnionType();
         } else {
             if ($default_node instanceof Node) {
-                $this->checkNodeIsConstExpr($default_node);
+                $this->checkNodeIsConstExprOrWarn(
+                    $default_node,
+                    $from_parameter ? self::CONSTANT_EXPRESSION_IN_PARAMETER : self::CONSTANT_EXPRESSION_IN_PROPERTY
+                );
                 $union_type = $this->resolveDefaultPropertyNode($default_node);
                 if (!$union_type) {
                     // We'll type check this union type against the real union type when the future union type is resolved
@@ -869,8 +874,7 @@ class ParseVisitor extends ScopeVisitor
 
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {
-                try {
-                    self::checkIsAllowedInConstExpr($value_node);
+                if ($this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CLASS_CONSTANT)) {
                     // TODO: Avoid using this when it only contains literals (nothing depending on the CodeBase),
                     $constant->setFutureUnionType(
                         new FutureUnionType(
@@ -879,12 +883,8 @@ class ParseVisitor extends ScopeVisitor
                             $value_node
                         )
                     );
-                } catch (InvalidArgumentException $_) {
+                } else {
                     $constant->setUnionType(MixedType::instance(false)->asPHPDocUnionType());
-                    $this->emitIssue(
-                        Issue::InvalidConstantExpression,
-                        $value_node->lineno
-                    );
                 }
             } else {
                 // This is a literal scalar value.
@@ -975,18 +975,13 @@ class ParseVisitor extends ScopeVisitor
         $this->handleClassConstantComment($constant, $comment);
 
         $value_node = $node->children['expr'];
-        if ($value_node instanceof Node && !self::isConstExpr($value_node)) {
+        if ($value_node instanceof Node) {
             // NOTE: In php itself, the same types of operations are allowed as other constant expressions (i.e. isConstExpr is the correct check).
             //
             // However, const expressions for enum cases are evaluated when compiling an enum,
             // including looking up global constants and class constants,
             // and if that can't be evaluated then it's a fatal compile error.
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                Issue::InvalidConstantExpression,
-                $value_node->lineno
-            );
+            $this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CLASS_CONSTANT);
         }
         $constant->setUnionType($class->getFQSEN()->asType()->asRealUnionType());
         $constant->setNodeForValue($value_node);
@@ -1034,7 +1029,7 @@ class ParseVisitor extends ScopeVisitor
     {
         $default = $node->children['default'];
         if ($default instanceof Node) {
-            $this->checkNodeIsConstExpr($default);
+            $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
         }
         $context = $this->context;
         // Make sure we're actually returning from a method.
@@ -1047,18 +1042,6 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $context;
-    }
-
-    private function checkNodeIsConstExpr(Node $node): void
-    {
-        try {
-            self::checkIsAllowedInConstExpr($node);
-        } catch (InvalidArgumentException $_) {
-            $this->emitIssue(
-                Issue::InvalidConstantExpression,
-                $node->lineno
-            );
-        }
     }
 
     /**
@@ -1079,14 +1062,7 @@ class ParseVisitor extends ScopeVisitor
             }
 
             $value_node = $child_node->children['value'];
-            try {
-                self::checkIsAllowedInConstExpr($value_node);
-            } catch (InvalidArgumentException $_) {
-                // InvalidArgumentException was caused by an invalid node kind in a constant expression (value_node should be a Node but Phan can't tell)
-                $this->emitIssue(
-                    Issue::InvalidConstantExpression,
-                    $value_node->lineno ?? $child_node->lineno
-                );
+            if ($value_node instanceof Node && !$this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CONSTANT)) {
                 // Note: Global constants with invalid value expressions aren't declared.
                 // However, class constants are declared with placeholders to make inheritance checks, etc. easier.
                 // Both will emit PhanInvalidConstantExpression
@@ -1843,6 +1819,57 @@ class ParseVisitor extends ScopeVisitor
     ];
 
     /**
+     * @internal
+     */
+    public const ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW = [
+        ast\AST_ARRAY_ELEM => true,
+        ast\AST_ARRAY => true,
+        ast\AST_BINARY_OP => true,
+        ast\AST_CLASS_CONST => true,
+        ast\AST_CLASS_NAME => true,
+        ast\AST_CONDITIONAL => true,
+        ast\AST_CONST => true,
+        ast\AST_DIM => true,
+        ast\AST_MAGIC_CONST => true,
+        ast\AST_NAME => true,
+        ast\AST_UNARY_OP => true,
+        ast\AST_UNPACK => true,
+
+        ast\AST_NEW => true,
+        ast\AST_ARG_LIST => true,
+        ast\AST_NAMED_ARG => true,
+    ];
+
+    public const CONSTANT_EXPRESSION_IN_ATTRIBUTE = 1;
+    public const CONSTANT_EXPRESSION_IN_PARAMETER = self::CONSTANT_EXPRESSION_IN_ATTRIBUTE;
+    public const CONSTANT_EXPRESSION_IN_CONSTANT = self::CONSTANT_EXPRESSION_IN_ATTRIBUTE;
+    public const CONSTANT_EXPRESSION_IN_STATIC_VARIABLE = self::CONSTANT_EXPRESSION_IN_ATTRIBUTE;
+
+    public const CONSTANT_EXPRESSION_IN_CLASS_CONSTANT = 2;
+    public const CONSTANT_EXPRESSION_IN_PROPERTY = self::CONSTANT_EXPRESSION_IN_CLASS_CONSTANT;
+    public const CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION = self::CONSTANT_EXPRESSION_IN_CLASS_CONSTANT;
+
+    /**
+     * If the expression $node contains invalid AST kinds for a constant expression, then this warns.
+     *
+     * @param 1|2 $const_expr_context determines what ast node kinds can be used in a constant expression
+     */
+    public function checkNodeIsConstExprOrWarn(Node $node, int $const_expr_context): bool
+    {
+        try {
+            self::checkIsAllowedInConstExpr($node, $const_expr_context);
+            return true;
+        } catch (InvalidArgumentException $e) {
+            $this->emitIssue(
+                Issue::InvalidConstantExpression,
+                $node->lineno,
+                $e->getMessage()
+            );
+            return false;
+        }
+    }
+
+    /**
      * This is meant to avoid causing errors in Phan where Phan expects a constant to be found.
      *
      * @param Node|string|float|int|bool|null $n
@@ -1854,29 +1881,38 @@ class ParseVisitor extends ScopeVisitor
      *
      * @internal
      */
-    public static function checkIsAllowedInConstExpr($n): void
+    public static function checkIsAllowedInConstExpr($n, int $const_expr_context): void
     {
         if (!($n instanceof Node)) {
             return;
         }
         if (!\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS)) {
-            throw new InvalidArgumentException();
+            if ($const_expr_context === self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE && \array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW)) {
+                if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+                    throw new InvalidArgumentException(ASTReverter::toShortString($n) . " (new expression requires minimum_target_php_version >= '8.1')");
+                }
+            } else {
+                throw new InvalidArgumentException(ASTReverter::toShortString($n));
+            }
         }
         foreach ($n->children as $child_node) {
-            self::checkIsAllowedInConstExpr($child_node);
+            self::checkIsAllowedInConstExpr($child_node, $const_expr_context);
         }
     }
 
     /**
      * @param Node|string|float|int|bool|null $n
+     * @param 1|2 $const_expr_context
+     * @param string &$error_message $error_message @phan-output-reference
      * @return bool - If true, then $n is a valid constant AST.
      */
-    public static function isConstExpr($n): bool
+    public static function isConstExpr($n, int $const_expr_context, string &$error_message = ''): bool
     {
         try {
-            self::checkIsAllowedInConstExpr($n);
+            self::checkIsAllowedInConstExpr($n, $const_expr_context);
             return true;
-        } catch (InvalidArgumentException $_) {
+        } catch (InvalidArgumentException $e) {
+            $error_message = $e->getMessage();
             return false;
         }
     }

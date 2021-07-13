@@ -868,7 +868,7 @@ class Issue
                 self::InvalidConstantExpression,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
-                "Constant expression contains invalid operations",
+                "Constant expression contains invalid operations ({CODE})",
                 self::REMEDIATION_A,
                 17001
             ),

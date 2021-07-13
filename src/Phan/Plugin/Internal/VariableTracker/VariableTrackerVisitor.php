@@ -429,7 +429,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     private static function getConstExprOrNull($expr)
     {
-        return ParseVisitor::isConstExpr($expr) ? $expr : null;
+        // Don't allow new expressions
+        return ParseVisitor::isConstExpr($expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION) ? $expr : null;
     }
 
     /**

@@ -8,6 +8,7 @@ New Features (Analysis):
   (not yet supported in polyfill)
 + Support parsing php 8.1 first-class callable syntax in unreleased php-ast version (#4464)
 + Support parsing php 8.1 readonly property modifier (#4463)
++ Support allowing `new` expressions in php 8.1 readonly property modifier (#4460)
 + Emit `PhanTypeInvalidArrayKey` and `PhanTypeInvalidArrayKeyValue` for invalid array key literal types or values.
 + Fix false positive `PhanTypeMissingReturn`/`PhanPluginAlwaysReturnMethod` for method with phpdoc return type of `@return never`
 

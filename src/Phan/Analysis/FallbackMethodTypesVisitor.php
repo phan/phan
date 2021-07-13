@@ -211,7 +211,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
     private function determineUnionType(Node $expr): ?UnionType
     {
         try {
-            if (ParseVisitor::isConstExpr($expr)) {
+            if (ParseVisitor::isConstExpr($expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                 return (new UnionTypeVisitor($this->code_base, $this->context, false))->__invoke($expr);
             }
             return (new FallbackUnionTypeVisitor($this->code_base, $this->context))->__invoke($expr);

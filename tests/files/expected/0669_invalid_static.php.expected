@@ -1,4 +1,4 @@
-%s:2 PhanInvalidConstantExpression Constant expression contains invalid operations
-%s:4 PhanInvalidConstantExpression Constant expression contains invalid operations
-%s:6 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:2 PhanInvalidConstantExpression Constant expression contains invalid operations (rand(0, 10))
+%s:4 PhanInvalidConstantExpression Constant expression contains invalid operations (rand(0, 10))
+%s:6 PhanInvalidConstantExpression Constant expression contains invalid operations (rand(0, 10))
 %s:6 PhanUnusedVariableStatic Unreferenced definition of variable $a as a static variable

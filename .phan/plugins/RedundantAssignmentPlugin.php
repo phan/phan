@@ -86,7 +86,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
             return;
         }
         $expr = $node->children['expr'];
-        if (!ParseVisitor::isConstExpr($expr)) {
+        if (!ParseVisitor::isConstExpr($expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
             return;
         }
         try {

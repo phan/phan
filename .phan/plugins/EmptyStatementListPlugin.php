@@ -342,7 +342,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
                     }
                 }
             }
-            if (!ParseVisitor::isConstExpr($c->children['cond'])) {
+            if (!ParseVisitor::isConstExpr($c->children['cond'], ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                 return;
             }
         }

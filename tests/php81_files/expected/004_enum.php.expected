@@ -12,7 +12,7 @@
 %s:19 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_ALSO_ZERO
 %s:20 PhanReusedEnumCaseValue Enum case IS_ALSO_EMPTY has the same value('') as a previous declared enum case IS_EMPTY defined at %s:17
 %s:20 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::IS_ALSO_EMPTY
-%s:21 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:21 PhanInvalidConstantExpression Constant expression contains invalid operations ($var)
 %s:21 PhanUndeclaredGlobalVariable Global variable $var is undeclared
 %s:21 PhanUndeclaredVariable Variable $var is undeclared
 %s:21 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\HasDuplicate::Invalid

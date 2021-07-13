@@ -72,12 +72,12 @@ class RedundantConditionLoopCheck
             case flags\BINARY_IS_GREATER_OR_EQUAL:
                 if (is_string($name = self::getVarName($left_node))) {
                     // e.g. if $i < 10
-                    if (ParseVisitor::isConstExpr($right_node)) {
+                    if (ParseVisitor::isConstExpr($right_node, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                         return [$name => $negate];
                     }
                 } elseif (is_string($name = self::getVarName($right_node))) {
                     // e.g. if 10 < $i
-                    if (ParseVisitor::isConstExpr($left_node)) {
+                    if (ParseVisitor::isConstExpr($left_node, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                         return [$name => !$negate];
                     }
                 }

@@ -81,7 +81,7 @@ class UnsafeCodeVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitShellExec(Node $node): void
     {
-        if (!ParseVisitor::isConstExpr($node->children['expr'])) {
+        if (!ParseVisitor::isConstExpr($node->children['expr'], ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
             $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
