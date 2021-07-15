@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.0.0a3 (dev)
+Jul 15 2021, Phan 5.0.0a3
 -------------------------
 
 New Features (Analysis):
@@ -12,6 +12,7 @@ New Features (Analysis):
 + Emit `PhanTypeInvalidArrayKey` and `PhanTypeInvalidArrayKeyValue` for invalid array key literal types or values.
 + Fix false positive `PhanTypeMissingReturn`/`PhanPluginAlwaysReturnMethod` for method with phpdoc return type of `@return never`
 + Warn about direct access to static methods or properties on traits (instead of classes using those methods/properties) being deprecated in php 8.1 (#4396)
++ Add `Stringable` to allowed types for sprintf variadic arguments. This currently requires explicitly implementing Stringable. (#4466)
 
 Bug fixes:
 - Fix a crash when analyzing array literals with invalid key literal values in php 8.1.
