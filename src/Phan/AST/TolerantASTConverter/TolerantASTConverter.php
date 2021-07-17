@@ -110,8 +110,8 @@ class TolerantASTConverter
     use TolerantASTConverterTrait;
 
     // The latest stable version of php-ast.
-    // For something != 80, update the library's release.
-    public const AST_VERSION = 80;
+    // For something != 85, update the library's release.
+    public const AST_VERSION = 85;
 
     // The versions that this supports
     public const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
@@ -627,9 +627,15 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\SourceFileNode' => static function (PhpParser\Node\SourceFileNode $n, int $start_line): ?\ast\Node {
                 return static::phpParserStmtlistToAstNode($n->statementList, $start_line, false);
             },
-            /** @return mixed */
+            /**
+             * @return mixed
+             */
             'Microsoft\PhpParser\Node\Expression\ArgumentExpression' => static function (PhpParser\Node\Expression\ArgumentExpression $n, int $start_line) {
-                $result = static::phpParserNodeToAstNode($n->expression);
+                $expression = $n->expression;
+                if ($expression === null) {
+                    throw new InvalidNodeException($n);
+                }
+                $result = static::phpParserNodeToAstNode($expression);
                 if ($n->dotDotDotToken !== null) {
                     return new ast\Node(ast\AST_UNPACK, 0, ['expr' => $result], $start_line);
                 }
@@ -971,7 +977,8 @@ class TolerantASTConverter
                         static::phpParserStmtlistToAstNode($n->classMembers->classMemberDeclarations ?? [], $start_line, false),
                         $start_line,
                         $end_line,
-                        $n->getDocCommentText()
+                        $n->getDocCommentText(),
+                        null
                     );
                 } else {
                     $class_node = static::phpParserNonValueNodeToAstNode($class_type_designator);
@@ -1265,7 +1272,8 @@ class TolerantASTConverter
                     static::phpParserStmtlistToAstNode($n->interfaceMembers->interfaceMemberDeclarations ?? [], $start_line, false),
                     $start_line,
                     $end_line,
-                    $n->getDocCommentText()
+                    $n->getDocCommentText(),
+                    null
                 );
             },
             /**
@@ -1283,7 +1291,8 @@ class TolerantASTConverter
                     static::phpParserStmtlistToAstNode($n->classMembers->classMemberDeclarations ?? [], self::getStartLine($n->classMembers), false),
                     static::getStartLine($n->classKeyword),
                     $end_line,
-                    $n->getDocCommentText()
+                    $n->getDocCommentText(),
+                    null
                 );
             },
             'Microsoft\PhpParser\Node\Statement\TraitDeclaration' => static function (PhpParser\Node\Statement\TraitDeclaration $n, int $start_line): ast\Node {
@@ -1300,8 +1309,30 @@ class TolerantASTConverter
                     static::phpParserStmtlistToAstNode($n->traitMembers->traitMemberDeclarations ?? [], self::getStartLine($n->traitMembers), false),
                     $start_line,
                     $end_line,
-                    $n->getDocCommentText()
+                    $n->getDocCommentText(),
+                    null
                 );
+            },
+            /**
+             * @unused-param $start_line
+             */
+            'Microsoft\PhpParser\Node\Statement\EnumDeclaration' => static function (PhpParser\Node\Statement\EnumDeclaration $n, int $start_line): ast\Node {
+                $end_line = static::getEndLine($n);
+                return static::astStmtClass(
+                    flags\CLASS_ENUM | flags\CLASS_FINAL,
+                    static::tokenToString($n->name),
+                    static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
+                    null,
+                    null,
+                    static::phpParserStmtlistToAstNode($n->enumMembers->enumMemberDeclarations ?? [], self::getStartLine($n->enumMembers), false),
+                    static::getStartLine($n->enumKeyword),
+                    $end_line,
+                    $n->getDocCommentText(),
+                    self::phpParserTypeToAstNode($n->enumType, $start_line)
+                );
+            },
+            'Microsoft\PhpParser\Node\EnumCaseDeclaration' => static function (PhpParser\Node\EnumCaseDeclaration $n, int $start_line): ast\Node {
+                return static::phpParserEnumCaseDeclarationToAstNode($n, $start_line);
             },
             'Microsoft\PhpParser\Node\ClassConstDeclaration' => static function (PhpParser\Node\ClassConstDeclaration $n, int $start_line): ast\Node {
                 return static::phpParserClassConstToAstNode($n, $start_line);
@@ -1869,10 +1900,17 @@ class TolerantASTConverter
     protected static function phpParserUnionTypeToAstNode(?object $types_node, int $line): ?\ast\Node
     {
         $types = [];
+        $is_intersection = false;
         if ($types_node instanceof PhpParser\Node\DelimitedList\QualifiedNameList) {
             foreach ($types_node->children as $child) {
-                if ($child instanceof Token && $child->kind === TokenKind::BarToken) {
-                    continue;
+                if ($child instanceof Token) {
+                    if ($child->kind === TokenKind::BarToken) {
+                        continue;
+                    }
+                    if ($child->kind === TokenKind::AmpersandToken) {
+                        $is_intersection = true;
+                        continue;
+                    }
                 }
                 $result = static::phpParserTypeToAstNode($child, static::getEndLine($child) ?: $line);
                 if ($result) {
@@ -1886,7 +1924,7 @@ class TolerantASTConverter
         } elseif ($n === 1) {
             return $types[0];
         }
-        return new ast\Node(ast\AST_TYPE_UNION, 0, $types, $types[0]->lineno);
+        return new ast\Node($is_intersection ? ast\AST_TYPE_INTERSECTION : ast\AST_TYPE_UNION, 0, $types, $types[0]->lineno);
     }
 
     /**
@@ -2002,13 +2040,19 @@ class TolerantASTConverter
         TokenKind::PublicKeyword    => ast\flags\MODIFIER_PUBLIC,
         TokenKind::ProtectedKeyword => ast\flags\MODIFIER_PROTECTED,
         TokenKind::PrivateKeyword   => ast\flags\MODIFIER_PRIVATE,
+        TokenKind::ReadonlyKeyword   => ast\flags\MODIFIER_READONLY,
     ];
 
     private static function getParamFlags(PhpParser\Node\Parameter $n): int
     {
         $flags = ($n->byRefToken ? flags\PARAM_REF : 0) | ($n->dotDotDotToken ? flags\PARAM_VARIADIC : 0);
         if ($visibilityToken = $n->visibilityToken) {
-            return $flags | (self::VISIBILITY_FLAG_MAP[$visibilityToken->kind] ?? 0);
+            $flags |= (self::VISIBILITY_FLAG_MAP[$visibilityToken->kind] ?? 0);
+        }
+        foreach ($n->modifiers ?? [] as $visibilityToken) {
+            if ($visibilityToken instanceof Token) {
+                $flags |= (self::VISIBILITY_FLAG_MAP[$visibilityToken->kind] ?? 0);
+            }
         }
         return $flags;
     }
@@ -2269,13 +2313,14 @@ class TolerantASTConverter
     private static function astStmtClass(
         int $flags,
         ?string $name,
-        ?\ast\Node $attributes,
-        ?\ast\Node $extends,
-        ?\Microsoft\PhpParser\Node\ClassInterfaceClause $implements,
-        ?\ast\Node $stmts,
+        ?ast\Node $attributes,
+        ?ast\Node $extends,
+        ?PhpParser\Node\ClassInterfaceClause $implements,
+        ?ast\Node $stmts,
         int $line,
         int $end_line,
-        ?string $doc_comment
+        ?string $doc_comment,
+        ?ast\Node $type
     ): ast\Node {
 
         // NOTE: `null` would be an anonymous class.
@@ -2291,6 +2336,7 @@ class TolerantASTConverter
                 'implements' => $extends,
                 'stmts'      => $stmts,
                 'attributes' => $attributes,
+                'type'       => null,
             ];
         } else {
             if ($implements !== null) {
@@ -2319,6 +2365,7 @@ class TolerantASTConverter
                 'implements' => $ast_implements,
                 'stmts'      => $stmts,
                 'attributes' => $attributes,
+                'type'       => $type,
             ];
         }
 
@@ -2766,6 +2813,9 @@ class TolerantASTConverter
                 case TokenKind::FinalKeyword:
                     $ast_visibility |= flags\MODIFIER_FINAL;
                     break;
+                case TokenKind::ReadonlyKeyword:
+                    $ast_visibility |= flags\MODIFIER_READONLY;
+                    break;
                 default:
                     throw new \RuntimeException("Unexpected visibility modifier '" . Token::getTokenKindNameFromValue($token->kind) . "'");
             }
@@ -2823,6 +2873,22 @@ class TolerantASTConverter
             ],
             $const_start_line
         );
+    }
+
+    /**
+     * @suppress PhanTypeMismatchArgument
+     */
+    private static function phpParserEnumCaseDeclarationToAstNode(PhpParser\Node\EnumCaseDeclaration $n, int $start_line): ast\Node
+    {
+        $assignment = $n->assignment;
+        $children = [
+            'name' => static::variableTokenToString($n->name),
+            'expr' => $assignment !== null ? static::phpParserNodeToAstNode($assignment) : null,
+            'docComment' => static::extractPhpdocComment($n),
+            'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
+        ];
+
+        return new ast\Node(ast\AST_ENUM_CASE, 0, $children, $start_line);
     }
 
     /**

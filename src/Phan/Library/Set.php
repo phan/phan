@@ -24,6 +24,7 @@ use TypeError;
  * @method bool offsetGet(T $object )
  * @method void offsetSet(T $object,mixed $data = null)
  * @method void offsetUnset(T $object)
+ * @phan-suppress-next-line PhanParamSignaturePHPDocMismatchReturnType TODO: Add a way to indicate that T is subtype of object
  * @method T current()
  *
  * @phan-file-suppress PhanParamSignatureMismatchInternal for these comment method overrides

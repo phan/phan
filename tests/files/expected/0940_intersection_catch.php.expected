@@ -1,3 +1,3 @@
 %s:6 PhanDebugAnnotation @phan-debug-var requested for variable $exceptionalCounter - it has union type \Countable&\Throwable
 %s:8 PhanTypeConversionFromArray array to string conversion
-%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $exceptionalCounter->count() of type int but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal%S Argument 1 ($string) is $exceptionalCounter->count() of type int but \strlen() takes string

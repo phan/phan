@@ -1,0 +1,2 @@
+%s:4 PhanParamSignaturePHPDocMismatchReturnType Declaration of real/@method function current() should be compatible with real/@method function current() : object (method returning 'T' cannot override method returning 'object') defined in internal:0
+%s:16 PhanTypeMismatchReturn Returning $elem of type \ArrayObject but test() is declared to return string

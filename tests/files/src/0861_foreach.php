@@ -1,7 +1,8 @@
 <?php
 /**
  * @template T
- * @method T current()
+ * @method T current() TODO: Support parent types of templates
+ * @suppress PhanParamSignaturePHPDocMismatchReturnType TODO: Support parent types of templates
  */
 class Set extends \SplObjectStorage
 {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Phan\Library;
 
 use Closure;
+// @phan-suppress-next-line PhanUnreferencedUseNormal
+use ReturnTypeWillChange;
 use SplObjectStorage;
 
 /**
@@ -15,6 +17,7 @@ use SplObjectStorage;
  * @template V
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignaturePHPDocMismatchParamType, PhanParamSignatureMismatchInternal
+ * @phan-file-suppress PhanUndeclaredClassAttribute `ReturnTypeWillChange` is undeclared in php 8.0, tentative return types were added in 8.1
  * TODO: Add a way to indicate in Phan that T is subtype of object for keys K
  *
  * @method void attach(K $object,V $data = null)
@@ -34,6 +37,7 @@ class Map extends SplObjectStorage
      * @return K
      * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
      */
+    #[ReturnTypeWillChange]
     public function key()
     {
         return parent::current();
@@ -44,9 +48,10 @@ class Map extends SplObjectStorage
      * than the current key
      * @return V
      */
+    #[ReturnTypeWillChange]
     public function current()
     {
-        return $this->offsetGet(parent::current());
+        return $this->getInfo();
     }
 
     /**

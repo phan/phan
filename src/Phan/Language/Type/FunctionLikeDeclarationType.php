@@ -1078,6 +1078,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    public function setHasTentativeReturnType(): void
+    {
+        // no-op
+    }
+
+    public function hasTentativeReturnType(): bool
+    {
+        return false;
+    }
+
     public function getVariableTypeFallbackMap(CodeBase $code_base): array
     {
         return [];

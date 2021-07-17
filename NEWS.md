@@ -1,5 +1,14 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.0a4 (dev)
+-------------------------
+
+Backwards incompatible changes:
+- Bump the minimum required AST version from 80 to 85 (Required to analyze php 8.1 enum classes - 'type' was added in AST version 85).
+
+Bug fixes:
+- Fix extraction of reflection attribute target type bitmask from internal attributes such as PHP 8.1's `ReturnTypeWillChange`
+
 Jul 15 2021, Phan 5.0.0a3
 -------------------------
 
