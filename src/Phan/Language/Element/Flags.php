@@ -61,13 +61,15 @@ class Flags
     public const IS_OVERRIDDEN_BY_ANOTHER = (1 << 25);
     // Currently applies only to some variables (e.g. static variables)
     public const IS_CONSTANT_DEFINITION = (1 << 26);
+    // only set on methods
+    public const HAS_TENTATIVE_RETURN_TYPE = (1 << 26);
     // Also used for `@phan-hardcode-return-type`
     public const HARDCODED_RETURN_TYPE = (1 << 26);
 
     // Flag to be set on fake __construct methods (e.g. for classes/interfaces without having them defined explicitly)
     // Currently for strict visibility checking, because fake constructors have public visibility by default, and Phan
     // fails thinking that child classes are violating the visibility if they have a private or protected __construct
-    // only set on classes.
+    // only set on methods.
     public const IS_FAKE_CONSTRUCTOR = (1 << 27);
     // only set on properties.
     public const IS_ENUM_PROPERTY = (1 << 27);

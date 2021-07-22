@@ -405,6 +405,16 @@ interface FunctionInterface extends AddressableElementInterface
     public function isPure(): bool;
 
     /**
+     * Mark this function or method as having a tentative return type
+     */
+    public function setHasTentativeReturnType(): void;
+
+    /**
+     * Check if this function has a tentative return type
+     */
+    public function hasTentativeReturnType(): bool;
+
+    /**
      * @return UnionType of 0 or more types from (at)throws annotations on this function-like
      */
     public function getThrowsUnionType(): UnionType;

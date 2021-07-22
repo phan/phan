@@ -1,1 +1,1 @@
-%s:15 PhanTypeMismatchReturn Returning $elem of type \ArrayObject but test() is declared to return string
+%s:16 PhanTypeMismatchReturn Returning $elem of type \ArrayObject but test() is declared to return string

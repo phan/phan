@@ -1,4 +1,4 @@
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetExists(%S$offset)
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetGet(%S$offset)
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetSet(%S$offset, %S$value)
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetUnset(%S$offset)
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetExists(%S$offset)%S
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetGet(%S$offset)%S
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetSet(%S$offset, %S$value)%S
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetUnset(%S$offset)%S

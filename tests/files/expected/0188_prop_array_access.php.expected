@@ -1,5 +1,5 @@
-%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetExists(%S$offset)
-%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetGet(%S$offset)
-%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetSet(%S$offset, %S$value)
-%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetUnset(%S$offset)
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetExists(%S$offset)%S
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetGet(%S$offset)%S
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetSet(%S$offset, %S$value)%S
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetUnset(%S$offset)%S
 %s:10 PhanUndeclaredProperty Reference to undeclared property \C188->key

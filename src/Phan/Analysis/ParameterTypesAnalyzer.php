@@ -1013,7 +1013,7 @@ class ParameterTypesAnalyzer
                 // in php 8.1, allow `foo(): never` to override any base type
                 //
                 // TODO: Narrow this to check for non-objects?
-                $is_exception_to_rule = (Config::get_closest_minimum_target_php_version_id() >= 70400 && $return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type)) ||
+                $is_exception_to_rule = ((Config::get_closest_minimum_target_php_version_id() >= 70400 || $overridden_method->hasTentativeReturnType()) && $return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type)) ||
                     ($return_union_type->hasIterable($code_base) &&
                     ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
                      $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));

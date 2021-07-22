@@ -56,6 +56,10 @@ class FunctionFactory
         $function->setIsDeprecated($reflection_function->isDeprecated());
 
         $real_return_type = self::getRealReturnTypeFromReflection($reflection_function);
+        // @phan-suppress-next-line PhanUndeclaredMethod
+        if (\PHP_VERSION_ID >= 80100 && $reflection_function->hasTentativeReturnType()) {
+            $function->setHasTentativeReturnType();
+        }
         if (Config::getValue('assume_real_types_for_internal_functions')) {
             // @phan-suppress-next-line PhanAccessMethodInternal
             $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$namespaced_name] ?? null;
@@ -178,6 +182,10 @@ class FunctionFactory
         // https://github.com/phan/phan/issues/888 - Reflection for that class's parameters causes php to throw/hang
         if ($class_name !== 'ServerResponse') {
             $method->setRealReturnType(self::getRealReturnTypeFromReflection($reflection_method));
+            // @phan-suppress-next-line PhanUndeclaredMethod
+            if (\PHP_VERSION_ID >= 80100 && $reflection_method->hasTentativeReturnType()) {
+                $method->setHasTentativeReturnType();
+            }
             $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
         }
 

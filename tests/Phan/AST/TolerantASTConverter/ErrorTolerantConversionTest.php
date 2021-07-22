@@ -441,11 +441,11 @@ EOT;
 
     private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false): void
     {
-        $supports80 = ConversionTest::hasNativeASTSupport(80);
+        $supports80 = ConversionTest::hasNativeASTSupport(85);
         if (!$supports80) {
             $this->fail('No supported AST versions to test');
         }
-        $this->runTestFallbackFromParserForASTVersion($incomplete_contents, $valid_contents, 80, $should_add_placeholders);
+        $this->runTestFallbackFromParserForASTVersion($incomplete_contents, $valid_contents, 85, $should_add_placeholders);
     }
 
     private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders): void

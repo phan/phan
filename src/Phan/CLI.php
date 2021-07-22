@@ -83,7 +83,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '5.0.0a3';
+    public const PHAN_VERSION = '5.0.0a4-dev';
 
     /**
      * List of short flags passed to getopt
@@ -849,7 +849,7 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    // In order to parse with AST version 80, 1.0.7+ is required
+                    // In order to parse with AST version 85, 1.0.11+ is required
                     if (\version_compare($ast_version, Config::MINIMUM_AST_EXTENSION_VERSION) < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
@@ -2745,7 +2745,8 @@ EOB
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
             \fprintf(
                 STDERR,
-                "ERROR: Phan 4.x requires php-ast 1.0.7+ because it depends on AST version 80. php-ast '%s' is installed." . PHP_EOL,
+                "ERROR: Phan 5.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
+                Config::MINIMUM_AST_EXTENSION_VERSION,
                 $ast_version
             );
             require_once __DIR__ . '/Bootstrap.php';

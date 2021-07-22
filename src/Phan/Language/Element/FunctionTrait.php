@@ -1945,6 +1945,22 @@ trait FunctionTrait
     }
 
     /**
+     * Mark this function or method as having a tentative return type
+     */
+    public function setHasTentativeReturnType(): void
+    {
+        $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TENTATIVE_RETURN_TYPE);
+    }
+
+    /**
+     * Check if this function has a tentative return type
+     */
+    public function hasTentativeReturnType(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_TENTATIVE_RETURN_TYPE);
+    }
+
+    /**
      * @return array<mixed, UnionType> very conservatively maps variable names to union types they can have.
      * Entries are omitted if there are possible assignments that aren't known.
      *
