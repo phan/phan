@@ -42,7 +42,8 @@ class Issue
     public const SyntaxReturnExpectedValue      = 'PhanSyntaxReturnExpectedValue';
     public const SyntaxReturnValueInVoid        = 'PhanSyntaxReturnValueInVoid';
     public const SyntaxReturnStatementInNever   = 'PhanSyntaxReturnStatementInNever';
-    public const SyntaxInconsistentEnum         = 'PhanSyntaxInconsistentEnum';
+    public const SyntaxEnumCaseExpectedValue    = 'PhanSyntaxEnumCaseExpectedValue';
+    public const SyntaxEnumCaseUnexpectedValue  = 'PhanSyntaxEnumCaseUnexpectedValue';
     public const PrivateFinalMethod             = 'PhanPrivateFinalMethod';
     public const PrivateFinalConstant           = 'PhanPrivateFinalConstant';
 
@@ -285,7 +286,7 @@ class Issue
     public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
     public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
     public const AttributeWrongTarget = 'PhanAttributeWrongTarget';
-    public const TypeInvalidEnumCaseType = 'PhanTypeInvalidEnumCaseType';
+    public const TypeUnexpectedEnumCaseType = 'PhanTypeUnexpectedEnumCaseType';
     public const InstanceMethodWithNoEnumCases = 'PhanInstanceMethodWithNoEnumCases';
     public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
     public const EnumForbiddenMagicMethod = 'PhanEnumForbiddenMagicMethod';
@@ -996,13 +997,22 @@ class Issue
                 17015
             ),
             new Issue(
-                self::SyntaxInconsistentEnum,
+                self::SyntaxEnumCaseExpectedValue,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
                 // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
-                "Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type",
+                "Syntax error: Expected enum case {CONST} to have a value of type {TYPE} but it has no value",
                 self::REMEDIATION_A,
                 17016
+            ),
+            new Issue(
+                self::SyntaxEnumCaseUnexpectedValue,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
+                "Syntax error: Expected enum case {CONST} not to have a value",
+                self::REMEDIATION_A,
+                17020
             ),
             new Issue(
                 self::PrivateFinalConstant,
@@ -2925,10 +2935,10 @@ class Issue
                 10173
             ),
             new Issue(
-                self::TypeInvalidEnumCaseType,
+                self::TypeUnexpectedEnumCaseType,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                'Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)',
+                'Saw enum case {CONST} with a value of type {TYPE} that did not match expected type {TYPE}',
                 self::REMEDIATION_B,
                 10175
             ),

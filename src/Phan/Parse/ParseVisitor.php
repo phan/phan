@@ -149,6 +149,14 @@ class ParseVisitor extends ScopeVisitor
             $class_context,
             $node->children['attributes'] ?? null
         ));
+        $type_node = $node->children['type'] ?? null;
+        if ($type_node) {
+            $class->setEnumType(UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $class_context,
+                $type_node
+            ));
+        }
         try {
             // Set the scope of the class's context to be the
             // internal scope of the class

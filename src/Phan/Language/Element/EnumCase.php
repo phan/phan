@@ -33,6 +33,7 @@ class EnumCase extends ClassConstant
      * Gets the value for this enum case, if one existed AND could be evaluated.
      * @see ClassConstant::getNodeForValue() for checking if the enum case has a value
      * @return int|string|null
+     * @suppress PhanUnreferencedPublicMethod made available for plugins. Can also be computed from getNodeForValue.
      */
     public function getEnumCaseValue()
     {

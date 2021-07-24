@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2021, Phan 5.0.0a4 (dev)
 -------------------------
 
+New Features (Analysis):
+- Use the enum class declaration type (int, string, or absent) from AST version 85 to check if enum cases are valid. (#4313)
+  New issue types: `PhanSyntaxEnumCaseExpectedValue`, `PhanSyntaxEnumCaseUnexpectedValue`, `PhanTypeUnexpectedEnumCaseType`
+
 Backwards incompatible changes:
 - Bump the minimum required AST version from 80 to 85 (Required to analyze php 8.1 enum classes - 'type' was added in AST version 85).
 - In php 8.1, require php-ast 1.0.14 to natively parse AST version 85.

@@ -182,15 +182,12 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
+     * @unused-param $node
      * @override
      */
     public function visitClass(Node $node): ?bool
     {
-        $args = $node->children['args'] ?? null;
-        if (!$args instanceof Node) {
-            return null;
-        }
-        return $this->__invoke($args);
+        return null;
     }
 
     public function visitThrow(Node $node): bool
