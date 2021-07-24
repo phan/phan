@@ -47,7 +47,6 @@ use function getenv;
 use function in_array;
 use function is_array;
 use function is_executable;
-use function is_resource;
 use function is_string;
 use function min;
 use function phpversion;
@@ -618,7 +617,7 @@ class CLI
                         throw new UsageException(\sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $output_file = \fopen($value, 'w');
-                    if (!is_resource($output_file)) {
+                    if (!$output_file) {
                         throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE, null, true);
                     }
                     $this->output = new StreamOutput($output_file);
@@ -2396,7 +2395,7 @@ EOB
     {
         static $did_end = false;
         if ($did_end) {
-            // Overkill as a sanity check
+            // Overkill to prevent redundant output.
             return;
         }
         $did_end = true;
@@ -2405,7 +2404,7 @@ EOB
             return;
         }
         if (self::shouldShowProgress()) {
-            // Print a newline to stderr to visuall separate stderr from stdout
+            // Print a newline to stderr to visually separate stderr from stdout
             fwrite(STDERR, PHP_EOL);
             \fflush(\STDOUT);
         }
@@ -2689,7 +2688,7 @@ EOB
             \phan_output_ast_installation_instructions();
             exit(EXIT_FAILURE);
         }
-        self::sanityCheckAstVersion();
+        self::exitIfAstVersionIsInvalid();
 
         try {
             // Split up the opening PHP tag to fix highlighting in vim.
@@ -2734,7 +2733,7 @@ EOB
     /**
      * This duplicates the check in Bootstrap.php, in case opcache.file_cache has outdated information about whether extension_loaded('ast') is true. exists.
      */
-    private static function sanityCheckAstVersion(): void
+    private static function exitIfAstVersionIsInvalid(): void
     {
         $ast_version = (string)\phpversion('ast');
         if (\version_compare($ast_version, '1.0.0') <= 0) {

@@ -5,6 +5,10 @@ Phan NEWS
 
 Backwards incompatible changes:
 - Bump the minimum required AST version from 80 to 85 (Required to analyze php 8.1 enum classes - 'type' was added in AST version 85).
+- In php 8.1, require php-ast 1.0.14 to natively parse AST version 85.
+
+Maintenance:
+- Upgrade tolerant-php-parser from 0.1.0 to 0.1.1 to prepare to support new php syntax in the polyfill/fallback parser. (#4449)
 
 Bug fixes:
 - Fix extraction of reflection attribute target type bitmask from internal attributes such as PHP 8.1's `ReturnTypeWillChange`
@@ -41,7 +45,7 @@ New Features (CLI)
 - Use `var_representation`/polyfill for generating representations of values in issue messages.
 
 Maintenance:
-- Upgrade tolerant-php-parser from ^0.0.23 to ^0.1.0 to prepare to support new php syntax in the polyfill/fallback parser. (#4449)
+- Upgrade tolerant-php-parser from 0.0.23 to 0.1.0 to prepare to support new php syntax in the polyfill/fallback parser. (#4449)
 
 Bug fixes:
 - Properly warn about referencing $this from a `static fn` declared in an instance method. (#4336)

@@ -3,6 +3,7 @@
 trigger:
 - master
 - v4
+- v5
 
 jobs:
   - template: .azure/job.yml

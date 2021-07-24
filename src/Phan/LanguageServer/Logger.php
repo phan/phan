@@ -95,6 +95,7 @@ class Logger
      */
     public static function setLogFile($new_file): void
     {
+        // NOTE: is_resource also checks if the resource is open.
         if (!\is_resource($new_file)) {
             throw new \TypeError("Expected newFile to be a resource, got " . \gettype($new_file));
         }

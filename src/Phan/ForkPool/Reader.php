@@ -53,6 +53,7 @@ class Reader
      */
     public function __construct($input, Closure $notification_handler)
     {
+        // NOTE: is_resource also checks if the resource isn't closed.
         if (!\is_resource($input)) {
             throw new TypeError('Expected resource for $input, got ' . \gettype($input));
         }

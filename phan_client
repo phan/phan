@@ -2,7 +2,7 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
- * Compatible with php 5.6 and php 7.x
+ * Compatible with php 5.6-8.1
  * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
@@ -220,7 +220,8 @@ class PhanPHPLinter
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
-        if (!\is_resource($client)) {
+        // NOTE: Some future release of php may change stream_socket_client to return an object on success.
+        if (!$client) {
             // TODO: This should attempt to start up the phan daemon for the given folder?
             self::debugError("Phan daemon not running on " . ($opts->url));
             exit(0);

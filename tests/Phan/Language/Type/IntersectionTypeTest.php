@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phan\Tests\Language;
+namespace Phan\Tests\Language\Type;
 
 use Phan\Language\Type\IntersectionType;
 use Phan\Tests\BaseTest;

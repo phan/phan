@@ -337,7 +337,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     restore_error_handler();
                 }
 
-                if (!\is_resource($conn)) {
+                if (!$conn) {
                     // If we didn't get a connection, and it wasn't due to a signal from a child process, then stop the daemon.
                     break;
                 }
