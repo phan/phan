@@ -22,6 +22,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
@@ -195,9 +196,23 @@ class Parameter extends Variable
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
      */
-    public function handleDefaultValueOfNull(): void
+    public function handleDefaultValueOfNull(CodeBase $code_base, Context $context): void
     {
         if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
+            foreach ($this->getNonVariadicUnionType()->getRealTypeSet() as $type) {
+                if ($type instanceof IntersectionType) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDefaultIntersection,
+                        $this->default_value->lineno ?? $context->getLineNumberStart(),
+                        $this->getNonVariadicUnionType(),
+                        $this->getName(),
+                        'null'
+                    );
+                    return;
+                }
+            }
             // If it isn't already nullable, convert the parameter type to nullable.
             $this->convertToNullable();
         }
@@ -438,7 +453,7 @@ class Parameter extends Variable
                     ));
                 }
             }
-            $parameter->handleDefaultValueOfNull();
+            $parameter->handleDefaultValueOfNull($code_base, $context);
         }
         $attributes_node = $node->children['attributes'] ?? null;
         if ($attributes_node instanceof Node) {

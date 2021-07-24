@@ -1,5 +1,12 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.0-RC1 (dev)
+-------------------------
+
+New Features (Analysis):
+- Warn about implicitly nullable parameter intersection types (`function(A&B $paramName = null)`) being a compile error.
+  New issue type: `PhanTypeMismatchDefaultIntersection`
+
 Jul 24 2021, Phan 5.0.0a4
 -------------------------
 

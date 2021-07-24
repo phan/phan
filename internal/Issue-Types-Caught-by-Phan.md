@@ -3754,6 +3754,14 @@ Default value for {TYPE} ${PARAMETER} can't be {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/rasmus_files/expected/0030_def_arg_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/rasmus_files/src/0030_def_arg_type.php#L4).
 
+## PhanTypeMismatchDefaultIntersection
+
+```
+Default value for {TYPE} ${PARAMETER} can't be {TYPE} because the parameter contains intersection types
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/020_implicitly_nullable_forbidden_in_intersection.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/020_implicitly_nullable_forbidden_in_intersection.php#L3).
+
 ## PhanTypeMismatchDimAssignment
 
 ```
