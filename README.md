@@ -43,7 +43,7 @@ Phan is able to perform the following kinds of analysis:
 
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
-* Check for PHP7/PHP5 backward compatibility.
+* Check for PHP8/PHP7/PHP5 backward compatibility.
 * Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, negative string offsets, multiple exception catches, etc.)
 * Check for sanity with array accesses.
 * Check for type safety on binary operations.
