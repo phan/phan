@@ -61,7 +61,7 @@ function phan_output_ast_installation_instructions(): void
         $extension_dir .= ' (extension directory does not exist and may need to be changed)';
     }
     if (DIRECTORY_SEPARATOR === '\\') {
-        if (PHP_VERSION_ID < 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+        if (PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
             // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.14/php_ast-1.0.14-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
             // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.14/php_ast-1.0.14-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
             fprintf(
@@ -76,12 +76,19 @@ function phan_output_ast_installation_instructions(): void
             );
             fwrite(STDERR, "(if that link doesn't work, check https://windows.php.net/downloads/pecl/releases/ast/ )" . PHP_EOL);
             fwrite(STDERR, "To install php-ast, add php_ast.dll from the zip to $extension_dir," . PHP_EOL);
-            fwrite(STDERR, "Then, enable php-ast by adding the following lines to your php.ini file at '$ini_path'" . PHP_EOL . PHP_EOL);
-            if (!is_dir((string)$configured_extension_dir) && is_dir($new_extension_dir)) {
-                fwrite(STDERR, "extension_dir=$new_extension_dir" . PHP_EOL);
+        } else {
+            if (PHP_VERSION_ID < 70300) {
+                fwrite(STDERR, "php-ast 1.0.11 is the minimum php-ast version needed for ast version 85. https://pecl.php.net/package/ast/1.0.11/windows does not supply dlls for php 7.2 because php-ast 1.0.11 was published after security support for php 7.2 was dropped" . PHP_EOL);
+            } else {
+                fprintf(STDERR, "Releases for php %s may not yet be available at https://windows.php.net/downloads/pecl/releases/ast/" . PHP_EOL, PHP_VERSION);
             }
-            fwrite(STDERR, "extension=php_ast.dll" . PHP_EOL . PHP_EOL);
+            fwrite(STDERR, "To build php-ast from source for Windows, see https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2 and https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2#building_pecl_extensions" . PHP_EOL);
         }
+        fwrite(STDERR, "Then, enable php-ast by adding the following lines to your php.ini file at '$ini_path'" . PHP_EOL . PHP_EOL);
+        if (!is_dir((string)$configured_extension_dir) && is_dir($new_extension_dir)) {
+            fwrite(STDERR, "extension_dir=$new_extension_dir" . PHP_EOL);
+        }
+        fwrite(STDERR, "extension=php_ast.dll" . PHP_EOL . PHP_EOL);
     } else {
         fwrite(STDERR, <<<EOT
 php-ast can be installed in the following ways:
