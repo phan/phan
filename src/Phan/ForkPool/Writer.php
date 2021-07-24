@@ -29,6 +29,7 @@ class Writer
      */
     public static function initialize($output): void
     {
+        // NOTE: is_resource also checks if the resource is writable
         if (!\is_resource($output)) {
             throw new TypeError('Expected resource for $output, got ' . \gettype($output));
         }

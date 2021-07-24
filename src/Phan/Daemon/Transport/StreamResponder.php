@@ -25,6 +25,7 @@ class StreamResponder implements Responder
     /** @param resource $connection a stream */
     public function __construct($connection, bool $expect_request)
     {
+        // NOTE: is_resource also checks if the resource isn't closed.
         if (!\is_resource($connection)) {
             throw new TypeError("Expected connection to be resource, saw " . \gettype($connection));
         }

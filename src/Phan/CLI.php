@@ -47,7 +47,6 @@ use function getenv;
 use function in_array;
 use function is_array;
 use function is_executable;
-use function is_resource;
 use function is_string;
 use function min;
 use function phpversion;
@@ -618,7 +617,7 @@ class CLI
                         throw new UsageException(\sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $output_file = \fopen($value, 'w');
-                    if (!is_resource($output_file)) {
+                    if (!$output_file) {
                         throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE, null, true);
                     }
                     $this->output = new StreamOutput($output_file);

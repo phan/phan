@@ -59,7 +59,7 @@ final class CSVPrinter implements BufferedPrinterInterface
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.
         $stream = \fopen("php://memory", "rw");
-        if (!\is_resource($stream)) {
+        if (!$stream) {
             throw new AssertionError('php://memory should always be openable');
         }
         $this->stream = $stream;

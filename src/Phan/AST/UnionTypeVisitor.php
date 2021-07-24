@@ -1354,7 +1354,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } elseif (\is_array($key_node)) {
                 return null;
             } elseif (\is_resource($key_node)) {
-                $key_node = (int)$key_node;
+                $key_node = \get_resource_id($key_node);
             } else {
                 // null
                 $key_node = (string)$key_node;
