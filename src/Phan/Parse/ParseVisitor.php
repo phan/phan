@@ -384,7 +384,6 @@ class ParseVisitor extends ScopeVisitor
             );
             return;
         }
-        // TODO support attributes in Phan 4
         // TODO: this should probably use FutureUnionType instead.
         $doc_comment = $parameter_node->children['docComment'] ?? '';
         $name = $parameter->getName();

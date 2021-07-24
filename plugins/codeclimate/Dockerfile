@@ -32,7 +32,7 @@ RUN adduser -u 9000 -D app
 
 ENV LAST_MODIFIED_DATE 2020-09-13
 
-ENV PHP_AST_VERSION=1.0.12
+ENV PHP_AST_VERSION=1.0.14
 
 RUN apk add --no-cache \
 	php8 && \
