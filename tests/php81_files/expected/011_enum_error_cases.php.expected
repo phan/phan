@@ -24,4 +24,5 @@
 %s:26 PhanUnreferencedPublicMethod Possibly zero references to public method \Mu::instanceMethod()
 %s:38 PhanUnreferencedClass Possibly zero references to class \NotEnum
 %s:39 PhanInvalidNode Cannot declare an enum case statement in a non-enum
+%s:43 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Expected enum case HEARTS not to have a value
 %s:45 PhanTypeInstantiateEnum Saw instantiation of enum \Suit

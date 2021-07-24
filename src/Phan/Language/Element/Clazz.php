@@ -59,7 +59,6 @@ use function array_values;
 use function count;
 use function in_array;
 use function is_int;
-use function is_object;
 use function is_string;
 use function strtolower;
 
@@ -169,6 +168,11 @@ class Clazz extends AddressableElement
      * (for unit enums)
      */
     private $enum_case_list = [];
+
+    /**
+     * @var ?UnionType backing type of enum. Null if enum cases have no value.
+     */
+    private $enum_type = null;
 
     /**
      * @param Context $context
@@ -1570,6 +1574,26 @@ class Clazz extends AddressableElement
         // TODO need to update minimum enum version to get enum's declared type
         $value = $enum_case->getNodeForValue();
         $name = $enum_case->getName();
+        if (($value !== null) !== ($this->enum_type !== null)) {
+            if ($this->enum_type) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $enum_case->getContext(),
+                    Issue::SyntaxEnumCaseExpectedValue,
+                    $enum_case->getContext()->getLineNumberStart(),
+                    $name,
+                    $this->enum_type
+                );
+            } else {
+                Issue::maybeEmit(
+                    $code_base,
+                    $enum_case->getContext(),
+                    Issue::SyntaxEnumCaseUnexpectedValue,
+                    $enum_case->getContext()->getLineNumberStart(),
+                    $name
+                );
+            }
+        }
         if ($value !== null) {
             if ($value instanceof Node) {
                 // TODO: Phan has a limit on how long of a string it will evaluate.
@@ -1596,29 +1620,25 @@ class Clazz extends AddressableElement
                     return;
                 }
                 $this->enum_case_map[$value] = $name;
-            } elseif (!is_object($value)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $enum_case->getContext(),
-                    Issue::TypeInvalidEnumCaseType,
-                    $enum_case->getContext()->getLineNumberStart(),
-                    $name,
-                    ASTReverter::toShortString($value),
-                    'int|string'
-                );
+            } else {
                 $this->enum_case_map_unknown[] = $name;
+            }
+            if ($this->enum_type !== null) {
+                $actual_case_type = $value instanceof UnionType ? $value : Type::fromObject($value)->asPHPDocUnionType();
+                if (!$actual_case_type->canStrictCastToUnionType($code_base, $this->enum_type)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $enum_case->getContext(),
+                        Issue::TypeUnexpectedEnumCaseType,
+                        $enum_case->getContext()->getLineNumberStart(),
+                        $name,
+                        $actual_case_type,
+                        $this->enum_type
+                    );
+                }
             }
         } else {
             $this->enum_case_list[] = $name;
-        }
-        if (count($this->enum_case_list) > 0 && (count($this->enum_case_map) > 0 || count($this->enum_case_map_unknown) > 0)) {
-            Issue::maybeEmit(
-                $code_base,
-                $this->getContext(),
-                Issue::SyntaxInconsistentEnum,
-                $this->getContext()->getLineNumberStart(),
-                $this->getFQSEN()
-            );
         }
     }
 
@@ -3999,27 +4019,18 @@ class Clazz extends AddressableElement
         $this->addEnumProperties($code_base);
     }
 
-    private function getEnumType(CodeBase $code_base): ?string
+    public function setEnumType(UnionType $type): void
     {
-        // TODO: Remove this when Phan switches to AST version 85
-        foreach ($this->enum_case_map as $case_name) {
-            $constant_fqsen = FullyQualifiedClassConstantName::make($this->getFQSEN(), $case_name);
-            if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
-                continue;
-            }
-            $case = $code_base->getClassConstantByFQSEN($constant_fqsen);
-            if (!$case instanceof EnumCase) {
-                continue;
-            }
+        $this->enum_type = $type;
+    }
 
-            $value = $case->getEnumCaseValue();
-            if (is_int($value)) {
-                return 'int';
-            } elseif (is_string($value)) {
-                return 'string';
-            }
-        }
-        return null;
+    /**
+     * Get the enum's type declaration. Currently, this can be the union type for int, string, or be null (cases have no value)
+     * @suppress PhanUnreferencedPublicMethod provided for plugins
+     */
+    public function getEnumType(): ?UnionType
+    {
+        return $this->enum_type;
     }
 
     private function addEnumProperties(CodeBase $code_base): void
@@ -4035,9 +4046,8 @@ class Clazz extends AddressableElement
         );
         $name_property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);
         $this->addProperty($code_base, $name_property, None::instance());
-        $enum_type = $this->getEnumType($code_base);
-        if (is_string($enum_type)) {
-            $value_type = UnionType::fromFullyQualifiedRealString($enum_type);
+        $value_type = $this->enum_type;
+        if ($value_type instanceof UnionType) {
             $value_property = new Property(
                 $this->getContext(),
                 'value',

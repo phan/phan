@@ -19,8 +19,7 @@
 %s:23 PhanNoopNewNoSideEffects Unused result of new object creation expression in new HasDuplicate() (this is likely free of side effects - there is no known non-empty constructor or destructor)
 %s:23 PhanTypeInstantiateEnum Saw instantiation of enum \Enums\HasDuplicate
 %s:25 PhanClassContainsAbstractMethod non-abstract class \Enums\InvalidEnum contains abstract method \Enums\InvalidEnum::mustNotBeAbstract() declared at %s:29
-%s:25 PhanSyntaxInconsistentEnum Syntax error: Enum \Enums\InvalidEnum unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
 %s:25 PhanUnreferencedClass Possibly zero references to enum \Enums\InvalidEnum
 %s:26 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\InvalidEnum::Valid
-%s:27 PhanTypeInvalidEnumCaseType Saw enum case Foo with a value(null) that did not match expected type int|string (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
+%s:27 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Expected enum case Foo not to have a value
 %s:27 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Enums\InvalidEnum::Foo

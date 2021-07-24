@@ -1,0 +1,3 @@
+%s:5 PhanSyntaxEnumCaseExpectedValue Syntax error: Expected enum case Hearts to have a value of type string but it has no value
+%s:9 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Expected enum case ZERO not to have a value
+%s:13 PhanTypeUnexpectedEnumCaseType Saw enum case ZERO with a value of type 'zero' that did not match expected type int

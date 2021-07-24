@@ -3351,14 +3351,6 @@ Invalid offset {SCALAR} of {CODE} of array type {TYPE} in an array destructuring
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0402_array_destructuring.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0402_array_destructuring.php#L4).
 
-## PhanTypeInvalidEnumCaseType
-
-```
-Saw enum case {CONST} with a value({SCALAR}) that did not match expected type {TYPE} (a future version of Phan will depend on an AST version that can be used to parse the enum declaration type)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L25) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L27).
-
 ## PhanTypeInvalidEval
 
 ```
@@ -4094,6 +4086,14 @@ Suspicious type {TYPE} of a variable or expression {CODE} used to build a string
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0187_undeclared_var_in_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0187_undeclared_var_in_string.php#L3).
+
+## PhanTypeUnexpectedEnumCaseType
+
+```
+Saw enum case {CONST} with a value of type {TYPE} that did not match expected type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/019_enum_wrong_case_type.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/019_enum_wrong_case_type.php#L13).
 
 ## PhanTypeVoidArgument
 
@@ -5147,6 +5147,22 @@ Cannot use an empty list in the left hand side of an array destructuring operati
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0799_array_destructuring_failures.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0799_array_destructuring_failures.php#L3).
 
+## PhanSyntaxEnumCaseExpectedValue
+
+```
+Syntax error: Expected enum case {CONST} to have a value of type {TYPE} but it has no value
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/019_enum_wrong_case_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/019_enum_wrong_case_type.php#L5).
+
+## PhanSyntaxEnumCaseUnexpectedValue
+
+```
+Syntax error: Expected enum case {CONST} not to have a value
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/019_enum_wrong_case_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/019_enum_wrong_case_type.php#L9).
+
 ## PhanSyntaxError
 
 This emits warnings for unparsable PHP files (detected by `php-ast`).
@@ -5155,14 +5171,6 @@ Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError
 Note: If the native parser is used, the reported column is a guess. Phan will use the column of the error reported by the **polyfill** if the errors are on the same line.
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/136_unexpected_bracket.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/136_unexpected_bracket.php#L2).
-
-## PhanSyntaxInconsistentEnum
-
-```
-Syntax error: Enum {ENUM} unexpectedly has cases that are inconsistent with the enum declaration\'s type or lack of type
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/004_enum.php.expected#L22) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/004_enum.php#L25).
 
 ## PhanSyntaxMixedKeyNoKeyArrayDestructuring
 
