@@ -173,6 +173,7 @@ class Issue
     public const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
 
     public const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    public const TypeMismatchDefaultIntersection = 'PhanTypeMismatchDefaultIntersection';
     public const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     public const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
     public const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
@@ -1563,6 +1564,14 @@ class Issue
                 "Default value for {TYPE} \${PARAMETER} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10002
+            ),
+            new Issue(
+                self::TypeMismatchDefaultIntersection,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Default value for {TYPE} \${PARAMETER} can't be {TYPE} because the parameter contains intersection types",
+                self::REMEDIATION_B,
+                10185
             ),
             new Issue(
                 self::TypeMismatchVariadicComment,
