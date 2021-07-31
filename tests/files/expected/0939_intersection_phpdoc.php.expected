@@ -4,5 +4,5 @@
 %s:10 PhanImpossibleIntersectionType Intersection type int&bool contains part int which cannot cast to the declared type bool
 %s:11 PhanTypeMismatchReturn Returning $value of type int&bool but test939() is declared to return \SplObjectStorage&\Error
 %s:13 PhanTypeMismatchArgumentProbablyReal Argument 1 ($value) is 123 of type 123 but \test939() takes int&bool (no real type) defined at %s:10 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:13 PhanTypeMismatchArgument Argument 2 ($object) is new stdClass() of type \stdClass but \test939() takes \stdClass&\ArrayObject defined at %s:10
+%s:13 PhanTypeMismatchArgumentSuperType Argument 2 ($object) is new stdClass() of type \stdClass but \test939() takes \stdClass&\ArrayObject defined at %s:10 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:17 PhanImpossibleIntersectionType Intersection type \stdClass&false contains part \stdClass which cannot cast to the declared type false

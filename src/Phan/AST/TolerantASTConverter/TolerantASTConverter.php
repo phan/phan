@@ -2835,7 +2835,7 @@ class TolerantASTConverter
             if ($prop instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
+            // @phan-suppress-next-line PhanTypeMismatchArgumentSuperType casting to a more specific node
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
@@ -2858,7 +2858,7 @@ class TolerantASTConverter
             if ($const_elem instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
+            // @phan-suppress-next-line PhanTypeMismatchArgumentSuperType casting to a more specific node
             $const_elems[] = static::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);

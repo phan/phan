@@ -165,6 +165,7 @@ class Issue
     public const TypeMismatchArgumentInternalProbablyReal = 'PhanTypeMismatchArgumentInternalProbablyReal';
     public const TypeMismatchArgumentInternalReal       = 'PhanTypeMismatchArgumentInternalReal';
     public const TypeMismatchArgumentNullableInternal   = 'PhanTypeMismatchArgumentNullableInternal';
+    public const TypeMismatchArgumentSuperType          = 'PhanTypeMismatchArgumentSuperType';
     public const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
     public const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
     public const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
@@ -196,6 +197,7 @@ class Issue
     public const TypeMismatchReturnNullable = 'PhanTypeMismatchReturnNullable';
     public const TypeMismatchReturnProbablyReal = 'PhanTypeMismatchReturnProbablyReal';
     public const TypeMismatchReturnReal     = 'PhanTypeMismatchReturnReal';
+    public const TypeMismatchReturnSuperType = 'PhanTypeMismatchReturnSuperType';
     public const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     public const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
     public const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
@@ -1622,6 +1624,14 @@ class Issue
                 10105
             ),
             new Issue(
+                self::TypeMismatchArgumentSuperType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be the same or a subtype, but saw a supertype instead)',
+                self::REMEDIATION_B,
+                10186
+            ),
+            new Issue(
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -1780,6 +1790,14 @@ class Issue
                 "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10060
+            ),
+            new Issue(
+                self::TypeMismatchReturnSuperType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (saw a supertype instead of a subtype)",
+                self::REMEDIATION_B,
+                10176
             ),
             new Issue(
                 self::PossiblyNullTypeReturn,

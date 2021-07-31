@@ -5,5 +5,5 @@
 %s:12 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but Closure(int&string):\stdClass&\ArrayObject takes int&string (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:13 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type int&null
 %s:13 PhanTypeMismatchArgument Argument 1 ($p0) is $other of type (int&null)|int|null but Closure(int&string):\stdClass&\ArrayObject takes int&string defined at %s:9
-%s:17 PhanTypeMismatchArgument Argument 1 ($value) is (function) of type Closure(int):\stdClass but \test42() takes Closure(int&string):\stdClass&\ArrayObject defined at %s:9
+%s:17 PhanTypeMismatchArgumentSuperType Argument 1 ($value) is (function) of type Closure(int):\stdClass but \test42() takes Closure(int&string):\stdClass&\ArrayObject defined at %s:9 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:20 PhanTypeMismatchArgumentProbablyReal Argument 2 ($other) is null of type null but \test42() takes int&null (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

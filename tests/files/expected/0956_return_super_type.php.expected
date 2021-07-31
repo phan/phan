@@ -1,0 +1,2 @@
+%s:14 PhanTypeMismatchReturnSuperType Returning $p of type \NS956\Base but test() is declared to return \NS956\SubClass (saw a supertype instead of a subtype)
+%s:20 PhanTypeMismatchArgumentSuperType Argument 1 ($p) is $b of type \NS956\BaseOfBase but \NS956\test() takes \NS956\Base defined at %s:13 (expected type to be the same or a subtype, but saw a supertype instead)

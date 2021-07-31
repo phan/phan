@@ -1164,6 +1164,7 @@ final class ArgumentType
         int $lineno,
         int $i
     ): void {
+        $context = (clone $context)->withLineNumberStart($lineno);
         /**
          * @return ?string
          */
@@ -1292,6 +1293,31 @@ final class ArgumentType
                     $method->getRepresentationForIssue(),
                     $alternate_parameter_type,
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart()
+                );
+                return;
+            }
+            if ($context->hasSuppressIssue($code_base, Issue::TypeMismatchArgument)) {
+                // Suppressing ProbablyReal also suppresses the less severe version.
+                return;
+            }
+            if (PostOrderAnalysisVisitor::doesExpressionHaveSuperClassOfTargetType(
+                $code_base,
+                $argument_type,
+                $alternate_parameter_type
+            )) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchArgumentSuperType,
+                    $lineno,
+                    ($i + 1),
+                    $alternate_parameter->getName(),
+                    ASTReverter::toShortString($argument_node),
+                    $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
+                    $method->getRepresentationForIssue(),
+                    (string)$alternate_parameter_type,
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
                 );
