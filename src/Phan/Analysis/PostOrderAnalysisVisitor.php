@@ -1750,13 +1750,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             }
         }
-        if ($this->context->hasSuppressIssue($this->code_base, Issue::TypeMismatchArgumentProbablyReal)) {
+        // Some suppressions are based on line number (e.g. (at)phan-suppress-next-line)
+        $context = (clone $this->context)->withLineNumberStart($lineno);
+
+        if ($context->hasSuppressIssue($this->code_base, Issue::TypeMismatchReturnProbablyReal)) {
             // Suppressing ProbablyReal also suppresses the less severe version.
             return;
         }
         if ($issue_type === Issue::TypeMismatchReturn) {
             if ($expression_type->hasRealTypeSet() &&
-                !$expression_type->getRealUnionType()->canCastToDeclaredType($this->code_base, $this->context, $method_return_type)) {
+                !$expression_type->getRealUnionType()->canCastToDeclaredType($this->code_base, $context, $method_return_type)) {
                 // The argument's real type is completely incompatible with the documented phpdoc type.
                 //
                 // Either the phpdoc type is wrong or the argument is likely wrong.
@@ -1773,6 +1776,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
         }
+        if ($context->hasSuppressIssue($this->code_base, $issue_type)) {
+            // Suppressing TypeMismatchReturn also suppresses the less severe version.
+            return;
+        }
+        if ($issue_type === Issue::TypeMismatchReturn && self::doesExpressionHaveSuperClassOfTargetType($this->code_base, $expression_type, $method_return_type)) {
+            $this->emitIssue(
+                Issue::TypeMismatchReturnSuperType,
+                $lineno,
+                self::returnExpressionToShortString($inner_node),
+                (string)$expression_type,
+                $method->getNameForIssue(),
+                (string)$method_return_type
+            );
+            return;
+        }
         $this->emitIssue(
             $issue_type,
             $lineno,
@@ -1781,6 +1799,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->getNameForIssue(),
             (string)$method_return_type
         );
+    }
+
+    /**
+     * Returns true if the expression has an object class type that is a supertype of the target type.
+     * (to emit a less severe issue for possible false positives)
+     *
+     * Normally, an exact type or subtype is required.
+     * @internal
+     */
+    public static function doesExpressionHaveSuperClassOfTargetType(
+        CodeBase $code_base,
+        UnionType $expression_type,
+        UnionType $target_type
+    ): bool {
+        $target_object_types = $target_type->objectTypesWithKnownFQSENs();
+        if ($target_object_types->isEmpty()) {
+            return false;
+        }
+        $expression_object_types = $expression_type->objectTypesWithKnownFQSENs();
+        if ($expression_object_types->isEmpty()) {
+            return false;
+        }
+        foreach ($expression_object_types->getTypeSet() as $type) {
+            foreach ($target_object_types->getTypeSet() as $other) {
+                if ($other->canCastToTypeWithoutConfig($type, $code_base)) {
+                    continue 2;
+                }
+            }
+            return false;
+        }
+        return true;
     }
 
     /**

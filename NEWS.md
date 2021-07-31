@@ -1,11 +1,15 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.0.0-RC1 (dev)
--------------------------
+??? ?? 2021, Phan 5.0.0 (dev)
+-----------------------
 
 New Features (Analysis):
 - Warn about implicitly nullable parameter intersection types (`function(A&B $paramName = null)`) being a compile error.
   New issue type: `PhanTypeMismatchDefaultIntersection`
+- Emit `PhanTypeMismatchArgumentSuperType` instead of `PhanTypeMismatchArgument` when passing in an object supertype (e.g. ancestor class) of an object instead of a subtype.
+  Emit `PhanTypeMismatchReturnSuperType` instead of `PhanTypeMismatchReturn` when returning an object supertype (e.g. ancestor class) of an object instead of a subtype.
+
+  Phan 5 starts warning about ancestor classes being incompatible argument or return types in cases where it previously allowed it. (#4413)
 
 Jul 24 2021, Phan 5.0.0a4
 -------------------------

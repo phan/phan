@@ -1,26 +1,26 @@
 %s:8 PhanTypeSuspiciousEcho Suspicious argument $fn of type callable(int):void for an echo/print statement
 %s:9 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int):void takes int (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:10 PhanParamTooFew Call with 0 arg(s) to callable(int):void which requires 1 arg(s) defined at %s:6
-%s:15 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_int_param() takes callable(int):void defined at %s:6
-%s:17 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int&):void but \expects_cb_int_param() takes callable(int):void defined at %s:6
+%s:15 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_int_param() takes callable(int):void defined at %s:6 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:17 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int&):void but \expects_cb_int_param() takes callable(int):void defined at %s:6 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:24 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but callable(int=):void takes int (no real type) defined at %s:22 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:26 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is null of type null but callable(int=):void takes int (no real type) defined at %s:22 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:28 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
-%s:31 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
-%s:32 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure():void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
-%s:33 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int&=):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22
+%s:28 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:31 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int,string):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:32 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure():void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:33 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int&=):void but \expects_cb_optional_int_param() takes callable(int=):void defined at %s:22 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:41 PhanParamTooMany Call with 1 arg(s) to callable():int which only takes 0 arg(s) defined at %s:40
 %s:42 PhanTypeMismatchReturn Returning $fn() of type int but expects_cb_int_return() is declared to return \stdClass
-%s:48 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure():array but \expects_cb_int_return() takes callable():int defined at %s:40
-%s:49 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(array):int but \expects_cb_int_return() takes callable():int defined at %s:40
+%s:48 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure():array but \expects_cb_int_return() takes callable():int defined at %s:40 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:49 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(array):int but \expects_cb_int_return() takes callable():int defined at %s:40 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:55 PhanTypeVoidAssignment Cannot assign void return value
 %s:55 PhanUnusedVariable Unused definition of variable $result
 %s:56 PhanTypeMismatchArgument Argument 1 ($fn) is $fn of type callable():void but \expects_cb_int_param() takes callable(int):void defined at %s:6
 %s:57 PhanTypeMismatchArgument Argument 1 ($fn) is $fn of type callable():void but \expects_cb_int_return() takes callable():int defined at %s:40
 %s:59 PhanPossiblyInfiniteRecursionSameParams expects_cb_void() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
-%s:65 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(mixed):void but \expects_cb_void() takes callable():void defined at %s:54
-%s:66 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure():int but \expects_cb_void() takes callable():void defined at %s:54
-%s:67 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_void() takes callable():void defined at %s:54
+%s:65 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(mixed):void but \expects_cb_void() takes callable():void defined at %s:54 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:66 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure():int but \expects_cb_void() takes callable():void defined at %s:54 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:67 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int):void but \expects_cb_void() takes callable():void defined at %s:54 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:75 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is ['arg'] of type array{0:'arg'} but callable(string...):void takes string (no real type) defined at %s:71 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:78 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(int...):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71
-%s:80 PhanTypeMismatchArgument Argument 1 ($fn) is (function) of type Closure(string):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71
+%s:78 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(int...):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:80 PhanTypeMismatchArgumentSuperType Argument 1 ($fn) is (function) of type Closure(string):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71 (expected type to be the same or a subtype, but saw a supertype instead)

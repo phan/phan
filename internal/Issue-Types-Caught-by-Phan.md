@@ -3698,6 +3698,14 @@ Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONL
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/rasmus_files/expected/0035_class_const.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/rasmus_files/src/0035_class_const.php#L6).
 
+## PhanTypeMismatchArgumentSuperType
+
+```
+Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE} (expected type to be the same or a subtype, but saw a supertype instead)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0956_return_super_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0956_return_super_type.php#L20).
+
 ## PhanTypeMismatchArrayDestructuringKey
 
 ```
@@ -3932,6 +3940,14 @@ This issue is emitted from the following code
 class G { function f() : int { return 'string'; } }
 ```
 
+
+## PhanTypeMismatchReturnSuperType
+
+```
+Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} (saw a supertype instead of a subtype)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0956_return_super_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0956_return_super_type.php#L13).
 
 ## PhanTypeMismatchUnpackKey
 
