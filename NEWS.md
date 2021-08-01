@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.0.1 (dev)
+-----------------------
+
+Documentation:
+- Update documentation of `--target-php-version` and `--minimum-target-php-version`
+
 Aug 01 2021, Phan 5.0.0
 -----------------------
 
