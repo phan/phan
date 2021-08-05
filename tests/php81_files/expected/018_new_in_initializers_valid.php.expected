@@ -1,0 +1,8 @@
+%s:10 PhanTypeMismatchDefault Default value for \ArrayObject $values can't be array|bool|float|int|null|resource|string
+%s:11 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS18\ExampleAttribute->values
+%s:15 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:16 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:17 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:19 PhanInvalidConstantExpression Constant expression contains invalid operations
+%s:20 PhanUnreferencedClass Possibly zero references to class \NS18\Other

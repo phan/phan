@@ -704,6 +704,14 @@ class InferPureVisitor extends AnalysisVisitor
         }
     }
 
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitCallableConvert(Node $node): void
+    {
+    }
+
     public function visitNamedArg(Node $node): void
     {
         $expr = $node->children['expr'];

@@ -3901,6 +3901,10 @@ class Clazz extends AddressableElement
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
                         if ($php_attribute->getName() === 'Attribute') {
                             // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                            $arg = $php_attribute->getArguments()[0] ?? null;
+                            if (is_int($arg)) {
+                                return $arg;
+                            }
                             return $php_attribute->getTarget();
                         }
                     }

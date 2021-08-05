@@ -1,0 +1,1 @@
+%s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $p->x of type int but \spl_object_id() takes object

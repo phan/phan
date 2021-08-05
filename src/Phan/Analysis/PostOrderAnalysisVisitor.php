@@ -3880,6 +3880,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $method->addReference($context);
 
+        $args_node = $node->children['args'];
+        if ($args_node->kind === ast\AST_CALLABLE_CONVERT) {
+            return;
+        }
         // Create variables for any pass-by-reference
         // parameters
         $argument_list = $node->children['args']->children;

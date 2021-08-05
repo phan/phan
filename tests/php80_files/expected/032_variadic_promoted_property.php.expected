@@ -4,16 +4,16 @@
 %s:3 PhanInvalidNode Cannot declare variadic promoted property
 %s:3 PhanWriteOnlyPublicProperty Possibly zero read references to public property \VariadicPromotedProperty->value
 %s:6 PhanEmptyPublicMethod Empty public method \VariadicPromotedProperty::other()
-%s:6 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public int $foo of non-constructor \VariadicPromotedProperty::other(int $foo)
+%s:6 PhanInvalidNode Cannot use visibility modifier on parameter public int $foo of non-constructor \VariadicPromotedProperty::other(int $foo)
 %s:6 PhanPluginUnknownMethodReturnType Method \VariadicPromotedProperty::other() has no declared or inferred return type
 %s:6 PhanPluginUseReturnValueNoopVoid The function/method \VariadicPromotedProperty::other() is declared to return (empty union type) and it has no side effects
 %s:6 PhanUnreferencedPublicMethod Possibly zero references to public method \VariadicPromotedProperty::other()
 %s:9 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
-%s:9 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public int $x of non-constructor Closure(int $x)
+%s:9 PhanInvalidNode Cannot use visibility modifier on parameter public int $x of non-constructor Closure(int $x)
 %s:9 PhanPluginUnknownClosureReturnType Closure Closure(int $x) has no declared or inferred return type (Types inferred after analysis: int)
 %s:9 PhanUnreferencedClosure Possibly zero references to Closure(int $x)
 %s:10 PhanEmptyFunction Empty function \fn32()
-%s:10 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public $var of non-constructor \fn32($var)
+%s:10 PhanInvalidNode Cannot use visibility modifier on parameter public $var of non-constructor \fn32($var)
 %s:10 PhanPluginUnknownFunctionParamType Function fn32() has no declared or inferred return type for $var
 %s:10 PhanPluginUseReturnValueNoopVoid The function/method \fn32() is declared to return void and it has no side effects
 %s:10 PhanUnreferencedFunction Possibly zero references to function \fn32()

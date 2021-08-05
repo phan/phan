@@ -301,6 +301,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitStaticCall(Node $node): Context
     {
@@ -359,8 +361,6 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Analyzes code such as list($a) = [1, 2, 3];
      * @see self::visitArray()
-     *
-     * @throws UnanalyzableException for first-class callable conversion
      */
     private function analyzeShapedArrayAssignment(Node $node): void
     {
