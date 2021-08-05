@@ -1,1 +1,1 @@
-src/070_nullable_param.php:2 PhanSyntaxError syntax error, unexpected variable "$x" (at column 19)
+src/070_nullable_param.php:2 PhanSyntaxError syntax error, unexpected '$x' (T_VARIABLE) (at column 19)
