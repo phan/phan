@@ -182,7 +182,7 @@ class ClassInheritanceAnalyzer
                     $source_class->getInternalContext(),
                     Issue::CompatibleSerializeInterfaceDeprecated,
                     $source_class->getFileRef()->getLineNumberStart(),
-                    $target_class_fqsen
+                    $source_class->getFQSEN()
                 );
             }
         }

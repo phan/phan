@@ -171,9 +171,15 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitMethodCall(Node $node): Context
     {
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about this being unanalyzable
+            return $this->visit($node);
+        }
         if ($this->dim_depth >= 2) {
             return $this->context;
         }
@@ -221,9 +227,15 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * analyzing the node
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     public function visitCall(Node $node): Context
     {
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // Warn about this being unanalyzable
+            return $this->visit($node);
+        }
         $expression = $node->children['expr'];
         if ($this->dim_depth < 2) {
             // Get the function.
@@ -347,6 +359,8 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Analyzes code such as list($a) = [1, 2, 3];
      * @see self::visitArray()
+     *
+     * @throws UnanalyzableException for first-class callable conversion
      */
     private function analyzeShapedArrayAssignment(Node $node): void
     {
@@ -1437,8 +1451,6 @@ class AssignmentVisitor extends AnalysisVisitor
         //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
         $property->setUnionType($updated_property_types->withRealTypeSet($property->getRealUnionType()->getTypeSet()));
     }
-
-
 
     /**
      * @param Property $property - The property which should have types added to it
