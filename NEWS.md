@@ -1,5 +1,13 @@
 Phan NEWS
 
+??? ?? 2021, Phan 4.1.0 (dev)
+-----------------------
+
+Maintenance:
++ Upgrade from tolerant-php-parser 0.0.23 to 0.1.1
++ Backport some changes from Phan 5 for php 8.1 first-class callable conversion `(...)` and avoid crashing when parsing intersection type supports.
+  **Note that Phan 5 must be used instead to actually support intersection types; intersection types are not part of Phan 4's type system.**
+
 Jun 26 2021, Phan 4.0.7
 -----------------------
 
