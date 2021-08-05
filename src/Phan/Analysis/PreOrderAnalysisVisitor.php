@@ -172,7 +172,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
         $method->ensureScopeInitialized($code_base);
         // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
-        Analyzable::ensureDidAnnotate($node);
+        Func::ensureDidAnnotate($node);
 
         // Parse the comment above the method to get
         // extra meta information about the method.
@@ -320,7 +320,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         $function->ensureScopeInitialized($code_base);
         // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
-        Analyzable::ensureDidAnnotate($node);
+        Func::ensureDidAnnotate($node);
 
         $context = $original_context->withScope(
             clone($function->getInternalScope())
@@ -452,7 +452,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func = $code_base->getFunctionByFQSEN($closure_fqsen);
         $func->ensureScopeInitialized($code_base);
         // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
-        Analyzable::ensureDidAnnotate($node);
+        Func::ensureDidAnnotate($node);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
@@ -592,7 +592,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func = $code_base->getFunctionByFQSEN($closure_fqsen);
         $func->ensureScopeInitialized($code_base);
         // Fix #2504 - add flags to ensure that DimOffset warnings aren't emitted inside closures
-        Analyzable::ensureDidAnnotate($node);
+        Func::ensureDidAnnotate($node);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure

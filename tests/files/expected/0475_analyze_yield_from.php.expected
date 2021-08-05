@@ -1,7 +1,7 @@
-%s:23 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (unknown)) with type 4 but test_yield_from() is declared to yield values of type string in \Generator<int,string>
-%s:24 PhanTypeMismatchGeneratorYieldKey Yield statement has a key (keys of (unknown)) with type string but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
-%s:26 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (unknown)) with type int but test_yield_from() is declared to yield values of type string in \Generator<int,string>
-%s:28 PhanTypeMismatchGeneratorYieldKey Yield statement has a key (keys of (unknown)) with type void but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
-%s:29 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (unknown)) with type \stdClass but test_yield_from() is declared to yield values of type string in \Generator<int,string>
-%s:31 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (unknown) of type 'not valid' (expected Traversable/array)
-%s:32 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (unknown) of type \stdClass (expected Traversable/array)
+%s:23 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (yield from [2=>4])) with type 4 but test_yield_from() is declared to yield values of type string in \Generator<int,string>
+%s:24 PhanTypeMismatchGeneratorYieldKey Yield statement has a key (keys of (yield from ['x'=>'y'])) with type string but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
+%s:26 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (yield from [2=>rand(0, 4)])) with type int but test_yield_from() is declared to yield values of type string in \Generator<int,string>
+%s:28 PhanTypeMismatchGeneratorYieldKey Yield statement has a key (keys of (yield from yields_generator_without_key())) with type void but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
+%s:29 PhanTypeMismatchGeneratorYieldValue Yield statement has a value (values of (yield from yields_generator_with_wrong_value())) with type \stdClass but test_yield_from() is declared to yield values of type string in \Generator<int,string>
+%s:31 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (yield from 'not valid') of type 'not valid' (expected Traversable/array)
+%s:32 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (yield from new stdClass()) of type \stdClass (expected Traversable/array)
