@@ -149,6 +149,10 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     public function visitCall(Node $node): void
     {
         $used = $this->findNonUnaryParentNode($node)[1];
+        if (!$used && $node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            $this->warnUnusedCallableConvert($node);
+            return;
+        }
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $expression = $node->children['expr'];
@@ -203,6 +207,10 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     private function checkIfUsingFunctionThatNeverReturns(array $function_list, Node $node): void
     {
         if (!$function_list) {
+            return;
+        }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This isn't calling the function, it's creating a closure.
             return;
         }
         foreach ($function_list as $function) {
@@ -313,6 +321,10 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            $this->warnUnusedCallableConvert($node);
+            return;
+        }
         $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
@@ -351,6 +363,17 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    protected function warnUnusedCallableConvert(Node $node): void
+    {
+        $this->emitPluginIssue(
+            $this->code_base,
+            (clone($this->context))->withLineNumberStart($node->lineno),
+            UseReturnValuePlugin::UseReturnValueCallableConvert,
+            'Expected to use the Closure created from {CODE}',
+            [ASTReverter::toShortString($node)]
+        );
+    }
+
     /**
      * @param Node $node a node of type AST_STATIC_CALL
      * @override
@@ -363,6 +386,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
+
+        if (!$used && $node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            $this->warnUnusedCallableConvert($node);
+            return;
+        }
 
         $method_name = $node->children['method'];
 

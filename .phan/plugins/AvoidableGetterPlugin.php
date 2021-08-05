@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use ast\Node;
-use Phan\Analysis\ConditionVisitorUtil;
+use Phan\Analysis\ConditionVisitor;
 use Phan\AST\ASTReverter;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -85,7 +85,7 @@ class AvoidableGetterVisitor extends PluginAwarePostAnalysisVisitor
                 return;
                 // This only supports instance method getters, not static getters (AST_STATIC_CALL)
             case ast\AST_METHOD_CALL:
-                if (!ConditionVisitorUtil::isThisVarNode($node->children['expr'])) {
+                if (!ConditionVisitor::isThisVarNode($node->children['expr'])) {
                     break;
                 }
                 $method_name = $node->children['method'];

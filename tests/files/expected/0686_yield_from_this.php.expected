@@ -1,2 +1,2 @@
-%s:57 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (unknown) of type static (expected Traversable/array)
-%s:58 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (unknown) of type static (expected Traversable/array)
+%s:57 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (yield from $this) of type static (expected Traversable/array)
+%s:58 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (yield from (clone($this))) of type static (expected Traversable/array)

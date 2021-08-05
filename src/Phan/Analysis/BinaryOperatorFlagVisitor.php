@@ -356,7 +356,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                             // TODO: Emit warning about division by zero.
                             return IntType::instance(false)->asRealUnionType();
                         }
-                        $value = $left_value % $right_value;
+                        $value = ((int)$left_value) % ((int)$right_value);
                         return $make_literal_union_type(
                             LiteralIntType::instanceForValue($value, false),
                             $real_int

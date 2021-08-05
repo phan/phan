@@ -1,0 +1,3 @@
+%s:10 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is $x of type object but Closure(int|string):(\ArrayObject|\stdClass) takes int|string (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:12 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is new stdClass() of type \stdClass but Closure(int|string):(\ArrayObject|\stdClass) takes int|string (no real type) defined at %s:9 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type int|null

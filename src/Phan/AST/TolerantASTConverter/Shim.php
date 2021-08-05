@@ -49,6 +49,12 @@ class Shim
         if (!defined('ast\AST_ATTRIBUTE_GROUP')) {
             define('ast\AST_ATTRIBUTE_GROUP', 251);
         }
+        if (!defined('ast\AST_TYPE_INTERSECTION')) {
+            define('ast\AST_TYPE_INTERSECTION', 250);
+        }
+        if (!defined('ast\AST_CALLABLE_CONVERT')) {
+            define('ast\AST_CALLABLE_CONVERT', 249);
+        }
         if (!defined('ast\AST_MATCH')) {
             define('ast\AST_MATCH', 0x2fc);
         }
@@ -86,6 +92,9 @@ class Shim
         }
         if (!defined('ast\flags\PARAM_MODIFIER_PRIVATE')) {
             define('ast\flags\PARAM_MODIFIER_PRIVATE', $max_param_flag << 3);
+        }
+        if (!defined('ast\flags\MODIFIER_READONLY')) {
+            define('ast\flags\MODIFIER_READONLY', $max_param_flag << 4);
         }
         if (!defined('ast\flags\TYPE_FALSE')) {
             define('ast\flags\TYPE_FALSE', 2);

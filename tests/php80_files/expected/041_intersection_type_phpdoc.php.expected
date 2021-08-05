@@ -1,0 +1,4 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type callable|object
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type callable|string[]
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type callable|string
+%s:16 PhanUnreferencedPublicMethod Possibly zero references to public method \A41::method()

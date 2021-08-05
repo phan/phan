@@ -1,2 +1,4 @@
-src/076_pipe.php:3 PhanCompatibleTypedProperty Cannot use typed properties before php 7.4. This property group has type string
+src/076_pipe.php:3 PhanNoopConstant Unused constant
+src/076_pipe.php:3 PhanNoopVariable Unused variable
 src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE) (at column 12)
+src/076_pipe.php:3 PhanUndeclaredConstant Reference to undeclared constant \string. This will cause a thrown Error in php 8.0+. (Did you mean \STDIN or \T_STRING)

@@ -40,6 +40,6 @@ class NotEnum {
 }
 
 enum Suit {
-    case HEARTS = 'H';
+    case HEARTS = 'H';  // invalid - warn but attempt to track existence
 }
 var_dump(clone Suit::HEARTS);  // cannot clone

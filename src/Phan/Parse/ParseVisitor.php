@@ -1227,7 +1227,8 @@ class ParseVisitor extends ScopeVisitor
         if (Config::get_backward_compatibility_checks()) {
             $this->analyzeBackwardCompatibility($node);
 
-            foreach ($node->children['args']->children as $arg_node) {
+            // Handle first-class callables which have no args
+            foreach ($node->children['args']->children ?? [] as $arg_node) {
                 if ($arg_node instanceof Node) {
                     $this->analyzeBackwardCompatibility($arg_node);
                 }
@@ -1768,6 +1769,10 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
     public function visitName(Node $node): Context
+    {
+        return $this->context;
+    }
+    public function visitCallableConvert(Node $node): Context
     {
         return $this->context;
     }

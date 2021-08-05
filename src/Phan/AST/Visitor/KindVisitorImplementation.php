@@ -111,6 +111,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitCallableConvert(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitCast(Node $node)
     {
         return $this->visit($node);
@@ -402,6 +407,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitType(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitTypeIntersection(Node $node)
     {
         return $this->visit($node);
     }

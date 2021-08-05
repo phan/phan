@@ -336,6 +336,10 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         if (!$context->isInFunctionLikeScope()) {
             return;
         }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a callable instead of calling the function.
+            return;
+        }
         $code_base = $this->code_base;
         $analyzed_function = $context->getFunctionLikeInScope($code_base);
         try {
@@ -375,6 +379,10 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         if (!$context->isInFunctionLikeScope()) {
             return;
         }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a callable instead of calling the function.
+            return;
+        }
         $code_base = $this->code_base;
         $method_name = $node->children['method'];
 
@@ -412,6 +420,10 @@ class ThrowRecursiveVisitor extends ThrowVisitor
     {
         $context = $this->context;
         if (!$context->isInFunctionLikeScope()) {
+            return;
+        }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a callable instead of calling the function.
             return;
         }
         $code_base = $this->code_base;
