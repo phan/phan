@@ -1,9 +1,19 @@
-%s:5 PhanAttributeNonRepeatable Saw attribute \Attribute which was not declared as \Attribute::IS_REPEATABLE in the class definition at internal:0 but had a repeat declaration on line 3
-%s:8 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $path of \Route32::__construct(string $path)
-%s:8 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Route32->path
-%s:11 PhanCompatibleAttributeGroupOnMultipleLines Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group Attribute(Attribute::TARGET_FUNCTION) of Class \Single32 ending around line 12. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
-%s:15 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $path of \Single32::__construct(string $path)
-%s:15 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Single32->path
-%s:20 PhanPluginUnknownFunctionParamType Function test32() has no declared or inferred return type for $arg (Types inferred after analysis: string)
-%s:25 PhanAttributeNonRepeatable Saw attribute \Single32 which was not declared as \Attribute::IS_REPEATABLE in the class definition at %s:14 but had a repeat declaration on line 24
-%s:26 PhanPluginUnknownFunctionParamType Function test32_bad() has no declared or inferred return type for $arg
+%s:2 PhanUnreferencedClass Possibly zero references to class \VariadicPromotedProperty
+%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public ...$rest of \VariadicPromotedProperty::__construct(int $value, ...$rest)
+%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $value of \VariadicPromotedProperty::__construct(int $value, ...$rest)
+%s:3 PhanInvalidNode Cannot declare variadic promoted property
+%s:3 PhanWriteOnlyPublicProperty Possibly zero read references to public property \VariadicPromotedProperty->value
+%s:6 PhanEmptyPublicMethod Empty public method \VariadicPromotedProperty::other()
+%s:6 PhanInvalidNode Cannot use visibility modifier on parameter public int $foo of non-constructor \VariadicPromotedProperty::other(int $foo)
+%s:6 PhanPluginUnknownMethodReturnType Method \VariadicPromotedProperty::other() has no declared or inferred return type
+%s:6 PhanPluginUseReturnValueNoopVoid The function/method \VariadicPromotedProperty::other() is declared to return (empty union type) and it has no side effects
+%s:6 PhanUnreferencedPublicMethod Possibly zero references to public method \VariadicPromotedProperty::other()
+%s:9 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
+%s:9 PhanInvalidNode Cannot use visibility modifier on parameter public int $x of non-constructor Closure(int $x)
+%s:9 PhanPluginUnknownClosureReturnType Closure Closure(int $x) has no declared or inferred return type (Types inferred after analysis: int)
+%s:9 PhanUnreferencedClosure Possibly zero references to Closure(int $x)
+%s:10 PhanEmptyFunction Empty function \fn32()
+%s:10 PhanInvalidNode Cannot use visibility modifier on parameter public $var of non-constructor \fn32($var)
+%s:10 PhanPluginUnknownFunctionParamType Function fn32() has no declared or inferred return type for $var
+%s:10 PhanPluginUseReturnValueNoopVoid The function/method \fn32() is declared to return void and it has no side effects
+%s:10 PhanUnreferencedFunction Possibly zero references to function \fn32()
