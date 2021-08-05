@@ -3905,6 +3905,7 @@ class Clazz extends AddressableElement
                             if (is_int($arg)) {
                                 return $arg;
                             }
+                            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
                             return $php_attribute->getTarget();
                         }
                     }
