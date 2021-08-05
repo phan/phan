@@ -145,7 +145,7 @@ class Fixers
         $leadingTriviaTokens = PhpTokenizer::getTokensArrayFromContent(
             $leadingTriviaText,
             ParseContext::SourceElements,
-            $node->getFullStart(),
+            $node->getFullStartPosition(),
             false
         );
         for ($i = \count($leadingTriviaTokens) - 1; $i >= 0; $i--) {

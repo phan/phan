@@ -137,6 +137,12 @@ class ASTReverter
             /**
              * @suppress PhanPartialTypeMismatchArgument
              */
+            ast\AST_TYPE_INTERSECTION => static function (Node $node): string {
+                return implode('&', array_map('self::toShortTypeString', $node->children));
+            },
+            /**
+             * @suppress PhanPartialTypeMismatchArgument
+             */
             ast\AST_TYPE_UNION => static function (Node $node): string {
                 return implode('|', array_map('self::toShortTypeString', $node->children));
             },
@@ -160,6 +166,9 @@ class ASTReverter
             },
             ast\AST_ARG_LIST => static function (Node $node): string {
                 return '(' . implode(', ', array_map('self::toShortString', $node->children)) . ')';
+            },
+            ast\AST_CALLABLE_CONVERT => /** @unused-param $node */ static function (Node $node): string {
+                return '(...)';
             },
             ast\AST_ATTRIBUTE_LIST => static function (Node $node): string {
                 return implode(' ', array_map('self::toShortString', $node->children));
@@ -540,7 +549,20 @@ class ASTReverter
             },
             ast\AST_EXIT => static function (Node $node): string {
                 return 'exit(' . self::toShortString($node->children['expr']) . ')';
-            }
+            },
+            ast\AST_YIELD => static function (Node $node): string {
+                ['value' => $value, 'key' => $key] = $node->children;
+                if ($value !== null) {
+                    return '(yield)';
+                }
+                if ($key !== null) {
+                    return sprintf('(yield %s => %s)', self::toShortString($key), self::toShortString($value));
+                }
+                return sprintf('(yield %s)', self::toShortString($value));
+            },
+            ast\AST_YIELD_FROM => static function (Node $node): string {
+                return '(yield from ' . self::toShortString($node->children['expr']) . ')';
+            },
             // TODO: AST_SHELL_EXEC, AST_ENCAPS_LIST(in shell_exec or double quotes)
         ];
     }

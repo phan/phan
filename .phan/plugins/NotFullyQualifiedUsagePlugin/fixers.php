@@ -71,7 +71,7 @@ call_user_func(static function (): void {
             // They are case-sensitively identical.
             // Generate a fix.
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-            $start = $node->getStart();
+            $start = $node->getStartPosition();
             $edits[] = new FileEdit($start, $start, '\\');
         }
         if ($edits) {

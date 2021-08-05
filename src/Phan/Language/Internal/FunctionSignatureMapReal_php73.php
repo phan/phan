@@ -1168,6 +1168,7 @@ return [
 'utf8_encode' => '?false|?string',
 'var_dump' => 'void',
 'var_export' => '?string',
+'var_representation' => 'string',
 'version_compare' => '?bool|?int',
 'vfprintf' => '?false|?int',
 'vprintf' => 'false|int',

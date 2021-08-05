@@ -63,7 +63,9 @@ class ArrowFunc
      */
     private function recordUse($name, Node $n): void
     {
-        $this->uses[$name] = $this->uses[$name] ?? $n;
+        if ($name !== 'this') {
+            $this->uses[$name] = $this->uses[$name] ?? $n;
+        }
     }
 
     private function buildUses(Node $n): void
