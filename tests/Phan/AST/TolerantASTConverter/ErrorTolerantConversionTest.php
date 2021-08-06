@@ -7,6 +7,7 @@ namespace Phan\Tests\AST\TolerantASTConverter;
 use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\Config;
 use Phan\Debug;
 use Phan\Tests\BaseTest;
 
@@ -441,7 +442,7 @@ EOT;
 
     private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false): void
     {
-        $supports80 = ConversionTest::hasNativeASTSupport(85);
+        $supports80 = ConversionTest::hasNativeASTSupport(Config::AST_VERSION);
         if (!$supports80) {
             $this->fail('No supported AST versions to test');
         }

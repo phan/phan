@@ -9,6 +9,7 @@ use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\Config;
 use Phan\Debug;
 use Phan\Tests\BaseTest;
 use RecursiveDirectoryIterator;
@@ -98,12 +99,12 @@ final class ConversionTest extends BaseTest
         $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
-        $supports80 = self::hasNativeASTSupport(85);
+        $supports80 = self::hasNativeASTSupport(Config::AST_VERSION);
         if (!$supports80) {
-            throw new RuntimeException("Version 85 is not natively supported");
+            throw new RuntimeException(\sprintf("Version %d is not natively supported", Config::AST_VERSION));
         }
         foreach ($paths as $path) {
-            $tests[] = [$path, 85];
+            $tests[] = [$path, Config::AST_VERSION];
         }
         return $tests;
     }

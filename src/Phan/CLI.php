@@ -52,6 +52,7 @@ use function min;
 use function phpversion;
 use function printf;
 use function shell_exec;
+use function sprintf;
 use function str_repeat;
 use function strcasecmp;
 use function strlen;
@@ -82,7 +83,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '5.0.1-dev';
+    public const PHAN_VERSION = '5.1.0-dev';
 
     /**
      * List of short flags passed to getopt
@@ -518,7 +519,7 @@ class CLI
                 case 'output-mode':
                     if (!is_string($value) || !in_array($value, $factory->getTypes(), true)) {
                         throw new UsageException(
-                            \sprintf(
+                            sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
                                 StringUtil::jsonEncode($value),
                                 \implode(',', $factory->getTypes())
@@ -614,7 +615,7 @@ class CLI
                 case 'o':
                 case 'output':
                     if (!is_string($value)) {
-                        throw new UsageException(\sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $output_file = \fopen($value, 'w');
                     if (!$output_file) {
@@ -646,7 +647,7 @@ class CLI
                 case 'processes':
                     $processes = \filter_var($value, FILTER_VALIDATE_INT);
                     if ($processes <= 0) {
-                        throw new UsageException(\sprintf("Invalid arguments to --processes: %s (expected a positive integer)\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --processes: %s (expected a positive integer)\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     Config::setValue('processes', $processes);
                     break;
@@ -690,7 +691,7 @@ class CLI
                     break;
                 case 'native-syntax-check':
                     if ($value === '') {
-                        throw new UsageException(\sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     if (!is_array($value)) {
                         $value = [$value];
@@ -741,11 +742,11 @@ class CLI
                 case 'daemonize-socket':
                     self::checkCanDaemonize('unix', $key);
                     if (!is_string($value)) {
-                        throw new UsageException(\sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $socket_dirname = \realpath(\dirname($value));
                     if (!is_string($socket_dirname) || !\file_exists($socket_dirname) || !\is_dir($socket_dirname)) {
-                        $msg = \sprintf(
+                        $msg = sprintf(
                             'Requested to create Unix socket server in %s, but folder %s does not exist',
                             StringUtil::jsonEncode($value),
                             StringUtil::jsonEncode($socket_dirname)
@@ -1010,7 +1011,7 @@ class CLI
         $resolved_binaries = [];
         foreach ($binaries as $binary) {
             if ($binary === '') {
-                throw new UsageException(\sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($binaries)), EXIT_FAILURE);
+                throw new UsageException(sprintf("Invalid arguments to --native-syntax-check: args=%s\n", StringUtil::jsonEncode($binaries)), EXIT_FAILURE);
             }
             if (DIRECTORY_SEPARATOR === '\\') {
                 $cmd = 'where ' . escapeshellarg($binary);
@@ -1019,10 +1020,10 @@ class CLI
             }
             $resolved = trim((string) shell_exec($cmd));
             if ($resolved === '') {
-                throw new UsageException(\sprintf("Could not find PHP binary for --native-syntax-check: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
+                throw new UsageException(sprintf("Could not find PHP binary for --native-syntax-check: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
             }
             if (!is_executable($resolved)) {
-                throw new UsageException(\sprintf("PHP binary for --native-syntax-check is not executable: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
+                throw new UsageException(sprintf("PHP binary for --native-syntax-check is not executable: arg=%s\n", StringUtil::jsonEncode($binary)), EXIT_FAILURE);
             }
             $resolved_binaries[] = $resolved;
         }
@@ -1124,7 +1125,7 @@ class CLI
             }
             if ($valid_files === 0) {
                 // TODO convert this to an error in Phan 5.
-                $error_message = \sprintf(
+                $error_message = sprintf(
                     "None of the files to analyze in %s exist - This will be an error in future Phan releases." . PHP_EOL,
                     Config::getProjectRootDirectory()
                 );
@@ -1223,7 +1224,7 @@ class CLI
                     $details = ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
                     $details .= self::getPluginSuggestionText($plugin_path_or_name);
                 }
-                self::printErrorToStderr(\sprintf(
+                self::printErrorToStderr(sprintf(
                     "Phan %s could not find plugin %s%s\n",
                     CLI::PHAN_VERSION,
                     StringUtil::jsonEncode($plugin_file_name),
@@ -2138,7 +2139,7 @@ EOB
                     }
                     if (!$file_info->isReadable()) {
                         $file_path = $file_info->getRealPath();
-                        CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isReadable() is false, getPerms()=" . \sprintf("%o(octal)", @$file_info->getPerms()) . "\n");
+                        CLI::printErrorToStderr("Unable to read file $file_path: SplFileInfo->isReadable() is false, getPerms()=" . sprintf("%o(octal)", @$file_info->getPerms()) . "\n");
                         return false;
                     }
 
@@ -2148,7 +2149,7 @@ EOB
                         return false;
                     }
                 } catch (Exception $e) {
-                    CLI::printErrorToStderr(\sprintf("Unexpected error checking if %s should be parsed: %s %s\n", $file_info->getPathname(), \get_class($e), $e->getMessage()));
+                    CLI::printErrorToStderr(sprintf("Unexpected error checking if %s should be parsed: %s %s\n", $file_info->getPathname(), \get_class($e), $e->getMessage()));
                     return false;
                 }
 
@@ -2357,15 +2358,15 @@ EOB
         $columns = self::getColumns();
         $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
         if ($columns - (60 + 10) > 19) {
-            $percent_progress = \sprintf('%1$ 5.1f', (int)(1000 * $p) / 10);
+            $percent_progress = sprintf('%1$ 5.1f', (int)(1000 * $p) / 10);
         } else {
-            $percent_progress = \sprintf("%1$ 3d", (int)(100 * $p));
+            $percent_progress = sprintf("%1$ 3d", (int)(100 * $p));
         }
         // Don't make the current memory usage in the progress bar shorter (avoid showing "MBB")
         $width = \max(2, strlen((string)(int)$peak));
         $right_side =
                " " . $percent_progress . "%" .
-               \sprintf(' %' . $width . 'dMB/%' . $width . 'dMB', (int)$memory, (int)$peak);
+               sprintf(' %' . $width . 'dMB/%' . $width . 'dMB', (int)$memory, (int)$peak);
         // @phan-suppress-previous-line PhanPluginPrintfVariableFormatString
 
         // strlen("  99% 999MB/999MB") == 17
@@ -2415,7 +2416,7 @@ EOB
      */
     public static function debugProgress(string $msg, float $p, $details): void
     {
-        $pct = \sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
+        $pct = sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
 
         if ($details === null) {
             return;
@@ -2578,7 +2579,7 @@ EOB
                         $buf .= str_repeat(" ", self::PROGRESS_WIDTH - $mod);
                     }
                     // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
-                    $buf .= " " . \sprintf(
+                    $buf .= " " . sprintf(
                         "%" . strlen((string)(int)$count) . "d / %d (%3d%%) %.0fMB" . PHP_EOL,
                         min(self::$current_progress_offset_long_progress, $count),
                         (int)$count,
@@ -2593,7 +2594,7 @@ EOB
                 $buf .= self::colorizeProgressBarSegment(str_repeat($chr, $offset - self::$current_progress_offset_long_progress));
                 self::$current_progress_offset_long_progress = $offset;
                 if (self::$current_progress_offset_long_progress === self::PROGRESS_WIDTH) {
-                    $buf .= ' ' . \sprintf("%.0fMB" . PHP_EOL, $memory);
+                    $buf .= ' ' . sprintf("%.0fMB" . PHP_EOL, $memory);
                 }
             }
         }
@@ -2650,7 +2651,7 @@ EOB
                 if ($config_file_name !== false) {
                     throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, UsageException::PRINT_EXTENDED);
                 } else {
-                    $msg = \sprintf(
+                    $msg = sprintf(
                         "Could not figure out the path for config file %s, but --require-config-exists was set",
                         StringUtil::encodeValue($this->config_file)
                     );
@@ -2739,20 +2740,23 @@ EOB
         if (\version_compare($ast_version, '1.0.0') <= 0) {
             if ($ast_version === '') {
                 // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
-                fwrite(STDERR, "ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . \ini_get('opcache.file_cache') . "')" . PHP_EOL);
+                CLI::printErrorToStderr("ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . \ini_get('opcache.file_cache') . "')" . PHP_EOL);
             }
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
-            \fprintf(
-                STDERR,
-                "ERROR: Phan 5.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
+            CLI::printErrorToStderr(sprintf(
+                "Phan 5.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
                 Config::MINIMUM_AST_EXTENSION_VERSION,
                 $ast_version
-            );
+            ));
             require_once __DIR__ . '/Bootstrap.php';
             \phan_output_ast_installation_instructions();
             \fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
             exit(1);
         }
+        if (\version_compare($ast_version, '1.0.11') < 0) {
+            CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 5. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
+        }
+
     }
 
     /**

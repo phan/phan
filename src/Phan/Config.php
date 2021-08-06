@@ -22,6 +22,9 @@ use const PHP_EOL;
 use const PHP_VERSION;
 use const STDERR;
 
+/** @internal hack to use dynamic configuration in class constant */
+\define('Phan\AST_VERSION', \version_compare(\phpversion('ast') ?: '1.0.14', '1.0.11') >= 0 || \PHP_VERSION_ID >= 80100 ? 85 : 80);
+
 /**
  * Program configuration.
  *
@@ -41,12 +44,12 @@ class Config
      * The version of the AST (defined in php-ast) that we're using.
      * @see https://github.com/nikic/php-ast#ast-versioning
      */
-    public const AST_VERSION = 85;
+    public const AST_VERSION = namespace\AST_VERSION;
 
     /**
      * The minimum AST extension version in the oldest php version supported by Phan.
      */
-    public const MINIMUM_AST_EXTENSION_VERSION = '1.0.11';
+    public const MINIMUM_AST_EXTENSION_VERSION = namespace\AST_VERSION === 85 ? '1.0.11' : '1.0.7';
 
     /**
      * The version of the Phan plugin system.

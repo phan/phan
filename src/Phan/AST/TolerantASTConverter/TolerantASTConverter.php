@@ -114,7 +114,7 @@ class TolerantASTConverter
     public const AST_VERSION = 85;
 
     // The versions that this supports
-    public const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
+    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION];
 
     private const _IGNORED_STRING_TOKEN_KIND_SET = [
         TokenKind::OpenBraceDollarToken => true,
