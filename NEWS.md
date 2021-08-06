@@ -1,7 +1,10 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.0.1 (dev)
+??? ?? 2021, Phan 5.1.0 (dev)
 -----------------------
+
+New Features (Analysis):
+- Support running Phan 5 with AST version 80 instead of 85 but warn about php-ast being outdated.
 
 Documentation:
 - Update documentation of `--target-php-version` and `--minimum-target-php-version`
