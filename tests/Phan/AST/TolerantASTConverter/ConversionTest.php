@@ -120,6 +120,12 @@ final class ConversionTest extends BaseTest
                 // https://github.com/nikic/php-ast/issues/64
                 $node->flags &= ~(0x800000);
             }
+            if ($kind === ast\AST_CLASS && !\array_key_exists('type', $node->children)) {
+                $declId = $node->children['__declId'];
+                $node->children['type'] = null;
+                unset($node->children['__declId']);
+                $node->children['__declId'] = $declId;
+            }
             foreach ($node->children as $c) {
                 self::normalizeOriginalAST($c);
             }
