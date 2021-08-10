@@ -381,6 +381,7 @@ class CLI
             $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
             printf("php-ast %s" . PHP_EOL, $ast_version_repr);
             printf("PHP version used to run Phan: %s" . PHP_EOL, \PHP_VERSION);
+            self::printUpgradingNotice();
             throw new ExitException('', EXIT_SUCCESS);
         }
         self::restartWithoutProblematicExtensions();
@@ -991,8 +992,16 @@ class CLI
                 throw new AssertionError("We cannot run dead code detection on more than one core.");
             }
         }
+        self::printUpgradingNotice();
         self::checkSaveBaselineOptionsAreValid();
         self::ensureServerRunsSingleAnalysisProcess();
+    }
+
+    private static function printUpgradingNotice(): void
+    {
+        if (!\getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+            \fprintf(STDERR, "(Consider upgrading from Phan %s to Phan 5, which has the latest features and bug fixes. This notice can be disabled with PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1))\n\n", CLI::PHAN_VERSION);
+        }
     }
 
     /**
@@ -1435,6 +1444,7 @@ EOT;
     public static function usage(string $msg = '', ?int $exit_code = EXIT_SUCCESS, int $usage_type = UsageException::PRINT_NORMAL, bool $forbid_color = true): void
     {
         global $argv;
+        self::printUpgradingNotice();
 
         if ($msg !== '') {
             self::printHelpSection("ERROR:");

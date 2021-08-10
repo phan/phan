@@ -42,9 +42,25 @@ if (PHP_VERSION_ID < 70200) {
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
     // The version of vendor libraries this depends on will also require php 7.1
     exit(1);
+} elseif (PHP_VERSION_ID >= 80100) {
+    if (!getenv('PHAN_SUPPRESS_PHP_UPGRADE_NOTICE')) {
+        fprintf(
+            STDERR,
+            "Phan 4.x does not fully support PHP 8.1+ (PHP %s is installed)" . PHP_EOL,
+            PHP_VERSION
+        );
+        fwrite(
+            STDERR,
+            "Phan 5 supports the latest features of PHP 8.1+." . PHP_EOL
+        );
+        fwrite(
+            STDERR,
+            "Executing anyway (Phan may crash). This notice can be disabled with PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1." . PHP_EOL
+        );
+    }
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.12';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.14';
 
 /**
  * Dump instructions on how to install php-ast
