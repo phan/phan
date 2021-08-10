@@ -10,8 +10,6 @@ and can track values in a few use cases (e.g. arrays, integers, and strings).
 [![Latest Stable Version](https://img.shields.io/packagist/v/phan/phan.svg)](https://packagist.org/packages/phan/phan)
 [![License](https://img.shields.io/packagist/l/phan/phan.svg)](https://github.com/phan/phan/blob/v5/LICENSE)
 
-This is the unstable branch for an upcoming Phan 5 release. The branch for the older stable Phan 4 release line is [here](https://github.com/phan/phan/tree/v4).
-
 # Getting Started
 
 The easiest way to use Phan is via Composer.
@@ -23,7 +21,7 @@ composer require phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-Phan depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.0.14+ is preferred) and supports analyzing PHP version 7.0-8.1 syntax.
+Phan 5 depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.0.14+ is preferred) and supports analyzing PHP version 7.0-8.1 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
 (Phan can be used without php-ast by using the CLI option `--allow-polyfill-parser`, but there are slight differences in the parsing of doc comments)
 
