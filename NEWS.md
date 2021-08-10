@@ -4,6 +4,10 @@ Phan NEWS
 -----------------------
 
 Maintenance:
++ Recommend using Phan 5 when analyzing code (#4487)
++ Mention that Phan 5 has been released in `--help`, `--version`, and crash reports (#4487)
+  The environment variable `PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1` can be set to disable this notice.
++ Warn if attempting to execute Phan 4.x with PHP 8.1 (Phan 5 fully supports all PHP 8.1 features, notably intersection types)
 + Upgrade from tolerant-php-parser 0.0.23 to 0.1.1
 + Backport some changes from Phan 5 for php 8.1 first-class callable conversion `(...)` and avoid crashing when parsing intersection type supports.
   **Note that Phan 5 must be used instead to actually support intersection types; intersection types are not part of Phan 4's type system.**
