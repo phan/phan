@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2021, Phan 4.1.0 (dev)
+Aug 10 2021, Phan 4.1.0
 -----------------------
 
 Maintenance:
