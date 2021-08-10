@@ -2843,8 +2843,13 @@ class TolerantASTConverter
         $line = $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line);
         $prop_decl = new ast\Node(ast\AST_PROP_DECL, 0, $prop_elems, $line);
         $type_line = static::getEndLine($n->typeDeclarationList) ?: $start_line;
+
+        $type = static::phpParserUnionTypeToAstNode($n->typeDeclarationList, $type_line);
+        if ($n->questionToken !== null && $type !== null) {
+            $type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $type], $start_line);
+        }
         return new ast\Node(ast\AST_PROP_GROUP, $flags, [
-            'type' => static::phpParserUnionTypeToAstNode($n->typeDeclarationList, $type_line),
+            'type' => $type,
             'props' => $prop_decl,
             'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
         ], $line);
