@@ -9,7 +9,7 @@ Maintenance:
   The environment variable `PHAN_SUPPRESS_PHP_UPGRADE_NOTICE=1` can be set to disable this notice.
 + Warn if attempting to execute Phan 4.x with PHP 8.1 (Phan 5 fully supports all PHP 8.1 features, notably intersection types)
 + Upgrade from tolerant-php-parser 0.0.23 to 0.1.1
-+ Backport some changes from Phan 5 for php 8.1 first-class callable conversion `(...)` and avoid crashing when parsing intersection type supports.
++ Backport some changes from Phan 5 for php 8.1 first-class callable conversion `(...)` and avoid crashing when parsing intersection types.
   **Note that Phan 5 must be used instead to actually support intersection types; intersection types are not part of Phan 4's type system.**
 
 Jun 26 2021, Phan 4.0.7
