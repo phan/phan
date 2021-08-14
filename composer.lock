@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cc0af707fc392b3959172556c6e575f4",
+    "content-hash": "9b0f8da866a879ae2b1c4847a19ea935",
     "packages": [
         {
             "name": "composer/semver",
@@ -1430,16 +1430,16 @@
         },
         {
             "name": "tysonandre/var_representation_polyfill",
-            "version": "0.0.2",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TysonAndre/var_representation_polyfill.git",
-                "reference": "3f17999ee1f257319ddc6721dd26ebbc5d175f33"
+                "reference": "ab1dd2e13258e10c95cafdb220a7703936bea5ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/3f17999ee1f257319ddc6721dd26ebbc5d175f33",
-                "reference": "3f17999ee1f257319ddc6721dd26ebbc5d175f33",
+                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/ab1dd2e13258e10c95cafdb220a7703936bea5ff",
+                "reference": "ab1dd2e13258e10c95cafdb220a7703936bea5ff",
                 "shasum": ""
             },
             "require": {
@@ -1449,6 +1449,9 @@
             "require-dev": {
                 "phan/phan": "^4.0",
                 "phpunit/phpunit": "^8.5.0"
+            },
+            "suggest": {
+                "ext-var_representation": "*"
             },
             "type": "library",
             "autoload": {
@@ -1468,16 +1471,16 @@
                     "name": "Tyson Andre"
                 }
             ],
-            "description": "Polyfill for var_representation",
+            "description": "Polyfill for var_representation: convert a variable to a string in a way that fixes the shortcomings of var_export",
             "keywords": [
                 "var_export",
                 "var_representation"
             ],
             "support": {
                 "issues": "https://github.com/TysonAndre/var_representation_polyfill/issues",
-                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.0.2"
+                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.1.0"
             },
-            "time": "2021-06-26T18:55:02+00:00"
+            "time": "2021-08-14T19:17:31+00:00"
         },
         {
             "name": "webmozart/assert",
