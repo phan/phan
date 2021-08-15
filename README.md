@@ -5,6 +5,7 @@ information is available or can be deduced. Phan has a good (but not comprehensi
 and can track values in a few use cases (e.g. arrays, integers, and strings).
 
 [![Build Status](https://dev.azure.com/tysonandre775/phan/_apis/build/status/phan.phan?branchName=v5)](https://dev.azure.com/tysonandre775/phan/_build/latest?definitionId=3&branchName=v5)
+[![Build Status](https://github.com/phan/phan/actions/workflows/main.yml/badge.svg?branch=v5)](https://github.com/phan/phan/actions/workflows/main.yml?query=branch%3Av5)
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=v5&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/v5)
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://img.shields.io/packagist/v/phan/phan.svg)](https://packagist.org/packages/phan/phan)
