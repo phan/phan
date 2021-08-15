@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # PHAN_TEST_PARALLEL can be set to 1 in your .bashrc (or other shell configuration) if you want to test in parallel by default.
-PHAN_TEST_PARALLEL=${PHAN_TEST_PARALLEL:-0}
+PHAN_TEST_PARALLEL=${PHAN_TEST_PARALLEL:-1}
 if [[ "$#" != 0 ]]; then
 	if [[ "$#" == 1 && "$@" == "--parallel" ]]; then
 		if type parallel >/dev/null; then
