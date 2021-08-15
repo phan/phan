@@ -14,38 +14,54 @@
  * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  */
 return [
-'new' => [
-'Closure::fromCallable' => ['Closure', 'callback'=>'callable'],
-'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int', 'flags='=>'int'],
-'curl_multi_errno' => ['int', 'multi_handle'=>'resource'],
-'curl_share_errno' => ['int', 'share_handle'=>'resource'],
-'curl_share_strerror' => ['string', 'error_code'=>'int'],
-'get_headers' => ['array<int|string,array|string>|false', 'url'=>'string', 'associative='=>'bool', 'context='=>'resource'],
-'getenv\'1' => ['array<string,string>'],
-'getopt' => ['array<string,string>|array<string,false>|array<string,list<mixed>>', 'short_options'=>'string', 'long_options='=>'array', '&w_rest_index='=>'int'],
-'hash_hkdf' => ['string|false', 'algo'=>'string', 'key'=>'string', 'length='=>'int', 'info='=>'string', 'salt='=>'string'],
-'is_iterable' => ['bool', 'value'=>'mixed'],
-'openssl_get_curve_names' => ['list<string>'],
-'pcntl_async_signals' => ['bool', 'enable='=>'bool'],
-'pcntl_signal_get_handler' => ['int|callable', 'signal'=>'int'],
-'pg_fetch_all' => ['array<int,array>|false', 'result'=>'resource', 'mode='=>'int'],
-'pg_last_error' => ['string', 'connection='=>'resource', 'operation='=>'int'],
-'pg_select' => ['string|bool', 'connection'=>'resource', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int', 'mode='=>'int'],
-'sapi_windows_cp_conv' => ['string', 'in_codepage'=>'int|string', 'out_codepage'=>'int|string', 'subject'=>'string'],
-'sapi_windows_cp_get' => ['int', 'kind='=>'string'],
-'sapi_windows_cp_is_utf8' => ['bool'],
-'sapi_windows_cp_set' => ['bool', 'codepage'=>'int'],
-'session_create_id' => ['string', 'prefix='=>'string'],
-'session_gc' => ['int|false'],
-'unpack' => ['array|false', 'format'=>'string', 'string'=>'string', 'offset='=>'int'],
-],
-'old' => [
-'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int'],
-'get_headers' => ['array|false', 'url'=>'string', 'associative='=>'bool'],
-'getopt' => ['array<string,string>|array<string,false>|array<string,list<string|false>>', 'short_options'=>'string', 'long_options='=>'array'],
-'pg_fetch_all' => ['array', 'result'=>'resource'],
-'pg_last_error' => ['string', 'connection='=>'resource'],
-'pg_select' => ['mixed', 'connection'=>'resource', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int'],
-'unpack' => ['array', 'format'=>'string', 'string'=>'string'],
-],
+  'added' => [
+    'Closure::fromCallable' => ['Closure', 'callback'=>'callable'],
+    'curl_multi_errno' => ['int', 'multi_handle'=>'resource'],
+    'curl_share_errno' => ['int', 'share_handle'=>'resource'],
+    'curl_share_strerror' => ['string', 'error_code'=>'int'],
+    'getenv\'1' => ['array<string,string>'],
+    'hash_hkdf' => ['string|false', 'algo'=>'string', 'key'=>'string', 'length='=>'int', 'info='=>'string', 'salt='=>'string'],
+    'is_iterable' => ['bool', 'value'=>'mixed'],
+    'openssl_get_curve_names' => ['list<string>'],
+    'pcntl_async_signals' => ['bool', 'enable='=>'bool'],
+    'pcntl_signal_get_handler' => ['int|callable', 'signal'=>'int'],
+    'sapi_windows_cp_conv' => ['string', 'in_codepage'=>'int|string', 'out_codepage'=>'int|string', 'subject'=>'string'],
+    'sapi_windows_cp_get' => ['int', 'kind='=>'string'],
+    'sapi_windows_cp_is_utf8' => ['bool'],
+    'sapi_windows_cp_set' => ['bool', 'codepage'=>'int'],
+    'session_create_id' => ['string', 'prefix='=>'string'],
+    'session_gc' => ['int|false'],
+  ],
+  'changed' => [
+    'get_headers' => [
+      'old' => ['array|false', 'url'=>'string', 'associative='=>'bool'],
+      'new' => ['array<int|string,array|string>|false', 'url'=>'string', 'associative='=>'bool', 'context='=>'resource'],
+    ],
+    'getopt' => [
+      'old' => ['array<string,string>|array<string,false>|array<string,list<string|false>>', 'short_options'=>'string', 'long_options='=>'array'],
+      'new' => ['array<string,string>|array<string,false>|array<string,list<mixed>>', 'short_options'=>'string', 'long_options='=>'array', '&w_rest_index='=>'int'],
+    ],
+    'pg_fetch_all' => [
+      'old' => ['array', 'result'=>'resource'],
+      'new' => ['array<int,array>|false', 'result'=>'resource', 'mode='=>'int'],
+    ],
+    'pg_last_error' => [
+      'old' => ['string', 'connection='=>'resource'],
+      'new' => ['string', 'connection='=>'resource', 'operation='=>'int'],
+    ],
+    'pg_select' => [
+      'old' => ['mixed', 'connection'=>'resource', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int'],
+      'new' => ['string|bool', 'connection'=>'resource', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int', 'mode='=>'int'],
+    ],
+    'SQLite3::createFunction' => [
+      'old' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int'],
+      'new' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argCount='=>'int', 'flags='=>'int'],
+    ],
+    'unpack' => [
+      'old' => ['array', 'format'=>'string', 'string'=>'string'],
+      'new' => ['array|false', 'format'=>'string', 'string'=>'string', 'offset='=>'int'],
+    ],
+  ],
+  'removed' => [
+  ],
 ];

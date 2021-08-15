@@ -563,7 +563,8 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
         foreach ($deltas as $delta) {
             $delta_path = dirname(__DIR__, 2) . "/src/Phan/Language/Internal/FunctionSignatureMap_php{$delta}_delta.php";
             $delta_contents = require($delta_path);
-            foreach (['old', 'new'] as $section) {
+            // TODO: Also update the changed section
+            foreach (['added', 'removed'] as $section) {
                 foreach ($delta_contents[$section] as $method_name => $arguments) {
                     /*
                     if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {

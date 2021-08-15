@@ -6,6 +6,9 @@ Aug ?? 2021, Phan 5.1.1 (dev)
 Bug fixes:
 - When using the polyfill parser, properly parse nullable class property declarations as nullable. (#4492)
 
+Maintenance:
+- Change internal representation of FunctionSignatureMap delta files.
+
 Aug 07 2021, Phan 5.1.0
 -----------------------
 
