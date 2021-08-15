@@ -544,11 +544,11 @@ EOT;
     {
         $parts = "return [\n";
         foreach ($deltas as $section_name => $signatures) {
-            $parts .= "'$section_name' => [\n";
+            $parts .= "  '$section_name' => [\n";
             foreach ($signatures as $function_like_name => $arguments) {
-                $parts .= static::encodeSingleSignature($function_like_name, $arguments);
+                $parts .= static::encodeSingleSignature($function_like_name, $arguments, '    ');
             }
-            $parts .= "],\n";
+            $parts .= "  ],\n";
         }
         $parts .= "];\n";
         return $parts;
@@ -625,12 +625,20 @@ EOT;
     }
 
     /**
-     * @param array<mixed,string> $arguments the return type and parameter signatures
-
+     * @param array<mixed,string|array<string,array>> $arguments the return type and parameter signatures
+     * @suppress PhanPartialTypeMismatchArgument
      */
-    public static function encodeSingleSignature(string $function_like_name, array $arguments): string
+    public static function encodeSingleSignature(string $function_like_name, array $arguments, string $indent = ''): string
     {
-        $result = static::encodeScalar($function_like_name) . ' => ';
+        $result = $indent . static::encodeScalar($function_like_name) . ' => ';
+        // The 'changed' section has an array of values
+        if (is_array($arguments['old'] ?? null)) {
+            $result .= "[\n" . self::encodeSingleSignature('old', $arguments['old'], "$indent  ");
+            $result .= self::encodeSingleSignature('new', $arguments['new'], "$indent  ");
+            $result .= "${indent}],\n";
+            return $result;
+        }
+
         $result .= static::encodeSignatureArguments($arguments);
         $result .= ",\n";
         return $result;

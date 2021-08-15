@@ -16,10 +16,12 @@
  * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  */
 return [
-'new' => [
-'array_is_list' => ['bool', 'array'=>'array'],
-'fsync' => ['bool', 'stream'=>'resource'],
-],
-'old' => [
-],
+  'added' => [
+    'array_is_list' => ['bool', 'array'=>'array'],
+    'fsync' => ['bool', 'stream'=>'resource'],
+  ],
+  'changed' => [
+  ],
+  'removed' => [
+  ],
 ];

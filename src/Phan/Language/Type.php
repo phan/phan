@@ -121,7 +121,7 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|associative-array|class-string|lowercase-string|numeric-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -255,6 +255,7 @@ class Type implements Stringable
         'non-empty-lowercase-string' => true,
         'non-zero-int'    => true,
         'null'            => true,
+        'numeric-string' => true,
         'object'          => true,
         'phan-intersection-type' => true,
         'resource'        => true,
@@ -522,6 +523,7 @@ class Type implements Stringable
                         );
                         break;
                     case 'lowercase-string':
+                    case 'numeric-string':  // TODO: Actually support numeric-string
                         $value = StringType::instance($is_nullable);
                         break;
                     case 'class-string':
@@ -878,6 +880,7 @@ class Type implements Stringable
                 return ScalarRawType::instance($is_nullable);
             case 'string':
             case 'lowercase-string':
+            case 'numeric-string':
                 return StringType::instance($is_nullable);
             case 'true':
                 return TrueType::instance($is_nullable);

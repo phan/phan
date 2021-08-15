@@ -4807,7 +4807,7 @@ class UnionType implements Serializable, Stringable
 
     /**
      * @param array<string,associative-array<int|string,string>> $older_map
-     * @param array{new:array<string,associative-array<int|string,string>>,old:array<string,associative-array<int|string,string>>} $delta
+     * @param array{added:array<string,associative-array<int|string,string>>,removed:array<string,associative-array<int|string,string>>,changed:array<string,array{old:associative-array<int|string,string>,new:associative-array<int|string,string>}>} $delta
      * @return array<string,associative-array<int|string,string>>
      *
      * @see applyDeltaToGetOlderSignatures - This is doing the exact same thing in reverse.
@@ -4815,24 +4815,37 @@ class UnionType implements Serializable, Stringable
      */
     private static function applyDeltaToGetNewerSignatures(array $older_map, array $delta): array
     {
-        return self::applyDeltaToGetOlderSignatures($older_map, [
-            'old' => $delta['new'],
-            'new' => $delta['old'],
-        ]);
+        foreach ($delta['removed'] as $key => $unused_signature) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            unset($older_map[\strtolower($key)]);
+        }
+        foreach ($delta['added'] as $key => $signature) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            $older_map[\strtolower($key)] = $signature;
+        }
+        foreach ($delta['changed'] as $key => ['new' => $signature]) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            $older_map[\strtolower($key)] = $signature;
+        }
+        return $older_map;
     }
 
     /**
      * @param array<string,associative-array<int|string,string>> $newer_map
-     * @param array{new:array<string,associative-array<int|string,string>>,old:array<string,associative-array<int|string,string>>} $delta
+     * @param array{added:array<string,associative-array<int|string,string>>,removed:array<string,associative-array<int|string,string>>,changed:array<string,array{old:associative-array<int|string,string>,new:associative-array<int|string,string>}>} $delta
      * @return array<string,associative-array<int|string,string>>
      */
     private static function applyDeltaToGetOlderSignatures(array $newer_map, array $delta): array
     {
-        foreach ($delta['new'] as $key => $unused_signature) {
+        foreach ($delta['added'] as $key => $unused_signature) {
             // Would also unset alternates, but that step isn't necessary yet.
             unset($newer_map[\strtolower($key)]);
         }
-        foreach ($delta['old'] as $key => $signature) {
+        foreach ($delta['removed'] as $key => $signature) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            $newer_map[\strtolower($key)] = $signature;
+        }
+        foreach ($delta['changed'] as $key => ['old' => $signature]) {
             // Would also unset alternates, but that step isn't necessary yet.
             $newer_map[\strtolower($key)] = $signature;
         }
