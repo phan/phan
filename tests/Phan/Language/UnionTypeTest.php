@@ -756,6 +756,7 @@ final class UnionTypeTest extends BaseTest
         $new_deltas = $deltas['added'];
         $old_deltas = $deltas['removed'];
         $changed_deltas = $deltas['changed'];
+        $delta_path = "src/Phan/Language/Internal/FunctionSignatureMap_{$name}.php";
         foreach (['added', 'removed', 'changed'] as $section) {
             $this->assertSectionIsSorted($deltas[$section], $section, $name);
         }
@@ -766,37 +767,40 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame([], \array_intersect_key($new_deltas, $changed_deltas));
         $this->assertSame([], \array_intersect_key($old_deltas, $changed_deltas));
         foreach ($changed_deltas as $function_key => ['old' => $old_signature, 'new' => $new_signature]) {
+            if ($old_signature === $new_signature) {
+                $errors .= "For $function_key: changed section entry did not actually change in $delta_path\n";
+            }
             $old_deltas[$function_key] = $old_signature;
             $new_deltas[$function_key] = $new_signature;
         }
         foreach ($new_deltas as $function_key => $new_signature) {
             if (($old_deltas[$function_key] ?? null) === $new_deltas) {
-                $errors .= "For $function_key: Old deltas in $name were the same as new deltas\n";
+                $errors .= "For $function_key: Old deltas in $delta_path were the same as new deltas\n";
             }
             $actual_new_signature = $new_map[$function_key] ?? null;
             if (!isset($old_deltas[$function_key]) && isset($old_map[$function_key])) {
-                $errors .= "Expected to remove $function_key from older signature map for $name but found it in the older map instead\n";
+                $errors .= "Expected to remove $function_key from older signature map for $delta_path but found it in the older map instead\n";
             }
             if (!$actual_new_signature) {
-                $errors .= "Missing $function_key for $name in new deltas\n";
+                $errors .= "Missing $function_key for $delta_path in new deltas\n";
                 continue;
             }
             if ($actual_new_signature !== $new_signature) {
-                $errors .= "Different $function_key for $name from new deltas :\n " . \json_encode($actual_new_signature) . " !=\n " . \json_encode($new_signature) . "\n";
+                $errors .= "Different $function_key for $delta_path from new deltas :\n " . \json_encode($actual_new_signature) . " !=\n " . \json_encode($new_signature) . "\n";
                 continue;
             }
         }
         foreach ($old_deltas as $function_key => $old_signature) {
             $actual_old_signature = $old_map[$function_key] ?? null;
             if (!isset($new_deltas[$function_key]) && isset($new_map[$function_key])) {
-                $errors .= "Expected to remove $function_key from newer signature map for $name but found it in the newer map instead\n";
+                $errors .= "Expected to remove $function_key from newer signature map for $delta_path but found it in the newer map instead\n";
             }
             if (!$actual_old_signature) {
-                $errors .= "Missing $function_key for $name in old deltas\n";
+                $errors .= "Missing $function_key for $delta_path in old deltas\n";
                 continue;
             }
             if ($actual_old_signature !== $old_signature) {
-                $errors .= "Different $function_key for $name from old deltas :\n " . \json_encode($actual_old_signature) . " !=\n " . \json_encode($old_signature) . "\n";
+                $errors .= "Different $function_key for $delta_path from old deltas :\n " . \json_encode($actual_old_signature) . " !=\n " . \json_encode($old_signature) . "\n";
                 continue;
             }
         }

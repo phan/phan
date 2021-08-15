@@ -341,10 +341,6 @@ return [
       'old' => ['string|false', 'format'=>'string', 'timestamp='=>'int'],
       'new' => ['string', 'format'=>'string', 'timestamp='=>'int'],
     ],
-    'gmmktime' => [
-      'old' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
-      'new' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
-    ],
     'gmp_binomial' => [
       'old' => ['GMP|false', 'n'=>'GMP|string|int', 'k'=>'int'],
       'new' => ['GMP', 'n'=>'GMP|string|int', 'k'=>'int'],
@@ -694,8 +690,8 @@ return [
       'new' => ['bool', 'image'=>'GdImage', 'brush'=>'GdImage'],
     ],
     'imagesetclip' => [
-      'old' => ['bool', 'image'=>'resource', 'x1'=>'int', 'x2'=>'int', 'y1'=>'int', 'y2'=>'int'],
-      'new' => ['bool', 'image'=>'GdImage', 'x1'=>'int', 'x2'=>'int', 'y1'=>'int', 'y2'=>'int'],
+      'old' => ['bool', 'image'=>'resource', 'x1'=>'int', 'y1'=>'int', 'x2'=>'int', 'y2'=>'int'],
+      'new' => ['bool', 'image'=>'GdImage', 'x1'=>'int', 'y1'=>'int', 'x2'=>'int', 'y2'=>'int'],
     ],
     'imagesetinterpolation' => [
       'old' => ['bool', 'image'=>'resource', 'method='=>'int'],
@@ -849,10 +845,6 @@ return [
       'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'encoding='=>'string'],
       'new' => ['int', 'haystack'=>'string', 'needle'=>'string', 'encoding='=>'string'],
     ],
-    'mktime' => [
-      'old' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
-      'new' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
-    ],
     'msg_get_queue' => [
       'old' => ['resource', 'key'=>'int', 'permissions='=>'int'],
       'new' => ['SysvMessageQueue', 'key'=>'int', 'permissions='=>'int'],
@@ -941,10 +933,6 @@ return [
       'old' => ['OCILob|false', 'connection'=>'resource', 'type='=>'int'],
       'new' => ['?OCILob', 'connection'=>'resource', 'type='=>'int'],
     ],
-    'openssl_cipher_iv_length' => [
-      'old' => ['int|false', 'cipher_algo'=>'string'],
-      'new' => ['int|false', 'cipher_algo'=>'string'],
-    ],
     'openssl_csr_export' => [
       'old' => ['bool', 'csr'=>'string|resource', '&w_output'=>'string', 'no_text='=>'bool'],
       'new' => ['bool', 'csr'=>'string|OpenSSLCertificateSigningRequest', '&w_output'=>'OpenSSLAsymmetricKey', 'no_text='=>'bool'],
@@ -969,45 +957,13 @@ return [
       'old' => ['resource|false', 'csr'=>'string|resource', 'ca_certificate'=>'string|resource|null', 'private_key'=>'string|resource|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int'],
       'new' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int'],
     ],
-    'openssl_decrypt' => [
-      'old' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', 'tag='=>'string', 'aad='=>'string'],
-      'new' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', 'tag='=>'string', 'aad='=>'string'],
-    ],
     'openssl_dh_compute_key' => [
       'old' => ['string|false', 'public_key'=>'string', 'private_key'=>'resource'],
       'new' => ['string|false', 'public_key'=>'string', 'private_key'=>'OpenSSLAsymmetricKey'],
     ],
-    'openssl_digest' => [
-      'old' => ['string|false', 'data'=>'string', 'digest_algo'=>'string', 'binary='=>'bool'],
-      'new' => ['string|false', 'data'=>'string', 'digest_algo'=>'string', 'binary='=>'bool'],
-    ],
-    'openssl_encrypt' => [
-      'old' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', '&w_tag='=>'string', 'aad='=>'string', 'tag_length='=>'int'],
-      'new' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', '&w_tag='=>'string', 'aad='=>'string', 'tag_length='=>'int'],
-    ],
-    'openssl_error_string' => [
-      'old' => ['string|false'],
-      'new' => ['string|false'],
-    ],
     'openssl_free_key' => [
       'old' => ['void', 'key'=>'resource'],
       'new' => ['void', 'key'=>'OpenSSLAsymmetricKey'],
-    ],
-    'openssl_get_cert_locations' => [
-      'old' => ['array'],
-      'new' => ['array'],
-    ],
-    'openssl_get_cipher_methods' => [
-      'old' => ['array', 'aliases='=>'bool'],
-      'new' => ['array', 'aliases='=>'bool'],
-    ],
-    'openssl_get_curve_names' => [
-      'old' => ['list<string>'],
-      'new' => ['list<string>'],
-    ],
-    'openssl_get_md_methods' => [
-      'old' => ['array', 'aliases='=>'bool'],
-      'new' => ['array', 'aliases='=>'bool'],
     ],
     'openssl_get_privatekey' => [
       'old' => ['resource|false', 'private_key'=>'string', 'passphrase='=>'string'],
@@ -1021,10 +977,6 @@ return [
       'old' => ['bool', 'data'=>'string', '&w_output'=>'string', 'encrypted_key'=>'string', 'private_key'=>'string|array|resource', 'cipher_algo'=>'string', 'iv='=>'string'],
       'new' => ['bool', 'data'=>'string', '&w_output'=>'string', 'encrypted_key'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'cipher_algo'=>'string', 'iv='=>'string'],
     ],
-    'openssl_pbkdf2' => [
-      'old' => ['string|false', 'password'=>'string', 'salt'=>'string', 'key_length'=>'int', 'iterations'=>'int', 'digest_algo='=>'string'],
-      'new' => ['string|false', 'password'=>'string', 'salt'=>'string', 'key_length'=>'int', 'iterations'=>'int', 'digest_algo='=>'string'],
-    ],
     'openssl_pkcs12_export' => [
       'old' => ['bool', 'certificate'=>'string|resource', '&w_output'=>'string', 'private_key'=>'string|array|resource', 'passphrase'=>'string', 'options='=>'array'],
       'new' => ['bool', 'certificate'=>'string|OpenSSLCertificate', '&w_output'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'passphrase'=>'string', 'options='=>'array'],
@@ -1032,10 +984,6 @@ return [
     'openssl_pkcs12_export_to_file' => [
       'old' => ['bool', 'certificate'=>'string|resource', 'output_filename'=>'string', 'private_key'=>'string|array|resource', 'passphrase'=>'string', 'options='=>'array'],
       'new' => ['bool', 'certificate'=>'string|OpenSSLCertificate', 'output_filename'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'passphrase'=>'string', 'options='=>'array'],
-    ],
-    'openssl_pkcs12_read' => [
-      'old' => ['bool', 'pkcs12'=>'string', '&w_certificates'=>'array', 'passphrase'=>'string'],
-      'new' => ['bool', 'pkcs12'=>'string', '&w_certificates'=>'array', 'passphrase'=>'string'],
     ],
     'openssl_pkcs7_decrypt' => [
       'old' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'string|resource', 'private_key='=>'string|resource|array'],
@@ -1045,17 +993,9 @@ return [
       'old' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'string|resource|array', 'headers'=>'array', 'flags='=>'int', 'cipher_algo='=>'int'],
       'new' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'OpenSSLCertificate|array|string', 'headers'=>'array', 'flags='=>'int', 'cipher_algo='=>'int'],
     ],
-    'openssl_pkcs7_read' => [
-      'old' => ['bool', 'input_filename'=>'string', '&w_certificates'=>'array'],
-      'new' => ['bool', 'input_filename'=>'string', '&w_certificates'=>'array'],
-    ],
     'openssl_pkcs7_sign' => [
       'old' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'string|resource', 'private_key'=>'string|resource|array', 'headers'=>'array', 'flags='=>'int', 'untrusted_certificates_filename='=>'string'],
       'new' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'OpenSSLCertificate|string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'headers'=>'array', 'flags='=>'int', 'untrusted_certificates_filename='=>'string'],
-    ],
-    'openssl_pkcs7_verify' => [
-      'old' => ['bool|int', 'input_filename'=>'string', 'flags'=>'int', 'signers_certificates_filename='=>'string', 'ca_info='=>'array', 'untrusted_certificates_filename='=>'string', 'content='=>'string', 'output_filename='=>'string'],
-      'new' => ['bool|int', 'input_filename'=>'string', 'flags'=>'int', 'signers_certificates_filename='=>'string', 'ca_info='=>'array', 'untrusted_certificates_filename='=>'string', 'content='=>'string', 'output_filename='=>'string'],
     ],
     'openssl_pkey_derive' => [
       'old' => ['string|false', 'public_key'=>'mixed', 'private_key'=>'mixed', 'key_length='=>'?int'],
@@ -1109,10 +1049,6 @@ return [
       'old' => ['string|false', 'length'=>'int', '&w_strong_result='=>'bool'],
       'new' => ['string', 'length'=>'int', '&w_strong_result='=>'bool'],
     ],
-    'openssl_seal' => [
-      'old' => ['int|false', 'data'=>'string', '&w_sealed_data'=>'string', '&rw_encrypted_keys'=>'array', 'public_key'=>'array', 'cipher_algo'=>'string', '&iv='=>'string'],
-      'new' => ['int|false', 'data'=>'string', '&w_sealed_data'=>'string', '&rw_encrypted_keys'=>'array', 'public_key'=>'array', 'cipher_algo'=>'string', '&iv='=>'string'],
-    ],
     'openssl_sign' => [
       'old' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'private_key'=>'resource|string', 'algorithm='=>'int|string'],
       'new' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string'],
@@ -1128,10 +1064,6 @@ return [
     'openssl_spki_new' => [
       'old' => ['?string', 'private_key'=>'resource', 'challenge'=>'string', 'digest_algo='=>'int'],
       'new' => ['false|string', 'private_key'=>'OpenSSLAsymmetricKey', 'challenge'=>'string', 'digest_algo='=>'int'],
-    ],
-    'openssl_spki_verify' => [
-      'old' => ['bool', 'spki'=>'string'],
-      'new' => ['bool', 'spki'=>'string'],
     ],
     'openssl_verify' => [
       'old' => ['int', 'data'=>'string', 'signature'=>'string', 'public_key'=>'resource|string', 'algorithm='=>'int|string'],
@@ -1172,10 +1104,6 @@ return [
     'openssl_x509_verify' => [
       'old' => ['int', 'certificate'=>'string|resource', 'public_key'=>'string|resource'],
       'new' => ['int', 'certificate'=>'OpenSSLCertificate|string', 'public_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string'],
-    ],
-    'parse_str' => [
-      'old' => ['void', 'string'=>'string', '&w_result'=>'array'],
-      'new' => ['void', 'string'=>'string', '&w_result'=>'array'],
     ],
     'password_hash' => [
       'old' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
@@ -1401,10 +1329,6 @@ return [
       'old' => ['bool', 'socket'=>'resource', 'level'=>'int', 'option'=>'int', 'value'=>'int|string|array'],
       'new' => ['bool', 'socket'=>'Socket', 'level'=>'int', 'option'=>'int', 'value'=>'int|string|array'],
     ],
-    'socket_set_timeout' => [
-      'old' => ['bool', 'stream'=>'resource', 'seconds'=>'int', 'microseconds='=>'int'],
-      'new' => ['bool', 'stream'=>'resource', 'seconds'=>'int', 'microseconds='=>'int'],
-    ],
     'socket_setopt' => [
       'old' => ['bool', 'socket'=>'resource', 'level'=>'int', 'option'=>'int', 'value'=>'int|string|array'],
       'new' => ['bool', 'socket'=>'Socket', 'level'=>'int', 'option'=>'int', 'value'=>'int|string|array'],
@@ -1412,10 +1336,6 @@ return [
     'socket_shutdown' => [
       'old' => ['bool', 'socket'=>'resource', 'mode='=>'int'],
       'new' => ['bool', 'socket'=>'Socket', 'mode='=>'int'],
-    ],
-    'socket_strerror' => [
-      'old' => ['string', 'error_code'=>'int'],
-      'new' => ['string', 'error_code'=>'int'],
     ],
     'socket_write' => [
       'old' => ['int|false', 'socket'=>'resource', 'data'=>'string', 'length='=>'int'],
@@ -1428,10 +1348,6 @@ return [
     'socket_wsaprotocol_info_import' => [
       'old' => ['resource|false', 'info_id'=>'string'],
       'new' => ['Socket|false', 'info_id'=>'string'],
-    ],
-    'socket_wsaprotocol_info_release' => [
-      'old' => ['bool', 'info_id'=>'string'],
-      'new' => ['bool', 'info_id'=>'string'],
     ],
     'strchr' => [
       'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string|int', 'before_needle='=>'bool'],
