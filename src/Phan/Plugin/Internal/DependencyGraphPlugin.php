@@ -701,7 +701,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         }
         $called_class_name = (string)$called_class->children['name'];
         // None of these add any dependency data we don't already have, so ignore them
-        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
+        if (\in_array(\strtolower($called_class_name), ['self', 'parent', 'class', 'static'], true)) {
             return;
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
@@ -728,7 +728,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $called_class_name = (string)$called_class->children['name'];
-        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
+        if (\in_array(strtolower($called_class_name), ['self', 'parent', 'class', 'static'], true)) {
             return;
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
@@ -756,7 +756,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         }
         $called_class_name = (string)$called_class->children['name'];
         // None of these add any dependency data we don't already have, so ignore them
-        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
+        if (\in_array(\strtolower($called_class_name), ['self', 'parent', 'class', 'static'], true)) {
             return;
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
