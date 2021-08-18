@@ -400,13 +400,13 @@ final class DependencyGraphPlugin extends PluginV3 implements
             \fwrite(\STDERR, "\n");
         }
         if ($cached_graph) {
-            $ignore_static = ($flags & \PDEP_IGNORE_STATIC);
-            $ignore_new = ($flags & \PDEP_IGNORE_NEW);
+            $ignore_static = $flags & \PDEP_IGNORE_STATIC;
+            $ignore_new = $flags & \PDEP_IGNORE_NEW;
             if ($ignore_static || $ignore_new) {
                 foreach ($graph as $node => $els) {
                     foreach ($els as $el => $val) {
                         $s = \substr((string)$val, 0, 2);
-                        if ($ignore_static && ($s === 'v:' || $s  === 's:') {
+                        if ($ignore_static && ($s === 'v:' || $s  === 's:')) {
                             unset($graph[$node][$el]);
                         }
                         if ($ignore_new && $s === 'i:') {
