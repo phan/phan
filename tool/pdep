@@ -8,6 +8,7 @@ use Phan\Phan;
 
 define("PDEP_IGNORE_STATIC", 1 << 0);
 define("PDEP_HIDE_LABELS", 1 << 1);
+define("PDEP_IGNORE_NEW", 1 << 2);
 
 /** Prints a usage message for 'pdep' and exits. */
 function pdep_usage(int $status) : void {
@@ -25,6 +26,7 @@ Usage: {$argv[0]} [options] [files or classes...]
  -m, --graphml       GraphML output
      --hide-labels   Labels are hidden - hover in yEd to see them
      --ignore-static Don't include static calls and static var dependencies
+     --ignore-new    Don't include instantiation dependencies
  -d, --depth <depth_level>
     When walking the dependency graph, limit it to this depth. For
     example,
@@ -67,6 +69,7 @@ call_user_func(static function () : void {
             'graph',
             'graphml',
             'ignore-static',
+            'ignore-new',
             'hide-labels',
             'find-classes',
             'find-files',
@@ -133,6 +136,9 @@ call_user_func(static function () : void {
                 break;
             case 'ignore-static':
                 $graph_flags |= \PDEP_IGNORE_STATIC;
+                break;
+            case 'ignore-new':
+                $graph_flags |= \PDEP_IGNORE_NEW;
                 break;
             case 'hide-labels':
                 $graph_flags |= \PDEP_HIDE_LABELS;
