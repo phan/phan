@@ -57,6 +57,12 @@ final class DependencyGraphPlugin extends PluginV3 implements
     public static $static_vars = [];
 
     /**
+     * A list of instantiations observed by this plugin
+     * @var list<array<string,array<string,string>>>
+     */
+    public static $instantiations = [];
+
+    /**
      * Build <filename>:<lineno> string
      */
     private static function getFileString(FileRef $file_ref): string
@@ -275,6 +281,18 @@ final class DependencyGraphPlugin extends PluginV3 implements
                 $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
                 $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
             }
+            foreach (self::$instantiations as $c) {
+                $cnode = \key($c);
+                if ($cnode === null) {
+                    continue;
+                }
+                if (!\array_key_exists($cnode, $this->class_to_file)) {
+                    continue;
+                }
+                $fnode = self::getFileLineno($this->class_to_file["$cnode"])[0];
+                $this->fgraph[$fnode][$c[$cnode]['file']]  = 'i:' . $c[$cnode]['lineno'];
+                $this->cgraph[$cnode][$c[$cnode]['class']] = 'i:' . $c[$cnode]['lineno'];
+            }
         }
         $this->processGraph();
     }
@@ -432,6 +450,9 @@ final class DependencyGraphPlugin extends PluginV3 implements
                 }
                 if ($type === 'v') {
                     $style = ',color="#5D3A9B",style=dashed';
+                }
+                if ($type === 'i') {
+                    $style = ',color="#008080"';
                 }
                 echo "\"$dnode\" -> \"$node\" [taillabel=$lineno,labelfontsize=10,labeldistance=1.4{$style}]\n";
                 if (empty($shape_defined[$dnode])) {
@@ -700,6 +721,30 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
         DependencyGraphPlugin::$static_calls[] = [$fqsen => ['class' => (string)$class_fqsen,'file' => $context->getFile(),'lineno' => $context->getLineNumberStart()]];
+    }
+
+    public function visitNew(Node $node): void
+    {
+        $context = $this->context;
+        try {
+            $class_fqsen = $context->getClassFQSEN();
+        } catch (Throwable $unused_e) {
+            return;
+        }
+        if ($context->isInGlobalScope()) {
+            return;
+        }
+        $called_class = $node->children['class'];
+        if (!isset($called_class->children['name'])) {
+            return;
+        }
+        $called_class_name = (string)$called_class->children['name'];
+        // None of these add any dependency data we don't already have, so ignore them
+        if (\in_array($called_class_name, ['self', 'parent', 'class', 'static'], true)) {
+            return;
+        }
+        $fqsen = (string)FullyQualifiedClassName::fromStringInContext($called_class_name, $context);
+        DependencyGraphPlugin::$instantiations[] = [$fqsen => ['class' => (string)$class_fqsen,'file' => $context->getFile(),'lineno' => $context->getLineNumberStart()]];
     }
 }
 
