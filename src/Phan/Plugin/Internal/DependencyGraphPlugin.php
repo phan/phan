@@ -281,6 +281,9 @@ final class DependencyGraphPlugin extends PluginV3 implements
                 $this->fgraph[$fnode][$c[$cnode]['file']]  = 'v:' . $c[$cnode]['lineno'];
                 $this->cgraph[$cnode][$c[$cnode]['class']] = 'v:' . $c[$cnode]['lineno'];
             }
+        }
+
+        if (!($flags & \PDEP_IGNORE_NEW)) {
             foreach (self::$instantiations as $c) {
                 $cnode = \key($c);
                 if ($cnode === null) {
@@ -294,6 +297,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
                 $this->cgraph[$cnode][$c[$cnode]['class']] = 'i:' . $c[$cnode]['lineno'];
             }
         }
+
         $this->processGraph();
     }
 
@@ -395,10 +399,11 @@ final class DependencyGraphPlugin extends PluginV3 implements
             // Don't overlap stdout with the progress bar on stderr.
             \fwrite(\STDERR, "\n");
         }
-        if (($flags & \PDEP_IGNORE_STATIC) && $cached_graph) {
+        if ($cached_graph && (($flags & \PDEP_IGNORE_STATIC) || ($flags & \PDEP_IGNORE_NEW))) {
             foreach ($graph as $node => $els) {
                 foreach ($els as $el => $val) {
-                    if (\substr((string)$val, 0, 2) === 'v:' || \substr((string)$val, 0, 2) === 's:') {
+                    $s = \substr((string)$val, 0, 2);
+                    if ($s === 'v:' || $s  === 's:' || $s === 'i:') {
                         unset($graph[$node][$el]);
                     }
                 }
