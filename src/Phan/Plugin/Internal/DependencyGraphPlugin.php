@@ -723,6 +723,10 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         DependencyGraphPlugin::$static_calls[] = [$fqsen => ['class' => (string)$class_fqsen,'file' => $context->getFile(),'lineno' => $context->getLineNumberStart()]];
     }
 
+    /**
+     * When we hit an AST_NEW
+     * @throws Exception
+     */
     public function visitNew(Node $node): void
     {
         $context = $this->context;
