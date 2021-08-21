@@ -87,7 +87,8 @@ class CompositionAnalyzer
                 } catch (IssueException $_) {
                     $inherited_property_union_type = UnionType::empty();
                 }
-                if (!$property->isDynamicOrFromPHPDoc()) {
+                // Don't complain about incompatible types if the base property is private, #4426
+                if (!$property->isDynamicOrFromPHPDoc() && !$inherited_property->isPrivate()) {
                     $real_property_type = $property->getRealUnionType()->asNormalizedTypes();
                     $real_inherited_property_type = $inherited_property->getRealUnionType()->asNormalizedTypes();
                     if (!$real_property_type->isEqualTo($real_inherited_property_type)) {
