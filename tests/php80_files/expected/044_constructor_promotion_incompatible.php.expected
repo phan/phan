@@ -1,0 +1,11 @@
+%:4: PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->a
+%:5: PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->b
+%:6: PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->c
+%:7: PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->d
+%:8: PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->e
+%:9: PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->f
+%:13: PhanUnreferencedClass Possibly zero references to class \B
+%:16: PhanIncompatibleRealPropertyType Declaration of \B::b of real type int is incompatible with inherited property \A::b of real type ?int defined at %:5
+%:18: PhanIncompatibleRealPropertyType Declaration of \B::d of real type string is incompatible with inherited property \A::d of real type ?string defined at %:7
+%:19: PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->e
+%:20: PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->f
