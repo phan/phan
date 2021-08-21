@@ -1,23 +1,23 @@
-%:4 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $a of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:4 PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->a
-%:5 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public ?int $b of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:5 PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->b
-%:6 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $c of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:6 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->c
-%:7 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected ?string $d of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:7 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->d
-%:8 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private bool $e of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:8 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->e
-%:9 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private ?bool $f of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
-%:9 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->f
-%:13 PhanUnreferencedClass Possibly zero references to class \B
-%:15 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $a of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:16 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $b of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:16 PhanIncompatibleRealPropertyType Declaration of \B::b of real type int is incompatible with inherited property \A::b of real type ?int defined at %:5
-%:17 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $c of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:18 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $d of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:18 PhanIncompatibleRealPropertyType Declaration of \B::d of real type string is incompatible with inherited property \A::d of real type ?string defined at %:7
-%:19 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private \stdClass $e of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:19 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->e
-%:20 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private \stdClass $f of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
-%:20 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->f
+%s:4 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $a of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:4 PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->a
+%s:5 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public ?int $b of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:5 PhanWriteOnlyPublicProperty Possibly zero read references to public property \A->b
+%s:6 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $c of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:6 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->c
+%s:7 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected ?string $d of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:7 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \A->d
+%s:8 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private bool $e of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:8 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->e
+%s:9 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private ?bool $f of \A::__construct(int $a, ?int $b, string $c, ?string $d, bool $e, ?bool $f)
+%s:9 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \A->f
+%s:13 PhanUnreferencedClass Possibly zero references to class \B
+%s:15 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $a of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:16 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $b of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:16 PhanIncompatibleRealPropertyType Declaration of \B::b of real type int is incompatible with inherited property \A::b of real type ?int defined at %s:5
+%s:17 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $c of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:18 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for protected string $d of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:18 PhanIncompatibleRealPropertyType Declaration of \B::d of real type string is incompatible with inherited property \A::d of real type ?string defined at %s:7
+%s:19 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private \stdClass $e of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:19 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->e
+%s:20 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for private \stdClass $f of \B::__construct(int $a, int $b, string $c, string $d, \stdClass $e, \stdClass $f)
+%s:20 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \B->f
