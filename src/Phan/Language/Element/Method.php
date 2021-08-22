@@ -51,7 +51,7 @@ class Method extends ClassElement implements FunctionInterface
     private $defining_method_for_type_fetching;
 
     /**
-     * @var Set<FullyQualifiedMethodName> Methods overriding this one.
+     * @var Set<FullyQualifiedMethodName> FQSENs of methods potentially overriding this one.
      */
     private $method_overrides;
 
@@ -116,6 +116,8 @@ class Method extends ClassElement implements FunctionInterface
             $this->setParameterList($parameter_list);
         }
         $this->checkForTemplateTypes();
+
+        $this->method_overrides = new Set();
     }
 
     public function __clone()
