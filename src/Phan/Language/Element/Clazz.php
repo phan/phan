@@ -71,6 +71,7 @@ use function strtolower;
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
+ * @property FullyQualifiedClassName $fqsen
  */
 class Clazz extends AddressableElement
 {
@@ -807,7 +808,7 @@ class Clazz extends AddressableElement
         }
 
         $property_fqsen = FullyQualifiedPropertyName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $property_name
         );
 
@@ -817,7 +818,7 @@ class Clazz extends AddressableElement
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
             if ($property->hasStaticInUnionType()) {
-                $property->inheritStaticUnionType($original_property_fqsen->getFullyQualifiedClassName(), $this->getFQSEN());
+                $property->inheritStaticUnionType($original_property_fqsen->getFullyQualifiedClassName(), $this->fqsen);
             }
 
             // Private properties of traits are accessible from the class that used that trait
@@ -918,7 +919,7 @@ class Clazz extends AddressableElement
         if (count($magic_property_map) === 0) {
             return true;  // Vacuously true.
         }
-        $class_fqsen = $this->getFQSEN();
+        $class_fqsen = $this->fqsen;
         $context = $this->internal_context;
         foreach ($magic_property_map as $comment_parameter) {
             // $phan_flags can be used to indicate if something is property-read or property-write
@@ -961,7 +962,7 @@ class Clazz extends AddressableElement
         if (count($magic_method_map) === 0) {
             return true;  // Vacuously true.
         }
-        $class_fqsen = $this->getFQSEN();
+        $class_fqsen = $this->fqsen;
         $context = $this->internal_context;
         $is_pure = $this->isPure();
         foreach ($magic_method_map as $comment_method) {
@@ -1012,7 +1013,7 @@ class Clazz extends AddressableElement
     ): bool {
         return $code_base->hasPropertyWithFQSEN(
             FullyQualifiedPropertyName::make(
-                $this->getFQSEN(),
+                $this->fqsen,
                 $name
             )
         );
@@ -1028,7 +1029,7 @@ class Clazz extends AddressableElement
     ): Property {
         return $code_base->getPropertyByFQSEN(
             FullyQualifiedPropertyName::make(
-                $this->getFQSEN(),
+                $this->fqsen,
                 $name
             )
         );
@@ -1066,7 +1067,7 @@ class Clazz extends AddressableElement
 
         // Get the FQSEN of the property we're looking for
         $property_fqsen = FullyQualifiedPropertyName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $name
         );
 
@@ -1233,7 +1234,7 @@ class Clazz extends AddressableElement
             Issue::fromType(Issue::UndeclaredProperty)(
                 $context->getFile(),
                 $context->getLineNumberStart(),
-                [$this->getFQSEN() . ($is_static ? '::$' : '->') . $name],
+                [$this->fqsen . ($is_static ? '::$' : '->') . $name],
                 IssueFixSuggester::suggestSimilarProperty($code_base, $context, $this, $name, $is_static)
             )
         );
@@ -1461,7 +1462,7 @@ class Clazz extends AddressableElement
     public function getPropertyMap(CodeBase $code_base): array
     {
         return $code_base->getPropertyMapByFullyQualifiedClassName(
-            $this->getFQSEN()
+            $this->fqsen
         );
     }
 
@@ -1473,7 +1474,7 @@ class Clazz extends AddressableElement
         ClassConstant $constant
     ): void {
         $constant_fqsen = FullyQualifiedClassConstantName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $constant->getName()
         );
 
@@ -1498,7 +1499,7 @@ class Clazz extends AddressableElement
                 $this->getContext(),
                 Issue::CommentAbstractOnInheritedConstant,
                 $this->getContext()->getLineNumberStart(),
-                $this->getFQSEN(),
+                $this->fqsen,
                 $constant->getRealDefiningFQSEN(),
                 $constant->getContext()->getFile(),
                 $constant->getContext()->getLineNumberStart(),
@@ -1604,7 +1605,7 @@ class Clazz extends AddressableElement
                 $enum_case->setEnumCaseValue($value);
                 $old_name = $this->enum_case_map[$value] ?? null;
                 if (is_string($old_name)) {
-                    $old_enum_case_fqsen = FullyQualifiedClassConstantName::make($this->getFQSEN(), $old_name);
+                    $old_enum_case_fqsen = FullyQualifiedClassConstantName::make($this->fqsen, $old_name);
                     $old_enum_case = $code_base->getClassConstantByFQSEN($old_enum_case_fqsen);
                     Issue::maybeEmit(
                         $code_base,
@@ -1650,7 +1651,7 @@ class Clazz extends AddressableElement
         ClassConstant $constant
     ): void {
         $constant_fqsen = FullyQualifiedClassConstantName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $constant->getName()
         );
 
@@ -1675,7 +1676,7 @@ class Clazz extends AddressableElement
     ): bool {
         if ($code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
+                $this->fqsen,
                 $name
             )
         )) {
@@ -1686,7 +1687,7 @@ class Clazz extends AddressableElement
         }
         return $code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
+                $this->fqsen,
                 $name
             )
         );
@@ -1718,7 +1719,7 @@ class Clazz extends AddressableElement
     ): ClassConstant {
 
         $constant_fqsen = FullyQualifiedClassConstantName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $name
         );
 
@@ -1728,7 +1729,7 @@ class Clazz extends AddressableElement
                     $context->getFile(),
                     $context->getLineNumberStart(),
                     [
-                        $this->getFQSEN() . '::' . $constant_fqsen
+                        $this->fqsen . '::' . $constant_fqsen
                     ],
                     IssueFixSuggester::suggestSimilarClassConstant($code_base, $context, $constant_fqsen)
                 )
@@ -1787,7 +1788,7 @@ class Clazz extends AddressableElement
     public function getConstantMap(CodeBase $code_base): array
     {
         return $code_base->getClassConstantMapByFullyQualifiedClassName(
-            $this->getFQSEN()
+            $this->fqsen
         );
     }
 
@@ -1810,7 +1811,7 @@ class Clazz extends AddressableElement
         Option $type_option
     ): void {
         $method_fqsen = FullyQualifiedMethodName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $method->getName(),
             $method->getFQSEN()->getAlternateId()
         );
@@ -1942,7 +1943,7 @@ class Clazz extends AddressableElement
         }
 
         $method_fqsen = FullyQualifiedMethodName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $name
         );
 
@@ -1966,7 +1967,7 @@ class Clazz extends AddressableElement
         string $name
     ): Method {
         $method_fqsen = FullyQualifiedMethodName::make(
-            $this->getFQSEN(),
+            $this->fqsen,
             $name
         );
 
@@ -1987,7 +1988,7 @@ class Clazz extends AddressableElement
 
             throw new CodeBaseException(
                 $method_fqsen,
-                "Method with name $name does not exist for class {$this->getFQSEN()}."
+                "Method with name $name does not exist for class {$this->fqsen}."
             );
         }
 
@@ -2001,7 +2002,7 @@ class Clazz extends AddressableElement
     public function getMethodMap(CodeBase $code_base): array
     {
         return $code_base->getMethodMapByFullyQualifiedClassName(
-            $this->getFQSEN()
+            $this->fqsen
         );
     }
 
@@ -2379,7 +2380,7 @@ class Clazz extends AddressableElement
         if ($this->isEnum()) {
             return true;
         }
-        return array_key_exists(strtolower($this->getFQSEN()->__toString()), self::IMMUTABLE_CLASS_SET);
+        return array_key_exists(strtolower($this->fqsen->__toString()), self::IMMUTABLE_CLASS_SET);
     }
 
     /**
@@ -2667,7 +2668,7 @@ class Clazz extends AddressableElement
             // Treat it as if all of the properties were added, with their real and phpdoc union types.
             // TODO: Finalize behavior for edge cases such as `static` and templates in union types
             $new_property = clone($property);
-            $new_property->setFQSEN(FullyQualifiedPropertyName::make($this->getFQSEN(), $name));
+            $new_property->setFQSEN(FullyQualifiedPropertyName::make($this->fqsen, $name));
             $new_property->setPhanFlags($new_property->getPhanFlags() | Flags::IS_FROM_PHPDOC);
             $this->addProperty($code_base, $new_property, None::instance());
         }
@@ -2690,7 +2691,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        if ($this->getParentClassFQSEN() === $this->getFQSEN()) {
+        if ($this->getParentClassFQSEN() === $this->fqsen) {
             return;
         }
 
@@ -2726,7 +2727,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        if ($this->getParentClassFQSEN() === $this->getFQSEN()) {
+        if ($this->getParentClassFQSEN() === $this->fqsen) {
             return;
         }
 
@@ -2928,7 +2929,7 @@ class Clazz extends AddressableElement
                     $this->getContext(),
                     Issue::CommentAbstractOnInheritedProperty,
                     $this->getContext()->getLineNumberStart(),
-                    $this->getFQSEN(),
+                    $this->fqsen,
                     $property->getRealDefiningFQSEN(),
                     $property->getContext()->getFile(),
                     $property->getContext()->getLineNumberStart(),
@@ -2996,7 +2997,7 @@ class Clazz extends AddressableElement
             $old_type = $parameter->getNonVariadicUnionType();
             $type = $old_type->withSelfResolvedInContext($context);
             if ($type->hasStaticType()) {
-                $type = $type->withType($this->getFQSEN()->asType());
+                $type = $type->withType($this->fqsen->asType());
             }
             if ($old_type !== $type) {
                 $changed = true;
@@ -3015,7 +3016,7 @@ class Clazz extends AddressableElement
             $old_type = $parameter->getNonVariadicUnionType();
             $type = $old_type->withSelfResolvedInContext($context);
             if ($type->hasStaticType()) {
-                $type = $type->withType($this->getFQSEN()->asType());
+                $type = $type->withType($this->fqsen->asType());
             }
             if ($old_type !== $type) {
                 $changed = true;
@@ -3059,7 +3060,7 @@ class Clazz extends AddressableElement
                     $this->getContext(),
                     Issue::UndeclaredAliasedMethodOfTrait,
                     $original_trait_alias_source->getAliasLineno(),  // TODO: Track line number in TraitAdaptation
-                    \sprintf('%s::%s', (string)$this->getFQSEN(), $alias_method_name),
+                    \sprintf('%s::%s', (string)$this->fqsen, $alias_method_name),
                     \sprintf('%s::%s', (string)$class->getFQSEN(), $source_method_name),
                     $class->getName()
                 );
@@ -3098,7 +3099,7 @@ class Clazz extends AddressableElement
             $this->getContext(),
             $issue_type,
             $this->getContext()->getLineNumberStart(),
-            $this->getFQSEN(),
+            $this->fqsen,
             $inherited_class->__toString(),
             $first_context->getFile(),
             $first_context->getLineNumberStart(),
@@ -3190,7 +3191,7 @@ class Clazz extends AddressableElement
             $string .= 'Class ';
         }
 
-        $string .= (string)$this->getFQSEN()->getCanonicalFQSEN();
+        $string .= (string)$this->fqsen->getCanonicalFQSEN();
 
         return $string;
     }
@@ -3218,7 +3219,7 @@ class Clazz extends AddressableElement
             $string .= 'class ';
         }
 
-        $string .= $this->getFQSEN()->getName();
+        $string .= $this->fqsen->getName();
 
         $extend_types = [];
         $implements_types = [];
@@ -3251,7 +3252,7 @@ class Clazz extends AddressableElement
 
     public function getMarkupDescription(): string
     {
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
         $string = '';
         $namespace = \ltrim($fqsen->getNamespace(), '\\');
         if ($namespace !== '') {
@@ -3325,7 +3326,7 @@ class Clazz extends AddressableElement
                 return $property->toStub();
             }, $property_map));
         }
-        $reflection_class = new \ReflectionClass((string)$this->getFQSEN());
+        $reflection_class = new \ReflectionClass((string)$this->fqsen);
         $method_map = \array_filter($this->getMethodMap($code_base), static function (Method $method) use ($reflection_class): bool {
             if ($method->getFQSEN()->isAlternate()) {
                 return false;
@@ -3343,7 +3344,7 @@ class Clazz extends AddressableElement
         }
 
         $stub .= "\n}\n\n";
-        $namespace = \ltrim($this->getFQSEN()->getNamespace(), '\\');
+        $namespace = \ltrim($this->fqsen->getNamespace(), '\\');
         return [$namespace, $stub];
     }
 
@@ -3358,7 +3359,7 @@ class Clazz extends AddressableElement
         }
 
         // Create the 'class' constant
-        $class_constant_value = \ltrim($this->getFQSEN()->__toString(), '\\');
+        $class_constant_value = \ltrim($this->fqsen->__toString(), '\\');
         $class_constant = new ClassConstant(
             $this->getContext(),
             'class',
@@ -3368,7 +3369,7 @@ class Clazz extends AddressableElement
             )->asRealUnionType(),
             0,
             FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
+                $this->fqsen,
                 'class'
             )
         );
@@ -3536,7 +3537,7 @@ class Clazz extends AddressableElement
                         $this->getContext(),
                         Issue::CommentAbstractOnInheritedMethod,
                         $this->getContext()->getLineNumberStart(),
-                        $this->getFQSEN(),
+                        $this->fqsen,
                         $method->getRealDefiningFQSEN(),
                         $method->getContext()->getFile(),
                         $method->getContext()->getLineNumberStart(),
@@ -3782,7 +3783,7 @@ class Clazz extends AddressableElement
                                 Issue::GenericConstructorTypes,
                                 $constructor_method->getContext()->getLineNumberStart(),
                                 $template_type,
-                                $this->getFQSEN()
+                                $this->fqsen
                             );
                         }
                         /** @param list<\ast\Node|mixed> $unused_arg_list */
@@ -3975,7 +3976,7 @@ class Clazz extends AddressableElement
         // Inherit properties from traits
         $this->hydrate($code_base);
 
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
         foreach ($this->getPropertyMap($code_base) as $property) {
             $context = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $property->getContext() : $this->getContext();
             Issue::maybeEmit(
@@ -3983,7 +3984,7 @@ class Clazz extends AddressableElement
                 $context,
                 Issue::EnumCannotHaveProperties,
                 $context->getLineNumberStart(),
-                $this->getFQSEN(),
+                $this->fqsen,
                 $property->getName(),
                 $property->getContext()->getFile(),
                 $property->getContext()->getLineNumberStart()
@@ -4001,7 +4002,7 @@ class Clazz extends AddressableElement
                             $context,
                             Issue::EnumForbiddenMagicMethod,
                             $context->getLineNumberStart(),
-                            $this->getFQSEN(),
+                            $this->fqsen,
                             $method->getName() . '()',
                             $method->getContext()->getFile(),
                             $method->getContext()->getLineNumberStart()
@@ -4016,7 +4017,7 @@ class Clazz extends AddressableElement
                     $context,
                     Issue::InstanceMethodWithNoEnumCases,
                     $context->getLineNumberStart(),
-                    $this->getFQSEN(),
+                    $this->fqsen,
                     $method->getName() . '()',
                     $method->getContext()->getFile(),
                     $method->getContext()->getLineNumberStart()
@@ -4048,7 +4049,7 @@ class Clazz extends AddressableElement
             'name',
             $string_type,
             ast\flags\MODIFIER_PUBLIC,
-            FullyQualifiedPropertyName::make($this->getFQSEN(), 'name'),
+            FullyQualifiedPropertyName::make($this->fqsen, 'name'),
             $string_type
         );
         $name_property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);
@@ -4060,7 +4061,7 @@ class Clazz extends AddressableElement
                 'value',
                 $value_type,
                 ast\flags\MODIFIER_PUBLIC,
-                FullyQualifiedPropertyName::make($this->getFQSEN(), 'name'),
+                FullyQualifiedPropertyName::make($this->fqsen, 'name'),
                 $value_type
             );
             $value_property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);

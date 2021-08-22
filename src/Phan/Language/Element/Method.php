@@ -27,6 +27,7 @@ use Phan\Memoize;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @method FullyQualifiedMethodName getDefiningFQSEN() @phan-suppress-current-line PhanParamSignaturePHPDocMismatchReturnType
+ * @property FullyQualifiedMethodName $fqsen
  */
 class Method extends ClassElement implements FunctionInterface
 {
@@ -715,7 +716,7 @@ class Method extends ClassElement implements FunctionInterface
 
         // If the type contains 'static', add this method's class
         // to the return type.
-        $scope = new ClassScope(new GlobalScope(), $this->getFQSEN()->getFullyQualifiedClassName(), 0);
+        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
         $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
@@ -744,7 +745,7 @@ class Method extends ClassElement implements FunctionInterface
     {
         // Workaround so that methods of generic classes will have the resolved template types
         yield $this;
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
         $alternate_id = $fqsen->getAlternateId() + 1;
 
         $fqsen = $fqsen->withAlternateId($alternate_id);

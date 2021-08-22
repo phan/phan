@@ -29,6 +29,7 @@ use Phan\Memoize;
  * Phan's representation of a closure or global function.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @property FullyQualifiedFunctionName $fqsen
  */
 class Func extends AddressableElement implements FunctionInterface
 {
@@ -334,7 +335,7 @@ class Func extends AddressableElement implements FunctionInterface
     public function alternateGenerator(CodeBase $code_base): \Generator
     {
         $alternate_id = 0;
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
 
         while ($code_base->hasFunctionWithFQSEN($fqsen)) {
             yield $code_base->getFunctionByFQSEN($fqsen);
@@ -394,7 +395,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function isClosure(): bool
     {
-        return $this->getFQSEN()->isClosure();
+        return $this->fqsen->isClosure();
     }
 
     /**
@@ -411,7 +412,7 @@ class Func extends AddressableElement implements FunctionInterface
 
     public function getMarkupDescription(): string
     {
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
         $namespace = \ltrim($fqsen->getNamespace(), '\\');
         $stub = '';
         if (StringUtil::isNonZeroLengthString($namespace)) {
@@ -438,7 +439,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function toStubInfo(): array
     {
-        $fqsen = $this->getFQSEN();
+        $fqsen = $this->fqsen;
         $stub = '';
         if (self::shouldAddDescriptionsToStubs()) {
             $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);

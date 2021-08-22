@@ -763,7 +763,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             return $this->asPHPDocUnionType();
         }
         // TODO: Override in array shape subclass
-        return $new_element_type->asGenericArrayTypes($this->getKeyType());
+        return $new_element_type->asGenericArrayTypes($this->key_type);
     }
 
     /**

@@ -142,7 +142,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
             switch ($type::NAME) {
                 case 'float':
                     if ($type instanceof LiteralFloatType) {
-                        return $type->getValue() === $this->getValue();
+                        return $type->value === $this->value;
                     }
                     return true;
                 case 'string':
@@ -189,7 +189,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
             switch ($type::NAME) {
                 case 'float':
                     if ($type instanceof LiteralFloatType) {
-                        return $type->getValue() === $this->getValue();
+                        return $type->value === $this->value;
                     }
                     return true;
                 default:
@@ -210,7 +210,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
         if ($type instanceof ScalarType) {
             if ($type::NAME === 'float') {
                 if ($type instanceof LiteralFloatType) {
-                    return $type->getValue() === $this->getValue();
+                    return $type->value === $this->value;
                 }
                 return true;
             }

@@ -1029,7 +1029,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
     {
-        $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+        $return_closure = $this->return_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$return_closure) {
             return null;
         }

@@ -15,6 +15,7 @@ use Phan\Library\StringUtil;
 
 /**
  * Phan's representation of a global constant
+ * @property FullyQualifiedGlobalConstantName $fqsen
  */
 class GlobalConstant extends AddressableElement implements ConstantInterface
 {
@@ -137,7 +138,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo(): array
     {
-        $fqsen = (string)$this->getFQSEN();
+        $fqsen = (string)$this->fqsen;
         $pos = \strrpos($fqsen, '\\');
         if ($pos !== false) {
             $name = (string)\substr($fqsen, $pos + 1);
@@ -153,7 +154,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $repr = 'null';
             $comment = '  // could not find';
         }
-        $namespace = \ltrim($this->getFQSEN()->getNamespace(), '\\');
+        $namespace = \ltrim($this->fqsen->getNamespace(), '\\');
         if (\preg_match('@^[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*$@D', $name)) {
             $string = "const $name = $repr;$comment\n";
         } else {
