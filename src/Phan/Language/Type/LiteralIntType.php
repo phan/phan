@@ -152,7 +152,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                     break;
                 case 'float':
                     if ($type instanceof LiteralFloatType) {
-                        return $type->getValue() == $this->getValue();
+                        return $type->getValue() == $this->value;
                     }
                     return true;
                 case 'true':

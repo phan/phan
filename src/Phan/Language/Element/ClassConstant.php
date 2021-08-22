@@ -168,7 +168,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // show public class constants as 'const', not 'public const'.
         // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ' . $this->name . ' = ';
-        $fqsen = $this->getFQSEN()->__toString();
+        $fqsen = $this->fqsen->__toString();
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
             // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
