@@ -19,6 +19,7 @@ use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\UnionType;
+use Phan\Library\Set;
 use Phan\Memoize;
 
 /**
@@ -48,6 +49,11 @@ class Method extends ClassElement implements FunctionInterface
      *              This may become out of date in language server mode.
      */
     private $defining_method_for_type_fetching;
+
+    /**
+     * @var Set<FullyQualifiedMethodName> Methods overriding this one.
+     */
+    private $method_overrides;
 
     /**
      * @param Context $context
@@ -167,18 +173,47 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Returns a (possibly incomplete) list of methods overriding this one.
+     * @param CodeBase $code_base
+     * @return list<Method>
+     * @suppress PhanUnreferencedPublicMethod May be called by plugins (#4502)
+     */
+    public function getPossibleOverrides(CodeBase $code_base): array {
+        $ret = [];
+        foreach ($this->method_overrides as $fqsen) {
+            // Consistency checks, mostly for language server mode.
+            /** @var FullyQualifiedMethodName $fqsen */
+            if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                continue;
+            }
+            $method = $code_base->getMethodByFQSEN($fqsen);
+            $subclassExpanded = $method->getClass($code_base)->getFQSEN()->asType()->asExpandedTypes($code_base);
+            $thisClassType = $this->getClass($code_base)->getFQSEN()->asType();
+            if ($subclassExpanded->hasType($thisClassType)) {
+                $ret[] = $method;
+            }
+        }
+        return $ret;
+    }
+
+    /**
      * Sets whether this method is overridden by another method
      *
      * @param bool $is_overridden_by_another
      * True if this method is overridden by another method
+     * @param FullyQualifiedMethodName|null $fqsen
+     * FQSEN of the overriding method, if available and $is_overridden_by_another is true.
      */
-    public function setIsOverriddenByAnother(bool $is_overridden_by_another): void
+    public function setIsOverriddenByAnother(bool $is_overridden_by_another, FullyQualifiedMethodName $fqsen = null): void
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::IS_OVERRIDDEN_BY_ANOTHER,
             $is_overridden_by_another
         ));
+        if ($is_overridden_by_another && $fqsen) {
+            $this->method_overrides->attach( $fqsen );
+        }
     }
 
     /**
