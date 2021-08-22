@@ -189,6 +189,9 @@ class Method extends ClassElement implements FunctionInterface
                 continue;
             }
             $method = $code_base->getMethodByFQSEN($fqsen);
+            if ($method->getDefiningFQSEN() !== $fqsen) {
+                continue;
+            }
             $subclassExpanded = $method->getClassFQSEN()->asType()->asExpandedTypes($code_base);
             $thisClassType = $this->getClassFQSEN()->asType();
             if ($subclassExpanded->hasType($thisClassType)) {
