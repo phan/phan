@@ -365,6 +365,7 @@ class ParseVisitor extends ScopeVisitor
             }
             // In PHP 8 and later having a __toString method automatically adds the Stringable interface, #4476
             if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen, built in type
                 $class->addAdditionalType(Type::fromFullyQualifiedString('\Stringable'));
             }
         }
