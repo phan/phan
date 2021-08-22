@@ -189,8 +189,8 @@ class Method extends ClassElement implements FunctionInterface
                 continue;
             }
             $method = $code_base->getMethodByFQSEN($fqsen);
-            $subclassExpanded = $method->getClass($code_base)->getFQSEN()->asType()->asExpandedTypes($code_base);
-            $thisClassType = $this->getClass($code_base)->getFQSEN()->asType();
+            $subclassExpanded = $method->getClassFQSEN()->asType()->asExpandedTypes($code_base);
+            $thisClassType = $this->getClassFQSEN()->asType();
             if ($subclassExpanded->hasType($thisClassType)) {
                 $ret[] = $method;
             }
@@ -214,7 +214,7 @@ class Method extends ClassElement implements FunctionInterface
             $is_overridden_by_another
         ));
         if ($is_overridden_by_another && $fqsen) {
-            $this->method_overrides->attach( $fqsen );
+            $this->method_overrides->attach($fqsen);
         }
     }
 
