@@ -1824,6 +1824,9 @@ class Clazz extends AddressableElement
             // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
+            if ($existing_method->getRealDefiningFQSEN() === $method->getRealDefiningFQSEN()) {
+                return;
+            }
             $existing_method_defining_fqsen = $existing_method->getDefiningFQSEN();
             // Note: For private/protected methods, the defining FQSEN is set to the FQSEN of the inheriting class.
             // So, when multiple traits are inherited, they may have identical defining FQSENs, but some may be abstract, and others may be implemented.
@@ -1831,13 +1834,8 @@ class Clazz extends AddressableElement
                 if ($method->isAbstract() === $existing_method->isAbstract()) {
                     return;
                 }
-            } else {
-                self::markMethodAsOverridden($code_base, $existing_method_defining_fqsen, $method_fqsen);
             }
 
-            if ($existing_method->getRealDefiningFQSEN() === $method->getRealDefiningFQSEN()) {
-                return;
-            }
             if ($existing_method->getRealDefiningFQSEN() === $method_fqsen || $method->isAbstract() || !$existing_method->isAbstract() || $existing_method->isNewConstructor()) {
                 // TODO: What if both of these are abstract, and those get combined into an abstract class?
                 //       Should phan check compatibility of the abstract methods it inherits?
@@ -3846,6 +3844,12 @@ class Clazz extends AddressableElement
             return;
         }
         $method = $code_base->getMethodByFQSEN($method_fqsen);
+        /*
+        if ($method->getName() === 'getBaz') {
+            echo "Marking $method_fqsen as overridden by $overriding_method_fqsen\n";
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
+        */
         $method->setIsOverriddenByAnother(true, $overriding_method_fqsen);
     }
 

@@ -2,5 +2,5 @@ src/167_trait_crash.php:6 PhanRedefineFunction Function diff defined at src/167_
 src/167_trait_crash.php:6 PhanUnreferencedPublicMethod Possibly zero references to public method \TraitCrash\BaseTrait::diff()
 src/167_trait_crash.php:9 PhanRedefineFunction Function diff defined at src/167_trait_crash.php:9 was previously defined at src/167_trait_crash.php:6
 src/167_trait_crash.php:9 PhanUnreferencedPublicMethod Possibly zero references to public method \TraitCrash\BaseTrait::diff,1()
-src/167_trait_crash.php:9 PhanUnusedPublicMethodParameter Parameter $date is never used
+src/167_trait_crash.php:9 PhanUnusedPublicNoOverrideMethodParameter Parameter $date is never used
 src/167_trait_crash.php:14 PhanUnreferencedClass Possibly zero references to trait \TraitCrash\Other
