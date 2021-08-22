@@ -105,16 +105,16 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTest
         foreach (self::IGNORED_ALIASES as $alias) {
             unset($real_map[$alias]);
         }
-        foreach ($real_map as $function_name => $return_type_string) {
-            $real_signature = $map[\strtolower($function_name)] ?? null;
-            if ($real_signature === null) {
+        foreach ($real_map as $function_name => $real_return_type_string) {
+            $signature = $map[\strtolower($function_name)] ?? null;
+            if ($signature === null) {
                 $errors .= "Expected function name '$function_name' to be found in signatures for PHP_VERSION_ID=$php_version_id\n";
                 continue;
             }
-            $return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $return_type_string), $context, Type::FROM_TYPE);
-            $phan_return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $real_signature[0]), $context, Type::FROM_TYPE);
+            $return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $real_return_type_string), $context, Type::FROM_TYPE);
+            $phan_return_type = UnionType::fromStringInContext(\str_replace('void', 'null', $signature[0]), $context, Type::FROM_TYPE);
             if (!$phan_return_type->canStrictCastToUnionType($this->code_base, $return_type)) {
-                $errors .= "Expected $phan_return_type to be able to cast to $return_type (checking consistency of real and phpdoc return types for '$function_name')\n";
+                $errors .= "Expected $phan_return_type to be able to cast to real signature $return_type (checking consistency of real and phpdoc return types for '$function_name')\n";
             }
         }
         $this->assertSame('', $errors);

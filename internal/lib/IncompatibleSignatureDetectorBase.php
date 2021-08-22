@@ -546,6 +546,9 @@ EOT;
         foreach ($deltas as $section_name => $signatures) {
             $parts .= "  '$section_name' => [\n";
             foreach ($signatures as $function_like_name => $arguments) {
+                if (!is_string($function_like_name)) {
+                    throw new RuntimeException("Unexpected function_like_name $function_like_name: arguments=" . json_encode($arguments));
+                }
                 $parts .= static::encodeSingleSignature($function_like_name, $arguments, '    ');
             }
             $parts .= "  ],\n";
