@@ -393,6 +393,7 @@ return [
         'tool/phan_repl_helpers.php',
         'internal/dump_fallback_ast.php',
         'internal/dump_html_styles.php',
+        'internal/emit_signature_map_for_php_version.php',
         'internal/extract_arg_info.php',
         'internal/flatten_signature_map.php',
         'internal/internalsignatures.php',

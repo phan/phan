@@ -4633,23 +4633,12 @@ class UnionType implements Serializable, Stringable
      */
     public static function internalFunctionSignatureMap(int $target_php_version): array
     {
-        static $php73_map = [];
+        static $php80_map = [];
 
-        if (!$php73_map) {
-            $php73_map = self::computeLatestFunctionSignatureMap();
+        if (!$php80_map) {
+            $php80_map = self::computeLatestFunctionSignatureMap();
         }
-        if ($target_php_version >= 70400) {
-            static $php74_map = [];
-            if (!$php74_map) {
-                $php74_map = self::computePHP74FunctionSignatureMap($php73_map);
-            }
-            if ($target_php_version < 80000) {
-                return $php74_map;
-            }
-            static $php80_map = [];
-            if (!$php80_map) {
-                $php80_map = self::computePHP80FunctionSignatureMap($php74_map);
-            }
+        if ($target_php_version >= 80000) {
             if ($target_php_version < 80100) {
                 return $php80_map;
             }
@@ -4658,6 +4647,17 @@ class UnionType implements Serializable, Stringable
                 $php81_map = self::computePHP81FunctionSignatureMap($php80_map);
             }
             return $php81_map;
+        }
+        static $php74_map = [];
+        if (!$php74_map) {
+            $php74_map = self::computePHP74FunctionSignatureMap($php80_map);
+        }
+        if ($target_php_version >= 70400) {
+            return $php74_map;
+        }
+        static $php73_map = [];
+        if (!$php73_map) {
+            $php73_map = self::computePHP73FunctionSignatureMap($php74_map);
         }
         if ($target_php_version >= 70300) {
             return $php73_map;
@@ -4746,23 +4746,23 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param array<string,associative-array<int|string,string>> $php74_map
+     * @param array<string,associative-array<int|string,string>> $php80_map
      * @return array<string,associative-array<int|string,string>>
      */
-    private static function computePHP80FunctionSignatureMap(array $php74_map): array
+    private static function computePHP74FunctionSignatureMap(array $php80_map): array
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php80_delta.php');
-        return self::applyDeltaToGetNewerSignatures($php74_map, $delta_raw);
+        return self::applyDeltaToGetOlderSignatures($php80_map, $delta_raw);
     }
 
     /**
-     * @param array<string,associative-array<int|string,string>> $php73_map
+     * @param array<string,associative-array<int|string,string>> $php74_map
      * @return array<string,associative-array<int|string,string>>
      */
-    private static function computePHP74FunctionSignatureMap(array $php73_map): array
+    private static function computePHP73FunctionSignatureMap(array $php74_map): array
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php74_delta.php');
-        return self::applyDeltaToGetNewerSignatures($php73_map, $delta_raw);
+        return self::applyDeltaToGetOlderSignatures($php74_map, $delta_raw);
     }
 
     /**

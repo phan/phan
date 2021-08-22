@@ -12,7 +12,7 @@ function sort_signature_maps(): void {
     global $argv;
     $files = array_slice($argv, 1);
     if (!$files) {
-        CLI::printErrorToStderr("Usage: ${argv[1]} path/to/SignatureMap1.php");
+        CLI::printErrorToStderr("Usage: ${argv[1]} path/to/SignatureMap1.php\n");
         exit(1);
     }
     foreach ($files as $original_path) {
@@ -32,7 +32,11 @@ function sort_signature_maps(): void {
         $new_path = $original_path . '.sorted';
         // @phan-suppress-next-line PhanPluginRemoveDebugCall
         fprintf(STDERR, "Saving sorted signature map to %s\n", $new_path);
-        IncompatibleXMLSignatureDetector::saveSignatureDeltaMap($new_path, $original_path, $contents);
+        if (isset($contents['added'])) {
+            IncompatibleXMLSignatureDetector::saveSignatureDeltaMap($new_path, $original_path, $contents);
+        } else {
+            IncompatibleXMLSignatureDetector::saveSignatureMap($new_path, $contents);
+        }
     }
 }
 sort_signature_maps();

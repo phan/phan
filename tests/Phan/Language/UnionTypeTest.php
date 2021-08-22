@@ -693,9 +693,9 @@ final class UnionTypeTest extends BaseTest
 
     public function testFunctionSignatureMapSorted(): void
     {
-        // Signatures are computed by applying deltas to php 7.3
-        $php73_map = UnionType::internalFunctionSignatureMap(70300);
-        $this->assertSectionIsSorted($php73_map, 'FunctionSignatureMap.php', '70300');
+        // Signatures are computed by applying deltas to php 8.0
+        $php73_map = UnionType::internalFunctionSignatureMap(80000);
+        $this->assertSectionIsSorted($php73_map, 'FunctionSignatureMap.php', '80000');
     }
 
     public function testFunctionSignatureMapConsistency(): void
@@ -709,9 +709,6 @@ final class UnionTypeTest extends BaseTest
         $php71_map = UnionType::internalFunctionSignatureMap(70100);
         $php70_map = UnionType::internalFunctionSignatureMap(70000);
         $php56_map = UnionType::internalFunctionSignatureMap(50600);
-
-        // Signatures are computed by applying deltas to php 7.4
-        $this->assertSectionIsSorted($php73_map, 'FunctionSignatureMap.php', '70300');
 
         $php81_delta = require("$signatures_dir/FunctionSignatureMap_php81_delta.php");
         $php80_delta = require("$signatures_dir/FunctionSignatureMap_php80_delta.php");

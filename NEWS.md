@@ -9,6 +9,7 @@ Bug fixes:
 
 Maintenance:
 - Change internal representation of FunctionSignatureMap delta files.
+- Internally represent the base function map using php 8.0 signatures instead of php 7.3 - applying deltas backwards has the same result (#4478)
 
 Aug 07 2021, Phan 5.1.0
 -----------------------
