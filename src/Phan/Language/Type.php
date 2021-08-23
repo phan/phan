@@ -111,10 +111,10 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
