@@ -473,7 +473,7 @@ class Property extends ClassElement
         try {
             $union_type = $future_union_type->get();
             if (!$this->real_union_type->isEmpty()
-                && !$union_type->canStrictCastToUnionType($future_union_type->getCodeBase(), $this->real_union_type)) {
+                && !$union_type->canCastToUnionType($this->real_union_type, $future_union_type->getCodeBase())) {
                     Issue::maybeEmit(
                         $future_union_type->getCodeBase(),
                         $future_union_type->getContext(),

@@ -225,7 +225,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             return false;
         }
 
-        return parent::canCastToNonNullableType($type, $code_base);
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 
     /**
