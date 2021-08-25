@@ -1,0 +1,2 @@
+%s:5 PhanTypeMismatchPropertyDefaultReal Default value for float $z can't be '0' of type string
+%s:6 PhanTypeMismatchPropertyDefaultReal Default value for float $w can't be null of type null

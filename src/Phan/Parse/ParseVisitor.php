@@ -583,7 +583,7 @@ class ParseVisitor extends ScopeVisitor
                     $union_type = UnionType::empty();
                 }
             } else {
-                if (!$union_type->isStrictSubtypeOf($this->code_base, $real_union_type)) {
+                if (!$union_type->canCastToUnionType($real_union_type, $this->code_base)) {
                     $this->emitIssue(
                         Issue::TypeMismatchPropertyDefaultReal,
                         $context_for_property->getLineNumberStart(),
