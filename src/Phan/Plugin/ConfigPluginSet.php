@@ -1071,29 +1071,19 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     private static function registerMergeVariableInfoClosure(array $plugin_set): void
     {
+        $closures = [];
         foreach (self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
-            $closure = $plugin->getMergeVariableInfoClosure();
-            self::$mergeVariableInfoClosure = self::mergeMergeVariableInfoClosures($closure, self::$mergeVariableInfoClosure);
-        }
-    }
-
-    /**
-     * @param Closure(Variable,Scope[],bool):void $a
-     * @param ?Closure(Variable,Scope[],bool):void $b
-     * @return Closure(Variable,Scope[],bool):void
-     */
-    private static function mergeMergeVariableInfoClosures(Closure $a, Closure $b = null): Closure
-    {
-        if (!$b) {
-            return $a;
+            $closures[] = $plugin->getMergeVariableInfoClosure();
         }
 
+        // Combine closures from all of the plugins into a single closure to run
         /**
          * @param list<Scope> $child_scopes
          */
-        return static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($a, $b): void {
-            $a($variable, $child_scopes, $var_exists_in_all_branches);
-            $b($variable, $child_scopes, $var_exists_in_all_branches);
+        self::$mergeVariableInfoClosure = static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($closures): void {
+            foreach ( $closures as $c ) {
+                $c($variable, $child_scopes, $var_exists_in_all_branches);
+            }
         };
     }
 
