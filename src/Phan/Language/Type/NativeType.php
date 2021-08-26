@@ -216,6 +216,7 @@ abstract class NativeType extends Type
                 // TODO: Handle other subtypes of mixed?
                 MixedType::NAME    => true,
                 NeverType::NAME => in_array(NeverType::NAME, $permitted_cast_type_names, true),
+                NonEmptyStringType::NAME => in_array(NonEmptyStringType::NAME, $permitted_cast_type_names, true),
                 NullType::NAME     => in_array(NullType::NAME, $permitted_cast_type_names, true),
                 ObjectType::NAME   => in_array(ObjectType::NAME, $permitted_cast_type_names, true),
                 ResourceType::NAME => in_array(ResourceType::NAME, $permitted_cast_type_names, true),
@@ -236,8 +237,8 @@ abstract class NativeType extends Type
             CallableArrayType::NAME => $generate_row(CallableArrayType::NAME, CallableType::NAME, ArrayType::NAME),
             CallableObjectType::NAME => $generate_row(CallableObjectType::NAME, CallableType::NAME, ObjectType::NAME),
             CallableType::NAME => $generate_row(CallableType::NAME),
-            CallableStringType::NAME => $generate_row(CallableStringType::NAME, CallableType::NAME, StringType::NAME),
-            ClassStringType::NAME => $generate_row(ClassStringType::NAME, CallableType::NAME, StringType::NAME),
+            CallableStringType::NAME => $generate_row(CallableStringType::NAME, CallableType::NAME, StringType::NAME, NonEmptyStringType::NAME),
+            ClassStringType::NAME => $generate_row(ClassStringType::NAME, StringType::NAME, NonEmptyStringType::NAME),
             FalseType::NAME    => $generate_row(FalseType::NAME, BoolType::NAME, ScalarRawType::NAME),
             FloatType::NAME    => $generate_row(FloatType::NAME, ScalarRawType::NAME),
             IntType::NAME      => $generate_row(IntType::NAME, FloatType::NAME, ScalarRawType::NAME),
@@ -247,7 +248,8 @@ abstract class NativeType extends Type
             NullType::NAME     => $generate_row(NullType::NAME),
             ObjectType::NAME   => $generate_row(ObjectType::NAME),
             ResourceType::NAME => $generate_row(ResourceType::NAME),
-            StringType::NAME   => $generate_row(StringType::NAME, CallableType::NAME, ScalarRawType::NAME, CallableStringType::NAME, ClassStringType::NAME),
+            StringType::NAME   => $generate_row(StringType::NAME, CallableType::NAME, ScalarRawType::NAME, CallableStringType::NAME, ClassStringType::NAME, NonEmptyStringType::NAME),
+            NonEmptyStringType::NAME   => $generate_row(NonEmptyStringType::NAME, StringType::NAME, CallableType::NAME, ScalarRawType::NAME, CallableStringType::NAME, ClassStringType::NAME),
             TrueType::NAME     => $generate_row(TrueType::NAME, BoolType::NAME, ScalarRawType::NAME),
             VoidType::NAME     => $generate_row(VoidType::NAME),
         ];

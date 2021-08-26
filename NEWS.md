@@ -12,6 +12,7 @@ Bug fixes:
 - Fix false positive where a method overriding an existing method could be treated as having overrides. (#4502)
 - Consistently support `numeric-string` in all phpdoc
 - Fix false positive `PhanTypeMismatchPropertyDefaultReal` warning for literal integer and `float` typed property. (#4507)
+- Fix false positive warnings such as `PhanImpossibleTypeComparison` about string subtypes not casting to other string subtypes (#4514)
 
 Maintenance:
 - Change internal representation of FunctionSignatureMap delta files.
