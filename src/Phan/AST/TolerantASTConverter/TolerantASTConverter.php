@@ -871,12 +871,14 @@ class TolerantASTConverter
                 return $str;
             },
             /**
+             * @return never
              * @throws InvalidNodeException
              */
             'Microsoft\PhpParser\MissingToken' => static function (PhpParser\MissingToken $unused_node, int $_): void {
                 throw new InvalidNodeException();
             },
             /**
+             * @return never
              * @throws InvalidNodeException
              */
             'Microsoft\PhpParser\SkippedToken' => static function (PhpParser\SkippedToken $unused_node, int $_): void {

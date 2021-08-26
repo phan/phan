@@ -86,7 +86,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         if (!is_string($realpath)) {
             fwrite(STDERR, "Could not find realpath of '$dir'\n");
             static::printUsageAndExit();
-            throw new RuntimeException("unreachable");
         }
         return $realpath;
     }
@@ -369,13 +368,13 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $detector->updatePHPDocSummaries();
                 break;
             case 'compare-named-parameters':
+                // Never returns
                 self::compareNamedParameters();
-                return;  // unreachable
             case 'help':
             case '--help':
             case '-h':
+                // Never returns
                 static::printUsageAndExit(0);
-                return;  // unreachable
             default:
                 fwrite(STDERR, "Invalid command '$command'\n");
                 static::printUsageAndExit(1);
@@ -1104,6 +1103,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * Implements compare-named-parameters to prepare docs and stub files for php 8.0 named parameters
+     * @return never
      */
     public static function compareNamedParameters(): void
     {

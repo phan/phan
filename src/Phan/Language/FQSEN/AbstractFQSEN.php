@@ -98,6 +98,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     abstract public function __toString(): string;
 
     /**
+     * @return never
      * @throws Error to prevent accidentally calling this
      */
     public function __clone()
@@ -108,6 +109,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
 
     /**
      * @throws Error to prevent accidentally calling this
+     * @return never
      */
     public function serialize(): string
     {
@@ -117,6 +119,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
 
     /**
      * @param string $serialized
+     * @return never
      * @throws Error to prevent accidentally calling this
      */
     public function unserialize($serialized): void
@@ -127,7 +130,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
 
     /**
      * @throws Error to prevent accidentally calling this
-     * @return array<string,mixed> TODO: Switch to phpdoc never
+     * @return never
      */
     public function __serialize(): array
     {
@@ -138,6 +141,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      * @unused-param $data
      * @param array<string,mixed> $data
      * @throws Error to prevent accidentally calling this
+     * @return never
      */
     public function __unserialize(array $data): void
     {

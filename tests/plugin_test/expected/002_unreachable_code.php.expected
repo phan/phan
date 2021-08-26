@@ -1,3 +1,4 @@
+src/002_unreachable_code.php:3 PhanPluginNeverReturnFunction Function \unreachableCode() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/002_unreachable_code.php:4 PhanThrowTypeAbsent \unreachableCode() can throw new \RuntimeException('Exception') of type \RuntimeException here, but has no '@throws' declarations for that class
 src/002_unreachable_code.php:5 PhanPluginUnreachableCode Unreachable statement detected
 src/002_unreachable_code.php:23 PhanPluginUnreachableCode Unreachable statement detected

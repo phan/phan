@@ -67,32 +67,55 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
         }
     }
 
-    /** @override */
+    /**
+     * @override
+     * @return never
+     */
     public function visitContinue(Node $node): void
     {
         throw new NodeException($node);
     }
 
+    /**
+     * @override
+     * @return never
+     */
     public function visitBreak(Node $node): void
     {
         throw new NodeException($node);
     }
 
+    /**
+     * @override
+     * @return never
+     */
     public function visitPreInc(Node $node): void
     {
         throw new NodeException($node);
     }
 
+    /**
+     * @override
+     * @return never
+     */
     public function visitPreDec(Node $node): void
     {
         throw new NodeException($node);
     }
 
+    /**
+     * @override
+     * @return never
+     */
     public function visitPostInc(Node $node): void
     {
         throw new NodeException($node);
     }
 
+    /**
+     * @override
+     * @return never
+     */
     public function visitPostDec(Node $node): void
     {
         throw new NodeException($node);
@@ -110,25 +133,37 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
         $this->visitVar($var);
     }
 
-    /** @override */
+    /**
+     * @override
+     * @return never
+     */
     public function visitGoto(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    /** @override */
+    /**
+     * @override
+     * @return never
+     */
     public function visitAssignOp(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    /** @override */
+    /**
+     * @override
+     * @return never
+     */
     public function visitAssign(Node $node): void
     {
         throw new NodeException($node);
     }
 
-    /** @override */
+    /**
+     * @override
+     * @return never
+     */
     public function visitReturn(Node $node): void
     {
         throw new NodeException($node);

@@ -167,7 +167,7 @@ final class GlobalScope extends Scope
     }
 
     /**
-     * @return Scope
+     * @return never
      * Get the parent scope of this scope
      */
     public function getParentScope(): Scope
@@ -175,11 +175,17 @@ final class GlobalScope extends Scope
         throw new AssertionError("Global scope has no parent scope");
     }
 
+    /**
+     * @return never
+     */
     public function getClassFQSEN(): FullyQualifiedClassName
     {
         throw new AssertionError("Cannot get class FQSEN on scope");
     }
 
+    /**
+     * @return never
+     */
     public function getPropertyFQSEN(): FullyQualifiedPropertyName
     {
         throw new AssertionError("Cannot get class FQSEN on scope");
@@ -194,6 +200,9 @@ final class GlobalScope extends Scope
         return null;
     }
 
+    /**
+     * @return never
+     */
     public function getFunctionLikeFQSEN()
     {
         throw new AssertionError("Cannot get method/function/closure FQSEN on scope");

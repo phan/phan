@@ -32,6 +32,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      * @unused-param $is_nullable
      * @internal - do not call
      * @deprecated
+     * @return never
      */
     public static function instance(bool $is_nullable)
     {

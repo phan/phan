@@ -264,6 +264,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 $key,
                 /**
                  * @throws FQSENException
+                 * @return never
                  */
                 static function (): self {
                     // Reuse the exception to save time generating an unused stack trace.

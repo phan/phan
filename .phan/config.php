@@ -655,7 +655,7 @@ return [
         'UnsafeCodePlugin',
         'DeprecateAliasPlugin',
         // Suggest '@return never'
-        'NeverReturnPlugin',
+        '.phan/plugins/AddNeverReturnTypePlugin.php',
         // Still have false positives to suppress
         // '.phan/plugins/StaticVariableMisusePlugin.php',
 

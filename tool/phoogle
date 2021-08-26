@@ -10,7 +10,8 @@ use Phan\CLIBuilder;
 use Phan\Phan;
 
 /**
- *  Print usage for phoogle and exit.
+ * Print usage for phoogle and exit.
+ * @return never
  */
 function phoogle_usage(int $status) : void {
     global $argv;

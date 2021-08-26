@@ -409,6 +409,9 @@ class InvokeExecutionPromise
         return $this->binary;
     }
 
+    /**
+     * @return never
+     */
     public function __wakeup()
     {
         $this->tmp_path = null;

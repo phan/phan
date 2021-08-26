@@ -4,3 +4,4 @@ src/085_throw_type_mismatch.php:19 PhanTypeInvalidThrowStatementNonThrowable \NS
 src/085_throw_type_mismatch.php:21 PhanThrowTypeMismatch \NS626\C::main() throws new FinalClass85() of type \NS626\FinalClass85 here, but it only has declarations of '@throws \InvalidArgumentException'
 src/085_throw_type_mismatch.php:21 PhanTypeInvalidThrowStatementNonThrowable \NS626\C::main() can throw new FinalClass85() of type \NS626\FinalClass85 here which can't cast to \Throwable
 src/085_throw_type_mismatch.php:23 PhanThrowTypeMismatchForCall \NS626\C::main() throws \TypeError because it calls \NS626\C::throw(), but it only has declarations of '@throws \InvalidArgumentException'
+src/085_throw_type_mismatch.php:29 PhanPluginNeverReturnMethod Function \NS626\C::throw() never returns and has a return type of (empty union type), but phpdoc type never could be used instead

@@ -29,7 +29,7 @@ class StubsGenerator
 {
 
     /**
-     * @return void (does not return)
+     * @return never (does not return)
      */
     public static function printHelpAndExit(string $message = '', int $exit_code = 1) : void
     {

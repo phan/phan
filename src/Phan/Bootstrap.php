@@ -214,6 +214,7 @@ if (!extension_loaded('filter') && !function_exists('filter_var')) {
 /**
  * Print more of the backtrace than is done by default
  * @suppress PhanAccessMethodInternal
+ * @return never
  */
 set_exception_handler(static function (Throwable $throwable): void {
     fwrite(STDERR, "ERROR: $throwable\n");

@@ -170,7 +170,7 @@ class Request
     }
 
     /**
-     * @return void (unreachable)
+     * @return never
      * @throws ExitException to imitate an exit without actually exiting
      */
     public function exit(int $exit_code): void

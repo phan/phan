@@ -81,7 +81,7 @@ final class NeverReturnPlugin extends PluginV3 implements
             $method->getContext(),
             'PhanPluginNeverReturnMethod',
             "Function {FUNCTION} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead",
-            [$method->getRepresentationForIssue(), (string)$method->getUnionType(), 'never']
+            [$method->getRepresentationForIssue(), $method->getUnionType(), 'never']
         );
     }
 
@@ -115,7 +115,7 @@ final class NeverReturnPlugin extends PluginV3 implements
             $function->getContext(),
             'PhanPluginNeverReturnFunction',
             "Function {FUNCTION} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead",
-            [$function->getRepresentationForIssue(), (string)$function->getUnionType(), 'never']
+            [$function->getRepresentationForIssue(), $function->getUnionType(), 'never']
         );
     }
 

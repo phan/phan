@@ -156,5 +156,6 @@ return [
         'DeprecateAliasPlugin',
         'PHPDocInWrongCommentPlugin',
         'StaticVariableMisusePlugin',
+        'AddNeverReturnTypePlugin',
     ],
 ];
