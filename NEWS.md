@@ -1,6 +1,6 @@
 Phan NEWS
 
-Aug ?? 2021, Phan 5.1.1 (dev)
+Aug 26 2021, Phan 5.2.0
 -----------------------
 
 Plugins
