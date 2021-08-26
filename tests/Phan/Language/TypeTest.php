@@ -478,6 +478,8 @@ final class TypeTest extends CodeBaseAwareTest
     {
         $from_type = self::makePHPDocType($from_type_string);
         $to_type = self::makePHPDocType($to_type_string);
+        $this->assertTrue($from_type->canCastToDeclaredType($this->code_base, new Context(), $to_type), "expected $from_type_string to be able to cast to declared type $to_type_string");
+        $this->assertTrue($from_type->canCastToTypeWithoutConfig($to_type, $this->code_base), "expected $from_type_string to be able to cast to $to_type_string without config");
         $this->assertTrue($from_type->canCastToType($to_type, $this->code_base), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
@@ -514,6 +516,11 @@ final class TypeTest extends CodeBaseAwareTest
             ['?callable(int):int', '?callable'],
             ['?callable', '?callable(int):int'],
             ['\'literal\'', 'string'],
+            ['class-string', 'non-empty-string'],
+            ['non-empty-string', 'class-string'],
+            ['\'literal\'', 'class-string'],
+            ['\'literal\'', 'callable-string'],
+            ['\'literal::foo\'', 'callable-string'],
         ];
     }
 
@@ -560,6 +567,8 @@ final class TypeTest extends CodeBaseAwareTest
             ['?iterable', '?ArrayObject'],
             ['?Countable', '?ArrayObject'],
             ['\'literal\'', '?int'],
+            ['\'literal::foo\'', 'class-string'],
+            ['\'literal::2foo\'', 'callable-string'],
             // not sure about desired semantics of ['?mixed', 'mixed'],
         ];
     }

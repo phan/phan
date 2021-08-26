@@ -13,7 +13,7 @@ use Phan\Language\Type;
  * Excludes '' and '0'.
  * @phan-pure
  */
-final class NonEmptyStringType extends StringType
+class NonEmptyStringType extends StringType
 {
     use NativeTypeTrait;
 
@@ -29,18 +29,6 @@ final class NonEmptyStringType extends StringType
     public function isPossiblyFalsey(): bool
     {
         return $this->is_nullable;
-    }
-
-    /** @override */
-    public function isAlwaysFalsey(): bool
-    {
-        return false;
-    }
-
-    /** @override */
-    public function isPossiblyTruthy(): bool
-    {
-        return true;
     }
 
     /** @override */
@@ -111,8 +99,6 @@ final class NonEmptyStringType extends StringType
                         return (bool)$type->getValue();
                     }
                     return true;
-                default:
-                    return false;
             }
         }
 

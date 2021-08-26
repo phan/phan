@@ -132,4 +132,16 @@ final class ClassStringType extends StringType
             Type::FROM_TYPE
         );
     }
+
+    /** @override */
+    public function isPossiblyFalsey(): bool
+    {
+        return $this->is_nullable;
+    }
+
+    /** @override */
+    public function isAlwaysTruthy(): bool
+    {
+        return !$this->is_nullable;
+    }
 }
