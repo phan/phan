@@ -50,6 +50,9 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 case BlockExitStatusChecker::STATUS_RETURN:
                     $parts[] = 'return';
                     break;
+                case BlockExitStatusChecker::STATUS_NORETURN:
+                    $parts[] = 'never';
+                    break;
                 default:
                     $parts[] = \sprintf("invalid(1<<%d)", (int)\round(\log($bit, 2)));
                     break;
@@ -92,15 +95,15 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 'echo "hello, world\n"; return 4;',
             ],
             [
-                'return',
+                'never',
                 'exit(1);',
             ],
             [
-                'return',
+                'never',
                 'for ($i = 0; true; $i++) {}',
             ],
             [
-                'return',
+                'never',
                 'for ($i = 0; ; $i++) {}',
             ],
             [
@@ -116,7 +119,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 'for ($i = 0; true, foo($i); $i++) {throw new RuntimeException("throw");}',
             ],
             [
-                'return',
+                'never',
                 'while (1) {foo();}',
             ],
             [
@@ -132,7 +135,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 'while (cond()) {foo();}',
             ],
             [
-                'return',
+                'never',
                 'do {foo();} while (1);',
             ],
             [
@@ -140,7 +143,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 'do {} while (0);',
             ],
             [
-                'return',
+                'never',
                 'do {} while (1);',
             ],
             [
@@ -152,11 +155,11 @@ final class BlockExitStatusCheckerTest extends BaseTest
                 'do {return "value";} while (cond());',
             ],
             [
-                'return',
+                'never',
                 'while (true) {foo();}',
             ],
             [
-                'return',
+                'never',
                 'while (1) {if (cond) {continue;} }',
             ],
             [
@@ -270,7 +273,7 @@ final class BlockExitStatusCheckerTest extends BaseTest
             ],
             // trigger_error can make it throw/exit. The returned code for exit is 'return'
             [
-                'return',
+                'never',
                 'trigger_error("err msg", E_USER_ERROR);',
             ],
             [
@@ -287,14 +290,14 @@ final class BlockExitStatusCheckerTest extends BaseTest
             ],
             [
                 'proceed',
-                'trigger_error("err msg", E_DEPRECATED);',
+                'trigger_error("err msg", E_USER_DEPRECATED);',
             ],
             [
-                'return',
+                'never',
                 '@trigger_error("err msg", E_USER_ERROR);',
             ],
             [
-                'proceed',
+                'throw',
                 '@trigger_error("err msg", E_DEPRECATED);',
             ],
         ];

@@ -654,6 +654,8 @@ return [
         'RemoveDebugStatementPlugin',
         'UnsafeCodePlugin',
         'DeprecateAliasPlugin',
+        // Suggest '@return never'
+        'NeverReturnPlugin',
         // Still have false positives to suppress
         // '.phan/plugins/StaticVariableMisusePlugin.php',
 
