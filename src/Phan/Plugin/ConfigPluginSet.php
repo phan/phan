@@ -1076,12 +1076,24 @@ final class ConfigPluginSet extends PluginV3 implements
             $closures[] = $plugin->getMergeVariableInfoClosure();
         }
 
-        // Combine closures from all of the plugins into a single closure to run
+        // If we have no plugins registering closures, no overall closure is needed
+        if (!$closures) {
+            self::$mergeVariableInfoClosure = null;
+            return;
+        }
+
+        // If we have only one plugin registering a closure, just use that
+        if (count($closures) === 1) {
+            self::$mergeVariableInfoClosure = reset($closures);
+            return;
+        }
+
+        // If we have multiple plugins registering closures, combine them
         /**
          * @param list<Scope> $child_scopes
          */
         self::$mergeVariableInfoClosure = static function (Variable $variable, array $child_scopes, bool $var_exists_in_all_branches) use ($closures): void {
-            foreach ( $closures as $c ) {
+            foreach ($closures as $c) {
                 $c($variable, $child_scopes, $var_exists_in_all_branches);
             }
         };
