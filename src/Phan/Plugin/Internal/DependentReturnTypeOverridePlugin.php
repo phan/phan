@@ -78,7 +78,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $type_if_unknown,
                 $type_if_false,
                 $expected_bool_pos
-): UnionType {
+            ): UnionType {
                 if (count($args) <= $expected_bool_pos) {
                     return $type_if_false;
                 }
@@ -142,7 +142,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $arg_pos,
                 $type_if_exists,
                 $type_if_missing
-): UnionType {
+            ): UnionType {
                 return isset($args[$arg_pos]) ? $type_if_exists : $type_if_missing;
             };
         };
@@ -167,7 +167,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $json_decode_array_types,
             $json_decode_object_types,
             $json_decode_array_or_object_types
-): UnionType {
+        ): UnionType {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
@@ -319,7 +319,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use (
             $string_union_type_with_null_in_real
-): UnionType {
+        ): UnionType {
             if (count($args) !== 1) {
                 if (count($args) !== 2) {
                     // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
@@ -440,7 +440,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ) use (
             $string_union_type,
             $callable
-): UnionType {
+        ): UnionType {
             if (count($args) !== 1) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;

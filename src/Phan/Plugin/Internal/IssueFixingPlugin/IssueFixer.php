@@ -211,7 +211,7 @@ class IssueFixer
                 ) use (
                     $closure,
                     $instance
-): ?FileEditSet {
+                ): ?FileEditSet {
                     self::debug("Calling for $instance\n");
                     return $closure($code_base, $file_contents, $instance);
                 };

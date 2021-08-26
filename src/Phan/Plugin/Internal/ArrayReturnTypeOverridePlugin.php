@@ -352,7 +352,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         ) use (
             $nullable_array_type_set,
             $real_nullable_array
-): UnionType {
+        ): UnionType {
             // TODO: Handle non-empty-array in these methods and convert to non-empty-array.
             if (\count($args) < 2) {
                 return $real_nullable_array;

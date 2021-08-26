@@ -60,7 +60,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $fmt_index,
                 $arg_index
-): void {
+            ): void {
                 if (\count($args) <= $fmt_index) {
                     return;
                 }
@@ -96,7 +96,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-): void {
+            ): void {
                 if (\count($args) <= $type_index) {
                     return;
                 }
@@ -136,7 +136,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
             ) use (
                 $type_index,
                 $arg_index
-): void {
+            ): void {
                 if (\count($args) <= $type_index) {
                     return;
                 }

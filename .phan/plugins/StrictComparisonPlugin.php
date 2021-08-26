@@ -60,7 +60,7 @@ class StrictComparisonPlugin extends PluginV3 implements
                 $index,
                 $index_name,
                 $min_args
-): void {
+            ): void {
                 if (count($args) < $min_args) {
                     return;
                 }
