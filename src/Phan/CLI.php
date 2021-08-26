@@ -2756,7 +2756,6 @@ EOB
         if (\version_compare($ast_version, '1.0.11') < 0) {
             CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 5. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
         }
-
     }
 
     /**

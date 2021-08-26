@@ -181,7 +181,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return list<Method>
      * @suppress PhanUnreferencedPublicMethod May be called by plugins (#4502)
      */
-    public function getPossibleOverrides(CodeBase $code_base): array {
+    public function getPossibleOverrides(CodeBase $code_base): array
+    {
         $ret = [];
         foreach ($this->method_overrides as $fqsen) {
             // Consistency checks, mostly for language server mode.

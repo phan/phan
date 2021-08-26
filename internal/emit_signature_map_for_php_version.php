@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/IncompatibleXMLSignatureDetector.php';
 
@@ -10,7 +12,8 @@ use Phan\Language\UnionType;
  * Emit the signature map for a given php version.
  * Can be used to change the base signature map to target a different version.
  */
-function emit_signature_map_for_php_version(): void {
+function emit_signature_map_for_php_version(): void
+{
     global $argv;
     if (count($argv) !== 3) {
         CLI::printErrorToStderr("Usage: ${argv[0]} PHP_VERSION_ID path/to/SignatureMapForVersion.php\n");

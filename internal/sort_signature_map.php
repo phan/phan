@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/IncompatibleXMLSignatureDetector.php';
 
@@ -8,7 +10,8 @@ use Phan\CLI;
 /**
  * Sort the functiton or delta signature maps provided as arguments on stdin
  */
-function sort_signature_maps(): void {
+function sort_signature_maps(): void
+{
     global $argv;
     $files = array_slice($argv, 1);
     if (!$files) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Temporary utility script to switch phan from the old flat style of signature map
  * to one that is easier to read and edit.
@@ -14,7 +16,8 @@
  * @param array{added?:array<string,string[]>,removed?:array<string,string[]>,changed?:array<string,array{old:string[],new:string[]}>} $map
  * @return array{old:array<string,string[]>,new:array<string,string[]>}
  */
-function convert_verbose_delta_map_to_flat_delta_map(array $map): array {
+function convert_verbose_delta_map_to_flat_delta_map(array $map): array
+{
     $new_delta_map = $map['added'] ?? [];
     $old_delta_map = $map['removed'] ?? [];
     foreach ($map['changed'] ?? [] as $name => ['old' => $old_signature, 'new' => $new_signature]) {
@@ -33,7 +36,8 @@ function convert_verbose_delta_map_to_flat_delta_map(array $map): array {
  * @param array{old:array<string,string[]>,new:array<string,string[]>} $map
  * @return array{added:array<string,string[]>,removed:array<string,string[]>,changed:array<string,array{old:string[],new:string[]}>} $map
  */
-function convert_flat_delta_map_to_verbose_delta_map(array $map): array {
+function convert_flat_delta_map_to_verbose_delta_map(array $map): array
+{
     $removed = [];
     $changed = [];
 

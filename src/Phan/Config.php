@@ -23,6 +23,7 @@ use const PHP_VERSION;
 use const STDERR;
 
 /** @internal hack to use dynamic configuration in class constant */
+
 \define('Phan\AST_VERSION', \version_compare(\phpversion('ast') ?: '1.0.14', '1.0.11') >= 0 || \PHP_VERSION_ID >= 80100 ? 85 : 80);
 
 /**
