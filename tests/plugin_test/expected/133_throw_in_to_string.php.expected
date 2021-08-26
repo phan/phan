@@ -1,2 +1,3 @@
+src/133_throw_in_to_string.php:6 PhanPluginNeverReturnMethod Function \X133::__toString() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/133_throw_in_to_string.php:6 PhanThrowCommentInToString \X133::__toString() documents that it throws \RuntimeException, but throwing in __toString() is a fatal error prior to PHP 7.4
 src/133_throw_in_to_string.php:7 PhanThrowStatementInToString \X133::__toString() throws \RuntimeException here, but throwing in __toString() is a fatal error prior to PHP 7.4

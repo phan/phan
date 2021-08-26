@@ -395,7 +395,7 @@ class PhanPHPLinterOpts
     /**
      * @param string $msg - optional message
      * @param int $exit_code - process exit code.
-     * @return void - exits with $exit_code
+     * @return never - exits with $exit_code
      */
     public function usage($msg = '', $exit_code = 0)
     {
@@ -537,7 +537,6 @@ EOB;
                     }
                     if (!is_string($value)) {
                         $this->usage('--flycheck-file should be passed a string value', 1);
-                        break;  // unreachable
                     }
                     $this->temporary_file_map = [$this->file_list[0] => $value];
                     break;
@@ -549,7 +548,6 @@ EOB;
                     $mapping = json_decode($value, true);
                     if (!\is_array($mapping)) {
                         $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
-                        break;  // unreachable
                     }
                     $this->temporary_file_map = $mapping;
 
@@ -574,19 +572,17 @@ EOB;
                     if (!is_string($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path) ?: 'invalid'), 1);
-                        exit(1);
                     }
                     if (!file_exists($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path) ?: 'invalid'), 1);
-                        exit(1);
                     }
                     $this->file_list[] = $path;
                     break;
                 case 'h':
                 case 'help':
+                    // never returns
                     $this->usage();
-                    break;
                 case 'd':
                 case 'disable-usage-on-error':
                     $print_usage_on_error = false;
@@ -604,7 +600,6 @@ EOB;
                 case 'output-mode':
                     if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'], true)) {
                         $this->usage("Expected --output-mode {text,json,csv,codeclimate,checkstyle,pylint}, but got " . json_encode($value), 1);
-                        break;  // unreachable
                     }
                     if ($value === 'phan_client') {
                         // We're requesting the default
@@ -614,7 +609,6 @@ EOB;
                     break;
                 default:
                     $this->usage("Unknown option '-$key'", 1);
-                    break;
             }
         }
         try {

@@ -45,6 +45,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      * @internal
      * @deprecated
      * @throws RuntimeException to prevent this from being called
+     * @return never
      */
     public static function instance(bool $is_nullable)
     {

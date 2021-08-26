@@ -10,7 +10,10 @@ define("PDEP_IGNORE_STATIC", 1 << 0);
 define("PDEP_HIDE_LABELS", 1 << 1);
 define("PDEP_IGNORE_NEW", 1 << 2);
 
-/** Prints a usage message for 'pdep' and exits. */
+/**
+ * Prints a usage message for 'pdep' and exits.
+ * @return never
+ */
 function pdep_usage(int $status) : void {
     global $argv;
     echo <<<EOT

@@ -28,6 +28,7 @@ use Phan\Phan;
 
 /**
  * Print usage for phantasm and exit.
+ * @return never
  */
 function phantasm_usage(int $status) : void {
     global $argv;

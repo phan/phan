@@ -89,6 +89,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @throws AssertionError
      * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
+     * @return never
      */
     private function handleMissing(Node $node): void
     {

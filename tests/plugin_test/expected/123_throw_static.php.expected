@@ -1,6 +1,9 @@
 src/123_throw_static.php:2 PhanUnreferencedClass Possibly zero references to class \ThrowingException688
+src/123_throw_static.php:6 PhanPluginNeverReturnMethod Function \ThrowingException688::throw() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/123_throw_static.php:6 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throw()
+src/123_throw_static.php:13 PhanPluginNeverReturnMethod Function \ThrowingException688::throwOther() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/123_throw_static.php:13 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throwOther()
 src/123_throw_static.php:14 PhanThrowTypeMismatch \ThrowingException688::throwOther() throws new RuntimeException('unexpected') of type \RuntimeException here, but it only has declarations of '@throws static'
+src/123_throw_static.php:20 PhanPluginNeverReturnMethod Function \ThrowingException688::throwStatic() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/123_throw_static.php:20 PhanUnreferencedPublicMethod Possibly zero references to public method \ThrowingException688::throwStatic()
 src/123_throw_static.php:21 PhanThrowTypeMismatch \ThrowingException688::throwStatic() throws new static('unexpected') of type static here, but it only has declarations of '@throws \RuntimeException'

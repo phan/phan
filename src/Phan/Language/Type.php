@@ -384,6 +384,7 @@ class Type implements Stringable
     /**
      * @throws Error this should not be called accidentally
      * @suppress PhanPluginRemoveDebugCall deliberate output before uncatchable Error
+     * @return never
      */
     public function __wakeup()
     {

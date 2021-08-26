@@ -206,6 +206,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
      *
      * @unused-param $code_base
      * @override
+     * @return never
      */
     public function finalizeProcess(CodeBase $code_base): void
     {

@@ -27,7 +27,7 @@ class Utils
      */
     public static function crash(Throwable $err): void
     {
-        Loop\nextTick(static function () use ($err): void {
+        Loop\nextTick(/** @return never */ static function () use ($err): void {
             // @phan-suppress-next-line PhanThrowTypeAbsent this is meant to crash the loop for debugging.
             throw $err;
         });

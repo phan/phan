@@ -3,6 +3,9 @@ Phan NEWS
 Aug ?? 2021, Phan 5.1.1 (dev)
 -----------------------
 
+Plugins
+- Add `AddNeverReturnTypePlugin`` which will suggest adding a phpdoc return type of `@return never`. (#4468)
+
 Bug fixes:
 - When using the polyfill parser, properly parse nullable class property declarations as nullable. (#4492)
 - Don't emit PhanIncompatibleRealPropertyType for private base property. (#4426)
@@ -12,6 +15,7 @@ Bug fixes:
 
 Maintenance:
 - Change internal representation of FunctionSignatureMap delta files.
+- Add a new exit status bit flag to `BlockExitStatusChecker` to indicate that a function will exit or infinitely loop (`STATUS_NORETURN`) (#4468)
 - Internally represent the base function map using php 8.0 signatures instead of php 7.3 - applying deltas backwards has the same result (#4478)
 
 Aug 07 2021, Phan 5.1.0

@@ -124,7 +124,7 @@ class RedundantReturnVisitor
             if ($stmts !== $this->stmts || !($exit_status & BlockExitStatusChecker::STATUS_PROCEED)) {
                 return $possible_return_nodes;
             }
-            // This is the function body, and there's one code path where it will not return a value.
+            // This is the function body, and there's one code path where it will proceed and not return a value.
             $line = $this->stmts->lineno;
             $possible_return_nodes[] = new Node(ast\AST_RETURN, 0, [
                 'expr' => new Node(ast\AST_CONST, 0, [

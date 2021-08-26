@@ -52,6 +52,7 @@ class NotFullyQualifiedReporterPlugin extends PluginV3 implements
 
     /**
      * @unused-param $code_base
+     * @return never
      */
     public function finalizeProcess(CodeBase $code_base): void
     {

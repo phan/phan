@@ -105,6 +105,10 @@ class InferPureVisitor extends AnalysisVisitor
     // visitEcho
     // visitPrint
     // visitIncludeOrExec
+    /**
+     * @override
+     * @return never
+     */
     public function visit(Node $node): void
     {
         throw new NodeException($node);

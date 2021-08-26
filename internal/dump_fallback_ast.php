@@ -46,6 +46,7 @@ dump_main();
  */
 function dump_main(): void
 {
+    /** @return never */
     $print_help = static function (int $exit_code): void {
         global $argv;
         $help = <<<"EOB"

@@ -52,7 +52,6 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         if (!is_string($realpath)) {
             echo "Could not find realpath of '$dir'\n";
             static::printUsageAndExit();
-            return;
         }
         $this->directory = $realpath;
 

@@ -148,6 +148,11 @@ final class MethodSearcherPlugin extends PluginV3 implements
         }
     }
 
+    /**
+     * Prints all function/method signatures that match the search input, and exits
+     *
+     * @return never
+     */
     public function beforeAnalyze(CodeBase $code_base): void
     {
         self::addMissingNamespacesToTypes($code_base);

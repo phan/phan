@@ -1066,6 +1066,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * A notification to ask the server to exit its process.
+     * @return never
      */
     public function exit(): void
     {

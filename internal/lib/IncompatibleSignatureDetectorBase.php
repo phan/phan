@@ -41,7 +41,7 @@ abstract class IncompatibleSignatureDetectorBase
     protected $aliases = [];
 
     /**
-     * @return void (does not return)
+     * @return never
      */
     protected static function printUsageAndExit(int $exit_code = 1): void
     {

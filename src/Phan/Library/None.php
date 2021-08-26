@@ -49,7 +49,7 @@ final class None extends Option
     }
 
     /**
-     * @return null
+     * @return never
      * @throws Exception to indicate that get() was called without checking for a value.
      */
     public function get()

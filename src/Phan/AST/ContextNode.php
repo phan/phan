@@ -1884,7 +1884,7 @@ class ContextNode
 
     /**
      * @throws IssueException
-     * @return no-return
+     * @return never
      */
     private function throwUndeclaredGlobalConstantIssueException(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen): void
     {

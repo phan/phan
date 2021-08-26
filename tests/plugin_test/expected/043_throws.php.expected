@@ -1,3 +1,5 @@
+src/043_throws.php:6 PhanPluginNeverReturnFunction Function \throwOutOfBoundsException() never returns and has a return type of void, but phpdoc type never could be used instead
+src/043_throws.php:14 PhanPluginNeverReturnMethod Function \ExampleThrow43::throwInvalidArgumentException() never returns and has a return type of (empty union type), but phpdoc type never could be used instead
 src/043_throws.php:20 PhanThrowTypeAbsent \ExampleThrow43::example() can throw throwOutOfBoundsException of type \OutOfBoundsException here, but has no '@throws' declarations for that class
 src/043_throws.php:22 PhanThrowTypeAbsentForCall \ExampleThrow43::example() can throw \InvalidArgumentException because it calls \ExampleThrow43::throwInvalidArgumentException(), but has no '@throws' declarations for that class
 src/043_throws.php:30 PhanThrowTypeAbsentForCall \ExampleThrow43::example2() can throw \InvalidArgumentException because it calls \ExampleThrow43::throwInvalidArgumentException(), but has no '@throws' declarations for that class
