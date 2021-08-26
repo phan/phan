@@ -118,7 +118,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             ) use (
                 $cb,
                 $cb_fallback
-): UnionType {
+            ): UnionType {
                 $result = $cb($code_base, $context, $function_decl, $args);
                 if ($result !== $function_decl->getUnionType()) {
                     return $result;
