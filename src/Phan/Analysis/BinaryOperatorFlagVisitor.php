@@ -752,7 +752,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // If both left and right union types are arrays, then this is array
         // concatenation. (`$left + $right`)
-        if ($left->isGenericArray() && $right->isGenericArray()) {
+        if ($left->isArray() && $right->isArray()) {
             self::checkInvalidArrayShapeCombination($code_base, $context, $node, $left, $right);
             if ($left->isEqualTo($right)) {
                 return $left;

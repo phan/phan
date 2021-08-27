@@ -283,7 +283,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 
         // If both left and right are arrays, then this is array
         // concatenation.
-        if ($left->isGenericArray() && $right->isGenericArray()) {
+        if ($left->isArray() && $right->isArray()) {
             if ($left->isEqualTo($right)) {
                 return $left;
             }
