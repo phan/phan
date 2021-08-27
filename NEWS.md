@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.2.1 (dev)
+-----------------------
+
+Bug fixes:
+- Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
+
 Aug 26 2021, Phan 5.2.0
 -----------------------
 

@@ -1,0 +1,3 @@
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $data - it has union type array
+%s:14 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
+%s:15 PhanUnusedVariable Unused definition of variable $data

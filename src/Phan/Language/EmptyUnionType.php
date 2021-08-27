@@ -979,9 +979,18 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return bool
-     * True if this is exclusively generic types
+     * True if this is non-empty and exclusively generic array types
      */
     public function isGenericArray(): bool
+    {
+        return false;  // empty
+    }
+
+    /**
+     * @return bool
+     * True if this is non-empty and exclusively array types.
+     */
+    public function isArray(): bool
     {
         return false;  // empty
     }

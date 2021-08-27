@@ -3807,7 +3807,10 @@ class UnionType implements Serializable, Stringable
 
     /**
      * @return bool
-     * True if this is exclusively generic types
+     * True if this is non-empty and exclusively generic array types such as array<int,\stdClass> or array{x:int}
+     *
+     * @see UnionType::isArray to check for all possible arrays
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isGenericArray(): bool
     {
@@ -3817,6 +3820,21 @@ class UnionType implements Serializable, Stringable
 
         return $this->allTypesMatchCallback(static function (Type $type): bool {
             return $type instanceof GenericArrayInterface;
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this is non-empty and exclusively array types
+     */
+    public function isArray(): bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return $this->allTypesMatchCallback(static function (Type $type): bool {
+            return $type instanceof ArrayType;
         });
     }
 

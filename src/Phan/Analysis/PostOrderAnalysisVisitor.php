@@ -40,7 +40,6 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -509,10 +508,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         if (!$type->hasPrintableScalar()) {
-            if ($type->isType(ArrayType::instance(false))
-                || $type->isType(ArrayType::instance(true))
-                || $type->isGenericArray()
-            ) {
+            if ($type->isArray()) {
                 $this->emitIssue(
                     Issue::TypeConversionFromArray,
                     $expr_node->lineno,
@@ -706,10 +702,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         if (!$type->hasPrintableScalar()) {
-            if ($type->isType(ArrayType::instance(false))
-                || $type->isType(ArrayType::instance(true))
-                || $type->isGenericArray()
-            ) {
+            if ($type->isArray()) {
                 $this->emitIssue(
                     Issue::TypeConversionFromArray,
                     $expr_node->lineno ?? $node->lineno,
