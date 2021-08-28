@@ -19,7 +19,6 @@ use RuntimeException;
 use function count;
 use function get_class;
 use function in_array;
-use function is_array;
 use function is_int;
 use function is_string;
 
@@ -143,6 +142,7 @@ final class ConversionTest extends BaseTest
      * Set all of the line numbers to constants,
      * so that minor differences in line numbers won't cause tests to fail.
      */
+    /*
     public static function normalizeLineNumbers(ast\Node $node): ast\Node
     {
         $node = clone($node);
@@ -156,7 +156,11 @@ final class ConversionTest extends BaseTest
         $node->lineno = 1;
         return $node;
     }
+     */
 
+    /**
+     * A list of ast\Node kinds that declare functions
+     */
     private const FUNCTION_DECLARATION_KINDS = [
         ast\AST_FUNC_DECL,
         ast\AST_METHOD,
@@ -234,10 +238,12 @@ final class ConversionTest extends BaseTest
         }
         $this->assertInstanceOf('\ast\Node', $fallback_ast, 'The fallback must also return a tree of php-ast nodes');
 
+        /*
         if ($test_folder_name === 'phan_test_files' || $test_folder_name === 'php-src_tests') {
             $fallback_ast = self::normalizeLineNumbers($fallback_ast);
             $ast          = self::normalizeLineNumbers($ast);
         }
+         */
         self::normalizeNodeFlags($ast);
         self::normalizeNodeFlags($fallback_ast);
         // TODO: Remove $ast->parent recursively

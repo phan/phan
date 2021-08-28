@@ -10,4 +10,4 @@ src/081_use_return_value.php:13 PhanUndeclaredMethod Call to undeclared method \
 src/081_use_return_value.php:17 PhanNoopUnaryOperator Unused result of a unary '-' operator
 src/081_use_return_value.php:17 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getCode
 src/081_use_return_value.php:18 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
-src/081_use_return_value.php:24 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
+src/081_use_return_value.php:25 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body

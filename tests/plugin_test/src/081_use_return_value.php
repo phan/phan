@@ -21,6 +21,6 @@ try {
     throw new RuntimeException();
 } catch (Exception $e) {
     echo $e;
-} finally // should emit PhanPluginEmptyStatementTryFinally
-{
+} finally
+{ // should emit PhanPluginEmptyStatementTryFinally (this is the line number php-ast emits)
 }
