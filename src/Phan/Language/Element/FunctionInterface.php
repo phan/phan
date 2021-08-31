@@ -15,6 +15,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
+use Phan\PluginV3;
 
 /**
  * Interface defining the behavior of both Methods and Functions
@@ -360,14 +361,17 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * Make additional analysis logic of this function/method use $closure
-     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures with addFunctionCallAnalyzer and the plugin that created the closure.
+     * @suppress PhanUnreferencedPublicMethod
+     * @deprecated
      */
     public function setFunctionCallAnalyzer(Closure $closure): void;
 
     /**
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @param ?PluginV3 $plugin @phan-mandatory-param
      */
-    public function addFunctionCallAnalyzer(Closure $closure): void;
+    public function addFunctionCallAnalyzer(Closure $closure, ?PluginV3 $plugin = null): void;
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.

@@ -40,6 +40,7 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
+use Phan\PluginV3;
 
 use function count;
 use function end;
@@ -1151,6 +1152,7 @@ trait FunctionTrait
     /**
      * Make additional analysis logic of this function/method use $closure
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function setFunctionCallAnalyzer(Closure $closure): void
     {
@@ -1163,10 +1165,11 @@ trait FunctionTrait
 
     /**
      * Make additional analysis logic of this function/method use $closure in addition to any other closures.
+     * @param ?PluginV3 $plugin @phan-mandatory-param
      */
-    public function addFunctionCallAnalyzer(Closure $closure): void
+    public function addFunctionCallAnalyzer(Closure $closure, PluginV3 $plugin = null): void
     {
-        $closure_id = spl_object_id($closure);
+        $closure_id = spl_object_id($plugin ?? $closure);
         if (isset($this->function_call_analyzer_callback_set[$closure_id])) {
             return;
         }

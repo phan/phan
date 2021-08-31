@@ -20,6 +20,7 @@ use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use Phan\PluginV3;
 
 /**
  * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`
@@ -749,7 +750,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @return never
      */
-    public function addFunctionCallAnalyzer(Closure $analyzer): void
+    public function addFunctionCallAnalyzer(Closure $closure, PluginV3 $plugin = null): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
