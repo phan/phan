@@ -132,7 +132,8 @@ class UnknownElementTypePlugin extends PluginV3 implements
                         $inferred_types[$i] = $combined_type;
                     }
                 }
-            }
+            },
+            $this
         );
     }
 
@@ -350,7 +351,8 @@ class UnknownElementTypePlugin extends PluginV3 implements
                         $inferred_types[$i] = $combined_type;
                     }
                 }
-            }
+            },
+            $this
         );
     }
 

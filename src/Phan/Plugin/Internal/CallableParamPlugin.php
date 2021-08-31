@@ -198,7 +198,7 @@ final class CallableParamPlugin extends PluginV3 implements
     ): void {
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
-            $function->addFunctionCallAnalyzer($closure);
+            $function->addFunctionCallAnalyzer($closure, $this);
         }
     }
 

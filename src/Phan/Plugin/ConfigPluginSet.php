@@ -159,7 +159,7 @@ final class ConfigPluginSet extends PluginV3 implements
     /** @var list<AnalyzeClassCapability>|null - plugins to analyze class declarations. */
     private $analyze_class_plugin_set;
 
-    /** @var list<AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
+    /** @var list<PluginV3&AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
     private $analyze_function_call_plugin_set;
 
     /** @var list<AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
@@ -717,6 +717,15 @@ final class ConfigPluginSet extends PluginV3 implements
             }
         }
         return $result;
+    }
+
+    /**
+     * @return list<PluginV3&AnalyzeFunctionCallCapability>
+     * @internal
+     */
+    public function getAnalyzeFunctionCallPluginSet(): array
+    {
+        return $this->analyze_function_call_plugin_set ?? [];
     }
 
     /**
@@ -1417,7 +1426,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @template T
      * @param list<PluginV3> $plugin_set
      * @param class-string<T> $interface_name
-     * @return list<T>
+     * @return list<PluginV3&T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
      */
     private static function filterByClass(array $plugin_set, string $interface_name): array
