@@ -14,3 +14,9 @@ uasort(
      */
     static function (array $a, array $b): int { return $a["x"] <=> $b["x"]; }
 );
+
+function test201($a, $b) {
+    return $a <=> $b;
+}
+$values = [1,3,2];
+uasort($values, 'test201');
