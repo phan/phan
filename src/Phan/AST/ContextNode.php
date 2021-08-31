@@ -1778,17 +1778,6 @@ class ContextNode
         }
 
         $code_base = $this->code_base;
-
-        $constant_name_lower = \strtolower($constant_name);
-        if ($constant_name_lower === 'true' || $constant_name_lower === 'false' || $constant_name_lower === 'null') {
-            return $code_base->getGlobalConstantByFQSEN(
-                // @phan-suppress-next-line PhanThrowTypeMismatchForCall
-                FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
-                    $constant_name_lower
-                )
-            );
-        }
-
         $context = $this->context;
         $flags = $node->children['name']->flags ?? 0;
         try {
@@ -1834,6 +1823,18 @@ class ContextNode
         } catch (FQSENException $e) {
             throw new AssertionError("Impossible FQSENException: " . $e->getMessage());
         }
+
+        // Handle true/false/null, even for edge cases such as `use const null as somethingelse;`
+        $fqsen_lower = \strtolower($fqsen->__toString());
+        if (\in_array($fqsen_lower, ['\true', '\false', '\null'], true)) {
+            return $code_base->getGlobalConstantByFQSEN(
+                // @phan-suppress-next-line PhanThrowTypeMismatchForCall
+                FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    $fqsen_lower
+                )
+            );
+        }
+
         // This is either a fully qualified constant,
         // or a relative constant for which nothing was found in the namespace
 

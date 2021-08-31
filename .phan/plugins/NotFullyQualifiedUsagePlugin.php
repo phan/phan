@@ -167,7 +167,9 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
         }
         $constant_name_lower = strtolower($constant_name);
         if ($constant_name_lower === 'true' || $constant_name_lower === 'false' || $constant_name_lower === 'null') {
-            // These are keywords and are the same in any namespace
+            // These are treated similarly to keywords and are either
+            // 1. the same in any namespace
+            // 2. `use somethingelse\true [as false];`
             return;
         }
 
