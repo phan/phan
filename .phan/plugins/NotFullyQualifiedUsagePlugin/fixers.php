@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Microsoft\PhpParser\Node\Expression\CallExpression;
 use Microsoft\PhpParser\Node\QualifiedName;
+use Microsoft\PhpParser\Node\ReservedWord;
+use Microsoft\PhpParser\Token;
 use Phan\AST\TolerantASTConverter\NodeUtils;
 use Phan\CodeBase;
 use Phan\IssueInstance;
@@ -29,15 +31,26 @@ call_user_func(static function (): void {
         $expected_name = $instance->getTemplateParameters()[0];
         $edits = [];
         foreach ($contents->getNodesAtLine($line) as $node) {
-            if (!$node instanceof QualifiedName) {
+            if ($node instanceof QualifiedName) {
+                if ($node->globalSpecifier || $node->relativeSpecifier) {
+                    IssueFixer::debug("skip already globally or relatively specified\n");
+                    // This is already qualified
+                    continue;
+                }
+                $actual_name = (new NodeUtils($contents->getContents()))->phpParserNameToString($node);
+            } elseif ($node instanceof ReservedWord) {
+                // A reserved word in other contexts such as 'float'
+                $token = $node->children;
+                if (!$token instanceof Token) {
+                    continue;
+                }
+                $actual_name = (new NodeUtils($contents->getContents()))->tokenToString($token);
+            } else {
+                IssueFixer::debug("skip wrong node kind " . get_class($node) . "\n");
                 continue;
             }
-            if ($node->globalSpecifier || $node->relativeSpecifier) {
-                // This is already qualified
-                continue;
-            }
-            $actual_name = (new NodeUtils($contents->getContents()))->phpParserNameToString($node);
             if ($actual_name !== $expected_name) {
+                IssueFixer::debug("skip '$actual_name' !== '$expected_name'\n");
                 continue;
             }
             $is_actual_call = $node->parent instanceof CallExpression;
@@ -58,7 +71,8 @@ call_user_func(static function (): void {
                 } else {
                     // Don't do this if the global function this refers to doesn't exist.
                     // TODO: Support namespaced functions
-                    if (!$code_base->hasGlobalConstantWithFQSEN(FullyQualifiedGlobalConstantName::fromFullyQualifiedString($actual_name))) {
+                    if (!$code_base->hasGlobalConstantWithFQSEN(FullyQualifiedGlobalConstantName::fromFullyQualifiedString($actual_name)) &&
+                            !in_array(strtolower($actual_name), ['null', 'true', 'false'], true)) {
                         IssueFixer::debug("skip attempt to fix $actual_name because the constant was not found in the global scope\n");
                         return null;
                     }

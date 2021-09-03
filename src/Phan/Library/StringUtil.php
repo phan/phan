@@ -36,7 +36,7 @@ class StringUtil
      */
     public static function varExportPretty($value): string
     {
-        return \var_representation($value, VAR_REPRESENTATION_SINGLE_LINE);
+        return \var_representation($value, \VAR_REPRESENTATION_SINGLE_LINE);
     }
 
     /**
