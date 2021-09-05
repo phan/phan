@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Phan\Analysis\ConditionVisitor;
 
 use ast\Node;
-use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ConditionVisitorInterface;
-use Phan\Analysis\NegatedConditionVisitor;
-use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 
 /**
@@ -42,41 +39,11 @@ class NotIdenticalCondition implements BinaryCondition
 
     public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
     {
-        if (!$expr instanceof Node) {
-            return null;
-        }
-        $code_base = $visitor->getCodeBase();
-        $context = $visitor->getContext();
-        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (!\is_bool($value)) {
-            return null;
-        }
-        if ($value) {
-            // e.g. `if (!(is_string($x) === true))`
-            return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
-        } else {
-            // e.g. `if (!(is_string($x) === false))`
-            return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
-        }
+        return (new IdenticalCondition())->analyzeCall($visitor, $call_node, $expr, true);
     }
 
     public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
     {
-        if (!$expr instanceof Node) {
-            return null;
-        }
-        $code_base = $visitor->getCodeBase();
-        $context = $visitor->getContext();
-        $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (!\is_bool($value)) {
-            return null;
-        }
-        if ($value) {
-            // e.g. `if (($x instanceof Xyz) !== true)`
-            return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
-        } else {
-            // e.g. `if (($x instanceof Xyz) !== false)`
-            return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
-        }
+        return (new IdenticalCondition())->analyzeComplexCondition($visitor, $complex_node, $expr, true);
     }
 }

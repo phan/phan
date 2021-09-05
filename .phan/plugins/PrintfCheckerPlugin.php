@@ -706,8 +706,8 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param string $fmt_str
-     * @param ConversionSpec[][] $types_of_arg contains array of ConversionSpec for
-     *                                         each position in the untranslated format string.
+     * @param associative-array<int,array<mixed,ConversionSpec|true>> $types_of_arg contains array of ConversionSpec for
+     *                                                                each position in the untranslated format string.
      */
     protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg): void
     {

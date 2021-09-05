@@ -1177,9 +1177,7 @@ class Type implements Stringable
             $key_type = GenericArrayType::KEY_MIXED;
         }
 
-        // TODO: Infer non-empty-array<int,Type> from conditions such as count($types) == 1
         if (count($types) === 1) {
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return $make(\reset($types), $key_type);
         } elseif (count($types) > 1) {
             return new GenericMultiArrayType(

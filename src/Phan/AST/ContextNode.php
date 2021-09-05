@@ -579,8 +579,6 @@ class ContextNode
             return [];
         }
 
-        // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
-        // TODO: Improve for intersection types
         if (\count($class_list) === 0) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories): bool {
                 if ($this->node instanceof Node) {

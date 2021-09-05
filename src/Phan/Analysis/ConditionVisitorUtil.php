@@ -30,6 +30,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -388,6 +389,24 @@ trait ConditionVisitorUtil
                 return $fallback->nonNullableClone();
             },
             $suppress_issues,
+            false
+        );
+    }
+
+    final protected function removeEmptyArrayFromVariable(Node $var_node, Context $context): Context
+    {
+        return $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $context,
+            static function (UnionType $type): bool {
+                return $type->hasArray();
+            },
+            static function (UnionType $type): UnionType {
+                return $type->asMappedUnionType(static function (Type $type): Type {
+                    return $type instanceof ArrayType ? $type->asNonFalseyType() : $type;
+                });
+            },
+            true,
             false
         );
     }
@@ -1034,6 +1053,8 @@ trait ConditionVisitorUtil
                     return $this->removeTrueFromVariable($var_node, $context);
                 } elseif ($value === null) {
                     return $this->removeNullFromVariable($var_node, $context, false);
+                } elseif ($value === []) {
+                    return $this->removeEmptyArrayFromVariable($var_node, $context);
                 }
             } else {
                 return $this->removeLiteralScalarFromVariable($var_node, $context, $expr, true);
@@ -1070,6 +1091,8 @@ trait ConditionVisitorUtil
                         return $this->removeFalseyFromVariable($var_node, $context, false);
                     } elseif ($expr === true) {
                         return $this->removeTrueFromVariable($var_node, $context);
+                    } elseif ($expr === []) {
+                        return $this->removeEmptyArrayFromVariable($var_node, $context);
                     }
                 }
                 // Remove all of the types which are loosely equal
@@ -1398,6 +1421,8 @@ trait ConditionVisitorUtil
 
     /**
      * Fetches the function name. Does not check for function uses or namespaces.
+     *
+     * TODO: Check for function uses
      * @param Node $node a node of kind ast\AST_CALL
      * @return ?string (null if function name could not be found)
      */

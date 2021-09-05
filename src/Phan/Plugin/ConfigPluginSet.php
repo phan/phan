@@ -1162,7 +1162,7 @@ final class ConfigPluginSet extends PluginV3 implements
         // @see PreAnalyzeNodeCapability (magic to create parent_node_list)
         $closure = self::getGenericClosureForPluginAwarePreAnalysisVisitor($plugin_analysis_class);
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-        if (\count($handled_node_kinds) === 0) {
+        if (!$handled_node_kinds) {
             // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,
@@ -1261,7 +1261,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $closure = self::getGenericClosureForPluginAwarePostAnalysisVisitor($plugin_analysis_class);
 
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-        if (\count($handled_node_kinds) === 0) {
+        if (!$handled_node_kinds) {
             // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,
@@ -1361,7 +1361,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $closure = self::getGenericClosureForBeforeLoopBodyAnalysisVisitor($plugin_analysis_class);
 
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-        if (\count($handled_node_kinds) === 0) {
+        if (!$handled_node_kinds) {
             // @phan-suppress-next-line PhanPluginRemoveDebugCall
             \fprintf(
                 STDERR,

@@ -10,6 +10,7 @@ use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
+use Phan\Language\UnionType;
 
 /**
  * This represents an identical assertion implementation acting on two sides of a condition (===)
@@ -39,19 +40,27 @@ class IdenticalCondition implements BinaryCondition
         return $visitor->analyzeClassAssertion($object, $expr) ?? $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr, bool $negate = false): ?Context
     {
-        if (!$expr instanceof Node) {
-            // Cannot be false/true.
-            return null;
-        }
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
         $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr)->asSingleScalarValueOrNullOrSelf();
-        if (!\is_bool($value)) {
+        if ($value instanceof UnionType) {
             return null;
         }
-        if ($value) {
+        $function_name = ConditionVisitor::getFunctionName($call_node);
+        if (\is_string($function_name) && \strcasecmp($function_name, 'count') === 0) {
+            if (!\is_int($value)) {
+                return null;
+            }
+            if ($negate && $value !== 0) {
+                // Phan currently can't infer anything from `count($x) !== 2`.
+                return null;
+            }
+        } elseif (!\is_bool($value)) {
+            return null;
+        }
+        if ($value xor $negate) {  // logical xor
             // e.g. `if (is_string($x) === true)`
             return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
         } else {
@@ -60,7 +69,7 @@ class IdenticalCondition implements BinaryCondition
         }
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr, bool $negate = false): ?Context
     {
         if (!$expr instanceof Node) {
             return null;
@@ -71,7 +80,7 @@ class IdenticalCondition implements BinaryCondition
         if (!\is_bool($value)) {
             return null;
         }
-        if ($value) {
+        if ($value xor $negate) {  // logical xor
             // e.g. `if (is_string($x) === true)`
             return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
         } else {
