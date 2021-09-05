@@ -23,6 +23,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -633,10 +634,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             })->asNormalizedTypes());
         };
         /** @param list<Node|mixed> $unused_args */
-        $zero_count_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
-            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type): array {
+        $zero_count_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $unused_args): void {
+            $variable->setUnionType($variable->getUnionType()->asMappedListUnionType(/** @return list<Type> */ static function (Type $type) use ($code_base, $context): array {
                 if ($type->isPossiblyObject()) {
-                    // TODO: Could cast iterable to Traversable|array{}
+                    if ($type->isObject()) {
+                        return [IntersectionType::createFromTypes([$type, Type::countableInstance()], $code_base, $context)];
+                    }
                     return [$type];
                 }
                 if (!$type->isPossiblyFalsey()) {

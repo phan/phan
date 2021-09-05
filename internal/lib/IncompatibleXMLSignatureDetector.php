@@ -941,7 +941,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                     continue;
                 }
                 $class_description_entries = $xml->partintro->section[0];
-                if (count($class_description_entries) === 0) {
+                // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
+                if ($class_description_entries->count() === 0) {
                     continue;
                 }
                 $paragraphs = iterator_to_array($class_description_entries->para, false);

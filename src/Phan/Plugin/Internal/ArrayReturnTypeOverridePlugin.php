@@ -445,7 +445,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     $possible_return_types = $new_element_types;
                 }
             }
-            if (!$possible_return_types || $possible_return_types->isEmpty()) {
+            if ($possible_return_types->isEmpty()) {
                 // This will always be a real array in php 8.0+
                 return $array_map_function->getUnionType();
             }

@@ -39,7 +39,7 @@ class EqualsCondition implements BinaryCondition
         return $visitor->analyzeClassAssertion($object, $expr) ?? $visitor->getContext();
     }
 
-    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr): ?Context
+    public function analyzeCall(ConditionVisitorInterface $visitor, Node $call_node, $expr, bool $negate = false): ?Context
     {
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
@@ -48,20 +48,27 @@ class EqualsCondition implements BinaryCondition
             return null;
         }
         // Skip check for `if is_bool`, allow weaker comparisons such as `is_string($x) == 1`
-        if (!$expr_type->isExclusivelyBoolTypes() && !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $call_node)->isExclusivelyBoolTypes()) {
+        $function_name = ConditionVisitor::getFunctionName($call_node);
+        if (\is_string($function_name) && \strcasecmp($function_name, 'count') === 0) {
+            if ($negate && $expr_type->containsTruthy()) {
+                // Currently can't infer anything from `if (count($x) != 2)`
+                return null;
+            }
+            // Fall through
+        } elseif (!$expr_type->isExclusivelyBoolTypes() && !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $call_node)->isExclusivelyBoolTypes()) {
             return null;
         }
-        if (!$expr_type->containsFalsey()) {
-            // e.g. `if (is_string($x) === true)`
+        if ($negate ? !$expr_type->containsTruthy() : !$expr_type->containsFalsey()) {
+            // e.g. `if (is_string($x) == true)`, or negated equals check such as `if (is_string($x) != false)`
             return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
-        } elseif (!$expr_type->containsTruthy()) {
-            // e.g. `if (is_string($x) === false)`
+        } elseif ($negate ? !$expr_type->containsFalsey() : !$expr_type->containsTruthy()) {
+            // e.g. `if (is_string($x) == false)`
             return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
         }
         return null;
     }
 
-    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context
+    public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr, bool $negate = false): ?Context
     {
         $code_base = $visitor->getCodeBase();
         $context = $visitor->getContext();
@@ -69,10 +76,10 @@ class EqualsCondition implements BinaryCondition
         if (!$expr_type->isExclusivelyBoolTypes() && !UnionTypeVisitor::unionTypeFromNode($code_base, $context, $complex_node)->isExclusivelyBoolTypes()) {
             return null;
         }
-        if (!$expr_type->containsFalsey()) {
+        if ($negate ? !$expr_type->containsTruthy() : !$expr_type->containsFalsey()) {
             // e.g. `if (($x instanceof Xyz) == true)`
             return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
-        } elseif (!$expr_type->containsTruthy()) {
+        } elseif ($negate ? !$expr_type->containsFalsey() : !$expr_type->containsTruthy()) {
             // e.g. `if (($x instanceof Xyz) == false)`
             return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
         }

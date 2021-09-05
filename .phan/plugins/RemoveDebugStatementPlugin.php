@@ -38,7 +38,10 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
-        $warn_remove_debug_call = static function (CodeBase $code_base, Context $context, FunctionInterface $function): void {
+        $warn_remove_debug_call = static function (CodeBase $code_base, Context $context, FunctionInterface $function, ?Node $node): void {
+            if ($node) {
+                $context = (clone $context)->withLineNumberStart($node->lineno);
+            }
             self::emitIssue(
                 $code_base,
                 $context,
@@ -55,12 +58,12 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             Context $context,
             Func $function,
             array $unused_args,
-            ?Node $unused_node = null
+            ?Node $node = null
         ) use ($warn_remove_debug_call): void {
             if (self::shouldSuppressDebugIssues($code_base, $context)) {
                 return;
             }
-            $warn_remove_debug_call($code_base, $context, $function);
+            $warn_remove_debug_call($code_base, $context, $function, $node);
         };
         /**
          * @param list<Node|string|int|float> $args the nodes for the arguments to the invocation
@@ -71,7 +74,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             Context $context,
             Func $function,
             array $args,
-            ?Node $unused_node = null
+            ?Node $node = null
         ) use ($warn_remove_debug_call): void {
             if (self::shouldSuppressDebugIssues($code_base, $context)) {
                 return;
@@ -84,7 +87,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
                     return;
                 }
             }
-            $warn_remove_debug_call($code_base, $context, $function);
+            $warn_remove_debug_call($code_base, $context, $function, $node);
         };
 
         /**
@@ -95,7 +98,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
             Context $context,
             Func $function,
             array $args,
-            ?Node $unused_node = null
+            ?Node $node = null
         ) use ($warn_remove_debug_call): void {
             $file = $args[0] ?? null;
             if (!$file instanceof Node || $file->kind !== ast\AST_CONST || !in_array($file->children['name']->children['name'] ?? null, ['STDOUT', 'STDERR'], true)) {
@@ -106,7 +109,7 @@ class RemoveDebugStatementPlugin extends PluginV3 implements
                 return;
             }
 
-            $warn_remove_debug_call($code_base, $context, $function);
+            $warn_remove_debug_call($code_base, $context, $function, $node);
         };
 
         return [

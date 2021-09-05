@@ -3,6 +3,10 @@ Phan NEWS
 ??? ?? 2021, Phan 5.2.1 (dev)
 -----------------------
 
+New Features:
+- Improve analysis of conditions detecting the empty/non-empty array. (#4523)
+  E.g. support `if ($x === []) {...} else {...}`, `if (count($x) > 0) {...} else {...}`, etc.
+
 Bug fixes:
 - Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
 - Fix false positive `PhanUnreferencedClosure`/`PhanUnreferencedFunction` seen when a closure/function name was passed to a function such as `uasort` that already had a plugin analyzing calls of the closure. (#4090, #4519)

@@ -4966,6 +4966,7 @@ class UnionType implements Serializable, Stringable
     /**
      * @param UnionType[] $union_types
      * @return UnionType union of these UnionTypes
+     * @suppress PhanPartialTypeMismatchArgument false positive seen when no real types are known. count() would throw in php 8.0+ for non-countables.
      */
     public static function merge(array $union_types, bool $normalize_array_shapes = true): UnionType
     {
@@ -5938,7 +5939,6 @@ class UnionType implements Serializable, Stringable
             return null;
         }
         $type = \reset($type_set);
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal TODO: Infer non-empty-array from count
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 return $type->isNullable() ? null : $type->getValue();
