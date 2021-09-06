@@ -2082,7 +2082,7 @@ class Issue
             new Issue(
                 self::TypeNonVarPassByRef,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Only variables can be passed by reference at argument {INDEX} of {FUNCTIONLIKE}",
                 self::REMEDIATION_B,
                 10018
