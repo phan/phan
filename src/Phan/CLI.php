@@ -1946,7 +1946,7 @@ EOB
      */
     public static function colorizeHelpSectionIfSupported(string $section): string
     {
-        if (Config::getValue('color_issue_messages') ?? (!self::hasNoColorEnv() && self::supportsColor(\STDOUT))) {
+        if (Config::getValue('color_issue_messages') ?? (!self::hasNoColorEnv() && \defined('STDOUT') && self::supportsColor(\STDOUT))) {
             $section = self::colorizeHelpSection($section);
         }
         return $section;

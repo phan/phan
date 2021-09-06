@@ -182,6 +182,9 @@ class InvokeExecutionPromise
     /** @var string the raw bytes from stdout with serialized data */
     private $raw_stdout = '';
 
+    /** @var string */
+    private $fallback_error = '';
+
     /** @var Context has the file name being analyzed */
     private $context;
 
@@ -252,7 +255,10 @@ class InvokeExecutionPromise
             }
             $this->process = $process;
 
-            self::streamPutContents($pipes[0], $new_file_contents);
+            error_clear_last();
+            if (!self::streamPutContents($pipes[0], $new_file_contents)) {
+                $this->fallback_error = \error_get_last()['message'] ?? '';
+            }
         }
         $this->pipes = $pipes;
 
@@ -290,17 +296,18 @@ class InvokeExecutionPromise
     /**
      * @param resource $stream stream to write $file_contents to before fclose()
      * @param string $file_contents
-     * @return void
      * See https://bugs.php.net/bug.php?id=39598
      */
-    private static function streamPutContents($stream, string $file_contents): void
+    private static function streamPutContents($stream, string $file_contents): bool
     {
         try {
             while (strlen($file_contents) > 0) {
-                $bytes_written = fwrite($stream, $file_contents);
+                $bytes_written = with_disabled_phan_error_handler(/** @return int|false */ static function () use ($stream, $file_contents) {
+                    return @fwrite($stream, $file_contents);
+                });
                 if ($bytes_written === false) {
-                    error_log('failed to write in ' . __METHOD__);
-                    return;
+                    CLI::printWarningToStderr('failed to write in ' . __METHOD__);
+                    return false;
                 }
                 if ($bytes_written === 0) {
                     $read_streams = [];
@@ -316,8 +323,8 @@ class InvokeExecutionPromise
                     // $stream is ready to be written to?
                     $bytes_written = fwrite($stream, $file_contents);
                     if (!$bytes_written) {
-                        error_log('failed to write in ' . __METHOD__ . ' but the stream should be ready');
-                        return;
+                        CLI::printToStderr('failed to write in ' . __METHOD__ . ' but the stream should be ready');
+                        return false;
                     }
                 }
                 if ($bytes_written > 0) {
@@ -327,6 +334,7 @@ class InvokeExecutionPromise
         } finally {
             fclose($stream);
         }
+        return true;
     }
 
     /**
@@ -389,6 +397,14 @@ class InvokeExecutionPromise
     {
         if (!$this->done) {
             throw new RangeException("Called " . __METHOD__ . " too early");
+        }
+        if ($this->error === '') {
+            // There was an error running the process, but no output to stdout.
+            $result = "No output was detected. Is " . var_representation($this->binary) . " a relative or absolute path to an executable PHP binary?";
+            if ($this->fallback_error !== '') {
+                $result .= ' Error sending file contents to syntax check: ' . $this->fallback_error;
+            }
+            return $result;
         }
         return $this->error;
     }
