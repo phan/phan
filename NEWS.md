@@ -7,6 +7,10 @@ New Features:
 - Improve analysis of conditions detecting the empty/non-empty array. (#4523)
   E.g. support `if ($x === []) {...} else {...}`, `if (count($x) > 0) {...} else {...}`, etc.
 
+Plugins:
+- Emit a proper warning when `InvokePHPNativeSyntaxCheckPlugin` is passed a path to a php binary that is missing or invalid (or if the syntax check crashed). (#4116)
+  Previously, Phan would crash with an error such as `fwrite(): write of 8196 bytes failed with errno=32 Broken pipe`
+
 Bug fixes:
 - Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
 - Fix false positive `PhanUnreferencedClosure`/`PhanUnreferencedFunction` seen when a closure/function name was passed to a function such as `uasort` that already had a plugin analyzing calls of the closure. (#4090, #4519)
@@ -14,7 +18,7 @@ Bug fixes:
 Aug 26 2021, Phan 5.2.0
 -----------------------
 
-Plugins
+Plugins:
 - Add `AddNeverReturnTypePlugin`` which will suggest adding a phpdoc return type of `@return never`. (#4468)
 
 Bug fixes:
