@@ -298,7 +298,7 @@ return [
 'get_defined_constants' => '?array<string,?array>|?array<string,?bool>|?array<string,?float>|?array<string,?int>|?array<string,?resource>|?array<string,?string>',
 'get_defined_functions' => '?array<string,array>',
 'get_extension_funcs' => '?list<string>|?false',
-'get_headers' => '?list<array>|?list<string>|?false',
+'get_headers' => '?array<int|string,array>|?array<int|string,string>|?false',
 'get_html_translation_table' => '?array<string,string>',
 'get_loaded_extensions' => '?list<string>',
 'get_mangled_object_vars' => '?array',

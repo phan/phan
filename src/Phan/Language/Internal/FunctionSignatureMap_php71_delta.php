@@ -34,7 +34,7 @@ return [
   ],
   'changed' => [
     'get_headers' => [
-      'old' => ['array|false', 'url'=>'string', 'associative='=>'bool'],
+      'old' => ['array<int|string,array|string>|false', 'url'=>'string', 'associative='=>'bool'],
       'new' => ['array<int|string,array|string>|false', 'url'=>'string', 'associative='=>'bool', 'context='=>'resource'],
     ],
     'getopt' => [

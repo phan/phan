@@ -16,6 +16,9 @@ Bug fixes:
 - Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
 - Fix false positive `PhanUnreferencedClosure`/`PhanUnreferencedFunction` seen when a closure/function name was passed to a function such as `uasort` that already had a plugin analyzing calls of the closure. (#4090, #4519)
 
+Maintenance:
+- Fix old return type signature for `get_headers` (#3273)
+
 Aug 26 2021, Phan 5.2.0
 -----------------------
 
