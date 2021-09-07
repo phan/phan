@@ -1052,6 +1052,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             case 'array_key_exists':
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 return $this->analyzeArrayKeyExists($args);
+            case 'in_array':
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+                return $this->analyzeInArray($args);
             case 'defined':
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 return $this->analyzeDefined($args);
@@ -1146,6 +1149,53 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             true,
             false
         );
+    }
+
+    /**
+     * @param list<Node|string|int|float> $args
+     */
+    private function analyzeInArray(array $args): Context
+    {
+        $context = $this->context;
+        if (\count($args) < 2) {
+            return $context;
+        }
+        // in_array($var, $array, [bool]) asserts that $var is a type found in the elements of $array
+        // It also asserts $array is not empty
+        $array_node = $args[1];
+        if (!$array_node instanceof Node) {
+            return $context;
+        }
+        if (\in_array($array_node->kind, [ast\AST_VAR, ast\AST_PROP, ast\AST_DIM], true)) {
+            // in_array implies the array has at least one element, implying it is not falsey.
+            $context = $this->updateVariableWithConditionalFilter(
+                $array_node,
+                $context,
+                static function (UnionType $_): bool {
+                    return true;
+                },
+                static function (UnionType $type): UnionType {
+                    return $type->arrayTypesStrictCast()->nonFalseyClone();
+                },
+                true,
+                false
+            );
+        }
+
+        $var_node = $args[0];
+        if (!($var_node instanceof Node)) {
+            return $context;
+        }
+        $array_value = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $array_node)->arrayTypesStrictCastAllowEmpty();
+        if ($array_value->isEmptyOrMixed()) {
+            return $context;
+        }
+        $element_type = $array_value->genericArrayElementTypes(true, $this->code_base);
+        if ($element_type->isEmptyOrMixed()) {
+            return $context;
+        }
+        $is_strict = isset($args[2]) && UnionTypeVisitor::checkCondUnconditionalTruthiness($args[2]) === true;
+        return $this->updateVariableWithNewType($var_node, $context, $element_type, true, $is_strict);
     }
 
     /**
