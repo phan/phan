@@ -152,9 +152,6 @@ final class IntersectionType extends Type
                 }
             }
         }
-        if (!$new_types) {
-            throw new AssertionError("Did not expect empty list of types for intersection type");
-        }
         foreach ($new_types as $i => $type) {
             // Convert callable&object to callable-object, etc.
             if ($type instanceof CallableType) {
@@ -174,8 +171,8 @@ final class IntersectionType extends Type
                     }
                 }
             }
+            // TODO: Convert iterable<k,v> to Traversable<k,v> if another value is an object
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return \array_values($new_types);
     }
 

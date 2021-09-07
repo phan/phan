@@ -1,0 +1,5 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $element - it has union type int
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $iterable - it has union type non-empty-array<string,int>(real=non-empty-array<mixed,mixed>)
+%s:8 PhanTypeMismatchArgumentInternal Argument 2 ($haystack) is $iterable of type iterable<string,int> but \in_array() takes array
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $element - it has union type non-empty-array<mixed,mixed>(real=non-empty-array<mixed,mixed>)
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $iterable - it has union type iterable<string,int>(real=iterable)
