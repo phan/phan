@@ -88,4 +88,10 @@ class IdenticalCondition implements BinaryCondition
             return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
         }
     }
+
+    /** @return static */
+    public function withFlippedOperands(): BinaryCondition
+    {
+        return $this;
+    }
 }

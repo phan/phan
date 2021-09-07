@@ -46,4 +46,10 @@ class NotIdenticalCondition implements BinaryCondition
     {
         return (new IdenticalCondition())->analyzeComplexCondition($visitor, $complex_node, $expr, true);
     }
+
+    /** @return static */
+    public function withFlippedOperands(): BinaryCondition
+    {
+        return $this;
+    }
 }

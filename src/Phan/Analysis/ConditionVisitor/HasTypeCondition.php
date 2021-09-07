@@ -87,4 +87,10 @@ class HasTypeCondition implements BinaryCondition
         // TODO: Could analyze get_class($array['field']) === stdClass::class (e.g. with AssignmentVisitor)
         return null;
     }
+
+    /** @return static */
+    public function withFlippedOperands(): BinaryCondition
+    {
+        return $this;
+    }
 }

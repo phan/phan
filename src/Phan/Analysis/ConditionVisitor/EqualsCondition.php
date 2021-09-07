@@ -85,4 +85,10 @@ class EqualsCondition implements BinaryCondition
         }
         return null;
     }
+
+    /** @return static */
+    public function withFlippedOperands(): BinaryCondition
+    {
+        return $this;
+    }
 }

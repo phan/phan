@@ -104,4 +104,20 @@ class ComparisonCondition implements BinaryCondition
     {
         return null;
     }
+
+    private const FLIP_OPERANDS = [
+        ast\flags\BINARY_IS_GREATER          => ast\flags\BINARY_IS_SMALLER,
+        ast\flags\BINARY_IS_GREATER_OR_EQUAL => ast\flags\BINARY_IS_SMALLER_OR_EQUAL,
+        ast\flags\BINARY_IS_SMALLER          => ast\flags\BINARY_IS_GREATER,
+        ast\flags\BINARY_IS_SMALLER_OR_EQUAL => ast\flags\BINARY_IS_GREATER_OR_EQUAL,
+    ];
+
+    /**
+     * @return static
+     */
+    public function withFlippedOperands(): BinaryCondition
+    {
+        $flipped = self::FLIP_OPERANDS[$this->flags] ?? null;
+        return isset($flipped) ? new self($flipped) : $this;
+    }
 }

@@ -1172,7 +1172,7 @@ trait ConditionVisitorUtil
             }
         }
         if ($right instanceof Node) {
-            $result = $this->analyzeBinaryConditionSide($right, $left, $condition);
+            $result = $this->analyzeBinaryConditionSide($right, $left, $condition->withFlippedOperands());
             if ($result !== null) {
                 return $result;
             }

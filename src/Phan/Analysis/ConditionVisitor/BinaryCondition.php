@@ -44,4 +44,9 @@ interface BinaryCondition
      * @param Node|string|int|float $expr a node with a constant value
      */
     public function analyzeComplexCondition(ConditionVisitorInterface $visitor, Node $complex_node, $expr): ?Context;
+
+    /**
+     * @return static the same operation but to analyze flipped operand orders
+     */
+    public function withFlippedOperands(): self;
 }
