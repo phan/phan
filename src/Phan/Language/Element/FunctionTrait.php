@@ -326,8 +326,7 @@ trait FunctionTrait
     }
 
     /**
-     *
-     * The number of required parameters
+     * Set the number of required parameters
      */
     public function setNumberOfRequiredParameters(int $number): void
     {

@@ -3,8 +3,9 @@ Phan NEWS
 ??? ?? 2021, Phan 5.2.2 (dev)
 -----------------------
 
-New Features:
+New Features(Analysis):
 - Fix false positive PhanPossiblyUndeclaredVariable warning when a `try` block unconditionally returns/throws/exits (#4419)
+- Fix false positive warnings when analyzing enums, infer that automatically generated methods of enums exist. (#4313)
 
 Bug fixes:
 - Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)
@@ -12,7 +13,7 @@ Bug fixes:
 Sep 14 2021, Phan 5.2.1
 -----------------------
 
-New Features:
+New Features(Analysis):
 - Improve analysis of conditions detecting the empty/non-empty array. (#4523)
   E.g. support `if ($x === []) {...} else {...}`, `if (count($x) > 0) {...} else {...}`, etc.
 - Raise severity of `PhanTypeNonVarPassByRef` to critical. It throws an Error in php 8.0+. (#3830)
