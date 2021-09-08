@@ -19,6 +19,7 @@ Bug fixes:
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)
+- Print instructions on how to upgrade php-ast to 1.0.11+ if an outdated version is installed. (#4532)
 
 Aug 26 2021, Phan 5.2.0
 -----------------------
