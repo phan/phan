@@ -596,6 +596,16 @@ This is only useful in applications or libraries that print output in only a few
 
 Suppression comments can use the issue name `PhanPluginRemoveDebugAny` to suppress all issue types emitted by this plugin.
 
+#### AddNeverReturnTypePlugin.php
+
+This plugin checks if a function or method will not return (and has no overrides).
+If the function doesn't have a return type of never.
+then this plugin will emit an issue.
+Closures and short error functions are currently not checked
+
+- **PhanPluginNeverReturnMethod**: `Method {METHOD} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead`
+- **PhanPluginNeverReturnFunction**: `Function {FUNCTION} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.

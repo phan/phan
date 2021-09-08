@@ -1,5 +1,6 @@
 %s:2 PhanUnreferencedClass Possibly zero references to class \Base9
 %s:3 PhanPluginUseReturnValueNoopVoid The function/method \Base9::test() is declared to return mixed and it has no side effects
+%s:3 PhanTypeMissingReturnReal Method \Base9::test is declared to return mixed in its real type signature but has no return value
 %s:3 PhanUnreferencedPublicMethod Possibly zero references to public method \Base9::test()
 %s:4 PhanSyntaxReturnExpectedValue Syntax error: Function test() with return type mixed must return a value (did you mean "return null" instead of "return"?)
 %s:9 PhanUnreferencedPublicMethod Possibly zero references to public method \Base9B::test()

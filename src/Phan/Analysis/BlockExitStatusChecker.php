@@ -816,7 +816,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * Will the node $node unconditionally throw or exit
+     * Will the node $node unconditionally throw or exit (or infinitely loop)
      */
     public static function willUnconditionallyNeverReturn(Node $node): bool
     {

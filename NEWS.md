@@ -17,6 +17,12 @@ Plugins:
 Bug fixes:
 - Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
 - Fix false positive `PhanUnreferencedClosure`/`PhanUnreferencedFunction` seen when a closure/function name was passed to a function such as `uasort` that already had a plugin analyzing calls of the closure. (#4090, #4519)
+- Fix false positive/negative `PhanTypeMissingReturn*` instances. (#4537)
+
+  The check was wrong and should have been checking for a statement list that throws/exits.
+  Return statements can be omitted if a function unconditionally exits.
+
+  Also, check for the real `never` return type when emitting issues
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)

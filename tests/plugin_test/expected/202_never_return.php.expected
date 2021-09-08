@@ -1,0 +1,1 @@
+src/202_never_return.php:7 PhanUnusedProtectedMethodParameter Parameter $x is never used

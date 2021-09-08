@@ -4,3 +4,4 @@
 %s:5 PhanRedefineFunction Function f3 defined at %s:5 was previously defined at %s:4
 %s:5 PhanTypeMissingReturnReal Method \f3 is declared to return int in its real type signature but has no return value
 %s:6 PhanSyntaxReturnExpectedValue Syntax error: Function f5() with return type ?string must return a value (did you mean "return null" instead of "return"?)
+%s:6 PhanTypeMissingReturnReal Method \f5 is declared to return ?string in its real type signature but has no return value

@@ -1498,10 +1498,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$func->hasReturn()
-            && !self::declOnlyThrows($node)
-            && !$return_type->hasType(VoidType::instance(false))
-            && !$return_type->hasType(NullType::instance(false))
-            && !$return_type->hasType(NeverType::instance(false))
+            && !self::declNeverReturns($node)
+            && !$return_type->isNull()
+            && !$return_type->isNeverType()
         ) {
             $this->warnTypeMissingReturn($func, $node);
         }
@@ -3022,9 +3021,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$has_interface_class
             && !$return_type->isEmpty()
             && !$method->hasReturn()
-            && !self::declOnlyThrows($node)
+            && !self::declNeverReturns($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
+            && !$return_type->hasType(NeverType::instance(false))
         ) {
             $this->warnTypeMissingReturn($method, $node);
         }
@@ -3084,7 +3084,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$function->hasReturn()
-            && !self::declOnlyThrows($node)
+            && !self::declNeverReturns($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
@@ -5039,12 +5039,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return bool
      * True when the decl can only throw an exception or return or exit()
      */
-    private static function declOnlyThrows(Node $node): bool
+    private static function declNeverReturns(Node $node): bool
     {
         // Work around fallback parser generating methods without statements list.
         // Otherwise, 'stmts' would always be a Node due to preconditions.
         $stmts_node = $node->children['stmts'];
-        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node);
+        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node);
     }
 
     /**

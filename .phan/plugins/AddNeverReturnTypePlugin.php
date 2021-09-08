@@ -13,7 +13,7 @@ use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
 
 /**
- * This file checks if a function, closure or method will not return (and has no overrides).
+ * This plugin checks if a function or method will not return (and has no overrides).
  * If the function doesn't have a return type of never.
  * then this plugin will emit an issue.
  *
@@ -67,20 +67,22 @@ final class NeverReturnPlugin extends PluginV3 implements
             return;
         }
 
-        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
-            return;
-        }
         if ($method->getUnionType()->hasType(NeverType::instance(false))) {
             return;
         }
         if ($method->isOverriddenByAnother()) {
             return;
         }
+
+        // This modifies the nodes in place, check this last
+        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
+            return;
+        }
         self::emitIssue(
             $code_base,
             $method->getContext(),
             'PhanPluginNeverReturnMethod',
-            "Function {FUNCTION} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead",
+            "Method {METHOD} never returns and has a return type of {TYPE}, but phpdoc type {TYPE} could be used instead",
             [$method->getRepresentationForIssue(), $method->getUnionType(), 'never']
         );
     }
@@ -104,10 +106,11 @@ final class NeverReturnPlugin extends PluginV3 implements
             return;
         }
 
-        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
+        if ($function->getUnionType()->hasType(NeverType::instance(false))) {
             return;
         }
-        if ($function->getUnionType()->hasType(NeverType::instance(false))) {
+        // This modifies the nodes in place, check this last
+        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
             return;
         }
         self::emitIssue(
