@@ -2755,6 +2755,11 @@ EOB
         }
         if (\version_compare($ast_version, '1.0.11') < 0) {
             CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 5. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
+            // Reuse PHAN_SUPPRESS_AST_DEPRECATION for this purpose as well.
+            if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
+                \phan_output_ast_installation_instructions();
+                fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
+            }
         }
     }
 

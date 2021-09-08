@@ -1,0 +1,1 @@
+src/005_more_specific.php:3 PhanReadOnlyPublicProperty Possibly zero write references to public property \TestSpecific->m

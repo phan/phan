@@ -12,6 +12,7 @@ New Features:
 Plugins:
 - Emit a proper warning when `InvokePHPNativeSyntaxCheckPlugin` is passed a path to a php binary that is missing or invalid (or if the syntax check crashed). (#4116)
   Previously, Phan would crash with an error such as `fwrite(): write of 8196 bytes failed with errno=32 Broken pipe`
+- Fix false positive `PhanPluginMoreSpecificActualReturnType` for phpdoc array shape return type and returned generic array. (#4531)
 
 Bug fixes:
 - Fix type inference logic that was looking for array specializations rather than array or any array subtype (#4512)
@@ -19,6 +20,7 @@ Bug fixes:
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)
+- Print instructions on how to upgrade php-ast to 1.0.11+ if an outdated version is installed. (#4532)
 
 Aug 26 2021, Phan 5.2.0
 -----------------------
