@@ -121,7 +121,7 @@ class AnnotatedUnionType extends UnionType
     {
         $result = parent::__toString();
         if ($this->is_possibly_undefined) {
-            return $result . '=';
+            return ($result !== '' ? $result : 'mixed') . '=';
         }
         return $result;
     }

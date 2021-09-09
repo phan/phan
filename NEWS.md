@@ -23,6 +23,7 @@ Bug fixes:
   Return statements can be omitted if a function unconditionally exits.
 
   Also, check for the real `never` return type when emitting issues
+- Fix false positive `PhanPossiblyUndefinedGlobalVariable*` instance when `global $var` is used within a conditional. (#4539)
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)

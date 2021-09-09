@@ -611,12 +611,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             $scope = $this->context->getScope();
             if (!$scope->hasGlobalVariableWithName($variable_name)) {
-                $this->context->addGlobalScopeVariable(clone $variable);
+                $actual_global_variable = clone $variable;
+                $this->context->addGlobalScopeVariable($actual_global_variable);
+            } else {
+                // TODO: Support @global?
+                $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
             }
-            // TODO: Support @global?
-            $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
             $scope_global_variable = $actual_global_variable instanceof GlobalVariable ? clone($actual_global_variable) : new GlobalVariable($actual_global_variable);
-            $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively());
+            // Importing an undefined global by reference will make an undefined value a reference to null.
+            $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively()->withIsPossiblyUndefined(false));
         }
 
         // Note that we're not creating a new scope, just
@@ -656,6 +659,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // NOTE: Phan can't be sure that the type the static type starts with is the same as what it has later. Avoid false positive PhanRedundantCondition.
+        // This should never be undefined with current limits on expressions found in static variables.
         $variable->setUnionType($default_type->eraseRealTypeSetRecursively());
         // TODO: Probably not true in a loop?
         // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)

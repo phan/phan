@@ -23,6 +23,7 @@ class GlobalVariable extends Variable
     {
         $this->type = $type;
         // Always merge the type on the actual global.
-        $this->element->setUnionType($this->element->getUnionType()->withUnionType($type->eraseRealTypeSetRecursively()));
+        // Convert undefined to null before merging in the type.
+        $this->element->setUnionType($this->element->getUnionType()->withUnionType($type->eraseRealTypeSetRecursively())->withIsPossiblyUndefined(false));
     }
 }
