@@ -290,7 +290,7 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
     {
         $string = '';
 
-        if (!$this->type->isEmpty()) {
+        if (!$this->type->isEmpty() || $this->type->isPossiblyUndefined()) {
             $string .= "{$this->type->getDebugRepresentation()} ";
         }
 

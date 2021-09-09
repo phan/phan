@@ -11,6 +11,6 @@ fi
 set -xeu
 PHP_VERSION=$1
 
-DOCKER_IMAGE=phan-$PHP_VERSION-test-runner
+DOCKER_IMAGE="phan-test-runner:$PHP_VERSION"
 docker build --network=host --build-arg="PHP_VERSION=$PHP_VERSION" --tag="$DOCKER_IMAGE" -f tests/docker/Dockerfile .
 docker run --rm $DOCKER_IMAGE tests/run_all_tests
