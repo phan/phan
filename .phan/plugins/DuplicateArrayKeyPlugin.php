@@ -95,7 +95,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $normalized_case_cond = is_object($case_cond) ? ASTReverter::toShortString($case_cond) : self::normalizeSwitchKey($case_cond);
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($case_node->lineno),
+                    (clone $this->context)->withLineNumberStart($case_node->lineno),
                     'PhanPluginDuplicateSwitchCase',
                     "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored in favor of case {CODE} at line {LINE}.",
                     [$normalized_case_cond, ASTReverter::toShortString($case_constant_set[$cond_key]->children['cond']), $case_constant_set[$cond_key]->lineno],
@@ -171,7 +171,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if ($old_index !== null) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    (clone($this->context))->withLineNumberStart($children[$i]->lineno),
+                    (clone $this->context)->withLineNumberStart($children[$i]->lineno),
                     'PhanPluginDuplicateSwitchCaseLooseEquality',
                     "Switch case({STRING_LITERAL}) is loosely equivalent (==) to an earlier case ({STRING_LITERAL}) in switch statement - the earlier entry may be chosen instead.",
                     [self::normalizeSwitchKey($values_to_check[$i]), self::normalizeSwitchKey($values_to_check[$old_index])],
@@ -227,7 +227,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     $normalized_arm_expr_cond = ASTReverter::toShortString($arm_expr_cond);
                     $this->emitPluginIssue(
                         $this->code_base,
-                        clone($this->context)->withLineNumberStart($lineno),
+                        (clone $this->context)->withLineNumberStart($lineno),
                         'PhanPluginDuplicateMatchArmExpression',
                         "Duplicate match arm expression({STRING_LITERAL}) detected in match expression - the later entry will be ignored in favor of expression {CODE} at line {LINE}.",
                         [$normalized_arm_expr_cond, ASTReverter::toShortString($arm_expr_constant_set[$cond_key][0]), $arm_expr_constant_set[$cond_key][1]],
@@ -302,7 +302,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
             $this->emitPluginIssue(
                 $this->code_base,
-                clone($this->context)->withLineNumberStart($entry->lineno),
+                (clone $this->context)->withLineNumberStart($entry->lineno),
                 'PhanPluginDuplicateArrayKeyExpression',
                 "Duplicate dynamic array key expression ({CODE}) detected in array - the earlier entry at line {LINE} will be ignored if the expression had the same value.",
                 [ASTReverter::toShortString($entry->children['key']), $old_entry->lineno],
@@ -315,7 +315,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $normalized_key = self::normalizeKey($key);
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($entry->lineno),
+            (clone $this->context)->withLineNumberStart($entry->lineno),
             'PhanPluginDuplicateArrayKey',
             "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry {CODE} at line {LINE} will be ignored.",
             [$normalized_key, ASTReverter::toShortString($old_entry->children['key']), $old_entry->lineno],

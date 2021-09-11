@@ -494,7 +494,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             RedundantCondition::emitInstance(
                 $var_node,
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($var_node),
@@ -509,7 +509,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             RedundantCondition::emitInstance(
                 $var_node,
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 Issue::ImpossibleCondition,
                 [
                     ASTReverter::toShortString($var_node),
@@ -597,7 +597,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             RedundantCondition::emitInstance(
                 $expr_node,
                 $code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($expr_node),
@@ -612,7 +612,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             RedundantCondition::emitInstance(
                 $expr_node,
                 $code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 Issue::ImpossibleCondition,
                 [
                     ASTReverter::toShortString($expr_node),

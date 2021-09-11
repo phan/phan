@@ -135,7 +135,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         // To reduce false positives, only emit this issue if all functions have the same return type
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueOfNever,
             "Saw use of value of expression {CODE} which likely uses the {CODE} statement with a return type of '{TYPE}' - this will not return normally",
             [ASTReverter::toShortString($node), 'exit', 'never']
@@ -233,7 +233,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         // To reduce false positives, only emit this issue if all functions have the same return type
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueOfNever,
             "Saw use of value of expression {CODE} which likely uses the function {FUNCTIONLIKE} with a return type of '{TYPE}' - this will not return normally",
             [ASTReverter::toShortString($node), $function->getRepresentationForIssue(true), 'never']
@@ -367,7 +367,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     {
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueCallableConvert,
             'Expected to use the Closure created from {CODE}',
             [ASTReverter::toShortString($node)]
@@ -437,7 +437,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if ($function->hasYield() || $function->getUnionType()->isExclusivelyGenerators()) {
             $this->emitPluginIssue(
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 UseReturnValuePlugin::UseReturnValueGenerator,
                 'Expected to use the return value of the function/method {FUNCTION} returning a generator of type {TYPE}',
                 [$function->getRepresentationForIssue(true), $function->getUnionType()]
@@ -541,7 +541,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if ($method->isPHPInternal()) {
             $this->emitPluginIssue(
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->lineno),
+                (clone $this->context)->withLineNumberStart($node->lineno),
                 UseReturnValuePlugin::UseReturnValueInternalKnown,
                 'Expected to use the return value of the internal function/method {FUNCTION}',
                 [$fqsen]
@@ -554,7 +554,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             UseReturnValuePlugin::UseReturnValueKnown,
             'Expected to use the return value of the user-defined function/method {FUNCTION} defined at {FILE}:{LINE}',
             [$method->getRepresentationForIssue(), $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()]

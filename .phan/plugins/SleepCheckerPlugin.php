@@ -149,7 +149,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties): void
     {
-        $context = clone($this->context)->withLineNumberStart($lineno);
+        $context = (clone $this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {
             $this->emitPluginIssue(
                 $this->code_base,

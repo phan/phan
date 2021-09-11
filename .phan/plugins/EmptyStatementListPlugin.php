@@ -111,7 +111,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
 
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($last_if_elem->children['stmts']->lineno ?? $last_if_elem->lineno),
+            (clone $this->context)->withLineNumberStart($last_if_elem->children['stmts']->lineno ?? $last_if_elem->lineno),
             'PhanPluginEmptyStatementIf',
             'Empty statement list statement detected for the last if/elseif statement',
             []
@@ -188,7 +188,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($stmts_node->lineno ?? $node->lineno),
+            (clone $this->context)->withLineNumberStart($stmts_node->lineno ?? $node->lineno),
             'PhanPluginEmptyStatementForLoop',
             'Empty statement list statement detected for the for loop',
             []
@@ -216,7 +216,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($stmts_node->lineno ?? $node->lineno),
+            (clone $this->context)->withLineNumberStart($stmts_node->lineno ?? $node->lineno),
             'PhanPluginEmptyStatementWhileLoop',
             'Empty statement list statement detected for the while loop',
             []
@@ -244,7 +244,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($stmts_node->lineno),
+            (clone $this->context)->withLineNumberStart($stmts_node->lineno),
             'PhanPluginEmptyStatementDoWhileLoop',
             'Empty statement list statement detected for the do-while loop',
             []
@@ -273,7 +273,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($stmts_node->lineno),
+            (clone $this->context)->withLineNumberStart($stmts_node->lineno),
             'PhanPluginEmptyStatementForeachLoop',
             'Empty statement list statement detected for the foreach loop',
             []
@@ -292,7 +292,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             if (!$this->hasTODOComment($try_node->lineno, $node, $node->children['catches']->children[0]->lineno ?? $finally_node->lineno ?? null)) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($try_node->lineno),
+                    (clone $this->context)->withLineNumberStart($try_node->lineno),
                     'PhanPluginEmptyStatementTryBody',
                     'Empty statement list statement detected for the try statement\'s body',
                     []
@@ -303,7 +303,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
             if (!$this->hasTODOComment($finally_node->lineno, $node)) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($finally_node->lineno),
+                    (clone $this->context)->withLineNumberStart($finally_node->lineno),
                     'PhanPluginEmptyStatementTryFinally',
                     'Empty statement list statement detected for the try\'s finally body',
                     []
@@ -348,7 +348,7 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
         }
         $this->emitPluginIssue(
             $this->code_base,
-            clone($this->context)->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             'PhanPluginEmptyStatementSwitch',
             'No side effects seen for any cases of this switch statement',
             []

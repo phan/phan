@@ -116,7 +116,7 @@ class AvoidableGetterVisitor extends PluginAwarePostAnalysisVisitor
 
         $this->emitPluginIssue(
             $this->code_base,
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             $issue_name,
             "Can replace {METHOD} with {PROPERTY}",
             [ASTReverter::toShortString($node), '$this->' . $property_name]

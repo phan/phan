@@ -126,7 +126,7 @@ class InlineHTMLPlugin extends PluginV3 implements
         }
         $this->emitIssue(
             $code_base,
-            clone($context)->withLineNumberStart($token[2]),
+            (clone $context)->withLineNumberStart($token[2]),
             $issue,
             $message,
             [StringUtil::jsonEncode(self::truncate($token[1]))]

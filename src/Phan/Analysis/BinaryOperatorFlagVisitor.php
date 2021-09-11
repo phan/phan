@@ -93,7 +93,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function handleMissing(Node $node): void
     {
-        throw new AssertionError("All flags must match. Found kind=" . Debug::nodeName($node) . ', flags=' . Element::flagDescription($node) . ' raw flags=' . $node->flags . ' at ' . $this->context->withLineNumberStart((int)$node->lineno));
+        throw new AssertionError("All flags must match. Found kind=" . Debug::nodeName($node) . ', flags=' . Element::flagDescription($node) . ' raw flags=' . $node->flags . ' at ' . (clone $this->context)->withLineNumberStart((int)$node->lineno));
     }
 
     /**
