@@ -55,7 +55,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
                 if ($comment_string[0] === '#' && substr($comment_string, 1, 1) !== '[') {
                     $this->emitIssue(
                         $code_base,
-                        (clone($context))->withLineNumberStart($token[2]),
+                        (clone $context)->withLineNumberStart($token[2]),
                         'PhanPluginPHPDocHashComment',
                         'Saw comment starting with {COMMENT} in {COMMENT} - consider using {COMMENT} instead to avoid confusion with php 8.0 {COMMENT} attributes',
                         ['#', StringUtil::jsonEncode(self::truncate(trim($comment_string))), '//', '#[']
@@ -76,7 +76,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
             }
             $this->emitIssue(
                 $code_base,
-                (clone($context))->withLineNumberStart($token[2]),
+                (clone $context)->withLineNumberStart($token[2]),
                 'PhanPluginPHPDocInWrongComment',
                 'Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**" (followed by whitespace), not "/*"',
                 [StringUtil::jsonEncode(self::truncate($comment_string))]

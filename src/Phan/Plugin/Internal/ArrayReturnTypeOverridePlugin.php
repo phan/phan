@@ -550,7 +550,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 RedundantCondition::emitInstance(
                     $args[0],
                     $code_base,
-                    (clone($context))->withLineNumberStart($args[0]->lineno ?? $context->getLineNumberStart()),
+                    (clone $context)->withLineNumberStart($args[0]->lineno ?? $context->getLineNumberStart()),
                     Issue::RedundantArrayValuesCall,
                     [
                         $union_type->asRealUnionType(),

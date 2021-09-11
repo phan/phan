@@ -351,7 +351,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
             if ($hash === $prev_hash) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    (clone($this->context))->withLineNumberStart($child->lineno ?? $node->lineno),
+                    (clone $this->context)->withLineNumberStart($child->lineno ?? $node->lineno),
                     'PhanPluginDuplicateAdjacentStatement',
                     "Statement {CODE} is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.",
                     [ASTReverter::toShortString($child)]
@@ -476,7 +476,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             if (isset($condition_set[$cond_hash])) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($cond->lineno ?? $children[$i]->lineno),
+                    (clone $this->context)->withLineNumberStart($cond->lineno ?? $children[$i]->lineno),
                     'PhanPluginDuplicateIfCondition',
                     'Saw the same condition {CODE} in an earlier if/elseif statement',
                     [ASTReverter::toShortString($cond)]
@@ -490,7 +490,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             if (($stmts->children ?? null) && ASTHasher::hash($stmts) === ASTHasher::hash($children[$N - 2]->children['stmts'])) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($children[$N - 1]->lineno),
+                    (clone $this->context)->withLineNumberStart($children[$N - 1]->lineno),
                     'PhanPluginDuplicateIfStatements',
                     'The statements of the else duplicate the statements of the previous if/elseif statement with condition {CODE}',
                     [ASTReverter::toShortString($children[$N - 2]->children['cond'])]
@@ -522,7 +522,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             if ($prev_hash === $cur_hash) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($catches[$i]->lineno),
+                    (clone $this->context)->withLineNumberStart($catches[$i]->lineno),
                     'PhanPluginDuplicateCatchStatementBody',
                     'The implementation of catch({CODE}) and catch({CODE}) are identical, and can be combined if the application only needs to supports php 7.1 and newer',
                     [

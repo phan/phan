@@ -93,7 +93,6 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                         continue;
                     }
                 }
-                $context = clone($this->context)->withLineNumberStart($next_node->lineno);
                 if ($this->context->isInFunctionLikeScope()) {
                     if ($this->context->getFunctionLikeInScope($this->code_base)->checkHasSuppressIssueAndIncrementCount('PhanPluginUnreachableCode')) {
                         // don't emit the below issue.
@@ -102,7 +101,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $this->emitPluginIssue(
                     $this->code_base,
-                    $context,
+                    (clone $this->context)->withLineNumberStart($next_node->lineno),
                     'PhanPluginUnreachableCode',
                     'Unreachable statement detected',
                     []

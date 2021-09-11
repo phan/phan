@@ -201,7 +201,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             if ($function->isPHPInternal()) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($node->lineno),
+                    (clone $this->context)->withLineNumberStart($node->lineno),
                     self::SuspiciousParamOrderInternal,
                     'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION}',
                     [
@@ -213,7 +213,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             } else {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($node->lineno),
+                    (clone $this->context)->withLineNumberStart($node->lineno),
                     self::SuspiciousParamOrder,
                     'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}',
                     [
@@ -280,7 +280,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             if ($function->isPHPInternal()) {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    (clone($this->context))->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
+                    (clone $this->context)->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
                     self::SuspiciousParamPositionInternal,
                     'Suspicious order for argument {DETAILS} - This is getting passed to parameter {DETAILS} of {FUNCTION}',
                     [
@@ -292,7 +292,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
             } else {
                 $this->emitPluginIssue(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
+                    (clone $this->context)->withLineNumberStart($args[$i]->lineno ?? $node->lineno),
                     self::SuspiciousParamPosition,
                     'Suspicious order for argument {DETAILS} - This is getting passed to parameter {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}',
                     [

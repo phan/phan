@@ -1177,7 +1177,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $node->children['expr'],
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                (clone $this->context)->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
                 Issue::EmptyForeach,
                 [(string)$union_type],
                 Closure::fromCallable([self::class, 'isEmptyIterable'])
@@ -1188,7 +1188,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 RedundantCondition::emitInstance(
                     $node->children['expr'],
                     $this->code_base,
-                    (clone($this->context))->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                    (clone $this->context)->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
                     Issue::EmptyForeachBody,
                     [(string)$union_type],
                     Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
@@ -2898,7 +2898,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $left_node,
                 $this->code_base,
-                (clone($context))->withLineNumberStart($node->lineno),
+                (clone $context)->withLineNumberStart($node->lineno),
                 Issue::CoalescingNeverNull,
                 [
                     ASTReverter::toShortString($left_node),
@@ -2914,7 +2914,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $left_node,
                 $this->code_base,
-                (clone($context))->withLineNumberStart($node->lineno),
+                (clone $context)->withLineNumberStart($node->lineno),
                 Issue::CoalescingAlwaysNull,
                 [
                     ASTReverter::toShortString($left_node),

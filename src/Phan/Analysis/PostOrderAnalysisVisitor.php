@@ -297,7 +297,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
                 return $type;
             });
-            $variable = clone($variable);
+            $variable = clone $variable;
             $context->addScopeVariable($variable);
             $variable->setUnionType($union_type);
             /*
@@ -307,7 +307,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $union_type = $union_type->withoutType($type)->withType(
                             GenericArrayType::fromElementType($type->genericArrayElementType(), false, $type->getKeyType())
                         );
-                        $variable = clone($variable);
+                        $variable = clone $variable;
                         $context->addScopeVariable($variable);
                         $variable->setUnionType($union_type);
                     }
@@ -617,7 +617,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // TODO: Support @global?
                 $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
             }
-            $scope_global_variable = $actual_global_variable instanceof GlobalVariable ? clone($actual_global_variable) : new GlobalVariable($actual_global_variable);
+            $scope_global_variable = $actual_global_variable instanceof GlobalVariable ? (clone $actual_global_variable) : new GlobalVariable($actual_global_variable);
             // Importing an undefined global by reference will make an undefined value a reference to null.
             $scope_global_variable->setUnionType($actual_global_variable->getUnionType()->eraseRealTypeSetRecursively()->withIsPossiblyUndefined(false));
         }
@@ -1247,7 +1247,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (IssueException | NodeException $_) {
                 return $this->context;
             }
-            $variable = clone($variable);
+            $variable = clone $variable;
             $variable->setUnionType($new_type);
             $this->context->addScopeVariable($variable);
             return $this->context;
@@ -1997,7 +1997,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             RedundantCondition::emitInstance(
                 $expr,
                 $this->code_base,
-                (clone($this->context))->withLineNumberStart($expr->lineno ?? $node->lineno),
+                (clone $this->context)->withLineNumberStart($expr->lineno ?? $node->lineno),
                 Issue::EmptyYieldFrom,
                 [(string)$yield_from_type],
                 Closure::fromCallable([BlockAnalysisVisitor::class, 'isEmptyIterable'])
@@ -4201,7 +4201,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($variable) {
             $set_variable_type = static function (UnionType $new_type) use ($code_base, $context, $variable, $argument): void {
                 if ($variable instanceof Variable) {
-                    $variable = clone($variable);
+                    $variable = clone $variable;
                     AssignmentVisitor::analyzeSetUnionTypeInContext($code_base, $context, $variable, $new_type, $argument);
                     $context->addScopeVariable($variable);
                 } else {
@@ -4346,12 +4346,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $original_method_scope = $method->getInternalScope();
-        $method->setInternalScope(clone($original_method_scope));
+        $method->setInternalScope(clone $original_method_scope);
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
             $parameter_list = \array_map(static function (Parameter $parameter): Parameter {
-                return clone($parameter);
+                return clone $parameter;
             }, $method->getParameterList());
 
             foreach ($parameter_list as $i => $parameter_clone) {
@@ -4433,7 +4433,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ): void {
         $method = $this->findDefiningMethod($method);
         $original_method_scope = $method->getInternalScope();
-        $method->setInternalScope(clone($original_method_scope));
+        $method->setInternalScope(clone $original_method_scope);
         $method_context = $method->getContext();
 
         try {

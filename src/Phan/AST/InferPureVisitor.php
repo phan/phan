@@ -685,7 +685,7 @@ class InferPureVisitor extends AnalysisVisitor
     public function visitClosure(Node $node): void
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            (clone($this->context))->withLineNumberStart($node->lineno),
+            (clone $this->context)->withLineNumberStart($node->lineno),
             $node
         );
         if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {

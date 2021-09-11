@@ -54,7 +54,7 @@ class WhitespacePlugin extends PluginV3 implements
         if ($newline_position !== false) {
             self::emitIssue(
                 $code_base,
-                clone($context)->withLineNumberStart(self::calculateLine($file_contents, $newline_position)),
+                (clone $context)->withLineNumberStart(self::calculateLine($file_contents, $newline_position)),
                 self::CarriageReturn,
                 'The first occurrence of a carriage return ("\r") was seen here. Running "dos2unix" can fix that.'
             );
@@ -63,7 +63,7 @@ class WhitespacePlugin extends PluginV3 implements
         if ($tab_position !== false) {
             self::emitIssue(
                 $code_base,
-                clone($context)->withLineNumberStart(self::calculateLine($file_contents, $tab_position)),
+                (clone $context)->withLineNumberStart(self::calculateLine($file_contents, $tab_position)),
                 self::Tab,
                 'The first occurrence of a tab was seen here. Running "expand" can fix that.'
             );
@@ -71,7 +71,7 @@ class WhitespacePlugin extends PluginV3 implements
         if (preg_match('/[ \t]\r?$/mS', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
             self::emitIssue(
                 $code_base,
-                clone($context)->withLineNumberStart(self::calculateLine($file_contents, $match[0][1])),
+                (clone $context)->withLineNumberStart(self::calculateLine($file_contents, $match[0][1])),
                 self::WhitespaceTrailing,
                 'The first occurrence of trailing whitespace was seen here.'
             );

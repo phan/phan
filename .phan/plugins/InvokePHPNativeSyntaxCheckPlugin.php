@@ -144,7 +144,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV3 implements
 
         self::emitIssue(
             $code_base,
-            clone($context)->withLineNumberStart($lineno),
+            (clone $context)->withLineNumberStart($lineno),
             'PhanNativePHPSyntaxCheckPlugin',
             'Saw error or notice for {FILE} --syntax-check: {DETAILS}',
             [
@@ -193,7 +193,7 @@ class InvokeExecutionPromise
 
     public function __construct(string $binary, string $file_contents, Context $context)
     {
-        $this->context = clone($context);
+        $this->context = clone $context;
         $new_file_contents = Parser::removeShebang($file_contents);
         // TODO: Use symfony process
         // Note: We might have invalid utf-8, ensure that the streams are opened in binary mode.
