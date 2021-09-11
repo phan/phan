@@ -24,6 +24,7 @@ Bug fixes:
 
   Also, check for the real `never` return type when emitting issues
 - Fix false positive `PhanPossiblyUndefinedGlobalVariable*` instance when `global $var` is used within a conditional. (#4539)
+- Fix false positive `PhanPluginRedundantAssignmentInLoop` instance when a variable is modified in a catch statement with a break/continue. (#4542)
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)

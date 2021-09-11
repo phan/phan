@@ -121,7 +121,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
             $issue_name = 'PhanPluginRedundantAssignment';
         }
         if ($this->context->isInLoop()) {
-            $this->context->deferCheckToOutermostLoop(function (Context $context_after_loop) use ($issue_name, $var_name, $variable_type): void {
+            $this->context->deferCheckToOutermostLoop(function (Context $context_after_loop) use ($issue_name, $var_name, $variable_type, $var): void {
                 $new_variable = $context_after_loop->getScope()->getVariableByNameOrNull($var_name);
                 if (!$new_variable) {
                     return;
@@ -135,7 +135,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
                 }
                 $this->emitPluginIssue(
                     $this->code_base,
-                    $this->context,
+                    (clone $this->context)->withLineNumberStart($var->lineno),
                     $issue_name,
                     'Assigning {TYPE} to variable ${VARIABLE} which already has that value',
                     [$variable_type, $var_name]
@@ -145,7 +145,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
         }
         $this->emitPluginIssue(
             $this->code_base,
-            $this->context,
+            (clone $this->context)->withLineNumberStart($var->lineno),
             $issue_name,
             'Assigning {TYPE} to variable ${VARIABLE} which already has that value',
             [$expr_type, $var_name]
