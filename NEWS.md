@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.2.1 (dev)
+Sep 14 2021, Phan 5.2.1
 -----------------------
 
 New Features:
