@@ -4958,6 +4958,12 @@ Saw an @param annotation for ${PARAMETER}, but it was not found in the param lis
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0373_reject_bad_type_narrowing.php#L4).
 
+## PhanCommentUnsupportedUnionType
+
+```
+Saw a union type {TYPE} with more than 1 type in a location that does not support union types
+```
+
 ## PhanCommentVarInsteadOfParam
 
 ```

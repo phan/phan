@@ -153,6 +153,6 @@ final class CallableStringType extends StringType implements CallableInterface
      */
     protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof CallableType || \get_class($type) === StringType::class || $type instanceof MixedType;
+        return $type instanceof CallableType || \in_array(\get_class($type), [StringType::class, NonEmptyStringType::class], true) || $type instanceof MixedType;
     }
 }

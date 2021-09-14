@@ -22,6 +22,7 @@ use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
@@ -300,12 +301,12 @@ final class UnionTypeTest extends BaseTest
     private static function makePHPDocUnionType(string $union_type_string): UnionType
     {
         self::assertTrue(\preg_match(self::VALID_UNION_TYPE_REGEX, $union_type_string) > 0, "$union_type_string should be parsed by regex");
-        return UnionType::fromStringInContext($union_type_string, new Context(), Type::FROM_PHPDOC);
+        return UnionType::fromStringInContext($union_type_string, new Context(), Type::FROM_PHPDOC, self::$code_base);
     }
 
     private static function makePHPDocType(string $type): Type
     {
-        return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
+        return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC, self::$code_base);
     }
 
     private function assertIsType(Type $type, string $union_type_string): void
@@ -818,6 +819,26 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $type->typeCount());
         $this->assertSame('\MyClass&\MyInterfaceUTT', (string)$type);
         $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[0]);
+    }
+
+    public function testIntersectionTypeArray(): void
+    {
+        $type = self::makePHPDocUnionType('non-empty-array&array<0|1>');
+        $this->assertSame(1, $type->typeCount());
+        // Currently, not able to use union types as a part of intersection types when building them.
+        $this->assertSame('non-empty-array<mixed,int>', (string)$type);
+        $this->assertInstanceOf(NonEmptyGenericArrayType::class, $type->getTypeSet()[0]);
+        $type = self::makePHPDocUnionType('non-empty-array&iterable<string,array>');
+        $this->assertSame('non-empty-array<string,array>', (string)$type);
+        $this->assertInstanceOf(NonEmptyGenericArrayType::class, $type->getTypeSet()[0]);
+        $type = self::makePHPDocUnionType('object&iterable<string,array>');
+        $this->assertSame('\Traversable<string,array>', (string)$type);
+        $this->assertInstanceOf(Type::class, $type->getTypeSet()[0]);
+        // Should not crash when given unsupported combinations of types.
+        // Currently, union types aren't allowed in intersection types.
+        $type = self::makePHPDocUnionType('array<string|int>&array<string|float>');
+        $this->assertSame('array', (string)$type);
+        $this->assertInstanceOf(ArrayType::class, $type->getTypeSet()[0]);
     }
 
     public function testIntersectionTypeWithUnionType(): void

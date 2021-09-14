@@ -1283,7 +1283,7 @@ class Type implements Stringable
         ?CodeBase $code_base,
         ?Context $context
     ): Type {
-        $result = IntersectionType::createFromTypes($template_parameter_type_list, $code_base, $context);
+        $result = IntersectionType::createFromTypes($template_parameter_type_list, $code_base, $context, true);
         return $is_nullable ? $result->withIsNullable(true) : $result;
     }
 

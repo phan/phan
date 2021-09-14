@@ -997,6 +997,15 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return bool
+     * True if this is non-empty and exclusively object types.
+     */
+    public function isObject(): bool
+    {
+        return false;  // empty
+    }
+
+    /**
+     * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
     public function hasTypeMatchingCallback(Closure $matcher_callback): bool

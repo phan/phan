@@ -26,6 +26,7 @@ Bug fixes:
 - Fix false positive `PhanPossiblyUndefinedGlobalVariable*` instance when `global $var` is used within a conditional. (#4539)
 - Fix false positive `PhanPluginRedundantAssignmentInLoop` instance when a variable is modified in a catch statement with a break/continue. (#4542)
 - Fix some incorrect line numbers in some plugin issues.
+- Fix crash seen when parsing intersection types containing union types such as `non-empty-array&array<'a'|'b'>` (#4544)
 
 Maintenance:
 - Fix old return type signature for `get_headers` (#3273)

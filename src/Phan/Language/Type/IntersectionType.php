@@ -82,10 +82,11 @@ final class IntersectionType extends Type
      * @param non-empty-list<Type|UnionType> $types
      * @param ?CodeBase $code_base
      * @param ?Context $context @unused-param
+     * @param bool $suppress_union_type_warnings
      */
-    public static function createFromTypes(array $types, ?CodeBase $code_base, ?Context $context): Type
+    public static function createFromTypes(array $types, ?CodeBase $code_base, ?Context $context, bool $suppress_union_type_warnings = false): Type
     {
-        $new_types = self::flattenTypes($types);
+        $new_types = self::flattenTypes($types, $code_base, $context, $suppress_union_type_warnings);
         if (!$new_types) {
             throw new AssertionError('Saw empty list of type_parts in intersection type');
         }
@@ -131,14 +132,37 @@ final class IntersectionType extends Type
      * @param non-empty-list<Type|UnionType> $types
      * @return non-empty-list<Type>
      */
-    private static function flattenTypes(array $types): array
+    private static function flattenTypes(array $types, ?CodeBase $code_base, ?Context $context, bool $suppress_union_type_warnings): array
     {
         $new_types = [];
         foreach ($types as $type) {
             if ($type instanceof UnionType) {
                 $type_set = $type->getTypeSet();
                 if (count($type_set) !== 1) {
-                    throw new AssertionError("Expected union type_parts to contain a single type");
+                    if ($suppress_union_type_warnings) {
+                        if ($code_base && $context) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::CommentUnsupportedUnionType,
+                                $context->getLineNumberStart(),
+                                $type
+                            );
+                        }
+                        $type = $type->withFlattenedArrayShapeOrLiteralTypeInstances();
+                        $type_set = $type->getTypeSet();
+                        if (count($type_set) !== 1) {
+                            if ($type->isArray()) {
+                                $type_set = [ArrayType::instance($type->containsNullable())];
+                            } elseif ($type->isObject()) {
+                                $type_set = [ObjectType::instance($type->containsNullable())];
+                            } else {
+                                $type_set = [MixedType::instance(false)];
+                            }
+                        }
+                    } else {
+                        throw new AssertionError("Expected union type_parts to contain a single type");
+                    }
                 }
                 $type = reset($type_set);
                 if (!$type instanceof Type) {
@@ -152,7 +176,13 @@ final class IntersectionType extends Type
                 }
             }
         }
+        $has_exclusively_truthy = false;
+        $has_array = false;
+        $has_object = false;
         foreach ($new_types as $i => $type) {
+            if (!$has_exclusively_truthy) {
+                $has_exclusively_truthy = $type->isAlwaysTruthy();
+            }
             // Convert callable&object to callable-object, etc.
             if ($type instanceof CallableType) {
                 foreach ($new_types as $j => $other) {
@@ -171,7 +201,53 @@ final class IntersectionType extends Type
                     }
                 }
             }
+            if ($type instanceof ObjectType) {
+                $has_object = true;
+            } elseif ($type instanceof ArrayType) {
+                $has_array = true;
+            }
             // TODO: Convert iterable<k,v> to Traversable<k,v> if another value is an object
+        }
+        if ($has_object) {
+            foreach ($new_types as $j => $other) {
+                if ($other->isObject()) {
+                    // do nothing
+                } elseif (!$other->isPossiblyObject()) {
+                    // Emit PhanImpossibleIntersectionType elsewhere
+                    continue;
+                } else {
+                    $other = $other->asObjectType();
+                    if ($other) {
+                        $new_types[$j] = $other;
+                    }
+                }
+            }
+        } elseif ($has_array) {
+            foreach ($new_types as $j => $other) {
+                if ($other instanceof ArrayType) {
+                    continue;
+                }
+                if (!$other instanceof IterableType && !$other instanceof MixedType) {
+                    // Emit PhanImpossibleIntersectionType elsewhere
+                    continue;
+                }
+                $other = $other->asArrayType();
+                if ($other) {
+                    $new_types[$j] = $other;
+                }
+            }
+        }
+        if ($has_exclusively_truthy) {
+            foreach ($new_types as $j => $other) {
+                if ($other->isAlwaysTruthy()) {
+                    continue;
+                }
+                if (!$other->isPossiblyTruthy()) {
+                    // Emit PhanImpossibleIntersectionType elsewhere
+                    continue;
+                }
+                $new_types[$j] = $other->asNonFalseyType();
+            }
         }
         return \array_values($new_types);
     }
