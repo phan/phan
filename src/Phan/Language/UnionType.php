@@ -3840,6 +3840,21 @@ class UnionType implements Serializable, Stringable
 
     /**
      * @return bool
+     * True if this is non-empty and exclusively object types
+     */
+    public function isObject(): bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return $this->allTypesMatchCallback(static function (Type $type): bool {
+            return $type->isObject();
+        });
+    }
+
+    /**
+     * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
     public function hasTypeMatchingCallback(Closure $matcher_callback): bool

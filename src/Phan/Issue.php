@@ -650,6 +650,7 @@ class Issue
     public const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
     public const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
     public const CommentObjectInClassConstantType = 'PhanCommentObjectInClassConstantType';
+    public const CommentUnsupportedUnionType      = 'PhanCommentUnsupportedUnionType';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -5585,6 +5586,14 @@ class Issue
                 "Impossible phpdoc declaration that a class constant {CONST} has a type {TYPE} containing objects. This type is ignored during analysis.",
                 self::REMEDIATION_B,
                 16021
+            ),
+            new Issue(
+                self::CommentUnsupportedUnionType,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw a union type {TYPE} with more than 1 type in a location that does not support union types",
+                self::REMEDIATION_B,
+                16027
             ),
         ];
         // phpcs:enable Generic.Files.LineLength
