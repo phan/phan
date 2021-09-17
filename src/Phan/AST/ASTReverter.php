@@ -486,6 +486,10 @@ class ASTReverter
                 return '(fn)';
             },
             ast\AST_RETURN => static function (Node $node): string {
+                $expr_node = $node->children['expr'];
+                if ($expr_node === null) {
+                    return 'return;';
+                }
                 return sprintf(
                     'return %s;',
                     self::toShortString($node->children['expr'])
@@ -528,7 +532,8 @@ class ASTReverter
                 return '(switch case statement)';
             },
             ast\AST_EXIT => static function (Node $node): string {
-                return 'exit(' . self::toShortString($node->children['expr']) . ')';
+                $expr = $node->children['expr'];
+                return 'exit(' . (isset($expr) ? self::toShortString($expr) : '') . ')';
             },
             ast\AST_YIELD => static function (Node $node): string {
                 ['value' => $value, 'key' => $key] = $node->children;
