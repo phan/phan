@@ -1,0 +1,4 @@
+%s:5 PhanUnusedVariableCaughtException Unused definition of variable $e2 as a caught exception
+%s:7 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $e2 - it has union type ?\LogicException=
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type 'exception'|'logic'(real='exception'|'logic')

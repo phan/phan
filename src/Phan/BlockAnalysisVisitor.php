@@ -2556,7 +2556,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor(
                 $context,
                 $catch_context_list
-            ))->mergeCatchContext($node);
+            ))->mergeCatchContext($node, BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node));
         }
 
         $finally_node = $node->children['finally'] ?? null;

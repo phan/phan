@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2021, Phan 5.2.2 (dev)
+-----------------------
+
+New Features:
+- Fix false positive PhanPossiblyUndeclaredVariable warning when a `try` block unconditionally returns/throws/exits (#4419)
+
 Sep 14 2021, Phan 5.2.1
 -----------------------
 

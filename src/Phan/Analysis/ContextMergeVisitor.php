@@ -130,7 +130,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Returns a context resulting from merging the possible variable types from the catch statements
      * that will fall through.
      */
-    public function mergeCatchContext(Node $node): Context
+    public function mergeCatchContext(Node $node, bool $try_statement_will_throw_or_return = false): Context
     {
         if (\count($this->child_context_list) < 2) {
             throw new AssertionError("Expected at least two contexts in " . __METHOD__);
@@ -192,20 +192,28 @@ class ContextMergeVisitor extends KindVisitorImplementation
         }
 
         // Look for variables that exist in catch, but not try
-        foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
-            $variable_name = (string)$variable_name;
-            if (!$try_scope->hasVariableWithName($variable_name)) {
-                $type = $variable->getUnionType();
-                if (!$type->containsNullableLabeled()) {
-                    $type = $type->withType(NullType::instance(false));
-                }
-                // Note that it can be null
-                // TODO: This still infers the wrong type when there are multiple catch blocks.
-                // Combine all of the catch blocks into one context and merge with that instead?
-                $variable->setUnionType($type->withIsPossiblyUndefined(true));
-
+        // (unless the try statement unconditionally throws, returns, exits, infinitely loops, etc.)
+        if ($try_statement_will_throw_or_return) {
+            foreach ($catch_scope->getVariableMap() as $variable) {
                 // Add it to the try scope
                 $try_scope->addVariable($variable);
+            }
+        } else {
+            foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
+                $variable_name = (string)$variable_name;
+                if (!$try_scope->hasVariableWithName($variable_name)) {
+                    $type = $variable->getUnionType();
+                    if (!$type->containsNullableLabeled()) {
+                        $type = $type->withType(NullType::instance(false));
+                    }
+                    // Note that it can be null
+                    // TODO: This still infers the wrong type when there are multiple catch blocks.
+                    // Combine all of the catch blocks into one context and merge with that instead?
+                    $variable->setUnionType($type->withIsPossiblyUndefined(true));
+
+                    // Add it to the try scope
+                    $try_scope->addVariable($variable);
+                }
             }
         }
 

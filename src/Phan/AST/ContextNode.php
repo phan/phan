@@ -1692,6 +1692,7 @@ class ContextNode
             // For instance properties, ignore it,
             // because we'll create our own property
         }
+        // Post-condition: $is_static is false, because otherwise an exception would have been thrown
 
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -1699,8 +1700,8 @@ class ContextNode
         }
 
         try {
-            $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
-            $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
+            $expected_type_categories = /* $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : */ self::CLASS_LIST_ACCEPT_OBJECT;
+            $expected_issue = /* $is_static ? Issue::TypeExpectedObjectStaticPropAccess : */ Issue::TypeExpectedObjectPropAccess;
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
