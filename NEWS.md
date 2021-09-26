@@ -6,6 +6,9 @@ Phan NEWS
 New Features:
 - Fix false positive PhanPossiblyUndeclaredVariable warning when a `try` block unconditionally returns/throws/exits (#4419)
 
+Bug fixes:
+- Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)
+
 Sep 14 2021, Phan 5.2.1
 -----------------------
 

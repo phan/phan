@@ -1,1 +1,1 @@
-%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array(real=array)
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type non-empty-array<mixed,mixed>(real=non-empty-array<mixed,mixed>)

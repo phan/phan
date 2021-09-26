@@ -77,14 +77,19 @@ class ComparisonCondition implements BinaryCondition
      */
     private function assertsPositiveNumber($value): bool {
         if ($this->flags === ast\flags\BINARY_IS_GREATER) {
-            return $value > 0;
-        } elseif ($this->flags === ast\flags\BINARY_IS_GREATER_OR_EQUAL) {
             return $value >= 0;
+        } elseif ($this->flags === ast\flags\BINARY_IS_GREATER_OR_EQUAL) {
+            return $value > 0;
         }
         return false;
     }
 
     /**
+     * Returns true if, given a non-negative integer, an assertion of the comparison operation against this value
+     * would only return true of that integer were 0.
+     *
+     * (e.g. to check if count($arr) implies $arr is the empty array)
+     *
      * @param bool|int|float|string|null $value
      */
     private function assertsZeroOrLess($value): bool {
