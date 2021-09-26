@@ -2,24 +2,27 @@
 
 namespace NS12;
 
-enum UnitEnum {
+enum MyUnitEnum {
     case FIRST;
 }
 
-enum BackedEnum: string {
+enum MyBackedEnum: string {
     case ABC = 'abc';
 }
 
-var_dump(UnitEnum::FIRST->name);  // is valid
-echo spl_object_hash(UnitEnum::FIRST->name); // should infer type 'string'
-UnitEnum::FIRST->name = 'other';  // should warn
-var_dump(UnitEnum::FIRST->value);  // should warn
+var_dump(MyUnitEnum::FIRST->name);  // is valid
+echo spl_object_hash(MyUnitEnum::FIRST->name); // should infer type 'string'
+MyUnitEnum::FIRST->name = 'other';  // should warn
+var_dump(MyUnitEnum::FIRST->value);  // should warn
 
-echo spl_object_hash(BackedEnum::ABC->name); // should infer type 'string'
-echo spl_object_hash(BackedEnum::ABC->value);  // should infer type 'string' or more specific
-$a = BackedEnum::ABC;
+echo spl_object_hash(MyBackedEnum::ABC->name); // should infer type 'string'
+echo spl_object_hash(MyBackedEnum::ABC->value);  // should infer type 'string' or more specific
+$a = MyBackedEnum::ABC;
 unset($a->value);
 
 // should warn about setting any property
 $a->undeclaredProperty = 123;
 unset($a->otherProperty);
+
+var_dump(MyUnitEnum::FIRST instanceof \UnitEnum);
+var_dump(MyBackedEnum::ABC instanceof \BackedEnum);

@@ -1,0 +1,13 @@
+%s:16 PhanRedundantCondition Redundant attempt to cast Backed::X of type \NS22\Backed to \BackedEnum
+%s:17 PhanRedundantCondition Redundant attempt to cast Backed::Y of type \NS22\Backed to \UnitEnum
+%s:19 PhanImpossibleCondition Impossible attempt to cast Unit::X of type \NS22\Unit to \BackedEnum
+%s:20 PhanRedundantCondition Redundant attempt to cast Unit::Y of type \NS22\Unit to \UnitEnum
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $backed_cases - it has union type array{0:\NS22\Backed,1:\NS22\Backed}(real=array{0:\NS22\Backed,1:\NS22\Backed})
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $unit_cases - it has union type array{0:\NS22\Unit,1:\NS22\Unit}(real=array{0:\NS22\Unit,1:\NS22\Unit})
+%s:25 PhanUndeclaredStaticMethod Static call to undeclared method \NS22\Unit::from
+%s:26 PhanUndeclaredStaticMethod Static call to undeclared method \NS22\Unit::tryFrom
+%s:28 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \NS22\Backed::from
+%s:28 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is 'not a method' of type 'not a method' but \NS22\Backed::from() takes int
+%s:29 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \NS22\Backed::tryFrom
+%s:29 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is 'not a method' of type 'not a method' but \NS22\Backed::tryFrom() takes int
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type \NS22\Backed(real=\NS22\Backed)

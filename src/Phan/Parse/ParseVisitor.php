@@ -45,11 +45,14 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\None;
+
+use function count;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
@@ -149,14 +152,10 @@ class ParseVisitor extends ScopeVisitor
             $class_context,
             $node->children['attributes'] ?? null
         ));
-        $type_node = $node->children['type'] ?? null;
-        if ($type_node) {
-            $class->setEnumType(UnionTypeVisitor::unionTypeFromNode(
-                $this->code_base,
-                $class_context,
-                $type_node
-            ));
+        if ($node->flags & ast\flags\CLASS_ENUM) {
+            $this->populateEnumClass($class, $class_context, $node);
         }
+
         try {
             // Set the scope of the class's context to be the
             // internal scope of the class
@@ -214,9 +213,10 @@ class ParseVisitor extends ScopeVisitor
             // Look to see if we have a parent class
             $extends_node = $node->children['extends'] ?? null;
             if ($extends_node instanceof Node) {
-                $parent_class_name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node);
+                $parent_class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node)->__toString();
 
                 // The name is fully qualified.
+                // This will throw an FQSENException if php-ast or the polyfill unexpectedly parsed an invalid class name.
                 $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
                     $parent_class_name
                 );
@@ -251,6 +251,85 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $class_context;
+    }
+
+    private function populateEnumClass(Clazz $class, Context $class_context, Node $node): void
+    {
+        $type_node = $node->children['type'] ?? null;
+        $class_fqsen = $class->getFQSEN();
+        $case_union_type = $class_fqsen->asType()->asRealUnionType();
+        $case_field_types = [];
+        foreach ($node->children['stmts']->children ?? [] as $case) {
+            if ($case instanceof Node && $case->kind === ast\AST_ENUM_CASE) {
+                // TODO: If individual enum cases get distinct types in the type system, replace this with that
+                $case_field_types[] = $case_union_type;
+            }
+        }
+        $case_count = count($case_field_types);
+        if ($type_node) {
+            $enum_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $class_context,
+                $type_node
+            );
+            $class->setEnumType($enum_type);
+
+            $from_type = $case_count ? $case_union_type : NeverType::instance(false)->asRealUnionType();
+            $value_parameter = new Parameter(
+                $class_context,
+                'value',
+                $enum_type,
+                0
+            );
+            // Note: The Method constructor will clone these parameters for us
+            $from_parameters = [$value_parameter];
+            $from_method = new Method(
+                $class_context,
+                'from',
+                $from_type,
+                ast\flags\MODIFIER_STATIC | ast\flags\MODIFIER_PUBLIC,
+                FullyQualifiedMethodName::make($class->getFQSEN(), 'from'),
+                $from_parameters
+            );
+            $from_method->setNumberOfRequiredParameters(1);
+            $from_method->setRealParameterList($from_parameters);
+            $from_method->setRealReturnType($from_type);
+            $from_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+            $class->addMethod($this->code_base, $from_method, None::instance());
+
+            $try_from_type = $case_count ? $from_type->withIsNullable(true) : NullType::instance(false)->asRealUnionType();
+            $try_from_method = new Method(
+                $class_context,
+                'tryFrom',
+                $try_from_type->withIsNullable(true),
+                ast\flags\MODIFIER_STATIC | ast\flags\MODIFIER_PUBLIC,
+                FullyQualifiedMethodName::make($class->getFQSEN(), 'tryFrom'),
+                $from_parameters
+            );
+            $try_from_method->setNumberOfRequiredParameters(1);
+            $try_from_method->setRealParameterList($from_parameters);
+            $try_from_method->setRealReturnType($try_from_type);
+            $try_from_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+            $class->addMethod($this->code_base, $try_from_method, None::instance());
+        }
+        $cases_type = ArrayShapeType::fromFieldTypes($case_field_types, false)->asRealUnionType();
+        $cases_method = new Method(
+            $class_context,
+            'cases',
+            $cases_type,
+            ast\flags\MODIFIER_STATIC | ast\flags\MODIFIER_PUBLIC,
+            FullyQualifiedMethodName::make($class->getFQSEN(), 'cases'),
+            []
+        );
+        $cases_method->setRealReturnType($cases_type);
+        $cases_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+        $class->addMethod($this->code_base, $cases_method, None::instance());
+
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+        $base_enum_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
+            $type_node ? '\BackedEnum' : '\UnitEnum'
+        );
+        $class->addInterfaceClassFQSEN($base_enum_fqsen, $node->lineno);
     }
 
     /**
