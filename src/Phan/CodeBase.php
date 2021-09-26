@@ -1072,7 +1072,7 @@ class CodeBase
      */
     public function getInternalClassMap(): Map
     {
-        if (\count($this->fqsen_class_map_reflection) > 0) {
+        if ($this->fqsen_class_map_reflection->count() > 0) {
             $fqsen_class_map_reflection = $this->fqsen_class_map_reflection;
             // Free up memory used by old class map. Prevent it from being freed before we can load it manually.
             $this->fqsen_class_map_reflection = new Map();

@@ -13,7 +13,7 @@ function test767() {
             $built_value[] = ',';
         }
         echo "#$i\n";
-        if (count($my_value) > 0) {  // should warn
+        if (count($my_value) > 0) {  // should warn (EDIT: but now can't, because phan now infers this implies the array can be non-empty in a branch and merges the implication into the context after the loop)
             echo "An element was somehow added to my_value\n";
         }
         var_export(count($my_value) > 0);
