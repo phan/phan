@@ -2413,6 +2413,7 @@ class Type implements Stringable
     public function iterableKeyUnionType(CodeBase $code_base): ?UnionType
     {
         if ($this->namespace === '\\') {
+            // This is in the global namespace
             $name = strtolower($this->name);
             if ($name === 'traversable' || $name === 'iterator') {
                 return $this->keyTypeOfTraversable();
@@ -2447,8 +2448,16 @@ class Type implements Stringable
             }
             // Find the class of the iterator
             $method = $class->getMethodByName($code_base, 'getIterator');
+            $method_type = $method->getUnionType();
+            if ($method_type->hasTemplateTypeRecursive()) {
+                $method_type = $method_type->withTemplateParameterTypeMap(
+                    $iterator_type->getTemplateParameterTypeMap($code_base)
+                )->withoutTemplateTypeRecursive();
+            }
             $new_expanded_types = null;
-            foreach ($method->getUnionType()->getTypeSet() as $iterator_type) {
+            // TODO: Support getIterator returning a union type with more than one type.
+            // Be sure to keep guarding against infinite recursion, e.g. analyzing getIterator returning another IteratorAggregate or subclass.
+            foreach ($method_type->getTypeSet() as $iterator_type) {
                 if ($iterator_type->isObjectWithKnownFQSEN()) {
                     $new_fqsen = FullyQualifiedClassName::fromType($iterator_type);
                     if (!$code_base->hasClassWithFQSEN($new_fqsen)) {
@@ -2501,7 +2510,8 @@ class Type implements Stringable
     public function iterableValueUnionType(CodeBase $code_base): ?UnionType
     {
         if ($this->namespace === '\\') {
-            $name = strtolower($this->name);
+            // This is in the global namespace
+            $name = strtolower($this->getName());
             if ($name === 'traversable' || $name === 'iterator') {
                 return $this->valueTypeOfTraversable();
             }
@@ -2534,10 +2544,16 @@ class Type implements Stringable
             }
             // Find the class of the iterator
             $method = $class->getMethodByName($code_base, 'getIterator');
+            $method_type = $method->getUnionType();
+            if ($method_type->hasTemplateTypeRecursive()) {
+                $method_type = $method_type->withTemplateParameterTypeMap(
+                    $iterator_type->getTemplateParameterTypeMap($code_base)
+                )->withoutTemplateTypeRecursive();
+            }
             $new_expanded_types = null;
             // TODO: Support getIterator returning a union type with more than one type.
             // Be sure to keep guarding against infinite recursion, e.g. analyzing getIterator returning another IteratorAggregate or subclass.
-            foreach ($method->getUnionType()->getTypeSet() as $iterator_type) {
+            foreach ($method_type->getTypeSet() as $iterator_type) {
                 if ($iterator_type->isObjectWithKnownFQSEN()) {
                     $new_fqsen = FullyQualifiedClassName::fromType($iterator_type);
                     if (!$code_base->hasClassWithFQSEN($new_fqsen)) {

@@ -20,6 +20,7 @@ function test_iterable941b(iterable $x): object {
         if (is_object($x)) {
             '@phan-debug-var $x';
             foreach ($x as $key => $value) {
+                '@phan-debug-var $key, $value';
                 echo intdiv($key, $value);
             }
             return $x;

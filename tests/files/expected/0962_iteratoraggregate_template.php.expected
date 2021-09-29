@@ -1,0 +1,6 @@
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $iterator - it has union type \Iterator<int,\UserModel>
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $users - it has union type \Collection<\UserModel>(real=\Collection)
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type int
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type \UserModel
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type int
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type \UserModel

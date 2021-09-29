@@ -17,7 +17,7 @@ environment:
     # This major release of Phan (5.0) requires php-ast 1.0.7+
     # Note: Less convenient to test in 8.1
     - PHP_EXT_VERSION: '8.0'
-      PHP_VERSION: '8.0.9'
+      PHP_VERSION: '8.0.11'
       PHP_AST_VERSION: 1.0.13
       VC: vs16
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
@@ -34,12 +34,12 @@ environment:
     #   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     #   PHP_AST_VERSION: 1.0.11
     - PHP_EXT_VERSION: '7.3'
-      PHP_VERSION: '7.3.29'
+      PHP_VERSION: '7.3.31'
       VC: vc15
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PHP_AST_VERSION: 1.0.11
     - PHP_EXT_VERSION: '7.4'
-      PHP_VERSION: '7.4.22'
+      PHP_VERSION: '7.4.24'
       VC_VERSION: 15
       VC: vc15
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
