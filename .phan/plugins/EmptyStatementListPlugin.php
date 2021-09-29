@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\InferPureAndNoThrowVisitor;
 use Phan\Config;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
@@ -296,6 +297,15 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
                     'PhanPluginEmptyStatementTryBody',
                     'Empty statement list statement detected for the try statement\'s body',
                     []
+                );
+            }
+        } elseif (InferPureAndNoThrowVisitor::isUnlikelyToThrow($this->code_base, $this->context, $try_node)) {
+            if (!$this->hasTODOComment($try_node->lineno, $node, $node->children['catches']->children[0]->lineno ?? $finally_node->lineno ?? null)) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    (clone $this->context)->withLineNumberStart($try_node->lineno),
+                    'PhanPluginEmptyStatementPossiblyNonThrowingTryBody',
+                    'Found a try block that looks like it might not throw. Note that this check is a heuristic prone to false positives, especially because error handlers, signal handlers, destructors, and other things may all lead to throwing.'
                 );
             }
         }

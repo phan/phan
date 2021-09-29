@@ -32,6 +32,16 @@ use function is_string;
  */
 class InferPureSnippetVisitor extends InferPureVisitor
 {
+    use InferPureVisitorTrait {
+        throwNodeException as visitReturn;
+        throwNodeException as visitThrow;
+        throwNodeException as visitYield;
+        throwNodeException as visitYieldFrom;
+
+        // TODO(optional) track actual goto labels
+        throwNodeException as visitGoto;
+        throwNodeException as visitUnset;
+    }
     public function __construct(CodeBase $code_base, Context $context)
     {
         parent::__construct($code_base, $context, '{unknown}');
@@ -57,15 +67,6 @@ class InferPureSnippetVisitor extends InferPureVisitor
         }
     }
 
-    /**
-     * @override
-     * @return never
-     */
-    public function visitReturn(Node $node): void
-    {
-        throw new NodeException($node);
-    }
-
     // visitThrow throws already
 
     // TODO(optional): Bother tracking actual loop/switch depth
@@ -83,44 +84,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
         }
     }
 
-    /**
-     * @override
-     * @return never
-     */
-    public function visitYield(Node $node): void
-    {
-        throw new NodeException($node);
-    }
-
-    /**
-     * @override
-     * @return never
-     */
-    public function visitYieldFrom(Node $node): void
-    {
-        throw new NodeException($node);
-    }
-
-    // TODO(optional) track actual goto labels
-    /**
-     * @override
-     * @return never
-     */
-    public function visitGoto(Node $node): void
-    {
-        throw new NodeException($node);
-    }
-
     // NOTE: Checks of assignment, increment or decrement are deferred to --unused-variable-detection
-
-    /**
-     * @override
-     * @return never
-     */
-    public function visitUnset(Node $node): void
-    {
-        throw new NodeException($node);
-    }
 
     // TODO: Return all classes in union and intersection types instead
     protected function getClassForVariable(Node $expr): Clazz

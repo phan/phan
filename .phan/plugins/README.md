@@ -217,6 +217,7 @@ The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` c
 - **PhanPluginEmptyStatementIf**: `Empty statement list statement detected for the last if/elseif statement`
 - **PhanPluginEmptyStatementSwitch** `No side effects seen for any cases of this switch statement`
 - **PhanPluginEmptyStatementTryBody** `Empty statement list statement detected for the try statement's body`
+- **PhanPluginEmptyStatementPossiblyNonThrowingTryBody**: `Found a try block that looks like it might not throw. Note that this check is a heuristic prone to false positives, especially because error handlers, signal handlers, destructors, and other things may all lead to throwing.`
 - **PhanPluginEmptyStatementTryFinally** `Empty statement list statement detected for the try's finally body`
 - **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
 

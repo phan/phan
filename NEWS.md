@@ -8,6 +8,9 @@ New Features(Analysis):
 - Fix false positive warnings when analyzing enums, infer that automatically generated methods of enums exist. (#4313)
 - Properly resolve template type when `getIterator` returns an `Iterator` that includes a template. (#4556)
 
+Plugins:
+- Warn about non-empty try statements that are unlikely to throw in `EmptyStatementListPlugin` (#4555)
+
 Bug fixes:
 - Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)
 
