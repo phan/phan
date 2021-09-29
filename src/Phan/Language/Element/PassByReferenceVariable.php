@@ -144,4 +144,13 @@ class PassByReferenceVariable extends Variable
     {
         return $this->element instanceof AddressableElement && $this->element->isPHPInternal();
     }
+
+    /**
+     * Get the parameter that this PassByReferenceVariable was passed into.
+     * @suppress PhanUnreferencedPublicMethod this may be called by plugins
+     */
+    public function getParameter(): Variable
+    {
+        return $this->parameter;
+    }
 }
