@@ -74,6 +74,9 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      */
     public function shouldSuppressIssueTypeInFile(string $issue_type, string $file): bool
     {
+        // Replace backslashes on Windows
+        $file = \str_replace(\DIRECTORY_SEPARATOR, '/', $file);
+
         $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$file] ?? [], true);
         if ($suppressed_by_file) {
             return true;
