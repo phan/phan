@@ -491,6 +491,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 }
             }
         }
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        if (\preg_match_all(Builder::PHAN_TYPE_ALIAS_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
+            $has_known_annotations = true;
+            foreach ($matches as $group) {
+                $alias_name = $group[1];
+                $union_type_string = $group[2];
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                Builder::addTypeAliasMapping($this->code_base, $this->context, $alias_name, $union_type_string);
+            }
+        }
 
         if (!$has_known_annotations && preg_match('/@phan-.*/', $text, $match) > 0) {
             Issue::maybeEmit(

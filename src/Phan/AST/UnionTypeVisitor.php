@@ -611,7 +611,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return Type::fromStringInContext(
                     $name,
                     $this->context,
-                    Type::FROM_NODE
+                    Type::FROM_NODE,
+                    $this->code_base
                 )->asRealUnionType();
             }
 
@@ -2584,7 +2585,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If the constant is referring to the current
         // class, return that as a type
         if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-            return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE)->asRealUnionType();
+            return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE, $this->code_base)->asRealUnionType();
         }
 
         try {
@@ -3610,7 +3611,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             $type = Type::fromStringInContext(
                 $class_name,
                 $context,
-                Type::FROM_NODE
+                Type::FROM_NODE,
+                $code_base
             );
         } elseif ($node->flags & \ast\flags\NAME_RELATIVE) {
             // Relative to current namespace

@@ -553,7 +553,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
         // If the constant is referring to the current
         // class, return that as a type
         if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-            return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE)->asRealUnionType();
+            return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE, $this->code_base)->asRealUnionType();
         }
 
         try {

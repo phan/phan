@@ -1,0 +1,7 @@
+%s:7 PhanTypeAliasInternalTypeConflict Saw attempt to use false as a type alias for true but internal types cannot be redefined.
+%s:8 PhanTypeAliasInternalTypeConflict Saw attempt to use true as a type alias for false but internal types cannot be redefined.
+%s:9 PhanTypeAliasInternalTypeConflict Saw attempt to use void as a type alias for A but internal types cannot be redefined.
+%s:13 PhanCommentUnextractableTypeAlias Saw a line * @phan-type D = with a type alias that could not be extracted
+%s:14 PhanCommentUnextractableTypeAlias Saw a line * @phan-type E with a type alias that could not be extracted
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \A

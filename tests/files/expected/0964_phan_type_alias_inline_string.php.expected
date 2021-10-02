@@ -1,0 +1,7 @@
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type array<int,string>
+%s:15 PhanTypeMismatchArgument Argument 1 ($data) is ['key'=>'value'] of type array{key:'value'} but \test1() takes array<string,int> defined at %s:12
+%s:19 PhanTypeAliasUsedOutsideComment Saw a type alias ArrayIS used outside of a comment - this will refer to a class name instead of array<int,string>
+%s:19 PhanUndeclaredTypeReturnType Return type of test2() is undeclared type \ArrayIS (Did you mean array)
+%s:20 PhanUndeclaredTypeParameter Parameter $data has undeclared type \ArraySI (Did you mean array)
+%s:22 PhanTypeAliasUsedOutsideComment Saw a type alias ArrayIS used outside of a comment - this will refer to a class name instead of array<int,string>
+%s:22 PhanUndeclaredClassMethod Call to method __construct from undeclared class \ArrayIS

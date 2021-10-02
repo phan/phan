@@ -651,6 +651,9 @@ class Issue
     public const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
     public const CommentObjectInClassConstantType = 'PhanCommentObjectInClassConstantType';
     public const CommentUnsupportedUnionType      = 'PhanCommentUnsupportedUnionType';
+    public const CommentUnextractableTypeAlias    = 'PhanCommentUnextractableTypeAlias';
+    public const TypeAliasUsedOutsideComment      = 'PhanTypeAliasUsedOutsideComment';
+    public const TypeAliasInternalTypeConflict    = 'PhanTypeAliasInternalTypeConflict';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -5594,6 +5597,30 @@ class Issue
                 "Saw a union type {TYPE} with more than 1 type in a location that does not support union types",
                 self::REMEDIATION_B,
                 16027
+            ),
+            new Issue(
+                self::CommentUnextractableTypeAlias,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_NORMAL,
+                "Saw a line {COMMENT} with a type alias that could not be extracted",
+                self::REMEDIATION_B,
+                16028
+            ),
+            new Issue(
+                self::TypeAliasUsedOutsideComment,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_NORMAL,
+                "Saw a type alias {TYPE} used outside of a comment - this will refer to a class name instead of {TYPE}",
+                self::REMEDIATION_B,
+                16029
+            ),
+            new Issue(
+                self::TypeAliasInternalTypeConflict,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_NORMAL,
+                "Saw attempt to use {TYPE} as a type alias for {TYPE} but internal types cannot be redefined.",
+                self::REMEDIATION_B,
+                16030
             ),
         ];
         // phpcs:enable Generic.Files.LineLength

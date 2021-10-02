@@ -1,0 +1,2 @@
+%s:11 PhanTypeMismatchReturnProbablyReal Returning false of type false but getResults() is declared to return list<array<string,mixed>>|list<false> (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type list<array<string,mixed>>|list<false>

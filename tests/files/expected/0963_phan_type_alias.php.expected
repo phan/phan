@@ -1,0 +1,2 @@
+%s:26 PhanTypeMismatchArgument Argument 1 ($data) is ['name'=>'test','id'=>'invalid'] of type array{name:'test',id:'invalid'} but \UserModel::__construct() takes array{name:string,id:int} defined at %s:15
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $data - it has union type array{name:string,id:int}(real=array)
