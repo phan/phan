@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language;
 
+use ArrayObject;
 use AssertionError;
 use ast\Node;
 use Closure;
@@ -71,6 +72,11 @@ class Context extends FileRef
     private $parse_namespace_map = [];
 
     /**
+     * @var ArrayObject<string,Type> shared among all clones of this context. Can include GenericMultiType.
+     */
+    private $type_alias_map;
+
+    /**
      * @var int
      * strict_types setting for the file
      */
@@ -100,6 +106,7 @@ class Context extends FileRef
     public function __construct()
     {
         $this->scope = new GlobalScope();
+        $this->type_alias_map = new ArrayObject();
     }
 
     /**
@@ -115,6 +122,10 @@ class Context extends FileRef
         $context->namespace = $namespace;
         $context->namespace_id += 1;  // Assumes namespaces are walked in order
         $context->namespace_map = [];
+
+        if ($context->namespace_id > 1) {
+            $context->type_alias_map = new ArrayObject();
+        }
         return $context;
     }
 
@@ -287,6 +298,20 @@ class Context extends FileRef
             $target,
             $alias
         );
+    }
+
+    public function addTypeAlias(string $alias_name, Type $type): bool
+    {
+        if ($this->type_alias_map->offsetExists($alias_name)) {
+            return false;
+        }
+        $this->type_alias_map->offsetSet($alias_name, $type);
+        return true;
+    }
+
+    public function getTypeAlias(string $alias_name): ?Type
+    {
+        return $this->type_alias_map[$alias_name] ?? null;
     }
 
     /**

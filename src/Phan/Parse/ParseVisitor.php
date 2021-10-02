@@ -24,6 +24,7 @@ use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\EnumCase;
 use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
@@ -1872,8 +1873,27 @@ class ParseVisitor extends ScopeVisitor
     }
     public function visitStmtList(Node $node): Context
     {
+        foreach ($node->children as $c) {
+            if (\is_string($c) && \strpos($c, '@phan-type') !== false) {
+                $this->analyzePhanTypeAliasStatement($c);
+            }
+        }
         return $this->context;
     }
+
+    private function analyzePhanTypeAliasStatement(string $text): void
+    {
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        if (\preg_match_all(Builder::PHAN_TYPE_ALIAS_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
+            foreach ($matches as $group) {
+                $alias_name = $group[1];
+                $union_type_string = $group[2];
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                Builder::addTypeAliasMapping($this->code_base, $this->context, $alias_name, $union_type_string);
+            }
+        }
+    }
+
     public function visitNullsafeProp(Node $node): Context
     {
         return $this->context;

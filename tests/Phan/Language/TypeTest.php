@@ -51,7 +51,7 @@ final class TypeTest extends CodeBaseAwareTest
     private function makePHPDocType(string $type_string): Type
     {
         $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string'");
-        return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
+        return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC, $this->code_base);
     }
 
     public function testBracketedTypes(): void

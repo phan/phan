@@ -1319,7 +1319,7 @@ class Type implements Stringable
      * @param int $source
      * Type::FROM_NODE, Type::FROM_TYPE, or Type::FROM_PHPDOC
      *
-     * @param ?CodeBase $code_base
+     * @param ?CodeBase $code_base @phan-mandatory-param
      * May be provided to resolve 'parent' in the context
      * (e.g. if parsing complex phpdoc).
      * Unnecessary in most use cases.
@@ -1390,8 +1390,27 @@ class Type implements Stringable
 
         // If our scope has a generic type identifier defined on it
         // that matches the type string, return that type.
-        if ($source === Type::FROM_PHPDOC && $context->getScope()->hasTemplateType(ltrim($string, '?'))) {
-            return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(substr($string, 0, 1) === '?');
+        $trim_string = ltrim($string, '?');
+        if ($source === Type::FROM_PHPDOC) {
+            if ($context->getScope()->hasTemplateType($trim_string)) {
+                return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(substr($string, 0, 1) === '?');
+            }
+        }
+        $alias_type = $context->getTypeAlias($trim_string);
+        if ($alias_type instanceof Type) {
+            if ($source === Type::FROM_PHPDOC) {
+                return $alias_type->withIsNullable(substr($string, 0, 1) === '?');
+            }
+            if ($code_base) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeAliasUsedOutsideComment,
+                    $context->getLineNumberStart(),
+                    $trim_string,
+                    $alias_type
+                );
+            }
         }
 
         // Extract the namespace, type and parameter type name list
@@ -1460,7 +1479,12 @@ class Type implements Stringable
 
         if ($is_generic_array_type && false !== \strrpos($non_generic_array_type_name, '[]')) {
             return GenericArrayType::fromElementType(
-                Type::fromStringInContext($non_generic_partially_qualified_array_type_name, $context, $source),
+                Type::fromStringInContext(
+                    $non_generic_partially_qualified_array_type_name,
+                    $context,
+                    $source,
+                    $code_base
+                ),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
             );
@@ -2007,7 +2031,7 @@ class Type implements Stringable
      * True if this is a native type or an array of native types
      * (like int, string, bool[], etc.),
      */
-    private static function isInternalTypeString(string $original_type_name, int $source): bool
+    public static function isInternalTypeString(string $original_type_name, int $source): bool
     {
         $type_name = \str_replace('[]', '', strtolower($original_type_name));
         if ($source === Type::FROM_PHPDOC) {

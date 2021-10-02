@@ -1,12 +1,41 @@
 Phan NEWS
 
-??? ?? 2021, Phan 5.2.2 (dev)
+??? ?? 2021, Phan 5.3.0 (dev)
 -----------------------
 
 New Features(Analysis):
 - Fix false positive PhanPossiblyUndeclaredVariable warning when a `try` block unconditionally returns/throws/exits (#4419)
 - Fix false positive warnings when analyzing enums, infer that automatically generated methods of enums exist. (#4313)
 - Properly resolve template type when `getIterator` returns an `Iterator` that includes a template. (#4556)
+- Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)
+
+  These aliases will apply to remaining statements in the current
+  **top-level namespace blocks,** similar to use statements, but can also be defined
+  in methods and apply to subsequent methods.
+
+  This can be of use in avoiding repetition of phpdoc for long type definitions.
+
+  ```php
+  // Alternate inline string version to work around php-ast limitations
+  '@phan-type UserData = array{name: string, id: int, createdAt: DateTime}';
+
+  /**
+   * @type-alias UserData = array{name: string, id: int, createdAt: DateTime}
+   * (applies to phpdoc in this and all subsequent AST nodes in the namespace block)
+   */
+  class ExampleElementWithPHPDoc {
+      /**
+       * @param UserData[] $users
+       * @return list<UserData>
+       */
+      public function filterUsers(array $values): array { /* ... */ }
+  }
+
+  // The UserData alias is still defined and can be used in other statements
+
+  namespace XYZ;
+  // The UserData alias is no longer defined in the new namespace block.
+  ```
 
 Plugins:
 - Warn about non-empty try statements that are unlikely to throw in `EmptyStatementListPlugin` (#4555)

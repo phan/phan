@@ -15,6 +15,7 @@ use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
 use Phan\Language\Scope\TemplateScope;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericMultiType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
@@ -525,15 +526,73 @@ final class Builder
             if ($type->isObjectWithKnownFQSEN()) {
                 $this->phan_overrides['mixin'][] = $type;
             } else {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     Issue::InvalidMixin,
                     $this->guessActualLineLocation($i),
                     $type
                 );
             }
         }
+    }
+
+    /**
+     * Add the type alias mapping to $context for the current namespace block.
+     */
+    public static function addTypeAliasMapping(CodeBase $code_base, Context $context, string $alias_name, string $union_type_string, string $line = ''): void
+    {
+        if (Type::isInternalTypeString($alias_name, Type::FROM_PHPDOC)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TypeAliasInternalTypeConflict,
+                $context->getLineNumberStart(),
+                $alias_name,
+                $union_type_string
+            );
+            return;
+        }
+        $union_type = UnionType::fromStringInContext(
+            $union_type_string,
+            $context,
+            Type::FROM_PHPDOC,
+            $code_base
+        );
+        if ($union_type->typeCount() === 0) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::CommentUnextractableTypeAlias,
+                $context->getLineNumberStart(),
+                $line
+            );
+            return;
+        }
+        $context->addTypeAlias(
+            $alias_name,
+            GenericMultiType::fromTypeSet($union_type->getTypeSet())
+        );
+    }
+
+    /**
+     * @internal
+     */
+    public const PHAN_TYPE_ALIAS_REGEX = '/@phan-type\s+' . self::WORD_REGEX . '\s*=\s*(' . UnionType::union_type_regex . ')/';
+
+    private function parsePhanType(int $i, string $line): void
+    {
+        $lineno = $this->guessActualLineLocation($i);
+        if (!\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches)) {
+            $this->emitIssue(
+                Issue::CommentUnextractableTypeAlias,
+                $lineno,
+                $line
+            );
+
+            return;
+        }
+        $alias_name = $matches[1];
+        $union_type_string = $matches[2];
+        self::addTypeAliasMapping($this->code_base, (clone $this->context)->withLineNumberStart($lineno), $alias_name, $union_type_string, $line);
     }
 
     private function parseParamLine(int $i, string $line): void
@@ -884,6 +943,9 @@ final class Builder
             case 'phan-mixin':
                 $this->parseMixin($i, $line, 'phan-mixin');
                 return;
+            case 'phan-type':
+                $this->parsePhanType($i, $line);
+                return;
             default:
                 $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
@@ -939,6 +1001,7 @@ final class Builder
         '@phan-suppress-next-next-line' => '',
         '@phan-suppress-previous-line' => '',
         '@phan-template' => '',
+        '@phan-type' => '',
         '@phan-var' => '',
         '@phan-write-only' => '',
     ];

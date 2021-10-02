@@ -4958,6 +4958,14 @@ Saw an @param annotation for ${PARAMETER}, but it was not found in the param lis
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0373_reject_bad_type_narrowing.php#L4).
 
+## PhanCommentUnextractableTypeAlias
+
+```
+Saw a line {COMMENT} with a type alias that could not be extracted
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0966_phan_type_alias_incorrect.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0966_phan_type_alias_incorrect.php#L13).
+
 ## PhanCommentUnsupportedUnionType
 
 ```
@@ -5027,6 +5035,22 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expecte
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/085_throw_type_mismatch.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/085_throw_type_mismatch.php#L23).
+
+## PhanTypeAliasInternalTypeConflict
+
+```
+Saw attempt to use {TYPE} as a type alias for {TYPE} but internal types cannot be redefined.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0966_phan_type_alias_incorrect.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0966_phan_type_alias_incorrect.php#L18).
+
+## PhanTypeAliasUsedOutsideComment
+
+```
+Saw a type alias {TYPE} used outside of a comment - this will refer to a class name instead of {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0964_phan_type_alias_inline_string.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0964_phan_type_alias_inline_string.php#L19).
 
 ## PhanUnextractableAnnotation
 
