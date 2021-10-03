@@ -168,6 +168,9 @@ trait ConditionVisitorUtil
         if ($new_fallback->isEmpty()) {
             return $default_empty;
         }
+        if (!$new_fallback->hasRealTypeSet()) {
+            return $new_fallback->withRealTypeSet($default_empty->getRealTypeSet());
+        }
         return $new_fallback;
     }
 
@@ -183,9 +186,8 @@ trait ConditionVisitorUtil
         if (!$context->getScope()->isInFunctionLikeScope()) {
             return null;
         }
-        if (!$context->isInLoop()) {
-            return null;
-        }
+        // Whether or not this is in a loop, try to find fallback types to narrow down reasonable types to expect.
+        // E.g. https://github.com/phan/phan/issues/4550
         $function = $context->getFunctionLikeInScope($this->code_base);
         $result = $function->getVariableTypeFallbackMap($this->code_base)[$var_name] ?? null;
         if ($result && !$result->isEmpty()) {

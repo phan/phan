@@ -1,0 +1,4 @@
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $retry - it has union type bool(real=?''|?'0'|?0|?0.0|?array{}|?false|?non-empty-mixed)
+%s:16 PhanUnusedVariable Unused definition of variable $id
+%s:21 PhanPossiblyInfiniteRecursionSameParams generateNewId() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:21 PhanUnusedVariable Unused definition of variable $id
