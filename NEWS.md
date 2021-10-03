@@ -7,6 +7,8 @@ New Features(Analysis):
 - Fix false positive PhanPossiblyUndeclaredVariable warning when a `try` block unconditionally returns/throws/exits (#4419)
 - Fix false positive warnings when analyzing enums, infer that automatically generated methods of enums exist. (#4313)
 - Properly resolve template type when `getIterator` returns an `Iterator` that includes a template. (#4556)
+- Fix false positives such as `PhanTypeMismatchArgumentNullable` analyzing recursive call with parameter set to literal, without real type information. (#4550)
+  (e.g. `function ($retry = true) { if ($retry) {/*...*/} some_call_using_retry($retry); }`)
 - Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)
 
   These aliases will apply to remaining statements in the current
