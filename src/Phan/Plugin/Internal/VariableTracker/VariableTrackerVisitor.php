@@ -1035,23 +1035,35 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $outer_scope = $this->scope;
 
         $try_scope = new VariableTrackingBranchScope($outer_scope);
-        $try_scope = $this->analyze($try_scope, $node->children['try']);
+        ['try' => $try_node, 'catches' => $catches_node, 'finally' => $finally_node] = $node->children;
+        $try_scope = $this->analyze($try_scope, $try_node);
         '@phan-var VariableTrackingBranchScope $try_scope';
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
         $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
+        $catches_will_throw_or_return = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catches_node);
 
-        $catch_node_list = $node->children['catches']->children;
+        $catch_node_list = $catches_node->children;
         if (\count($catch_node_list) > 0) {
             $catches_scope = new VariableTrackingBranchScope($main_scope);
-            $catches_scope = $this->analyze($catches_scope, $node->children['catches']);
-            // @phan-suppress-next-line PhanTypeMismatchArgumentSuperType
-            $main_scope = $main_scope->mergeWithSingleBranchScope($catches_scope);
+            $catches_scope = $this->analyze($catches_scope, $catches_node);
+            if (!$catches_will_throw_or_return) {
+                if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node)) {
+                    // @phan-suppress-next-line PhanTypeMismatchArgument
+                    $main_scope = $main_scope->mergeBranchScopeList([$catches_scope], false, []);
+                } else {
+                    // @phan-suppress-next-line PhanTypeMismatchArgumentSuperType
+                    $main_scope = $main_scope->mergeWithSingleBranchScope($catches_scope);
+                }
+            }
         }
-        $finally_node = $node->children['finally'];
         if ($finally_node !== null) {
             return $this->analyze($main_scope, $finally_node);
+        }
+        if ($catches_will_throw_or_return) {
+            $combined_scope = $outer_scope->mergeBranchScopeList([$try_scope], false, []);
+            return $combined_scope;
         }
         return $main_scope;
     }
