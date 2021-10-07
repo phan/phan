@@ -1109,6 +1109,10 @@ return [
       'old' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
       'new' => ['string', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
     ],
+    'PDOStatement::fetchAll' => [
+        'old' => ['array|false', 'mode='=>'int', 'args='=>'int|string|callable', 'ctor_args='=>'?array'],
+        'new' => ['array', 'mode='=>'int', 'args='=>'int|string|callable', 'ctor_args='=>'?array'],
+    ],
     'pg_fetch_all' => [
       'old' => ['array<int,array>|false', 'result'=>'resource', 'mode='=>'int'],
       'new' => ['array<int,array>', 'result'=>'resource', 'mode='=>'int'],
