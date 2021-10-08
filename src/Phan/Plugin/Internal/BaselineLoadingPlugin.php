@@ -81,6 +81,13 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // Support suppressing '.' in a baseline (may be useful when plugins affecting type inference get enabled)
         $normalized_file = self::normalizeDirectoryPathString($file);
+
+        // Check normalized path to suppress file paths with backslashes on Windows
+        $suppressed_by_normalized_file = \in_array($issue_type, $this->file_suppressions[$normalized_file] ?? [], true);
+        if ($suppressed_by_normalized_file) {
+            return true;
+        }
+
         if (\in_array($issue_type, $this->directory_suppressions[''] ?? [], true)) {
             if (!Paths::isAbsolutePath($issue_type) && \substr($normalized_file, 0, 3) !== '../') {
                 return true;
@@ -89,8 +96,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // Not suppressed by file, check for suppression by directory
 
-        $parts = self::normalizeDirectoryPathString($file);
-        $parts = \explode('/', $parts);
+        $parts = \explode('/', $normalized_file);
         \array_pop($parts); // Remove file name
 
         $dirPath = '';
