@@ -21,6 +21,7 @@ final class BaselineLoadingPluginTest extends BaseTest
         };
         $assertShouldSuppressIssueEquals(false, 'src/test.php.php', 'PhanUndeclaredMethod');
         $assertShouldSuppressIssueEquals(true, 'src/test.php', 'PhanUndeclaredMethod');
+        $assertShouldSuppressIssueEquals(true, 'src\\test.php', 'PhanUndeclaredMethod');
 
         // directory suppressions
         $assertShouldSuppressIssueEquals(false, 'src/test.php', 'PhanNoopConstant');
