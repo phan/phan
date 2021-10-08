@@ -20,5 +20,5 @@ $b = new B14();
 // Reference base class's elements from a subclass.
 $y = B14::myotherconst;
 B14::$prop++;
-A14::$prop3++;
+var_dump(A14::$prop3++);
 B14::foo();

@@ -3810,7 +3810,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @return ?bool
      * - false if this is a read reference
-     * - false for modifications such as $x++
+     * - false for modifications such as $x++ or $x += 1 if the assignment operation result is used
+     * - true for modifications such as $x++ or $x += 1 if the assignment operation result is not used
      * - true if this is a write reference
      * - null if this is both, e.g. $a =& $b for $a and $b
      */
@@ -3840,10 +3841,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($parent_kind === ast\AST_DIM) {
             return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim($parent_node_list);
-        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
+        } elseif ($parent_kind === ast\AST_ASSIGN) {
             return $parent_node->children['var'] === $node;
+        } elseif ($parent_kind === ast\AST_ASSIGN_OP) {
+            if ($parent_node->children['var'] !== $node) {
+                return false;
+            }
+            \array_pop($parent_node_list);
+            return self::isInNoOpPositionForList($parent_node, $parent_node_list);
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
             return null;
+        } elseif (\in_array($parent_kind, self::READ_AND_WRITE_KINDS, true)) {
+            \array_pop($parent_node_list);
+            return self::isInNoOpPositionForList($parent_node, $parent_node_list);
         }
         return false;
     }
@@ -4830,6 +4840,33 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->getRepresentationForIssue(),
             $parameter_type
         );
+    }
+
+    /**
+     * @param list<Node> $parent_node_list
+     */
+    private static function isInNoOpPositionForList(Node $node, array $parent_node_list): bool
+    {
+        $parent_node = \end($parent_node_list);
+        if (!($parent_node instanceof Node)) {
+            return false;
+        }
+        switch ($parent_node->kind) {
+            case ast\AST_STMT_LIST:
+                return true;
+            case ast\AST_EXPR_LIST:
+                $parent_parent_node = \prev($parent_node_list);
+                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty
+                if ($parent_parent_node->kind === ast\AST_MATCH_ARM) {
+                    return false;
+                }
+                if ($node !== \end($parent_node->children)) {
+                    return true;
+                }
+                // This is an expression list, but it's in the condition
+                return $parent_node !== ($parent_parent_node->children['cond'] ?? null);
+        }
+        return false;
     }
 
     private function isInNoOpPosition(Node $node): bool

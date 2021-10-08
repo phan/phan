@@ -10,6 +10,7 @@ New Features(Analysis):
 - Fix false positives such as `PhanTypeMismatchArgumentNullable` analyzing recursive call with parameter set to literal, without real type information. (#4550)
   (e.g. `function ($retry = true) { if ($retry) {/*...*/} some_call_using_retry($retry); }`)
 - Properly detect `PhanUnusedVariable` in try-catch where catch always rethrows. (#4567)
+- Make read-only/write-only property detection more accurate for assignment operations (e.g. `+=`, `??=`) and increment/decrement operations. (#4570)
 - Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)
 
   These aliases will apply to remaining statements in the current
