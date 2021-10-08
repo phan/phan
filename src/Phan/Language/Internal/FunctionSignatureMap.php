@@ -12138,7 +12138,7 @@ return [
 'ReflectionClass::getReflectionConstants' => ['list<ReflectionClassConstant>'],
 'ReflectionClass::getShortName' => ['string'],
 'ReflectionClass::getStartLine' => ['int|false'],
-'ReflectionClass::getStaticProperties' => ['ReflectionProperty[]'],
+'ReflectionClass::getStaticProperties' => ['array<string,mixed>'],
 'ReflectionClass::getStaticPropertyValue' => ['mixed', 'name'=>'string', 'default='=>'mixed'],
 'ReflectionClass::getTraitAliases' => ['array<string,string>|null'],
 'ReflectionClass::getTraitNames' => ['list<string>|null'],
