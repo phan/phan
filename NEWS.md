@@ -46,6 +46,7 @@ Plugins:
 
 Bug fixes:
 - Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)
+- Fix checking file path suppressed by baseline (with `/`) on windows (#4149)
 
 Maintenance:
 - Account for a few PHP 8.0 signature changes for PDOStatement::fetchAll and Phar methods. (#4569)
