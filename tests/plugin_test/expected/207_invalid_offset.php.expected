@@ -1,0 +1,11 @@
+src/207_invalid_offset.php:5 PhanTypeInvalidDimOffset Invalid offset true of $arr of array type array{string:'z',:'x',0:array{}}
+src/207_invalid_offset.php:5 PhanTypeMismatchArgumentReal Argument 1 ($x) is $arr[true] of type null but \expect_string() takes string defined at src/207_invalid_offset.php:4
+src/207_invalid_offset.php:6 PhanTypeInvalidDimOffset Invalid offset 3.5 of $arr of array type array{string:'z',:'x',0:array{}}
+src/207_invalid_offset.php:6 PhanTypeMismatchArgumentReal Argument 1 ($x) is $arr[3.5] of type null but \expect_string() takes string defined at src/207_invalid_offset.php:4
+src/207_invalid_offset.php:7 PhanPartialTypeMismatchArgument Argument 1 ($x) is $arr[STDIN] of type 'x'|'z'|array{} but \expect_string() takes string (array{} is incompatible) defined at src/207_invalid_offset.php:4
+src/207_invalid_offset.php:7 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{string:'z',:'x',0:array{}}, found an array index of type resource, but expected the index to be of type int|string
+src/207_invalid_offset.php:8 PhanPartialTypeMismatchArgument Argument 1 ($x) is $arr[[]] of type 'x'|'z'|array{} but \expect_string() takes string (array{} is incompatible) defined at src/207_invalid_offset.php:4
+src/207_invalid_offset.php:8 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{string:'z',:'x',0:array{}}, found an array index of type array{}, but expected the index to be of type int|string
+src/207_invalid_offset.php:10 PhanTypeMismatchArgumentReal Argument 1 ($x) is $arr[false] of type array{} but \expect_string() takes string defined at src/207_invalid_offset.php:4
+src/207_invalid_offset.php:11 PhanTypeInvalidDimOffset Invalid offset true of $arr of array type array{string:'z',:'x',0:array{}}
+src/207_invalid_offset.php:11 PhanTypeMismatchArgumentReal Argument 1 ($x) is $arr[true] of type null but \expect_string() takes string defined at src/207_invalid_offset.php:4

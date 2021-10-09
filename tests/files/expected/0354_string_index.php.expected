@@ -8,7 +8,7 @@
 %s:23 PhanTypeMismatchDimFetch When fetching an array index from a value of type 'abc', found an array index of type 'offset', but expected the index to be of type int
 %s:24 PhanTypeMismatchDimFetch When fetching an array index from a value of type 'abc', found an array index of type null, but expected the index to be of type int
 %s:27 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:'c'}, found an array index of type array{}, but expected the index to be of type string
-%s:28 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array{offset:'c'}, found an array index of type null, but expected the index to be of the non-nullable type string
+%s:28 PhanTypeInvalidDimOffset Invalid offset null of $arr of array type array{offset:'c'}
 %s:29 PhanTypeInvalidDimOffset Invalid offset 0 of $arr of array type array{offset:'c'}
 %s:30 PhanTypeInvalidDimOffset Invalid offset 31 of $arr of array type array{offset:'c'}
 %s:31 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of $arr of array type array{offset:'c'}

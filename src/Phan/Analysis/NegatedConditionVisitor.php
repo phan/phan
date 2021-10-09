@@ -1050,7 +1050,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitAssign(Node $node): Context
     {
-        $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+        $context = (new PostOrderAnalysisVisitor($this->code_base, $this->context, []))->visitAssign($node, true);
         $left = $node->children['var'];
         if (!($left instanceof Node)) {
             // Other code should warn about this invalid AST

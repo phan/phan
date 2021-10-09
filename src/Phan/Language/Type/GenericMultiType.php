@@ -37,7 +37,8 @@ final class GenericMultiType extends Type implements MultiType
      *
      * @throws InvalidArgumentException if there are less than 2 types in $types
      */
-    protected function __construct(array $types) {
+    protected function __construct(array $types)
+    {
         if (\count($types) < 2) {
             throw new InvalidArgumentException('Expected $types to have at least 2 types');
         }
@@ -55,7 +56,7 @@ final class GenericMultiType extends Type implements MultiType
     {
         if (\count($type_set) === 1) {
             return \reset($type_set);
-        } else if (!$type_set) {
+        } elseif (!$type_set) {
             throw new InvalidArgumentException('Expected $types to have at least 1 type');
         }
         return new self($type_set);

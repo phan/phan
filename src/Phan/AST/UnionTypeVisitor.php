@@ -2073,7 +2073,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
         }
-        if (!is_scalar($dim_value)) {
+        if (!is_scalar($dim_value) && $dim_value !== null) {
             return null;
         }
 
@@ -2110,13 +2110,18 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param list<Type> $real_type_set
-     * @param int|string|float $dim_value
+     * @param int|string|float|bool|null $dim_value a scalar dimension.
      */
     private static function couldRealTypesHaveKey(array $real_type_set, $dim_value): bool
     {
+        if (\is_float($dim_value)) {
+            $dim_value = (int)$dim_value;
+        }
         foreach ($real_type_set as $type) {
             if ($type instanceof ArrayShapeType) {
-                if (\array_key_exists($dim_value, $type->getFieldTypes())) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetchNullable this is deliberate to emulate php's runtime behavior
+                $element_type = $type->getFieldTypes()[$dim_value] ?? null;
+                if (\is_object($element_type)) {
                     return true;
                 }
             } elseif ($type instanceof ListType) {
@@ -2133,7 +2138,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param UnionType $union_type a union type with at least one top-level array shape type
-     * @param int|string|float|bool $dim_value a scalar dimension. TODO: Warn about null?
+     * @param int|string|float|bool|null $dim_value a scalar dimension. TODO: Warn about null?
      * @return ?UnionType|?false
      *  returns false if there the offset was invalid and there are no ways to get that offset
      *  returns null if the dim_value offset could not be found, but there were other generic array types
@@ -2177,6 +2182,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 continue;
             }
+            if (\is_float($dim_value)) {
+                $dim_value = (int)$dim_value;
+            }
+            // @phan-suppress-next-line PhanTypeMismatchDimFetchNullable this is deliberate to emulate php's runtime behavior
             $element_type = $type->getFieldTypes()[$dim_value] ?? null;
             if ($element_type !== null) {
                 // $element_type may be non-null but $element_type->isEmpty() may be true.

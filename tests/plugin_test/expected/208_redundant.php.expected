@@ -1,0 +1,5 @@
+src/208_redundant.php:2 PhanUnreferencedFunction Possibly zero references to function \check_assign_redundant()
+src/208_redundant.php:3 PhanPluginNonBoolBranch Non bool value of type 'a' evaluated in if clause
+src/208_redundant.php:3 PhanRedundantCondition Redundant attempt to cast $x[0] of type 'a' to truthy
+src/208_redundant.php:6 PhanImpossibleCondition Impossible attempt to cast $x[1] of type false to truthy
+src/208_redundant.php:6 PhanUnusedVariable Unused definition of variable $x

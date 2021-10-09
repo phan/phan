@@ -295,7 +295,7 @@ class ParseVisitor extends ScopeVisitor
             $from_method->setNumberOfRequiredParameters(1);
             $from_method->setRealParameterList($from_parameters);
             $from_method->setRealReturnType($from_type);
-            $from_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+            $from_method->setPhanFlags(Flags::IS_PHP_INTERNAL | Flags::IS_SIDE_EFFECT_FREE);
             $class->addMethod($this->code_base, $from_method, None::instance());
 
             $try_from_type = $case_count ? $from_type->withIsNullable(true) : NullType::instance(false)->asRealUnionType();
@@ -310,7 +310,7 @@ class ParseVisitor extends ScopeVisitor
             $try_from_method->setNumberOfRequiredParameters(1);
             $try_from_method->setRealParameterList($from_parameters);
             $try_from_method->setRealReturnType($try_from_type);
-            $try_from_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+            $try_from_method->setPhanFlags(Flags::IS_PHP_INTERNAL | Flags::IS_SIDE_EFFECT_FREE);
             $class->addMethod($this->code_base, $try_from_method, None::instance());
         }
         $cases_type = ArrayShapeType::fromFieldTypes($case_field_types, false)->asRealUnionType();
@@ -323,7 +323,7 @@ class ParseVisitor extends ScopeVisitor
             []
         );
         $cases_method->setRealReturnType($cases_type);
-        $cases_method->setPhanFlags(Flags::IS_PHP_INTERNAL|Flags::IS_SIDE_EFFECT_FREE);
+        $cases_method->setPhanFlags(Flags::IS_PHP_INTERNAL | Flags::IS_SIDE_EFFECT_FREE);
         $class->addMethod($this->code_base, $cases_method, None::instance());
 
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall

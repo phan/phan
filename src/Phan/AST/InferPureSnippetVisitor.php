@@ -42,6 +42,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
         throwNodeException as visitGoto;
         throwNodeException as visitUnset;
     }
+
     public function __construct(CodeBase $code_base, Context $context)
     {
         parent::__construct($code_base, $context, '{unknown}');
