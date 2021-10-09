@@ -7,7 +7,7 @@ class X206 {
     /** @var int */
     private static $prop3;
     public static function set($value) {
-        return self::$prop ??= $value;
+        return self::$prop += $value;
     }
 
     public static function callCount() {
