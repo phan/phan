@@ -67,6 +67,7 @@ class InferPureVisitor extends AnalysisVisitor
         maybeInvokeAllChildNodes as visitReturn;
         maybeInvokeAllChildNodes as visitArgList;
     }
+
     /** @var string the function fqsen being visited */
     protected $function_fqsen_label;
 

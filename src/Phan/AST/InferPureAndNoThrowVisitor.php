@@ -46,6 +46,7 @@ class InferPureAndNoThrowVisitor extends InferPureSnippetVisitor
         maybeInvokeAllChildNodes as visitEcho;
         maybeInvokeAllChildNodes as visitPrint;
     }
+
     /**
      * Check if the statements and expressions found in $node are unlikely to throw
      * @param Node|int|string|float|null $node

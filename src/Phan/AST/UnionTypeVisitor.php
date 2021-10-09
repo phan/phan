@@ -2121,7 +2121,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($type instanceof ArrayShapeType) {
                 // @phan-suppress-next-line PhanTypeMismatchDimFetchNullable this is deliberate to emulate php's runtime behavior
                 $element_type = $type->getFieldTypes()[$dim_value] ?? null;
-                if (\is_object($element_type )) {
+                if (\is_object($element_type)) {
                     return true;
                 }
             } elseif ($type instanceof ListType) {
