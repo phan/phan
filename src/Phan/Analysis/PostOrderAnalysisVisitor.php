@@ -125,8 +125,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAssign(Node $node): Context
+    public function visitAssign(Node $node, bool $redundant_condition_detection = false): Context
     {
+        $var_node = $node->children['var'];
+
         // Get the type of the right side of the
         // assignment
         $right_type = UnionTypeVisitor::unionTypeFromNode(
@@ -136,7 +138,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
-        $var_node = $node->children['var'];
         if (!($var_node instanceof Node)) {
             // Give up, this should be impossible except with the fallback
             $this->emitIssue(
@@ -145,6 +146,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 "Expected left side of assignment to be a variable"
             );
             return $this->context;
+        }
+
+        if ($redundant_condition_detection && $right_type->hasRealTypeSet() &&
+            !\in_array($var_node->kind, [ast\AST_VAR, ast\AST_ARRAY], true)) {
+            (new ConditionVisitor($this->code_base, $this->context))->checkRedundantOrImpossibleTruthyCondition($var_node, $this->context, $right_type->getRealUnionType(), false);
         }
 
         if ($right_type->isVoidType()) {

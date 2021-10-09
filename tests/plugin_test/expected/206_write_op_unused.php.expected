@@ -1,0 +1,1 @@
+src/206_write_op_unused.php:8 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \X206::$prop3

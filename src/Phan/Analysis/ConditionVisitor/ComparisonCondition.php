@@ -6,8 +6,8 @@ namespace Phan\Analysis\ConditionVisitor;
 
 use ast;
 use ast\Node;
-use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\ConditionVisitorInterface;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
@@ -75,7 +75,8 @@ class ComparisonCondition implements BinaryCondition
     /**
      * @param bool|int|float|string|null $value
      */
-    private function assertsPositiveNumber($value): bool {
+    private function assertsPositiveNumber($value): bool
+    {
         if ($this->flags === ast\flags\BINARY_IS_GREATER) {
             return $value >= 0;
         } elseif ($this->flags === ast\flags\BINARY_IS_GREATER_OR_EQUAL) {
@@ -92,7 +93,8 @@ class ComparisonCondition implements BinaryCondition
      *
      * @param bool|int|float|string|null $value
      */
-    private function assertsZeroOrLess($value): bool {
+    private function assertsZeroOrLess($value): bool
+    {
         if ($this->flags === ast\flags\BINARY_IS_SMALLER) {
             return $value > 0 && $value <= 1;
         } elseif ($this->flags === ast\flags\BINARY_IS_SMALLER_OR_EQUAL) {
