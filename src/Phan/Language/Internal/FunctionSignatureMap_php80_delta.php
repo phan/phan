@@ -49,6 +49,14 @@ return [
       'old' => ['bool', 'key'=>'string|int', 'array'=>'array|ArrayObject'],
       'new' => ['bool', 'key'=>'string|int', 'array'=>'array'],
     ],
+    'array_merge' => [
+      'old' => ['array', 'arrays'=>'array', '...args='=>'array'],
+      'new' => ['array', '...arrays='=>'array'],
+    ],
+    'array_merge_recursive' => [
+      'old' => ['array', 'arrays'=>'array', '...args='=>'array'],
+      'new' => ['array', '...arrays='=>'array'],
+    ],
     'bcdiv' => [
       'old' => ['?string', 'num1'=>'string', 'num2'=>'string', 'scale='=>'int'],
       'new' => ['string', 'num1'=>'string', 'num2'=>'string', 'scale='=>'int'],

@@ -559,7 +559,10 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             // @phan-suppress-next-line PhanUndeclaredProperty
             $first_stmt->is_inside_else = true;
             \array_pop($children);
-            \array_push($children, ...$first_stmt->children);
+            $if_elems = $first_stmt->children;
+            foreach ($if_elems as $elem) {
+                $children[] = $elem;
+            }
             $last_child = \end($children);
         }
         return $children;

@@ -1,4 +1,5 @@
 %s:7 PhanTypeInvalidDimOffset Invalid offset "aces" of $deck of array type list<mixed>
 %s:7 PhanTypeSuspiciousEcho Suspicious argument $deck['aces'] of type null for an echo/print statement
 %s:10 PhanRedundantCondition Redundant attempt to cast $deck of type non-empty-list<'Queen of hearts'>|non-empty-list<mixed> to truthy
+%s:18 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \var_dump($value, ...$values) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
 %s:18 PhanTypeMismatchUnpackKey When unpacking a value of type associative-array<mixed,mixed>, the value's keys were of type int|string, but the keys should be consecutive integers starting from 0

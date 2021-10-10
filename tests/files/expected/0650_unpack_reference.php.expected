@@ -1,2 +1,4 @@
+%s:19 PhanParamTooFewUnpack Call with 0 or more arg(s) to \ns650\expects_reference(int &$a, int &$b) which requires 2 arg(s) defined at %s:9. This may throw an ArgumentCountError if there are too few args at runtime.
 %s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \ns650\expects_reference(int &$a, int &$b)
 %s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 2 of \ns650\expects_reference(int &$a, int &$b)
+%s:20 PhanParamTooFewUnpack Call with 0 or more arg(s) to \ns650\expects_reference(int &$a, int &$b) which requires 2 arg(s) defined at %s:9. This may throw an ArgumentCountError if there are too few args at runtime.
