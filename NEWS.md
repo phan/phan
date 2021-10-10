@@ -11,6 +11,7 @@ New Features(Analysis):
   (e.g. `function ($retry = true) { if ($retry) {/*...*/} some_call_using_retry($retry); }`)
 - Properly detect `PhanUnusedVariable` in try-catch where catch always rethrows. (#4567)
 - Make read-only/write-only property detection more accurate for assignment operations (e.g. `+=`, `??=`) and increment/decrement operations. (#4570)
+- Improve estimates of array sizes when analyzing calls that unpack values, based on the inferred real type set. (#4577)
 - Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)
 
   These aliases will apply to remaining statements in the current

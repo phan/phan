@@ -26,12 +26,16 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV3\StopParamAnalysisException;
 use Phan\Suggestion;
 
+use function count;
+use function is_null;
 use function is_string;
 
 /**
@@ -80,10 +84,15 @@ final class ArgumentType
         // Emit an issue if this is an externally accessed internal method
         $arglist = $node->children['args'];
         $arglist_children = $arglist->children ?? [];
-        $argcount = \count($arglist_children);
+        $is_unpack = self::isUnpack($arglist_children);
+        $argcount = count($arglist_children);
+        if ($is_unpack) {
+            // If we don't know the exact argument count, treat this like an unpacking
+            [$argcount, $is_unpack] = self::getArgCount($code_base, $context, $arglist_children);
+        }
 
         // Make sure we have enough arguments
-        if ($argcount < $method->getNumberOfRequiredParameters() && !self::isUnpack($arglist_children)) {
+        if ($argcount < $method->getNumberOfRequiredParameters() && !$is_unpack) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
@@ -120,17 +129,18 @@ final class ArgumentType
         }
 
         // Make sure we don't have too many arguments
-        if ($argcount > $method->getNumberOfParameters() && !self::isVarargs($code_base, $method)) {
+        $argcount_for_check = ($is_unpack ? $argcount + 1 : $argcount);
+        if ($argcount_for_check > $method->getNumberOfParameters() && !self::isVarargs($code_base, $method)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
-                if ($argcount <= $alternate_method->getNumberOfParameters()) {
+                if ($argcount_for_check <= $alternate_method->getNumberOfParameters()) {
                     $alternate_found = true;
                     break;
                 }
             }
 
             if (!$alternate_found) {
-                self::emitParamTooMany($code_base, $context, $method, $node, $argcount);
+                self::emitParamTooMany($code_base, $context, $method, $node, $argcount, $is_unpack);
             }
         }
 
@@ -221,10 +231,11 @@ final class ArgumentType
         Context $context,
         FunctionInterface $method,
         Node $node,
-        int $argcount
+        int $argcount,
+        bool $is_unpack
     ): void {
         $max = $method->getNumberOfParameters();
-        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === ast\AST_UNPACK;
+        $caused_by_variadic = $is_unpack && $argcount <= $max;
         if ($method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
@@ -329,6 +340,76 @@ final class ArgumentType
             }
         }
         return false;
+    }
+
+    /**
+     * Get the argument count and whether there is any uncertainty in the argument count,
+     * for a call with one or more unpacking calls.
+     *
+     * @param array<mixed,Node|int|string|float> $children
+     * @return array{0: int, 1: bool}
+     */
+    private static function getArgCount(CodeBase $code_base, Context $context, array $children): array
+    {
+        $total = count($children);
+        $has_unknown = false;
+        foreach ($children as $child) {
+            if ($child instanceof Node && $child->kind === ast\AST_UNPACK) {
+                [$min_size, $child_has_unknown] = self::estimateMinArraySize($code_base, $context, $child->children['expr']);
+                $total += $min_size - 1;
+                $has_unknown = $has_unknown || $child_has_unknown;
+            }
+        }
+        return [$total, $has_unknown];
+    }
+
+    /**
+     * Determine the following:
+     * 1. The minimum possible number of arguments from unpacking this array.
+     * 2. Whether the exact number of arguments is unknown.
+     *
+     * @param Node|float|int|string $expr
+     * @return array{0:int, 1:bool} [$min_size, $has_unknown]
+     */
+    private static function estimateMinArraySize(CodeBase $code_base, Context $context, $expr): array
+    {
+        if (!$expr instanceof Node) {
+            return [0, false];
+        }
+        $lowest_count = null;
+        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
+        $has_unknown = false;
+        foreach ($union_type->getRealTypeSet() as $type) {
+            if (!$type instanceof ArrayType) {
+                return [0, true];
+            }
+
+            if ($type instanceof ArrayShapeType) {
+                $count = 0;
+                foreach ($type->getFieldTypes() as $field) {
+                    if ($field->isPossiblyUndefined()) {
+                        $has_unknown = true;
+                    } else {
+                        $count++;
+                    }
+                }
+            } else {
+                if ($type->isPossiblyFalsey()) {
+                    return [0, true];
+                }
+                $count = 1;
+            }
+            if (is_null($lowest_count) || $count < $lowest_count) {
+                if ($count <= 0 && $has_unknown) {
+                    return [0, true];
+                }
+                $lowest_count = $count;
+            }
+        }
+        if (is_null($lowest_count)) {
+            return [0, true];
+        }
+        return [$lowest_count, false];
     }
 
     /**
