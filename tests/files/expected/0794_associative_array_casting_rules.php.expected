@@ -3,6 +3,7 @@
 %s:23 PhanTypeMismatchArgument Argument 1 ($list) is $a of type associative-array<int,string> but \NS794\accepts_list() takes list<mixed> defined at %s:9
 %s:24 PhanTypeMismatchArgumentInternal Argument 2 ($args) is $b of type associative-array<mixed,\stdClass> but \call_user_func_array() takes list<mixed>
 %s:25 PhanTypeMismatchArgumentInternal Argument 2 ($args) is $a of type associative-array<int,string> but \call_user_func_array() takes list<mixed>
+%s:27 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \var_dump($value, ...$values) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
 %s:27 PhanTypeMismatchUnpackKey When unpacking a value of type associative-array<int,string>, the value's keys were of type int, but the keys should be consecutive integers starting from 0
 %s:37 PhanTypeMismatchArgument Argument 1 ($a) is $a of type list<string> but \NS794\test_cannot_pass_associative_to_list() takes associative-array<int,string> defined at %s:17
 %s:37 PhanTypeMismatchArgument Argument 2 ($b) is $b of type list<\stdClass> but \NS794\test_cannot_pass_associative_to_list() takes associative-array<mixed,\stdClass> defined at %s:17

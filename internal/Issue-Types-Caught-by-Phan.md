@@ -2234,6 +2234,22 @@ This will be emitted for the code
 strlen();
 ```
 
+## PhanParamTooFewInternalUnpack
+
+```
+Call with {COUNT} or more arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0802_min_max_explode_edge_case.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0802_min_max_explode_edge_case.php#L5).
+
+## PhanParamTooFewUnpack
+
+```
+Call with {COUNT} or more arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s) defined at {FILE}:{LINE}. This may throw an ArgumentCountError if there are too few args at runtime.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0650_unpack_reference.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0650_unpack_reference.php#L19).
+
 ## PhanParamTooMany
 
 This issue is emitted when you're passing more than the number of required and optional parameters than are defined for a method or function.

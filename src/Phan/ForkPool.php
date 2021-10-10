@@ -176,7 +176,7 @@ class ForkPool
                             $this->progress[$i]->cur_mem = 0;
 
                             $issues = unserialize($payload);
-                            if ($issues) {
+                            if (\is_array($issues) && $issues) {
                                 \array_push($this->issues, ...$issues);
                             }
                             break;

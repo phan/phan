@@ -92,7 +92,7 @@ final class ArgumentType
         }
 
         // Make sure we have enough arguments
-        if ($argcount < $method->getNumberOfRequiredParameters() && !$is_unpack) {
+        if ($argcount < $method->getNumberOfRequiredParameters()) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
@@ -106,7 +106,7 @@ final class ArgumentType
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        Issue::ParamTooFewInternal,
+                        $is_unpack ? Issue::ParamTooFewInternalUnpack : Issue::ParamTooFewInternal,
                         $node->lineno,
                         $argcount,
                         $method->getRepresentationForIssue(true),
@@ -116,7 +116,7 @@ final class ArgumentType
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        Issue::ParamTooFew,
+                        $is_unpack ? Issue::ParamTooFewUnpack : Issue::ParamTooFew,
                         $node->lineno ?? 0,
                         $argcount,
                         $method->getRepresentationForIssue(true),
@@ -379,7 +379,7 @@ final class ArgumentType
         $lowest_count = null;
         $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
         $has_unknown = false;
-        foreach ($union_type->getRealTypeSet() as $type) {
+        foreach ($union_type->getTypeSet() as $type) {
             if (!$type instanceof ArrayType) {
                 return [0, true];
             }

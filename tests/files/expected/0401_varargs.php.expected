@@ -1,4 +1,9 @@
+%s:13 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
 %s:13 PhanTypeMismatchUnpackKey When unpacking a value of type array<string,\stdClass>, the value's keys were of type string, but the keys should be consecutive integers starting from 0
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($a1) is ...($c) of type 2 but \test_varargs401() takes \stdClass defined at %s:3
+%s:15 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
 %s:15 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 2 which does not contain any subtypes of iterable (such as array or Traversable)
+%s:16 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
 %s:16 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
+%s:17 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
+%s:18 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.

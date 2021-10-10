@@ -338,7 +338,9 @@ class Issue
     public const ParamSpecial4             = 'PhanParamSpecial4';
     public const ParamSuspiciousOrder      = 'PhanParamSuspiciousOrder';
     public const ParamTooFew               = 'PhanParamTooFew';
+    public const ParamTooFewUnpack         = 'PhanParamTooFewUnpack';
     public const ParamTooFewInternal       = 'PhanParamTooFewInternal';
+    public const ParamTooFewInternalUnpack = 'PhanParamTooFewInternalUnpack';
     public const ParamTooFewCallable       = 'PhanParamTooFewCallable';
     public const ParamTooFewInPHPDoc       = 'PhanParamTooFewInPHPDoc';
     public const ParamTooMany              = 'PhanParamTooMany';
@@ -3225,12 +3227,28 @@ class Issue
                 7003
             ),
             new Issue(
+                self::ParamTooFewUnpack,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} or more arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s) defined at {FILE}:{LINE}. This may throw an ArgumentCountError if there are too few args at runtime.",
+                self::REMEDIATION_B,
+                7063
+            ),
+            new Issue(
                 self::ParamTooFewInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
                 "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7004
+            ),
+            new Issue(
+                self::ParamTooFewInternalUnpack,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} or more arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s). This may throw an ArgumentCountError if there are too few args at runtime.",
+                self::REMEDIATION_B,
+                7064
             ),
             new Issue(
                 self::ParamTooFewCallable,

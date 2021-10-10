@@ -47,6 +47,14 @@ return [
     'WeakReference::get' => ['?object'],
   ],
   'changed' => [
+    'array_push' => [
+      'old' => ['int', '&rw_array'=>'array', 'values'=>'mixed', '...vars='=>'mixed'],
+      'new' => ['int', '&rw_array'=>'array', '...values='=>'mixed'],
+    ],
+    'array_unshift' => [
+      'old' => ['int', '&rw_array'=>'array', 'values'=>'mixed', '...vars='=>'mixed'],
+      'new' => ['int', '&rw_array'=>'array', '...values='=>'mixed'],
+    ],
     'password_hash' => [
       'old' => ['string|false|null', 'password'=>'string', 'algo'=>'int', 'options='=>'array'],
       'new' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],

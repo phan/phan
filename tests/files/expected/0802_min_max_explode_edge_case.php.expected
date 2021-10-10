@@ -1,1 +1,4 @@
+%s:5 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \implode(string $separator, array $array = %S) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:6 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \min(non-empty-array<mixed,mixed> $value) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:7 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \max(non-empty-array<mixed,mixed> $value) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
 %s:8 PhanPossiblyInfiniteRecursionSameParams recurs() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).

@@ -61,7 +61,7 @@ class OpcacheFuncInfoParser
         $result = [];
         $function_names = get_defined_functions();
         unset($function_names['user']);
-        foreach (array_merge(...array_values($function_names)) as $function_name) {
+        foreach (array_merge([], ...array_values($function_names)) as $function_name) {
             $function = new ReflectionFunction($function_name);
             if (!$function->hasReturnType()) {
                 continue;
