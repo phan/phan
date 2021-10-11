@@ -511,7 +511,8 @@ class Comment
         Flags::HARDCODED_RETURN_TYPE |
         Flags::IS_SIDE_EFFECT_FREE |
         Flags::IS_PHPDOC_ABSTRACT |
-        Flags::IS_OVERRIDE_INTENDED;
+        Flags::IS_OVERRIDE_INTENDED |
+        Flags::NO_NAMED_ARGUMENTS;
 
     /**
      * Gets the subset of the bitmask that applies to methods.
@@ -521,6 +522,20 @@ class Comment
         return $this->comment_flags & self::FLAGS_FOR_METHOD;
     }
 
+    private const FLAGS_FOR_FUNC =
+        Flags::IS_NS_INTERNAL |
+        Flags::IS_DEPRECATED |
+        Flags::HARDCODED_RETURN_TYPE |
+        Flags::IS_SIDE_EFFECT_FREE |
+        Flags::NO_NAMED_ARGUMENTS;
+
+    /**
+     * Gets the subset of the bitmask that applies to global functions.
+     */
+    public function getPhanFlagsForFunc(): int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_FUNC;
+    }
     /**
      * @return bool
      * Set to true if the comment contains a 'phan-forbid-undeclared-magic-properties'

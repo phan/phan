@@ -519,4 +519,14 @@ interface FunctionInterface extends AddressableElementInterface
      * @return list<Attribute>
      */
     public function getAttributeList(): array;
+
+    /**
+     * Get the phan flags associated with this function-like
+     */
+    public function getPhanFlags(): int;
+
+    /**
+     * Check if this function was implemented with (at)no-named-arguments
+     */
+    public function hasNoNamedArguments(): bool;
 }

@@ -512,7 +512,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
                 }
             }
             foreach ($dep_node as $dnode => $val) {
-                [$dnode] = \explode(',', $dnode);
+                [$dnode] = \explode(',', (string)$dnode);
                 $type = self::getFileLineno((string)$val)[0];
                 $style = '';
                 if ($type === 's') {

@@ -1,2 +1,1 @@
-%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type non-empty-associative-array<int>|non-empty-associative-array<mixed>(real=non-empty-array<mixed,mixed>)
-%s:6 PhanTypeMismatchReturn Returning $z of type non-empty-associative-array<int>|non-empty-associative-array<mixed> but test_int_key() is declared to return list<mixed>
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type non-empty-list<int>|non-empty-list<string>(real=non-empty-list<mixed>)

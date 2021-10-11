@@ -45,6 +45,8 @@ class Flags
     // For dead code detection
     public const WAS_PROPERTY_READ = (1 << 18);
     public const WAS_PROPERTY_WRITTEN = (1 << 19);
+    // For methods
+    public const NO_NAMED_ARGUMENTS = (1 << 19);
 
     public const IS_DYNAMIC_PROPERTY = (1 << 20);
     // Is this a dynamic global constant?

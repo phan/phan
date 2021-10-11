@@ -1,0 +1,4 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $is - it has union type list<int>(real=list<int>)
+%s:14 PhanNoNamedArgumentVariadic Saw likely use of named argument for unpacking ...(['a'=>2]) in call to \NS970\foo(int ...$is) declared with @no-named-arguments defined at %s:8
+%s:14 PhanTypeMismatchUnpackKey When unpacking a value of type array{a:2}, the value's keys were of type string, but the keys should be consecutive integers starting from 0
+%s:15 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 1 which does not contain any subtypes of iterable (such as array or Traversable)

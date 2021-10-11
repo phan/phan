@@ -1,6 +1,5 @@
-%s:4 PhanRedundantCondition Redundant attempt to cast $values of type list<float> to list
 %s:5 PhanTypeMismatchReturnReal Returning $values of type list<float> but example3() is declared to return int
-%s:7 PhanTypeMismatchReturnReal Returning $values of type non-empty-associative-array<list<float>> but example3() is declared to return int
+%s:7 PhanTypeMismatchReturnReal Returning $values of type non-empty-associative-array<float[]> but example3() is declared to return int
 %s:9 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \example3() defined at %s:3
 %s:10 PhanPluginUnknownArrayFunctionParamType Function example3b() has a parameter type of array for $values, but does not specify any key types or value types
 %s:10 PhanUnreferencedFunction Possibly zero references to function \example3b()

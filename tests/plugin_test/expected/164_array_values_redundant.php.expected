@@ -1,4 +1,2 @@
-src/164_array_values_redundant.php:3 PhanRedundantArrayValuesCall Attempting to convert list<int> to a list using \array_values() (it is already a list)
-src/164_array_values_redundant.php:3 PhanRedundantArrayValuesCall Attempting to convert list<mixed> to a list using \array_values() (it is already a list)
 src/164_array_values_redundant.php:5 PhanRedundantArrayValuesCall Attempting to convert list<int> to a list using \array_values() (it is already a list)
 src/164_array_values_redundant.php:5 PhanRedundantArrayValuesCall Attempting to convert list<mixed> to a list using \array_values() (it is already a list)
