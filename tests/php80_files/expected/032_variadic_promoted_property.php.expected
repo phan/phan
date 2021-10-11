@@ -2,6 +2,7 @@
 %s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public ...$rest of \VariadicPromotedProperty::__construct(int $value, ...$rest)
 %s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $value of \VariadicPromotedProperty::__construct(int $value, ...$rest)
 %s:3 PhanInvalidNode Cannot declare variadic promoted property
+%s:3 PhanPluginUnknownArrayMethodParamType Method \VariadicPromotedProperty::__construct has a parameter type of array for $rest, but does not specify any key types or value types
 %s:3 PhanWriteOnlyPublicProperty Possibly zero read references to public property \VariadicPromotedProperty->value
 %s:6 PhanEmptyPublicMethod Empty public method \VariadicPromotedProperty::other()
 %s:6 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public int $foo of non-constructor \VariadicPromotedProperty::other(int $foo)

@@ -29,6 +29,8 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV3\StopParamAnalysisException;
@@ -690,6 +692,19 @@ final class ArgumentType
             }
             $i = $original_i;
             if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                if ($method->hasNoNamedArguments()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::NoNamedArgument,
+                        $argument->lineno ?? $node->lineno,
+                        ASTReverter::toShortString($argument),
+                        $method->getRepresentationForIssue(true),
+                        '@no-named-arguments',
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
+                }
                 ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
                 if ($argument_expression === null) {
                     throw new AssertionError("Expected argument to have an expression");
@@ -834,7 +849,7 @@ final class ArgumentType
                 }
             }
             if ($argument_kind === ast\AST_UNPACK && $argument_expression instanceof Node) {
-                self::analyzeRemainingParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument_expression, $argument_type);
+                self::analyzeUnpackedParametersForVariadic($code_base, $context, $method, $i + 1, $node, $argument_expression, $argument_type);
             }
         }
         if (\is_array($positions_used)) {
@@ -999,7 +1014,7 @@ final class ArgumentType
         );
     }
 
-    private static function analyzeRemainingParametersForVariadic(
+    private static function analyzeUnpackedParametersForVariadic(
         CodeBase $code_base,
         Context $context,
         FunctionInterface $method,
@@ -1008,6 +1023,28 @@ final class ArgumentType
         Node $argument,
         UnionType $argument_type
     ): void {
+        if ($method->hasNoNamedArguments()) {
+            $iterable_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $argument->children['expr']);
+            $key_type = $iterable_type->iterableKeyUnionType($code_base);
+            if ((!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                if ($type instanceof IntType || $type instanceof MixedType) {
+                    return true;
+                }
+                return false; // e.g. StringType
+            }))) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::NoNamedArgumentVariadic,
+                    $argument->lineno,
+                    ASTReverter::toShortString($argument),
+                    $method->getRepresentationForIssue(true),
+                    '@no-named-arguments',
+                    $method->getContext()->getFile(),
+                    $method->getContext()->getLineNumberStart()
+                );
+            }
+        }
         // Check the remaining required parameters for this variadic argument.
         // To avoid false positives, don't check optional parameters for now.
 

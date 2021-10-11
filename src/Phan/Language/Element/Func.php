@@ -185,6 +185,7 @@ class Func extends AddressableElement implements FunctionInterface
             $node->lineno ?? 0,
             Comment::ON_FUNCTION
         );
+        $func->setPhanFlags($func->getPhanFlags() | $comment->getPhanFlagsForFunc());
 
         // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
         // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure

@@ -1845,6 +1845,22 @@ Missing named argument for {PARAMETER} in call to {METHOD}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/024_named_arg_missing.php.expected#L25) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/024_named_arg_missing.php#L14).
 
+## PhanNoNamedArgument
+
+```
+Saw named argument for {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/045_named_argument.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/045_named_argument.php#L7).
+
+## PhanNoNamedArgumentVariadic
+
+```
+Saw likely use of named argument for unpacking {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0970_no_named_arguments.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0970_no_named_arguments.php#L14).
+
 ## PhanParamMustBeUserDefinedClassname
 
 ```

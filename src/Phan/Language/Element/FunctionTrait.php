@@ -765,6 +765,11 @@ trait FunctionTrait
         $parameter_offset = 0;
         $function_parameter_list = $function->getParameterList();
         $real_parameter_name_map = [];
+        if ($function->getPhanFlags() & Flags::NO_NAMED_ARGUMENTS) {
+            foreach ($function_parameter_list as $parameter) {
+                $parameter->setHasNoNamedArguments();
+            }
+        }
         foreach ($function_parameter_list as $parameter) {
             $real_parameter_name_map[$parameter->getName()] = $parameter;
             self::addParamToScopeOfFunctionOrMethod(
@@ -2007,5 +2012,24 @@ trait FunctionTrait
             return;
         }
         $this->last_mandatory_phpdoc_param_offset = $parameter_offset;
+    }
+
+    /**
+     * Returns whether this function is marked with no-named-arguments
+     */
+    public function hasNoNamedArguments(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::NO_NAMED_ARGUMENTS);
+    }
+
+    /**
+     * Marks this function as having (at)no-named-arguments
+     */
+    public function setHasNoNamedArguments(): void
+    {
+        $this->setPhanFlags($this->getPhanFlags() | Flags::NO_NAMED_ARGUMENTS);
+        foreach ($this->parameter_list as $parameter) {
+            $parameter->setHasNoNamedArguments();
+        }
     }
 }

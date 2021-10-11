@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 
 /**
@@ -142,7 +143,11 @@ class VariadicParameter extends Parameter
     public function getUnionType(): UnionType
     {
         if (!$this->isCloneOfVariadic()) {
-            return parent::getUnionType()->asNonEmptyListTypes();
+            if ($this->hasNoNamedArguments()) {
+                return parent::getUnionType()->asNonEmptyListTypes();
+            }
+            // As of php 8.0 named arguments, variadic arguments can have string keys
+            return parent::getUnionType()->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_MIXED);
         }
         return $this->type;
     }

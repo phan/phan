@@ -333,15 +333,7 @@ class ArrayType extends IterableType
      */
     public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
-        // Reduce false positive partial type mismatch errors
-        return UnionType::empty();
-        /**
-        static $result;
-        if ($result === null) {
-            $result = UnionType::fromFullyQualifiedString('int|string');
-        }
-        return $result;
-         */
+        return UnionType::fromFullyQualifiedPHPDocString('int|string');
     }
 
     /**

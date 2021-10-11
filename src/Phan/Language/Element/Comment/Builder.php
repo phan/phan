@@ -397,7 +397,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
+        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -480,6 +480,11 @@ final class Builder
                 case 'abstract':
                     if (\preg_match('/@abstract\b/', $line, $match)) {
                         $this->comment_flags |= Flags::IS_PHPDOC_ABSTRACT;
+                    }
+                    break;
+                case 'no-named-arguments':
+                    if ($this->checkCompatible('@no-named-arguments', Comment::ON_CLASS_OR_FUNCTIONLIKE, $i)) {
+                        $this->comment_flags |= Flags::NO_NAMED_ARGUMENTS;
                     }
                     break;
                 default:

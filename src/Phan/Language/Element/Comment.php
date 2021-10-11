@@ -58,7 +58,9 @@ class Comment
         self::ON_CONST,
     ];
 
-    public const HAS_TEMPLATE_ANNOTATION = [
+    public const HAS_TEMPLATE_ANNOTATION = self::ON_CLASS_OR_FUNCTIONLIKE;
+
+    public const ON_CLASS_OR_FUNCTIONLIKE = [
         self::ON_CLASS,
         self::ON_FUNCTION,
         self::ON_METHOD,
@@ -495,7 +497,8 @@ class Comment
         Flags::IS_SIDE_EFFECT_FREE |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES |
-        Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
+        Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS |
+        Flags::NO_NAMED_ARGUMENTS;
 
     /**
      * Gets the subset of the bitmask that applies to classes.
@@ -511,7 +514,8 @@ class Comment
         Flags::HARDCODED_RETURN_TYPE |
         Flags::IS_SIDE_EFFECT_FREE |
         Flags::IS_PHPDOC_ABSTRACT |
-        Flags::IS_OVERRIDE_INTENDED;
+        Flags::IS_OVERRIDE_INTENDED |
+        Flags::NO_NAMED_ARGUMENTS;
 
     /**
      * Gets the subset of the bitmask that applies to methods.
@@ -521,6 +525,20 @@ class Comment
         return $this->comment_flags & self::FLAGS_FOR_METHOD;
     }
 
+    private const FLAGS_FOR_FUNC =
+        Flags::IS_NS_INTERNAL |
+        Flags::IS_DEPRECATED |
+        Flags::HARDCODED_RETURN_TYPE |
+        Flags::IS_SIDE_EFFECT_FREE |
+        Flags::NO_NAMED_ARGUMENTS;
+
+    /**
+     * Gets the subset of the bitmask that applies to global functions.
+     */
+    public function getPhanFlagsForFunc(): int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_FUNC;
+    }
     /**
      * @return bool
      * Set to true if the comment contains a 'phan-forbid-undeclared-magic-properties'

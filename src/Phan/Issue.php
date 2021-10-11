@@ -397,6 +397,8 @@ class Issue
     public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
     public const SuspiciousNamedArgumentForVariadic                          = 'PhanSuspiciousNamedArgumentForVariadic';
     public const SuspiciousNamedArgumentVariadicInternal                     = 'PhanSuspiciousNamedArgumentVariadicInternal';
+    public const NoNamedArgument                                             = 'PhanNoNamedArgument';
+    public const NoNamedArgumentVariadic                                     = 'PhanNoNamedArgumentVariadic';
 
     // Issue::CATEGORY_NOOP
     public const NoopArray                     = 'PhanNoopArray';
@@ -3710,6 +3712,22 @@ class Issue
                 'Passing named argument {CODE} to the variadic parameter of the internal function {METHOD}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.',
                 self::REMEDIATION_B,
                 7062
+            ),
+            new Issue(
+                self::NoNamedArgument,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Saw named argument for {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                7065
+            ),
+            new Issue(
+                self::NoNamedArgumentVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Saw likely use of named argument for unpacking {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                7066
             ),
 
             // Issue::CATEGORY_NOOP

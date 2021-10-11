@@ -1077,8 +1077,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if (Config::getValue('unused_variable_detection') &&
             !$expression_union_type->isEmpty() && !$expression_union_type->hasPossiblyObjectTypes() &&
             InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $inner_context, $stmts_node) &&
-            self::isLoopVariableWithoutSideEffects($node->children['key']) &&
-            self::isLoopVariableWithoutSideEffects($node->children['value'])
+            self::isLoopVariableWithoutSideEffects($key_node) &&
+            self::isLoopVariableWithoutSideEffects($value_node)
         ) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
@@ -1317,9 +1317,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     "Can't use list() as a key element - aborting"
                 );
             } else {
-                // TODO: Support Traversable<Key, T> then return Key.
                 // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
-                // (Or if we see iterable<int,T>
+                // For Traversable<Key, T> or iterable<Key, T>, return Key.
                 $context = (new AssignmentVisitor(
                     $code_base,
                     $context,

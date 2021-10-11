@@ -601,6 +601,9 @@ class Method extends ClassElement implements FunctionInterface
                 !\array_key_exists(\strtolower($method->getName()), self::NON_PURE_METHOD_NAME_SET)) {
             $method->setIsPure();
         }
+        if ($class->hasNoNamedArguments()) {
+            $method->setHasNoNamedArguments();
+        }
 
         $is_trait = $class->isTrait();
         // Add the syntax-level return type to the method's union type

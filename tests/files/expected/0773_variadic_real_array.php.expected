@@ -1,8 +1,8 @@
-%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type list<mixed>(real=list<mixed>)
-%s:7 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $i of type int but \spl_object_id() takes object
-%s:9 PhanRedundantCondition Redundant attempt to cast $v of type list<mixed> to array
-%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type list<int>(real=list<int>)
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type array(real=array)
+%s:7 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $i of type int|string but \spl_object_id() takes object
+%s:9 PhanRedundantCondition Redundant attempt to cast $v of type array to array
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int[](real=int[])
 %s:18 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $el of type int but \spl_object_id() takes object
-%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $i of type int but \spl_object_id() takes object
-%s:21 PhanRedundantCondition Redundant attempt to cast $v of type list<int> to array
-%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type list<int>(real=list<mixed>)
+%s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is $i of type int|string but \spl_object_id() takes object
+%s:21 PhanRedundantCondition Redundant attempt to cast $v of type int[] to array
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int[](real=array)

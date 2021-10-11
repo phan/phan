@@ -244,6 +244,7 @@ class Daemon
      *
      * @param string $format - printf style format string
      * @param mixed ...$args - printf args
+     * @no-named-arguments
      * @suppress PhanPluginPrintfVariableFormatString
      */
     public static function debugf(string $format, ...$args): void

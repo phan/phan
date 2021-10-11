@@ -1,4 +1,4 @@
-%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type non-empty-list<int>(real=non-empty-list<int>)
+%s:4 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type non-empty-array<mixed,int>(real=non-empty-array<mixed,int>)
 %s:6 PhanTypeMismatchReturn Returning $element of type int but test959() is declared to return array
 %s:9 PhanTypeMismatchReturn Returning $element of type 'literal'|2 but test959() is declared to return array
 %s:12 PhanTypeMismatchReturnReal Returning $element of type 'softequals' (real type ?'softequals') but test959() is declared to return array

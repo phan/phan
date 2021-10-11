@@ -1,2 +1,3 @@
+%s:2 PhanPluginUnknownArrayFunctionParamType Function named() has a parameter type of array for $args, but does not specify any key types or value types
 %s:5 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (args: [2])
 %s:5 PhanSuspiciousNamedArgumentForVariadic Passing named argument to a variadic parameter $args of the same name in a call to \named(...$args). This will set the array offset "args" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).

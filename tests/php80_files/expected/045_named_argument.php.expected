@@ -1,0 +1,16 @@
+%s:5 PhanEmptyFunction Empty function \foo()
+%s:5 PhanPluginUseReturnValueNoopVoid The function/method \foo() is declared to return void and it has no side effects
+%s:5 PhanUnusedGlobalFunctionParameter Parameter $a is never used
+%s:5 PhanUnusedGlobalFunctionParameter Parameter $args is never used
+%s:7 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 123)
+%s:7 PhanNoNamedArgument Saw named argument for a: 123 in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:8 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (b: 456)
+%s:8 PhanNoNamedArgument Saw named argument for b: 456 in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:9 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (a: 123)
+%s:9 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (b: 456)
+%s:9 PhanNoNamedArgument Saw named argument for a: 123 in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:9 PhanNoNamedArgument Saw named argument for b: 456 in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:11 PhanNoNamedArgumentVariadic Saw likely use of named argument for unpacking ...(['a-b'=>123]) in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:11 PhanTypeMismatchUnpackKey When unpacking a value of type array{a-b:123}, the value's keys were of type string, but the keys should be consecutive integers starting from 0
+%s:12 PhanNoNamedArgumentVariadic Saw likely use of named argument for unpacking ...([''=>123]) in call to \foo(int $a, int ...$args) declared with @no-named-arguments defined at %s:5
+%s:12 PhanTypeMismatchUnpackKey When unpacking a value of type array{:123}, the value's keys were of type string, but the keys should be consecutive integers starting from 0

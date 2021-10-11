@@ -10,8 +10,9 @@ function test_binary_op($var) {
     return $arr + [$var + 1];
 }
 function test_binary_op_list($var, ...$args) {
-    var_export([$var] + $args);
+    var_export([$var] + array_keys($args));
     var_export($args + [$var]);
+    var_export(array_values($args) + [$var]);
     var_export(array_merge($args, [2]) + $args);
     var_export(array_reverse($args) + $args);
 }

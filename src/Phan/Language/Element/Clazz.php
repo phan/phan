@@ -1919,6 +1919,11 @@ class Clazz extends AddressableElement
             $method->setFlags(Flags::bitVectorWithState($method->getFlags(), \ast\flags\MODIFIER_ABSTRACT, true));
         }
 
+        if ($this->hasNoNamedArguments()) {
+            // Add another check for trait inheritance, method inheritance, etc.
+            $method->setHasNoNamedArguments();
+        }
+
         if ($is_override) {
             $method->setIsOverride(true);
         }
@@ -4067,5 +4072,14 @@ class Clazz extends AddressableElement
             $value_property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);
             $this->addProperty($code_base, $value_property, None::instance());
         }
+    }
+
+    /**
+     * Returns true if this class was marked as (at)no-named-arguments.
+     * All methods added to this class will also be treated as having no-named-arguments.
+     */
+    public function hasNoNamedArguments(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::NO_NAMED_ARGUMENTS);
     }
 }

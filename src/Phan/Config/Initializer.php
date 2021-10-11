@@ -352,6 +352,7 @@ EOT;
         $require_directories = $composer_settings['require'] ?? [];
         $require_dev_directories = $composer_settings['require-dev'] ?? [];
         foreach (\array_merge($require_directories, $require_dev_directories) as $requirement => $_) {
+            $requirement = (string)$requirement;
             if (\substr_count($requirement, '/') !== 1) {
                 // e.g. ext-ast, php >= 7.0, etc.
                 continue;

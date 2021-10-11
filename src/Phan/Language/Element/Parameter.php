@@ -645,6 +645,22 @@ class Parameter extends Variable
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
+    /**
+     * Mark that this parameter does not support being used with named arguments
+     */
+    public function setHasNoNamedArguments(): void
+    {
+        $this->enablePhanFlagBits(Flags::NO_NAMED_ARGUMENTS);
+    }
+
+    /**
+     * Is this a parameter of a function that does not use named arguments?
+     */
+    public function hasNoNamedArguments(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::NO_NAMED_ARGUMENTS);
+    }
+
     public function __toString(): string
     {
         $string = '';

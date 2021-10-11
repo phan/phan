@@ -707,6 +707,10 @@ final class IntersectionType extends Type
         return false;
     }
 
+    /**
+     * @param mixed ...$args
+     * @no-named-arguments
+     */
     private function anyTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
     {
         foreach ($this->type_parts as $part) {
@@ -717,6 +721,10 @@ final class IntersectionType extends Type
         return false;
     }
 
+    /**
+     * @suppress PhanPluginUnknownArrayMethodParamType
+     * @no-named-arguments
+     */
     private function allTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
     {
         foreach ($this->type_parts as $part) {

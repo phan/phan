@@ -1173,6 +1173,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 
+    public function getPhanFlags(): int
+    {
+        return 0;
+    }
+
+    public function hasNoNamedArguments(): bool
+    {
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////
