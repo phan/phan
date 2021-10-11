@@ -6,7 +6,7 @@
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $fn2('extra') of type int but \strlen() takes string
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $fn3() of type \Generator|\Iterator|\Traversable|iterable but \strlen() takes string
 %s:23 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of Closure(&$x)
-%s:26 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $fn6('arg') of type list<mixed> but \strlen() takes string
+%s:26 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $fn6('arg') of type array but \strlen() takes string
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $fn('foooooooooooooooo') of type bool but \intdiv() takes int
 %s:30 PhanNoopClosure Unused closure
 %s:32 PhanUndeclaredVariable Variable $undef is undeclared

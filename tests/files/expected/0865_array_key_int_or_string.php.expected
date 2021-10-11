@@ -1,1 +1,2 @@
 %s:6 PhanImpossibleTypeComparisonInLoop Impossible attempt to check if $a of type array is identical to $k of type int|string in a loop body (likely a false positive)
+%s:6 PhanTypeComparisonFromArray array to int|string comparison

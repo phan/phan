@@ -1077,8 +1077,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if (Config::getValue('unused_variable_detection') &&
             !$expression_union_type->isEmpty() && !$expression_union_type->hasPossiblyObjectTypes() &&
             InferPureSnippetVisitor::isSideEffectFreeSnippet($this->code_base, $inner_context, $stmts_node) &&
-            self::isLoopVariableWithoutSideEffects($node->children['key']) &&
-            self::isLoopVariableWithoutSideEffects($node->children['value'])
+            self::isLoopVariableWithoutSideEffects($key_node) &&
+            self::isLoopVariableWithoutSideEffects($value_node)
         ) {
             VariableTrackerVisitor::recordHasLoopBodyWithoutSideEffects($node);
         }
