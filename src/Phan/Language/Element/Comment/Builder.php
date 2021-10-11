@@ -483,9 +483,10 @@ final class Builder
                     }
                     break;
                 case 'no-named-arguments':
-                    if ($this->checkCompatible('@no-named-arguments', Comment::FUNCTION_LIKE, $i)) {
+                    if ($this->checkCompatible('@no-named-arguments', Comment::ON_CLASS_OR_FUNCTIONLIKE, $i)) {
                         $this->comment_flags |= Flags::NO_NAMED_ARGUMENTS;
                     }
+                    break;
                 default:
                     if (\strpos($type, 'phan-') === 0) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);

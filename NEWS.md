@@ -14,7 +14,7 @@ New Features(Analysis):
 - Improve estimates of array sizes when analyzing calls that unpack values, based on the inferred real type set. (#4577)
 - Infer that variadic parameters can have string keys (as of php 8.0) (#4579)
 - Emit `PhanParamTooFewUnpack` and `PhanParamTooFewInternalUnpack` to indicate when argument unpacking may provide too few arguments to the called function. (#4577)
-- Support the non-standard `@no-named-arguments` PHPDoc comment on function-likes. (#4580)
+- Support the non-standard `@no-named-arguments` PHPDoc comment on function-likes. (#4580, #4152)
   Treat variadic parameters as list types when this annotation is used,
   warn about unpacking string arguments or explicitly passing named arguments to functions using this declaration.
 - Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)

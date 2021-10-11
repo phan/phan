@@ -58,7 +58,9 @@ class Comment
         self::ON_CONST,
     ];
 
-    public const HAS_TEMPLATE_ANNOTATION = [
+    public const HAS_TEMPLATE_ANNOTATION = self::ON_CLASS_OR_FUNCTIONLIKE;
+
+    public const ON_CLASS_OR_FUNCTIONLIKE = [
         self::ON_CLASS,
         self::ON_FUNCTION,
         self::ON_METHOD,
@@ -495,7 +497,8 @@ class Comment
         Flags::IS_SIDE_EFFECT_FREE |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS |
         Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES |
-        Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
+        Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS |
+        Flags::NO_NAMED_ARGUMENTS;
 
     /**
      * Gets the subset of the bitmask that applies to classes.

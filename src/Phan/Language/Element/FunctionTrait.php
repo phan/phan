@@ -2021,4 +2021,15 @@ trait FunctionTrait
     {
         return $this->getPhanFlagsHasState(Flags::NO_NAMED_ARGUMENTS);
     }
+
+    /**
+     * Marks this function as having (at)no-named-arguments
+     */
+    public function setHasNoNamedArguments(): void
+    {
+        $this->setPhanFlags($this->getPhanFlags() | Flags::NO_NAMED_ARGUMENTS);
+        foreach ($this->parameter_list as $parameter) {
+            $parameter->setHasNoNamedArguments();
+        }
+    }
 }
