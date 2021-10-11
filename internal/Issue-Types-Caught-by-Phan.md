@@ -1856,7 +1856,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expecte
 ## PhanNoNamedArgumentVariadic
 
 ```
-Saw likely use of named argument for unpacking {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}
+Saw likely use of named argument for unpacking {PARAMETER} of type {TYPE} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0970_no_named_arguments.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0970_no_named_arguments.php#L14).
@@ -2350,6 +2350,14 @@ Passing named argument {CODE} to the variadic parameter of the internal function
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/036_named_variadic.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/036_named_variadic.php#L6).
+
+## PhanSuspiciousNamedArgumentVariadicInternalUnpack
+
+```
+Saw likely use of named arguments in argument unpacking for {PARAMETER} of type {TYPE} passed to an internal function {FUNCTION}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/047_named_argument_variadic_internal_error.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/047_named_argument_variadic_internal_error.php#L5).
 
 ## PhanUndeclaredNamedArgument
 

@@ -1,6 +1,8 @@
 %s:18 PhanParamTooFewInternalUnpack Call with 1 or more arg(s) to \array_unshift(array &$array, $values, ...$vars) which requires 2 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:18 PhanSuspiciousNamedArgumentVariadicInternalUnpack Saw likely use of named arguments in argument unpacking for ...($something) of type \stdClass passed to an internal function \array_unshift(array &$array, $values, ...$vars). Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
 %s:18 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
 %s:19 PhanParamTooFewInternalUnpack Call with 1 or more arg(s) to \array_unshift(array &$array, $values, ...$vars) which requires 2 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:19 PhanSuspiciousNamedArgumentVariadicInternalUnpack Saw likely use of named arguments in argument unpacking for ...($something) of type \stdClass passed to an internal function \array_unshift(array &$array, $values, ...$vars). Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
 %s:19 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($array) is 'x' of type 'x' but \array_unshift() takes array
 %s:19 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
 %s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \array_unshift(array &$array, $values, ...$vars)
