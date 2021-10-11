@@ -1023,7 +1023,7 @@ final class ArgumentType
         Node $argument,
         UnionType $argument_type
     ): void {
-        if ($method->hasNoNamedArguments()) {
+        if ($method->hasNoNamedArguments() || $method->isPHPInternal()) {
             $iterable_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $argument->children['expr']);
             $key_type = $iterable_type->iterableKeyUnionType($code_base);
             if ((!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type): bool {
@@ -1032,17 +1032,30 @@ final class ArgumentType
                 }
                 return false; // e.g. StringType
             }))) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::NoNamedArgumentVariadic,
-                    $argument->lineno,
-                    ASTReverter::toShortString($argument),
-                    $method->getRepresentationForIssue(true),
-                    '@no-named-arguments',
-                    $method->getContext()->getFile(),
-                    $method->getContext()->getLineNumberStart()
-                );
+                if ($method->isPHPInternal()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::SuspiciousNamedArgumentVariadicInternalUnpack,
+                        $argument->lineno,
+                        ASTReverter::toShortString($argument),
+                        $iterable_type,
+                        $method->getRepresentationForIssue(true)
+                    );
+                } else {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::NoNamedArgumentVariadic,
+                        $argument->lineno,
+                        ASTReverter::toShortString($argument),
+                        $iterable_type,
+                        $method->getRepresentationForIssue(true),
+                        '@no-named-arguments',
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
+                }
             }
         }
         // Check the remaining required parameters for this variadic argument.

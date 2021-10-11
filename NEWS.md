@@ -17,6 +17,8 @@ New Features(Analysis):
 - Support the non-standard `@no-named-arguments` PHPDoc comment on function-likes. (#4580, #4152)
   Treat variadic parameters as list types when this annotation is used,
   warn about unpacking string arguments or explicitly passing named arguments to functions using this declaration.
+- Warn about argument unpacking that may pass strings to internal functions (e.g. `var_dump(...['a' => 'unsupported'])`) (#4579)
+  New issue types: `PhanSuspiciousNamedArgumentVariadicInternalUnpack`
 - Support `@phan-type AliasName=UnionType` annotation in inline strings or element comments (#4562)
 
   These aliases will apply to remaining statements in the current

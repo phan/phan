@@ -397,6 +397,7 @@ class Issue
     public const MissingNamedArgumentInternal                                = 'PhanMissingNamedArgumentInternal';
     public const SuspiciousNamedArgumentForVariadic                          = 'PhanSuspiciousNamedArgumentForVariadic';
     public const SuspiciousNamedArgumentVariadicInternal                     = 'PhanSuspiciousNamedArgumentVariadicInternal';
+    public const SuspiciousNamedArgumentVariadicInternalUnpack               = 'PhanSuspiciousNamedArgumentVariadicInternalUnpack';
     public const NoNamedArgument                                             = 'PhanNoNamedArgument';
     public const NoNamedArgumentVariadic                                     = 'PhanNoNamedArgumentVariadic';
 
@@ -3714,6 +3715,14 @@ class Issue
                 7062
             ),
             new Issue(
+                self::SuspiciousNamedArgumentVariadicInternalUnpack,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                'Saw likely use of named arguments in argument unpacking for {PARAMETER} of type {TYPE} passed to an internal function {FUNCTION}. Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.',
+                self::REMEDIATION_B,
+                7067
+            ),
+            new Issue(
                 self::NoNamedArgument,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -3725,7 +3734,7 @@ class Issue
                 self::NoNamedArgumentVariadic,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                'Saw likely use of named argument for unpacking {PARAMETER} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}',
+                'Saw likely use of named argument for unpacking {PARAMETER} of type {TYPE} in call to {METHOD} declared with {COMMENT} defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 7066
             ),
