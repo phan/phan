@@ -1,3 +1,4 @@
 src/173_duplicate_catch.php:7 PhanPluginDuplicateCatchStatementBody The implementation of catch(RuntimeException) and catch(Error) are identical, and can be combined if the application only needs to supports php 7.1 and newer
+src/173_duplicate_catch.php:12 PhanPluginInconsistentReturnFunction Function \test_unserialize has no return type and will inconsistently return or not return
 src/173_duplicate_catch.php:16 PhanPluginDuplicateCatchStatementBody The implementation of catch(RuntimeException|InvalidArgumentException) and catch(ArgumentCountError) are identical, and can be combined if the application only needs to supports php 7.1 and newer
 src/173_duplicate_catch.php:18 PhanPluginDuplicateCatchStatementBody The implementation of catch(TypeError) and catch(Error) are identical, and can be combined if the application only needs to supports php 7.1 and newer

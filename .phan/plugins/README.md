@@ -56,6 +56,11 @@ Also see [DollarDollarPlugin.php](#dollardollarpluginphp) for a meaningful real-
 Checks if a function or method with a non-void return type will **unconditionally** return or throw.
 This is stricter than Phan's default checks (Phan accepts a function or method that **may** return something, or functions that unconditionally throw).
 
+- **PhanPluginInconsistentReturnMethod**: `Method {METHOD} has no return type and will inconsistently return or not return`
+- **PhanPluginAlwaysReturnMethod**: `Method {METHOD} has a return type of {TYPE}, but may fail to return a value`
+- **PhanPluginInconsistentReturnFunction**: `Function {FUNCTION} has no return type and will inconsistently return or not return`
+- **PhanPluginAlwaysReturnFunction**: `Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value`
+
 #### DuplicateArrayKeyPlugin.php
 
 Warns about common errors in php array keys and switch statements. Has the following checks (This is able to resolve global and class constants to their scalar values).
