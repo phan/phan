@@ -1,0 +1,4 @@
+src/209_return_explicit.php:3 PhanPluginInconsistentReturnFunction Function \f209 has no return type and will inconsistently return or not return
+src/209_return_explicit.php:8 PhanPluginInconsistentReturnFunction Function \g209 has no return type and will inconsistently return or not return
+src/209_return_explicit.php:9 PhanPluginEmptyStatementTryBody Empty statement list statement detected for the try statement's body
+src/209_return_explicit.php:14 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \f209() defined at src/209_return_explicit.php:3

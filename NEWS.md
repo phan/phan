@@ -51,6 +51,7 @@ New Features(Analysis):
 
 Plugins:
 - Warn about non-empty try statements that are unlikely to throw in `EmptyStatementListPlugin` (#4555)
+- Warn in `AlwaysReturnPlugin` about functions/methods with no return type that have at least one return statement with an expression, but may fall through to the end of the function body without an explicit return (#4587)
 
 Bug fixes:
 - Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)

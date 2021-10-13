@@ -71,6 +71,20 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         }
 
         if (self::returnTypeOfFunctionLikeAllowsNull($method)) {
+            // This has at least one return statement with an expression
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+                if ($method->getUnionType()->isEmpty() && $method->hasReturn()) {
+                    if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnMethod')) {
+                        self::emitIssue(
+                            $code_base,
+                            $method->getContext(),
+                            'PhanPluginInconsistentReturnMethod',
+                            "Method {METHOD} has no return type and will inconsistently return or not return",
+                            [(string)$method->getFQSEN()]
+                        );
+                    }
+                }
+            }
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
@@ -101,11 +115,25 @@ final class AlwaysReturnPlugin extends PluginV3 implements
     ): void {
         $stmts_list = self::getStatementListToAnalyze($function);
         if ($stmts_list === null) {
-            // check for abstract methods, generators, etc.
+            // check for generators, etc.
             return;
         }
 
         if (self::returnTypeOfFunctionLikeAllowsNull($function)) {
+            if ($function->getUnionType()->isEmpty() && $function->hasReturn()) {
+                // This has at least one return statement with an expression
+                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+                    if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnFunction')) {
+                        self::emitIssue(
+                            $code_base,
+                            $function->getContext(),
+                            'PhanPluginInconsistentReturnFunction',
+                            "Function {FUNCTION} has no return type and will inconsistently return or not return",
+                            [(string)$function->getFQSEN()]
+                        );
+                    }
+                }
+            }
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
