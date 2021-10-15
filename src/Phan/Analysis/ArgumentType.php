@@ -400,6 +400,7 @@ final class ArgumentType
                     return [0, true];
                 }
                 $count = 1;
+                $has_unknown = true;
             }
             if (is_null($lowest_count) || $count < $lowest_count) {
                 if ($count <= 0 && $has_unknown) {
@@ -411,7 +412,7 @@ final class ArgumentType
         if (is_null($lowest_count)) {
             return [0, true];
         }
-        return [$lowest_count, false];
+        return [$lowest_count, $has_unknown];
     }
 
     /**
