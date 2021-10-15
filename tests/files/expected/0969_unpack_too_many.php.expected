@@ -2,3 +2,5 @@
 %s:6 PhanParamTooFew Call with 0 arg(s) to \foo(int $a) which requires 1 arg(s) defined at %s:2
 %s:8 PhanParamTooMany Call with 2 arg(s) to \foo(int $a) which only takes 1 arg(s) defined at %s:2
 %s:10 PhanParamTooMany Call with 2 arg(s) to \foo(int $a) which only takes 1 arg(s) defined at %s:2
+%s:15 PhanParamTooFewUnpack Call with 0 or more arg(s) to \foo969(int $a, int $b) which requires 2 arg(s) defined at %s:11. This may throw an ArgumentCountError if there are too few args at runtime.
+%s:17 PhanParamTooFewUnpack Call with 1 or more arg(s) to \foo969(int $a, int $b) which requires 2 arg(s) defined at %s:11. This may throw an ArgumentCountError if there are too few args at runtime.
