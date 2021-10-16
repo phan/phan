@@ -12,7 +12,7 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 ../../../phan | tee $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
 echo

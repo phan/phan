@@ -30,7 +30,7 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 ../../../phan --use-fallback-parser | tee $ACTUAL_PATH
 # normalize output for https://github.com/phan/phan/issues/1130
 # This has a varying order for src/020_issue.php

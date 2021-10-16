@@ -11,7 +11,7 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 # Run phan, using the fallback parser only if the AST is invalid
 ../../../phan --use-fallback-parser | tee $ACTUAL_PATH
 sed -i "s,unexpected token \"=\",unexpected '='," $ACTUAL_PATH
