@@ -285,10 +285,10 @@ class UnknownElementTypePlugin extends PluginV3 implements
             if ($parameter->getUnionType()->isEmpty()) {
                 if ($function->getFQSEN()->isClosure()) {
                     $issue = 'PhanPluginUnknownClosureParamType';
-                    $message = 'Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+                    $message = 'Closure {FUNCTION} has no declared or inferred parameter type for ${PARAMETER}';
                 } else {
                     $issue = 'PhanPluginUnknownFunctionParamType';
-                    $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+                    $message = 'Function {FUNCTION} has no declared or inferred parameter type for ${PARAMETER}';
                 }
                 $warning_closures[$i] = static function () use ($code_base, $issue, $message, $parameter, $function, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionType($inferred_types[$i] ?? null);

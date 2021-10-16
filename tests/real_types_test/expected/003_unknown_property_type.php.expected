@@ -1,5 +1,5 @@
 src/003_unknown_property_type.php:4 PhanPluginUnknownPropertyType Property \Test003::$prop has an initial type that cannot be inferred (Types inferred after analysis: bool)
 src/003_unknown_property_type.php:5 PhanPluginUnknownMethodParamType Method \Test003::f has no declared or inferred parameter type for $obj (Types inferred after analysis: ?string)
-src/003_unknown_property_type.php:15 PhanPluginUnknownClosureParamType Closure Closure($x) has no declared or inferred return type for $x (Types inferred after analysis: int)
+src/003_unknown_property_type.php:15 PhanPluginUnknownClosureParamType Closure Closure($x) has no declared or inferred parameter type for $x (Types inferred after analysis: int)
 src/003_unknown_property_type.php:15 PhanPluginUnknownClosureReturnType Closure Closure($x) has no declared or inferred return type (Types inferred after analysis: float|int)
-src/003_unknown_property_type.php:19 PhanPluginUnknownFunctionParamType Function fetch_value() has no declared or inferred return type for $x (Types inferred after analysis: int)
+src/003_unknown_property_type.php:19 PhanPluginUnknownFunctionParamType Function fetch_value() has no declared or inferred parameter type for $x (Types inferred after analysis: int)
