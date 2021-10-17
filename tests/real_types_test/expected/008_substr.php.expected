@@ -1,5 +1,5 @@
-src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred return type for $x (Types inferred after analysis: array)
-src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred return type for $y (Types inferred after analysis: array)
+src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred parameter type for $x (Types inferred after analysis: array)
+src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred parameter type for $y (Types inferred after analysis: array)
 src/008_substr.php:2 PhanPluginUnknownFunctionReturnType Function \test188() has no declared or inferred return type (Types inferred after analysis: bool)
 src/008_substr.php:3 PhanImpossibleTypeComparison Impossible attempt to check if substr($x, $y) of type false|string is identical to null of type null
 src/008_substr.php:3 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type array but \substr() takes string

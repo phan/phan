@@ -4,6 +4,6 @@
 %s:11 PhanCompatibleAttributeGroupOnMultipleLines Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group Attribute(Attribute::TARGET_FUNCTION) of Class \Single32 ending around line 12. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
 %s:15 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $path of \Single32::__construct(string $path)
 %s:15 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Single32->path
-%s:20 PhanPluginUnknownFunctionParamType Function test32() has no declared or inferred return type for $arg (Types inferred after analysis: string)
+%s:20 PhanPluginUnknownFunctionParamType Function test32() has no declared or inferred parameter type for $arg (Types inferred after analysis: string)
 %s:25 PhanAttributeNonRepeatable Saw attribute \Single32 which was not declared as \Attribute::IS_REPEATABLE in the class definition at %s:14 but had a repeat declaration on line 24
-%s:26 PhanPluginUnknownFunctionParamType Function test32_bad() has no declared or inferred return type for $arg
+%s:26 PhanPluginUnknownFunctionParamType Function test32_bad() has no declared or inferred parameter type for $arg

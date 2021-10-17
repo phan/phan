@@ -401,9 +401,9 @@ Warns about elements containing unknown types (function/method/closure return ty
 - **PhanPluginUnknownMethodReturnType**: `Method {METHOD} has no declared or inferred return type`
 - **PhanPluginUnknownMethodParamType**: `Method {METHOD} has no declared or inferred parameter type for ${PARAMETER}`
 - **PhanPluginUnknownFunctionReturnType**: `Function {FUNCTION} has no declared or inferred return type`
-- **PhanPluginUnknownFunctionParamType**: `Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}`
+- **PhanPluginUnknownFunctionParamType**: `Function {FUNCTION} has no declared or inferred parameter type for ${PARAMETER}`
 - **PhanPluginUnknownClosureReturnType**: `Closure {FUNCTION} has no declared or inferred return type`
-- **PhanPluginUnknownClosureParamType**: `Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}`
+- **PhanPluginUnknownClosureParamType**: `Closure {FUNCTION} has no declared or inferred parameter type for ${PARAMETER}`
 - **PhanPluginUnknownPropertyType**: `Property {PROPERTY} has an initial type that cannot be inferred`
 
 #### DuplicateExpressionPlugin.php

@@ -15,6 +15,6 @@
 %s:9 PhanUnreferencedClosure Possibly zero references to Closure(int $x)
 %s:10 PhanEmptyFunction Empty function \fn32()
 %s:10 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public $var of non-constructor \fn32($var)
-%s:10 PhanPluginUnknownFunctionParamType Function fn32() has no declared or inferred return type for $var
+%s:10 PhanPluginUnknownFunctionParamType Function fn32() has no declared or inferred parameter type for $var
 %s:10 PhanPluginUseReturnValueNoopVoid The function/method \fn32() is declared to return void and it has no side effects
 %s:10 PhanUnreferencedFunction Possibly zero references to function \fn32()

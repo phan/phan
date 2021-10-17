@@ -1,15 +1,15 @@
-%s:2 PhanPluginUnknownFunctionParamType Function test_match_unreachable() has no declared or inferred return type for $x
+%s:2 PhanPluginUnknownFunctionParamType Function test_match_unreachable() has no declared or inferred parameter type for $x
 %s:2 PhanUnreferencedFunction Possibly zero references to function \test_match_unreachable()
 %s:3 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) {}
 %s:3 PhanNoopMatchArms This match expression only has the default arm in match ($x) {}
 %s:3 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) {}
 %s:4 PhanPluginUnreachableCode Unreachable statement detected
-%s:6 PhanPluginUnknownFunctionParamType Function test_match_reachable() has no declared or inferred return type for $x
+%s:6 PhanPluginUnknownFunctionParamType Function test_match_reachable() has no declared or inferred parameter type for $x
 %s:6 PhanUnreferencedFunction Possibly zero references to function \test_match_reachable()
 %s:7 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { default => 2 }
 %s:7 PhanNoopMatchArms This match expression only has the default arm in match ($x) { default => 2 }
 %s:7 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) { default => 2 }
-%s:10 PhanPluginUnknownFunctionParamType Function test_match_value() has no declared or inferred return type for $x
+%s:10 PhanPluginUnknownFunctionParamType Function test_match_value() has no declared or inferred parameter type for $x
 %s:10 PhanUnreferencedFunction Possibly zero references to function \test_match_value()
 %s:12 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($x) { true => 'x', $x => 'y' }
 %s:12 PhanTypeMismatchReturnReal Returning match ($x) { true => 'x', $x => 'y' } of type 'x'|'y' but test_match_value() is declared to return int
