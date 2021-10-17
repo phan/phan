@@ -10,7 +10,7 @@ if [ ! -e $EXPECTED_PATH  ]; then
 	exit 1
 fi
 echo "Running make_stubs in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 ../../tool/make_stubs -e json | tee $ACTUAL_PATH
 if php -r 'exit(PHP_MAJOR_VERSION < 8 ? 0 : 1);'; then
     # Normalize output by deleting constants added in php 7.1.0+

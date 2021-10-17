@@ -12,7 +12,7 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 
 # We use the polyfill parser because it behaves consistently in all php versions.
 ../../phan --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH

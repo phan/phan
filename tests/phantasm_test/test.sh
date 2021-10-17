@@ -13,7 +13,7 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
-rm $ACTUAL_PATH -f || exit 1
+rm -f $ACTUAL_PATH || exit 1
 
 # Create a copy so we can verify the copy is changed in place
 rm -rf out
