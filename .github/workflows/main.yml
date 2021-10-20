@@ -31,7 +31,7 @@ jobs:
          - PHP_VERSION: '7.3'
          - PHP_VERSION: '7.4'
          - PHP_VERSION: '8.0'
-         - PHP_VERSION: '8.1.0RC2'
+         - PHP_VERSION: '8.1.0RC4'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
