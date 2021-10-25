@@ -123,7 +123,11 @@ class PassByReferenceVariable extends Variable
             );
             return;
         }
-        $this->element->setUnionType($type->eraseRealTypeSetRecursively());
+        $new_element_type = UnionType::merge([
+            $type->eraseRealTypeSetRecursively(),
+            $this->element->getUnionType()
+        ]);
+        $this->element->setUnionType($new_element_type);
     }
 
     /**
