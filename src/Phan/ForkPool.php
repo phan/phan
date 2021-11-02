@@ -349,8 +349,13 @@ class ForkPool
 
         // Wait for all children to return
         foreach ($this->child_pid_list as $child_pid) {
-            if (\pcntl_waitpid($child_pid, $status) < 0) {
-                \error_log(\posix_strerror(\posix_get_last_error()));
+            if (\pcntl_waitpid($child_pid, $status, \WNOHANG) < 0) {
+                $last_error = \posix_get_last_error();
+                if ($last_error !== 0) {
+                    \error_log(\posix_strerror($last_error));
+                }
+                usleep(50000);
+                continue;
             }
 
             // Check to see if the child died a graceful death
