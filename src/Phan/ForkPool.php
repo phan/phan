@@ -354,7 +354,7 @@ class ForkPool
                 if ($last_error !== 0) {
                     \error_log(\posix_strerror($last_error));
                 }
-                usleep(50000);
+                \usleep(50000);
                 continue;
             }
 
