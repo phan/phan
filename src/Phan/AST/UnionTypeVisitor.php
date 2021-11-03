@@ -4068,7 +4068,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return [];
         }
         $method = $class->getMethodByName($code_base, $method_name);
-        if (!$method->isStatic()) {
+        if ($class_or_expr !== 'parent' && !$method->isStatic()) {
             $this->emitIssue(
                 Issue::StaticCallToNonStatic,
                 $context->getLineNumberStart(),
