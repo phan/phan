@@ -382,8 +382,6 @@ class CLI
             printf("PHP version used to run Phan: %s" . PHP_EOL, \PHP_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
-        self::restartWithoutProblematicExtensions();
-        $this->warnSuspiciousShortOptions($argv);
 
         // Determine the root directory of the project from which
         // we route all relative paths passed in as args
@@ -434,6 +432,15 @@ class CLI
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
         $this->maybeReadConfigFile(\array_key_exists('require-config-exists', $opts));
+
+        // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
+        // to know if grpc should be excluded.
+        // Before that, we need to have parsed the config file to override config settings.
+        self::parseProcessCountOverride($opts);
+        self::restartWithoutProblematicExtensions();
+
+        // Only after restarting, emit output.
+        $this->warnSuspiciousShortOptions($argv);
 
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
@@ -645,11 +652,7 @@ class CLI
                     break;
                 case 'j':
                 case 'processes':
-                    $processes = \filter_var($value, FILTER_VALIDATE_INT);
-                    if ($processes <= 0) {
-                        throw new UsageException(sprintf("Invalid arguments to --processes: %s (expected a positive integer)\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
-                    }
-                    Config::setValue('processes', $processes);
+                    // Already parsed in parseProcessCountOverride
                     break;
                 case 'z':
                 case 'signature-compatibility':
@@ -2776,6 +2779,26 @@ EOB
             $version .= '-' . \filesize($news_path);
         }
         return $version;
+    }
+
+    /**
+     * Parse the process count override early for the restartWithoutProblematicExtensions check.
+     * Imitate the original parsing order for now, this may be strictened to forbid passing both flags in a future release.
+     *
+     * @param array<string,string|false|array> $opts
+     * @throws UsageException
+     */
+    public function parseProcessCountOverride(array $opts): void
+    {
+        foreach ($opts as $key => $value) {
+            if (in_array($key, ['j', 'processes'], true)) {
+                $processes = \filter_var($value, FILTER_VALIDATE_INT);
+                if ($processes <= 0) {
+                    throw new UsageException(sprintf("Invalid arguments to --processes: %s (expected a positive integer)\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                }
+                Config::setValue('processes', $processes);
+            }
+        }
     }
 
     /**
