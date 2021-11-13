@@ -39,16 +39,6 @@ class PHP72Test extends AbstractPhanFileTest
     {
         $skip_reason = null;
         $main_path = \basename(\reset($test_file_list));
-        if (\PHP_VERSION_ID < 70200) {
-            switch ($main_path) {
-                case '0002_hash.php':
-                    $skip_reason = 'Skip HashContext has no stub';
-                    break;
-                case '0003_is_iterable.php':
-                    $skip_reason = 'Skip isIterateable not added in php < 7.2, no stub exists';
-                    break;
-            }
-        }
         if (\PHP_VERSION_ID >= 80000) {
             switch ($main_path) {
                 case '0006_deprecated_create_internal_function.php':
