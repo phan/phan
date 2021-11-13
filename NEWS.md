@@ -48,6 +48,8 @@ New Features(Analysis):
   namespace XYZ;
   // The UserData alias is no longer defined in the new namespace block.
   ```
+- When analyzing calls that modify variables as pass by reference, merge old types with existing types
+  to account for possibility of branches or early returns (#4602)
 
 Plugins:
 - Warn about non-empty try statements that are unlikely to throw in `EmptyStatementListPlugin` (#4555)
