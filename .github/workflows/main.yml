@@ -25,13 +25,13 @@ jobs:
       fail-fast: false
       matrix:
        include:
-         # NOTE: If this is not quoted, the yaml parser will convert 7.0 to the number 7,
+         # NOTE: If this is not quoted, the yaml parser will convert numbers such as 7.0 to the number 7,
          # and the docker image `php:7` is the latest minor version of php 7.x (7.4).
          - PHP_VERSION: '7.2'
          - PHP_VERSION: '7.3'
          - PHP_VERSION: '7.4'
          - PHP_VERSION: '8.0'
-         - PHP_VERSION: '8.1.0RC2'
+         - PHP_VERSION: '8.1.0RC6'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

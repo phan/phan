@@ -48,6 +48,8 @@ New Features(Analysis):
   namespace XYZ;
   // The UserData alias is no longer defined in the new namespace block.
   ```
+- When analyzing calls that modify variables as pass by reference, merge old types with existing types
+  to account for possibility of branches or early returns (#4602)
 
 Plugins:
 - Warn about non-empty try statements that are unlikely to throw in `EmptyStatementListPlugin` (#4555)
@@ -57,6 +59,7 @@ Bug fixes:
 - Fix off-by-one error when inferring from comparison conditions such as `count($arr) > 0` and `count($arr) >= 1` that the array is non-empty. (#4551)
 - Fix checking file path suppressed by baseline (with `/`) on windows (#4149)
 - Fix crash when inferring type of array access for scalar other than int/string (e.g. `$arr[true]`) (#4573)
+- Properly read `--processes N` CLI flag before checking if phan should restart without `grpc`  (#4608)
 
 Maintenance:
 - Account for a few PHP 8.0 signature changes for PDOStatement::fetchAll and Phar methods. (#4569)
