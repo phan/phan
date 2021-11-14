@@ -356,6 +356,11 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // https://github.com/sabre-io/event/pull/88
         return true;
     }
+    if ($errno === E_DEPRECATED && preg_match('/^Use of "\w+" in callables is deprecated/i', $errstr) && str_contains(str_replace('\\', '/', $errfile), 'vendor/webmozart/assert')) {
+        // TODO: Remove after bumping the minimum webmozart version to a release that fixes this
+        // https://github.com/webmozarts/assert/pull/260/files
+        return true;
+    }
     if ($errno === E_USER_DEPRECATED && preg_match('/(^Passing a command as string when creating a |method is deprecated since Symfony 4\.4)/', $errstr)) {
         // Suppress deprecation notices running `vendor/bin/paratest`.
         // Don't execute the PHP internal error handler.

@@ -329,6 +329,7 @@ class Issue
     public const DeprecatedProperty        = 'PhanDeprecatedProperty';
     public const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
     public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
+    public const DeprecatedPartiallySupportedCallable = 'PhanDeprecatedPartiallySupportedCallable';
 
     // Issue::CATEGORY_PARAMETER
     public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -3186,6 +3187,14 @@ class Issue
                 "Creating case-insensitive constants with define() has been deprecated in PHP 7.3",
                 self::REMEDIATION_B,
                 5006
+            ),
+            new Issue(
+                self::DeprecatedPartiallySupportedCallable,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Saw deprecated partially supported callable {METHOD}. This behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.',
+                self::REMEDIATION_B,
+                5008
             ),
 
             // Issue::CATEGORY_PARAMETER
