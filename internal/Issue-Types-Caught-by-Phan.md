@@ -924,6 +924,14 @@ Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0269_deprecated_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0269_deprecated_interface.php#L5).
 
+## PhanDeprecatedPartiallySupportedCallable
+
+```
+Saw deprecated partially supported callable {METHOD}. This behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0370_callable_edge_cases.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0370_callable_edge_cases.php#L5).
+
 ## PhanDeprecatedProperty
 
 ```

@@ -3972,8 +3972,32 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
     }
 
-    private function emitNonObjectContextInCallableIssue(string $class_name, string $method_name): void
+    /**
+     * @param ?string|?int|?float|?bool|?Node $method_name
+     */
+    private function emitDeprecatedPartiallySupportedCallable(string $class_name, $method_name): void
     {
+        if (!is_string($method_name)) {
+            $method_name = '(unknown)';
+        }
+        $class_name = \strtolower($class_name);
+        $this->emitIssue(
+            Issue::DeprecatedPartiallySupportedCallable,
+            $this->context->getLineNumberStart(),
+            "$class_name::$method_name",
+            $class_name,
+            \var_representation($method_name)
+        );
+    }
+
+    /**
+     * @param ?string|?int|?float|?bool|?Node $method_name
+     */
+    private function emitNonObjectContextInCallableIssue(string $class_name, $method_name): void
+    {
+        if (!is_string($method_name)) {
+            $method_name = '(unknown)';
+        }
         $this->emitIssue(
             Issue::ContextNotObjectInCallable,
             $this->context->getLineNumberStart(),
@@ -4010,12 +4034,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $method_name_type
                     );
                 }
-                return [];
             }
         }
         try {
             if (is_string($class_or_expr)) {
                 if (\in_array(\strtolower($class_or_expr), ['static', 'self', 'parent'], true)) {
+                    $this->emitDeprecatedPartiallySupportedCallable($class_or_expr, $method_name);
                     // Allow 'static' but not '\static'
                     if (!$context->isInClassScope()) {
                         $this->emitNonObjectContextInCallableIssue($class_or_expr, $method_name);
@@ -4031,9 +4055,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $class_fqsen = (new ContextNode($code_base, $context, $class_or_expr))->resolveClassNameInContext();
                 if (!$class_fqsen) {
+                    if (!is_string($method_name)) {
+                        return [];
+                    }
                     return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name);
                 }
                 if (\in_array(\strtolower($class_fqsen->getName()), ['static', 'self', 'parent'], true)) {
+                    $this->emitDeprecatedPartiallySupportedCallable($class_fqsen->getName(), $method_name);
                     if (!$context->isInClassScope()) {
                         $this->emitNonObjectContextInCallableIssue((string)$class_fqsen, $method_name);
                         return [];
@@ -4054,8 +4082,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 Issue::UndeclaredClassInCallable,
                 $context->getLineNumberStart(),
                 (string)$class_fqsen,
-                "$class_fqsen::$method_name"
+                "$class_fqsen::" . (is_string($method_name) ? $method_name : '(unknown)')
             );
+            return [];
+        }
+        if (!is_string($method_name)) {
             return [];
         }
         $class = $code_base->getClassByFQSEN($class_fqsen);
