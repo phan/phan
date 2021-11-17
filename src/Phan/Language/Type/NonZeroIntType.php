@@ -72,6 +72,7 @@ final class NonZeroIntType extends IntType
                     if ($type instanceof LiteralStringType) {
                         return (bool)$type->getValue();
                     }
+                    // string, non-empty-string, literal-string fall through to the parent call.
                     break;
                 case 'float':
                     if ($type instanceof LiteralFloatType) {

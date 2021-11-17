@@ -3,7 +3,7 @@ function test_weak_nes(string $s) {
     if ($s) {
         var_export($s > '0');
         var_export($s == '0');
-        var_export($s == 0);  // TODO: This can be true for `0 == 'foo'`, but it is still suspicious
+        var_export($s == 0);  // TODO: This can be true for `0 == 'foo'` until php 8.0 strict numeric comparisons, but it is still suspicious
     }
 }
 function test_weak_nzi(int $i) {
