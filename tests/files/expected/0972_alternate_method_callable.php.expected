@@ -1,0 +1,12 @@
+%s:15 PhanParamTooFewCallable Call with 0 arg(s) to \NS972\Foo::m(int $arg) (as a provided callable) which requires 1 arg(s) defined at %s:5
+%s:16 PhanDeprecatedPartiallySupportedCallableAlternateScope Saw partially supported callable [new Foo(), 'NS972\\Foo::m']. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.
+%s:16 PhanUndeclaredMethodInCallable Call to undeclared method NS972\Foo::m in callable. Possible object type(s) for that method are \NS972\Foo
+%s:17 PhanDeprecatedPartiallySupportedCallableAlternateScope Saw partially supported callable [new Foo(), 'NS972\\Bar::m']. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.
+%s:17 PhanUndeclaredMethodInCallable Call to undeclared method NS972\Bar::m in callable. Possible object type(s) for that method are \NS972\Foo
+%s:18 PhanParamTooFewCallable Call with 0 arg(s) to \NS972\Bar::m(int $arg) (as a provided callable) which requires 1 arg(s) defined at %s:10
+%s:19 PhanDeprecatedPartiallySupportedCallableAlternateScope Saw partially supported callable [new Bar(), 'NS972\\Foo::m']. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.
+%s:19 PhanUndeclaredMethodInCallable Call to undeclared method NS972\Foo::m in callable. Possible object type(s) for that method are \NS972\Bar
+%s:20 PhanDeprecatedPartiallySupportedCallableAlternateScope Saw partially supported callable [new Bar(), 'NS972\\Bar::m']. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.
+%s:20 PhanUndeclaredMethodInCallable Call to undeclared method NS972\Bar::m in callable. Possible object type(s) for that method are \NS972\Bar
+%s:21 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \NS972\Bar::NS972\Foo::m in callable
+%s:22 PhanUndeclaredMethod Call to undeclared method \NS972\Foo::NS972\Foo::m

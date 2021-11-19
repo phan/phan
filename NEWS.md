@@ -6,6 +6,7 @@ Phan NEWS
 New Features(Analysis):
 - Emit `PhanDeprecatedPartiallySupportedCallable` for functions that work with `call_user_func($expr)` but not `$expr()`.
   The literal strings `'self'`, `'parent'`, and `'static'` in `'self::methodName'` or `['self', 'methodName']` in callables were deprecated in PHP 8.2.
+- Emit `PhanDeprecatedPartiallySupportedCallableAlternateScope` for uses of callables such as `[new SubClass(), 'Base::method']` specifying an alternate scope.
 
 Nov 13 2021, Phan 5.3.0
 -----------------------

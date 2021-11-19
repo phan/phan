@@ -927,10 +927,18 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0269
 ## PhanDeprecatedPartiallySupportedCallable
 
 ```
-Saw deprecated partially supported callable {METHOD}. This behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.
+Saw deprecated partially supported callable {METHOD}. This was deprecated in PHP 8.2 and behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0370_callable_edge_cases.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0370_callable_edge_cases.php#L5).
+
+## PhanDeprecatedPartiallySupportedCallableAlternateScope
+
+```
+Saw partially supported callable [{CODE}, {METHOD}]. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0972_alternate_method_callable.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0972_alternate_method_callable.php#L16).
 
 ## PhanDeprecatedProperty
 

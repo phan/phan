@@ -330,6 +330,7 @@ class Issue
     public const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
     public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
     public const DeprecatedPartiallySupportedCallable = 'PhanDeprecatedPartiallySupportedCallable';
+    public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
 
     // Issue::CATEGORY_PARAMETER
     public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -3192,9 +3193,17 @@ class Issue
                 self::DeprecatedPartiallySupportedCallable,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                'Saw deprecated partially supported callable {METHOD}. This behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.',
+                'Saw deprecated partially supported callable {METHOD}. This was deprecated in PHP 8.2 and behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [{CLASS}::class, {METHOD}] can be used instead.',
                 self::REMEDIATION_B,
                 5008
+            ),
+            new Issue(
+                self::DeprecatedPartiallySupportedCallableAlternateScope,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Saw partially supported callable [{CODE}, {METHOD}]. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.',
+                self::REMEDIATION_B,
+                5009
             ),
 
             // Issue::CATEGORY_PARAMETER

@@ -75,6 +75,7 @@ use TypeError;
 
 use function is_scalar;
 use function is_string;
+use function strpos;
 
 /**
  * Determines the UnionType associated with a given node.
@@ -3625,7 +3626,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } elseif ($node->flags & \ast\flags\NAME_RELATIVE) {
             // Relative to current namespace
-            if (0 !== \strpos($class_name, '\\')) {
+            if (0 !== strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
@@ -3634,7 +3635,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } else {
             // Fully qualified
-            if (0 !== \strpos($class_name, '\\')) {
+            if (0 !== strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
@@ -3989,6 +3990,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             \var_representation($method_name)
         );
     }
+    /**
+     * @param ?string|?int|?float|?bool|?Node $class_name
+     */
+    private function emitDeprecatedPartiallySupportedCallableAlternateScope($class_name, string $method_name): void
+    {
+        $this->emitIssue(
+            Issue::DeprecatedPartiallySupportedCallableAlternateScope,
+            $this->context->getLineNumberStart(),
+            ASTReverter::toShortString($class_name),
+            var_representation($method_name)
+        );
+    }
 
     /**
      * @param ?string|?int|?float|?bool|?Node $method_name
@@ -4013,7 +4026,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return list<FullyQualifiedMethodName>
      * A list of `FullyQualifiedMethodName`s associated with the given node
      */
-    private function methodFQSENListFromParts($class_or_expr, $method_name): array
+    private function methodFQSENListFromParts($class_or_expr, $method_name, bool $from_array): array
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -4035,6 +4048,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                     );
                 }
             }
+        }
+        if ($from_array && is_string($method_name) && strpos($method_name, '::') !== false) {
+            $this->emitDeprecatedPartiallySupportedCallableAlternateScope($class_or_expr, $method_name);
         }
         try {
             if (is_string($class_or_expr)) {
@@ -4156,9 +4172,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
         }
         if (is_string($node)) {
-            if (\strpos($node, '::') !== false) {
+            if (strpos($node, '::') !== false) {
                 [$class_name, $method_name] = \explode('::', $node, 2);
-                return $this->methodFQSENListFromParts($class_name, $method_name);
+                return $this->methodFQSENListFromParts($class_name, $method_name, false);
             }
             return $this->functionFQSENListFromFunctionName($node);
         }
@@ -4183,7 +4199,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 $i++;
             }
-            return $this->methodFQSENListFromParts($node[0], $node[1]);
+            return $this->methodFQSENListFromParts($node[0], $node[1], true);
         }
         if (!($node instanceof Node)) {
             // TODO: Warn?
