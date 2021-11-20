@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.14';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.0.15';
 
 /**
  * Dump instructions on how to install php-ast
@@ -62,8 +62,8 @@ function phan_output_ast_installation_instructions(): void
     }
     if (DIRECTORY_SEPARATOR === '\\') {
         if (PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
-            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.14/php_ast-1.0.14-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
-            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.14/php_ast-1.0.14-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
+            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.15/php_ast-1.0.15-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
+            // e.g. https://windows.php.net/downloads/pecl/releases/ast/1.0.15/php_ast-1.0.15-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
             fprintf(
                 STDERR,
                 PHP_EOL . "Windows users can download php-ast from https://windows.php.net/downloads/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
@@ -146,14 +146,16 @@ if (extension_loaded('ast')) {
         exit(1);
     };
 
-    if (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.14') < 0) {
+    if (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.0.15') < 0) {
+        $phan_output_ast_too_old_and_exit('1.0.15', '8.2');
+    } elseif (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.14') < 0) {
         $phan_output_ast_too_old_and_exit('1.0.14', '8.1');
     } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.11') < 0) {
         $phan_output_ast_too_old_and_exit('1.0.11', '8.0');
     } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
         fprintf(
             STDERR,
-            "WARNING: Phan 5.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.14+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
+            "WARNING: Phan 5.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.15+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
             $ast_version,
             PHP_VERSION
         );
@@ -351,52 +353,53 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler
         return true;
     }
-    if ($errno === E_DEPRECATED && preg_match('/^stream_select.*should be null instead of 0/i', $errstr)) {
-        // TODO: Remove after bumping the minimum sabre/event version to a release that fixes this
-        // https://github.com/sabre-io/event/pull/88
-        return true;
-    }
-    if ($errno === E_DEPRECATED && preg_match('/^Use of "\w+" in callables is deprecated/i', $errstr) && str_contains(str_replace('\\', '/', $errfile), 'vendor/webmozart/assert')) {
-        // TODO: Remove after bumping the minimum webmozart version to a release that fixes this
-        // https://github.com/webmozarts/assert/pull/260/files
-        return true;
-    }
     if ($errno === E_USER_DEPRECATED && preg_match('/(^Passing a command as string when creating a |method is deprecated since Symfony 4\.4)/', $errstr)) {
         // Suppress deprecation notices running `vendor/bin/paratest`.
         // Don't execute the PHP internal error handler.
         return true;
     }
-    if ($errno === E_DEPRECATED && preg_match('/^(Constant |Method ReflectionParameter::getClass)/', $errstr)) {
-        // Suppress deprecation notices running `vendor/bin/paratest` in php 8
-        // Constants such as ENCHANT can be deprecated when calling constant()
-        return true;
-    }
-    if ($errno === E_DEPRECATED && preg_match('/^The Serializable interface is deprecated/', $errstr)) {
-        if (preg_match('@/vendor/phpunit/@', $errfile)) {
-            // Suppress deprecation notices running phpunit in php 8.1 with the Serializable interface.
-            // phpunit 8 stopped being maintained before Serializable was deprecated.
+    if ($errno === E_DEPRECATED) {
+        // Because php 7.2 is used in CI we're stuck on an unmaintained paratest version.
+        if (preg_match('/^Creation of dynamic property (ParaTest\\\\Runners|Microsoft\\\\PhpParser|Phan\\\\LanguageServer\\\\LanguageServer::)/', $errstr)) {
+            return true;
+        }
+        if (preg_match('/^Use of "\w+" in callables is deprecated/i', $errstr) && str_contains(str_replace('\\', '/', $errfile), 'vendor/webmozart/assert')) {
+            // TODO: Remove after bumping the minimum webmozart version to a release that fixes this
+            // https://github.com/webmozarts/assert/pull/260/files
+            return true;
+        }
+        if (preg_match('/^(Constant |Method ReflectionParameter::getClass)/', $errstr)) {
+            // Suppress deprecation notices running `vendor/bin/paratest` in php 8
+            // Constants such as ENCHANT can be deprecated when calling constant()
+            return true;
+        }
+        if (preg_match('/^The Serializable interface is deprecated/', $errstr)) {
+            if (preg_match('@/vendor/phpunit/@', $errfile)) {
+                // Suppress deprecation notices running phpunit in php 8.1 with the Serializable interface.
+                // phpunit 8 stopped being maintained before Serializable was deprecated.
+                return true;
+            }
+        }
+        if (preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
+            static $did_warn = false;
+            if (!$did_warn) {
+                $did_warn = true;
+                if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
+                    CLI::printWarningToStderr(sprintf(
+                        "php-ast AST version %d used by Phan %s has been deprecated in php-ast %s. Check if a newer version of Phan is available." . PHP_EOL,
+                        Config::AST_VERSION,
+                        CLI::PHAN_VERSION,
+                        (string)phpversion('ast')
+                    ));
+                    fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
+                }
+            }
+            // Don't execute the PHP internal error handler
             return true;
         }
     }
     if ($errno === E_NOTICE && preg_match('/^(iconv_strlen)/', $errstr)) {
         // Suppress deprecation notices in symfony/polyfill-mbstring
-        return true;
-    }
-    if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_.*Version.*is deprecated/i', $errstr)) {
-        static $did_warn = false;
-        if (!$did_warn) {
-            $did_warn = true;
-            if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
-                CLI::printWarningToStderr(sprintf(
-                    "php-ast AST version %d used by Phan %s has been deprecated in php-ast %s. Check if a newer version of Phan is available." . PHP_EOL,
-                    Config::AST_VERSION,
-                    CLI::PHAN_VERSION,
-                    (string)phpversion('ast')
-                ));
-                fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
-            }
-        }
-        // Don't execute the PHP internal error handler
         return true;
     }
     fwrite(STDERR, "$errfile:$errline [$errno] $errstr\n");

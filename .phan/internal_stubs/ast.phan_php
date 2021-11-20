@@ -12,11 +12,12 @@ class Metadata {
     public $name;
 }
 
+#[AllowDynamicProperties]
 class Node {
 
     // properties
     public $children;
-    public $endLineno;
+    public $endLineno;  // not actually a declared property but created for declarations by php-ast.
     public $flags;
     public $kind;
     public $lineno;

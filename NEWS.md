@@ -8,6 +8,9 @@ New Features(Analysis):
   The literal strings `'self'`, `'parent'`, and `'static'` in `'self::methodName'` or `['self', 'methodName']` in callables were deprecated in PHP 8.2.
 - Emit `PhanDeprecatedPartiallySupportedCallableAlternateScope` for uses of callables such as `[new SubClass(), 'Base::method']` specifying an alternate scope.
 
+Bug fixes:
+- Avoid crashing when running in PHP 8.2+ after php 8.2 deprecated dynamic(undeclared) properties on classes without `#[AllowDynamicProperties]`.
+
 Nov 13 2021, Phan 5.3.0
 -----------------------
 
