@@ -30,9 +30,9 @@ WORKDIR /usr/src/app
 
 RUN adduser -u 9000 -D app
 
-ENV LAST_MODIFIED_DATE 2020-09-13
+ENV LAST_MODIFIED_DATE 2021-11-27
 
-ENV PHP_AST_VERSION=1.0.14
+ENV PHP_AST_VERSION=1.0.16
 
 RUN apk add --no-cache \
 	php8 && \

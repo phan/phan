@@ -242,7 +242,9 @@ if (!\class_exists('\ast\Node')) {
     /**
      * This class describes a single node in a PHP AST.
      * @suppress PhanRedefineClassInternal
+     * @phan-suppress-next-next-line PhanUndeclaredClassAttribute class suppression isn't working for duplicate of internal class.
      */
+    #[AllowDynamicProperties]
     class Node
     {
         /** @var int AST Node Kind. Values are one of ast\AST_* constants. */
