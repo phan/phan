@@ -1,0 +1,2 @@
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type \Templated<\stdClass>(real=\Templated<\stdClass>)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $inst - it has union type \stdClass
