@@ -59,9 +59,15 @@ class Parameter extends Variable
 
     /**
      * @var UnionType|null
-     * The type of the default value, if any
+     * The type of the default value, if any (converting literals to non-literals)
      */
     private $default_value_type = null;
+
+    /**
+     * @var UnionType|null
+     * The type of the default value, if any
+     */
+    private $default_value_literal_type = null;
 
     /**
      * @var FutureUnionType|null
@@ -134,6 +140,7 @@ class Parameter extends Variable
     public function setDefaultValueType(UnionType $type): void
     {
         $this->default_value_type = $type;
+        $this->default_value_literal_type = $type;
     }
 
     /**
@@ -157,7 +164,7 @@ class Parameter extends Variable
     /**
      * @return UnionType
      * The type of the default value for this parameter
-     * if it exists
+     * if it exists (converting literals to non-literals)
      */
     public function getDefaultValueType(): UnionType
     {
@@ -165,7 +172,8 @@ class Parameter extends Variable
         if ($future_type !== null) {
             // Only attempt to resolve the future type once.
             try {
-                $this->default_value_type = $future_type->get()->asNonLiteralType();
+                $this->default_value_literal_type = $future_type->get();
+                $this->default_value_type = $this->default_value_literal_type->asNonLiteralType();
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
@@ -178,8 +186,37 @@ class Parameter extends Variable
                 $this->default_value_future_type = null;
             }
         }
-        // @phan-suppress-next-line PhanPossiblyNullTypeReturn callers should check hasDefaultType
+        // @phan-suppress-next-line PhanPossiblyNullTypeReturn callers should check hasDefaultValue
         return $this->default_value_type;
+    }
+
+    /**
+     * @return UnionType
+     * The type of the default value for this parameter
+     * if it exists (keeping literals)
+     */
+    public function getDefaultValueLiteralType(): UnionType
+    {
+        $future_type = $this->default_value_future_type;
+        if ($future_type !== null) {
+            // Only attempt to resolve the future type once.
+            try {
+                $this->default_value_literal_type = $future_type->get();
+                $this->default_value_type = $this->default_value_literal_type->asNonLiteralType();
+            } catch (IssueException $exception) {
+                // Ignore exceptions
+                Issue::maybeEmitInstance(
+                    $future_type->getCodebase(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $future_type->getContext(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $exception->getIssueInstance()
+                );
+            } finally {
+                // Only try to resolve the FutureType once.
+                $this->default_value_future_type = null;
+            }
+        }
+        // @phan-suppress-next-line PhanPossiblyNullTypeReturn callers should check hasDefaultValue
+        return $this->default_value_literal_type;
     }
 
     /**
@@ -924,6 +961,7 @@ class Parameter extends Variable
     {
         $this->default_value = $other->default_value;
         $this->default_value_type = $other->default_value_type;
+        $this->default_value_literal_type = $other->default_value_literal_type;
         if ($other->default_value_from_reflection) {
             $this->default_value_from_reflection = true;
         }

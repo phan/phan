@@ -1669,18 +1669,18 @@ trait FunctionTrait
             $closure = TemplateType::combineParameterClosures(
                 $closure,
                 /**
-                 * @param list<Node|UnionType|mixed> $parameters
+                 * @param list<Node|UnionType|mixed> $arguments
                  */
-                static function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type): UnionType {
-                    $param_value = $parameters[$i] ?? null;
-                    if ($param_value !== null) {
-                        if ($param_value instanceof UnionType) {
+                static function (array $arguments, Context $context) use ($code_base, $i, $closure_for_type, $parameter): UnionType {
+                    $arg_value = $arguments[$i] ?? ($parameter->hasDefaultValue() ? $parameter->getDefaultValueLiteralType() : null);
+                    if ($arg_value !== null) {
+                        if ($arg_value instanceof UnionType) {
                             // This helper method has two callers - one passes in an array of union types, another passes in the raw nodes.
-                            $param_type = $param_value;
+                            $arg_type = $arg_value;
                         } else {
-                            $param_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $param_value);
+                            $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg_value);
                         }
-                        return $closure_for_type($param_type, $context);
+                        return $closure_for_type($arg_type, $context);
                     }
                     return UnionType::empty();
                 }
