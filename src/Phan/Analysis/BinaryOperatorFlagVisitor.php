@@ -486,26 +486,42 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     public function visitBinaryConcat(Node $node): UnionType
     {
         $left_node = $node->children['left'];
-        $left_value = $left_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $left_node,
-            $this->should_catch_issue_exception
-        )->asSingleScalarValueOrNullOrSelf() : $left_node;
+        if ($left_node instanceof Node) {
+            $left_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $left_node,
+                $this->should_catch_issue_exception
+            );
+            $left_value = $left_type->asSingleScalarValueOrNullOrSelf();
+        } else {
+            $left_value = $left_node;
+        }
         if (\is_object($left_value)) {
             return StringType::instance(false)->asRealUnionType();
         }
         $right_node = $node->children['right'];
-        $right_value = $right_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $right_node,
-            $this->should_catch_issue_exception
-        )->asSingleScalarValueOrNullOrSelf() : $right_node;
+        if ($right_node instanceof Node) {
+            $right_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $right_node,
+                $this->should_catch_issue_exception
+            );
+            $right_value = $right_type->asSingleScalarValueOrNullOrSelf();
+        } else {
+            $right_value = $right_node;
+        }
         if (\is_object($right_value)) {
             return StringType::instance(false)->asRealUnionType();
         }
-        return LiteralStringType::instanceForValue($left_value . $right_value, false)->asRealUnionType();
+        $literal = LiteralStringType::instanceForValue($left_value . $right_value, false);
+        if ((!isset($left_type) || $left_type->getRealUnionType()->isSingleScalarValue()) &&
+            (!isset($right_type) || $right_type->getRealUnionType()->isSingleScalarValue())) {
+            return $literal->asRealUnionType();
+        }
+
+        return new UnionType([$literal], true, [StringType::instance(false)]);
     }
 
     /**

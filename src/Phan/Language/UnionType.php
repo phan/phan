@@ -5986,11 +5986,9 @@ class UnionType implements Serializable, Stringable
             return $this;
         }
         $type = \reset($type_set);
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         if ($type->isNullable()) {
             return ($type instanceof NullType || $type instanceof VoidType) ? null : $this;
         }
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
             case LiteralIntType::class:
             case LiteralStringType::class:
@@ -6002,6 +6000,23 @@ class UnionType implements Serializable, Stringable
             default:
                 return $this;
         }
+    }
+
+    /**
+     * If this union type can be represented by a single scalar value or null,
+     * then this returns true.
+     */
+    public function isSingleScalarValue(): bool
+    {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return false;
+        }
+        $type = \reset($type_set);
+        if ($type->isNullable()) {
+            return $type instanceof NullType || $type instanceof VoidType;
+        }
+        return $type instanceof LiteralTypeInterface;
     }
 
     /**
@@ -6313,6 +6328,7 @@ class UnionType implements Serializable, Stringable
 
     /**
      * Converts a phpdoc type into the real union type equivalent.
+     * @see UnionType::getRealUnionType() instead to create a union type from the real type set.
      */
     public function asRealUnionType(): UnionType
     {

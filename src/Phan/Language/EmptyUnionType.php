@@ -1501,6 +1501,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function isSingleScalarValue(): bool
+    {
+        return false;
+    }
+
     public function asValueOrNullOrSelf()
     {
         return $this;

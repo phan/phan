@@ -6,6 +6,7 @@ Phan NEWS
 New Features(Analysis):
 - Use intersection type of original variable value and array elements when inferring type of `$var` in `in_array($var, $array)`
   instead of just the type of the array elements (#4630)
+- Treat type of concatenation of one or more non-real strings as a phpdoc(non-real) string with the real type string. (#4635)
 
 Bug fixes:
 - Fix dead code detection for PHP 8.0 non-capturing catch statements. (#4633)
