@@ -7,6 +7,10 @@ New Features(Analysis):
 - Use intersection type of original variable value and array elements when inferring type of `$var` in `in_array($var, $array)`
   instead of just the type of the array elements (#4630)
 
+Bug fixes:
+- Fix dead code detection for PHP 8.0 non-capturing catch statements. (#4633)
+  This should still analyze the catch body even if there is no caught exception variable.
+
 Dec 14 2021, Phan 5.3.1
 -----------------------
 

@@ -1,0 +1,4 @@
+%s:3 PhanUnreferencedClass Possibly zero references to class \Test48
+%s:4 PhanUnreferencedPublicMethod Possibly zero references to public method \Test48::connect()
+%s:4 PhanUnusedPublicNoOverrideMethodParameter Parameter $u is never used
+%s:7 PhanCompatibleNonCapturingCatch Catching exceptions without a variable is not supported before PHP 8.0 in catch (Exception)
