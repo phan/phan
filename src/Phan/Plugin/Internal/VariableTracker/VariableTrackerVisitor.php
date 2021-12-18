@@ -1103,13 +1103,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     public function visitCatch(Node $node): VariableTrackingScope
     {
         $var_node = $node->children['var'];
-        if (!$var_node instanceof Node) {
-            // This is a non-capturing catch. Or it could be an invalid node from the polyfill.
-            return $this->scope;
-        }
-
         $scope = $this->scope;
-        if ($var_node->kind === \ast\AST_VAR) {
+        // handle php 8.0 non-capturing catches
+        if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             $name = $var_node->children['name'];
             if (is_string($name)) {
                 self::$variable_graph->recordVariableDefinition($name, $var_node, $scope, null);
