@@ -1,0 +1,4 @@
+%s:2 PhanUnreferencedClass Possibly zero references to class \Test49
+%s:6 PhanUnreferencedPublicMethod Possibly zero references to public method \Test49::save()
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $scheme - it has union type 'file:'(real=string)
+%s:12 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match ($scheme) { self::TYPE_INT_PREFIX, self::TYPE_MAIL_PREFIX, 'http:', 'https:' => $var, default => $var }
