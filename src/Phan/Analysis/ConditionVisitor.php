@@ -1194,8 +1194,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if ($element_type->isEmptyOrMixed()) {
             return $context;
         }
+        $var_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node);
+        $new_type = self::calculateNarrowedUnionType($this->code_base, $this->context, $var_type, $element_type);
         $is_strict = isset($args[2]) && UnionTypeVisitor::checkCondUnconditionalTruthiness($args[2]) === true;
-        return $this->updateVariableWithNewType($var_node, $context, $element_type, true, $is_strict);
+        return $this->updateVariableWithNewType($var_node, $context, $new_type, true, $is_strict);
     }
 
     /**

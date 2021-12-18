@@ -1,5 +1,12 @@
 Phan NEWS
 
+??? ?? 202?, Phan 5.3.2 (dev)
+-----------------------
+
+New Features(Analysis):
+- Use intersection type of original variable value and array elements when inferring type of `$var` in `in_array($var, $array)`
+  instead of just the type of the array elements (#4630)
+
 Dec 14 2021, Phan 5.3.1
 -----------------------
 
