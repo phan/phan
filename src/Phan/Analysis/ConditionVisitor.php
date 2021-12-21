@@ -1048,7 +1048,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
         // TODO: Check if the return value of the function is void/always truthy (e.g. object)
 
-        switch (\strtolower($raw_function_name)) {
+        $function_name = \strtolower($raw_function_name);
+        switch ($function_name) {
             case 'array_key_exists':
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 return $this->analyzeArrayKeyExists($args);
@@ -1063,7 +1064,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // Only look at things of the form
         // `\is_string($variable)`
         if (!($first_arg instanceof Node && $first_arg->kind === ast\AST_VAR)) {
-            $type_modification_callback = $map[\strtolower($raw_function_name)] ?? null;
+            $type_modification_callback = $map[$function_name] ?? null;
             if (!$type_modification_callback) {
                 if (Config::getValue('redundant_condition_detection')) {
                     $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
@@ -1074,13 +1075,19 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $this->modifyComplexExpression($first_arg, $type_modification_callback, $this->context, $args);
         }
 
-        $function_name = \strtolower($raw_function_name);
-        if (\count($args) !== 1) {
-            if (!(\count($args) === 2 && \in_array($function_name, ['is_a', 'class_exists', 'method_exists'], true))) {
-                if (Config::getValue('redundant_condition_detection')) {
-                    $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+        // Check if a class-string is potentially being used as the first argument to is_a
+        if ($function_name === 'is_a' && isset($args[2])) {
+            $allow_string_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $args[2])->containsTruthy();
+            if ($allow_string_type) {
+                // is_a("A"...) and is_a(A::class) early out in the node/var check above
+                $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $first_arg);
+                // TODO: Narrow to class-string|object in another PR (low priority)
+                if (!$union_type->isObject()) {
+                    if (Config::getValue('redundant_condition_detection')) {
+                        $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+                    }
+                    return $this->context;
                 }
-                return $this->context;
             }
         }
 
