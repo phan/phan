@@ -1,6 +1,6 @@
 <?php
 
-function test305($x, $y, $z, $w, $className) {
+function test305($x, $y, $z, $w, $className, $untypedParameter) {
     if (is_a($x, 'stdClass')) {
         echo intdiv($x, 2);  // wrong
     }
@@ -15,6 +15,20 @@ function test305($x, $y, $z, $w, $className) {
 
     if (is_a($z, $className)) {
         echo intdiv($z, 2);  // infer ObjectType if we don't know?
+    }
+
+    $a = 'A';
+    if (is_a($a, 'stdClass', true)) {
+        '@phan-debug-var $a';
+    }
+
+    $b = new stdClass();
+    if (is_a($b, 'ArrayObject', true)) {
+        '@phan-debug-var $b';
+    }
+
+    if (is_a($untypedParameter, 'ArrayObject', true)) {
+        '@phan-debug-var $untypedParameter';
     }
 }
 test305(0, 1, 'ignored');
