@@ -326,7 +326,15 @@ final class Builder
             if (\strpos($line, '@') === false) {
                 continue;
             }
-            $this->parseCommentLine($i, \trim($line));
+            // https://docs.phpdoc.org/2.9/guides/docblocks.html
+            // > A tag always starts on a new line with an at-sign (@) followed by the name of the tag.
+            // > Between the start of the line and the tag’s name (including at-sign) there may be one or more spaces or tabs.
+            $line = \trim($line);
+            $trimmed = \preg_replace('/^\/?[\*\s]+/', '', $line);
+            if (($trimmed[0] ?? '') !== '@') {
+                continue;
+            }
+            $this->parseCommentLine($i, $line, $trimmed);
         }
 
         if (\count($this->template_type_list)) {
@@ -392,12 +400,14 @@ final class Builder
         ))->build();
     }
 
-    private function parseCommentLine(int $i, string $line): void
+    private function parseCommentLine(int $i, string $line, string $trimmed): void
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $line, $matches)) {
+        //
+        // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 

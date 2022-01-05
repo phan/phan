@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 202?, Phan 5.3.2 (dev)
+??? ?? 2022, Phan 5.3.2 (dev)
 -----------------------
 
 New Features(Analysis):
@@ -11,6 +11,10 @@ New Features(Analysis):
 Bug fixes:
 - Fix dead code detection for PHP 8.0 non-capturing catch statements. (#4633)
   This should still analyze the catch body even if there is no caught exception variable.
+- Ignore phpdoc comment tags that don't start at the start of a line of the doc comment (`* @sometag`) or aren't an inline tag (`* something {@sometag}`). (#4640)
+  See https://docs.phpdoc.org/3.0/guide/references/phpdoc/tags/internal.html and https://docs.phpdoc.org/2.9/guides/docblocks.html
+
+  E.g. `* This is not @abstract.` is no longer treated as an abstract method.
 
 Dec 14 2021, Phan 5.3.1
 -----------------------

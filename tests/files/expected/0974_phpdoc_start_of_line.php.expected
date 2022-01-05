@@ -1,0 +1,1 @@
+%s:12 PhanCommentAbstractOnInheritedMethod Class \B974 inherits a method \A974::test declared at %s:4 marked as @abstract in phpdoc but does not override it

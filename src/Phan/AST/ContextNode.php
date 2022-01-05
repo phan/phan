@@ -2275,6 +2275,8 @@ class ContextNode
     // This currently only supports static variables.
     // When disabled, all variables will be resolved.
     public const RESOLVE_ONLY_CONSTANT_VARS = (1 << 7);
+    // Don't use variables.
+    public const RESOLVE_DONT_USE_VARS = (1 << 8);
 
     public const RESOLVE_DEFAULT =
         self::RESOLVE_ARRAYS |
@@ -2407,7 +2409,7 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~(self::RESOLVE_CONSTANTS|self::RESOLVE_ONLY_CONSTANT_VARS|self::RESOLVE_DONT_USE_VARS));
                 }
                 return $new_node;
             case ast\AST_CLASS_CONST:
