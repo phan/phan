@@ -462,7 +462,7 @@ return [
         'vendor/microsoft/tolerant-php-parser/src',
         'vendor/netresearch/jsonmapper/src',
         'vendor/phpunit/phpunit/src',
-        'vendor/psr/log/Psr',
+        'vendor/psr/log',  // subdirectory depends on dependency version
         'vendor/sabre/event/lib',
         'vendor/symfony/console',
         'vendor/symfony/polyfill-php80',
