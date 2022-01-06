@@ -32,7 +32,7 @@ class GenericLiteralStringType extends StringType
      */
     protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof self || parent::canCastToNonNullableType($type, $code_base);
+        return ($type instanceof StringType || parent::canCastToNonNullableType($type, $code_base)) && !($type instanceof NonEmptyStringType);
     }
 
     /**
@@ -40,7 +40,7 @@ class GenericLiteralStringType extends StringType
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $type): bool
     {
-        return $type instanceof self || parent::canCastToDeclaredType($code_base, $context, $type);
+        return ($type instanceof StringType || parent::canCastToDeclaredType($code_base, $context, $type)) && !($type instanceof NonEmptyStringType);
     }
 
     /**
@@ -51,7 +51,8 @@ class GenericLiteralStringType extends StringType
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        return $type instanceof self || parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
+        // Allow literal-string -> 'a', string, but forbid literal-string->non-empty-string like string->non-empty-string is forbidden
+        return ($type instanceof StringType || parent::canCastToNonNullableTypeWithoutConfig($type, $code_base)) && !($type instanceof NonEmptyStringType);
     }
 
     /**
@@ -61,6 +62,8 @@ class GenericLiteralStringType extends StringType
     protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
     {
         // E.g. GenericNonEmptyLiteralStringType is a subtype of GenericLiteralStringType
-        return $this instanceof $type || parent::isSubtypeOfNonNullableType($type, $code_base);
+        // (if GenericNonEmptyLiteralStringType were to be added)
+        // (TODO: If GenericNonEmptyLiteralStringType allow GenericNonEmptyLiteralStringType->NonEmptyStringType here and above)
+        return ($this instanceof $type || parent::isSubtypeOfNonNullableType($type, $code_base)) && !$type instanceof NonEmptyStringType;
     }
 }

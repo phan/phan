@@ -342,6 +342,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                     if ($type instanceof LiteralStringType) {
                         return $type->value === $this->value;
                     }
+                    // fallthrough
+                case 'literal-string':
                     return true;
                 case 'non-empty-string':
                     return (bool)$this->value;
