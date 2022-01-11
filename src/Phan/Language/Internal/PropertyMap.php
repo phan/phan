@@ -118,6 +118,10 @@ return [
         'lineno' => 'int',
         'name' => '?string',
     ],
+    'backedenum' => [
+        'name' => 'string',
+        'value' => 'int|string',
+    ],
     'collator' => ['name' => 'string'],
     'curlfile' => [
         'mime' => 'string',
@@ -413,6 +417,9 @@ return [
     ],
     'tokyotyrantexception' => ['code' => 'int'],
     'transliterator' => ['id' => 'string'],
+    'unitenum' => [
+        'name' => 'string',
+    ],
     'xmlreader' => [
         'attributeCount' => 'int',
         'baseURI' => 'string',

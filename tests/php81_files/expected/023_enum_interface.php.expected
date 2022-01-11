@@ -1,0 +1,10 @@
+%s:12 PhanEnumCannotImplement Classlike \Invalid23 cannot implement \UnitEnum in php 8.1+
+%s:12 PhanUnreferencedClass Possibly zero references to class \Invalid23
+%s:13 PhanPluginUnknownArrayMethodReturnType Method \Invalid23::cases() has a return type of array, but does not specify any key types or value types
+%s:20 PhanUndeclaredProperty Reference to undeclared property \UnitEnum->value
+%s:21 PhanAccessReadOnlyProperty Cannot modify read-only property \UnitEnum->name defined at internal:0
+%s:22 PhanAccessReadOnlyProperty Cannot modify read-only property \BackedEnum->name defined at internal:0
+%s:23 PhanAccessReadOnlyProperty Cannot modify read-only property \BackedEnum->value defined at internal:0
+%s:24 PhanUndeclaredProperty Reference to undeclared property \BackedEnum->extra
+%s:25 PhanTypeInstantiateEnum Saw instantiation of enum \BackedEnum
+%s:25 PhanTypeInstantiateEnum Saw instantiation of enum \UnitEnum

@@ -2693,6 +2693,14 @@ Enum {ENUM} is not allowed to declare instance or static properties but it conta
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/011_enum_error_cases.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/011_enum_error_cases.php#L17).
 
+## PhanEnumCannotImplement
+
+```
+Classlike {CLASSLIKE} cannot implement {INTERFACE} in php 8.1+
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/023_enum_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/023_enum_interface.php#L12).
+
 ## PhanEnumForbiddenMagicMethod
 
 ```

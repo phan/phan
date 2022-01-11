@@ -293,6 +293,7 @@ class Issue
     public const InstanceMethodWithNoEnumCases = 'PhanInstanceMethodWithNoEnumCases';
     public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
     public const EnumForbiddenMagicMethod = 'PhanEnumForbiddenMagicMethod';
+    public const EnumCannotImplement = 'PhanEnumCannotImplement';
     public const ImpossibleIntersectionType = 'PhanImpossibleIntersectionType';
     public const TypeInvalidArrayKey = 'PhanTypeInvalidArrayKey';
     public const TypeInvalidArrayKeyLiteral = 'PhanTypeInvalidArrayKeyLiteral';
@@ -3004,6 +3005,14 @@ class Issue
                 'Enum {ENUM} is not allowed to have the magic method {METHOD} declared at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 10180
+            ),
+            new Issue(
+                self::EnumCannotImplement,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Classlike {CLASSLIKE} cannot implement {INTERFACE} in php 8.1+',
+                self::REMEDIATION_B,
+                10187
             ),
             new Issue(
                 self::ImpossibleIntersectionType,
