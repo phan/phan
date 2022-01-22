@@ -134,6 +134,14 @@ return [
         's' => 'int',
         'y' => 'int',
     ],
+    'dateperiod' => [
+        'current' => '?DateTimeInterface',
+        'end' => '?DateTimeInterface',
+        'include_start_date' => 'bool',
+        'interval' => 'DateInterval',
+        'recurrences' => 'int',
+        'start' => 'DateTimeInterface',
+    ],
     'directory' => ['handle' => 'resource', 'path' => 'string'],
     'directoryiterator' => ['name' => 'string'],
     'domattr' => [
