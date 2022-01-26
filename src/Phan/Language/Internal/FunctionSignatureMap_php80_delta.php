@@ -233,6 +233,34 @@ return [
       'old' => ['DateTime|false', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
       'new' => ['DateTime', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
     ],
+    'DateTimeImmutable::format' => [
+      'old' => ['string|false', 'format'=>'string'],
+      'new' => ['string', 'format'=>'string'],
+    ],
+    'DateTimeImmutable::setDate' => [
+      'old' => ['static|false', 'year'=>'int', 'month'=>'int', 'day'=>'int'],
+      'new' => ['static', 'year'=>'int', 'month'=>'int', 'day'=>'int'],
+    ],
+    'DateTimeImmutable::setISODate' => [
+      'old' => ['static|false', 'year'=>'int', 'week'=>'int', 'dayOfWeek='=>'int'],
+      'new' => ['static', 'year'=>'int', 'week'=>'int', 'dayOfWeek='=>'int'],
+    ],
+    'DateTimeImmutable::setTime' => [
+      'old' => ['static|false', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microsecond='=>'int'],
+      'new' => ['static', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microsecond='=>'int'],
+    ],
+    'DateTimeImmutable::setTimestamp' => [
+      'old' => ['static|false', 'timestamp'=>'int'],
+      'new' => ['static', 'timestamp'=>'int'],
+    ],
+    'DateTimeImmutable::setTimezone' => [
+      'old' => ['static|false', 'timezone'=>'DateTimeZone'],
+      'new' => ['static', 'timezone'=>'DateTimeZone'],
+    ],
+    'DateTimeImmutable::sub' => [
+      'old' => ['static|false', 'interval'=>'DateInterval'],
+      'new' => ['static', 'interval'=>'DateInterval'],
+    ],
     'debug_backtrace' => [
       'old' => ['list<array>', 'options='=>'int|bool', 'limit='=>'int'],
       'new' => ['list<array>', 'options='=>'int', 'limit='=>'int'],
