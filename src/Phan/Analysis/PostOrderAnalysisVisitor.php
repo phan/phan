@@ -3682,6 +3682,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $fqsen = $type->asFQSEN();
+        // The only thing that can implement the UnitEnum/BackedEnum interfaces in php 8.1+ are enums.
+        if (\in_array(strtolower($fqsen->__toString()), ['\backedenum', '\unitenum'], true)) {
+            return true;
+        }
         if (!$fqsen instanceof FullyQualifiedClassName || !$this->code_base->hasClassWithFQSEN($fqsen)) {
             return false;
         }

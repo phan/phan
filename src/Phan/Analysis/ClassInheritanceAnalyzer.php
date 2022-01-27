@@ -186,5 +186,17 @@ class ClassInheritanceAnalyzer
                 );
             }
         }
+        if ($target_class->isInterface() && !$source_class->isEnum()) {
+            if (\in_array(\strtolower($target_class->getFQSEN()->__toString()), ['\unitenum', '\backedenum'], true)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $source_class->getInternalContext(),
+                    Issue::EnumCannotImplement,
+                    $source_class->getFileRef()->getLineNumberStart(),
+                    $source_class->getFQSEN(),
+                    $target_class->getFQSEN()
+                );
+            }
+        }
     }
 }

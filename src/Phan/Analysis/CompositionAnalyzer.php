@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 use Phan\Language\UnionType;
 
 /**
@@ -41,6 +42,9 @@ class CompositionAnalyzer
         // and check to see if the types line up.
         // (This must be done after hydration, because some properties are loaded from traits)
         foreach ($class->getPropertyMap($code_base) as $property) {
+            if ($property->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
+                continue;
+            }
             try {
                 $property_union_type = $property->getDefaultType() ?? UnionType::empty();
             } catch (IssueException $_) {

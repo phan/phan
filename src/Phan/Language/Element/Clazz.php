@@ -278,6 +278,7 @@ class Clazz extends AddressableElement
 
         $context = new Context();
 
+        // ReflectionClass->getName() will include the namespace prefix (e.g. 'ast\Node'), unlike Phan\Language\Element\Clazz.
         $class_name = $class->getName();
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be valid if extension is valid
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
@@ -317,7 +318,7 @@ class Clazz extends AddressableElement
         // As a result, we set the types from Phan's documented internal property types first,
         // preferring them over the default values (which may be null, etc.).
         foreach (UnionType::internalPropertyMapForClassName(
-            $clazz->getName()
+            $class_name
         ) as $property_name => $property_type_string) {
             // An asterisk indicates that the class supports
             // dynamic properties
@@ -360,10 +361,16 @@ class Clazz extends AddressableElement
             // Record that Phan has known union types for this internal property,
             // so that analysis of assignments to the property can account for it.
             $property->setPHPDocUnionType($property_type);
+            if (in_array(strtolower($class_name), ['backedenum', 'unitenum'], true)) {
+                $property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);
+            }
 
             $clazz->addProperty($code_base, $property, None::instance());
         }
 
+        if (in_array(strtolower($class_name), ['backedenum', 'unitenum'], true)) {
+            $clazz->setPhanFlags($clazz->getPhanFlags() | Flags::IS_READ_ONLY);
+        }
         // n.b.: public properties on internal classes don't get
         //       listed via reflection until they're set unless
         //       they have a default value. Therefore, we don't
@@ -3417,6 +3424,10 @@ class Clazz extends AddressableElement
             }
         }
 
+        if ($this->isEnum()) {
+            $this->addEnumProperties($code_base);
+        }
+
         // Fetch the properties declared within the class, to check if they have override annotations later.
         $original_declared_properties = $this->getPropertyMap($code_base);
 
@@ -3978,11 +3989,19 @@ class Clazz extends AddressableElement
         if (!$this->isEnum()) {
             return;
         }
-        // Inherit properties from traits
+
+        // Inherit properties from traits and magic properties from interfaces
         $this->hydrate($code_base);
 
         $fqsen = $this->fqsen;
         foreach ($this->getPropertyMap($code_base) as $property) {
+            if (($property->getPhanFlags() & Flags::IS_ENUM_PROPERTY)) {
+                continue;
+            }
+            $fqsen_string = $property->getDefiningClassFQSEN()->__toString();
+            if (in_array(strtolower($fqsen_string), ['\backedenum', '\unitenum'], true)) {
+                continue;
+            }
             $context = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $property->getContext() : $this->getContext();
             Issue::maybeEmit(
                 $code_base,
@@ -4029,7 +4048,6 @@ class Clazz extends AddressableElement
                 );
             }
         }
-        $this->addEnumProperties($code_base);
     }
 
     public function setEnumType(UnionType $type): void
