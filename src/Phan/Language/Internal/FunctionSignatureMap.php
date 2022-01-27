@@ -7408,7 +7408,7 @@ return [
 'lstat' => ['bool[]|false|int[]|string[]', 'filename'=>'string'],
 'ltrim' => ['string', 'string'=>'string', 'characters='=>'string'],
 'Lua::__call' => ['mixed', 'lua_func'=>'callable', 'args='=>'array', 'use_self='=>'int'],
-'Lua::__construct' => ['void', 'lua_script_file'=>'string'],
+'Lua::__construct' => ['void', 'lua_script_file='=>'string'],
 'Lua::assign' => ['?Lua', 'name'=>'string', 'value'=>'mixed'],
 'Lua::call' => ['mixed', 'lua_func'=>'callable', 'args='=>'array', 'use_self='=>'int'],
 'Lua::eval' => ['mixed', 'statements'=>'string'],
