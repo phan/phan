@@ -443,8 +443,10 @@ EOT;
             $version_guess = '7.3';
         } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.0-dev'))) {
             $version_guess = '7.4';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('>=8.0-dev'))) {
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.1-dev'))) {
             $version_guess = '8.0';
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('>=8.1-dev'))) {
+            $version_guess = '8.1';
         } else {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
