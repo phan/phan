@@ -1,14 +1,20 @@
 Phan NEWS
 
-??? ?? 2022, Phan 5.3.2 (dev)
+Jan 31 2022, Phan 5.3.2
 -----------------------
 
 New Features(Analysis):
 - Use intersection type of original variable value and array elements when inferring type of `$var` in `in_array($var, $array)`
   instead of just the type of the array elements (#4630)
 - Treat type of concatenation of one or more non-real strings as a phpdoc(non-real) string with the real type string. (#4635)
+- In `phan --init`, allow inferring php 8.1 as the target php version in the generated config file. (#4655)
+
+Maintenance:
+- Allow installing xdebug-handler version ^3.0 (#4639)
+- Allow installing symfony/console version ^6.0 (#4642)
 
 Bug fixes:
+- Fix AST download link for PHP 8.0+ for Windows (#4645)
 - Fix dead code detection for PHP 8.0 non-capturing catch statements. (#4633)
   This should still analyze the catch body even if there is no caught exception variable.
 - Ignore phpdoc comment tags that don't start at the start of a line of the doc comment (`* @sometag`) or aren't an inline tag (`* something {@sometag}`). (#4640)
