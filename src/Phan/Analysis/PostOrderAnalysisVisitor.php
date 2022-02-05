@@ -5162,6 +5162,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     private function checkForPrivateMethodInTrait(Clazz $class, Method $method): void
     {
+        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
+            return;
+        }
+
         if (! $class->isTrait()) {
             return;
         }
