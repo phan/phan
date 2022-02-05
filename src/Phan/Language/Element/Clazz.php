@@ -3542,24 +3542,29 @@ class Clazz extends AddressableElement
 
     private function analyzeInheritedMethods(CodeBase $code_base): void
     {
-        if ($this->isClass() && !$this->isAbstract()) {
-            foreach ($this->getMethodMap($code_base) as $method) {
-                if ($method->getRealDefiningFQSEN() === $method->getFQSEN()) {
-                    continue;
-                }
-                if ($method->isPHPDocAbstract() && !$method->isPrivate()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $this->getContext(),
-                        Issue::CommentAbstractOnInheritedMethod,
-                        $this->getContext()->getLineNumberStart(),
-                        $this->fqsen,
-                        $method->getRealDefiningFQSEN(),
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart(),
-                        '@abstract'
-                    );
-                }
+        if (!$this->isClass()) {
+            return;
+        }
+        if ($this->isAbstract()) {
+            return;
+        }
+
+        foreach ($this->getMethodMap($code_base) as $method) {
+            if ($method->getRealDefiningFQSEN() === $method->getFQSEN()) {
+                continue;
+            }
+            if ($method->isPHPDocAbstract() && !$method->isPrivate()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->getContext(),
+                    Issue::CommentAbstractOnInheritedMethod,
+                    $this->getContext()->getLineNumberStart(),
+                    $this->fqsen,
+                    $method->getRealDefiningFQSEN(),
+                    $method->getContext()->getFile(),
+                    $method->getContext()->getLineNumberStart(),
+                    '@abstract'
+                );
             }
         }
     }

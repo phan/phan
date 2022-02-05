@@ -421,6 +421,14 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
+## PhanCompatibleAbstractPrivateMethodInTrait
+
+```
+Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php74_files/expected/034_trait_private_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php74_files/src/034_trait_private_method.php#L2).
+
 ## PhanCompatibleAccessMethodOnTraitDefinition
 
 ```

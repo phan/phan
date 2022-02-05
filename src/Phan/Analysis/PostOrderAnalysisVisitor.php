@@ -3022,6 +3022,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
 
+            $this->checkForAbstractPrivateMethodInTrait($class, $method);
             $this->checkForPHP4StyleConstructor($class, $method);
         } catch (Exception $_) {
         }
@@ -5157,5 +5158,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    private function checkForAbstractPrivateMethodInTrait(Clazz $class, Method $method): void
+    {
+        // Skip PHP 8.0+
+        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
+            return;
+        }
+
+        if (!$class->isTrait()) {
+            return;
+        }
+
+        if (!$method->isPrivate()) {
+            return;
+        }
+
+        if (!$method->isAbstract()) {
+            return;
+        }
+
+        $this->emitIssue(
+            Issue::CompatibleAbstractPrivateMethodInTrait,
+            $this->context->getLineNumberStart(),
+            (string)$class->getFQSEN(),
+            $method->getName()
+        );
     }
 }

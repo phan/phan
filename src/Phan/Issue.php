@@ -618,6 +618,7 @@ class Issue
     public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
+    public const CompatibleAbstractPrivateMethodInTrait    = 'PhanCompatibleAbstractPrivateMethodInTrait';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -5341,6 +5342,14 @@ class Issue
                 "Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait",
                 self::REMEDIATION_B,
                 3048
+            ),
+            new Issue(
+                self::CompatibleAbstractPrivateMethodInTrait,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                'Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+',
+                self::REMEDIATION_B,
+                3049
             ),
 
             // Issue::CATEGORY_GENERIC
