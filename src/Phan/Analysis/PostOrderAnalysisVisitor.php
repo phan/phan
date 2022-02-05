@@ -5160,7 +5160,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    private function checkForPrivateMethodInTrait(Clazz $class, $method): void
+    private function checkForPrivateMethodInTrait(Clazz $class, Method $method): void
     {
         if (! $class->isTrait()) {
             return;
