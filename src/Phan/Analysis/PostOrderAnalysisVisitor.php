@@ -5170,6 +5170,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
+        if (! $method->isAbstract()) {
+            return;
+        }
+
         $this->emitIssue(
             Issue::CompatibleAbstractPrivateMethodInTrait,
             $this->context->getLineNumberStart(),
