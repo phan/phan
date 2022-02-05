@@ -1,1 +1,1 @@
-%s:2 PhanCompatAbstractPrivateMethodInTrait Trait \T975 declared private function \T975::private at %s:2
+%s:2 PhanCompatibleAbstractPrivateMethodInTrait Trait \T975 declares abstract private function private which is only allowed in 8.0+
