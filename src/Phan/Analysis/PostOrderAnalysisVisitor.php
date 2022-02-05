@@ -5167,15 +5167,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (! $class->isTrait()) {
+        if (!$class->isTrait()) {
             return;
         }
 
-        if (! $method->isPrivate()) {
+        if (!$method->isPrivate()) {
             return;
         }
 
-        if (! $method->isAbstract()) {
+        if (!$method->isAbstract()) {
             return;
         }
 

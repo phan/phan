@@ -427,7 +427,7 @@ This category of issue is emitted when there are compatibility issues. They will
 Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0975_trait_private_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0975_trait_private_method.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php74_files/expected/034_trait_private_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php74_files/src/034_trait_private_method.php#L2).
 
 ## PhanCompatibleAccessMethodOnTraitDefinition
 
