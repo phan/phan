@@ -506,6 +506,7 @@ class Issue
     public const VariableDefinitionCouldBeConstantNull = 'PhanVariableDefinitionCouldBeConstantNull';
     public const ProvidingUnusedParameter              = 'PhanProvidingUnusedParameter';
     public const ProvidingUnusedParameterOfClosure     = 'PhanProvidingUnusedParameterOfClosure';
+    public const PrivateFunctionInTrait                = 'PhanPrivateFunctionInTrait';
 
     // Issue::CATEGORY_REDEFINE
     public const RedefineClass             = 'PhanRedefineClass';
@@ -4536,6 +4537,14 @@ class Issue
                 'Saw a repeated silence operator in {CODE}',
                 self::REMEDIATION_B,
                 6097
+            ),
+            new Issue(
+                self::PrivateFunctionInTrait,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Trait {TRAIT} declares private function {FUNCTION} at {CODE}',
+                self::REMEDIATION_B,
+                6098
             ),
 
             // Issue::CATEGORY_REDEFINE
