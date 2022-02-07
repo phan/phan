@@ -60,7 +60,6 @@ use function strtolower;
 
 /**
  * Methods for an AST node in context
- * @phan-file-suppress PhanPartialTypeMismatchArgument, PhanTypeMismatchArgumentNullable
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class ContextNode
@@ -72,13 +71,13 @@ class ContextNode
     /** @var Context The context in which we are requesting information about the Node $this->node */
     private $context;
 
-    /** @var Node|array|bool|string|float|int|bool|null the node which we're requesting information about. */
+    /** @var Node|string|float|int|null the node which we're requesting information about. */
     private $node;
 
     /**
      * @param CodeBase $code_base The code base within which we're operating
      * @param Context $context The context in which we are requesting information about the Node.
-     * @param Node|array|string|float|int|bool|null $node the node which we're requesting information about.
+     * @param ?(Node|string|float|int) $node the node which we're requesting information about.
      */
     public function __construct(
         CodeBase $code_base,
@@ -382,6 +381,10 @@ class ContextNode
 
         // This is the class which will have the method hidden
         foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
+            if (!$trait_insteadof_class_name instanceof Node) {
+                // Fallback parser issue?
+                continue;
+            }
             try {
                 $trait_insteadof_fqsen = (new ContextNode(
                     $this->code_base,
@@ -913,6 +916,17 @@ class ContextNode
         if ($expression->kind === ast\AST_NAME) {
             $name = $expression->children['name'];
             try {
+                if (!\is_string($name)) {
+                    // Impossible?
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $this->context,
+                        Issue::TypeInvalidCallable,
+                        $this->context->getLineNumberStart(),
+                        '(unexpectedly unknown name)'
+                    );
+                    return [];
+                }
                 return [
                     $this->getFunction($name, false, $return_placeholder_for_undefined),
                 ];
@@ -2055,6 +2069,12 @@ class ContextNode
      */
     public function getClosure(): Func
     {
+        if (!$this->node instanceof Node) {
+            throw new CodeBaseException(
+                null,
+                "Could not find closure - invalid node. This should not happen."
+            );
+        }
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context,
@@ -2362,7 +2382,7 @@ class ContextNode
      *
      * @see self::getEquivalentPHPValue()
      *
-     * @param Node|float|int|string $node
+     * @param ?(Node|array|resource|float|int|string) $node
      * @return Node|string[]|int[]|float[]|string|float|int|bool|resource|null -
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
@@ -2529,6 +2549,7 @@ class ContextNode
             return $node;
         }
         try {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument throwing an Error is caught
             return InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
         } catch (Error $e) {
             self::handleErrorInOperation($node, $e);
@@ -2561,6 +2582,7 @@ class ContextNode
         }
 
         try {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument throwing an Error is caught
             return InferValue::computeUnaryOpResult($operand_value, $node->flags);
         } catch (Error $e) {
             self::handleErrorInOperation($node, $e);
@@ -2631,7 +2653,8 @@ class ContextNode
     private function getValueForCall(Node $node, int $flags)
     {
         $arg_list = $node->children['args']->children;
-        if (\count($arg_list) !== 1) {
+        // arg_list[0] should always be set.
+        if (\count($arg_list) !== 1 || !isset($arg_list[0])) {
             return $node;
         }
         $raw_function_name = ConditionVisitor::getFunctionName($node);
@@ -2716,9 +2739,9 @@ class ContextNode
      *
      * This does not create new object instances.
      *
-     * @return Node|string|float|int|bool|null -
+     * @return Node|string|float|int|bool|null|resource -
      *         If this could be resolved and we're certain of the value, this gets an equivalent definition.
-     *         Otherwise, this returns $node. If this would be an array, this returns $node.
+     *         Otherwise, if this would be an array or an object, this returns $node.
      *
      * @suppress PhanPartialTypeMismatchReturn the flags prevent this from returning an array
      */
