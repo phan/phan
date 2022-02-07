@@ -61,7 +61,7 @@ class ASTReverter
      *
      * This does not work for all node kinds, and may be ambiguous.
      *
-     * @param Node|string|int|float|bool|null|resource $node
+     * @param Node|string|int|float|bool|null|resource|array $node
      */
     public static function toShortString($node): string
     {
