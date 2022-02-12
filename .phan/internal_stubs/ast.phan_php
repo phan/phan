@@ -12,7 +12,7 @@ class Metadata {
     public $name;
 }
 
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class Node {
 
     // properties

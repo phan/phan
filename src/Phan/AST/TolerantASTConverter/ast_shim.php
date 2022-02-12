@@ -244,7 +244,7 @@ if (!\class_exists('\ast\Node')) {
      * @suppress PhanRedefineClassInternal
      * @phan-suppress-next-next-line PhanUndeclaredClassAttribute class suppression isn't working for duplicate of internal class.
      */
-    #[AllowDynamicProperties]
+    #[\AllowDynamicProperties]
     class Node
     {
         /** @var int AST Node Kind. Values are one of ast\AST_* constants. */
