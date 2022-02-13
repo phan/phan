@@ -1,0 +1,157 @@
+#!/usr/bin/env php
+<?php
+
+use Phan\Phan;
+use Phan\Config;
+use Phan\CLI;
+use Phan\CLIBuilder;
+use Phan\Exception\UsageException;
+
+/**
+ * analyze_phpt is a script for checking a phpt file.
+ * This class implements it.
+ *
+ * @phan-file-suppress PhanPluginRemoveDebugAny
+ */
+class AnalyzePhpt {
+    /**
+     * Print usage for analyze_phpt and exit.
+     * @return never
+     */
+    public static function printUsage(int $status) : void {
+        global $argv;
+        $program = $argv[0];
+        fwrite($status !== 0 ? STDERR : STDOUT, <<<EOT
+    Usage: $program [options] 'path/to/file.phpt'
+
+    Checks a phpt test case
+
+    Options:
+      -h, --help: Print this help message to stdout.
+      -p, --progress-bar: Show a progress bar.
+      --target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,native}
+       The PHP version that the codebase will be checked for compatibility against.
+       For best results, the PHP binary used to run Phan should have the same PHP version.
+       (Phan relies on Reflection for some param counts
+        and checks for undefined classes/methods/functions)
+
+      --minimum-target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,native}
+       The PHP version that will be used for feature/syntax compatibility warnings.
+      --add-parse-file: Add a path to a file to parse but not analyze.
+      --color, --no-color: Add or remove colors from the outputted issues.
+      --output-mode: Set the output mode.
+      --debug: Print debugging info.
+
+EOT
+        );
+        exit($status);
+    }
+
+    private const GETOPT_LONG_OPTIONS = [
+        'help',
+        'progress-bar',
+        'add-parse-file:',
+        'color',
+        'no-color',
+        'output-mode:',
+        'debug',
+        'target-php-version:',
+        'minimum-target-php-version:',
+    ];
+
+    private const GETOPT_SHORT_OPTIONS = "hp";
+
+    /**
+     * Script entrypoint to analyze phpt files. See printUsage for details.
+     */
+    public static function main(): void {
+        global $argv;
+        $options = getopt(
+            self::GETOPT_SHORT_OPTIONS,
+            self::GETOPT_LONG_OPTIONS,
+            $optind
+        );
+        $has_any_option = static function (string ...$arg_names) use ($options) : bool {
+            foreach ($arg_names as $arg) {
+                if (array_key_exists($arg, $options)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if ($has_any_option('h', 'help')) {
+            self::printUsage(0);
+        }
+
+        require_once(__DIR__ . '/../src/Phan/Bootstrap.php');
+        try {
+            CLI::checkAllArgsUsed($options, $argv, self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
+        } catch (UsageException $e) {
+            fwrite(STDERR, $e->getMessage());
+            self::printUsage(1);
+        }
+
+        $files_to_analyze = array_slice($argv, $optind);
+        if (count($files_to_analyze) < 1) {
+            fwrite(STDERR, "ERROR: Expected 1 or more arguments with the phpt files to check\n");
+            self::printUsage(1);
+        }
+
+        $extra_files_to_parse = ($options['add-parse-file'] ?? []) ?: [];
+        if (!is_array($extra_files_to_parse)) {
+            $extra_files_to_parse = [$extra_files_to_parse];
+        }
+        $files_to_parse = array_merge($files_to_analyze, $extra_files_to_parse);
+
+        foreach ($files_to_parse as $file) {
+            $file = Config::projectPath($file);
+            if (!is_file($file)) {
+                fprintf(STDERR, "Warning: %s does not exist\n", var_representation($file));
+            }
+        }
+        Config::setValue('file_list', $files_to_analyze);
+        // exclude_file_list is currently redundant to add but harmless.
+        Config::setValue('exclude_file_list', array_diff($extra_files_to_parse, $files_to_analyze));
+        Config::setValue('include_analysis_file_list', $files_to_analyze);
+        $cli_builder = new CLIBuilder();
+        $cli_builder->setOption('no-config-file', false);
+        $cli_builder->setOption('allow-polyfill-parser', false);
+        if ($has_any_option('p', 'progress-bar')) {
+            $cli_builder->setOption('progress-bar');
+        } else {
+            $cli_builder->setOption('no-progress-bar');
+        }
+        $default_target_php_version = $options['target-php-version'] ?? sprintf('%d.%d', PHP_MAJOR_VERSION, PHP_MINOR_VERSION);
+        $options['target-php-version'] = $default_target_php_version;
+        $options['minimum-target-php-version'] = $options['minimum-target-php-version'] ?? $default_target_php_version;
+        foreach ([
+            'debug',
+            'color',
+            'no-color',
+            'color-scheme',
+            'output-mode',
+            'target-php-version',
+            'minimum-target-php-version',
+        ] as $option_name) {
+            if (array_key_exists($option_name, $options)) {
+                $cli_builder->setOption($option_name, $options[$option_name]);
+            }
+        }
+        if (array_key_exists('debug', $options)) {
+            $cli_builder->setOption('debug');
+        }
+        // CLIBuilder::build will set config options as a side effect
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+        $cli_builder->build();
+        Config::setValue('analyzed_file_extensions', ['phpt', 'php', 'inc']);
+        // Generate codebase info after parsing configs (e.g. included_extension_subset)
+        $code_base = require(__DIR__ . '/../src/codebase.php');
+
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+        Phan::analyzeFileList($code_base, /** @return string[] */ static function () use($files_to_parse) : array {
+            return $files_to_parse;
+        });
+    }
+}
+AnalyzePhpt::main();

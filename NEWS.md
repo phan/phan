@@ -1,5 +1,14 @@
 Phan NEWS
 
+??? ?? 2022, Phan 5.3.3 (dev)
+-----------------------
+
+New Features(CLI, Configs):
+- Add `tool/analyze_phpt` to analyze phpt files. See https://www.phpinternalsbook.com/tests/phpt_file_structure.html
+
+Bug fixes:
+- Fix php 8.2.0-dev deprecation notice for `ast\Node` when running Phan in php 5.2.0 with the polyfill instead of the native php-ast version.
+
 Jan 31 2022, Phan 5.3.2
 -----------------------
 

@@ -37,6 +37,7 @@ use Symfony\Component\Console\Terminal;
 
 use function array_map;
 use function array_merge;
+use function array_key_exists;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -83,7 +84,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '5.3.2';
+    public const PHAN_VERSION = '5.3.3-dev';
 
     /**
      * List of short flags passed to getopt
@@ -170,6 +171,7 @@ class CLI
         'minimum-target-php-version:',
         'native-syntax-check:',
         'no-color',
+        'no-config-file',
         'no-progress-bar',
         'output:',
         'output-mode:',
@@ -261,10 +263,16 @@ class CLI
     /**
      * @param array<string,mixed> $opts
      * @param list<string> $argv
+     * @param string $short_options_string
+     * @param list<string> $long_options
      * @throws UsageException
      */
-    private static function checkAllArgsUsed(array $opts, array &$argv): void
-    {
+    public static function checkAllArgsUsed(
+        array $opts,
+        array &$argv,
+        string $short_options_string = self::GETOPT_SHORT_OPTIONS,
+        array $long_options = self::GETOPT_LONG_OPTIONS
+    ): void {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
@@ -291,12 +299,12 @@ class CLI
                 $value = $parts[1] ?? '';  // php getopt() treats --processes and --processes= the same way
                 $key = \preg_replace('/^--?/', '', $key);
                 if ($value === '') {
-                    if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                    if (in_array($key . ':', $long_options, true)) {
                         throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
                         // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
-                        if (\strpos(self::GETOPT_SHORT_OPTIONS, "$key:") !== false) {
+                        if (\strpos($short_options_string, "$key:") !== false) {
                             throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
                         }
                     }
@@ -357,14 +365,14 @@ class CLI
     {
         self::detectAndConfigureColorSupport($opts);
 
-        if (\array_key_exists('extended-help', $opts)) {
+        if (array_key_exists('extended-help', $opts)) {
             throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_EXTENDED);  // --extended-help prints help and calls exit(0)
         }
 
-        if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
+        if (array_key_exists('h', $opts) || array_key_exists('help', $opts)) {
             throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_NORMAL);  // --help prints help and calls exit(0)
         }
-        if (\array_key_exists('help-annotations', $opts)) {
+        if (array_key_exists('help-annotations', $opts)) {
             $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
 
             $result .= "Annotations specific to Phan:" . PHP_EOL;
@@ -374,7 +382,7 @@ class CLI
             }
             throw new ExitException($result, EXIT_SUCCESS);
         }
-        if (\array_key_exists('v', $opts) || \array_key_exists('version', $opts)) {
+        if (array_key_exists('v', $opts) || array_key_exists('version', $opts)) {
             printf("Phan %s" . PHP_EOL, self::PHAN_VERSION);
             $ast_version = (string) phpversion('ast');
             $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
@@ -401,7 +409,7 @@ class CLI
         }
         Config::setProjectRootDirectory($cwd);
 
-        if (\array_key_exists('init', $opts)) {
+        if (array_key_exists('init', $opts)) {
             Initializer::initPhanConfig($opts);
             exit(EXIT_SUCCESS);
         }
@@ -431,7 +439,16 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
-        $this->maybeReadConfigFile(\array_key_exists('require-config-exists', $opts));
+        if (array_key_exists('no-config-file', $opts)) {
+            if (array_key_exists('require-config-exists', $opts)) {
+                throw new ExitException('no-config-file conflicts with --require-config-exists');
+            }
+            if ($config_file_override !== null) {
+                throw new ExitException('no-config-file conflicts with --config-file');
+            }
+        } else {
+            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts));
+        }
 
         // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
         // to know if grpc should be excluded.
@@ -521,6 +538,7 @@ class CLI
                     break;
                 case 'k':
                 case 'config-file':
+                case 'no-config-file':
                     break;
                 case 'm':
                 case 'output-mode':
@@ -1049,7 +1067,7 @@ class CLI
         }
         foreach (array_slice($argv, 1) as $arg) {
             $arg = \preg_replace('/=.*$/D', '', $arg);
-            if (\array_key_exists($arg, $opt_set)) {
+            if (array_key_exists($arg, $opt_set)) {
                 self::printHelpSection(
                     "WARNING: Saw suspicious CLI arg '$arg' (did you mean '-$arg')\n",
                     false,
@@ -1990,10 +2008,14 @@ EOB
      * which match with a distance of <= 5
      *
      * @param string $key Misspelled key to attempt to correct
+     * @param string $short_options_string
+     * @param list<string> $long_options
      * @internal
      */
     public static function getFlagSuggestionString(
-        string $key
+        string $key,
+        string $short_options_string = self::GETOPT_SHORT_OPTIONS,
+        array $long_options = self::GETOPT_LONG_OPTIONS
     ): string {
         $trim = static function (string $s): string {
             return \rtrim($s, ':');
@@ -2005,7 +2027,7 @@ EOB
             $suggestions = \array_merge([$suggestion], $other_suggestions);
             return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
         };
-        $short_options = \array_filter(array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
+        $short_options = \array_filter(array_map($trim, \str_split($short_options_string)));
         if (strlen($key) === 1) {
             if (in_array($key, $short_options, true)) {
                 return $generate_suggestion_text($key);
@@ -2022,7 +2044,7 @@ EOB
             return '';
         }
         // include short options in case a typo is made like -aa instead of -a
-        $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
+        $known_flags = \array_merge($long_options, $short_options);
 
         $known_flags = array_map($trim, $known_flags);
 
@@ -2041,7 +2063,7 @@ EOB
                 continue;
             }
             if ($key === $flag) {
-                if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
+                if (in_array($key . ':', $long_options, true)) {
                     return " (This option is probably missing the required value. Or this option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
                 } else {
                     return " (This option may not apply to a regular Phan analysis, and/or it may be unintentionally unhandled in \Phan\CLI::__construct())";
