@@ -2,7 +2,7 @@
 <!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
 <!-- This is regenerated from the comments and defaults in src/Phan/Config.php by the script internal/update_wiki_config_types.php -->
 
-See [`\Phan\Config`](https://github.com/phan/phan/blob/v4/src/Phan/Config.php) for the most up to date list of configuration settings.
+See [`\Phan\Config`](https://github.com/phan/phan/blob/v5/src/Phan/Config.php) for the most up to date list of configuration settings.
 
 Table of Contents
 =================
