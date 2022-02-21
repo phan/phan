@@ -1,0 +1,5 @@
+src/210_duplicate_array_key.php:5 PhanUnreferencedFunction Possibly zero references to function \check_switch()
+src/210_duplicate_array_key.php:10 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('0.5') is loosely equivalent (==) to an earlier case (0.5) in switch statement - the earlier entry may be chosen instead.
+src/210_duplicate_array_key.php:13 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('0.50') is loosely equivalent (==) to an earlier case ('0.5') in switch statement - the earlier entry may be chosen instead.
+src/210_duplicate_array_key.php:22 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('00') is loosely equivalent (==) to an earlier case (0) in switch statement - the earlier entry may be chosen instead.
+src/210_duplicate_array_key.php:28 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('foo') is loosely equivalent (==) to an earlier case (0) in switch statement - the earlier entry may be chosen instead.
