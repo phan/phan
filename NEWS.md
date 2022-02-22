@@ -8,6 +8,7 @@ New Features(CLI, Configs):
 
 Bug fixes:
 - Fix php 8.2.0-dev deprecation notice for `ast\Node` when running Phan in php 5.2.0 with the polyfill instead of the native php-ast version.
+- Fix DuplicateArrayKeyPlugin "Implicit conversion from float ... to int" warning causing crash in php 8.1 (#4666)
 
 Jan 31 2022, Phan 5.3.2
 -----------------------

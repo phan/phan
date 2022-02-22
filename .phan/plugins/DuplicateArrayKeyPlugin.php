@@ -157,10 +157,21 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $fuzzy_numeric_set = [];
         foreach ($values_to_check as $i => $value) {
             if (is_numeric($value)) {
-                // For `"1"`, search for `"1foo"`, `"1bar"`, etc.
-                $value = is_float($value) ? $value : filter_var($value, FILTER_VALIDATE_FLOAT);
-                $old_index = $numeric_set[$value] ?? $fuzzy_numeric_set[$value] ?? null;
-                $numeric_set[$value] = $i;
+                if (is_int($value)) {
+                    $old_index = $numeric_set[$value] ?? $fuzzy_numeric_set[$value] ?? null;
+                    $numeric_set[$value] = $i;
+                } else {
+                    // For `"1"`, search for `"1foo"`, `"1bar"`, etc.
+                    $original_value = $value;
+                    $value = is_float($value) ? (string)$value : (string)filter_var($value, FILTER_VALIDATE_FLOAT);
+                    $old_index = $numeric_set[$value] ?? null;
+                    if ($value === (string)$original_value) {
+                        $old_index = $old_index ?? $fuzzy_numeric_set[$value] ?? null;
+                        $numeric_set[$value] = $i;
+                    } else {
+                        $fuzzy_numeric_set[$value] = $i;
+                    }
+                }
             } else {
                 $value = (float)$value;
                 // For `"1foo"`, search for `1` but not `"1bar"`
