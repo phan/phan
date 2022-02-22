@@ -9,6 +9,8 @@ New Features(CLI, Configs):
 Bug fixes:
 - Fix php 8.2.0-dev deprecation notice for `ast\Node` when running Phan in php 5.2.0 with the polyfill instead of the native php-ast version.
 - Fix DuplicateArrayKeyPlugin "Implicit conversion from float ... to int" warning causing crash in php 8.1 (#4666)
+- Fix slow memory leak of reference cycles in the language server - enable garbage collection for the Phan daemon/language server consistently. (#4665)
+  (This fix is only enabled in php 7.3+ when using pcntl, the pcntl fallback already re-enabled garbage collection. php 7.3 improved the garbage collection efficiency for large collections of objects.)
 
 Jan 31 2022, Phan 5.3.2
 -----------------------

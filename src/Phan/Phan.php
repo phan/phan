@@ -172,7 +172,7 @@ class Phan implements IgnoredFilesFilterInterface
     ];
 
     /**
-     * Analyze the given set of files and emit any issues
+     * Parse and analyze the given set of files and emit any issues
      * found to STDOUT.
      *
      * @param CodeBase $code_base
@@ -212,10 +212,9 @@ class Phan implements IgnoredFilesFilterInterface
             exit(EXIT_SUCCESS);
         }
         if (CLI::isDaemonOrLanguageServer() &&
-            Config::getValue('language_server_use_pcntl_fallback')) {
+            (\PHP_VERSION_ID >= 70300 || Config::getValue('language_server_use_pcntl_fallback'))) {
             // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
             // so we need to garbage collect that.
-            // This is probably the only part of the code which generates cyclic references
             //
             // 1. Phan clones the old codebase to restore it, and cyclic references exist as a side effect.
             //
@@ -226,6 +225,8 @@ class Phan implements IgnoredFilesFilterInterface
             //
             // This fix works in PHP 7.3, which has an improved garbage collector.
             // It might not work as well in earlier PHP versions on large codebases.
+            //
+            // Other parts of the code also generate reference cycles even with PCNTL enabled.
             gc_enable();
         }
 
