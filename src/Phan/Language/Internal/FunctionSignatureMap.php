@@ -7410,7 +7410,7 @@ return [
 'Lua::__call' => ['mixed', 'lua_func'=>'callable', 'args='=>'array', 'use_self='=>'int'],
 'Lua::__construct' => ['void', 'lua_script_file='=>'string'],
 'Lua::assign' => ['?Lua', 'name'=>'string', 'value'=>'mixed'],
-'Lua::call' => ['mixed', 'lua_func'=>'callable', 'args='=>'array', 'use_self='=>'int'],
+'Lua::call' => ['mixed', 'lua_func'=>'string', 'args='=>'array', 'use_self='=>'int'],
 'Lua::eval' => ['mixed', 'statements'=>'string'],
 'Lua::getVersion' => ['string'],
 'Lua::include' => ['mixed', 'file'=>'string'],
