@@ -3798,11 +3798,13 @@ class Clazz extends AddressableElement
                     if (!$template_type_resolver) {
                         // PhanTemplateTypeNotDeclaredInFunctionParams can be suppressed both on the class and on __construct()
                         if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
+                            $warn_context = $constructor_method->getDefiningClassFQSEN() === $this->fqsen ? $constructor_method->getContext() : $this->getContext();
+
                             Issue::maybeEmit(
                                 $code_base,
-                                $constructor_method->getContext(),
+                                $warn_context,
                                 Issue::GenericConstructorTypes,
-                                $constructor_method->getContext()->getLineNumberStart(),
+                                $warn_context->getLineNumberStart(),
                                 $template_type,
                                 $this->fqsen
                             );
