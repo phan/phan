@@ -11,6 +11,7 @@ Bug fixes:
 - Fix DuplicateArrayKeyPlugin "Implicit conversion from float ... to int" warning causing crash in php 8.1 (#4666)
 - Fix slow memory leak of reference cycles in the language server - enable garbage collection for the Phan daemon/language server consistently. (#4665)
   (This fix is only enabled in php 7.3+ when using pcntl, the pcntl fallback already re-enabled garbage collection. php 7.3 improved the garbage collection efficiency for large collections of objects.)
+- Move `PhanGenericConstructorTypes` warning to the class inheriting a constructor if needed (#4675)
 
 Jan 31 2022, Phan 5.3.2
 -----------------------

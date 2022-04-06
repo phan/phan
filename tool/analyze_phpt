@@ -7,6 +7,22 @@ use Phan\CLI;
 use Phan\CLIBuilder;
 use Phan\Exception\UsageException;
 
+/*
+"Example vim snippet
+
+function! PHPTsynCHK()
+  let winnum =winnr() " get current window number
+  silent make %
+  cw 4 " open the error window if it contains error
+  " return to the window with cursor set on the line of the first error (if any)
+  execute winnum . "wincmd w"
+  :redraw!
+endfunction
+
+au! BufWritePost  *.phpt  call PHPTsynCHK()
+au BufNewFile,BufRead,BufWrite *.phpt setlocal makeprg=/path/to/bin/php\ /path/to/phan/tool/analyze_phpt errorformat=%f:%l\ %m
+ */
+
 /**
  * analyze_phpt is a script for checking a phpt file.
  * This class implements it.
@@ -24,7 +40,8 @@ class AnalyzePhpt {
         fwrite($status !== 0 ? STDERR : STDOUT, <<<EOT
     Usage: $program [options] 'path/to/file.phpt'
 
-    Checks a phpt test case
+    Checks a phpt test case.
+    See tool/analyze_phpt file comment for examples of using this as a Vim save action.
 
     Options:
       -h, --help: Print this help message to stdout.
