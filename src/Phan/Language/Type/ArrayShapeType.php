@@ -527,7 +527,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $key_parts[$key] = $field_union_type->generateUniqueId();
         }
         if ($is_nullable) {
-            $key_parts[] = '?';
+            $key_parts = [ '?' => $key_parts ];
+        } else {
+            $key_parts = [ ' ' => $key_parts ];
         }
         $key = \json_encode($key_parts);
 
