@@ -526,12 +526,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         foreach ($field_types as $key => $field_union_type) {
             $key_parts[$key] = $field_union_type->generateUniqueId();
         }
-        if ($is_nullable) {
-            $key_parts = [ '?' => $key_parts ];
-        } else {
-            $key_parts = [ ' ' => $key_parts ];
-        }
-        $key = \json_encode($key_parts);
+        // NOTE: Use serialize instead of json_encode, because json_encode will fail for invalid utf-8
+        $key = \serialize($key_parts) . ($is_nullable ? '?' : '');
 
         return $cache[$key] ?? ($cache[$key] = new self($field_types, $is_nullable));
     }
