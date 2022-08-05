@@ -638,7 +638,7 @@ EOT;
         if (is_array($arguments['old'] ?? null)) {
             $result .= "[\n" . self::encodeSingleSignature('old', $arguments['old'], "$indent  ");
             $result .= self::encodeSingleSignature('new', $arguments['new'], "$indent  ");
-            $result .= "${indent}],\n";
+            $result .= "$indent],\n";
             return $result;
         }
 

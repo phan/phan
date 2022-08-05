@@ -16,13 +16,13 @@ function emit_signature_map_for_php_version(): void
 {
     global $argv;
     if (count($argv) !== 3) {
-        CLI::printErrorToStderr("Usage: ${argv[0]} PHP_VERSION_ID path/to/SignatureMapForVersion.php\n");
+        CLI::printErrorToStderr("Usage: {$argv[0]} PHP_VERSION_ID path/to/SignatureMapForVersion.php\n");
         exit(1);
     }
     $version_id = filter_var($argv[1], FILTER_VALIDATE_INT);
     if (!$version_id) {
         CLI::printErrorToStderr("PHP_VERSION_ID must be a number (e.g. 80000)");
-        CLI::printErrorToStderr("Usage: ${argv[0]} PHP_VERSION_ID path/to/SignatureMap1.php\n");
+        CLI::printErrorToStderr("Usage: {$argv[0]} PHP_VERSION_ID path/to/SignatureMap1.php\n");
         exit(1);
     }
     $path = dirname(__DIR__) . '/src/Phan/Language/UnionType.php';

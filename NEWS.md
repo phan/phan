@@ -14,6 +14,7 @@ Bug fixes:
 - Move `PhanGenericConstructorTypes` warning to the class inheriting a constructor if needed (#4675)
 - Fix crash when combining types for null and an array with PHP_INT_MAX as a key (#4688)
 - Fix incorrect type inference for arrays with keys that were invalid UTF-8 (#4688)
+- Fix error due to deprecation notice running Phan in php 8.2 due to use of `"${}"` string interpolation (#4692)
 
 Jan 31 2022, Phan 5.3.2
 -----------------------

@@ -250,7 +250,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             self::emitPluginIssue(
                 $this->code_base,
                 $method->getContext(),
-                "PhanPluginNoCommentOn${visibility_upper}Method",
+                "PhanPluginNoCommentOn{$visibility_upper}Method",
                 "$visibility_upper method {METHOD} has no doc comment",
                 [$method->getFQSEN()]
             );
@@ -262,7 +262,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             self::emitPluginIssue(
                 $this->code_base,
                 $method->getContext(),
-                "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
+                "PhanPluginDescriptionlessCommentOn{$visibility_upper}Method",
                 "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
                 [$method->getFQSEN(), HasPHPDocPlugin::getDocCommentRepresentation($doc_comment)]
             );
@@ -287,7 +287,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             self::emitPluginIssue(
                 $this->code_base,
                 $property->getContext(),
-                "PhanPluginNoCommentOn${visibility_upper}Property",
+                "PhanPluginNoCommentOn{$visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no doc comment",
                 [$property->getRepresentationForIssue()]
             );
@@ -300,7 +300,7 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             self::emitPluginIssue(
                 $this->code_base,
                 $property->getContext(),
-                "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
+                "PhanPluginDescriptionlessCommentOn{$visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
                 [$property->getRepresentationForIssue(), HasPHPDocPlugin::getDocCommentRepresentation($doc_comment)]
             );

@@ -88,7 +88,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
                 self::emitIssue(
                     $code_base,
                     $method->getContext(),
-                    "PhanPluginPossiblyStatic${visibility_upper}Method",
+                    "PhanPluginPossiblyStatic{$visibility_upper}Method",
                     "$visibility_upper method {METHOD} can be static",
                     [$method->getRepresentationForIssue()]
                 );
