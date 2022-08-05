@@ -15,7 +15,7 @@ function sort_signature_maps(): void
     global $argv;
     $files = array_slice($argv, 1);
     if (!$files) {
-        CLI::printErrorToStderr("Usage: ${argv[1]} path/to/SignatureMap1.php\n");
+        CLI::printErrorToStderr("Usage: {$argv[1]} path/to/SignatureMap1.php\n");
         exit(1);
     }
     foreach ($files as $original_path) {

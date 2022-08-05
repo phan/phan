@@ -91,7 +91,7 @@ class Consistent implements Hasher
     {
         $hashes = [];
         for ($i = 0; $i < self::VIRTUAL_COPY_COUNT; $i++) {
-            $hashes[$i] = self::generateKeyHash("${i}@$group");
+            $hashes[$i] = self::generateKeyHash("$i@$group");
         }
         return $hashes;
     }

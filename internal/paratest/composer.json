@@ -17,6 +17,6 @@
     },
     "require": {
         "brianium/habitat": "^1.0.0",
-        "brianium/paratest": "dev-master#3267d1d23853b3d2db33973afa681c36d67161a3"
+        "brianium/paratest": "6.x-dev#3267d1d23853b3d2db33973afa681c36d67161a3"
     }
 }

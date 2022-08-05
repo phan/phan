@@ -218,9 +218,9 @@ class ASTReverter
                     $dim_str = '';
                 }
                 if ($node->flags & ast\flags\DIM_ALTERNATIVE_SYNTAX) {
-                    return "${expr_str}{{$dim_str}}";
+                    return "{$expr_str}{{$dim_str}}";
                 }
-                return "${expr_str}[$dim_str]";
+                return "{$expr_str}[$dim_str]";
             },
             ast\AST_NAME => static function (Node $node): string {
                 $result = $node->children['name'];
