@@ -5,6 +5,10 @@ Phan NEWS
 
 New Features(CLI, Configs):
 - Add `tool/analyze_phpt` to analyze phpt files. See https://www.phpinternalsbook.com/tests/phpt_file_structure.html
+- Support php 8.2's `true` type (https://wiki.php.net/rfc/true-type).
+  Emit `PhanCompatTrueType` when `true` is used when `minimum_target_php_version` is less than 8.2.
+- Emit `PhanCompatStandaloneType` instead of `PhanInvalidNode` for uses of null/false as real standalone types to support php 8.2 https://wiki.php.net/rfc/null-false-standalone-types
+  (Not emitted when `minimum_target_php_version` is 8.2 or higher)
 
 Bug fixes:
 - Fix php 8.2.0-dev deprecation notice for `ast\Node` when running Phan in php 5.2.0 with the polyfill instead of the native php-ast version.

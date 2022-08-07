@@ -8,17 +8,18 @@ use Phan\Config;
 use Phan\Plugin\ConfigPluginSet;
 
 /**
- * Unit tests of Phan analysis targeting PHP 8.1 codebases with minimum_target_php_version of 8.1.
+ * Unit tests of Phan analysis targeting PHP 8.2 codebases with minimum_target_php_version of 8.2.
+ * PHP 8.2 will be out in 2022.
  */
-final class PHP81Test extends AbstractPhanFileTest
+final class PHP82Test extends AbstractPhanFileTest
 {
     private const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
         'dead_code_detection' => true,  // for use with constructor property promotion, etc.
-        'target_php_version' => '8.1',
-        'minimum_target_php_version' => '8.1',  // Test that checks and type inferences for older php versions aren't supported.
+        'target_php_version' => '8.2',
+        'minimum_target_php_version' => '8.2',  // Test that checks and type inferences for older php versions aren't supported.
         'plugins' => [
             'DuplicateArrayKeyPlugin',
             'EmptyMethodAndFunctionPlugin',
@@ -54,8 +55,8 @@ final class PHP81Test extends AbstractPhanFileTest
     {
         $skip_reason = null;
         $main_path = \basename(\reset($test_file_list));
-        if (\PHP_VERSION_ID < 80100) {
-            $skip_reason = 'Skip PHP 8.1 is required';
+        if (\PHP_VERSION_ID < 80200) {
+            $skip_reason = 'Skip PHP 8.2 is required';
         }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");
@@ -69,6 +70,6 @@ final class PHP81Test extends AbstractPhanFileTest
      */
     public function getTestFiles(): array
     {
-        return $this->scanSourceFilesDir(\PHP81_TEST_FILE_DIR, \PHP81_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\PHP82_TEST_FILE_DIR, \PHP82_EXPECTED_DIR);
     }
 }

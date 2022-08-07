@@ -1,6 +1,6 @@
 %s:2 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: null)
-%s:2 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:2
 %s:3 PhanCompatibleMatchExpression Cannot use match expressions before php 8.0 in match (true) { default => $yes, default => $no }
 %s:4 PhanUndeclaredVariable Variable $yes is undeclared
 %s:5 PhanInvalidNode Saw an invalid match arm with multiple default nodes
 %s:5 PhanUndeclaredVariable Variable $no is undeclared
+%s:8 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:2

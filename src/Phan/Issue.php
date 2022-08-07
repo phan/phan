@@ -332,6 +332,7 @@ class Issue
     public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
     public const DeprecatedPartiallySupportedCallable = 'PhanDeprecatedPartiallySupportedCallable';
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
+    public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
 
     // Issue::CATEGORY_PARAMETER
     public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -577,7 +578,9 @@ class Issue
     public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
     public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
-    public const CompatibleNeverType                 = 'PhanCompatibleNeverType';
+    public const CompatibleNeverType                = 'PhanCompatibleNeverType';
+    public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
+    public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
     public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
     public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
     public const CompatibleMixedType                = 'PhanCompatibleMixedType';
@@ -3213,7 +3216,15 @@ class Issue
                 self::SEVERITY_NORMAL,
                 'Saw partially supported callable [{CODE}, {METHOD}]. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.',
                 self::REMEDIATION_B,
-                5009
+                5010
+            ),
+            new Issue(
+                self::DeprecatedEncapsVar,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Saw deprecated encapsulated string variable syntax for {CODE}: {DETAILS}',
+                self::REMEDIATION_B,
+                5011
             ),
 
             // Issue::CATEGORY_PARAMETER
@@ -5001,6 +5012,22 @@ class Issue
                 "Return type '{TYPE}' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'",
                 self::REMEDIATION_B,
                 3043
+            ),
+            new Issue(
+                self::CompatibleStandaloneType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a standalone type before php 8.2.",
+                self::REMEDIATION_B,
+                3050
+            ),
+            new Issue(
+                self::CompatibleTrueType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a type before php 8.2.",
+                self::REMEDIATION_B,
+                3051
             ),
             new Issue(
                 self::CompatibleIterableTypePHP70,

@@ -9,7 +9,7 @@
 %s:13 PhanCompatibleStaticType Cannot use static return types before php 8.0
 %s:17 PhanCompatibleUnionType Cannot use union types (Countable|false|null|array) before php 8.0
 %s:18 PhanCompatibleNullableTypePHP70 Nullable type 'null' is not compatible with PHP 7.0
-%s:18 PhanInvalidNode Invalid union type false in element signature
-%s:18 PhanInvalidNode Invalid union type null in element signature
+%s:18 PhanCompatibleStandaloneType Cannot use false as a standalone type before php 8.2.
+%s:18 PhanCompatibleStandaloneType Cannot use null as a standalone type before php 8.2.
 %s:22 PhanUndeclaredMethod Call to undeclared method \X::missingMethod
 %s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' of type 'invalid' to property but \X::$prop is ?int

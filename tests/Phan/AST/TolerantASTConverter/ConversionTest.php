@@ -188,6 +188,7 @@ final class ConversionTest extends BaseTest
         }
         unset($node->is_not_parenthesized);
         unset($node->polyfill_has_trailing_comma);
+        unset($node->is_deprecated_encaps_var);
 
         foreach ($node->children as $v) {
             if ($v instanceof ast\Node) {

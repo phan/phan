@@ -127,13 +127,6 @@ class TolerantASTConverter
     // The versions that this supports
     public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION];
 
-    private const _IGNORED_STRING_TOKEN_KIND_SET = [
-        TokenKind::OpenBraceDollarToken => true,
-        TokenKind::OpenBraceToken => true,
-        TokenKind::DollarOpenBraceToken => true,
-        TokenKind::CloseBraceToken => true,
-    ];
-
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
     public const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
@@ -1996,6 +1989,9 @@ class TolerantASTConverter
                 case 'false':
                     $flags = flags\TYPE_FALSE;
                     break;
+                case 'true':
+                    $flags = flags\TYPE_TRUE;
+                    break;
                 case 'static':
                     $flags = flags\TYPE_STATIC;
                     break;
@@ -2715,6 +2711,11 @@ class TolerantASTConverter
                 return $left_node;
             }
         }
+        if (PHP_VERSION_ID >= 80200) {
+            if ($flags === ast\flags\BINARY_CONCAT && is_string($left_node) && is_string($right_node)) {
+                return $left_node . $right_node;
+            }
+        }
 
         return new ast\Node(
             ast\AST_BINARY_OP,
@@ -3309,14 +3310,25 @@ class TolerantASTConverter
         $inner_node_parts = [];
         $start_quote_text = static::tokenToString($n->startQuote);
         $end_quote_text = $n->endQuote->getText(self::$file_contents);
+        $deprecated = false;
 
         foreach ($children as $part) {
             if ($part instanceof PhpParser\Node) {
-                $inner_node_parts[] = static::phpParserNodeToAstNode($part);
+                $node = static::phpParserNodeToAstNode($part);
+                if ($deprecated) {
+                    self::setDeprecatedEncapsVar($node);
+                    $deprecated = false;
+                }
+                $inner_node_parts[] = $node;
             } else {
                 $kind = $part->kind;
-                if (\array_key_exists($kind, self::_IGNORED_STRING_TOKEN_KIND_SET)) {
-                    continue;
+                switch ($kind) {
+                    case TokenKind::DollarOpenBraceToken:
+                        $deprecated = true;
+                    case TokenKind::OpenBraceDollarToken:
+                    case TokenKind::OpenBraceToken:
+                    case TokenKind::CloseBraceToken:
+                        continue 2;
                 }
                 // ($part->kind === TokenKind::EncapsedAndWhitespace)
                 $raw_string = static::tokenToRawString($part);
@@ -3335,6 +3347,22 @@ class TolerantASTConverter
     }
 
     /**
+     * @param ast\Node|string|int|float|null $node
+     */
+    private static function setDeprecatedEncapsVar($node): void {
+        if ($node instanceof ast\Node && \in_array($node->kind, [ast\AST_VAR, ast\AST_DIM], true)) {
+            if (PHP_VERSION_ID >= 80200) {
+                // Make flags identical to native ast version for unit tests.
+                // PHP 8.2 deprecated `"${...}"` string encapsulation syntax in favor of `"{$...}"`
+                $node->flags |= $node->kind === ast\AST_VAR && ($node->children['var']->kind ?? null) === ast\AST_VAR
+                    ? ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR
+                    : ast\flags\ENCAPS_VAR_DOLLAR_CURLY;
+            }
+            // @phan-suppress-next-line PhanUndeclaredProperty
+            $node->is_deprecated_encaps_var = true;
+        }
+    }
+    /**
      * @param PhpParser\Node[]|PhpParser\Token[] $children $children
      */
     private static function parseMultiPartHeredoc(PhpParser\Node\StringLiteral $n, array $children): ast\Node
@@ -3345,16 +3373,28 @@ class TolerantASTConverter
 
         $spaces = \strspn($end_quote_text, " \t");
         $raw_spaces = substr($end_quote_text, 0, $spaces);
+        $deprecated = false;
 
         foreach ($children as $i => $part) {
             if ($part instanceof PhpParser\Node) {
-                $inner_node_parts[] = static::phpParserNodeToAstNode($part);
+                $node = static::phpParserNodeToAstNode($part);
+                if ($deprecated) {
+                    self::setDeprecatedEncapsVar($node);
+                    $deprecated = false;
+                }
+                $inner_node_parts[] = $node;
                 continue;
             }
             $kind = $part->kind;
-            if (\array_key_exists($kind, self::_IGNORED_STRING_TOKEN_KIND_SET)) {
-                continue;
+            switch ($kind) {
+                case TokenKind::DollarOpenBraceToken:
+                    $deprecated = true;
+                case TokenKind::OpenBraceDollarToken:
+                case TokenKind::OpenBraceToken:
+                case TokenKind::CloseBraceToken:
+                    continue 2;
             }
+
             // ($part->kind === TokenKind::EncapsedAndWhitespace)
             $raw_string = static::tokenToRawString($part);
             if ($i > 0) {
