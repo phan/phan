@@ -332,6 +332,7 @@ class Issue
     public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
     public const DeprecatedPartiallySupportedCallable = 'PhanDeprecatedPartiallySupportedCallable';
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
+    public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
 
     // Issue::CATEGORY_PARAMETER
     public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -3215,7 +3216,15 @@ class Issue
                 self::SEVERITY_NORMAL,
                 'Saw partially supported callable [{CODE}, {METHOD}]. This was deprecated in PHP 8.2. Invoking methods with alternative scopes can be done with ReflectionMethod::invoke or Closure::bindTo instead.',
                 self::REMEDIATION_B,
-                5009
+                5010
+            ),
+            new Issue(
+                self::DeprecatedEncapsVar,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Saw deprecated encapsulated string variable syntax for {CODE}: {DETAILS}',
+                self::REMEDIATION_B,
+                5011
             ),
 
             // Issue::CATEGORY_PARAMETER

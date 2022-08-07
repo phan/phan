@@ -916,6 +916,12 @@ Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
 
+## PhanDeprecatedEncapsVar
+
+```
+Saw deprecated encapsulated string variable syntax for {CODE}: {DETAILS}
+```
+
 ## PhanDeprecatedFunction
 
 If a class, method, function, property or constant is marked in its comment as `@deprecated`, any references to them will emit a deprecated error.

@@ -502,8 +502,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    private const DEPRECATED_ENCAPS_VAR_FLAGS = ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR | ast\flags\ENCAPS_VAR_DOLLAR_CURLY;
+
     private function checkExpressionInDynamicString(Node $expr_node): void
     {
+        if ($expr_node->flags & self::DEPRECATED_ENCAPS_VAR_FLAGS) {
+            $deprecation = null;
+            if (\in_array($expr_node->kind, [ast\AST_VAR, ast\AST_DIM], true) && ($expr_node->flags & ast\flags\ENCAPS_VAR_DOLLAR_CURLY)) {
+                $deprecation = 'Using ${var} in strings is deprecated, use {$var} instead';
+            } elseif ($expr_node->kind === ast\AST_VAR && ($expr_node->flags & ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR)) {
+                $deprecation = 'Using ${expr} in strings is deprecated, use {${expr}} instead';
+            }
+            if ($deprecation) {
+                $this->emitIssue(
+                    Issue::DeprecatedEncapsVar,
+                    $expr_node->lineno,
+                    ASTReverter::toShortString($expr_node),
+                    $deprecation
+                );
+            }
+        }
         $code_base = $this->code_base;
         $context = $this->context;
         $type = UnionTypeVisitor::unionTypeFromNode(
