@@ -218,6 +218,7 @@ EOT;
             glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php80_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php81_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php82_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/rasmus_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/real_types_test/expected/*.php.expected') ?: []

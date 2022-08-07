@@ -704,7 +704,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expecte
 Cannot use {TYPE} as a standalone type before php 8.2.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_true.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_true.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/013_union_type_errors.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/013_union_type_errors.php#L18).
 
 ## PhanCompatibleStaticType
 
@@ -755,7 +755,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/
 Cannot use {TYPE} as a type before php 8.2.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_true.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php82_files/expected/003_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php82_files/src/003_true.php#L2).
 
 ## PhanCompatibleTypedProperty
 
@@ -921,6 +921,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php72_files/expecte
 ```
 Saw deprecated encapsulated string variable syntax for {CODE}: {DETAILS}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0497_concat_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0497_concat_string.php#L12).
 
 ## PhanDeprecatedFunction
 

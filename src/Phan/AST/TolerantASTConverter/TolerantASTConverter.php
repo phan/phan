@@ -2711,6 +2711,11 @@ class TolerantASTConverter
                 return $left_node;
             }
         }
+        if (PHP_VERSION_ID >= 80200) {
+            if ($flags === ast\flags\BINARY_CONCAT && is_string($left_node) && is_string($right_node)) {
+                return $left_node . $right_node;
+            }
+        }
 
         return new ast\Node(
             ast\AST_BINARY_OP,
@@ -3346,8 +3351,9 @@ class TolerantASTConverter
      */
     private static function setDeprecatedEncapsVar($node): void {
         if ($node instanceof ast\Node && \in_array($node->kind, [ast\AST_VAR, ast\AST_DIM], true)) {
-            if (PHP_VERSION_ID >= 80100) {
+            if (PHP_VERSION_ID >= 80200) {
                 // Make flags identical to native ast version for unit tests.
+                // PHP 8.2 deprecated `"${...}"` string encapsulation syntax in favor of `"{$...}"`
                 $node->flags |= $node->kind === ast\AST_VAR && ($node->children['var']->kind ?? null) === ast\AST_VAR
                     ? ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR
                     : ast\flags\ENCAPS_VAR_DOLLAR_CURLY;

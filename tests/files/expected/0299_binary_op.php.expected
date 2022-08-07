@@ -4,7 +4,7 @@
 %s:12 PhanTypeMismatchArgumentReal Argument 1 ($x) is (1 xor 2) of type bool but \expect_string_298() takes string defined at %s:3
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
-%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' . '1') of type '01' but \expect_int_298() takes int defined at %s:4
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is %s of type '01' but \expect_int_298() takes int defined at %s:4
 %s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 / 2) of type 2 but \expect_string_298() takes string defined at %s:3
 %s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type 4 to 2 of type 2 with operator '=='
 %s:17 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 == 2) of type bool but \expect_string_298() takes string defined at %s:3
