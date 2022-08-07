@@ -111,6 +111,12 @@ class Shim
         if (!defined('ast\flags\TYPE_NEVER')) {
             define('ast\flags\TYPE_NEVER', \PHP_MAJOR_VERSION >= 80000 ? 17 : 22);
         }
+        if (!defined('ast\flags\ENCAPS_VAR_DOLLAR_CURLY')) {
+            define('ast\flags\ENCAPS_VAR_DOLLAR_CURLY', 1);
+        }
+        if (!defined('ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR')) {
+            define('ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR', 2);
+        }
         if (!defined('ast\flags\CLASS_ENUM')) {
             define('ast\flags\CLASS_ENUM', 0x10000000);
         }

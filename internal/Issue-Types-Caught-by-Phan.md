@@ -698,6 +698,14 @@ Square bracket syntax for an array destructuring assignment is not compatible wi
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/003_short_array.php#L8).
 
+## PhanCompatibleStandaloneType
+
+```
+Cannot use {TYPE} as a standalone type before php 8.2.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_true.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_true.php#L5).
+
 ## PhanCompatibleStaticType
 
 ```
@@ -740,6 +748,14 @@ Cannot use trailing commas in parameter or closure use lists before php 8.0 in d
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
+
+## PhanCompatibleTrueType
+
+```
+Cannot use {TYPE} as a type before php 8.2.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_true.php#L2).
 
 ## PhanCompatibleTypedProperty
 
