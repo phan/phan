@@ -1,0 +1,9 @@
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type true(real=true)
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type ?true(real=?true)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type false(real=false)
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=null)
+%s:14 PhanPluginUseReturnValueNoopVoid The function/method \test_null() is declared to return null and it has no side effects
+%s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \test_true() takes true defined at %s:2
+%s:22 PhanTypeMismatchArgument Argument 1 ($x) is false of type false but \test_nullabletrue() takes ?true defined at %s:6
+%s:25 PhanTypeMismatchArgument Argument 1 ($x) is true of type true but \test_false() takes false defined at %s:10
+%s:26 PhanTypeMismatchArgumentReal Argument 1 ($x) is false of type false but \test_null() takes null defined at %s:14

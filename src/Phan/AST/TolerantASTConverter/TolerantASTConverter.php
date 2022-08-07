@@ -1996,6 +1996,9 @@ class TolerantASTConverter
                 case 'false':
                     $flags = flags\TYPE_FALSE;
                     break;
+                case 'true':
+                    $flags = flags\TYPE_TRUE;
+                    break;
                 case 'static':
                     $flags = flags\TYPE_STATIC;
                     break;

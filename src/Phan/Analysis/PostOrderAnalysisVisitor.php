@@ -1075,6 +1075,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         flags\TYPE_VOID => 'void',
         flags\TYPE_ITERABLE => 'iterable',
         flags\TYPE_FALSE => 'false',
+        flags\TYPE_TRUE => 'true',
         flags\TYPE_STATIC => 'static',
     ];
 
@@ -3139,13 +3140,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->checkUnionTypeCompatibility($node->children['returnType']);
     }
 
-    private function checkUnionTypeCompatibility(?Node $type): void
+    private function checkUnionTypeCompatibility(?Node $type, bool $is_union = false): void
     {
         if (!$type) {
             return;
         }
+        $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
+        if ($minimum_target_php_version_id >= 80200) {
+            return;
+        }
+
         if ($type->kind === ast\AST_TYPE_INTERSECTION) {
-            if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+            if ($minimum_target_php_version_id < 80100) {
                 // TODO: Warn about false|false, false|null, etc in php 8.0.
                 $this->emitIssue(
                     Issue::CompatibleIntersectionType,
@@ -3153,19 +3159,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     ASTReverter::toShortString($type)
                 );
             }
-            return;
-        }
-        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
-            // Don't warn about using union types if the project dropped support for php versions older than 8.0
+            foreach ($type->children as $node) {
+                $this->checkUnionTypeCompatibility($node);
+            }
             return;
         }
         if ($type->kind === ast\AST_TYPE_UNION) {
+            if ($minimum_target_php_version_id < 80000) {
+                $this->emitIssue(
+                    Issue::CompatibleUnionType,
+                    $type->lineno,
+                    ASTReverter::toShortString($type)
+                );
+            }
+            foreach ($type->children as $node) {
+                $this->checkUnionTypeCompatibility($node, true);
+            }
             // TODO: Warn about false|false, false|null, etc in php 8.0.
-            $this->emitIssue(
-                Issue::CompatibleUnionType,
-                $type->lineno,
-                ASTReverter::toShortString($type)
-            );
             return;
         }
         if ($type->kind === ast\AST_NULLABLE_TYPE) {
@@ -3192,15 +3202,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         if ($inner_type->flags === ast\flags\TYPE_STATIC) {
+            if ($minimum_target_php_version_id < 80000) {
+                $this->emitIssue(
+                    Issue::CompatibleStaticType,
+                    $inner_type->lineno
+                );
+            }
+        } elseif ($inner_type->flags === ast\flags\TYPE_TRUE) {
             $this->emitIssue(
-                Issue::CompatibleStaticType,
-                $inner_type->lineno
-            );
-        } elseif (\in_array($inner_type->flags, [ast\flags\TYPE_FALSE, ast\flags\TYPE_NULL], true)) {
-            $this->emitIssue(
-                Issue::InvalidNode,
+                Issue::CompatibleTrueType,
                 $inner_type->lineno,
-                "Invalid union type " . ASTReverter::toShortTypeString($type) . " in element signature"
+                'true'
+            );
+        } elseif (!$is_union && \in_array($inner_type->flags, [ast\flags\TYPE_NULL, ast\flags\TYPE_FALSE], true)) {
+            $this->emitIssue(
+                Issue::CompatibleStandaloneType,
+                $inner_type->lineno,
+                ASTReverter::toShortTypeString($type)
             );
         }
     }

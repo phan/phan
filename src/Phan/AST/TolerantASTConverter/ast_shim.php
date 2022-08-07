@@ -168,6 +168,7 @@ const PARAM_REF = 8;
 const PARAM_VARIADIC = 16;
 const TYPE_NULL = 1;
 const TYPE_FALSE = 2;
+const TYPE_TRUE = 3;
 const TYPE_BOOL = 17;
 const TYPE_LONG = 4;
 const TYPE_DOUBLE = 5;

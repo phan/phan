@@ -67,6 +67,7 @@ use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
@@ -676,6 +677,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return VoidType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_FALSE:
                 return FalseType::instance(false)->asRealUnionType();
+            case \ast\flags\TYPE_TRUE:
+                return TrueType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_STATIC:
                 return StaticType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_MIXED:
@@ -3999,7 +4002,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             Issue::DeprecatedPartiallySupportedCallableAlternateScope,
             $this->context->getLineNumberStart(),
             ASTReverter::toShortString($class_name),
-            var_representation($method_name)
+            \var_representation($method_name)
         );
     }
 

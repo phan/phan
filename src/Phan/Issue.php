@@ -577,7 +577,9 @@ class Issue
     public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
     public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
-    public const CompatibleNeverType                 = 'PhanCompatibleNeverType';
+    public const CompatibleNeverType                = 'PhanCompatibleNeverType';
+    public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
+    public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
     public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
     public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
     public const CompatibleMixedType                = 'PhanCompatibleMixedType';
@@ -5001,6 +5003,22 @@ class Issue
                 "Return type '{TYPE}' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'",
                 self::REMEDIATION_B,
                 3043
+            ),
+            new Issue(
+                self::CompatibleStandaloneType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a standalone type before php 8.2.",
+                self::REMEDIATION_B,
+                3050
+            ),
+            new Issue(
+                self::CompatibleTrueType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a type before php 8.2.",
+                self::REMEDIATION_B,
+                3051
             ),
             new Issue(
                 self::CompatibleIterableTypePHP70,
