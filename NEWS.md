@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2022, Phan 5.3.3 (dev)
+Aug 08 2022, Phan 5.4.0
 -----------------------
 
 New Features(CLI, Configs):
