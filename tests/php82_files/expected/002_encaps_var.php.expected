@@ -1,0 +1,5 @@
+%s:6 PhanUnreferencedPublicProperty Possibly zero references to public property \NS978\Example->foo
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $deprecated - it has union type array{0:'abc',1:string,2:'abc'}(real=array{0:'abc',1:string,2:'abc'})
+%s:12 PhanDeprecatedEncapsVar Saw deprecated encapsulated string variable syntax for $x: Using ${var} in strings is deprecated, use {$var} instead
+%s:13 PhanDeprecatedEncapsVar Saw deprecated encapsulated string variable syntax for $x[0]: Using ${var} in strings is deprecated, use {$var} instead
+%s:14 PhanDeprecatedEncapsVar Saw deprecated encapsulated string variable syntax for ${foo}: Using ${expr} in strings is deprecated, use {${expr}} instead

@@ -364,12 +364,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
             $class = $this->code_base->getClassByFQSEN($fqsen);
-            if ($class->isImmutableAtRuntime()) {
+            if ($class->isPropertyImmutableFromContext($this->code_base, $this->context, $prop_name)) {
                 if ($class->hasPropertyWithName($this->code_base, $prop_name)) {
                     // NOTE: We deliberately emit this issue whether or not the access is to a public or private variable,
                     // because unsetting a private variable at runtime is also a (failed) attempt to unset a declared property.
                     $prop_context = $class->getPropertyByName($this->code_base, $prop_name)->getFileRef();
                 } else {
+                    // Properties that are undeclared on readonly classes can't be modified
                     $prop_context = $class->getContext();
                 }
                 $this->emitIssue(
