@@ -120,5 +120,8 @@ class Shim
         if (!defined('ast\flags\CLASS_ENUM')) {
             define('ast\flags\CLASS_ENUM', 0x10000000);
         }
+        if (!defined('ast\flags\CLASS_READONLY')) {
+            define('ast\flags\CLASS_READONLY', 0x20000000);
+        }
     }
 }

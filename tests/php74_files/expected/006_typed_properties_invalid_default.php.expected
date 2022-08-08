@@ -1,6 +1,6 @@
 %s:9 PhanTypeMismatchPropertyDefaultReal Default value for string $badNullable can't be null of type null
 %s:10 PhanTypeMismatchPropertyDefaultReal Default value for string $invalidFalseable can't be false of type false
-%s:11 PhanTypeMismatchPropertyDefaultReal Default value for int $invalidInt can't be %s of type 'foobar'
+%s:11 PhanTypeMismatchPropertyDefaultReal Default value for int $invalidInt can't be %s of type string
 %s:12 PhanTypeMismatchPropertyDefaultReal Default value for string $invalidArray can't be [] of type array{}
 %s:13 PhanTypeMismatchPropertyDefaultReal Default value for \stdClass $invalidDefaultObject can't be [] of type array{}
 %s:14 PhanUndeclaredTypeProperty Property \TypedProperties\BadDefaultType->invalidClass has undeclared type \TypedProperties\MissingClass

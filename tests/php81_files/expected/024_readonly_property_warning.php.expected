@@ -1,0 +1,7 @@
+%s:6 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS24\Foo->baz
+%s:7 PhanPluginUnknownPropertyType Property \NS24\Foo->readonlyMissingTypeDeclaration has an initial type that cannot be inferred
+%s:7 PhanReadonlyPropertyMissingType Readonly property $readonlyMissingTypeDeclaration must have a declared type
+%s:7 PhanUnreferencedPublicProperty Possibly zero references to public property \NS24\Foo->readonlyMissingTypeDeclaration
+%s:10 PhanTypeMismatchPropertyReal Assigning $baz of type int to property but \NS24\Foo->baz is string
+%s:13 PhanParamTooFew Call with 1 arg(s) to \NS24\Foo::__construct(int $bar, int $baz) which requires 2 arg(s) defined at %s:8
+%s:14 PhanAccessReadOnlyProperty Cannot modify read-only property \NS24\Foo->bar defined at %s:5

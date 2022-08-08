@@ -223,6 +223,8 @@ return [
 'ast\flags\CLASS_TRAIT' => 'Marks a `ast\AST_CLASS` (class-like declaration) as being a trait',
 'ast\flags\CLOSURE_USE_REF' => 'Marks an `ast\AST_CLOSURE_USE` as using a variable by reference',
 'ast\flags\DIM_ALTERNATIVE_SYNTAX' => 'Marks an `ast\AST_DIM` as using the alternative `expr{dim}` syntax',
+'ast\flags\ENCAPS_VAR_DOLLAR_CURLY' => 'Marks an `ast\AST_VAR` or `ast\AST_DIM` found inside an encapsulated string as being embedded using the `${...}` syntax',
+'ast\flags\ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR' => 'Marks an `ast\AST_VAR` or `ast\AST_DIM` found inside an encapsulated string as being a variable variable access to an expression embedded using the `${expr}` syntax (equivalent to {${expr}})',
 'ast\flags\EXEC_EVAL' => 'Marks an `ast\AST_EXEC` as being an `eval(...)`',
 'ast\flags\EXEC_INCLUDE' => 'Marks an `ast\AST_EXEC` as being an `include`',
 'ast\flags\EXEC_INCLUDE_ONCE' => 'Marks an `ast\AST_EXEC` as being an `include_once`',

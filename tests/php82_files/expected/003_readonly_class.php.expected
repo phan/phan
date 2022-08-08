@@ -1,0 +1,8 @@
+%s:6 PhanPluginUnknownPropertyType Property \NS3\Foo->readonlyMissingTypeDeclaration has an initial type that cannot be inferred
+%s:6 PhanReadonlyPropertyMissingType Readonly property $readonlyMissingTypeDeclaration must have a declared type
+%s:6 PhanUnreferencedPublicProperty Possibly zero references to public property \NS3\Foo->readonlyMissingTypeDeclaration
+%s:9 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NS3\Foo's property $undeclared2 declared at %s:4 (immutability of properties is enforced at runtime)
+%s:9 PhanUndeclaredProperty Reference to undeclared property \NS3\Foo->undeclared2
+%s:13 PhanAccessReadOnlyProperty Cannot modify read-only property \NS3\Foo->bar defined at %s:5
+%s:14 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NS3\Foo's property $undeclaredProperty declared at %s:4 (immutability of properties is enforced at runtime)
+%s:14 PhanUndeclaredProperty Reference to undeclared property \NS3\Foo->undeclaredProperty

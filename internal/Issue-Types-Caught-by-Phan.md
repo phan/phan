@@ -5281,6 +5281,14 @@ PHP warns about private method {METHOD} being final starting in php 8.0
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0951_private_final.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0951_private_final.php#L4).
 
+## PhanReadonlyPropertyMissingType
+
+```
+Readonly property ${PROPERTY} must have a declared type
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php82_files/expected/003_readonly_class.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php82_files/src/003_readonly_class.php#L6).
+
 ## PhanSyntaxCompileWarning
 
 ```

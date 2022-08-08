@@ -1002,7 +1002,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $class_with_property = null;
         $class_without_property = null;
         foreach ($class_list as $clazz) {
-            if ($clazz->isImmutableAtRuntime()) {
+            if ($clazz->isPropertyImmutableFromContext($this->code_base, $this->context, $property_name)) {
                 $this->emitTypeModifyImmutableObjectPropertyIssue($clazz, $property_name, $node);
                 return $this->context;
             }
@@ -1645,6 +1645,8 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             $property_context = $property->getContext();
         } else {
+            // TODO: Should emit a different issue when property doesn't exist.
+            // TypeModifyUndeclaredPropertyOfImmutableClass
             $property_context = $clazz->getContext();
         }
         $this->emitIssue(

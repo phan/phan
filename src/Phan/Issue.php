@@ -46,6 +46,7 @@ class Issue
     public const SyntaxEnumCaseUnexpectedValue  = 'PhanSyntaxEnumCaseUnexpectedValue';
     public const PrivateFinalMethod             = 'PhanPrivateFinalMethod';
     public const PrivateFinalConstant           = 'PhanPrivateFinalConstant';
+    public const ReadonlyPropertyMissingType    = 'PhanReadonlyPropertyMissingType';
 
     // Issue::CATEGORY_UNDEFINED
     public const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -1040,6 +1041,14 @@ class Issue
                 "Private constant is not allowed to be final",
                 self::REMEDIATION_A,
                 17018
+            ),
+            new Issue(
+                self::ReadonlyPropertyMissingType,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Readonly property ${PROPERTY} must have a declared type',
+                self::REMEDIATION_A,
+                17021
             ),
             new Issue(
                 self::PrivateFinalMethod,

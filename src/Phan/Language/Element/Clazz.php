@@ -2337,11 +2337,20 @@ class Clazz extends AddressableElement
 
     /**
      * @return bool
-     * True if this is an enum
+     * True if this is a php 8.1 enum
      */
     public function isEnum(): bool
     {
         return $this->getFlagsHasState(\ast\flags\CLASS_ENUM);
+    }
+
+    /**
+     * @return bool
+     * True if this is a php 8.2 readonly class
+     */
+    public function isReadonly(): bool
+    {
+        return $this->getFlagsHasState(\ast\flags\CLASS_READONLY);
     }
 
     private const IMMUTABLE_CLASS_SET = [
@@ -2381,6 +2390,8 @@ class Clazz extends AddressableElement
         '\xmlparser' => true,
     ];
 
+    private const READONLY_CLASS_FLAGS = ast\flags\CLASS_ENUM | ast\flags\CLASS_READONLY;
+
     /**
      * @return bool
      * True if this is an object with immutable properties such as an enum or closure
@@ -2389,10 +2400,38 @@ class Clazz extends AddressableElement
      */
     public function isImmutableAtRuntime(): bool
     {
-        if ($this->isEnum()) {
+        if ($this->getFlags() & self::READONLY_CLASS_FLAGS) {
             return true;
         }
         return array_key_exists(strtolower($this->fqsen->__toString()), self::IMMUTABLE_CLASS_SET);
+    }
+
+    /**
+     * Check if $prop_name of this class can't be mutated from the given Context $context.
+     * @unused-param $context
+     */
+    public function isPropertyImmutableFromContext(CodeBase $code_base, Context $context, string $prop_name): bool
+    {
+        if (!$this->isImmutableAtRuntime()) {
+            return false;
+        }
+        if (!$this->isReadonly()) {
+            // This is an enum or an internal class where properties can't be mutated at runtime.
+            return true;
+        }
+        if (!$this->hasPropertyWithName($code_base, $prop_name)) {
+            // Cannot add undeclared properties to a readonly class.
+            return true;
+        }
+        // Declared Properties of readonly classes can be initialized once, inside or outside of the class.
+        //
+        // TODO: Make this stricter, e.g. forbid writes if a property would be set in the constructor.
+        // - For now, the existing logic for PhanAccessReadOnlyProperty on phpdoc `@readonly` or real `readonly`
+        //   will continue to be used.
+        //
+        // $prop_context = $this->getPropertyByName($code_base, $prop_name)->getContext();
+        // return $context->getClassFQSENOrNull() !== $prop_context->getClassFQSEN();
+        return false;
     }
 
     /**

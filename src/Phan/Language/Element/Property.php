@@ -482,7 +482,7 @@ class Property extends ClassElement
                         $this->real_union_type,
                         $this->name,
                         ASTReverter::toShortString($future_union_type->getNode()),
-                        $union_type
+                        $union_type->asNonLiteralType()  // Make issue messages less verbose for property declarations. Same as ParseVisitor::addProperty
                     );
             }
         } catch (IssueException $_) {

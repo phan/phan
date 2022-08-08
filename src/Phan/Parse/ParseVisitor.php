@@ -622,6 +622,19 @@ class ParseVisitor extends ScopeVisitor
      */
     private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes, bool $from_parameter): ?Property
     {
+        $original_flags = $flags;
+        if ($class->getFlags() & ast\flags\CLASS_READONLY) {
+            $flags |= ast\flags\MODIFIER_READONLY;
+        }
+        if ($flags & ast\flags\MODIFIER_READONLY) {
+            if ($real_union_type->isEmpty()) {
+                $this->emitIssue(
+                    Issue::ReadonlyPropertyMissingType,
+                    $lineno,
+                    $property_name
+                );
+            }
+        }
         $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
 
         // If something goes wrong will getting the type of
@@ -666,7 +679,7 @@ class ParseVisitor extends ScopeVisitor
                 if (!$union_type->canCastToUnionType($real_union_type, $this->code_base)) {
                     $this->emitIssue(
                         Issue::TypeMismatchPropertyDefaultReal,
-                        $context_for_property->getLineNumberStart(),
+                        $lineno,
                         $real_union_type,
                         $property_name,
                         ASTReverter::toShortString($default_node),
@@ -729,12 +742,12 @@ class ParseVisitor extends ScopeVisitor
         $phan_flags = $property_comment->getPhanFlagsForProperty();
         if ($flags & ast\flags\MODIFIER_READONLY) {
             $phan_flags |= Flags::IS_READ_ONLY;
-            if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+            if (($original_flags & ast\flags\MODIFIER_READONLY) && Config::get_closest_minimum_target_php_version_id() < 80100) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $context_for_property,
                     Issue::CompatibleReadonlyProperty,
-                    $context_for_property->getLineNumberStart(),
+                    $lineno,
                     $property
                 );
             }

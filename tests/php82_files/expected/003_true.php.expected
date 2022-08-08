@@ -1,3 +1,0 @@
-%s:2 PhanCompatibleTrueType Cannot use true as a type before php 8.2.
-%s:5 PhanCompatibleStandaloneType Cannot use false as a standalone type before php 8.2.
-%s:8 PhanCompatibleStandaloneType Cannot use null as a standalone type before php 8.2.
