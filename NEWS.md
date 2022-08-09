@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2022, Phan 5.4.1 (dev)
+-----------------------
+
+New Features(Analysis):
+- Support parsing php 8.2's disjunctive normal form types (e.g. `A|(B&C)` (https://wiki.php.net/rfc/dnf_types).
+
 Aug 08 2022, Phan 5.4.0
 -----------------------
 

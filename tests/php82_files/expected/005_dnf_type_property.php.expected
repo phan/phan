@@ -1,0 +1,2 @@
+%s:14 PhanTypeMismatchPropertyReal Assigning null of type null to property but \X5->value is (\Countable&\ArrayAccess)|\stdClass
+%s:16 PhanTypeMismatchPropertyReal Assigning $v2 of type \X5 to property but \X5->value is (\Countable&\ArrayAccess)|\stdClass
