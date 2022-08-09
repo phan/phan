@@ -19,8 +19,18 @@ return [
   'added' => [
     'array_is_list' => ['bool', 'array'=>'array'],
     'fsync' => ['bool', 'stream'=>'resource'],
+    'mysqli_fetch_column' => ['null|int|float|string|false', 'result' => 'mysqli_result', 'column'=>'int'],
+    'mysqli_result::fetch_column' => ['null|int|float|string|false', 'column'=>'int'],
   ],
   'changed' => [
+    'mysqli_stmt::execute' => [
+      'old' => ['bool'],
+      'new' => ['bool', 'params=' => '?list<string>'],
+    ],
+    'mysqli_stmt_execute' => [
+      'old' => ['bool', 'statement'=>'mysqli_stmt'],
+      'new' => ['bool', 'statement'=>'mysqli_stmt', 'params=' => '?list<string>'],
+    ],
   ],
   'removed' => [
   ],
