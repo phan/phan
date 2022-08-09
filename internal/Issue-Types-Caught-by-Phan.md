@@ -17,6 +17,14 @@ This category of issue is emitted when you're trying to access things that you c
 Note: in this document, "`@internal`" refers to user-defined elements with `/** @internal */` in their PHPDoc,
 while "internal" refers to classes, functions, methods, etc.  that are built into PHP and PHP modules (e.g. `is_string`, `stdClass`, etc)
 
+## PhanAccessClassConstantOfTraitDirectly
+
+```
+Cannot directly access class constant {CONST} of trait {TRAIT} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_trait_constant.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_trait_constant.php#L25).
+
 ## PhanAccessClassConstantPrivate
 
 This issue comes up when there is an attempt to access a private class constant outside of the scope in which it's defined.
@@ -748,6 +756,14 @@ Cannot use trailing commas in parameter or closure use lists before php 8.0 in d
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
+
+## PhanCompatibleTraitConstant
+
+```
+Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_trait_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_trait_constant.php#L3).
 
 ## PhanCompatibleTrueType
 

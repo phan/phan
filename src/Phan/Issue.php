@@ -551,6 +551,7 @@ class Issue
     public const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
     public const AccessClassConstantPrivate      = 'PhanAccessClassConstantPrivate';
     public const AccessClassConstantProtected    = 'PhanAccessClassConstantProtected';
+    public const AccessClassConstantOfTraitDirectly = 'PhanAccessClassConstantOfTraitDirectly';
     public const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
     public const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
     public const AccessOwnConstructor            = 'PhanAccessOwnConstructor';
@@ -623,6 +624,7 @@ class Issue
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
     public const CompatibleAbstractPrivateMethodInTrait    = 'PhanCompatibleAbstractPrivateMethodInTrait';
+    public const CompatibleTraitConstant                 = 'PhanCompatibleTraitConstant';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -4845,6 +4847,14 @@ class Issue
                 1009
             ),
             new Issue(
+                self::AccessClassConstantOfTraitDirectly,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot directly access class constant {CONST} of trait {TRAIT} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1036
+            ),
+            new Issue(
                 self::AccessPropertyStaticAsNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
@@ -5386,6 +5396,14 @@ class Issue
                 'Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+',
                 self::REMEDIATION_B,
                 3049
+            ),
+            new Issue(
+                self::CompatibleTraitConstant,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                'Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+',
+                self::REMEDIATION_B,
+                3052
             ),
 
             // Issue::CATEGORY_GENERIC
