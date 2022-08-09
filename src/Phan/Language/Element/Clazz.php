@@ -266,6 +266,7 @@ class Clazz extends AddressableElement
         } elseif ($class->isTrait()) {
             $flags = \ast\flags\CLASS_TRAIT;
         }
+        // FIXME readonly flag
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
@@ -1513,10 +1514,11 @@ class Clazz extends AddressableElement
                 '@abstract'
             );
         }
-
-        // Update the FQSEN if it's not associated with this
-        // class yet (always true)
-        if ($constant->getFQSEN() !== $constant_fqsen) {
+        if ($constant->getClass($code_base)->isTrait()) {
+            $constant = $constant->createUseAlias($this);
+        } elseif ($constant->getFQSEN() !== $constant_fqsen) {
+            // Update the FQSEN if it's not associated with this
+            // class yet (always true)
             $constant = clone($constant);
             $constant->setFQSEN($constant_fqsen);
         }
@@ -1543,6 +1545,7 @@ class Clazz extends AddressableElement
             );
         }
         // Traits don't have constants, thankfully, so the logic is simple.
+        // FIXME now they do
         if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
             if ($inherited_constant->isPHPInternal()) {
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
@@ -1743,20 +1746,31 @@ class Clazz extends AddressableElement
             );
         }
 
-        $constant = $code_base->getClassConstantByFQSEN(
-            $constant_fqsen
-        );
+        $constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
 
-        if ($constant->isPublic()) {
-            // Most constants are public, check that first.
+        if ($constant->isPublic() && !$this->isTrait()) {
+            // Most constants are public and declared outside of traits, check that after checking if the declaring class was a trait
             return $constant;
         }
-
-        // Visibility checks for private/protected class constants:
 
         $accessing_class = $context->getClassFQSENOrNull();
         if ($accessing_class && $constant->isAccessibleFromClass($code_base, $accessing_class)) {
             return $constant;
+        }
+        // Visibility checks for private/protected class constants:
+        if ($this->isTrait()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantOfTraitDirectly)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        $constant_fqsen,
+                        $this->fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
         }
 
         if ($constant->isPrivate()) {
@@ -1766,7 +1780,7 @@ class Clazz extends AddressableElement
                     $context->getFile(),
                     $context->getLineNumberStart(),
                     [
-                        (string)$constant_fqsen,
+                        $constant_fqsen,
                         $constant->getContext()->getFile(),
                         $constant->getContext()->getLineNumberStart()
                     ]
@@ -1780,7 +1794,7 @@ class Clazz extends AddressableElement
                 $context->getFile(),
                 $context->getLineNumberStart(),
                 [
-                    (string)$constant_fqsen,
+                    $constant_fqsen,
                     $constant->getContext()->getFile(),
                     $constant->getContext()->getLineNumberStart()
                 ]

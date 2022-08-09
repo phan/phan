@@ -10,5 +10,5 @@ function test169(int $i, int $j) : void {
         include_once __DIR__ . '/000_plugins.php',
         eval('echo "test";'),
     ]);
-    echo intdiv("{$i}2${j}", 2);
+    echo intdiv("{$i}2{$j}", 2);
 }

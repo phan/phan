@@ -35,9 +35,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
 
+use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_key_exists;
 use function array_slice;
 use function array_unique;
 use function array_values;

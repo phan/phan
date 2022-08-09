@@ -1,0 +1,10 @@
+%s:3 PhanCompatibleTraitConstant Trait \T977 declares constant PUBLIC_CONST which is only allowed in 8.2+
+%s:4 PhanCompatibleTraitConstant Trait \T977 declares constant PRIVATE_CONST which is only allowed in 8.2+
+%s:5 PhanCompatibleTraitConstant Trait \T977 declares constant PROTECTED_CONST which is only allowed in 8.2+
+%s:19 PhanAccessClassConstantPrivate Cannot access private class constant \C977::PRIVATE_CONST defined at %s:4
+%s:20 PhanAccessClassConstantProtected Cannot access protected class constant \C977::PROTECTED_CONST defined at %s:5
+%s:25 PhanAccessClassConstantOfTraitDirectly Cannot directly access class constant \T977::PUBLIC_CONST of trait \T977 defined at %s:3
+%s:27 PhanAccessClassConstantOfTraitDirectly Cannot directly access class constant \T977::PRIVATE_CONST of trait \T977 defined at %s:4
+%s:28 PhanAccessClassConstantPrivate Cannot access private class constant \C977::PRIVATE_CONST defined at %s:4
+%s:29 PhanAccessClassConstantOfTraitDirectly Cannot directly access class constant \T977::PROTECTED_CONST of trait \T977 defined at %s:5
+%s:30 PhanAccessClassConstantProtected Cannot access protected class constant \C977::PROTECTED_CONST defined at %s:5

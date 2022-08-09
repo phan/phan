@@ -1352,7 +1352,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-
             // Mark that this class constant has been referenced
             // from this context
             $constant->addReference($this->context);
@@ -1406,6 +1405,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $class = $this->context->getClassInScope($this->code_base);
 
+
         foreach ($node->children as $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected class const element to be a Node');
@@ -1413,6 +1413,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $name = $child_node->children['name'];
             if (!\is_string($name)) {
                 throw new AssertionError('expected class const name to be a string');
+            }
+            if ($class->isTrait() && Config::get_closest_minimum_target_php_version_id() < 80200) {
+                $this->emitIssue(Issue::CompatibleTraitConstant, $node->lineno, $class->getFQSEN(), $name);
             }
             try {
                 $const_decl = $class->getConstantByNameInContext($this->code_base, $name, $this->context);
