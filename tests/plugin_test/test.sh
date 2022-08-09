@@ -39,6 +39,7 @@ sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
     -e 's/\\\(Exception\|Error\)|\\Stringable|\\Throwable/\\\1|\\Throwable/g' \
     -e 's/strlen(): Argument #1 (\$string) must be of type string/strlen() expects parameter 1 to be string/g' \
     -e 's/alphanumeric, backslash, or NUL$/alphanumeric or backslash/g' \
+    -e 's/'\''Not using'\'' . " args\\n"/"Not using args\\n"/g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then
