@@ -23,6 +23,14 @@ return [
     'mysqli_result::fetch_column' => ['null|int|float|string|false', 'column'=>'int'],
   ],
   'changed' => [
+    'mysqli_stmt::execute' => [
+      'old' => ['bool'],
+      'new' => ['bool', 'params=' => '?list<string>'],
+    ],
+    'mysqli_stmt_execute' => [
+      'old' => ['bool', 'statement'=>'mysqli_stmt'],
+      'new' => ['bool', 'statement'=>'mysqli_stmt', 'params=' => '?list<string>'],
+    ],
   ],
   'removed' => [
   ],
