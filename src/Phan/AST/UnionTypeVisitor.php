@@ -734,7 +734,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 $types[] = $this->visitName($c);
             } else {
-                throw new AssertionError("Expected union type to be composed of types and names");
+                throw new AssertionError("Expected intersection type to be composed of types and names");
             }
         }
         $result = [IntersectionType::createFromTypes($types, $this->code_base, $this->context)];
@@ -782,6 +782,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                 }
                 $types[] = $this->visitName($c);
+            } elseif ($kind === ast\AST_TYPE_INTERSECTION) {
+                $types[] = $this->visitTypeIntersection($c);
             } else {
                 throw new AssertionError("Expected union type to be composed of types and names");
             }

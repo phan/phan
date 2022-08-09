@@ -1,0 +1,7 @@
+%s:4 PhanPluginUnknownMethodReturnType Method \NS4\A::example() has no declared or inferred return type
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $param - it has union type (\NS4\B&\NS4\C)|\NS4\A(real=(\NS4\B&\NS4\C)|\NS4\A)
+%s:14 PhanParamTooMany Call with 1 arg(s) to \NS4\A::example() which only takes 0 arg(s) defined at %s:4
+%s:16 PhanTypeMismatchReturnSuperType Returning new B() of type \NS4\B but example() is declared to return (\NS4\B&\NS4\C)|\NS4\A (saw a supertype instead of a subtype)
+%s:21 PhanTypeMismatchArgumentSuperType Argument 1 ($param) is new B() of type \NS4\B but \NS4\example() takes (\NS4\B&\NS4\C)|\NS4\A defined at %s:12 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:23 PhanTypeMismatchArgument Argument 1 ($param) is new \stdClass() of type \stdClass but \NS4\example() takes (\NS4\B&\NS4\C)|\NS4\A defined at %s:12
+%s:24 PhanTypeMismatchArgumentReal Argument 1 ($param) is null of type null but \NS4\example() takes (\NS4\B&\NS4\C)|\NS4\A defined at %s:12
