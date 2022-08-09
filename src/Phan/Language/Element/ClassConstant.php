@@ -76,12 +76,12 @@ class ClassConstant extends ClassElement implements ConstantInterface
     {
         $constant_fqsen = FullyQualifiedClassConstantName::make(
             $clazz->getFQSEN(),
-            $this->getName()
+            $this->name
         );
 
         $constant = new ClassConstant(
             $this->getContext(),
-            $this->getName(),
+            $this->name,
             $this->getUnionType(),
             $this->getFlags(),
             $constant_fqsen
