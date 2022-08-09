@@ -2429,7 +2429,7 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~(self::RESOLVE_CONSTANTS|self::RESOLVE_ONLY_CONSTANT_VARS|self::RESOLVE_DONT_USE_VARS));
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~(self::RESOLVE_CONSTANTS | self::RESOLVE_ONLY_CONSTANT_VARS | self::RESOLVE_DONT_USE_VARS));
                 }
                 return $new_node;
             case ast\AST_CLASS_CONST:

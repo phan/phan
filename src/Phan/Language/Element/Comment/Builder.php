@@ -405,7 +405,6 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        //
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
         if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];

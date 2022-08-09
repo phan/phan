@@ -1416,7 +1416,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             if ($class->isTrait() && Config::get_closest_minimum_target_php_version_id() < 80200) {
                 $this->emitIssue(Issue::CompatibleTraitConstant, $node->lineno, $class->getFQSEN(), $name);
-            };
+            }
             try {
                 $const_decl = $class->getConstantByNameInContext($this->code_base, $name, $this->context);
                 $const_decl->getUnionType();

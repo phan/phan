@@ -3349,7 +3349,8 @@ class TolerantASTConverter
     /**
      * @param ast\Node|string|int|float|null $node
      */
-    private static function setDeprecatedEncapsVar($node): void {
+    private static function setDeprecatedEncapsVar($node): void
+    {
         if ($node instanceof ast\Node && \in_array($node->kind, [ast\AST_VAR, ast\AST_DIM], true)) {
             if (PHP_VERSION_ID >= 80200) {
                 // Make flags identical to native ast version for unit tests.

@@ -1516,7 +1516,7 @@ class Clazz extends AddressableElement
         }
         if ($constant->getClass($code_base)->isTrait()) {
             $constant = $constant->createUseAlias($this);
-        } else if ($constant->getFQSEN() !== $constant_fqsen) {
+        } elseif ($constant->getFQSEN() !== $constant_fqsen) {
             // Update the FQSEN if it's not associated with this
             // class yet (always true)
             $constant = clone($constant);
