@@ -1518,16 +1518,16 @@
         },
         {
             "name": "tysonandre/var_representation_polyfill",
-            "version": "0.1.1",
+            "version": "0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TysonAndre/var_representation_polyfill.git",
-                "reference": "0a942e74e18af5514749895507bc6ca7ab96399a"
+                "reference": "e925b7b0806b39f26aa899202ee065decbabafdb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/0a942e74e18af5514749895507bc6ca7ab96399a",
-                "reference": "0a942e74e18af5514749895507bc6ca7ab96399a",
+                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/e925b7b0806b39f26aa899202ee065decbabafdb",
+                "reference": "e925b7b0806b39f26aa899202ee065decbabafdb",
                 "shasum": ""
             },
             "require": {
@@ -1535,7 +1535,7 @@
                 "php": "^7.2.0|^8.0.0"
             },
             "require-dev": {
-                "phan/phan": "^4.0",
+                "phan/phan": "^5.1",
                 "phpunit/phpunit": "^8.5.0"
             },
             "suggest": {
@@ -1566,9 +1566,9 @@
             ],
             "support": {
                 "issues": "https://github.com/TysonAndre/var_representation_polyfill/issues",
-                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.1.1"
+                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.1.2"
             },
-            "time": "2021-08-16T00:12:50+00:00"
+            "time": "2022-08-11T12:33:19+00:00"
         },
         {
             "name": "webmozart/assert",
