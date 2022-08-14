@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use ast;
 use Closure;
 use Phan\AST\ASTReverter;
 use Phan\Exception\IssueException;
@@ -395,6 +396,14 @@ class Property extends ClassElement
     public function isReadOnly(): bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
+    }
+
+    /**
+     * Is this property declared with the PHP 8.1+ `readonly` modifier?
+     */
+    public function isReadOnlyReal(): bool
+    {
+        return ($this->getFlags() & ast\flags\MODIFIER_READONLY) !== 0;
     }
 
     /**

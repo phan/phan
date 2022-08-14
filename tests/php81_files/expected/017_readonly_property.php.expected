@@ -1,2 +1,2 @@
-%s:6 PhanAccessReadOnlyProperty Cannot modify read-only property \Point->x defined at %s:3
+%s:6 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Point's property $x declared at %s:3 (immutability of properties is enforced at runtime)
 %s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $p->x of type int but \spl_object_id() takes object

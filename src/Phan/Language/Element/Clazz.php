@@ -2426,16 +2426,21 @@ class Clazz extends AddressableElement
      */
     public function isPropertyImmutableFromContext(CodeBase $code_base, Context $context, string $prop_name): bool
     {
-        if (!$this->isImmutableAtRuntime()) {
-            return false;
-        }
-        if (!$this->isReadonly()) {
-            // This is an enum or an internal class where properties can't be mutated at runtime.
-            return true;
-        }
         if (!$this->hasPropertyWithName($code_base, $prop_name)) {
-            // Cannot add undeclared properties to a readonly class.
-            return true;
+            // Cannot add undeclared properties to a readonly class or enum or internal readonly class.
+            return $this->isImmutableAtRuntime();
+        }
+        if ($this->isImmutableAtRuntime()) {
+            if (!$this->isReadonly()) {
+                // This is an enum or an internal class where properties can't be mutated at runtime.
+                return true;
+            }
+        }
+        $property = $this->getPropertyByName($code_base, $prop_name);
+        if ($property->isReadOnlyReal()) {
+            // A `readonly` property can only be mutated from within the declaration's own class scope.
+            // (even public properties)
+            return $context->getClassFQSENOrNull() !== $property->getDefiningClassFQSEN();
         }
         // Declared Properties of readonly classes can be initialized once, inside or outside of the class.
         //
@@ -2443,8 +2448,6 @@ class Clazz extends AddressableElement
         // - For now, the existing logic for PhanAccessReadOnlyProperty on phpdoc `@readonly` or real `readonly`
         //   will continue to be used.
         //
-        // $prop_context = $this->getPropertyByName($code_base, $prop_name)->getContext();
-        // return $context->getClassFQSENOrNull() !== $prop_context->getClassFQSEN();
         return false;
     }
 
