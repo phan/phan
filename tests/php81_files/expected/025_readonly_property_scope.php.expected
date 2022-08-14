@@ -1,0 +1,4 @@
+%s:2 PhanPluginUnknownArrayPropertyType Property \X->x has an array type, but does not specify any key types or value types
+%s:2 PhanWriteOnlyPublicProperty Possibly zero read references to public property \X->x
+%s:5 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Y's property $x declared at %s:2 (immutability of properties is enforced at runtime)
+%s:7 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Y's property $x declared at %s:2 (immutability of properties is enforced at runtime)

@@ -8,6 +8,8 @@ New Features(Analysis):
 - Support php 8.2 class constants on trait RFC. (#4687)
   Emit `PhanCompatibleTraitConstant` when using constants on traits with a `minimum_target_php_version` below `'8.2'`
   Emit `PhanAccessClassConstantOfTraitDirectly` when directly referencing the class constant on the trait declaration.
+- Emit `PhanTypeModifyImmutableObjectProperty` for PHP 8.1 `readonly` properties when modified anywhere outside of the
+  declaring class's scope. (#4710)
 
 Aug 08 2022, Phan 5.4.0
 -----------------------
