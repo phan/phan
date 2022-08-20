@@ -785,7 +785,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } elseif ($kind === ast\AST_TYPE_INTERSECTION) {
                 $types[] = $this->visitTypeIntersection($c);
             } else {
-                throw new AssertionError("Expected union type to be composed of types and names");
+                throw new AssertionError("Expected union type to be composed of types and names but got " . Debug::nodeName($c));
             }
         }
         $result = [];
