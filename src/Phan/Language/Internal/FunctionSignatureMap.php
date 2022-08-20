@@ -370,7 +370,7 @@ return [
 'array_diff_ukey\'1' => ['associative-array', 'array'=>'array', 'rest'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable(mixed,mixed):int'],
 'array_fill' => ['array<int,mixed>', 'start_index'=>'int', 'count'=>'int', 'value'=>'mixed'],
 'array_fill_keys' => ['array', 'keys'=>'array', 'value'=>'mixed'],
-'array_filter' => ['associative-array', 'array'=>'array', 'callback='=>'callable(mixed,mixed):bool|callable(mixed):bool', 'mode='=>'int'],
+'array_filter' => ['associative-array', 'array'=>'array', 'callback='=>'?callable(mixed,mixed):bool|?callable(mixed):bool', 'mode='=>'int'],
 'array_flip' => ['associative-array<mixed,int>|associative-array<mixed,string>', 'array'=>'array'],
 'array_intersect' => ['associative-array', 'array'=>'array', 'arrays'=>'array', '...args='=>'array'],
 'array_intersect_assoc' => ['associative-array', 'array'=>'array', 'arrays'=>'array', '...args='=>'array'],

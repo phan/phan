@@ -11,6 +11,9 @@ New Features(Analysis):
 - Emit `PhanTypeModifyImmutableObjectProperty` for PHP 8.1 `readonly` properties when modified anywhere outside of the
   declaring class's scope. (#4710)
 
+Miscellaneous:
+- Allow `array_filter` `$callback` to be null (#4715)
+
 Aug 08 2022, Phan 5.4.0
 -----------------------
 
