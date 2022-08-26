@@ -1080,7 +1080,7 @@ class TolerantASTConverter
                 $element_value = $array_element->elementValue ?? null;
                 // Workaround for <= 0.0.5
                 // TODO: Remove workaround?
-                $ast_expr = ($element_value !== null && !($element_value instanceof MissingToken)) ? static::phpParserNodeToAstNode($array_element->elementValue) : null;
+                $ast_expr = ($element_value !== null && !($element_value instanceof MissingToken)) ? static::phpParserNodeToAstNode($element_value) : null;
                 if ($kind === \ast\AST_YIELD) {
                     $element_key = $array_element->elementKey ?? null;
                     $key = $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null;
