@@ -691,16 +691,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.11",
+            "version": "v5.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "535846c7ee6bc4dd027ca0d93220601456734b10"
+                "reference": "c072aa8f724c3af64e2c7a96b796a4863d24dba1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/535846c7ee6bc4dd027ca0d93220601456734b10",
-                "reference": "535846c7ee6bc4dd027ca0d93220601456734b10",
+                "url": "https://api.github.com/repos/symfony/console/zipball/c072aa8f724c3af64e2c7a96b796a4863d24dba1",
+                "reference": "c072aa8f724c3af64e2c7a96b796a4863d24dba1",
                 "shasum": ""
             },
             "require": {
@@ -770,7 +770,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.11"
+                "source": "https://github.com/symfony/console/tree/v5.4.12"
             },
             "funding": [
                 {
@@ -786,7 +786,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-07-22T10:42:43+00:00"
+            "time": "2022-08-17T13:18:05+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -1432,16 +1432,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v5.4.11",
+            "version": "v5.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "5eb661e49ad389e4ae2b6e4df8d783a8a6548322"
+                "reference": "2fc515e512d721bf31ea76bd02fe23ada4640058"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/5eb661e49ad389e4ae2b6e4df8d783a8a6548322",
-                "reference": "5eb661e49ad389e4ae2b6e4df8d783a8a6548322",
+                "url": "https://api.github.com/repos/symfony/string/zipball/2fc515e512d721bf31ea76bd02fe23ada4640058",
+                "reference": "2fc515e512d721bf31ea76bd02fe23ada4640058",
                 "shasum": ""
             },
             "require": {
@@ -1498,7 +1498,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v5.4.11"
+                "source": "https://github.com/symfony/string/tree/v5.4.12"
             },
             "funding": [
                 {
@@ -1514,34 +1514,42 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-07-24T16:15:25+00:00"
+            "time": "2022-08-12T17:03:11+00:00"
         },
         {
             "name": "tysonandre/var_representation_polyfill",
-            "version": "0.1.2",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TysonAndre/var_representation_polyfill.git",
-                "reference": "e925b7b0806b39f26aa899202ee065decbabafdb"
+                "reference": "e9116c2c352bb0835ca428b442dde7767c11ad32"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/e925b7b0806b39f26aa899202ee065decbabafdb",
-                "reference": "e925b7b0806b39f26aa899202ee065decbabafdb",
+                "url": "https://api.github.com/repos/TysonAndre/var_representation_polyfill/zipball/e9116c2c352bb0835ca428b442dde7767c11ad32",
+                "reference": "e9116c2c352bb0835ca428b442dde7767c11ad32",
                 "shasum": ""
             },
             "require": {
                 "ext-tokenizer": "*",
                 "php": "^7.2.0|^8.0.0"
             },
+            "provide": {
+                "ext-var_representation": "*"
+            },
             "require-dev": {
-                "phan/phan": "^5.1",
+                "phan/phan": "^5.4.1",
                 "phpunit/phpunit": "^8.5.0"
             },
             "suggest": {
-                "ext-var_representation": "*"
+                "ext-var_representation": "For best performance"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.3-dev"
+                }
+            },
             "autoload": {
                 "files": [
                     "src/var_representation.php"
@@ -1566,9 +1574,9 @@
             ],
             "support": {
                 "issues": "https://github.com/TysonAndre/var_representation_polyfill/issues",
-                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.1.2"
+                "source": "https://github.com/TysonAndre/var_representation_polyfill/tree/0.1.3"
             },
-            "time": "2022-08-11T12:33:19+00:00"
+            "time": "2022-08-31T12:59:22+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -2317,16 +2325,16 @@
         },
         {
             "name": "sebastian/comparator",
-            "version": "3.0.3",
+            "version": "3.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/comparator.git",
-                "reference": "1071dfcef776a57013124ff35e1fc41ccd294758"
+                "reference": "1dc7ceb4a24aede938c7af2a9ed1de09609ca770"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/1071dfcef776a57013124ff35e1fc41ccd294758",
-                "reference": "1071dfcef776a57013124ff35e1fc41ccd294758",
+                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/1dc7ceb4a24aede938c7af2a9ed1de09609ca770",
+                "reference": "1dc7ceb4a24aede938c7af2a9ed1de09609ca770",
                 "shasum": ""
             },
             "require": {
@@ -2379,7 +2387,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/comparator/issues",
-                "source": "https://github.com/sebastianbergmann/comparator/tree/3.0.3"
+                "source": "https://github.com/sebastianbergmann/comparator/tree/3.0.5"
             },
             "funding": [
                 {
@@ -2387,7 +2395,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-11-30T08:04:30+00:00"
+            "time": "2022-09-14T12:31:48+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -2520,16 +2528,16 @@
         },
         {
             "name": "sebastian/exporter",
-            "version": "3.1.4",
+            "version": "3.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/exporter.git",
-                "reference": "0c32ea2e40dbf59de29f3b49bf375176ce7dd8db"
+                "reference": "73a9676f2833b9a7c36968f9d882589cd75511e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/0c32ea2e40dbf59de29f3b49bf375176ce7dd8db",
-                "reference": "0c32ea2e40dbf59de29f3b49bf375176ce7dd8db",
+                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/73a9676f2833b9a7c36968f9d882589cd75511e6",
+                "reference": "73a9676f2833b9a7c36968f9d882589cd75511e6",
                 "shasum": ""
             },
             "require": {
@@ -2585,7 +2593,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/exporter/issues",
-                "source": "https://github.com/sebastianbergmann/exporter/tree/3.1.4"
+                "source": "https://github.com/sebastianbergmann/exporter/tree/3.1.5"
             },
             "funding": [
                 {
@@ -2593,7 +2601,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-11-11T13:51:24+00:00"
+            "time": "2022-09-14T06:00:17+00:00"
         },
         {
             "name": "sebastian/global-state",

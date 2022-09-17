@@ -216,15 +216,15 @@ By default, this plugin won't warn if it can find a TODO/FIXME/"Deliberately emp
 (This may miss some TODOs due to `php-ast` not providing the end line numbers)
 The setting `'plugin_config' => ['empty_statement_list_ignore_todos' => true]` can be used to make it unconditionally warn about empty statement lists.
 
-- **PhanPluginEmptyStatementDoWhileLoop** `Empty statement list statement detected for the do-while loop`
-- **PhanPluginEmptyStatementForLoop** `Empty statement list statement detected for the for loop`
-- **PhanPluginEmptyStatementForeachLoop** `Empty statement list statement detected for the foreach loop`
-- **PhanPluginEmptyStatementIf**: `Empty statement list statement detected for the last if/elseif statement`
+- **PhanPluginEmptyStatementDoWhileLoop** `Empty statement list detected for the do-while loop`
+- **PhanPluginEmptyStatementForLoop** `Empty statement list detected for the for loop`
+- **PhanPluginEmptyStatementForeachLoop** `Empty statement list detected for the foreach loop`
+- **PhanPluginEmptyStatementIf**: `Empty statement list detected for the last if/elseif statement`
 - **PhanPluginEmptyStatementSwitch** `No side effects seen for any cases of this switch statement`
-- **PhanPluginEmptyStatementTryBody** `Empty statement list statement detected for the try statement's body`
+- **PhanPluginEmptyStatementTryBody** `Empty statement list detected for the try statement's body`
 - **PhanPluginEmptyStatementPossiblyNonThrowingTryBody**: `Found a try block that looks like it might not throw. Note that this check is a heuristic prone to false positives, especially because error handlers, signal handlers, destructors, and other things may all lead to throwing.`
-- **PhanPluginEmptyStatementTryFinally** `Empty statement list statement detected for the try's finally body`
-- **PhanPluginEmptyStatementWhileLoop** `Empty statement list statement detected for the while loop`
+- **PhanPluginEmptyStatementTryFinally** `Empty statement list detected for the try's finally body`
+- **PhanPluginEmptyStatementWhileLoop** `Empty statement list detected for the while loop`
 
 ### LoopVariableReusePlugin.php
 

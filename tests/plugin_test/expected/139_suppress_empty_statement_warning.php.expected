@@ -1,12 +1,12 @@
-src/139_suppress_empty_statement_warning.php:4 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
+src/139_suppress_empty_statement_warning.php:4 PhanPluginEmptyStatementTryFinally Empty statement list detected for the try's finally body
 src/139_suppress_empty_statement_warning.php:8 PhanPluginEmptyStatementPossiblyNonThrowingTryBody Found a try block that looks like it might not throw. Note that this check is a heuristic prone to false positives, especially because error handlers, signal handlers, destructors, and other things may all lead to throwing.
 src/139_suppress_empty_statement_warning.php:18 PhanPluginDuplicateAdjacentStatement Statement (if statement) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
-src/139_suppress_empty_statement_warning.php:18 PhanPluginEmptyStatementIf Empty statement list statement detected for the last if/elseif statement
+src/139_suppress_empty_statement_warning.php:18 PhanPluginEmptyStatementIf Empty statement list detected for the last if/elseif statement
 src/139_suppress_empty_statement_warning.php:26 PhanPluginDuplicateAdjacentStatement Statement (while loop) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
-src/139_suppress_empty_statement_warning.php:26 PhanPluginEmptyStatementWhileLoop Empty statement list statement detected for the while loop
+src/139_suppress_empty_statement_warning.php:26 PhanPluginEmptyStatementWhileLoop Empty statement list detected for the while loop
 src/139_suppress_empty_statement_warning.php:30 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{0:2} (iterating has no side effects)
 src/139_suppress_empty_statement_warning.php:34 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{0:2} (iterating has no side effects)
 src/139_suppress_empty_statement_warning.php:34 PhanPluginDuplicateAdjacentStatement Statement (foreach loop) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
-src/139_suppress_empty_statement_warning.php:34 PhanPluginEmptyStatementForeachLoop Empty statement list statement detected for the foreach loop
+src/139_suppress_empty_statement_warning.php:34 PhanPluginEmptyStatementForeachLoop Empty statement list detected for the foreach loop
 src/139_suppress_empty_statement_warning.php:41 PhanPluginDuplicateAdjacentStatement Statement (for loop) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
-src/139_suppress_empty_statement_warning.php:41 PhanPluginEmptyStatementForLoop Empty statement list statement detected for the for loop
+src/139_suppress_empty_statement_warning.php:41 PhanPluginEmptyStatementForLoop Empty statement list detected for the for loop

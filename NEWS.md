@@ -1,5 +1,11 @@
 Phan NEWS
 
+??? ?? 2022, Phan 5.4.2 (dev)
+-----------------------
+
+Miscellaneous:
+- Fix wording in EmptyStatementListPlugin issue messages.
+
 Aug 25 2022, Phan 5.4.1
 -----------------------
 

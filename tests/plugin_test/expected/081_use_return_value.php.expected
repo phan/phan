@@ -2,12 +2,12 @@ src/081_use_return_value.php:2 PhanPluginUseReturnValueInternalKnown Expected to
 src/081_use_return_value.php:3 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \count
 src/081_use_return_value.php:4 PhanNoopUnaryOperator Unused result of a unary '-' operator
 src/081_use_return_value.php:4 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \count
-src/081_use_return_value.php:5 PhanPluginEmptyStatementTryBody Empty statement list statement detected for the try statement's body
+src/081_use_return_value.php:5 PhanPluginEmptyStatementTryBody Empty statement list detected for the try statement's body
 src/081_use_return_value.php:9 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getMessage
 src/081_use_return_value.php:11 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getCode
 src/081_use_return_value.php:12 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getCode
 src/081_use_return_value.php:13 PhanUndeclaredMethod Call to undeclared method \Exception::getMissing
 src/081_use_return_value.php:17 PhanNoopUnaryOperator Unused result of a unary '-' operator
 src/081_use_return_value.php:17 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \Exception::getCode
-src/081_use_return_value.php:18 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
-src/081_use_return_value.php:25 PhanPluginEmptyStatementTryFinally Empty statement list statement detected for the try's finally body
+src/081_use_return_value.php:18 PhanPluginEmptyStatementTryFinally Empty statement list detected for the try's finally body
+src/081_use_return_value.php:25 PhanPluginEmptyStatementTryFinally Empty statement list detected for the try's finally body
