@@ -488,6 +488,10 @@ class Clazz extends AddressableElement
             foreach ($method_list as $method) {
                 $clazz->addMethod($code_base, $method, None::instance());
             }
+            if (\PHP_VERSION_ID < 80000 && $reflection_method->isConstructor()  && \strcasecmp($reflection_method->name, '__construct') !== 0) {
+                // E.g. SoapFault::SoapFault and other soap classes before PHP 8.0
+                $clazz->addMethod($code_base, Method::defaultConstructorForClass($clazz, $code_base), None::instance());
+            }
         }
 
         return $clazz;

@@ -20,6 +20,11 @@ New Features(Analysis):
 Miscellaneous:
 - Allow `array_filter` `$callback` to be null (#4715)
 
+Bug fixes:
+- Fix false positive warning in PHP < 8.0 for inferring the method signature of `new SoapFault`. (#4724)
+  (The constructor was internally declared in reflection as `SoapFault::SoapFault` until php 8.0)
+  Adjust the method signature of `SoapFault::__construct` to match the documentation/implementation.
+
 Aug 08 2022, Phan 5.4.0
 -----------------------
 

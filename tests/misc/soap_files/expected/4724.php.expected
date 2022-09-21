@@ -1,0 +1,2 @@
+%s:4 PhanParamTooFewInternal Call with 1 arg(s) to \SoapFault::__construct(?array{0:string,1:string}|?string $code, string $string, string $actor = %s, $details = %s, string $name = %s, string $headerFault = %s) which requires 2 arg(s)
+%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($code) is 1 of type 1 but \SoapFault::__construct() takes ?array{0:string,1:string}|?string%S
