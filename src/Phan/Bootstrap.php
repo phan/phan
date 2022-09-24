@@ -146,8 +146,8 @@ if (extension_loaded('ast')) {
         exit(1);
     };
 
-    if (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.0.15') < 0) {
-        $phan_output_ast_too_old_and_exit('1.0.15', '8.2');
+    if (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.1.0') < 0) {
+        $phan_output_ast_too_old_and_exit('1.1.0', '8.2');
     } elseif (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.14') < 0) {
         $phan_output_ast_too_old_and_exit('1.0.14', '8.1');
     } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.11') < 0) {
@@ -360,6 +360,7 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     }
     if ($errno === E_DEPRECATED) {
         // Because php 7.2 is used in CI we're stuck on an unmaintained paratest version.
+        // NOTE: Known issues with dynamic properties in tolerant-php-parser are fixed in `main` (but not 0.1.1) but there may be remaining unknown ones.
         if (preg_match('/^Creation of dynamic property (ParaTest\\\\Runners|Microsoft\\\\PhpParser|Phan\\\\LanguageServer\\\\LanguageServer::)/', $errstr)) {
             return true;
         }
