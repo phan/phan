@@ -6,6 +6,10 @@ Phan NEWS
 Miscellaneous:
 - Fix wording in EmptyStatementListPlugin issue messages.
 
+Maintenance:
+- Require php-ast 1.1.0 or newer in PHP 8.2+ if php-ast is installed.
+  This release of php-ast makes the parsing of `AST_ARROW_FUNC` in php 8.2 match older php versions.
+
 Aug 25 2022, Phan 5.4.1
 -----------------------
 
