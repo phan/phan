@@ -5,6 +5,7 @@ Phan NEWS
 
 Miscellaneous:
 - Fix wording in EmptyStatementListPlugin issue messages.
+- Add a few more functions where the return value should be used.
 
 Maintenance:
 - Require php-ast 1.1.0 or newer in PHP 8.2+ if php-ast is installed.
