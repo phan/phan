@@ -22,6 +22,12 @@ for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
             path="$alternate_path"
         fi
     fi
+    if [[ "$PHP_VERSION_ID" -ge 80200 ]]; then
+        alternate_path=${original_path/.expected/.expected82}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
     cat $path;
 done > $EXPECTED_PATH
 
