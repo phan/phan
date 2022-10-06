@@ -1,0 +1,4 @@
+src/079_dnf.php:2 PhanCompatibleUnionType Cannot use union types (string|Countable) before php 8.0
+src/079_dnf.php:2 PhanSyntaxError syntax error, unexpected token ")"
+src/079_dnf.php:2 PhanUnusedGlobalFunctionParameter Parameter $x is never used
+src/079_dnf.php:4 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \foo79() takes \Countable|string defined at src/079_dnf.php:2

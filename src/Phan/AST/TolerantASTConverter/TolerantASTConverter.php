@@ -1269,6 +1269,9 @@ class TolerantASTConverter
                     $variableName !== null ? self::getStartLine($variableName) : $start_line
                 );
             },
+            'Microsoft\PhpParser\Node\Statement\HaltCompilerStatement' => static function (PhpParser\Node\Statement\HaltCompilerStatement $n, int $start_line): ast\Node {
+                return new ast\Node(ast\AST_HALT_COMPILER, 0, ['offset' => $n->getHaltCompilerOffset()], $start_line);
+            },
             'Microsoft\PhpParser\Node\Statement\InterfaceDeclaration' => static function (PhpParser\Node\Statement\InterfaceDeclaration $n, int $start_line): ast\Node {
                 if ($n->interfaceKeyword) {
                     $start_line = self::getStartLine($n->interfaceKeyword);
@@ -1294,7 +1297,7 @@ class TolerantASTConverter
                 $end_line = static::getEndLine($n);
                 $base_class = $n->classBaseClause->baseClass ?? null;
                 return static::astStmtClass(
-                    static::phpParserClassModifierToAstClassFlags($n->abstractOrFinalModifier),
+                    static::phpParserClassModifiersToAstClassFlags($n->abstractOrFinalModifier, $n->modifiers),
                     static::tokenToString($n->name),
                     static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
                     $base_class !== null ? static::phpParserNonValueNodeToAstNode($base_class) : null,
@@ -1940,6 +1943,23 @@ class TolerantASTConverter
         return new ast\Node($is_intersection ? ast\AST_TYPE_INTERSECTION : ast\AST_TYPE_UNION, 0, $types, $types[0]->lineno);
     }
 
+    protected static function phpParserParenthesizedIntersectionTypeToAstNode(PhpParser\Node\ParenthesizedIntersectionType $n, int $start_line): ?ast\Node {
+        $children = [];
+        foreach ($n->children->children ?? [] as $c) {
+            if ($c instanceof Token && $c->kind === TokenKind::AmpersandToken) {
+                continue;
+            }
+            $result = self::phpParserTypeToAstNode($c, $start_line);
+            if ($result) {
+                $children[] = $result;
+            }
+        }
+        if (count($children) <= 1) {
+            return $children[0] ?? null;
+        }
+        return new ast\Node(ast\AST_TYPE_INTERSECTION, 0, $children, $start_line);
+    }
+
     /**
      * @param PhpParser\Node\QualifiedName|Token|null $type
      */
@@ -1951,7 +1971,12 @@ class TolerantASTConverter
         $original_type = $type;
         if ($type instanceof PhpParser\Node\QualifiedName) {
             $type = static::phpParserNameToString($type);
+        } elseif ($type instanceof PhpParser\Node\ParenthesizedIntersectionType) {
+            return static::phpParserParenthesizedIntersectionTypeToAstNode($type, $line);
         } elseif ($type instanceof Token) {
+            if (get_class($type) !== Token::class) {
+                return null;
+            }
             $type = static::tokenToString($type);
         }
         if (\is_string($type)) {
@@ -2283,23 +2308,34 @@ class TolerantASTConverter
         );
     }
 
-    /**
-     * @param ?Token $flags
-     * @throws InvalidArgumentException if the class flags were unexpected
-     */
-    private static function phpParserClassModifierToAstClassFlags(?Token $flags): int
+    private static function phpParserClassModifierToAstClassFlags(?Token $modifier): int
     {
-        if ($flags === null) {
+        if ($modifier === null) {
             return 0;
         }
-        switch ($flags->kind) {
+        switch ($modifier->kind) {
             case TokenKind::AbstractKeyword:
                 return flags\CLASS_ABSTRACT;
             case TokenKind::FinalKeyword:
                 return flags\CLASS_FINAL;
+            case TokenKind::ReadonlyKeyword:
+                return flags\CLASS_READONLY;
             default:
-                throw new InvalidArgumentException("Unexpected kind '" . Token::getTokenKindNameFromValue($flags->kind) . "'");
+                throw new InvalidArgumentException("Unexpected kind '" . Token::getTokenKindNameFromValue($modifier->kind) . "'");
         }
+    }
+    /**
+     * @param ?Token $modifier
+     * @param list<Token> $modifiers
+     * @throws InvalidArgumentException if the class flags were unexpected
+     */
+    private static function phpParserClassModifiersToAstClassFlags(?Token $modifier, array $modifiers): int
+    {
+        $flags = self::phpParserClassModifierToAstClassFlags($modifier);
+        foreach ($modifiers as $extra_modifier) {
+            $flags |= self::phpParserClassModifierToAstClassFlags($extra_modifier);
+        }
+        return $flags;
     }
 
     private static function interfaceBaseClauseToNode(?\Microsoft\PhpParser\Node\InterfaceBaseClause $node): ?\ast\Node
