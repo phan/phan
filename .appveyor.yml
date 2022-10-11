@@ -5,8 +5,10 @@ version: '{branch}.{build}'
 clone_folder: C:\projects\phan
 # Don't include full git history
 clone_depth: 1
-# Test 32-bit builds
-platform: x86
+# Test 64-bit builds, which are far more commonly used.
+# This also avoids errors seen when running PhanNativePHPSyntaxCheckPlugin in x86.
+# https://github.com/php/php-src/issues/9650#issuecomment-1273961567
+platform: x64
 
 # Test with a given PHP version
 # 1. (PHP_VERSION is the only version tested of PHP_EXT_VERSION, and it can only be built with VC_VERSION)
@@ -75,7 +77,7 @@ build_script:
 
     cd C:\projects\php
 
-    SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-%VC%-x86.zip
+    SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-%VC%-x64.zip
 
     curl -fsS https://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME% || curl -fsS https://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME%
 
@@ -85,7 +87,7 @@ build_script:
 
     cd C:\projects\php\ext
 
-    SET AST_ZIP_BASENAME=php_ast-%PHP_AST_VERSION%-%PHP_EXT_VERSION%-nts-%VC%-x86.zip
+    SET AST_ZIP_BASENAME=php_ast-%PHP_AST_VERSION%-%PHP_EXT_VERSION%-nts-%VC%-x64.zip
 
     curl -fsS https://windows.php.net/downloads/pecl/releases/ast/%PHP_AST_VERSION%/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
