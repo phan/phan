@@ -1,3 +1,4 @@
+ARG PHP_IMAGE
 ARG PHP_VERSION
 FROM php:$PHP_VERSION
 RUN pecl install ast-1.1.0 && docker-php-ext-enable ast
