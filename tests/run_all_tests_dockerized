@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-if [ $# != 1 ]; then
-    echo "Usage: $0 PHP_VERSION" 1>&2
+if [[ $# < 1 || $# > 2 ]]; then
+    echo "Usage: $0 PHP_VERSION [i386]" 1>&2
     echo "e.g. $0 8.0" 1>&2
     echo "The PHP_VERSION is the version of the php docker image to use" 1>&2
     exit 1
@@ -10,7 +10,16 @@ fi
 # -u fail for undefined variables
 set -xeu
 PHP_VERSION=$1
+DOCKER_ARCHITECTURE=${2:-}
+if [[ "$DOCKER_ARCHITECTURE" == i386 ]]; then
+    # Run test suites on a 32 bit build of php and confirm they have the expected results.
+    PHP_IMAGE="i386/php"
+    DOCKER_LABEL="i386-php"
+else
+    PHP_IMAGE="php"
+    DOCKER_LABEL="php"
+fi
 
-DOCKER_IMAGE="phan-test-runner:$PHP_VERSION"
-docker build --network=host --build-arg="PHP_VERSION=$PHP_VERSION" --tag="$DOCKER_IMAGE" -f tests/docker/Dockerfile .
+DOCKER_IMAGE="phan-test-runner:$DOCKER_LABEL"
+docker build --network=host --build-arg="PHP_IMAGE=$PHP_IMAGE" --build-arg="PHP_VERSION=$PHP_VERSION" --tag="$DOCKER_IMAGE" -f tests/docker/Dockerfile .
 docker run --rm $DOCKER_IMAGE tests/run_all_tests
