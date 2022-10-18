@@ -15,6 +15,7 @@
 # The resulting tags file may be combined with tags for JS, CSS, etc.
 function usage() {
 	echo "Usage: $0 [options for phpctags]" 1>&2
+	echo "You may wish to run ./phan --dump-ctags=basic instead" 1>&2
 }
 
 if ! type phpctags ; then
