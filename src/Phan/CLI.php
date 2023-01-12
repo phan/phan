@@ -2139,6 +2139,11 @@ EOB
                         // Exclude '.' and '..'
                         return false;
                     }
+                    if ($file_info->isLink()) {
+                        // Ignore links
+                        return false;
+                    }
+                    
                     if ($file_info->isDir()) {
                         if (!$iterator->hasChildren()) {
                             return false;
