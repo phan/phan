@@ -131,6 +131,10 @@ return [
     'ZipArchive::setEncryptionName' => ['bool', 'name'=>'string', 'method'=>'int', 'password='=>'string'],
   ],
   'changed' => [
+    'exif_read_data' => [
+      'old' => ['array<string,mixed>|false', 'file'=>'string', 'required_sections='=>'string', 'as_arrays='=>'bool', 'read_thumbnail='=>'bool'],
+      'new' => ['array<string,mixed>|false', 'file'=>'resource|string', 'required_sections='=>'string', 'as_arrays='=>'bool', 'read_thumbnail='=>'bool'],
+    ],
     'hash_copy' => [
       'old' => ['resource', 'context'=>'resource'],
       'new' => ['HashContext', 'context'=>'HashContext'],
