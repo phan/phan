@@ -3074,7 +3074,7 @@ return [
 'Exception::getTraceAsString' => ['string'],
 'exec' => ['string', 'command'=>'string', '&w_output='=>'array', '&w_result_code='=>'int'],
 'exif_imagetype' => ['int|false', 'filename'=>'string'],
-'exif_read_data' => ['array<string,mixed>|false', 'file'=>'string', 'required_sections='=>'string', 'as_arrays='=>'bool', 'read_thumbnail='=>'bool'],
+'exif_read_data' => ['array<string,mixed>|false', 'file'=>'resource|string', 'required_sections='=>'string', 'as_arrays='=>'bool', 'read_thumbnail='=>'bool'],
 'exif_tagname' => ['string|false', 'index'=>'int'],
 'exif_thumbnail' => ['string|false', 'file'=>'string', '&w_width='=>'int', '&w_height='=>'int', '&w_image_type='=>'int'],
 'exit' => ['', 'status'=>'string|int'],
