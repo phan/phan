@@ -1,6 +1,6 @@
 Phan NEWS
 
-??? ?? 2022, Phan 5.4.2 (dev)
+Mar 03 2023, Phan 5.4.2
 -----------------------
 
 Miscellaneous:
