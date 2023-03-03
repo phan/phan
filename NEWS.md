@@ -6,6 +6,8 @@ Phan NEWS
 Miscellaneous:
 - Fix wording in EmptyStatementListPlugin issue messages.
 - Add a few more functions where the return value should be used.
+- Fix signature of exif_read_data() #4759
+- Make allow_missing_properties setting aware of AllowDynamicProperties attribute for PHP 8.2
 
 Maintenance:
 - Require php-ast 1.1.0 or newer in PHP 8.2+ if php-ast is installed.
