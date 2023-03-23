@@ -67,7 +67,7 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
         if (\strcasecmp($method->getName(), '__toString') !== 0) {
             return;
         }
-        $throws_union_type = $method->getThrowsUnionType();
+        $throws_union_type = $method->getOwnThrowsUnionType();
         if ($throws_union_type->isEmpty()) {
             return;
         }
@@ -220,7 +220,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             if ($type->hasTemplateTypeRecursive()) {
                 continue;
             }
-            $throws_union_type = $analyzed_function->getThrowsUnionType();
+            $throws_union_type = $analyzed_function->getFullThrowsUnionType();
             if ($throws_union_type->isEmpty()) {
                 if ($call !== null) {
                     $this->emitIssue(
@@ -353,7 +353,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->warnAboutPossiblyThrownType(
                     $node,
                     $analyzed_function,
-                    $this->withoutCaughtUnionTypes($invoked_function->getThrowsUnionType(), false)
+                    $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false)
                 );
             }
         } catch (CodeBaseException $_) {
@@ -407,7 +407,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         $this->warnAboutPossiblyThrownType(
             $node,
             $analyzed_function,
-            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType(), false),
+            $this->withoutCaughtUnionTypes($invoked_method->getOwnThrowsUnionType(), false),
             $invoked_method
         );
     }
@@ -451,7 +451,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         $this->warnAboutPossiblyThrownType(
             $node,
             $analyzed_function,
-            $this->withoutCaughtUnionTypes($invoked_method->getThrowsUnionType(), false),
+            $this->withoutCaughtUnionTypes($invoked_method->getOwnThrowsUnionType(), false),
             $invoked_method
         );
     }

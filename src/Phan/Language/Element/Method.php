@@ -57,6 +57,11 @@ class Method extends ClassElement implements FunctionInterface
     private $method_overrides;
 
     /**
+     * @var UnionType|null
+     */
+    private $inherited_throws_union_type;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -1092,4 +1097,22 @@ class Method extends ClassElement implements FunctionInterface
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }
+
+    public function getFullThrowsUnionType(): UnionType
+    {
+        $type = $this->getOwnThrowsUnionType();
+        if ($this->inherited_throws_union_type) {
+            $type = $type->withUnionType($this->inherited_throws_union_type);
+        }
+        return $type;
+    }
+
+    /**
+     * Set union type of (at)throws annotations that this method inherits.
+     */
+    public function setInheritedThrowsUnionType(UnionType $type): void
+    {
+        $this->inherited_throws_union_type = $type;
+    }
+
 }

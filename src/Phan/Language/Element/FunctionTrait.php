@@ -1198,10 +1198,15 @@ trait FunctionTrait
         $this->comment = $comment;
     }
 
-    public function getThrowsUnionType(): UnionType
+    public function getOwnThrowsUnionType(): UnionType
     {
         $comment = $this->comment;
         return $comment ? $comment->getThrowsUnionType() : UnionType::empty();
+    }
+
+    public function getFullThrowsUnionType(): UnionType
+    {
+        return $this->getOwnThrowsUnionType();
     }
 
     /**

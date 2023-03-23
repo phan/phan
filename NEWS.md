@@ -2,6 +2,8 @@ Phan NEWS
 
 ??? ?? 2023, Phan 5.4.3 (dev)
 -----------------------
+New Features(Analysis):
+- Automatically inherit `@throws` types from parent methods if `enable_phpdoc_types` is true (which it is by default). (#4757)
 
 
 Mar 03 2023, Phan 5.4.2

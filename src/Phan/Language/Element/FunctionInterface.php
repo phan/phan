@@ -419,9 +419,18 @@ interface FunctionInterface extends AddressableElementInterface
     public function hasTentativeReturnType(): bool;
 
     /**
-     * @return UnionType of 0 or more types from (at)throws annotations on this function-like
+     * @return UnionType of 0 or more types from (at)throws annotations on this function-like. This only includes
+     * types that are specifically mentioned in the function-like phpdoc (and not, for instance, types inherited from
+     * an ancestor method).
      */
-    public function getThrowsUnionType(): UnionType;
+    public function getOwnThrowsUnionType(): UnionType;
+
+    /**
+     * @return UnionType of 0 or more types from (at)throws annotations on this function-like. This might include types
+     * that are not specifically mentioned in the function-like phpdoc (for instance, types inherited from an
+     * ancestor method).
+     */
+    public function getFullThrowsUnionType(): UnionType;
 
     /**
      * @return bool
