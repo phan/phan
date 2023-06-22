@@ -38,11 +38,20 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     // See #9: https://www.sqlite.org/limits.html
     private const BULK_INSERT_SIZE = 999 / self::NUM_DB_COLS;
 
+    /** @var SQLite3 */
     private static $db;
+
+    /** @var SQLite3Stmt */
     private static $prepared_insert;
 
+    /** @var array */
     private static $callsites = [];
 
+    /**
+     * @param CodeBase $code_base
+     * @param Context  $context
+     * @throws Exception
+     */
     public function __construct(CodeBase $code_base, Context $context) {
         parent::__construct($code_base, $context);
         if (self::$db) {
@@ -50,7 +59,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         $db_path = (string) (Config::getValue('plugin_config')['phound_sqlite_path'] ?? '');
-        if (!$db_path) {
+        if ($db_path === '') {
             throw new Exception("You must specify a `plugin_config.phound_sqlite_path` in your phan configuration.");
         }
         self::$db = new SQLite3($db_path);
@@ -84,11 +93,20 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         self::$prepared_insert = $this->createBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
     }
 
+    /**
+     * @param  int    $bulk_insert_size
+     * @return SQLite3Stmt
+     * @throws Exception
+     */
     private static function createBulkInsertPreparedStatement(int $bulk_insert_size): SQLite3Stmt {
         $bulk_insert_sql = "INSERT INTO callsites ('element', 'type', 'callsite') VALUES ";
         $bulk_insert_sql .= str_repeat("(?, ?, ?), ", $bulk_insert_size);
         $bulk_insert_sql = rtrim($bulk_insert_sql, ', ');
-        return self::$db->prepare($bulk_insert_sql);
+        $stmt = self::$db->prepare($bulk_insert_sql);
+        if ($stmt === false) {
+            throw new Exception();
+        }
+        return $stmt;
     }
 
     public function visitMethodCall(Node $node)
@@ -98,8 +116,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod(method_name: $node->children['method'], is_static: false, is_direct: true);
-        } catch (Exception $e) {
+            ))->getMethod(method_name: $node->children['method'], is_static: false, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -112,8 +130,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod(method_name: $node->children['method'], is_static: true, is_direct: true);
-        } catch (Exception $e) {
+            ))->getMethod(method_name: $node->children['method'], is_static: true, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -129,7 +147,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-        } catch (Exception $e) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'const');
@@ -145,7 +163,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: true);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -161,7 +179,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: false);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -174,7 +192,12 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $this->visitProp($node);
     }
 
-    public function genericVisitClassElement(ClassElement $element, string $type) {
+    /**
+     * @param  ClassElement $element
+     * @param  string       $type
+     * @return void
+     */
+    public function genericVisitClassElement(ClassElement $element, string $type): void {
         $element_name = $element->getFQSEN()->__toString();
         $callsite = $this->context->__toString();
         self::$callsites[] = [$element_name, $type, $callsite];
@@ -184,6 +207,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    /**
+     * @param  SQLite3Stmt $stmt
+     * @return void
+     * @throws Exception
+     */
     private static function doBulkWrite(SQLite3Stmt $stmt): void {
         sort(self::$callsites);
         $bind_index = 1;
@@ -211,7 +239,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         self::$callsites = [];
     }
 
-    public static function finalizeProcess() {
+    /**
+     * @return void
+     */
+    public static function finalizeProcess(): void {
         if (count(self::$callsites) <= 0) {
             return;
         }
@@ -236,11 +267,12 @@ use Phan\PluginV3;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
-use Phan\Language\Element\Func;
-use Phan\Language\Element\Method;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Element\FunctionInterface;
 
+/**
+ * Plugin to go with PhoundVisitor.
+ */
 final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AnalyzeFunctionCallCapability, FinalizeProcessCapability
 {
 
@@ -261,6 +293,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node)>
      * maps FQSEN of function or method to a closure used to analyze the function in question.
      * '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.
@@ -294,7 +327,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
         $generic_callback = static function(
             CodeBase $code_base,
             Context $context,
-            array $args,
+            array $args
         ): void {
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             if (\count($function_like_list) === 0) {
@@ -379,6 +412,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      * Some plugins using this, such as UnusedSuppressionPlugin,
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
+     * @unused-param $code_base
      */
     public function finalizeProcess(CodeBase $code_base): void
     {
