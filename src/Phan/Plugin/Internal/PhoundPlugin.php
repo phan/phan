@@ -44,7 +44,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     /** @var SQLite3Stmt */
     private static $prepared_insert;
 
-    /** @var array */
+    /** @var list<array{string,string,string}> */
     private static $callsites = [];
 
     /**
@@ -95,7 +95,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param  int    $bulk_insert_size
-     * @return SQLite3Stmt
      * @throws Exception
      */
     private static function createBulkInsertPreparedStatement(int $bulk_insert_size): SQLite3Stmt {
@@ -117,7 +116,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod(method_name: $node->children['method'], is_static: false, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception) {
+        } catch (Exception $e) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -131,7 +130,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod(method_name: $node->children['method'], is_static: true, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception) {
+        } catch (Exception $e) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -147,7 +146,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-        } catch (Exception) {
+        } catch (Exception $e) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'const');
@@ -163,7 +162,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: true);
-        } catch (Exception) {
+        } catch (Exception $e) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -179,7 +178,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: false);
-        } catch (Exception) {
+        } catch (Exception $e) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -193,9 +192,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Helper function to add a class element to the DB
      * @param  ClassElement $element
      * @param  string       $type
      * @return void
+     * @throws Exception
      */
     public function genericVisitClassElement(ClassElement $element, string $type): void {
         $element_name = $element->getFQSEN()->__toString();
@@ -209,7 +210,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param  SQLite3Stmt $stmt
-     * @return void
      * @throws Exception
      */
     private static function doBulkWrite(SQLite3Stmt $stmt): void {
@@ -240,7 +240,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return void
+     * Finish pending bulk writes.
+     * @throws Exception
      */
     public static function finalizeProcess(): void {
         if (count(self::$callsites) <= 0) {
@@ -324,6 +325,9 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      */
     private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
+        /**
+         * @param list<Node|int|string|float> $args
+         */
         $generic_callback = static function(
             CodeBase $code_base,
             Context $context,
