@@ -118,7 +118,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod(method_name: $node->children['method'], is_static: false, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            ))->getMethod($node->children['method'], false, true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         } catch (Exception $_) {
             return;
         }
@@ -135,11 +135,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod(method_name: $node->children['method'], is_static: true, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            ))->getMethod($node->children['method'], true, true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         } catch (Exception $_) {
             return;
         }
-        $this->genericVisitClassElement(element: $element, type: 'method');
+        $this->genericVisitClassElement($element, 'method');
     }
 
     /**
@@ -156,7 +156,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         } catch (Exception $_) {
             return;
         }
-        $this->genericVisitClassElement(element: $element, type: 'const');
+        $this->genericVisitClassElement($element, 'const');
     }
 
     /**
@@ -169,11 +169,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty(is_static: true);
+            ))->getProperty(true);
         } catch (Exception $_) {
             return;
         }
-        $this->genericVisitClassElement(element: $element, type: 'prop');
+        $this->genericVisitClassElement($element, 'prop');
     }
 
     /**
@@ -186,11 +186,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty(is_static: false);
+            ))->getProperty(false);
         } catch (Exception $_) {
             return;
         }
-        $this->genericVisitClassElement(element: $element, type: 'prop');
+        $this->genericVisitClassElement($element, 'prop');
     }
 
     /**
@@ -265,6 +265,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node $node a node of type AST_NULLSAFE_METHOD_CALL
      * @override
+     * @throws Exception
      */
     public function visitNullsafeMethodCall(Node $node): void
     {
@@ -354,7 +355,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
                     if ($phound_visitor === null) {
                         $phound_visitor = new PhoundVisitor($code_base, $context);
                     }
-                    $phound_visitor->genericVisitClassElement(element: $function, type: 'method');
+                    $phound_visitor->genericVisitClassElement($function, 'method');
                 }
             }
         };
