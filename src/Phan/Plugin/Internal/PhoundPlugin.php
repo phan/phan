@@ -116,7 +116,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod(method_name: $node->children['method'], is_static: false, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -130,7 +130,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod(method_name: $node->children['method'], is_static: true, is_direct: true); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'method');
@@ -138,6 +138,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_CLASS_CONST`
+     * @throws Exception
      */
     public function visitClassConst(Node $node) {
         try {
@@ -146,7 +147,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'const');
@@ -154,6 +155,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_STATIC_PROP`
+     * @throws Exception
      */
     public function visitStaticProp(Node $node) {
         try {
@@ -162,7 +164,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: true);
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -170,6 +172,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_PROP`
+     * @throws Exception
      */
     public function visitProp(Node $node) {
         try {
@@ -178,7 +181,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty(is_static: false);
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return;
         }
         $this->genericVisitClassElement(element: $element, type: 'prop');
@@ -195,7 +198,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      * Helper function to add a class element to the DB
      * @param  ClassElement $element
      * @param  string       $type
-     * @return void
      * @throws Exception
      */
     public function genericVisitClassElement(ClassElement $element, string $type): void {
@@ -327,6 +329,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
     {
         /**
          * @param list<Node|int|string|float> $args
+         * @throws Exception
          */
         $generic_callback = static function(
             CodeBase $code_base,
@@ -417,6 +420,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
      * @unused-param $code_base
+     * @throws Exception
      */
     public function finalizeProcess(CodeBase $code_base): void
     {
