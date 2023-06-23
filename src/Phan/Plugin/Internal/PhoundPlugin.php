@@ -108,6 +108,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         return $stmt;
     }
 
+    /**
+     * @throws Exception
+     */
     public function visitMethodCall(Node $node)
     {
         try {
@@ -122,6 +125,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $this->genericVisitClassElement(element: $element, type: 'method');
     }
 
+    /**
+     * @throws Exception
+     */
     public function visitStaticCall(Node $node)
     {
         try {
@@ -189,6 +195,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_NULLSAFE_PROP`
+     * @throws Exception
      */
     public function visitNullsafeProp(Node $node) {
         $this->visitProp($node);
@@ -354,6 +361,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
 
         /**
          * @param list<Node|int|string|float> $args
+         * @throws Exception
          */
         $call_user_func_callback = static function (
             CodeBase $code_base,
@@ -370,6 +378,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
 
         /**
          * @param list<Node|int|string|float> $args
+         * @throws Exception
          */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
@@ -386,6 +395,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
 
         /**
          * @param list<Node|int|string|float> $args
+         * @throws Exception
          */
         $from_callable_callback = static function (
             CodeBase $code_base,
