@@ -11903,7 +11903,7 @@ return [
 'RedisArray::unlink' => ['int', 'key'=>'string', '...other_keys='=>'string'],
 'RedisArray::unlink\'1' => ['int', 'key'=>'string[]'],
 'RedisArray::unwatch' => [''],
-'RedisCluster::__construct' => ['void', 'name'=>'?string', 'seeds='=>'string[]', 'timeout='=>'float', 'read_timeout='=>'float', 'persistent='=>'bool', 'auth='=>'?string'],
+'RedisCluster::__construct' => ['void', 'name'=>'?string', 'seeds='=>'?string[]', 'timeout='=>'int|float', 'read_timeout='=>'int|float', 'persistent='=>'bool', 'auth='=>'mixed', 'context'=>'?array'],
 'RedisCluster::_masters' => ['array'],
 'RedisCluster::_prefix' => ['string', 'key'=>'mixed'],
 'RedisCluster::_redir' => [''],
