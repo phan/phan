@@ -108,6 +108,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakePhoundTest)
+		cd tests/phound_test
+		./test.sh
+		exit $?
+		;;
 	__FakeInferMissingTypesTest)
 		cd tests/infer_missing_types_test
 		./test.sh
