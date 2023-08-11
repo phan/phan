@@ -511,6 +511,7 @@ return [
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
         'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
+        'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
         'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
