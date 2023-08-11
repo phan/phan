@@ -54,6 +54,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function __construct(CodeBase $code_base, Context $context) {
         parent::__construct($code_base, $context);
+
         if (self::$db) {
             return;
         }
