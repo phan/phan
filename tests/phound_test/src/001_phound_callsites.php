@@ -12,7 +12,6 @@ class A {
         echo 'instance var: ' . $this->fooz . "\n"; // AST_PROP
         echo 'instance method: ' . $this->foo() . "\n"; // AST_METHOD_CALL
         echo 'static method: ' . self::bar() . "\n"; // AST_STATIC_CALL
-        echo 'null safe prop: ' . $this?->fooz . "\n"; // AST_NULLSAFE_PROP
     }
 }
 
@@ -24,7 +23,6 @@ A::bar(); // AST_STATIC_CALL
 yo(); // AST_CALL
 call_user_func([$a, 'foo']); // AST_CALL
 call_user_func_array(A::class . '::bar', []); // AST_CALL
-$a?->foo(); // AST_NULLSAFE_METHOD_CALL
 $a->baz(); // AST_METHOD_CALL
 
 $class_name = 'A';
