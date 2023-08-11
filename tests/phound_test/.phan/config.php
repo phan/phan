@@ -9,7 +9,7 @@
  * See Config for all configurable options.
  */
 return [
-    'plugins' => ['PhoundPlugin'],
+    'plugins' => [__DIR__ . '/../../../src/Phan/Plugin/Internal/PhoundPlugin.php'],
 
     'directory_list' => ['src'],
 
