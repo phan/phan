@@ -15,5 +15,7 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
-    'phound_sqlite_path' => $_SERVER['HOME'] . '/phound.db',
+    'plugin_config' => [
+        'phound_sqlite_path' => $_SERVER['HOME'] . '/phound.db',
+    ],
 ];
