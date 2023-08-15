@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -u
 
-if ! php -r 'if (version_compare(PHP_VERSION, "7.3") <= 0) exit(1);' ; then
+if ! php -r 'if (version_compare(PHP_VERSION, "7.4") < 0) exit(1);' ; then
     # If we got here, then the PHP version is 7.3 or lower.
     # For some reason, PHP 7.3 does not have access to the SQLite3 class in the CI environment.
     # The PHP 7.3 CI build had errors in the log:
     #
     #   Error: Class 'SQLite3' not found in /home/vsts/work/1/s/src/Phan/Plugin/Internal/PhoundPlugin.php:66
     #
-    # Thus, skip running the test if we're using PHP version 7.3 or lower.
+    # Thus, we skip running the test if we're using PHP version 7.3 or lower.
     echo "The installed PHP version is 7.3 or lower, thus we are skipping the phound tests because we had issues using the SQLite3 extension in the CI environment on this version."
     exit 0
 fi
