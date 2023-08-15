@@ -28,34 +28,21 @@ if ! ../../phan --force-polyfill-parser --memory-limit 1G ; then
     exit 1
 fi
 
-ACTUAL=$(sqlite3 ~/phound.db 'select * from callsites order by callsite, id')
+ACTUAL=$(sqlite3 ~/phound.db 'select element, type, callsite from callsites order by callsite, element, type')
 EXPECTED=$(cat <<-EOF
-\A::foo|const|src/001_phound_callsites.php:10|11
-\A::foo|const|src/001_phound_callsites.php:10|12
-\A::foo|prop|src/001_phound_callsites.php:11|21
-\A::foo|prop|src/001_phound_callsites.php:11|22
-\A::fooz|prop|src/001_phound_callsites.php:12|23
-\A::fooz|prop|src/001_phound_callsites.php:12|24
-\A::foo|method|src/001_phound_callsites.php:13|13
-\A::foo|method|src/001_phound_callsites.php:13|14
-\A::bar|method|src/001_phound_callsites.php:14|1
-\A::bar|method|src/001_phound_callsites.php:14|2
-\A::foo|method|src/001_phound_callsites.php:21|15
-\A::foo|method|src/001_phound_callsites.php:21|16
-\A::bar|method|src/001_phound_callsites.php:22|3
-\A::bar|method|src/001_phound_callsites.php:22|4
-\A::foo|method|src/001_phound_callsites.php:24|17
-\A::foo|method|src/001_phound_callsites.php:24|18
-\A::bar|method|src/001_phound_callsites.php:25|5
-\A::bar|method|src/001_phound_callsites.php:25|6
-\A::baz|method|src/001_phound_callsites.php:26|9
-\A::baz|method|src/001_phound_callsites.php:26|10
-\A::bar|method|src/001_phound_callsites.php:31|7
-\A::bar|method|src/001_phound_callsites.php:31|8
-\A::foo|method|src/001_phound_callsites.php:34|19
-\A::foo|method|src/001_phound_callsites.php:34|20
-\Closure::fromCallable|method|src/001_phound_callsites.php:34|25
-\Closure::fromCallable|method|src/001_phound_callsites.php:34|26
+\A::foo|const|src/001_phound_callsites.php:10
+\A::foo|prop|src/001_phound_callsites.php:11
+\A::fooz|prop|src/001_phound_callsites.php:12
+\A::foo|method|src/001_phound_callsites.php:13
+\A::bar|method|src/001_phound_callsites.php:14
+\A::foo|method|src/001_phound_callsites.php:21
+\A::bar|method|src/001_phound_callsites.php:22
+\A::foo|method|src/001_phound_callsites.php:24
+\A::bar|method|src/001_phound_callsites.php:25
+\A::baz|method|src/001_phound_callsites.php:26
+\A::bar|method|src/001_phound_callsites.php:31
+\A::foo|method|src/001_phound_callsites.php:34
+\Closure::fromCallable|method|src/001_phound_callsites.php:34
 EOF
 )
 
