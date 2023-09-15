@@ -427,7 +427,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
 
  -m, --output-mode <mode>
-  Output mode from 'phan_client' (default), 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
+  Output mode from 'phan_client'. Valid options are 'checkstyle', 'codeclimate', 'csv', 'gitlab', 'html', 'json', 'pylint', 'text' (default), or 'verbose'
 
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
   A json mapping from original path to absolute temporary path (E.g. of a file that is still being edited)
