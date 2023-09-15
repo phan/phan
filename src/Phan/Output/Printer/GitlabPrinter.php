@@ -37,8 +37,7 @@ class GitlabPrinter implements BufferedPrinterInterface
             'location' => [
                 'path' => $instance->getDisplayedFile(),
                 'lines' => [
-                    'begin' => $instance->getLine(),
-                    'end' => $instance->getLine(),
+                    'begin' => $instance->getLine()
                 ],
             ],
         ];
