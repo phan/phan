@@ -73,7 +73,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     public static function instanceForValue(string $value, bool $is_nullable)
     {
         if (!self::canRepresentStringOfLength(\strlen($value))) {
-            return StringType::instance($is_nullable);
+            return GenericLiteralStringType::instance($is_nullable);
         }
 
         if ($is_nullable) {
@@ -243,6 +243,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return $type->value === $this->value;
                     }
                     return true;
+                case 'literal-string':
+                    return true;
                 case 'int':
                     // Allow int or float strings to cast to int or floats
                     if (filter_var($this->value, FILTER_VALIDATE_INT) === false) {
@@ -297,6 +299,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         }
                     }
                     return true;
+                case 'literal-string':
+                    return true;
                 case 'non-empty-string':
                     return (bool)$this->value;
                 case 'int':
@@ -338,6 +342,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                     if ($type instanceof LiteralStringType) {
                         return $type->value === $this->value;
                     }
+                    // fallthrough
+                case 'literal-string':
                     return true;
                 case 'non-empty-string':
                     return (bool)$this->value;

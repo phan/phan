@@ -45,18 +45,19 @@ class NonEmptyStringType extends StringType
     protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof ScalarType) {
+            if ($type->isAlwaysFalsey()) {
+                // Rule out false, null, etc.
+                return false;
+            }
             switch ($type::NAME) {
                 case 'string':
-                    if ($type instanceof LiteralStringType) {
-                        return (bool)$type->getValue();
-                    }
-                    return true;
                 case 'non-empty-string':
                     return true;
-                case 'false':
-                case 'null':
+                case 'literal-string':
+                    // Also, a non-literal can't cast to a phpdoc `literal-string`.
                     return false;
             }
+            // Fall through to the parent implementation for other checks.
         }
 
         return parent::canCastToNonNullableType($type, $code_base);
@@ -68,14 +69,8 @@ class NonEmptyStringType extends StringType
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $type): bool
     {
         if ($type instanceof ScalarType) {
-            switch ($type::NAME) {
-                case 'string':
-                    if ($type instanceof LiteralStringType) {
-                        return (bool)$type->getValue();
-                    }
-                    return true;
-                case 'non-empty-string':
-                    return true;
+            if ($type instanceof StringType) {
+                return $type->isPossiblyTruthy();
             }
             return !$context->isStrictTypes();
         }
@@ -90,16 +85,8 @@ class NonEmptyStringType extends StringType
      */
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
-        if ($type instanceof ScalarType) {
-            switch ($type::NAME) {
-                case 'non-empty-string':
-                    return true;
-                case 'string':
-                    if ($type instanceof LiteralStringType) {
-                        return (bool)$type->getValue();
-                    }
-                    return true;
-            }
+        if ($type instanceof StringType) {
+            return $type->isPossiblyTruthy() && !$type instanceof GenericLiteralStringType;
         }
 
         return parent::canCastToNonNullableType($type, $code_base);

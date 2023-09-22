@@ -154,6 +154,7 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
                             return false;
                         }
                     }
+                    // string, non-empty-string, literal-string fall through to the parent call.
                     break;
                 case 'int':
                     return false;

@@ -221,6 +221,7 @@ abstract class NativeType extends Type
                 ObjectType::NAME   => in_array(ObjectType::NAME, $permitted_cast_type_names, true),
                 ResourceType::NAME => in_array(ResourceType::NAME, $permitted_cast_type_names, true),
                 ScalarRawType::NAME => in_array(ScalarRawType::NAME, $permitted_cast_type_names, true),
+                GenericLiteralStringType::NAME => in_array(StringType::NAME, $permitted_cast_type_names, true),
                 StringType::NAME   => in_array(StringType::NAME, $permitted_cast_type_names, true),
                 TrueType::NAME     => in_array(TrueType::NAME, $permitted_cast_type_names, true),
                 VoidType::NAME     => in_array(VoidType::NAME, $permitted_cast_type_names, true),
