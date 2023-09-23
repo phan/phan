@@ -16,6 +16,7 @@ use Phan\Language\UnionType;
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
  */
+#[\AllowDynamicProperties]
 abstract class TypedElement implements TypedElementInterface
 {
     /**

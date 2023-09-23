@@ -16,6 +16,7 @@ use Stringable;
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
+#[\AllowDynamicProperties]
 abstract class UnaddressableTypedElement implements Stringable
 {
     /**
