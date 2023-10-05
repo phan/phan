@@ -195,15 +195,18 @@ ini_set('assert.exception', '1');
 // Set a substitute character for StringUtil::asUtf8()
 ini_set('mbstring.substitute_character', (string)0xFFFD);
 
-// Explicitly set each option in case INI is set otherwise
-assert_options(ASSERT_ACTIVE, true);
-assert_options(ASSERT_WARNING, false);
-assert_options(ASSERT_BAIL, false);
-// ASSERT_QUIET_EVAL has been removed starting with PHP 8
-if (defined('ASSERT_QUIET_EVAL')) {
-    assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line UnusedPluginSuppression, PhanTypeMismatchArgumentNullableInternal
+// assert_options has been deprecated starting with PHP 8.3
+if (PHP_VERSION_ID < 80300) {
+    // Explicitly set each option in case INI is set otherwise
+    assert_options(ASSERT_ACTIVE, true);
+    assert_options(ASSERT_WARNING, false);
+    assert_options(ASSERT_BAIL, false);
+    // ASSERT_QUIET_EVAL has been removed starting with PHP 8
+    if (defined('ASSERT_QUIET_EVAL')) {
+        assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line UnusedPluginSuppression, PhanTypeMismatchArgumentNullableInternal
+    }
+    assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 }
-assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 
 // php 8 seems to have segfault issues with disable_function
 if (!extension_loaded('filter') && !function_exists('filter_var')) {
