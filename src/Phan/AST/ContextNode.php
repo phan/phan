@@ -2321,8 +2321,8 @@ class ContextNode
                 self::warnAboutEmptyArrayElements($this->code_base, $this->context, $node);
                 continue;
             }
-            $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) !== 0 ? $child_node->children['key'] : null;
-            $value_node = $child_node->children['value'];
+            $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) !== 0 ? ($child_node->children['key'] ?? null) : null;
+            $value_node = $child_node->children['value'] ?? null;
             if (self::RESOLVE_ARRAY_VALUES) {
                 $value_node = $this->getEquivalentPHPValueForNode($value_node, $flags);
             }

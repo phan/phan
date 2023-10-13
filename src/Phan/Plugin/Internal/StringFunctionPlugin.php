@@ -50,10 +50,10 @@ final class StringFunctionPlugin extends PluginV3 implements
                     if (!($child instanceof Node)) {
                         continue;
                     }
-                    if (!self::isSimpleExpression($child->children['key'])) {
+                    if (!self::isSimpleExpression(($child->children['key'] ?? null))) {
                         return false;
                     }
-                    if (!self::isSimpleExpression($child->children['value'])) {
+                    if (!self::isSimpleExpression(($child->children['value'] ?? null))) {
                         return false;
                     }
                 }
