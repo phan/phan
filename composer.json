@@ -1,7 +1,7 @@
 {
     "name": "phan/phan",
     "description": "A static analyzer for PHP",
-    "keywords": ["php", "static", "analyzer"],
+    "keywords": ["php", "static", "analyzer", "static analysis"],
     "type": "project",
     "license": "MIT",
     "authors": [
