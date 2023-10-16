@@ -45,4 +45,5 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build and test in docker
+        run: sudo apt-get install -y sqlite3
         run: bash tests/run_all_tests_dockerized ${{ matrix.PHP_VERSION }} ${{ matrix.DOCKER_ARCHITECTURE }}
