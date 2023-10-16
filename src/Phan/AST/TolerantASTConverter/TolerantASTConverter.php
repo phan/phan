@@ -3405,7 +3405,7 @@ class TolerantASTConverter
     private static function parseMultiPartHeredoc(PhpParser\Node\StringLiteral $n, array $children): ast\Node
     {
         $inner_node_parts = [];
-        $end_of_start_quote = self::$file_contents[$n->startQuote->start + $n->startQuote->length - 1];
+        $end_of_start_quote = self::$file_contents[$n->startQuote->start + $n->startQuote->length - 1] ?? 0;
         $end_quote_text = $n->endQuote->getText(self::$file_contents);
 
         $spaces = \strspn($end_quote_text, " \t");
