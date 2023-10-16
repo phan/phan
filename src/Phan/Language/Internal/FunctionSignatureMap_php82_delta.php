@@ -1,4 +1,9 @@
 <?php // phpcs:ignoreFile
+/**
+ * @see FunctionSignatureMap.php
+ *
+ * @phan-file-suppress PhanPluginMixedKeyNoKey
+ */
 return [
   'added' => [
       'curl_upkeep' => ['bool', 'handle'=>'curlhandle'],

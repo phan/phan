@@ -1,4 +1,9 @@
 <?php // phpcs:ignoreFile
+/**
+ * @see FunctionSignatureMap.php
+ *
+ * @phan-file-suppress PhanPluginMixedKeyNoKey
+ */
 return [
   'added' => [
     'array_is_list' => ['bool', 'array'=>'array'],
