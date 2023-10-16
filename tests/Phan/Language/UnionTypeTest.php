@@ -702,7 +702,7 @@ final class UnionTypeTest extends BaseTest
     public function testFunctionSignatureMapConsistency(): void
     {
         $signatures_dir = \dirname(__DIR__, 3) . '/src/Phan/Language/Internal';
-        $php81_map = UnionType::internalFunctionSignatureMap(80200);
+        $php82_map = UnionType::internalFunctionSignatureMap(80200);
         $php81_map = UnionType::internalFunctionSignatureMap(80100);
         $php80_map = UnionType::internalFunctionSignatureMap(80000);
         $php74_map = UnionType::internalFunctionSignatureMap(70400);
@@ -720,7 +720,7 @@ final class UnionTypeTest extends BaseTest
         $php72_delta = require("$signatures_dir/FunctionSignatureMap_php72_delta.php");
         $php71_delta = require("$signatures_dir/FunctionSignatureMap_php71_delta.php");
         $php70_delta = require("$signatures_dir/FunctionSignatureMap_php70_delta.php");
-        $this->assertDeltasApply($php81_map, $php80_map, $php81_delta, 'php82_delta');
+        $this->assertDeltasApply($php82_map, $php80_map, $php82_delta, 'php82_delta');
         $this->assertDeltasApply($php81_map, $php80_map, $php81_delta, 'php81_delta');
         $this->assertDeltasApply($php80_map, $php74_map, $php80_delta, 'php80_delta');
         $this->assertDeltasApply($php74_map, $php73_map, $php74_delta, 'php74_delta');
