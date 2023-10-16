@@ -682,9 +682,14 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->return_type;
     }
 
-    public function getThrowsUnionType(): UnionType
+    public function getOwnThrowsUnionType(): UnionType
     {
         return UnionType::empty();
+    }
+
+    public function getFullThrowsUnionType(): UnionType
+    {
+        return $this->getOwnThrowsUnionType();
     }
 
     public function hasFunctionCallAnalyzer(): bool

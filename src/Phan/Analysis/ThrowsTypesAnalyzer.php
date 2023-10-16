@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Config;
+use Phan\Exception\CodeBaseException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -32,11 +34,22 @@ class ThrowsTypesAnalyzer
         FunctionInterface $method
     ): void {
         try {
-            foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
-                // TODO: When analyzing the method body, only check the valid exceptions
-                self::analyzeSingleThrowType($code_base, $method, $type);
-            }
+            self::analyzeThrowsTypesInner($code_base, $method);
         } catch (RecursionDepthException $_) {
+        }
+    }
+
+    private static function analyzeThrowsTypesInner(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ): void {
+        foreach ($method->getOwnThrowsUnionType()->getTypeSet() as $type) {
+            // TODO: When analyzing the method body, only check the valid exceptions
+            self::analyzeSingleThrowType($code_base, $method, $type);
+        }
+
+        if ($method instanceof Method) {
+            self::maybeInheritPHPDocThrowsTypes($code_base, $method);
         }
     }
 
@@ -140,5 +153,43 @@ class ThrowsTypesAnalyzer
                 return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );
+    }
+
+    private static function maybeInheritPHPDocThrowsTypes(
+        CodeBase $code_base,
+        Method $method
+    ): void {
+        if (!Config::getValue('inherit_phpdoc_types')) {
+            return;
+        }
+
+        try {
+            $overridden_method_list = $method->getOverriddenMethods($code_base);
+        } catch (CodeBaseException $_) {
+            return;
+        }
+
+        foreach ($overridden_method_list as $overridden_method) {
+            self::inheritPHPDocThrowsTypes($method, $overridden_method);
+        }
+    }
+
+    /**
+     * Inherit phpdoc types for (at)throws of $method from $overridden_method.
+     * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
+     */
+    private static function inheritPHPDocThrowsTypes(
+        Method $method,
+        Method $overridden_method
+    ): void {
+        // The method was already from phpdoc.
+        if ($method->isFromPHPDoc()) {
+            return;
+        }
+
+        $parent_throws_type = $overridden_method->getFullThrowsUnionType();
+        if (!$parent_throws_type->isEmpty()) {
+            $method->setInheritedThrowsUnionType($parent_throws_type);
+        }
     }
 }
