@@ -13,6 +13,10 @@ return [
   ],
 
   'changed' => [
+    'ini_set' => [
+      'old' => ['string|false', 'option'=>'string', 'value'=>'string'],
+      'new' => ['string|false', 'option'=>'string', 'value'=>'string|int|float|bool|null'],
+    ],
     'ldap_add' => [
       'old' => ['bool', 'ldap'=>'resource','dn'=>'string','entry'=>'array','controls='=>'?array'],
       'new' => ['bool', 'ldap'=>'ldap\connection','dn'=>'string','entry'=>'array','controls='=>'?array'],
