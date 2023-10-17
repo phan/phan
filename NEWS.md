@@ -8,6 +8,9 @@ New Features(Analysis):
 
 Miscellaneous:
 - Fix ini_set() signature to take any scalar since PHP 8.1 (#4806)
+- Fix RedisCluster setOption/getOption signatures (#4790)
+- Fix ldap function signatures
+- Fix a couple of array spread crash bugs
 
 Mar 03 2023, Phan 5.4.2
 -----------------------
