@@ -25,7 +25,7 @@ return [
 'addcslashes' => '?string',
 'addslashes' => '?string',
 'array_change_key_case' => '?array',
-'array_chunk' => '?array',
+'array_chunk' => '?list<array>',
 'array_column' => '?array|?false',
 'array_combine' => '?array|?false',
 'array_count_values' => '?int[]',
