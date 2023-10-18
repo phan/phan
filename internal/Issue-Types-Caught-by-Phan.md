@@ -4072,7 +4072,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expecte
 ## PhanTypeMismatchUnpackKeyArraySpread
 
 ```
-When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be integers
+When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be integers before PHP 8.1
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php74_files/expected/021_associative_array_casting_rules.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php74_files/src/021_associative_array_casting_rules.php#L11).

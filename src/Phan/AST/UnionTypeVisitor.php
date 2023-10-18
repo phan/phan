@@ -2355,13 +2355,15 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             return false;
         }))) {
-            throw new IssueException(
-                Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
-                    $this->context->getFile(),
-                    $node->lineno,
-                    [(string)$union_type, $key_type]
-                )
-            );
+            if (Config::get_closest_target_php_version_id() < 80100) {
+                throw new IssueException(
+                    Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
+                        $this->context->getFile(),
+                        $node->lineno,
+                        [(string)$union_type, $key_type]
+                    )
+                );
+            }
         }
     }
 

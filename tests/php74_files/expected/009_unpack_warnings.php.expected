@@ -6,7 +6,7 @@
 %s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type null which does not contain any subtypes of iterable (such as array or Traversable)
 %s:7 PhanUndeclaredGlobalVariable Global variable $undef is undeclared
 %s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($num1) is $validLiteral of type list<3> but \intdiv() takes int
-%s:11 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array{dos:2}, the value's keys were of type string, but the keys should be integers
+%s:11 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array{dos:2}, the value's keys were of type string, but the keys should be integers before PHP 8.1
 %s:19 PhanTypeMismatchReturn Returning $x of type array<string,object>[] but expects_stringmap() is declared to return array<int,false>
 %s:20 PhanTypeMismatchReturn Returning ...($x) of type object[] but expects_stringmap() is declared to return array<int,false>
-%s:20 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be integers
+%s:20 PhanTypeMismatchUnpackKeyArraySpread When unpacking a value of type array<string,object>, the value's keys were of type string, but the keys should be integers before PHP 8.1

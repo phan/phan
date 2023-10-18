@@ -2286,7 +2286,7 @@ class Issue
                 self::TypeMismatchUnpackKeyArraySpread,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers',
+                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers before PHP 8.1',
                 self::REMEDIATION_B,
                 10109
             ),
