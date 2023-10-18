@@ -346,6 +346,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         // while loops and for loops have a cond node, foreach loops don't.
         $inner_loop_node_cond = $this->context->getInnermostLoopNode()->children['cond'] ?? null;
         if ($inner_loop_node_cond instanceof Node) {
+            if ($node->kind === ast\AST_MATCH_ARM) {
+                return false;
+            }
             // For loops have a list of expressions, the last of which is a condition
             if ($inner_loop_node_cond->kind === ast\AST_EXPR_LIST) {
                 $inner_loop_node_cond = \end($inner_loop_node_cond->children);
