@@ -469,6 +469,7 @@ class Issue
     public const EmptyClosure = 'PhanEmptyClosure';
 
     public const UnusedVariable                        = 'PhanUnusedVariable';
+    public const UnusedVariableOverwrittenAllBranches  = 'PhanUnusedVariableOverwrittenAllBranches';
     public const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
     public const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
     public const UnusedPublicNoOverrideMethodParameter = 'PhanUnusedPublicNoOverrideMethodParameter';
@@ -4559,6 +4560,14 @@ class Issue
                 'Saw a repeated silence operator in {CODE}',
                 self::REMEDIATION_B,
                 6097
+            ),
+            new Issue(
+                self::UnusedVariableOverwrittenAllBranches,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Definition of variable ${VARIABLE} is overwritten on all branches',
+                self::REMEDIATION_B,
+                6098
             ),
 
             // Issue::CATEGORY_REDEFINE
