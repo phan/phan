@@ -17,6 +17,7 @@ Bug fixes:
 - Don't emit `PhanTypeMismatchUnpackKeyArraySpread` when `minimum_target_php_version` is `'8.1'` or newer. (#4788)
 - Fix a couple of array spread crash bugs (#4780)
 - Fix crash if match is used inside for-loop (#4767)
+- Fix DateTime::getTimestamp return type (#4731)
 
 Mar 03 2023, Phan 5.4.2
 -----------------------

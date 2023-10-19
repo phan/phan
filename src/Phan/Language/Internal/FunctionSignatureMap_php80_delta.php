@@ -225,6 +225,10 @@ return [
       'old' => ['DateTime|false', 'object'=>'DateTime', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microsecond='=>'int'],
       'new' => ['DateTime', 'object'=>'DateTime', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microsecond='=>'int'],
     ],
+    'date_timestamp_get' => [
+      'old' => ['int|false', 'object'=>'DateTimeInterface'],
+      'new' => ['int', 'object'=>'DateTimeInterface'],
+    ],
     'date_timestamp_set' => [
       'old' => ['DateTime|false', 'object'=>'DateTime', 'timestamp'=>'int'],
       'new' => ['DateTime', 'object'=>'DateTime', 'timestamp'=>'int'],
@@ -233,9 +237,17 @@ return [
       'old' => ['DateTime|false', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
       'new' => ['DateTime', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
     ],
+    'DateTime::getTimestamp' => [
+      'old' => ['int|false'],
+      'new' => ['int'],
+    ],
     'DateTimeImmutable::format' => [
       'old' => ['string|false', 'format'=>'string'],
       'new' => ['string', 'format'=>'string'],
+    ],
+    'DateTimeImmutable::getTimestamp' => [
+      'old' => ['int|false'],
+      'new' => ['int'],
     ],
     'DateTimeImmutable::setDate' => [
       'old' => ['static|false', 'year'=>'int', 'month'=>'int', 'day'=>'int'],
@@ -260,6 +272,10 @@ return [
     'DateTimeImmutable::sub' => [
       'old' => ['static|false', 'interval'=>'DateInterval'],
       'new' => ['static', 'interval'=>'DateInterval'],
+    ],
+    'DateTimeInterface::getTimestamp' => [
+      'old' => ['int|false'],
+      'new' => ['int'],
     ],
     'debug_backtrace' => [
       'old' => ['list<array>', 'options='=>'int|bool', 'limit='=>'int'],
