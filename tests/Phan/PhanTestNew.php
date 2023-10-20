@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests;
 
 /**
- * Runs tests/files/src/0700+
+ * Runs tests/files/src/0900+
  *
  * The default type of test for Phan
  *

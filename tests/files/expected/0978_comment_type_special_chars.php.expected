@@ -1,0 +1,9 @@
+%s:9 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @phan-param '<3' $h'
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type (empty union type)
+%s:16 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @phan-return ':-['|':-]''
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $emoticon - it has union type ':-\x5b'|':-\x5d'
+%s:25 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @phan-param '>'|'<'|'!='|'='|'>='|'<=' $op'
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $op - it has union type (empty union type)
+%s:32 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @phan-param array{0:':-)'|':-]',1:'<3',2:'([{<>}])',3:'foo,bar'} $arr': after array, did not see an element name (will guess based on comment order)
+%s:32 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @phan-param array{0:':-)'|':-]',1:'<3',2:'([{<>}])',3:'foo,bar'} $arr': after array, saw '{'
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type (empty union type)
