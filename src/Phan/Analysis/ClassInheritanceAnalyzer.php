@@ -186,7 +186,7 @@ class ClassInheritanceAnalyzer
                 );
             }
         }
-        if ($target_class->isInterface() && !$source_class->isEnum()) {
+        if ($target_class->isInterface() && !$source_class->isEnum() && !$source_class->isInterface()) {
             if (\in_array(\strtolower($target_class->getFQSEN()->__toString()), ['\unitenum', '\backedenum'], true)) {
                 Issue::maybeEmit(
                     $code_base,
