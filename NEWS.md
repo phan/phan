@@ -10,6 +10,7 @@ Miscellaneous:
 - Fix ldap function signatures
 
 Bug fixes:
+- Fix interfaces can extend BackedEnum and UnitEnum (#4782)
 - Fix ini_set() signature to take any scalar since PHP 8.1 (#4806)
 - Fix RedisCluster setOption/getOption signatures (#4790)
 - Fix ldap function signatures
