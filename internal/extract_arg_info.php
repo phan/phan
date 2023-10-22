@@ -238,7 +238,7 @@ class OpcacheFuncInfoParser
             exit(1);
         }
 
-        $func_info_path = $argv[1] . "/ext/opcache/Optimizer/zend_func_info.c";
+        $func_info_path = $argv[1] . "/Zend/Optimizer/zend_func_info.c";
         if (!file_exists($func_info_path)) {
             fwrite(STDERR, "Could not find $func_info_path\n");
             exit(1);

@@ -44,6 +44,10 @@ return [
       'old' => ['void', 'iterator'=>'Traversable'],
       'new' => ['void', 'iterator'=>'Traversable|array|iterable'],
     ],
+    'pg_close' => [
+      'old' => ['bool', 'connection='=>'?resource'],
+      'new' => ['true', 'connection='=>'?pgsql\connection'],
+    ],
   ],
   'removed' => [
   ],
