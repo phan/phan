@@ -1173,6 +1173,10 @@ return [
       'old' => ['array<int,?string>|false', 'result'=>'resource', 'field='=>'int'],
       'new' => ['array<int,?string>', 'result'=>'resource', 'field='=>'int'],
     ],
+    'pg_version' => [
+        'old' => ['array<string,string>', 'connection='=>'resource'],
+        'new' => ['array<string,string>', 'connection='=>'?resource']
+    ],
     'proc_get_status' => [
       'old' => ['array<string,int|string|bool>|false', 'process'=>'resource'],
       'new' => ['array<string,int|string|bool>', 'process'=>'resource'],
