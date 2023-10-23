@@ -198,13 +198,18 @@ ini_set('mbstring.substitute_character', (string)0xFFFD);
 // assert_options has been deprecated starting with PHP 8.3
 if (PHP_VERSION_ID < 80300) {
     // Explicitly set each option in case INI is set otherwise
+    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
     assert_options(ASSERT_ACTIVE, true);
+    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
     assert_options(ASSERT_WARNING, false);
+    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
     assert_options(ASSERT_BAIL, false);
     // ASSERT_QUIET_EVAL has been removed starting with PHP 8
     if (defined('ASSERT_QUIET_EVAL')) {
+    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
         assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line UnusedPluginSuppression, PhanTypeMismatchArgumentNullableInternal
     }
+    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
     assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 }
 
