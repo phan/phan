@@ -8,13 +8,12 @@ New Features(Analysis):
 
 Miscellaneous:
 - Fix ldap function signatures
+- Fix a couple of array spread crash bugs
 
 Bug fixes:
 - Fix interfaces can extend BackedEnum and UnitEnum (#4782)
 - Fix ini_set() signature to take any scalar since PHP 8.1 (#4806)
 - Fix RedisCluster setOption/getOption signatures (#4790)
-- Fix ldap function signatures
-- Fix a couple of array spread crash bugs
 - Don't emit `PhanTypeMismatchUnpackKeyArraySpread` when `minimum_target_php_version` is `'8.1'` or newer. (#4788)
 - Fix a couple of array spread crash bugs (#4780)
 - Fix crash if match is used inside for-loop (#4767)
