@@ -294,10 +294,10 @@ class DeprecateAliasPlugin extends PluginV3 implements
         'bzclose' => 'fclose',
         'bzflush' => 'fflush',
         'bzwrite' => 'fwrite',
-        'checkdnsrr' => 'dns_check_record',
+        'dns_check_record' => 'checkdnsrr',
         'dir' => 'getdir',
         'ftp_quit' => 'ftp_close',
-        'getmxrr' => 'dns_get_mx',
+        'dns_get_mx' => 'getmxrr',
         // 'getrandmax' => 'mt_getrandmax',  // confusing because rand is not an alias of mt_rand
         'get_required_files' => 'get_included_files',
         'gmp_div' => 'gmp_div_q',
