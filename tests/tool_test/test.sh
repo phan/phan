@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-if php -r 'exit(PHP_VERSION_ID >= 80100 ? 0 : 1);'; then
+if php -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);'; then
+    EXPECTED_PATH=json_stubs.expected83
+elif php -r 'exit(PHP_VERSION_ID >= 80100 ? 0 : 1);'; then
     EXPECTED_PATH=json_stubs.expected81
 elif php -r 'exit(PHP_MAJOR_VERSION >= 8 ? 0 : 1);'; then
     EXPECTED_PATH=json_stubs.expected80
