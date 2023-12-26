@@ -1,6 +1,6 @@
 <!-- This is mirrored at https://github.com/phan/phan/wiki/Phan-Config-Settings -->
 <!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
-<!-- This is regenerated from the comments and defaults in src/Phan/Config.php by the script internal/update_wiki_config_types.php -->
+<!-- This is regenerated from the comments and defaults in src/Phan/Config.php by tests/Phan/Internal/WikiConfigTest.php -->
 
 See [`\Phan\Config`](https://github.com/phan/phan/blob/v5/src/Phan/Config.php) for the most up to date list of configuration settings.
 
@@ -181,7 +181,7 @@ If this list is empty, no filter against issues types will be applied.
 If this list is non-empty, only issues within the list
 will be emitted by Phan.
 
-See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
+See https://github.com/phan/phan/blob/v5/internal/Issue-Types-Caught-by-Phan.md
 for the full list of issues that Phan detects.
 
 Phan is capable of detecting hundreds of types of issues.
@@ -712,7 +712,7 @@ If this is null, this will be inferred from `target_php_version`.
 The PHP version that will be used for feature/syntax compatibility warnings.
 
 Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-`'8.0'`, `'8.1'`, `null`.
+`'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `null`.
 If this is set to `null`, Phan will first attempt to infer the value from
 the project's composer.json's `{"require": {"php": "version range"}}` if possible.
 If that could not be determined, then Phan assumes `target_php_version`.
@@ -744,7 +744,7 @@ For best results, the PHP binary used to run Phan should have the same PHP versi
 and checks for undefined classes/methods/functions)
 
 Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-`'8.0'`, `'8.1'`, `null`.
+`'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `null`.
 If this is set to `null`,
 then Phan assumes the PHP version which is closest to the minor version
 of the php executable used to execute Phan.
