@@ -135,7 +135,7 @@ class Config
         // and checks for undefined classes/methods/functions)
         //
         // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-        // `'8.0'`, `'8.1'`, `null`.
+        // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `null`.
         // If this is set to `null`,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute Phan.
@@ -147,7 +147,7 @@ class Config
         // The PHP version that will be used for feature/syntax compatibility warnings.
         //
         // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-        // `'8.0'`, `'8.1'`, `null`.
+        // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `null`.
         // If this is set to `null`, Phan will first attempt to infer the value from
         // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
         // If that could not be determined, then Phan assumes `target_php_version`.
@@ -1398,6 +1398,7 @@ class Config
         '8.0' => 70400,
         '8.1' => 80000,
         '8.2' => 80100,
+        '8.3' => 80200,
     ];
 
     private static function computeClosestTargetPHPVersionId(string $version): int
@@ -1408,7 +1409,7 @@ class Config
                 return $resulting_version_id;
             }
         }
-        return 80200;
+        return 80300;
     }
 
     /**
