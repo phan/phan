@@ -9,6 +9,7 @@ New Features(Analysis):
 Miscellaneous:
 - Fix ldap function signatures
 - Fix a couple of array spread crash bugs
+- Extend supported dependency versions of symfony/console to also allow 7.x (#4822)
 
 Bug fixes:
 - Fix interfaces can extend BackedEnum and UnitEnum (#4782)
@@ -18,6 +19,9 @@ Bug fixes:
 - Fix a couple of array spread crash bugs (#4780)
 - Fix crash if match is used inside for-loop (#4767)
 - Fix DateTime::getTimestamp return type (#4731)
+- Avoid deprecation warning for ASSERT constants in php 8.3+ (#4808)
+- Fix crash in AST fallback parser when parsing invalid ArgumentExpression in php 8.0+
+- Fix false positive warnings and skipping internal constants declared by PECLs prefixed with `\x00` (`APCu`, `immutable_cache`)
 
 Mar 03 2023, Phan 5.4.2
 -----------------------
