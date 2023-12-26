@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.0.16';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.1.1';
 
 /**
  * Dump instructions on how to install php-ast
@@ -171,6 +171,14 @@ if (extension_loaded('ast')) {
         phan_output_ast_installation_instructions();
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
+    }
+    if (PHP_VERSION_ID >= 80300 && version_compare($ast_version, '1.1.1') < 0) {
+        fprintf(
+            STDERR,
+            "WARNING: Phan 5.x requires php-ast 1.1.1+ to properly analyze ASTs for php 8.3+. php-ast %s and php %s is installed." . PHP_EOL,
+            $ast_version,
+            PHP_VERSION
+        );
     }
     // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
     if (PHP_VERSION_ID < 80100 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
