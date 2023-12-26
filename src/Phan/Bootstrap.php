@@ -177,7 +177,7 @@ if (extension_loaded('ast')) {
     // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
     if (PHP_VERSION_ID < 80400 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
         // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
-        // But don't warn for 8.1.0 since there's no way to upgrade to a stable release.
+        // But don't warn for 8.4.0 since there's no way yet to upgrade to a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
     unset($ast_version);
@@ -192,27 +192,31 @@ define('EXIT_SUCCESS', 0);
 define('EXIT_FAILURE', 1);
 define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
+// Note that Phan's source code now throws exceptions rather than using assert(),
+// but make the settings consistent for any third party plugins still using assert().
+// Use ini_set where the value Phan uses is the same as php's defaults. https://wiki.php.net/rfc/assert-string-eval-cleanup#formal_proposal
+// https://www.php.net/manual/en/function.assert-options.php
 // Throw exceptions so asserts can be linked to the code being analyzed
 ini_set('assert.exception', '1');
+// enable assert() function
+ini_set('assert.active', '1');
+// Exceptions are thrown instead of bailing in phan.
+ini_set('assert.bail', '0');
 // Set a substitute character for StringUtil::asUtf8()
 ini_set('mbstring.substitute_character', (string)0xFFFD);
+// Disable custom callbacks for assert.
+ini_set('assert.callback', '');
 
 // assert_options has been deprecated starting with PHP 8.3
 if (PHP_VERSION_ID < 80300) {
     // Explicitly set each option in case INI is set otherwise
     // @phan-suppress-next-line PhanDeprecatedFunctionInternal
-    assert_options(ASSERT_ACTIVE, true);
-    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
     assert_options(ASSERT_WARNING, false);
-    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
-    assert_options(ASSERT_BAIL, false);
     // ASSERT_QUIET_EVAL has been removed starting with PHP 8
     if (defined('ASSERT_QUIET_EVAL')) {
     // @phan-suppress-next-line PhanDeprecatedFunctionInternal
         assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line UnusedPluginSuppression, PhanTypeMismatchArgumentNullableInternal
     }
-    // @phan-suppress-next-line PhanDeprecatedFunctionInternal
-    assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 }
 
 // php 8 seems to have segfault issues with disable_function

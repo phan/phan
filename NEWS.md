@@ -21,6 +21,7 @@ Bug fixes:
 - Fix crash if match is used inside for-loop (#4767)
 - Fix DateTime::getTimestamp return type (#4731)
 - Avoid deprecation warning for ASSERT constants in php 8.3+ (#4808)
+- Use `ini_set()` instead of `assert_options()` when Phan's assertion options match PHP's assert ini setting defaults to keep those values and avoid deprecation warnings in php 8.3+.
 - Fix crash in AST fallback parser when parsing invalid ArgumentExpression in php 8.0+
 - Fix false positive warnings and skipping internal constants declared by PECLs prefixed with `\x00` (`APCu`, `immutable_cache`)
 
