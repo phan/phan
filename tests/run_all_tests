@@ -35,7 +35,9 @@ TEST_SUITES+=" __FakeToolTest"
 TEST_SUITES+=" __FakeConfigOverrideTest"
 TEST_SUITES+=" __FakeFixerTest"
 TEST_SUITES+=" __FakePhantasmTest"
-TEST_SUITES+=" __FakePhoundTest"
+if type sqlite3 >/dev/null 2>/dev/null; then
+    TEST_SUITES+=" __FakePhoundTest"
+fi
 TEST_SUITES+=" __FakeInferMissingTypesTest"
 TEST_SUITES+=" __FakeEmptyMethodsPluginTest"
 
