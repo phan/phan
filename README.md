@@ -4,7 +4,6 @@ Phan looks for common issues and will verify type compatibility on various opera
 information is available or can be deduced. Phan has a good (but not comprehensive) understanding of flow control
 and can track values in a few use cases (e.g. arrays, integers, and strings).
 
-[![Build Status](https://dev.azure.com/tysonandre775/phan/_apis/build/status/phan.phan?branchName=v5)](https://dev.azure.com/tysonandre775/phan/_build/latest?definitionId=3&branchName=v5)
 [![Build Status](https://github.com/phan/phan/actions/workflows/main.yml/badge.svg?branch=v5)](https://github.com/phan/phan/actions/workflows/main.yml?query=branch%3Av5)
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=v5&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/v5)
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -22,7 +21,7 @@ composer require phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-Phan 5 depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.0.16+ is preferred) and supports analyzing PHP version 7.0-8.1 syntax.
+Phan 5 depends on PHP 7.2+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.1.1+ is preferred) and supports analyzing PHP version 7.0-8.2 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
 (Phan can be used without php-ast by using the CLI option `--allow-polyfill-parser`, but there are slight differences in the parsing of doc comments)
 
@@ -126,7 +125,7 @@ A simple `.phan/config.php` file might look something like the following.
 return [
 
     // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-    // `'8.0'`, `'8.1'`, `null`.
+    // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `null`.
     // If this is set to `null`,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute Phan.

@@ -481,12 +481,8 @@ class CodeBase
 
     private static function handleGlobalConstantException(string $const_name, Exception $e): void
     {
-        // Workaround for windows bug in #1011
-        if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
-            return;
-        }
-        // e.g. "\000apc_register_serializer-" APC_SERIALIZER_ABI
-        if (\strncmp($const_name, "\x00apc_", 5) === 0) {
+        // e.g. "\000apc_register_serializer-" APC_SERIALIZER_ABI or immutable_cache or windows bug in #1011
+        if (\strncmp($const_name, "\x00", 1) === 0) {
             return;
         }
         // @phan-suppress-next-line PhanPluginRemoveDebugCall

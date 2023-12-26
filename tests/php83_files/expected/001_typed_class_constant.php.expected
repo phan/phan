@@ -1,0 +1,3 @@
+%s:9 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::x of type 123 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:10 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::bad of type 'x' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:11 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::more of type 'x' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)

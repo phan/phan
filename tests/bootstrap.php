@@ -30,6 +30,8 @@ const PHP81_TEST_FILE_DIR = './tests/php81_files/src';
 const PHP81_EXPECTED_DIR = './tests/php81_files/expected';
 const PHP82_TEST_FILE_DIR = './tests/php82_files/src';
 const PHP82_EXPECTED_DIR = './tests/php82_files/expected';
+const PHP83_TEST_FILE_DIR = './tests/php83_files/src';
+const PHP83_EXPECTED_DIR = './tests/php83_files/expected';
 
 require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';
 

@@ -637,7 +637,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ArgumentExpression' => static function (PhpParser\Node\Expression\ArgumentExpression $n, int $start_line) {
                 $expression = $n->expression;
                 if ($expression === null) {
-                    throw new InvalidNodeException($n);
+                    throw new InvalidNodeException();
                 }
                 $result = static::phpParserNodeToAstNode($expression);
                 if ($n->dotDotDotToken !== null) {
