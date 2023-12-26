@@ -10,7 +10,7 @@ Miscellaneous:
 - Fix ldap function signatures
 - Fix a couple of array spread crash bugs
 - Extend supported dependency versions of symfony/console to also allow 7.x (#4822)
-- Warn if using php-ast releases older than 1.1.1 in php 8.3+
+- Require php-ast 1.1.1 or newer in PHP 8.3+ if php-ast is installed.
 
 Bug fixes:
 - Fix interfaces can extend BackedEnum and UnitEnum (#4782)
