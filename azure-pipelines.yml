@@ -8,11 +8,6 @@ trigger:
 jobs:
   - template: .azure/job.yml
     parameters:
-      configurationName: PHP_73_NTS
-      phpVersion: 7.3
-      vmImage: 'ubuntu-20.04'
-  - template: .azure/job.yml
-    parameters:
       configurationName: PHP_74_NTS
       phpVersion: 7.4
       vmImage: 'ubuntu-20.04'
