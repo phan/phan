@@ -157,6 +157,8 @@ return [
 'ast\AST_PROP_DECL' => 'A single group of property declarations inside a class. (numerically indexed children)',
 'ast\AST_PROP_ELEM' => 'A class property declaration. (children: name, default, docComment)',
 'ast\AST_PROP_GROUP' => 'A class property group declaration with optional type information for the group (in PHP 7.4+). Used in AST version 70+ (children: type, props, __declId)',
+'ast\AST_PROPERTY_HOOK' => 'A class property hook declaration. (children: name, docComment, params, stmts, attributes)',
+'ast\AST_PROPERTY_HOOK_SHORT_BODY' => 'A class property hook declaration using the shorthand format. (children: expr)',
 'ast\AST_REF' => 'only used for `&$v` in `foreach ($a as &$v)` (children: var)',
 'ast\AST_RETURN' => 'A `return;` or `return expr` statement. (children: expr)',
 'ast\AST_SHELL_EXEC' => 'A `\`some_shell_command\`` expression. (children: expr)',
