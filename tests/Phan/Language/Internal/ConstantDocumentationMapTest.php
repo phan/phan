@@ -33,6 +33,6 @@ final class ConstantDocumentationMapTest extends BaseTest
                 }
             }
         }
-        $this->assertSame('', $failures, 'This test was written for php-ast 1.0.6 and php <=7.4. If you are using a newer php-ast version, this test failure is expected for `ast:`');
+        $this->assertSame('', $failures, 'This test was written for php-ast 1.1.2. If you are using a newer php-ast version, this test failure is expected for `ast:`');
     }
 }

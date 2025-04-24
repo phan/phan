@@ -2,6 +2,8 @@ Phan NEWS
 
 ??? ?? 202?, Phan 5.4.6 (dev)
 -----------------------
+Miscellaneous:
+- Require php-ast 1.1.2 or newer in PHP 8.4+ if php-ast is installed.
 
 Aug 13 2024, Phan 5.4.5
 -----------------------

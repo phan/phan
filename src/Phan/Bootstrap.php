@@ -44,7 +44,7 @@ if (PHP_VERSION_ID < 70200) {
     exit(1);
 }
 
-const LATEST_KNOWN_PHP_AST_VERSION = '1.1.1';
+const LATEST_KNOWN_PHP_AST_VERSION = '1.1.2';
 
 /**
  * Dump instructions on how to install php-ast
@@ -150,7 +150,9 @@ if (extension_loaded('ast')) {
         exit(1);
     };
 
-    if (PHP_VERSION_ID >= 80300 && version_compare($ast_version, '1.1.1') < 0) {
+    if (PHP_VERSION_ID >= 80400 && version_compare($ast_version, '1.1.2') < 0) {
+        $phan_output_ast_too_old_and_exit('1.1.2', '8.4');
+    } elseif (PHP_VERSION_ID >= 80300 && version_compare($ast_version, '1.1.1') < 0) {
         $phan_output_ast_too_old_and_exit('1.1.1', '8.3');
     } elseif (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.1.0') < 0) {
         $phan_output_ast_too_old_and_exit('1.1.0', '8.2');
@@ -179,9 +181,9 @@ if (extension_loaded('ast')) {
         exit(1);
     }
     // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
-    if (PHP_VERSION_ID < 80400 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
+    if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
         // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
-        // But don't warn for 8.4.0 since there's no way yet to upgrade to a stable release.
+        // But don't warn for upcoming versions without a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
     unset($ast_version);
