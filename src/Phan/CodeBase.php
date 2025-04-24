@@ -926,7 +926,9 @@ class CodeBase
             return;
         }
         // The original class exists. Attempt to create aliases of the original class.
-        $class = $this->getClassByFQSEN($original_fqsen);
+        // Don't hydrate yet, though, because the referenced class could itself
+        // inherit from an alias, and not all of the aliases are loaded yet.
+        $class = $this->getClassByFQSENWithoutHydrating($original_fqsen);
         foreach ($alias_set as $alias_record) {
             if (!($alias_record instanceof ClassAliasRecord)) {
                 throw new AssertionError("Expected instances of ClassAliasRecord in alias_set");
@@ -935,7 +937,7 @@ class CodeBase
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
             if ($this->hasClassWithFQSEN($alias_fqsen)) {
                 // Emit a different issue type to make filtering out false positives easier.
-                $clazz = $this->getClassByFQSEN($alias_fqsen);
+                $clazz = $this->getClassByFQSENWithoutHydrating($alias_fqsen);
                 Issue::maybeEmit(
                     $this,
                     $alias_record->context,
