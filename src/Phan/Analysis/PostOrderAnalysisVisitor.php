@@ -3234,11 +3234,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         } elseif ($inner_type->flags === ast\flags\TYPE_TRUE) {
-            $this->emitIssue(
-                Issue::CompatibleTrueType,
-                $inner_type->lineno,
-                'true'
-            );
+            if ($minimum_target_php_version_id < 82000) {
+                $this->emitIssue(
+                    Issue::CompatibleTrueType,
+                    $inner_type->lineno,
+                    'true'
+                );
+            }
         } elseif (!$is_union && \in_array($inner_type->flags, [ast\flags\TYPE_NULL, ast\flags\TYPE_FALSE], true)) {
             $this->emitIssue(
                 Issue::CompatibleStandaloneType,
