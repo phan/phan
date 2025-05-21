@@ -20,6 +20,7 @@
         <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true" />
         <env name="PHAN_DISABLE_PROGRESS_BAR" value="1" force="true" />
         <env name="PHAN_COLOR_SCHEME" value="" force="true" />
+        <ini name="serialize_precision" value="-1"/>
     </php>
 
     <testsuites>
