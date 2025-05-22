@@ -608,6 +608,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($function_name[0] === '\\') {
             $function_name = \substr($function_name, 1);
         }
+        if (\PHP_VERSION_ID >= 80400) {
+            // exit is a proper function since 8.4.0
+            if ($function_name === 'exit' || $function_name === 'die') {
+                return self::STATUS_NORETURN;
+            }
+        }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
