@@ -346,7 +346,7 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
-    public function testIncompleteMethodCallBeforeIfWithPlaceholders(): void
+    public function testIncompleteMethodCallBeforeIfWithPlaceholdersPre840(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -369,10 +369,41 @@ $obj->
 if (true);
 echo "example";
 EOT;
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $this->markTestIncomplete('Since PHP 8.4, array syntax with curly braces are not valid anymore');
+        }
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
-    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders(): void
+    public function testIncompleteMethodCallBeforeIfWithPlaceholders(): void
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) [
+    $y
+]
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true)[
+    $y
+];
+$obj->
+if (true);
+echo "example";
+EOT;
+
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
+    }
+
+    public function testIncompleteMethodCallBeforeIfWithoutPlaceholdersPre840(): void
     {
         $incomplete_contents = <<<'EOT'
 <?php
@@ -395,6 +426,36 @@ $obj->
 if (true);
 echo "example";
 EOT;
+        if (\PHP_VERSION_ID >= 80400) {
+            $this->markTestIncomplete('Since PHP 8.4, array syntax with curly braces are not valid anymore');
+        }
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
+    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders(): void
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) [
+    foo();
+]
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true) [
+    foo()
+];
+$obj->
+if (true);
+echo "example";
+EOT;
+
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
