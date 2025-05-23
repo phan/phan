@@ -38,6 +38,7 @@ jobs:
          - PHP_VERSION: '8.2'
            DOCKER_ARCHITECTURE: i386
          - PHP_VERSION: '8.3'
+         - PHP_VERSION: '8.4'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
