@@ -25,7 +25,7 @@ final class CSVPrinterTest extends BaseTest
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, ["foo"]));
         $printer->flush();
 
-        $lines = \array_map(function($line) {
+        $lines = \array_map(static function($line) {
             return str_getcsv($line, ",", '"', "\\");
         }, \explode("\n", $output->fetch()));
         // str_getcsv() returns [0 => null] if passed the empty string.
