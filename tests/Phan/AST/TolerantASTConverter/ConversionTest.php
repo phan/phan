@@ -219,6 +219,17 @@ final class ConversionTest extends BaseTest
         if (\PHP_VERSION_ID >= 80000 && \basename($file_name) === 'use_simple.php') {
             $this->markTestIncomplete('php-ast cannot parse php8.0 syntax when running in php7.4 or older');
         }
+        if (\PHP_VERSION_ID >= 80400) {
+            $tests_to_skip = [
+                'misc/fallback_ast_src/exit.php',
+                'misc/fallback_ast_src/php-src_tests/bug60634_error_3.php',
+            ];
+            foreach ($tests_to_skip as $test_to_skip) {
+                if (str_ends_with($file_name, $test_to_skip)) {
+                    $this->markTestIncomplete('exit was changed to function since php8.4, and microsoft/tolerant-php-parser (fallback) cannot parse it correctly yet');
+                }
+            }
+        }
         $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
