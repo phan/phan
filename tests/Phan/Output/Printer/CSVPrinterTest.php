@@ -27,7 +27,7 @@ final class CSVPrinterTest extends BaseTest
 
         $lines = \array_map(
             /**
-             * @return string[]
+             * @return array<int,null>|array<int,string>
              */
             static function(string $line): array {
                 return str_getcsv($line, ",", '"', "\\");
