@@ -32,7 +32,7 @@ final class CSVPrinter implements BufferedPrinterInterface
             Issue::getNameForCategory($instance->getIssue()->getCategory()),
             $instance->getIssue()->getType(),
             $instance->getMessageAndMaybeSuggestion(),
-        ]);
+        ], ",", '"', "\\");
     }
 
     /** flush printer buffer */
@@ -66,6 +66,6 @@ final class CSVPrinter implements BufferedPrinterInterface
         \fputcsv($this->stream, [
             "filename", "line", "severity_ord", "severity_name",
             "category", "check_name", "message"
-        ]);
+        ], ",", '"', "\\");
     }
 }

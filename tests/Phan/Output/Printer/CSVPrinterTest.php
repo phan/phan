@@ -25,7 +25,9 @@ final class CSVPrinterTest extends BaseTest
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, ["foo"]));
         $printer->flush();
 
-        $lines = \array_map("str_getcsv", \explode("\n", $output->fetch()));
+        $lines = \array_map(function($line) {
+            return str_getcsv($line, ",", '"', "\\");
+        }, \explode("\n", $output->fetch()));
         // str_getcsv() returns [0 => null] if passed the empty string.
         // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         $fields = \array_combine($lines[0], $lines[1]);
