@@ -2830,7 +2830,7 @@ EOB
     public function restartWithoutProblematicExtensions(): void
     {
         $extensions_to_disable = self::extensionsToDisable();
-        if (in_array('xdebug', $extensions_to_disable)) {
+        if (in_array('xdebug', $extensions_to_disable, true)) {
             // Restart if Xdebug is loaded, unless the environment variable PHAN_ALLOW_XDEBUG is set.
             if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
                 fwrite(STDERR, <<<EOT
@@ -2843,7 +2843,7 @@ EOT
                 );
             }
         }
-        if (in_array('uopz', $extensions_to_disable)) {
+        if (in_array('uopz', $extensions_to_disable, true)) {
             // NOTE: uopz seems to cause instability when used and switched from enabled to disabled.
             //
             // TODO create and link to stubs if https://github.com/krakjoe/uopz/issues/123 is completed.
@@ -2857,7 +2857,7 @@ EOT
 EOT
             );
         }
-        if (in_array('grpc', $extensions_to_disable)) {
+        if (in_array('grpc', $extensions_to_disable, true)) {
             // This still hangs when phan runs with --processes 2, even in 1.22.0
             fwrite(
                 STDERR,
@@ -2880,6 +2880,9 @@ EOT
         }
     }
 
+    /**
+     * @return string[] List of PHP extensions to disable
+     */
     public static function extensionsToDisable(): array
     {
         $extensions_to_disable = [];
