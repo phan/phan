@@ -20,6 +20,8 @@ final class ForkPoolTest extends BaseTest
      */
     public function testBasicForkJoin(): void
     {
+        $this->isIgnored();
+
         $data = [
             [1, 2, 3, 4],
             [5, 6, 7, 8],
@@ -67,6 +69,8 @@ final class ForkPoolTest extends BaseTest
      */
     public function testStartupFunction(): void
     {
+        $this->isIgnored();
+
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
@@ -91,5 +95,12 @@ final class ForkPoolTest extends BaseTest
             [true, true, true, true],
             $pool->wait()
         );
+    }
+
+    private function isIgnored(): void
+    {
+        if (\extension_loaded('grpc')) {
+            $this->markTestIncomplete('Ignoring becasue grpc PHP extension is enabled');
+        }
     }
 }

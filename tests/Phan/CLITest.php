@@ -80,6 +80,11 @@ final class CLITest extends BaseTest
      */
     public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = []): void
     {
+        $extensions_to_disable = CLI::extensionsToDisable();
+        if (count($extensions_to_disable) > 0) {
+            $this->markTestIncomplete('PHP extension(s) has to be disabled in order for this test to run: ' . implode(', ', $extensions_to_disable));
+        }
+
         $opts += ['project-root-directory' => \dirname(__DIR__) . '/misc/config/'];
         $expected_changed_options += [
             '__directory_regex' => '@^(\./)*(src)([/\\\\]|$)@',
