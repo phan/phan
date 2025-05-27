@@ -6,8 +6,8 @@ class A {
        protected string $c,
        protected ?string $d,
        private bool $e,
-       private ?bool $f
-    ) {}
+       private ?bool $f)
+   {}
 }
 
 class B extends A {
@@ -17,6 +17,6 @@ class B extends A {
         protected string $c,
         protected string $d,
         private stdClass $e,
-        private stdClass $f
-    ) {}
+        private stdClass $f)
+    {}
 }
