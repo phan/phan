@@ -800,7 +800,7 @@ class Phan implements IgnoredFilesFilterInterface
         }
         $warned = false;
         // Unless debugging Phan itself, these two configurations are unnecessarily adding slowness.
-        if (PHP_DEBUG) {
+        if ((bool) PHP_DEBUG) {
             CLI::printHelpSection("WARNING: Phan is around twice as slow when php is compiled with --enable-debug (That option is only needed when debugging Phan itself).\n", false, true);
             $warned = true;
         }
