@@ -72,7 +72,8 @@ function phan_output_ast_installation_instructions(): void
                 $version,
                 $version,
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
-                (bool) PHP_ZTS ? 'ts' : 'nts',
+                // @phan-suppress-next-line PhanImpossibleCondition, PHP_ZTS is a boolean, but phan assumes it is always false
+                PHP_ZTS ? 'ts' : 'nts',
                 PHP_VERSION_ID >= 80000 ? 'vs16' : 'vc15',
                 PHP_INT_SIZE == 4 ? 'x86' : 'x64'
             );
