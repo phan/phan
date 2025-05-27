@@ -8,8 +8,8 @@ use Attribute;
 #[Attribute]
 class ExampleAttribute {
     public function __construct(
-        public ArrayObject $values = new ArrayObject(['first'])
-    ) {}
+        public ArrayObject $values = new ArrayObject(['first']))
+    {}
 }
 
 const Values = new ArrayObject();
