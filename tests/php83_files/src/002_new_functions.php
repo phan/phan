@@ -85,5 +85,5 @@ str_decrement(12);
 stream_context_set_options(stream_context_create(), []);
 // Zip https://www.php.net/manual/en/migration83.new-functions.php#migration83.new-functions.zip
 $zip = new ZipArchive();
-$zip->getArchiveFlag(ZipArchive::AFL_IS_TORRENTZIP);
-//$zip->getArchiveFlag(ZipArchive::AFL_IS_TORRENTZIP, ZipArchive::FL_UNCHANGED);
+$zip->getArchiveFlag(1);
+$zip->getArchiveFlag(1, ZipArchive::FL_UNCHANGED);
