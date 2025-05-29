@@ -1,0 +1,10 @@
+src/068_binary_literal.php:3 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 10 of type 10 but \spl_object_hash() takes object
+src/068_binary_literal.php:4 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 31 of type 31 but \spl_object_hash() takes object
+src/068_binary_literal.php:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 295147905179352825856.0 of type 295147905179352825856.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:6 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 196765270119568539648.0 of type 196765270119568539648.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 290608900102321590293119209832448.0 of type 290608900102321590293119209832448.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 1.0 of type 1.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:9 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 10.0 of type 10.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:10 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 300.0 of type 300.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:11 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 300.0 of type 300.0 but \spl_object_hash() takes object
+src/068_binary_literal.php:13 PhanSyntaxError Unclosed '{' on line 12
