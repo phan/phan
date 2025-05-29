@@ -4682,11 +4682,28 @@ class UnionType implements Serializable, Stringable
             if ($target_php_version < 80200) {
                 return $php81_map;
             }
+
             static $php82_map = [];
             if (!$php82_map) {
                 $php82_map = self::computePHP82FunctionSignatureMap($php81_map);
             }
-            return $php82_map;
+            if ($target_php_version < 80200) {
+                return $php82_map;
+            }
+
+            static $php83_map = [];
+            if (!$php83_map) {
+                $php83_map = self::computePHP83FunctionSignatureMap($php82_map);
+            }
+            if ($target_php_version < 80300) {
+                return $php83_map;
+            }
+
+            static $php84_map = [];
+            if (!$php84_map) {
+                $php84_map = self::computePHP84FunctionSignatureMap($php83_map);
+            }
+            return $php84_map;
         }
         static $php74_map = [];
         if (!$php74_map) {
@@ -4773,6 +4790,26 @@ class UnionType implements Serializable, Stringable
             $map[\strtolower($key)] = $value;
         }
         return $map;
+    }
+
+    /**
+     * @param array<string,associative-array<int|string,string>> $php83_map
+     * @return array<string,associative-array<int|string,string>>
+     */
+    private static function computePHP84FunctionSignatureMap(array $php83_map): array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php84_delta.php');
+        return self::applyDeltaToGetNewerSignatures($php83_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,associative-array<int|string,string>> $php82_map
+     * @return array<string,associative-array<int|string,string>>
+     */
+    private static function computePHP83FunctionSignatureMap(array $php82_map): array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php83_delta.php');
+        return self::applyDeltaToGetNewerSignatures($php82_map, $delta_raw);
     }
 
     /**
