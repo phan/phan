@@ -6,7 +6,12 @@
  */
 return [
   'added' => [
+      'IntlTimeZone::getIanaID' => ['string|false', 'timezoneId'=>'string'],
+      'intltz_get_iana_id' => ['string|false', 'timezoneId'=>'string'],
+      'pcntl_getcpu' => ['int'],
       'pcntl_getcpuaffinity' => ['array|false', 'process_id='=>'int'],
+      'pcntl_getqos_class' => ['Pcntl\QosClass'],
+      'pcntl_setns' => ['bool', 'process_id='=>'?int', 'nstype='=>'int'],
       'pcntl_waitid' => ['bool', 'idtype='=>'int', 'id='=>'int', '&info='=>'array', 'flags='=>'int'],
       'Pdo\Pgsql::__construct' => ['void', 'dsn'=>'string', 'username='=>'?string', 'password='=>'?string', 'options='=>'?array'],
       'Pdo\Pgsql::setNoticeCallback' => ['void', 'callback'=>'callable'],

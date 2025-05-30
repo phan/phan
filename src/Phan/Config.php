@@ -1408,6 +1408,7 @@ class Config
         '8.1' => 80000,
         '8.2' => 80100,
         '8.3' => 80200,
+        '8.4' => 80300,
     ];
 
     private static function computeClosestTargetPHPVersionId(string $version): int
@@ -1418,7 +1419,7 @@ class Config
                 return $resulting_version_id;
             }
         }
-        return 80300;
+        return 80400;
     }
 
     /**
