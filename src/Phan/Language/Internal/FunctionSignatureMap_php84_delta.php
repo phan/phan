@@ -13,8 +13,6 @@ return [
       'pcntl_getqos_class' => ['Pcntl\QosClass'],
       'pcntl_setns' => ['bool', 'process_id='=>'?int', 'nstype='=>'int'],
       'pcntl_waitid' => ['bool', 'idtype='=>'int', 'id='=>'int', '&info='=>'array', 'flags='=>'int'],
-      'Pdo\Pgsql::__construct' => ['void', 'dsn'=>'string', 'username='=>'?string', 'password='=>'?string', 'options='=>'?array'],
-      'Pdo\Pgsql::setNoticeCallback' => ['void', 'callback'=>'callable'],
       'pg_set_chunked_rows_size' => ['bool', 'connection'=>'\PgSql\Connection', 'size'=>'int'],
       'sodium_crypto_aead_aegis128l_decrypt' => ['string|false', 'ciphertext'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
       'sodium_crypto_aead_aegis128l_encrypt' => ['string', 'message'=>'string', 'additional_data'=>'string', 'nonce'=>'string', 'key'=>'string'],
