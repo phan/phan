@@ -31,6 +31,9 @@ RUN apt-get install -y libpq-dev \
 # sockets
 RUN docker-php-ext-install sockets
 
+# bcmath
+RUN docker-php-ext-install bcmath
+
 ADD composer.json composer.lock ./
 RUN composer.phar install && composer.phar clear-cache
 
