@@ -37,7 +37,13 @@ DOMXPath::quote("'quoted' name");
 # Hash https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.hash
 hash_init('sha256')->__debugInfo();
 # Intl https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.intl
-IntlTimeZone::getIanaID('UTC');
+/**
+ * IntlTimeZone::getIanaID is available only for never versions of ICU.
+ * For older versions of ICU IntlTimeZone class will be exising, so phan can use its reflection.
+ * And phan tries to use maps only when reflection is not available. Which makes it impossible to
+ * add IntlTimeZone::getIanaID using maps for older ICU cases.
+ */
+// IntlTimeZone::getIanaID('UTC');
 intltz_get_iana_id('UTC');
 IntlDateFormatter::create(null, 0, 0)->parseToCalendar('value');
 new Spoofchecker()->setAllowedChars('value', 1);
@@ -92,4 +98,3 @@ pg_result_memory_size(new PgSql\Result());
 pg_set_chunked_rows_size($connection, 10);
 pg_socket_poll('socket', 1, 2);
 pg_socket_poll('socket', 1, 2, 3);
-reflectionfunction::isanonymous();

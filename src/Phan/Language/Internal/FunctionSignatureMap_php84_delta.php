@@ -6,8 +6,8 @@
  */
 return [
   'added' => [
-      'IntlTimeZone::getIanaID' => ['string|false', 'timezoneId'=>'string'],
       'intltz_get_iana_id' => ['string|false', 'timezoneId'=>'string'],
+      'opcache_jit_blacklist' => ['void', 'closure'=>'callable'],
       'pcntl_getcpu' => ['int'],
       'pcntl_getcpuaffinity' => ['array|false', 'process_id='=>'int'],
       'pcntl_getqos_class' => ['Pcntl\QosClass'],
