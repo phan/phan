@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phan;
 
-use Phan\Config;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Tests\AbstractPhanFileTest;
 
