@@ -26,7 +26,7 @@ RUN apt-get install -y libzip-dev  zip \
 # pgsql
 RUN apt-get install -y libpq-dev \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pgsql pdo pdo_pgsql
+    && docker-php-ext-install pgsql
 
 # sockets
 RUN docker-php-ext-install sockets
