@@ -516,14 +516,18 @@ return [
         'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
         'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
+        'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
         'phar'        => '.phan/internal_stubs/phar.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
         'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
+        'soap'        => '.phan/internal_stubs/soap.phan_php',
         'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
         'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
+        'tidy'        => '.phan/internal_stubs/tidy.phan_php',
+        'xsl'         => '.phan/internal_stubs/xsl.phan_php',
     ],
 
     // This can be set to a list of extensions to limit Phan to using the reflection information of.

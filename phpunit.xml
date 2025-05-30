@@ -89,6 +89,9 @@
         <testsuite name="PHP83Test">
             <file>tests/Phan/PHP83Test.php</file>
         </testsuite>
+        <testsuite name="PHP84Test">
+            <file>tests/Phan/PHP84Test.php</file>
+        </testsuite>
         <testsuite name="All">
             <directory>tests/Phan</directory>
         </testsuite>
