@@ -98,3 +98,32 @@ pg_result_memory_size(new PgSql\Result());
 pg_set_chunked_rows_size($connection, 10);
 pg_socket_poll('socket', 1, 2);
 pg_socket_poll('socket', 1, 2, 3);
+# Reflection https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.reflection
+$reflector = new ReflectionClass(DateTime::class);
+$reflector->newLazyGhost(function (DateTime $dt) {
+    $dt->__construct('now');
+});
+$reflector->newLazyProxy(function (DateTime $dt): DateTime {
+    return new DateTime($dt->format('c'));
+});
+$reflector->resetAsLazyGhost(new DateTime('now'), function (DateTime $dt) {
+    $dt->__construct('now');
+});
+$reflector->resetAsLazyProxy(new DateTime('now'), function (DateTime $dt): DateTime {
+    return new DateTime($dt->format('c'));
+});
+$reflector->isUninitializedLazyObject(new DateTime('now'));
+$reflector->initializeLazyObject(new DateTime('now'));
+$reflector->markLazyObjectAsInitialized(new DateTime('now'));
+$reflector->getLazyInitializer(new DateTime('now'));
+$reflector = new ReflectionProperty(stdClass::class, 'test');
+$reflector->skipLazyInitialization(new stdClass());
+$reflector->setRawValueWithoutLazyInitialization(new stdClass(), 'data');
+$reflector->isDynamic();
+new ReflectionClassConstant(stdClass::class, 'SOME_CONST')->isDeprecated();
+function gen(): Generator
+{
+    yield 'a';
+    yield 'a';
+}
+new ReflectionGenerator(gen())->isClosed();

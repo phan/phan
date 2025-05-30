@@ -4687,7 +4687,7 @@ class UnionType implements Serializable, Stringable
             if (!$php82_map) {
                 $php82_map = self::computePHP82FunctionSignatureMap($php81_map);
             }
-            if ($target_php_version < 80200) {
+            if ($target_php_version < 80300) {
                 return $php82_map;
             }
 
@@ -4695,7 +4695,7 @@ class UnionType implements Serializable, Stringable
             if (!$php83_map) {
                 $php83_map = self::computePHP83FunctionSignatureMap($php82_map);
             }
-            if ($target_php_version < 80300) {
+            if ($target_php_version < 80400) {
                 return $php83_map;
             }
 
