@@ -1,0 +1,4 @@
+%s:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($options) is 'value' of type 'value' but \request_parse_body() takes ?array
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 ($num) is 1 of type 1 but \bcceil() takes string
+%s:29 PhanTypeMismatchArgumentInternal Argument 1 ($string) is false of type false but \grapheme_str_split() takes string
+%s:42 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is ['value'] of type array{0:'value'} but \mb_ucfirst() takes string
