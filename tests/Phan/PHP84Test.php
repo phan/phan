@@ -27,6 +27,12 @@ final class PHP84Test extends AbstractPhanFileTest
             'UseReturnValuePlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
+        'autoload_internal_extension_signatures' => [
+            'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
+            'soap'        => '.phan/internal_stubs/soap.phan_php',
+            'tidy'        => '.phan/internal_stubs/tidy.phan_php',
+            'xsl'         => '.phan/internal_stubs/xsl.phan_php',
+        ],
     ];
 
     public static function setUpBeforeClass(): void
