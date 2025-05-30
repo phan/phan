@@ -127,3 +127,58 @@ function gen(): Generator
     yield 'a';
 }
 new ReflectionGenerator(gen())->isClosed();
+# Sodium https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.sodium
+sodium_crypto_aead_aegis128l_keygen();
+sodium_crypto_aead_aegis128l_encrypt('message', 'data', 'nonce', 'key');
+sodium_crypto_aead_aegis128l_decrypt('cipher', 'data', 'nonce', 'key');
+# SPL https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.sodium
+new SplObjectStorage()->seek(0);
+# SOAP https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.sodium
+new SoapServer('test.wsdl')->__getLastResponse();
+# Standard https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.standard
+http_get_last_response_headers();
+http_clear_last_response_headers();
+fpow(2, 4);
+fpow(1.2, 5.5);
+$array = [
+    'a' => 'dog',
+    'b' => 'cat',
+    'c' => 'cow',
+    'd' => 'duck',
+    'e' => 'goose',
+    'f' => 'elephant'
+];
+array_all($array, function (string $value): bool {
+    return strlen($value) < 12;
+});
+array_any($array, function (string $value): bool {
+    return strlen($value) > 5;
+});
+array_find($array, function (string $value): bool {
+    return strlen($value) > 4;
+});
+array_find_key($array, function (string $value): bool {
+    return strlen($value) > 4;
+});
+# Tidy https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.tidy
+tidy_parse_string('')->body()->getNextSibling();
+tidy_parse_string('')->body()->getPreviousSibling();
+# XMLReader https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.xmlreader
+XMLReader::fromStream(fopen('/tmp', 'r'));
+XMLReader::fromStream(fopen('/tmp', 'r'), 'UTF-8');
+XMLReader::fromStream(fopen('/tmp', 'r'), 'UTF-8', 8);
+XMLReader::fromStream(fopen('/tmp', 'r'), null, 8);
+XMLReader::fromUri('uri');
+XMLReader::fromUri('uri', 'UTF-8');
+XMLReader::fromUri('uri', 'UTF-8', 8);
+XMLReader::fromUri('uri', null, 8);
+XMLReader::fromString('string');
+XMLReader::fromString('string', 'UTF-8');
+XMLReader::fromString('string', 'UTF-8', 8);
+XMLReader::fromString('string', null, 8);
+# XMLWriter https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.xmlwriter
+XMLWriter::toStream(fopen('/tmp', 'w'));
+XMLWriter::toUri('uri');
+XMLWriter::toMemory();
+# XSL https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.xsl
+new XSLTProcessor()->registerPHPFunctionNS('urn:my.ns', 'uppercase', strtoupper(...));
