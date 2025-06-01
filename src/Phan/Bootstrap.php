@@ -13,6 +13,11 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Library\StringUtil;
 
+// Phan does a ton of GC and this offers a major speed
+// improvement if your system can handle it (which it
+// should be able to)
+gc_disable();
+
 // Listen for all errors
 error_reporting(E_ALL);
 
