@@ -722,7 +722,7 @@ final class IntersectionType extends Type
     }
 
     /**
-     * @suppress PhanPluginUnknownArrayMethodParamType
+     * @param mixed ...$args
      * @no-named-arguments
      */
     private function allTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool

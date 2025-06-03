@@ -77,6 +77,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         $warning_closures = [];
         $inferred_types = [];
         foreach ($method->getParameterList() as $i => $parameter) {
+            $parameter = $parameter->asNonVariadic();
             if ($parameter->getUnionType()->isEmpty()) {
                 $warning_closures[$i] = static function () use ($code_base, $parameter, $method, $i, &$inferred_types): void {
                     $suggestion = self::suggestionFromUnionType($inferred_types[$i] ?? null);
@@ -282,6 +283,7 @@ class UnknownElementTypePlugin extends PluginV3 implements
         $warning_closures = [];
         $inferred_types = [];
         foreach ($function->getParameterList() as $i => $parameter) {
+            $parameter = $parameter->asNonVariadic();
             if ($parameter->getUnionType()->isEmpty()) {
                 if ($function->getFQSEN()->isClosure()) {
                     $issue = 'PhanPluginUnknownClosureParamType';
