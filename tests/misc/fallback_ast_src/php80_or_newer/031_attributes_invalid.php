@@ -2,7 +2,8 @@
 #[MissingAttribute]
 function test31(
     #[MissingAttribute2, MissingAttribute3()]
-    int $argument) {
+    int $argument
+) {
     var_export($argument);
 }
 

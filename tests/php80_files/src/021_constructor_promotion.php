@@ -2,8 +2,8 @@
 // Still not finished
 class ConstructorPromotion21 {
     public function __construct(
-        public int $value, private MissingClass $other = null)
-    {
+        public int $value, private MissingClass $other = null
+    ) {
         echo $value[0];
     }
 }
