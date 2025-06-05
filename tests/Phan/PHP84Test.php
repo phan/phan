@@ -28,6 +28,8 @@ final class PHP84Test extends AbstractPhanFileTest
         ],
         'plugin_config' => ['infer_pure_methods' => true],
         'autoload_internal_extension_signatures' => [
+            'bcmath'      => '.phan/internal_stubs/bcmath.phan_php',
+            'ldap'        => '.phan/internal_stubs/ldap.phan_php',
             'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
             'soap'        => '.phan/internal_stubs/soap.phan_php',
             'tidy'        => '.phan/internal_stubs/tidy.phan_php',
