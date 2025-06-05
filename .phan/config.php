@@ -512,28 +512,21 @@ return [
     // Also see `include_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
     'autoload_internal_extension_signatures' => [
         'ast'         => '.phan/internal_stubs/ast.phan_php',
-        'bcmath'      => '.phan/internal_stubs/bcmath.phan_php',
         'ctype'       => '.phan/internal_stubs/ctype.phan_php',
         'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
-        'intl'        => '.phan/internal_stubs/intl.phan_php',
-        'ldap'        => '.phan/internal_stubs/ldap.phan_php',
         'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
-        'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
-        'pgsql'       => '.phan/internal_stubs/pgsql.phan_php',
         'phar'        => '.phan/internal_stubs/phar.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
         'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
         'soap'        => '.phan/internal_stubs/soap.phan_php',
-        'sockets'     => '.phan/internal_stubs/sockets.phan_php',
         'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
         'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
         'tidy'        => '.phan/internal_stubs/tidy.phan_php',
         'xsl'         => '.phan/internal_stubs/xsl.phan_php',
-        'zip'         => '.phan/internal_stubs/zip.phan_php',
     ],
 
     // This can be set to a list of extensions to limit Phan to using the reflection information of.
