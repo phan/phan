@@ -1,0 +1,8 @@
+src_copy/013_false_true_null.php:8 PhanPluginCanUseNullableReturnType Can use ?bool as a return type of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:8 PhanPluginCanUseParamType Can use bool as the type of parameter $a of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:8 PhanPluginCanUseParamType Can use bool as the type of parameter $b of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:20 PhanPluginCanUseNullableParamType Can use ?float as the type of parameter $c of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseNullableReturnType Can use ?bool as a return type of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseParamType Can use bool as the type of parameter $bool of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseUnionParamType Can use bool|int as the type of parameter $b of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseUnionParamType Can use bool|string as the type of parameter $a of testFalseTrueNullUnion

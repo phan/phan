@@ -1,0 +1,2 @@
+src_copy/014_object.php:6 PhanPluginCanUseParamType Can use object as the type of parameter $o of testObject
+src_copy/014_object.php:6 PhanPluginCanUseReturnType Can use object as a return type of testObject

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
@@ -83,8 +84,7 @@ class ObjectType extends NativeType
 
     public function canUseInRealSignature(): bool
     {
-        // Callers should check this separately if they want to support php 7.2
-        return false;
+        return Config::get_closest_minimum_target_php_version_id() >= 70200;
     }
 
     /** For ObjectType/CallableObjectType  */

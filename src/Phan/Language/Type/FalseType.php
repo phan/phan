@@ -122,7 +122,9 @@ final class FalseType extends ScalarType implements LiteralTypeInterface
      */
     public function asSignatureType(): Type
     {
-        return BoolType::instance($this->is_nullable);
+        return Config::get_closest_minimum_target_php_version_id() >= 80200
+            ? $this
+            : BoolType::instance($this->is_nullable);
     }
 
     /** @return false */

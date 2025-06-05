@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\IssueInstance;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Type;
 use Phan\Library\FileCacheEntry;
 use Phan\Phan;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
@@ -33,9 +35,11 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
     private const CanUsePHP71Void = 'PhanPluginCanUsePHP71Void';
     private const CanUseReturnType = 'PhanPluginCanUseReturnType';
     private const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
+    private const CanUseUnionReturnType = 'PhanPluginCanUseUnionReturnType';
 
     private const CanUseParamType = 'PhanPluginCanUseParamType';
     private const CanUseNullableParamType = 'PhanPluginCanUseNullableParamType';
+    private const CanUseUnionParamType = 'PhanPluginCanUseUnionParamType';
 
     /** @var array<string,Method> */
     private $deferred_analysis_methods = [];
@@ -52,8 +56,10 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             self::CanUsePHP71Void => $return_closure,
             self::CanUseReturnType => $return_closure,
             self::CanUseNullableReturnType => $return_closure,
+            self::CanUseUnionReturnType => $return_closure,
             self::CanUseNullableParamType => $param_closure,
             self::CanUseParamType => $param_closure,
+            self::CanUseUnionParamType => $param_closure,
         ];
     }
 
@@ -108,19 +114,29 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
                 continue;
             }
             $union_type = $phpdoc_param->getNonVariadicUnionType()->asNormalizedTypes();
-            if ($union_type->typeCount() !== 1) {
+            if (
+                $union_type->isEmpty() ||
+                ($union_type->typeCount() > 1 && Config::get_closest_minimum_target_php_version_id() < 80000)
+            ) {
                 continue;
             }
-            $type = $union_type->getTypeSet()[0];
-            if (!$type->canUseInRealSignature()) {
+            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                return !$type->canUseInRealSignature();
+            })) {
                 continue;
+            }
+            if ($union_type->typeCount() > 1) {
+                $issue_type = self::CanUseUnionParamType;
+            } else {
+                $type = $union_type->getTypeSet()[0];
+                $issue_type = $type->isNullableLabeled() ? self::CanUseNullableParamType : self::CanUseParamType;
             }
             self::emitIssue(
                 $code_base,
                 $method->getContext(),
-                $type->isNullable() ? self::CanUseNullableParamType : self::CanUseParamType,
+                $issue_type,
                 'Can use {TYPE} as the type of parameter ${PARAMETER} of {METHOD}',
-                [$type->asSignatureType(), $parameter->getName(), $method->getName()]
+                [$union_type->asSignatureUnionType(), $parameter->getName(), $method->getName()]
             );
         }
     }
@@ -139,19 +155,30 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             return;
         }
         $union_type = $union_type->asNormalizedTypes();
-        if ($union_type->typeCount() !== 1) {
+
+        if (
+            $union_type->isEmpty() ||
+            ($union_type->typeCount() > 1 && Config::get_closest_minimum_target_php_version_id() < 80000)
+        ) {
             return;
         }
-        $type = $union_type->getTypeSet()[0];
-        if (!$type->canUseInRealSignature()) {
+        if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            return !$type->canUseInRealSignature();
+        })) {
             return;
+        }
+        if ($union_type->typeCount() > 1) {
+            $issue_type = self::CanUseUnionReturnType;
+        } else {
+            $type = $union_type->getTypeSet()[0];
+            $issue_type = $type->isNullableLabeled() ? self::CanUseNullableReturnType : self::CanUseReturnType;
         }
         self::emitIssue(
             $code_base,
             $method->getContext(),
-            $type->isNullable() ? self::CanUseNullableReturnType : self::CanUseReturnType,
+            $issue_type,
             'Can use {TYPE} as a return type of {METHOD}',
-            [$type->asSignatureType(), $method->getName()]
+            [$union_type->asSignatureUnionType(), $method->getName()]
         );
     }
 }

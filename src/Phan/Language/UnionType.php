@@ -5033,6 +5033,21 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * Returns the corresponding union type that would be used in a signature
+     */
+    public function asSignatureUnionType(): self
+    {
+        $nonreal_type = $this->eraseRealTypeSet();
+        if ($nonreal_type->containsNullableLabeled() && $nonreal_type->typeCount() > 1) {
+            // Use X|Y|null instead of ?X|?Y
+            $nonreal_type = $nonreal_type->nonNullableClone()->withType(NullType::instance(false));
+        }
+        return $nonreal_type->asMappedUnionType(static function (Type $type): Type {
+            return $type->asSignatureType();
+        });
+    }
+
+    /**
      * @param UnionType[] $union_types
      * @return UnionType union of these UnionTypes
      * @suppress PhanPartialTypeMismatchArgument false positive seen when no real types are known. count() would throw in php 8.0+ for non-countables.
