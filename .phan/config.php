@@ -516,7 +516,6 @@ return [
         'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
         'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
-        'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
         'phar'        => '.phan/internal_stubs/phar.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
