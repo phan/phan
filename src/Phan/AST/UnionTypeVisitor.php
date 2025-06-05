@@ -2849,6 +2849,28 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
 
+            // Handle property hooks (PHP 8.4+)
+            if ($property->hasGetHook()) {
+                // Enter property access tracking for recursion detection
+                $this->context->getPropertyAccessTracker()->enterPropertyAccess($property->getFQSEN());
+
+                try {
+                    // For now, return the hook's return type
+                    // TODO: Analyze the get hook method body
+                    return $property->getUnionTypeWithHook();
+                } catch (\RuntimeException $e) {
+                    // Recursion detected
+                    $this->emitIssue(
+                        Issue::PropertyHookInfiniteRecursion,
+                        $node->lineno,
+                        $property->getName()
+                    );
+                    return UnionType::empty();
+                } finally {
+                    $this->context->getPropertyAccessTracker()->exitPropertyAccess($property->getFQSEN());
+                }
+            }
+
             if ($expr_node instanceof Node &&
                     $expr_node->kind === ast\AST_VAR &&
                     $expr_node->children['name'] === 'this'

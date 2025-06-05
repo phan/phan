@@ -597,7 +597,7 @@ class ParseVisitor extends ScopeVisitor
                     . (clone $this->context)->withLineNumberStart($child_node->lineno)
                 );
             }
-            $this->addProperty(
+            $property = $this->addProperty(
                 $class,
                 $property_name,
                 $default_node,
@@ -610,6 +610,14 @@ class ParseVisitor extends ScopeVisitor
                 $attributes,
                 false
             );
+
+            // Parse property hooks if present (PHP 8.4+)
+            if ($property !== null) {
+                $hooks_node = $child_node->children['hooks'] ?? null;
+                if ($hooks_node instanceof Node && $hooks_node->kind === \ast\AST_STMT_LIST) {
+                    $this->parsePropertyHooks($property, $hooks_node, $class);
+                }
+            }
         }
 
         return $this->context;
@@ -860,6 +868,216 @@ class ParseVisitor extends ScopeVisitor
         }
         return $property;
     }
+
+    /**
+     * Parse property hooks (PHP 8.4+)
+     *
+     * @param Property $property The property to add hooks to
+     * @param Node $hooks_node The AST_STMT_LIST node containing hooks
+     * @param Clazz $class The class containing the property
+     */
+    private function parsePropertyHooks(Property $property, Node $hooks_node, Clazz $class): void
+    {
+        $get_node = null;
+        $set_node = null;
+
+        // Iterate through the children to find get and set hooks
+        foreach ($hooks_node->children as $hook) {
+            if ($hook instanceof Node && $hook->kind === \ast\AST_PROPERTY_HOOK) {
+                $hook_name = $hook->children['name'] ?? null;
+                if ($hook_name === 'get') {
+                    $get_node = $hook;
+                } elseif ($hook_name === 'set') {
+                    $set_node = $hook;
+                }
+            }
+        }
+
+        $uses_backing_value = false;
+
+        if ($get_node instanceof Node) {
+            $get_method = $this->createHookMethod(
+                $property,
+                $get_node,
+                'get',
+                $property->getRealUnionType(), // return type
+                UnionType::empty(),         // no parameters
+                $class
+            );
+            $property->setGetHook($get_method);
+            // Add the hook method to the class so it gets analyzed
+            $class->addMethod($this->code_base, $get_method, None::instance());
+            $uses_backing_value = $uses_backing_value || $this->hookUsesBackingValue($get_node, $property);
+
+            // Mark properties referenced in the hook
+            $this->markPropertiesInHookAsReferenced($get_node, $class);
+        }
+
+        if ($set_node instanceof Node) {
+            // Set hook has a single parameter with the property's type
+            $param_type = $property->getRealUnionType()->isEmpty()
+                ? MixedType::instance(false)->asRealUnionType()
+                : $property->getRealUnionType();
+
+            $set_method = $this->createHookMethod(
+                $property,
+                $set_node,
+                'set',
+                UnionType::fromFullyQualifiedRealString('void'), // void return
+                $param_type,
+                $class
+            );
+            $property->setSetHook($set_method);
+            // Add the hook method to the class so it gets analyzed
+            $class->addMethod($this->code_base, $set_method, None::instance());
+            $uses_backing_value = $uses_backing_value || $this->hookUsesBackingValue($set_node, $property);
+
+            // Mark properties referenced in the hook
+            $this->markPropertiesInHookAsReferenced($set_node, $class);
+        }
+
+        // Property is virtual if it has hooks but doesn't use backing value
+        $property->setIsVirtual(($get_node || $set_node) && !$uses_backing_value);
+        $property->setUsesBackingValue($uses_backing_value);
+    }
+
+    /**
+     * Create a Method instance representing a property hook
+     */
+    private function createHookMethod(
+        Property $property,
+        Node $hook_node,
+        string $hook_type,
+        UnionType $return_type,
+        UnionType $param_type,
+        Clazz $class
+    ): Method
+    {
+        $method_name = '__property_hook_' . $hook_type . '_' . $property->getName();
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class->getFQSEN(),
+            $method_name
+        );
+
+        // Create a method context that inherits the class context and file
+        // Use the line number from the hook node for better tracking
+        $method_context = $this->context
+            ->withFile($property->getContext()->getFile())
+            ->withLineNumberStart($hook_node->lineno ?? 0)
+            ->withScope(new \Phan\Language\Scope\FunctionLikeScope($this->context->getScope(), $method_fqsen))
+            ->withClassFQSEN($class->getFQSEN());
+
+        $method = new Method(
+            $method_context,
+            $method_name,
+            $return_type,
+            \ast\flags\MODIFIER_PUBLIC, // Make it public so it's analyzed
+            $method_fqsen,
+            [] // parameter list will be set below
+        );
+        $method->setRealReturnType($return_type);
+        $method->setNumberOfRequiredParameters($hook_type === 'set' ? 1 : 0);
+
+        if ($hook_type === 'set' && !$param_type->isEmpty()) {
+            $parameter = new Parameter(
+                $method_context,
+                'value',
+                $param_type,
+                0
+            );
+            $method->appendParameter($parameter);
+        }
+
+        // Store the hook's AST for analysis
+        $hook_body = $hook_node->children['stmts'] ?? null;
+
+        if ($hook_body instanceof Node) {
+            // Check if this is a short-form hook (arrow function style)
+            if ($hook_body->kind === \ast\AST_PROPERTY_HOOK_SHORT_BODY) {
+                // For short form hooks (=>), wrap the expression in a return statement
+                $expr = $hook_body->children['expr'] ?? null;
+                if ($expr instanceof Node) {
+                    $return_node = new Node(\ast\AST_RETURN, 0, ['expr' => $expr], $hook_body->lineno ?? 0);
+                    $stmt_list = new Node(\ast\AST_STMT_LIST, 0, [$return_node], $hook_body->lineno ?? 0);
+                    $method->setNode($stmt_list);
+                } else {
+                    // Empty body
+                    $method->setNode(new Node(\ast\AST_STMT_LIST, 0, [], $hook_node->lineno ?? 0));
+                }
+            } else {
+                // Regular hook body - use as is
+                $method->setNode($hook_body);
+            }
+        } else {
+            // No body - create empty statement list
+            $method->setNode(new Node(\ast\AST_STMT_LIST, 0, [], $hook_node->lineno ?? 0));
+        }
+
+        return $method;
+    }
+
+    /**
+     * Check if a hook uses the backing value of the property
+     */
+    private function hookUsesBackingValue(Node $hook_node, Property $property): bool
+    {
+        // TODO: Implement visitor to detect $this->{propertyName} access
+        // For now, return false to mark all hooked properties as virtual
+        return false;
+    }
+
+    /**
+     * Mark properties referenced in a property hook
+     */
+    private function markPropertiesInHookAsReferenced(Node $hook_node, Clazz $class): void
+    {
+        // Get the hook body
+        $hook_body = $hook_node->children['stmts'] ?? null;
+        if (!$hook_body instanceof Node) {
+            return;
+        }
+
+        // For short-form hooks, extract the expression
+        if ($hook_body->kind === \ast\AST_PROPERTY_HOOK_SHORT_BODY) {
+            $expr = $hook_body->children['expr'] ?? null;
+            if ($expr instanceof Node) {
+                $this->markPropertiesInNodeAsReferenced($expr, $class);
+            }
+        } else {
+            // Regular hook body
+            $this->markPropertiesInNodeAsReferenced($hook_body, $class);
+        }
+    }
+
+    /**
+     * Recursively mark properties in an AST node as referenced
+     */
+    private function markPropertiesInNodeAsReferenced(Node $node, Clazz $class): void
+    {
+        if ($node->kind === \ast\AST_PROP) {
+            $expr = $node->children['expr'] ?? null;
+            if ($expr instanceof Node &&
+                $expr->kind === \ast\AST_VAR &&
+                $expr->children['name'] === 'this') {
+                // This is a property access on $this
+                $prop_name = $node->children['prop'];
+                if (is_string($prop_name)) {
+                    // We can't fully track references during parse phase,
+                    // but we can add a note that this property is used in hooks
+                    // This will be used later during analysis
+                    // For now, just continue - the hook methods should handle this during analysis
+                }
+            }
+        }
+
+        // Recursively process children
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                $this->markPropertiesInNodeAsReferenced($child, $class);
+            }
+        }
+    }
+
 
     /**
      * Resolve the union type of a property's default node.

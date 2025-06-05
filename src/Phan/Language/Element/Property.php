@@ -54,6 +54,26 @@ class Property extends ClassElement
     private $default_type;
 
     /**
+     * @var ?Method The get hook implementation (treated as a method internally)
+     */
+    private ?Method $get_hook = null;
+
+    /**
+     * @var ?Method The set hook implementation
+     */
+    private ?Method $set_hook = null;
+
+    /**
+     * @var bool Whether this property has no backing storage
+     */
+    private bool $is_virtual = false;
+
+    /**
+     * @var bool Whether the backing value is accessed in hooks
+     */
+    private bool $uses_backing_value = false;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -540,5 +560,75 @@ class Property extends ClassElement
     public function getDefaultType(): ?UnionType
     {
         return $this->default_type;
+    }
+
+    public function hasGetHook(): bool
+    {
+        return $this->get_hook !== null;
+    }
+
+    public function hasSetHook(): bool
+    {
+        return $this->set_hook !== null;
+    }
+
+    public function isVirtual(): bool
+    {
+        return $this->is_virtual;
+    }
+
+    public function getGetHook(): ?Method
+    {
+        return $this->get_hook;
+    }
+
+    public function getSetHook(): ?Method
+    {
+        return $this->set_hook;
+    }
+
+    public function setGetHook(Method $method): void
+    {
+        $this->get_hook = $method;
+    }
+
+    public function setSetHook(Method $method): void
+    {
+        $this->set_hook = $method;
+    }
+
+    public function setIsVirtual(bool $is_virtual): void
+    {
+        $this->is_virtual = $is_virtual;
+    }
+
+    public function setUsesBackingValue(bool $uses_backing_value): void
+    {
+        $this->uses_backing_value = $uses_backing_value;
+    }
+
+    public function getUsesBackingValue(): bool
+    {
+        return $this->uses_backing_value;
+    }
+
+    /**
+     * Analyze if this property can be used by reference
+     */
+    public function canBeUsedByReference(): bool
+    {
+        // Properties with set hooks cannot be used by reference
+        return !$this->hasSetHook();
+    }
+
+    /**
+     * Get the effective read type (considering get hook)
+     */
+    public function getUnionTypeWithHook(): UnionType
+    {
+        if ($this->hasGetHook()) {
+            return $this->get_hook->getRealReturnType();
+        }
+        return $this->getUnionType();
     }
 }

@@ -101,12 +101,19 @@ class Context extends FileRef
     private $cache = [];
 
     /**
+     * @var PropertyAccessTracker
+     * Tracks property access for recursion detection in property hooks
+     */
+    private $property_access_tracker;
+
+    /**
      * Create a new context
      */
     public function __construct()
     {
         $this->scope = new GlobalScope();
         $this->type_alias_map = new ArrayObject();
+        $this->property_access_tracker = new PropertyAccessTracker();
     }
 
     /**
@@ -1057,5 +1064,13 @@ class Context extends FileRef
             }
         }
         return $result;
+    }
+
+    /**
+     * Get the PropertyAccessTracker for this context
+     */
+    public function getPropertyAccessTracker(): PropertyAccessTracker
+    {
+        return $this->property_access_tracker;
     }
 }

@@ -3058,6 +3058,54 @@ Saw {CODE} exponentiating to a power of type {TYPE} (the result will always be 1
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0761_division_by_zero.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0761_division_by_zero.php#L14).
 
+## PhanPropertyHookArrayAccess
+
+```
+Cannot use array access on property {PROPERTY} with set hook. Use explicit method calls instead
+```
+
+## PhanPropertyHookIncompatibleOverride
+
+```
+Property {PROPERTY} has incompatible type {TYPE}, parent property {PROPERTY} is {TYPE}
+```
+
+## PhanPropertyHookInfiniteRecursion
+
+```
+Infinite recursion detected in property {PROPERTY} hook - hook accesses itself recursively
+```
+
+## PhanPropertyHookInvalidReference
+
+```
+Cannot take reference to property {PROPERTY} with set hook
+```
+
+## PhanPropertyHookMissingImplementation
+
+```
+Property {PROPERTY} must implement {FUNCTION} hook as required by interface {CLASSLIKE}
+```
+
+## PhanPropertyHookTypeMismatch
+
+```
+Property hook returns {TYPE} but property type is {TYPE}
+```
+
+## PhanPropertyReadOnlyWithSetHook
+
+```
+readonly property {PROPERTY} cannot have a set hook
+```
+
+## PhanPropertyVirtualWithDefault
+
+```
+Virtual property {PROPERTY} should not have a default value
+```
+
 ## PhanRedundantCondition
 
 ```

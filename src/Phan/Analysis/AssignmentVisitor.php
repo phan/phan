@@ -1107,6 +1107,69 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node): Context
     {
         $code_base = $this->code_base;
+
+        // Check for readonly property with set hook
+        if ($property->isReadOnlyReal() && $property->hasSetHook()) {
+            $this->emitIssue(
+                Issue::PropertyReadOnlyWithSetHook,
+                $node->lineno,
+                $property->getName()
+            );
+            return $this->context;
+        }
+
+        // Handle property hooks (PHP 8.4+)
+        if ($property->hasSetHook()) {
+            // Cannot use reference with set hook
+            // TODO: Check if this is a reference assignment
+            /* if ($this->isReference()) {
+                $this->emitIssue(
+                    Issue::PropertyHookInvalidReference,
+                    $node->lineno,
+                    $property->getName()
+                );
+                return $this->context;
+            } */
+
+            // Cannot use array access on property with set hook
+            if ($this->dim_depth > 0) {
+                $this->emitIssue(
+                    Issue::PropertyHookArrayAccess,
+                    $node->lineno,
+                    $property->getName()
+                );
+                return $this->context;
+            }
+
+            // Type check the value against the set hook parameter type
+            $set_hook = $property->getSetHook();
+            if ($set_hook !== null) {
+                $param_list = $set_hook->getParameterList();
+                if (!empty($param_list)) {
+                    $param = $param_list[0];
+                    $param_type = $param->getUnionType();
+                    $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
+
+                    if (!$resolved_right_type->canCastToUnionType($param_type, $code_base)) {
+                        $this->emitIssue(
+                            Issue::TypeMismatchArgumentInternal,
+                            $node->lineno,
+                            1,
+                            'value',
+                            $resolved_right_type,
+                            $set_hook->getRepresentationForIssue(),
+                            $param_type
+                        );
+                    }
+                }
+
+                // TODO: Analyze set hook body for side effects
+            }
+
+            // Don't modify the property type when it has a set hook
+            return $this->context;
+        }
+
         if ($property->isReadOnly()) {
             $this->analyzeAssignmentToReadOnlyProperty($property, $node);
         }

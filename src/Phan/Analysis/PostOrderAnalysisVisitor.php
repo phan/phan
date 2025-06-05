@@ -3768,6 +3768,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // this context
             if (Config::get_track_references()) {
                 $this->trackPropertyReference($property, $node);
+
+                // If this property has hooks, mark it as having a read reference
+                // (the actual read/write tracking happens via the hooks)
+                if ($property->hasGetHook() || $property->hasSetHook()) {
+                    $property->setHasReadReference();
+                }
             }
         } catch (IssueException $exception) {
             // We'll check out some reasons it might not exist

@@ -1,0 +1,5 @@
+%s:4 PhanUnreferencedPrivateProperty Possibly zero references to private property \User->firstName
+%s:5 PhanUnreferencedPrivateProperty Possibly zero references to private property \User->lastName
+%s:17 PhanUnreferencedPrivateProperty Possibly zero references to private property \Temperature->kelvin
+%s:19 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Temperature->celsius
+%s:24 PhanReadOnlyPublicProperty Possibly zero write references to public property \Temperature->fahrenheit

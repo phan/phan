@@ -670,6 +670,17 @@ class Issue
     public const CommentUnextractableTypeAlias    = 'PhanCommentUnextractableTypeAlias';
     public const TypeAliasUsedOutsideComment      = 'PhanTypeAliasUsedOutsideComment';
     public const TypeAliasInternalTypeConflict    = 'PhanTypeAliasInternalTypeConflict';
+
+    // Property hook issues
+    public const PropertyHookInfiniteRecursion = 'PhanPropertyHookInfiniteRecursion';
+    public const PropertyHookTypeMismatch = 'PhanPropertyHookTypeMismatch';
+    public const PropertyHookMissingImplementation = 'PhanPropertyHookMissingImplementation';
+    public const PropertyHookInvalidReference = 'PhanPropertyHookInvalidReference';
+    public const PropertyHookArrayAccess = 'PhanPropertyHookArrayAccess';
+    public const PropertyHookIncompatibleOverride = 'PhanPropertyHookIncompatibleOverride';
+    public const PropertyVirtualWithDefault = 'PhanPropertyVirtualWithDefault';
+    public const PropertyReadOnlyWithSetHook = 'PhanPropertyReadOnlyWithSetHook';
+
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -2700,6 +2711,71 @@ class Issue
                 "{CODE} of type {TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10151
+            ),
+            // Property hook issues (PHP 8.4+)
+            new Issue(
+                self::PropertyHookInfiniteRecursion,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Infinite recursion detected in property {PROPERTY} hook - hook accesses itself recursively",
+                self::REMEDIATION_A,
+                10188
+            ),
+            new Issue(
+                self::PropertyHookTypeMismatch,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Property hook returns {TYPE} but property type is {TYPE}",
+                self::REMEDIATION_B,
+                10189
+            ),
+            new Issue(
+                self::PropertyHookMissingImplementation,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Property {PROPERTY} must implement {FUNCTION} hook as required by interface {CLASSLIKE}",
+                self::REMEDIATION_B,
+                10190
+            ),
+            new Issue(
+                self::PropertyHookInvalidReference,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Cannot take reference to property {PROPERTY} with set hook",
+                self::REMEDIATION_B,
+                10191
+            ),
+            new Issue(
+                self::PropertyHookArrayAccess,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Cannot use array access on property {PROPERTY} with set hook. Use explicit method calls instead",
+                self::REMEDIATION_B,
+                10192
+            ),
+            new Issue(
+                self::PropertyHookIncompatibleOverride,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Property {PROPERTY} has incompatible type {TYPE}, parent property {PROPERTY} is {TYPE}",
+                self::REMEDIATION_B,
+                10193
+            ),
+            new Issue(
+                self::PropertyVirtualWithDefault,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Virtual property {PROPERTY} should not have a default value",
+                self::REMEDIATION_B,
+                10194
+            ),
+            new Issue(
+                self::PropertyReadOnlyWithSetHook,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "readonly property {PROPERTY} cannot have a set hook",
+                self::REMEDIATION_A,
+                10195
             ),
             new Issue(
                 self::ImpossibleCondition,

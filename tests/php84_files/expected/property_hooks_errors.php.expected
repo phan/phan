@@ -1,0 +1,10 @@
+%s:4 PhanUnreferencedClass Possibly zero references to class \RecursionTest
+%s:5 PhanUnreferencedPublicProperty Possibly zero references to public property \RecursionTest->prop
+%s:11 PhanUnreferencedClass Possibly zero references to class \TypeMismatchTest
+%s:12 PhanUnreferencedPublicProperty Possibly zero references to public property \TypeMismatchTest->count
+%s:24 PhanUnreferencedFunction Possibly zero references to function \testReference()
+%s:25 PhanUnusedVariableReference Unused definition of variable $ref as a reference
+%s:30 PhanPluginUnknownArrayPropertyType Property \ArrayAccessTest->items has an array type, but does not specify any key types or value types (Types inferred after analysis: array|non-empty-array<int,string>)
+%s:30 PhanWriteOnlyPublicProperty Possibly zero read references to public property \ArrayAccessTest->items
+%s:39 PhanUnreferencedClass Possibly zero references to class \ReadOnlyTest
+%s:40 PhanUnreferencedPublicProperty Possibly zero references to public property \ReadOnlyTest->setting
