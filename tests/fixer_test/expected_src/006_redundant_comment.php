@@ -16,6 +16,9 @@ $doubles_input =
 var_export($doubles_input(21));
 
 class C {
+    public function __construct( int $a, string $b, ?bool $c ) {
+        echo $c ? $a : $b;
+    }
     public static function f($value) : void {
         var_export($value);
     }

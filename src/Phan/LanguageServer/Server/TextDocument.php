@@ -46,10 +46,6 @@ class TextDocument
      */
     protected $file_mapping;
 
-    /**
-     * @param LanguageClient $client
-     * @param FileMapping $file_mapping
-     */
     public function __construct(
         LanguageClient $client,
         LanguageServer $server,

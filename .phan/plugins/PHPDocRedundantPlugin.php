@@ -45,7 +45,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
 
     public function analyzeMethod(CodeBase $code_base, Method $method): void
     {
-        if ($method->isMagic() || $method->isPHPInternal()) {
+        if ($method->isPHPInternal()) {
             return;
         }
         if ($method->getFQSEN() !== $method->getDefiningFQSEN()) {

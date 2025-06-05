@@ -5938,7 +5938,6 @@ class Issue
 
     /**
      * @param list<mixed> $template_parameters
-     * @return IssueInstance
      */
     public function __invoke(
         string $file,

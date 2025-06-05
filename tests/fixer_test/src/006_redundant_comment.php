@@ -22,6 +22,14 @@ var_export($doubles_input(21));
 
 class C {
     /**
+     * @param int $a
+     * @param string $b
+     * @param bool|null $c
+     */
+    public function __construct( int $a, string $b, ?bool $c ) {
+        echo $c ? $a : $b;
+    }
+    /**
      *
      */
     public static function f($value) : void {
