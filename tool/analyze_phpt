@@ -46,13 +46,13 @@ class AnalyzePhpt {
     Options:
       -h, --help: Print this help message to stdout.
       -p, --progress-bar: Show a progress bar.
-      --target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,native}
+      --target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,8.2,8.3,8.4,native}
        The PHP version that the codebase will be checked for compatibility against.
        For best results, the PHP binary used to run Phan should have the same PHP version.
        (Phan relies on Reflection for some param counts
         and checks for undefined classes/methods/functions)
 
-      --minimum-target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,native}
+      --minimum-target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,8.2,8.3,8.4,native}
        The PHP version that will be used for feature/syntax compatibility warnings.
       --add-parse-file: Add a path to a file to parse but not analyze.
       --color, --no-color: Add or remove colors from the outputted issues.
