@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -219,7 +220,7 @@ final class NeverType extends NativeType
     // TODO: Emit an issue if used for a parameter/property type.
     public function canUseInRealSignature(): bool
     {
-        return true;
+        return Config::get_closest_minimum_target_php_version_id() >= 80100;
     }
 
     public function asScalarType(): ?Type

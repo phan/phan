@@ -98,6 +98,10 @@ final class NonNullMixedType extends MixedType
         return NonEmptyMixedType::instance(false);
     }
 
+    public function asSignatureType(): Type {
+        return MixedType::instance(false);
+    }
+
     /** @override */
     public function isNullable(): bool
     {

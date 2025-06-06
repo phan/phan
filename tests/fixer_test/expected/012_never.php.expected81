@@ -1,0 +1,1 @@
+src_copy/012_never.php:5 PhanPluginCanUseReturnType Can use never as a return type of testNever

@@ -230,7 +230,7 @@ final class NullType extends ScalarType implements LiteralTypeInterface
 
     public function canUseInRealSignature(): bool
     {
-        return false;
+        return Config::get_closest_minimum_target_php_version_id() >= 80200;
     }
 
     public function asScalarType(): ?Type

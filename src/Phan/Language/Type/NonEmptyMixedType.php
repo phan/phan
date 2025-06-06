@@ -115,6 +115,10 @@ final class NonEmptyMixedType extends MixedType
         return $this->is_nullable ? $this->withIsNullable(false) : $this;
     }
 
+    public function asSignatureType(): Type {
+        return MixedType::instance(false);
+    }
+
     /** @override */
     public function isNullable(): bool
     {

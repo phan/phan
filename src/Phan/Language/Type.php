@@ -4222,7 +4222,7 @@ class Type implements Stringable
 
     /**
      * Returns true if this type or a parent type can be used in a signature.
-     * Returns false for template types, resources, object, etc.
+     * Returns false for template types, resources, etc.
      */
     public function canUseInRealSignature(): bool
     {
