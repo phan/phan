@@ -7,7 +7,6 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Method;
-use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\FloatType;
@@ -17,22 +16,25 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Tests\BaseTest;
-use ast\Node;
 
+/**
+ * Test PHP 8.4 property hooks
+ */
 class PropertyHookTest extends BaseTest {
-    
+
     /**
      * Test basic property hook functionality
+     * @throws \Phan\Exception\FQSENException
      */
     public function testBasicPropertyHooks(): void {
         $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         // Create a test class
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
         $class = new Clazz($context, 'TestClass', UnionType::empty(), 0, $class_fqsen);
         $code_base->addClass($class);
-        
+
         // Create a property with hooks
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'testProperty');
         $property = new Property(
@@ -43,7 +45,7 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             StringType::instance(false)->asRealUnionType()
         );
-        
+
         // Create a get hook
         $get_method = new Method(
             $context,
@@ -55,23 +57,22 @@ class PropertyHookTest extends BaseTest {
         );
         $get_method->setRealReturnType(StringType::instance(false)->asRealUnionType());
         $property->setGetHook($get_method);
-        
+
         // Test that property has get hook
         $this->assertTrue($property->hasGetHook());
         $this->assertFalse($property->hasSetHook());
         $this->assertSame($get_method, $property->getGetHook());
     }
-    
+
     /**
      * Test property with both get and set hooks
+     * @throws \Phan\Exception\FQSENException
      */
     public function testGetAndSetHooks(): void {
-        $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
-        $class = new Clazz($context, 'TestClass', UnionType::empty(), 0, $class_fqsen);
-        
+
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'price');
         $property = new Property(
             $context,
@@ -81,7 +82,7 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             FloatType::instance(false)->asRealUnionType()
         );
-        
+
         // Create get hook
         $get_method = new Method(
             $context,
@@ -93,7 +94,7 @@ class PropertyHookTest extends BaseTest {
         );
         $get_method->setRealReturnType(FloatType::instance(false)->asRealUnionType());
         $property->setGetHook($get_method);
-        
+
         // Create set hook with value parameter
         $value_param = new \Phan\Language\Element\Parameter(
             $context,
@@ -111,24 +112,24 @@ class PropertyHookTest extends BaseTest {
         );
         $set_method->setRealReturnType(VoidType::instance(false)->asRealUnionType());
         $property->setSetHook($set_method);
-        
+
         // Test that property has both hooks
         $this->assertTrue($property->hasGetHook());
         $this->assertTrue($property->hasSetHook());
         $this->assertSame($get_method, $property->getGetHook());
         $this->assertSame($set_method, $property->getSetHook());
     }
-    
+
     /**
      * Test virtual property (no backing storage)
+     * @throws \Phan\Exception\FQSENException
      */
     public function testVirtualProperty(): void {
-        $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'virtualProp');
-        
+
         $property = new Property(
             $context,
             'virtualProp',
@@ -137,23 +138,23 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             UnionType::empty()
         );
-        
+
         // Set as virtual
         $property->setIsVirtual(true);
-        
+
         $this->assertTrue($property->isVirtual());
     }
-    
+
     /**
      * Test property reference restrictions with set hook
+     * @throws \Phan\Exception\FQSENException
      */
     public function testCanBeUsedByReference(): void {
-        $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'prop');
-        
+
         $property = new Property(
             $context,
             'prop',
@@ -162,10 +163,10 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             UnionType::empty()
         );
-        
+
         // Without set hook, can be used by reference
         $this->assertTrue($property->canBeUsedByReference());
-        
+
         // Add set hook
         $value_param = new \Phan\Language\Element\Parameter(
             $context,
@@ -183,21 +184,21 @@ class PropertyHookTest extends BaseTest {
         );
         $set_method->setRealReturnType(VoidType::instance(false)->asRealUnionType());
         $property->setSetHook($set_method);
-        
+
         // With set hook, cannot be used by reference
         $this->assertFalse($property->canBeUsedByReference());
     }
-    
+
     /**
      * Test getUnionTypeWithHook returns hook return type
+     * @throws \Phan\Exception\FQSENException
      */
     public function testGetUnionTypeWithHook(): void {
-        $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'computed');
-        
+
         // Property declared as string
         $property = new Property(
             $context,
@@ -207,7 +208,7 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             StringType::instance(false)->asRealUnionType()
         );
-        
+
         // Get hook returns int
         $get_method = new Method(
             $context,
@@ -219,23 +220,23 @@ class PropertyHookTest extends BaseTest {
         );
         $get_method->setRealReturnType(IntType::instance(false)->asRealUnionType());
         $property->setGetHook($get_method);
-        
+
         // getUnionTypeWithHook should return the hook's return type
         $hook_type = $property->getUnionTypeWithHook();
         $this->assertTrue($hook_type->hasType(IntType::instance(false)));
         $this->assertFalse($hook_type->hasType(StringType::instance(false)));
     }
-    
+
     /**
      * Test backing value usage tracking
+     * @throws \Phan\Exception\FQSENException
      */
     public function testBackingValueUsage(): void {
-        $code_base = new CodeBase([], [], [], [], []);
         $context = new Context();
-        
+
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\TestClass');
         $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'prop');
-        
+
         $property = new Property(
             $context,
             'prop',
@@ -244,14 +245,14 @@ class PropertyHookTest extends BaseTest {
             $property_fqsen,
             UnionType::empty()
         );
-        
+
         // Test default
         $this->assertFalse($property->getUsesBackingValue());
-        
+
         // Set uses backing value
         $property->setUsesBackingValue(true);
         $this->assertTrue($property->getUsesBackingValue());
-        
+
         // When using backing value, property should not be virtual
         $property->setIsVirtual(false);
         $this->assertFalse($property->isVirtual());

@@ -2858,7 +2858,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // For now, return the hook's return type
                     // TODO: Analyze the get hook method body
                     return $property->getUnionTypeWithHook();
-                } catch (\RuntimeException $e) {
+                } catch (\RuntimeException $_) {
                     // Recursion detected
                     $this->emitIssue(
                         Issue::PropertyHookInfiniteRecursion,

@@ -907,7 +907,7 @@ class ParseVisitor extends ScopeVisitor
             $property->setGetHook($get_method);
             // Add the hook method to the class so it gets analyzed
             $class->addMethod($this->code_base, $get_method, None::instance());
-            $uses_backing_value = $uses_backing_value || $this->hookUsesBackingValue($get_node, $property);
+            $uses_backing_value = $this->hookUsesBackingValue($get_node, $property);
 
             // Mark properties referenced in the hook
             $this->markPropertiesInHookAsReferenced($get_node, $class);
@@ -964,8 +964,7 @@ class ParseVisitor extends ScopeVisitor
         $method_context = $this->context
             ->withFile($property->getContext()->getFile())
             ->withLineNumberStart($hook_node->lineno ?? 0)
-            ->withScope(new \Phan\Language\Scope\FunctionLikeScope($this->context->getScope(), $method_fqsen))
-            ->withClassFQSEN($class->getFQSEN());
+            ->withScope(new \Phan\Language\Scope\FunctionLikeScope($this->context->getScope(), $method_fqsen));
 
         $method = new Method(
             $method_context,
@@ -985,7 +984,7 @@ class ParseVisitor extends ScopeVisitor
                 $param_type,
                 0
             );
-            $method->appendParameter($parameter);
+            $method->setRealParameterList([$parameter]);
         }
 
         // Store the hook's AST for analysis
@@ -1018,6 +1017,7 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * Check if a hook uses the backing value of the property
+     * @suppress PhanPluginPossiblyStaticPrivateMethod,PhanUnusedPrivateMethodParameter
      */
     private function hookUsesBackingValue(Node $hook_node, Property $property): bool
     {
@@ -1028,6 +1028,7 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * Mark properties referenced in a property hook
+     * @suppress PhanPluginUseReturnValueNoopVoid
      */
     private function markPropertiesInHookAsReferenced(Node $hook_node, Clazz $class): void
     {
@@ -1051,6 +1052,7 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * Recursively mark properties in an AST node as referenced
+     * @suppress PhanPluginUseReturnValueNoopVoid,PhanPluginEmptyStatementIf
      */
     private function markPropertiesInNodeAsReferenced(Node $node, Clazz $class): void
     {

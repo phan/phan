@@ -56,22 +56,22 @@ class Property extends ClassElement
     /**
      * @var ?Method The get hook implementation (treated as a method internally)
      */
-    private ?Method $get_hook = null;
+    private $get_hook = null;
 
     /**
      * @var ?Method The set hook implementation
      */
-    private ?Method $set_hook = null;
+    private $set_hook = null;
 
     /**
      * @var bool Whether this property has no backing storage
      */
-    private bool $is_virtual = false;
+    private $is_virtual = false;
 
     /**
      * @var bool Whether the backing value is accessed in hooks
      */
-    private bool $uses_backing_value = false;
+    private $uses_backing_value = false;
 
     /**
      * @param Context $context
@@ -623,6 +623,7 @@ class Property extends ClassElement
 
     /**
      * Get the effective read type (considering get hook)
+     * @suppress PhanPossiblyNonClassMethodCall
      */
     public function getUnionTypeWithHook(): UnionType
     {

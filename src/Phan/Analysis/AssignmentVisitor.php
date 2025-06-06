@@ -1156,9 +1156,11 @@ class AssignmentVisitor extends AnalysisVisitor
                             $node->lineno,
                             1,
                             'value',
+                            $property->getName(),
                             $resolved_right_type,
                             $set_hook->getRepresentationForIssue(),
-                            $param_type
+                            $param_type,
+
                         );
                     }
                 }
