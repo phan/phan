@@ -49,6 +49,7 @@ class PropertyAccessTracker
 
     /**
      * Reset the access stack (e.g., when entering a new function)
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function reset(): void
     {
@@ -57,6 +58,7 @@ class PropertyAccessTracker
 
     /**
      * Check if a property is currently being accessed
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isPropertyBeingAccessed(FullyQualifiedPropertyName $fqsen): bool
     {

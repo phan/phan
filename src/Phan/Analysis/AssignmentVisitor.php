@@ -1159,8 +1159,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $property->getName(),
                             $resolved_right_type,
                             $set_hook->getRepresentationForIssue(),
-                            $param_type,
-
+                            $param_type
                         );
                     }
                 }
