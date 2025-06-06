@@ -749,9 +749,12 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * Computes the non-nullable union of two or more array shape types.
+     * Computes the union of two or more array shape types. Elements are considered to be possibly undefined iff
+     * they are possibly undefined in all of the types.
      *
-     * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
+     * E.g.
+     * array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
+     * array{0?: string,1:int,2?:bool} + array{0:int,1?:int,2?:float} === array{0:int|string,1:int,2?:bool|float}
      * @param list<ArrayShapeType> $array_shape_types
      */
     public static function union(array $array_shape_types): ArrayShapeType
@@ -769,10 +772,16 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             foreach ($type->field_types as $key => $union_type) {
                 $old_union_type = $field_types[$key] ?? null;
                 if ($old_union_type === null) {
-                    $field_types[$key] = $union_type;
-                    continue;
+                    // The new type is possibly undefined iff the current type is.
+                    $new_union_type = $union_type;
+                } else {
+                    $new_union_type = $old_union_type->withUnionType($union_type);
+                    if ($old_union_type->isPossiblyUndefined() && $union_type->isPossiblyUndefined()) {
+                        $new_union_type = $new_union_type->withIsPossiblyUndefined(true);
+                    }
+                    // Else we're good because the type returned by `withUnionType` is never possibly undefined.
                 }
-                $field_types[$key] = $old_union_type->withUnionType($union_type);
+                $field_types[$key] = $new_union_type;
             }
         }
         return self::fromFieldTypes($field_types, false);
