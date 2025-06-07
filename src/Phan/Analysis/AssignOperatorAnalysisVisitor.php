@@ -119,7 +119,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 )
             );
             $variable->setUnionType($get_type($variable->getUnionType()));
-            return $this->context->withScopeVariable($variable);
+            $this->context->addScopeVariable($variable);
+            return $this->context;
         }
 
         if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
@@ -141,7 +142,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $get_type(NullType::instance(false)->asPHPDocUnionType()),
             0
         );
-        return $this->context->withScopeVariable($variable);
+        $this->context->addScopeVariable($variable);
+        return $this->context;
     }
 
     /**
