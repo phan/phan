@@ -429,7 +429,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     public function getTypeAfterIncOrDec(): UnionType
     {
         $v = $this->value;
-        ++$v;
+        if (is_numeric($v)) {
+            ++$v;
+        }
         return Type::nonLiteralFromObject($v)->asPHPDocUnionType();
     }
 
