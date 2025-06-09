@@ -1,9 +1,34 @@
 Phan NEWS
 
-??? ?? 202?, Phan 5.4.6 (dev)
+June 8 2025, Phan 5.4.6
 -----------------------
+New features(CLI, Configs):
+- Allow passing `--minimum-target-php-version=native` from the command line. [#4939](https://github.com/phan/phan/pull/4939)
+
+Bug fixes:
+- Fix type of the `$gc` argument to `session_set_save_handler` [#4891](https://github.com/phan/phan/pull/4891)
+- Update various `IntlDateFormatter` signatures [#4898](https://github.com/phan/phan/issues/4898)
+- Fix various false positives when using `enable_class_alias_support` and two aliases refer to each other [#4897](https://github.com/phan/phan/pull/4897)
+- Fix deprecation warnings when using the CSV printer in PHP 8.4 [#4913](https://github.com/phan/phan/pull/4913)
+- Fix false positive `PhanParamTooFewInternal` with `exit()` in PHP 8.4 [#4888](https://github.com/phan/phan/issues/4888)
+- Fix edge case false positives for inferred type of properties of `$this` [#4916](https://github.com/phan/phan/issues/4916)
+- Fix false positive `PhanPossiblyUndeclaredVariable` in loops when append operators are used [#4885](https://github.com/phan/phan/issues/4885)
+- Fix crash in PHP >= 8.3 due to increment or decrement on non-literal strings [#4860](https://github.com/phan/phan/issues/4860)
+
+Plugins:
+- Fix `dir()` and `getdir()` being reversed in DeprecateAliasPlugin [#4882](https://github.com/phan/phan/pull/4882)
+- Make PHPDocRedundantPlugin handle magic methods [#4931](https://github.com/phan/phan/pull/4931)
+- Fix UnknownElementTypePlugin flagging variadic parameters with `mixed` type [#4927](https://github.com/phan/phan/issues/4927)
+- Update PHPDocToRealTypesPlugin for PHP 8 [#4936](https://github.com/phan/phan/pull/4936)
+
 Miscellaneous:
-- Require php-ast 1.1.2 or newer in PHP 8.4+ if php-ast is installed.
+- Require php-ast 1.1.2 or newer in PHP 8.4+ if php-ast is installed. [#4895](https://github.com/phan/phan/pull/4895)
+- Support automatically setting target PHP version from composer.json for PHP >= 8.2 [#4903](https://github.com/phan/phan/pull/4903), [#4940](https://github.com/phan/phan/pull/4940)
+- Allow netresearch/jsonmapper ^5.0 [#4901](https://github.com/phan/phan/issues/4901)
+- Update tests for PHP 8.4 [#4902](https://github.com/phan/phan/pull/4902), [#4907](https://github.com/phan/phan/pull/4907), [#4909](https://github.com/phan/phan/pull/4909), [#4911](https://github.com/phan/phan/pull/4911)
+  [#4912](https://github.com/phan/phan/pull/4912), [#4917](https://github.com/phan/phan/pull/4917), [#4923](https://github.com/phan/phan/pull/4923), [#4925](https://github.com/phan/phan/pull/4925), [#4934](https://github.com/phan/phan/pull/4934)
+- Support analyzing `exit()` in PHP 8.4 [#4908](https://github.com/phan/phan/pull/4908)
+- Consistently disable the garbage collector for all entry points [#4928](https://github.com/phan/phan/pull/4928)
 
 Aug 13 2024, Phan 5.4.5
 -----------------------
