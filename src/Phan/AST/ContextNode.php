@@ -2658,7 +2658,7 @@ class ContextNode
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
      */
-    public function getEquivalentPHPValueForNode($node, int $flags)
+    public function getEquivalentPHPValueForNode($node, int $flags, bool $should_catch_issue_exception = true)
     {
         if (!($node instanceof Node)) {
             return $node;
@@ -2700,7 +2700,9 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~(self::RESOLVE_CONSTANTS | self::RESOLVE_ONLY_CONSTANT_VARS | self::RESOLVE_DONT_USE_VARS));
+                    $recursiveFlags = $flags & ~(self::RESOLVE_CONSTANTS | self::RESOLVE_ONLY_CONSTANT_VARS | self::RESOLVE_DONT_USE_VARS);
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))
+                        ->getEquivalentPHPValueForNode($new_node, $recursiveFlags, $should_catch_issue_exception);
                 }
                 return $new_node;
             case ast\AST_CLASS_CONST:
@@ -2716,7 +2718,8 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))
+                        ->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS, $should_catch_issue_exception);
                 }
                 return $new_node;
             case ast\AST_CLASS_NAME:
@@ -2773,7 +2776,8 @@ class ContextNode
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node
+            $node,
+            $should_catch_issue_exception
         );
         $value = $node_type->asValueOrNullOrSelf();
         if (\is_object($value)) {
@@ -2981,9 +2985,9 @@ class ContextNode
      *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
      *   Otherwise, this returns $node.
      */
-    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT)
+    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT, bool $should_catch_issue_exception = true)
     {
-        return $this->getEquivalentPHPValueForNode($this->node, $flags);
+        return $this->getEquivalentPHPValueForNode($this->node, $flags, $should_catch_issue_exception);
     }
 
     /**
@@ -3016,8 +3020,12 @@ class ContextNode
      *
      * @suppress PhanPartialTypeMismatchReturn the flags prevent this from returning an array
      */
-    public function getEquivalentPHPScalarValue()
+    public function getEquivalentPHPScalarValue(bool $should_catch_issue_exception = true)
     {
-        return $this->getEquivalentPHPValueForNode($this->node, self::RESOLVE_SCALAR_DEFAULT);
+        return $this->getEquivalentPHPValueForNode(
+            $this->node,
+            self::RESOLVE_SCALAR_DEFAULT,
+            $should_catch_issue_exception
+        );
     }
 }

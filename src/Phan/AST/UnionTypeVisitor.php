@@ -836,7 +836,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return null;
                 }
             }
-            $result = (new ContextNode($code_base, $context, $node))->getEquivalentPHPValue();
+            $result = (new ContextNode($code_base, $context, $node))->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, false);
 
             if ($result instanceof Node) {
                 return null;
@@ -1347,7 +1347,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($context_node === null) {
                     $context_node = new ContextNode($this->code_base, $this->context, null);
                 }
-                $key_node = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
+                $key_node = $context_node->getEquivalentPHPValueForNode(
+                    $key_node,
+                    ContextNode::RESOLVE_CONSTANTS,
+                    $this->should_catch_issue_exception
+                );
                 if (\is_object($key_node)) {
                     return null;
                 }
@@ -2041,7 +2045,12 @@ class UnionTypeVisitor extends AnalysisVisitor
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type): ?UnionType
     {
         $dim_node = $node->children['dim'];
-        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+        if ($dim_node instanceof Node) {
+            $dim_value = (new ContextNode($this->code_base, $this->context, $dim_node))
+                ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
+        } else {
+            $dim_value = $dim_node;
+        }
         // TODO: detect and warn about null
         $has_non_empty_array = false;
         $check_invalid_dim = !($node->flags & self::FLAG_IGNORE_NULLABLE);
@@ -4042,7 +4051,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($method_name instanceof Node)) {
                 $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
             }
-            $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
+            $method_name = (new ContextNode($code_base, $context, $method_name))
+                ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
             if (!is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name, $this->should_catch_issue_exception);
                 if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
@@ -4176,7 +4186,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $orig_node = $node;
         if ($node instanceof Node) {
-            $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
+            $node = (new ContextNode($this->code_base, $this->context, $node))
+                ->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, $this->should_catch_issue_exception);
         }
         if (is_string($node)) {
             if (strpos($node, '::') !== false) {
