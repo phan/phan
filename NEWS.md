@@ -1,7 +1,10 @@
 Phan NEWS
 
-June 8 2025, Phan 5.4.6
+June 9 2025, Phan 5.4.6
 -----------------------
+New features(Analysis):
+- Infer that `json_encode` always returns a string in PHP >= 7.3 when `JSON_THROW_ON_ERROR` is used [#4946](https://github.com/phan/phan/pull/4946)
+
 New features(CLI, Configs):
 - Allow passing `--minimum-target-php-version=native` from the command line. [#4939](https://github.com/phan/phan/pull/4939)
 
@@ -12,7 +15,7 @@ Bug fixes:
 - Fix deprecation warnings when using the CSV printer in PHP 8.4 [#4913](https://github.com/phan/phan/pull/4913)
 - Fix false positive `PhanParamTooFewInternal` with `exit()` in PHP 8.4 [#4888](https://github.com/phan/phan/issues/4888)
 - Fix edge case false positives for inferred type of properties of `$this` [#4916](https://github.com/phan/phan/issues/4916)
-- Fix false positive `PhanPossiblyUndeclaredVariable` in loops when append operators are used [#4885](https://github.com/phan/phan/issues/4885)
+- Fix false positive `PhanPossiblyUndeclaredVariable` in loops when redundant condition detection is enabled [#4885](https://github.com/phan/phan/issues/4885), [#4617](https://github.com/phan/phan/issues/4617)
 - Fix crash in PHP >= 8.3 due to increment or decrement on non-literal strings [#4860](https://github.com/phan/phan/issues/4860)
 
 Plugins:
