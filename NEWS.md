@@ -1,5 +1,8 @@
 Phan NEWS
 
+??? ?? 202?, Phan 5.4.7 (dev)
+-----------------------
+
 June 9 2025, Phan 5.4.6
 -----------------------
 New features(Analysis):
