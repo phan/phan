@@ -55,6 +55,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $string_union_type_with_null_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', '?string');
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
+        $string_or_false_real_type = UnionType::fromFullyQualifiedRealString('string|false');
         $void_union_type = VoidType::instance(false)->asPHPDocUnionType();
         $nullable_string_union_type = StringType::instance(true)->asPHPDocUnionType();
         $float_union_type = FloatType::instance(false)->asPHPDocUnionType();
@@ -196,6 +197,33 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return ($options_result & \JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
         };
 
+        /**
+         * @param Func $function @phan-unused-param
+         * @param list<Node|int|float|string> $args
+         */
+        $json_encode_return_type_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use (
+            $string_or_false_real_type,
+            $string_union_type_real
+        ): UnionType {
+            // string|false json_encode ( mixed $value [, int $flags = 0 [, int $depth = 512 ]] )
+            // TODO: reject `...` operator? (Low priority)
+            if (count($args) < 2 || Config::get_closest_minimum_target_php_version_id() < 70300) {
+                return $string_or_false_real_type;
+            }
+            $resolved_flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+            if (!is_int($resolved_flags)) {
+                // unable to resolve value. TODO: Support bitmask operators in getEquivalentPHPScalarValue
+                return $string_or_false_real_type;
+            }
+            $throwOnError = defined('JSON_THROW_ON_ERROR') ? JSON_THROW_ON_ERROR : 4194304;
+            return ($resolved_flags & $throwOnError) !== 0 ? $string_union_type_real : $string_or_false_real_type;
+        };
+
         $str_replace_types = UnionType::fromFullyQualifiedPHPDocString('string|string[]');
         $str_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
 
@@ -225,7 +253,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $has_array ? $str_array_type : $str_replace_types;
         };
-        $string_or_false = UnionType::fromFullyQualifiedRealString('string|false');
         /**
          * @param list<Node|int|float|string> $args
          */
@@ -234,11 +261,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Context $unused_context,
             Func $unused_function,
             array $args
-        ) use ($string_or_false): UnionType {
+        ) use ($string_or_false_real_type): UnionType {
             if (count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
                 return UnionType::fromFullyQualifiedPHPDocString('array<string,string>');
             }
-            return $string_or_false;
+            return $string_or_false_real_type;
         };
         /**
          * @param list<Node|int|float|string> $args
@@ -249,7 +276,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args
         ) use (
-            $string_or_false,
+            $string_or_false_real_type,
             $string_union_type_with_false_in_real,
             $string_union_type_real
         ): UnionType {
@@ -265,7 +292,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type_with_false_in_real;
             }
-            return $string_or_false;
+            return $string_or_false_real_type;
         };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
@@ -380,14 +407,14 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Context $context,
             Func $function,
             array $args
-        ): UnionType {
+        ) use ($string_union_type_real): UnionType {
             if (Config::get_closest_target_php_version_id() >= 80000) {
-                return StringType::instance(false)->asRealUnionType();
+                return $string_union_type_real;
             }
             if (count($args) >= 1 && count($args) <= 2) {
                 if (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->getRealUnionType()->isNonNullStringType()) {
                     if (!isset($args[1]) || is_string($args[1]) || UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->getRealUnionType()->isNonNullStringType()) {
-                        return StringType::instance(false)->asRealUnionType();
+                        return $string_union_type_real;
                     }
                 }
             }
@@ -400,6 +427,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'var_export'                  => $string_if_2_true,
             'print_r'                     => $string_if_2_true_else_true,
             'json_decode'                 => $json_decode_return_type_handler,
+            'json_encode'                 => $json_encode_return_type_handler,
             'count'                       => $count_handler,
             // Functions with dependent return types
             'str_replace'                 => $third_argument_string_or_array_handler,
