@@ -125,10 +125,11 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             })) {
                 continue;
             }
-            if ($union_type->typeCount() > 1) {
+            $signature_type = $union_type->asSignatureUnionType();
+            if ($signature_type->typeCount() > 1) {
                 $issue_type = self::CanUseUnionParamType;
             } else {
-                $type = $union_type->getTypeSet()[0];
+                $type = $signature_type->getTypeSet()[0];
                 $issue_type = $type->isNullableLabeled() ? self::CanUseNullableParamType : self::CanUseParamType;
             }
             self::emitIssue(
@@ -136,7 +137,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
                 $method->getContext(),
                 $issue_type,
                 'Can use {TYPE} as the type of parameter ${PARAMETER} of {METHOD}',
-                [$union_type->asSignatureUnionType(), $parameter->getName(), $method->getName()]
+                [$signature_type, $parameter->getName(), $method->getName()]
             );
         }
     }
@@ -167,10 +168,11 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         })) {
             return;
         }
-        if ($union_type->typeCount() > 1) {
+        $signature_type = $union_type->asSignatureUnionType();
+        if ($signature_type->typeCount() > 1) {
             $issue_type = self::CanUseUnionReturnType;
         } else {
-            $type = $union_type->getTypeSet()[0];
+            $type = $signature_type->getTypeSet()[0];
             $issue_type = $type->isNullableLabeled() ? self::CanUseNullableReturnType : self::CanUseReturnType;
         }
         self::emitIssue(
@@ -178,7 +180,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             $method->getContext(),
             $issue_type,
             'Can use {TYPE} as a return type of {METHOD}',
-            [$union_type->asSignatureUnionType(), $method->getName()]
+            [$signature_type, $method->getName()]
         );
     }
 }

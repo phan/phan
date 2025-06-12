@@ -5033,11 +5033,20 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * Returns the corresponding union type that would be used in a signature
+     * Returns the corresponding union type that would be used in a signature.
+     * Callers are responsible for making sure that this representation can be used in the given
+     * minimum target PHP version.
      */
     public function asSignatureUnionType(): self
     {
         $nonreal_type = $this->eraseRealTypeSet();
+
+        static $mixed_union_type = null;
+        if ($nonreal_type->hasMixedOrNonEmptyMixedType()) {
+            // `mixed` can only be used as a standalone type (not even nullable).
+            $mixed_union_type = $mixed_union_type ?? MixedType::instance(false)->asPHPDocUnionType();
+            return $mixed_union_type;
+        }
         if ($nonreal_type->containsNullableLabeled() && $nonreal_type->typeCount() > 1) {
             // Use X|Y|null instead of ?X|?Y
             $nonreal_type = $nonreal_type->nonNullableClone()->withType(NullType::instance(false));
