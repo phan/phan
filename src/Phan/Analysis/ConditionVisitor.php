@@ -871,8 +871,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param string $extract_types
-         * @param UnionType $default_if_empty
          * @return Closure(CodeBase,Context,Variable,array):void
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty, bool $allow_undefined = false): Closure {

@@ -19,8 +19,6 @@ interface FQSEN extends Stringable
      *
      * The case depends on the case of the first FQSEN string this was called with.
      *
-     * @param string $fully_qualified_string
-     *
      * @return static
      */
     public static function fromFullyQualifiedString(

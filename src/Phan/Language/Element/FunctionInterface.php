@@ -226,7 +226,6 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * Records the fact that $parameter_name is an output-only reference.
-     * @param string $parameter_name
      */
     public function recordOutputReferenceParamName(string $parameter_name): void;
 

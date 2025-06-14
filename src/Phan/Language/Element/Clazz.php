@@ -762,8 +762,6 @@ class Clazz extends AddressableElement
     /**
      * Add the given FQSEN to the list of implemented
      * interfaces for this class.
-     *
-     * @param FullyQualifiedClassName $fqsen
      */
     public function addInterfaceClassFQSEN(FullyQualifiedClassName $fqsen, int $lineno = 0): void
     {
@@ -1443,8 +1441,6 @@ class Clazz extends AddressableElement
 
     /**
      * Returns true if this is an access to a property or method of self/static/$this
-     *
-     * @param ?Node $node
      */
     public static function isAccessToElementOfThis(?Node $node): bool
     {

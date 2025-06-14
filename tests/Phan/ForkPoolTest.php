@@ -42,8 +42,6 @@ final class ForkPoolTest extends BaseTest
             },
             /**
              * This is called on every value of the arrays passed to workers
-             * @param int $unused_i
-             * @param int $data
              */
             static function (int $unused_i, int $data, int $count) use (&$worker_data): void {
                 if ($count !== 4) {

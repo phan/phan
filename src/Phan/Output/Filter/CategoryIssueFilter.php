@@ -18,7 +18,6 @@ final class CategoryIssueFilter implements IssueFilterInterface
 
     /**
      * CategoryIssueFilter constructor.
-     * @param int $mask
      */
     public function __construct(int $mask = -1)
     {

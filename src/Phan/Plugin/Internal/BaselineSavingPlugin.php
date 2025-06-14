@@ -53,8 +53,6 @@ final class BaselineSavingPlugin extends PluginV3 implements
     /**
      * This method is called before Phan emits an issue not suppressed elsewhere.
      *
-     * @param IssueInstance $issue_instance
-     *
      * @return false this plugin does not suppress anything - it just records issues to generate a file that can be used by BaselineReadingPlugin in subsequent runs.
      */
     public function onEmitIssue(

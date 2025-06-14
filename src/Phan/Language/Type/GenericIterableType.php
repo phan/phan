@@ -191,7 +191,6 @@ final class GenericIterableType extends IterableType
     /**
      * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
      *
-     * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure

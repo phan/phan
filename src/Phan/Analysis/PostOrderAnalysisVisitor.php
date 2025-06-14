@@ -3966,10 +3966,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Analyze whether a method is callable
-     *
-     * @param Method $method
-     * @param Node $node
-     * @param bool $is_static_call
      */
     private function analyzeMethodVisibility(
         Method $method,
@@ -4029,9 +4025,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyze the parameters and arguments for a call
      * to the given method or function
-     *
-     * @param FunctionInterface $method
-     * @param Node $node
      */
     private function analyzeCallToFunctionLike(
         FunctionInterface $method,
@@ -5145,9 +5138,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Check if the class is using PHP4-style constructor (without having its own __construct method)
-     *
-     * @param Clazz $class
-     * @param Method $method
      */
     private function checkForPHP4StyleConstructor(Clazz $class, Method $method): void
     {

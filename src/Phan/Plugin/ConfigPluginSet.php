@@ -533,8 +533,6 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $code_base
-     * @param string $file_path
      * @return array<string,list<int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
      */
     public function getIssueSuppressionList(
@@ -699,7 +697,6 @@ final class ConfigPluginSet extends PluginV3 implements
         };
     }
     /**
-     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
@@ -729,7 +726,6 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
-     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getReturnTypeOverrides(CodeBase $code_base): array

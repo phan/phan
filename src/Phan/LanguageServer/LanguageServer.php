@@ -902,7 +902,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * @param int $severity
      * @return int
      * A DiagnosticSeverity constant used by the language server protocol.
      */

@@ -60,7 +60,6 @@ class ConversionSpec
     /**
      * Compute the number of additional arguments expected when sprintf is called
      * with a format string of $fmt_str.
-     * @param string $fmt_str
      */
     public static function computeExpectedArgumentCount(string $fmt_str): int
     {

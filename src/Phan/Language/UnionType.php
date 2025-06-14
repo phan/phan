@@ -597,8 +597,6 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param ?\ReflectionType $reflection_type
-     *
      * @return UnionType
      * A UnionType with 0 or more nullable/non-nullable Types
      * (limited to at most 1 in php 7, unlimited in php 8)

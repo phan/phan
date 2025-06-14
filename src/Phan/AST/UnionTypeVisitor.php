@@ -854,7 +854,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Returns the union type from a type in a parameter/return signature of a function-like.
      * This preserves `self` and `static`
-     * @param Node $node
      */
     public function fromTypeInSignature(Node $node): UnionType
     {

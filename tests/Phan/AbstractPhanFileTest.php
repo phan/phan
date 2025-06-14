@@ -72,7 +72,6 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
     /**
      * Placeholder for getTestFiles dataProvider
      *
-     * @param string $source_dir
      * @return array<string,array{0:array,1:string}>
      */
     final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array

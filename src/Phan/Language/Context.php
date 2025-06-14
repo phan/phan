@@ -840,7 +840,6 @@ class Context extends FileRef
     }
 
     /**
-     * @param int $node_id
      * @return ?array{0:UnionType,1:Clazz[]} $result
      * @suppress PhanPartialTypeMismatchReturn cache is mixed with other cache objects
      */

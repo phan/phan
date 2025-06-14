@@ -614,8 +614,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * @param string $function_name
-     * @param ?SimpleXMLElement $xml
      * @return ?array<mixed,string>
      */
     private static function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml): ?array

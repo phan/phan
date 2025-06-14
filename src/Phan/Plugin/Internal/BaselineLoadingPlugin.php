@@ -143,8 +143,6 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
     /**
      * Normalize path string.
-     *
-     * @param string $path
      */
     private static function normalizeDirectoryPathString(string $path): string
     {

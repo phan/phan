@@ -30,7 +30,6 @@ trait ElementFutureUnionType
 
     /**
      * Set the type of this element
-     * @param UnionType $type
      */
     abstract public function setUnionType(UnionType $type): void;
 
