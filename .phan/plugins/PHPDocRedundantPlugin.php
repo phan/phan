@@ -27,6 +27,10 @@ use PHPDocRedundantPlugin\Fixers;
  * 1. It is exclusively annotations (0 or more), e.g. (at)return void
  * 2. Every annotation repeats the real information in the signature.
  *
+ * If the doc comment as a whole is not redundant, this will also check if the (at)return annotation or
+ * the (at)param annotations are redundant. Note, the parameter list is only considered redundant as a whole;
+ * individual parameters are not flagged independently.
+ *
  * It does not check if the change is safe to make.
  */
 class PHPDocRedundantPlugin extends PluginV3 implements
@@ -37,6 +41,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     private const RedundantFunctionComment = 'PhanPluginRedundantFunctionComment';
     private const RedundantClosureComment = 'PhanPluginRedundantClosureComment';
     private const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
+    private const RedundantParameterListComment = 'PhanPluginRedundantParameterListComment';
     private const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
 
     public function analyzeFunction(CodeBase $code_base, Func $function): void
@@ -66,7 +71,9 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     ): void {
         $lines = explode("\n", $comment_str);
         $has_redundant_comment = true;
+        $has_redundant_param_list = true;
         $has_redundant_return = true;
+        $seen_param_lines = [];
         $return_line = null;
         foreach ($lines as $line) {
             $line = trim($line, " \r\n\t*/");
@@ -79,14 +86,29 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                     // Text that might belong to the (at)return annotation
                     $has_redundant_return = false;
                 }
+                if ($seen_param_lines && $return_line ===null) {
+                    // Text that might belong to an (at)param annotation
+                    $has_redundant_param_list = false;
+                }
             }
             if (!preg_match('/^@(phan-)?(param|return)\s/', $line)) {
                 $has_redundant_comment = false;
+                if ($seen_param_lines && $return_line ===null) {
+                    // A tag, other than (at)param and (at)return, after the start of the parameter list but before
+                    // the (at) return tag. Assume it might belong to an (at)param annotation.
+                    $has_redundant_param_list = false;
+                }
             }
             if (preg_match(Builder::PARAM_COMMENT_REGEX, $line, $matches)) {
+                $seen_param_lines[] = $line;
                 if ($matches[0] !== $line) {
                     // There's a description after the (at)param annotation
                     $has_redundant_comment = false;
+                    $has_redundant_param_list = false;
+                }
+                if ($return_line !== null) {
+                    // (at)param after (at)return. Avoid false positives and a potentially complicated fix.
+                    $has_redundant_param_list = false;
                 }
             } elseif (preg_match(Builder::RETURN_COMMENT_REGEX, $line, $matches)) {
                 $return_line = $line;
@@ -100,7 +122,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 $has_redundant_comment = false;
             }
 
-            if (!$has_redundant_comment && !$has_redundant_return) {
+            if (!$has_redundant_comment && !$has_redundant_param_list && !$has_redundant_return) {
                 // Nothing else to check.
                 return;
             }
@@ -119,11 +141,14 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         if (count($comment->getParameterList()) > 0) {
             $has_redundant_comment = false;
         }
-        foreach ($comment->getParameterMap() as $comment_param_name => $param) {
+        $comment_parameter_map = $comment->getParameterMap();
+        foreach ($comment_parameter_map as $comment_param_name => $param) {
             $comment_param_type = $param->getUnionType()->asNormalizedTypes();
             if ($comment_param_type->isEmpty()) {
                 // @phan-suppress-next-line PhanUnusedVariable Probably not understanding the `continue 2` below.
                 $has_redundant_comment = false;
+                // @phan-suppress-next-line PhanUnusedVariable Probably not understanding the `continue 2` below.
+                $has_redundant_param_list = false;
             }
             foreach ($method->getRealParameterList() as $real_param) {
                 if ($real_param->getName() === $comment_param_name) {
@@ -136,6 +161,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             // could not find that comment param, Phan warns elsewhere.
             // Assume this is not redundant.
             $has_redundant_comment = false;
+            $has_redundant_param_list = false;
         }
 
         if ($has_redundant_comment) {
@@ -153,6 +179,16 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 self::RedundantReturnComment,
                 'Redundant {COMMENT} {TYPE} on function {FUNCTION}. Either add a description or remove the {COMMENT} annotation: {COMMENT}',
                 [$return_tag, $comment_return_type, $method->getNameForIssue(), $return_tag, $return_line]
+            );
+        }
+        if ($has_redundant_param_list && $seen_param_lines && $comment_parameter_map) {
+            $param_lines_text = StringUtil::encodeValue(implode("\n", $seen_param_lines));
+            self::emitIssue(
+                $code_base,
+                (clone $method->getContext())->withLineNumberStart(reset($comment_parameter_map)->getLineno()),
+                self::RedundantParameterListComment,
+                'Redundant parameter list doc comment on function {FUNCTION}. Either add a description or remove the @param annotations: {COMMENT}',
+                [$method->getNameForIssue(), $param_lines_text]
             );
         }
     }
@@ -216,6 +252,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             self::RedundantFunctionComment => $function_like_fixer,
             self::RedundantMethodComment => $function_like_fixer,
             self::RedundantClosureComment => $function_like_fixer,
+            self::RedundantParameterListComment => Closure::fromCallable([Fixers::class, 'fixRedundantParameterListComment']),
             self::RedundantReturnComment => Closure::fromCallable([Fixers::class, 'fixRedundantReturnComment']),
         ];
     }
