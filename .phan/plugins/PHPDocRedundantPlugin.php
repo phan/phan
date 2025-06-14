@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Phan\CodeBase;
 use Phan\IssueInstance;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -57,9 +58,9 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     /**
      * @suppress PhanAccessClassConstantInternal
      */
-    private static function isRedundantFunctionComment(FunctionInterface $method, string $doc_comment): bool
+    private static function isRedundantFunctionComment(FunctionInterface $method, Comment $comment, string $comment_str): bool
     {
-        $lines = explode("\n", $doc_comment);
+        $lines = explode("\n", $comment_str);
         foreach ($lines as $line) {
             $line = trim($line, " \r\n\t*/");
             if ($line === '') {
@@ -86,11 +87,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 return false;
             }
         }
-        $comment = $method->getComment();
-        if (!$comment) {
-            // unparseable?
-            return false;
-        }
+
         if ($comment->hasReturnUnionType()) {
             $comment_return_type = $comment->getReturnType();
             if (!$comment_return_type->isEmpty() && !$comment_return_type->asNormalizedTypes()->isEqualTo($method->getRealReturnType())) {
@@ -130,8 +127,13 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         if (!StringUtil::isNonZeroLengthString($comment)) {
             return;
         }
-        if (!self::isRedundantFunctionComment($method, $comment)) {
-            self::checkIsRedundantReturn($code_base, $method, $comment);
+        $commentObj = $method->getComment();
+        if (!$commentObj) {
+            // unparseable?
+            return;
+        }
+        if (!self::isRedundantFunctionComment($method, $commentObj, $comment)) {
+            self::checkIsRedundantReturn($code_base, $method, $commentObj, $comment);
             return;
         }
         $encoded_comment = StringUtil::encodeValue($comment);
@@ -162,14 +164,12 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         }
     }
 
-    private static function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, string $doc_comment): void
+    private static function checkIsRedundantReturn(CodeBase $code_base, FunctionInterface $method, Comment $comment, string $comment_str): void
     {
-        if (strpos($doc_comment, '@return') === false) {
-            return;
-        }
-        $comment = $method->getComment();
-        if (!$comment) {
-            // unparseable?
+        if (
+            strpos($comment_str, '@return') === false &&
+            strpos($comment_str, '@phan-return') === false
+        ) {
             return;
         }
         if ($method->getRealReturnType()->isEmpty()) {
@@ -182,7 +182,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         if (!$comment_return_type->asNormalizedTypes()->isEqualTo($method->getRealReturnType())) {
             return;
         }
-        $lines = explode("\n", $doc_comment);
+        $lines = explode("\n", $comment_str);
         for ($i = count($lines) - 1; $i >= 0; $i--) {
             $line = $lines[$i];
             $line = trim($line, " \r\n\t*/");
@@ -190,11 +190,13 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 continue;
             }
             if ($line[0] !== '@') {
+                // Text that might belong to the (at)return annotation
                 return;
             }
-            if (!preg_match('/^@(phan-)?return\s/', $line)) {
+            if (!preg_match('/^@(phan-)?return(?=\s)/', $line, $tag_matches)) {
                 continue;
             }
+            $tag = $tag_matches[0];
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             if (!preg_match(Builder::RETURN_COMMENT_REGEX, $line, $matches)) {
                 return;
@@ -205,10 +207,10 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             }
             self::emitIssue(
                 $code_base,
-                $method->getContext()->withLineNumberStart($comment->getReturnLineno()),
+                (clone $method->getContext())->withLineNumberStart($comment->getReturnLineno()),
                 self::RedundantReturnComment,
-                'Redundant @return {TYPE} on function {FUNCTION}. Either add a description or remove the @return annotation: {COMMENT}',
-                [$comment_return_type, $method->getNameForIssue(), $line]
+                'Redundant {COMMENT} {TYPE} on function {FUNCTION}. Either add a description or remove the {COMMENT} annotation: {COMMENT}',
+                [$tag, $comment_return_type, $method->getNameForIssue(), $tag, $line]
             );
             return;
         }
