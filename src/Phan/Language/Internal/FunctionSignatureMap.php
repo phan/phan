@@ -7048,7 +7048,7 @@ return [
 'jobqueue_license_info' => ['array'],
 'join' => ['string', 'separator'=>'string', 'array'=>'array'],
 'join\'1' => ['string', 'separator'=>'array'],
-'json_decode' => ['mixed', 'json'=>'string', 'associative='=>'bool', 'depth='=>'int', 'flags='=>'int'],
+'json_decode' => ['mixed', 'json'=>'string', 'associative='=>'?bool', 'depth='=>'int', 'flags='=>'int'],
 'json_encode' => ['string|false', 'value'=>'mixed', 'flags='=>'int', 'depth='=>'int'],
 'json_last_error' => ['int'],
 'json_last_error_msg' => ['string'],

@@ -169,7 +169,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $json_decode_object_types,
             $json_decode_array_or_object_types
         ): UnionType {
-            //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
+            //  mixed json_decode ( string $json [, ?bool $associative = null [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
             if (count($args) < 2) {
@@ -183,7 +183,19 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             if ($result === true) {
                 return $json_decode_array_types;
             }
-            if ($result !== false) {
+            // Before PHP 7.2: $assoc was bool, true returned an array, false was meant to check the
+            //   JSON_OBJECT_AS_ARRAY flag. In practice though, the flag was always ignored:
+            //   https://www.php.net/manual/en/migration72.incompatible.php#migration72.incompatible.json_decode-changes
+            // Since PHP 7.2: $assoc is nullable, true returns array, false returns object, null checks the flag
+            if ($result === false) {
+                return $json_decode_object_types;
+            }
+            if (Config::get_closest_target_php_version_id() < 70200) {
+                // Null autocasts as false, anything else is unexpected. JSON_OBJECT_AS_ARRAY is ignored anyway.
+                return $result === null ? $json_decode_object_types : $json_decode_array_or_object_types;
+            }
+            if ($result !== null) {
+                // Unexpected value.
                 return $json_decode_array_or_object_types;
             }
             if (count($args) < 4) {
