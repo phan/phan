@@ -1744,6 +1744,7 @@ return [
     'gmp_random' => ['GMP', 'limiter='=>'int'],
     'gzgetss' => ['string|false', 'zp'=>'resource', 'length'=>'int', 'allowable_tags='=>'string'],
     'image2wbmp' => ['bool', 'im'=>'resource', 'filename='=>'?string', 'threshold='=>'int'],
+    'imap_header' => ['stdClass|false', 'stream_id'=>'resource', 'msg_no'=>'int', 'from_length='=>'int', 'subject_length='=>'int', 'default_host='=>'string'],
     'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
     'ldap_sort' => ['bool', 'link_identifier'=>'resource', 'result_identifier'=>'resource', 'sortfilter'=>'string'],
     'msg_receive' => ['bool', 'queue'=>'resource', 'desired_message_type'=>'int', '&w_received_message_type'=>'int', 'max_message_size'=>'int', '&w_message'=>'mixed', 'unserialize='=>'bool', 'flags='=>'int', '&w_error_code='=>'int'],
