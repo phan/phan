@@ -1,0 +1,4 @@
+%s:10 PhanTypeInvalidDimOffset Invalid offset "missing" of $x of array type array{a:int}|string
+%s:15 PhanTypeInvalidDimOffset Invalid offset 3 of $y of array type array{a:int}|int
+%s:16 PhanTypeInvalidDimOffset Invalid offset "missing" of $y of array type array{a:int}|int
+%s:28 PhanTypeInvalidDimOffset Invalid offset 3 of $y of array type array{a:int}|int

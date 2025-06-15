@@ -2165,22 +2165,20 @@ class UnionTypeVisitor extends AnalysisVisitor
          *           but have unknown array shapes in $union_type
          */
         $has_generic_array = false;
-        $has_string = false;
+        $has_valid_string_access = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
                 if ($type instanceof StringType) {
-                    $has_string = true;
                     if (\is_int($dim_value) || \filter_var($dim_value, \FILTER_VALIDATE_INT) !== false) {
                         // If we request a string offset from a string, that's not valid. Only accept integer dimensions as valid.
                         // in php, indices of strings can be negative
+                        $has_valid_string_access = true;
                         if ($resulting_element_type instanceof UnionType) {
                             $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
                         } else {
                             $resulting_element_type = StringType::instance(false)->asPHPDocUnionType();
                         }
-                    } else {
-                        // TODO: Warn about string indices of strings?
                     }
                 } elseif ($type->isArrayLike($code_base) || $type->isObject() || $type instanceof MixedType) {
                     if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
@@ -2213,15 +2211,15 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if ($resulting_element_type === null) {
-            if (!$has_string && !$has_generic_array) {
-                // This is exclusively array shape types.
+            if (!$has_valid_string_access && !$has_generic_array) {
+                // This is exclusively array shape and non-array types.
                 // Return false to indicate that the offset doesn't exist in any of those array shape types.
                 return false;
             }
             return null;
         }
-        if ($has_string || $has_generic_array) {
-            if ($has_string && $has_generic_array) {
+        if ($has_valid_string_access || $has_generic_array) {
+            if ($has_valid_string_access && $has_generic_array) {
                 return null;
             }
             if ($resulting_element_type->hasRealTypeSet()) {
