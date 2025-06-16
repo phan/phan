@@ -2203,8 +2203,21 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
+        if (\PHP_VERSION_ID >= 80300) {
+            if ($constant_name instanceof Node) {
+                $constant_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $constant_name);
+            }
+        }
         if (!is_string($constant_name)) {
-            throw new AssertionError('$constant_name must be a string');
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno,
+                "Class constant name must be a string or a variable (PHP 8.3+), got " . (is_object($constant_name) ? get_class($constant_name) : gettype($constant_name))
+            );
+            throw new NodeException(
+                $node,
+                "Class constant name must be a string or a variable (PHP 8.3+)"
+            );
         }
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
