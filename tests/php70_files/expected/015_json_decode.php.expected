@@ -1,0 +1,12 @@
+%s:6 PhanTypeInvalidDimOffset Invalid offset "key" of $value1 of array type list<mixed>
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($assoc) is null of type null but \json_decode() takes bool
+%s:11 PhanTypeInvalidDimOffset Invalid offset "key" of $value2 of array type list<mixed>
+%s:16 PhanTypeInvalidDimOffset Invalid offset "key" of $value3 of array type list<mixed>
+%s:19 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 0 of type 0 but \json_decode() takes bool
+%s:21 PhanTypeInvalidDimOffset Invalid offset "key" of $value4 of array type list<mixed>
+%s:29 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 1 of type 1 but \json_decode() takes bool
+%s:44 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value1 with type array|bool|float|int|null|string
+%s:45 PhanTypeMismatchArgumentInternal Argument 2 ($assoc) is 1 of type 1 but \json_decode() takes bool
+%s:46 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value2 with type array|bool|float|int|null|string
+%s:49 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($assoc) is null of type null but \json_decode() takes bool
+%s:53 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($assoc) is null of type null but \json_decode() takes bool
