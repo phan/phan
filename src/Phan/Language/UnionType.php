@@ -4765,9 +4765,21 @@ class UnionType implements Serializable, Stringable
      */
     public static function getLatestRealFunctionSignatureMap(int $target_php_version): array
     {
+        if ($target_php_version >= 80400) {
+            static $map_84;
+            return $map_84 ?? ($map_84 = self::computeLatestRealFunctionSignatureMap(''));
+        }
+        if ($target_php_version >= 80300) {
+            static $map_83;
+            return $map_83 ?? ($map_83 = self::computeLatestRealFunctionSignatureMap('_php83'));
+        }
+        if ($target_php_version >= 80200) {
+            static $map_82;
+            return $map_82 ?? ($map_82 = self::computeLatestRealFunctionSignatureMap('_php82'));
+        }
         if ($target_php_version >= 80100) {
             static $map_81;
-            return $map_81 ?? ($map_81 = self::computeLatestRealFunctionSignatureMap(''));
+            return $map_81 ?? ($map_81 = self::computeLatestRealFunctionSignatureMap('_php81'));
         }
         if ($target_php_version >= 80000) {
             static $map_80;
