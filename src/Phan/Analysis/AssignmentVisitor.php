@@ -1336,6 +1336,11 @@ class AssignmentVisitor extends AnalysisVisitor
                     return;
                 }
             }
+            if (PHP_VERSION_ID >= 80300) {
+                if ($method instanceof Method && strcasecmp($method->getName(), '__clone') === 0 && $property->isReadOnly()) {
+                    return;
+                }
+            }
         }
         $this->emitIssue(
             $is_from_phpdoc ? Issue::AccessReadOnlyMagicProperty : Issue::AccessReadOnlyProperty,
