@@ -1116,7 +1116,10 @@ class AssignmentVisitor extends AnalysisVisitor
         // know what the array structure of the parameter is
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
-        $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($this->context);
+        // TODO: If the property is inherited, this will resolve `static` in the context of the parent class, and
+        // thus yield a supertype of the intended type. However, we can't resolve `static` in the right context here,
+        // and the PHPDoc type isn't meant to be replaced with concrete types as in Property::inheritStaticUnionType().
+        $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
             if ($resolved_right_type->canCastToExpandedUnionType(
