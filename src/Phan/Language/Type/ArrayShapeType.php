@@ -534,7 +534,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * Returns an empty array shape (for `array{}`)
-     * @param bool $is_nullable
      */
     public static function empty(
         bool $is_nullable = false
@@ -899,7 +898,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     /**
      * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
      *
-     * @param CodeBase $code_base
      * @return ?Closure(UnionType, Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure

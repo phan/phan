@@ -82,7 +82,6 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Set the IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished
-     * @param IssueCollectorInterface $issue_collector
      */
     public static function setIssueCollector(
         IssueCollectorInterface $issue_collector
@@ -775,8 +774,6 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * @param string $filename
-     *
      * @return bool True if filename is ignored during analysis
      */
     public function isFilenameIgnored(string $filename): bool

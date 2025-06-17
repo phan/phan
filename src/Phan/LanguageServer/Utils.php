@@ -35,8 +35,6 @@ class Utils
 
     /**
      * Transforms an absolute file path into a URI as used by the language server protocol.
-     *
-     * @param string $filepath
      */
     public static function pathToUri(string $filepath): string
     {

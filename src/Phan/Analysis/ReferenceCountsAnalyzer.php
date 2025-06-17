@@ -110,11 +110,6 @@ class ReferenceCountsAnalyzer
     }
 
     /**
-     * @param CodeBase $code_base
-     * @param ClassMap $class_map
-     * @param int $total_count
-     * @param int $i
-     *
      * @return \Generator|ClassElement[]
      * @phan-return \Generator<ClassElement>
      */

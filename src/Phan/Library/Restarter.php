@@ -34,7 +34,6 @@ class Restarter extends XdebugHandler
 
     /**
      * Mark this extension as disabled
-     * @param string $disabledExtension
      */
     public function disableExtension(string $disabledExtension): void
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PHPDocRedundantPlugin;
 
+use LogicException;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
@@ -98,7 +99,25 @@ class Fixers
     }
 
     /**
-     * Add a missing return type to the real signature
+     * Delete a list of redundant (at) param annotations.
+     * @param CodeBase $code_base @unused-param
+    */
+    public static function fixRedundantParameterListComment(
+        CodeBase $code_base,
+        FileCacheEntry $contents,
+        IssueInstance $instance
+    ): ?FileEditSet {
+        $first_line = $instance->getLine();
+        $encoded_lines_to_delete = $instance->getTemplateParameters()[1];
+        if (!is_string($encoded_lines_to_delete)) {
+            throw new LogicException('Issue parameters changed');
+        }
+        $last_line = $first_line + substr_count($encoded_lines_to_delete, "\\n");
+        return self::computeEditSetToDeleteCommentLinesAndBlanks($contents, $contents->getLines(), $first_line, $last_line);
+    }
+
+    /**
+     * Delete a redundant (at) return annotation.
      * @param CodeBase $code_base @unused-param
      */
     public static function fixRedundantReturnComment(
@@ -114,23 +133,56 @@ class Fixers
         if (!\preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
             return null;
         }
-        $first_deleted_line = $lineno;
-        $last_deleted_line = $lineno;
+        return self::computeEditSetToDeleteCommentLinesAndBlanks($contents, $file_lines, $lineno, $lineno);
+    }
+
+    /**
+     * Computes an edit set to delete comment lines in the specified range, plus any surrounding blank comment lines.
+     * @param associative-array<int,string> $file_lines
+     */
+    private static function computeEditSetToDeleteCommentLinesAndBlanks(
+        FileCacheEntry $contents,
+        array $file_lines,
+        int $first_deleted_line,
+        int $last_deleted_line
+    ): ?FileEditSet {
         $is_blank_comment_line = static function (int $i) use ($file_lines): bool {
             return \trim($file_lines[$i] ?? '') === '*';
         };
-        while ($is_blank_comment_line($first_deleted_line - 1)) {
-            $first_deleted_line--;
+        $is_content_comment_line = static function (int $i) use ($file_lines): bool {
+            return \trim($file_lines[$i] ?? '', " \r\n\t*/") !== '';
+        };
+
+        $empty_lines_before = 0;
+        while ($is_blank_comment_line($first_deleted_line - $empty_lines_before - 1)) {
+            $empty_lines_before++;
         }
-        while ($is_blank_comment_line($last_deleted_line + 1)) {
-            $last_deleted_line++;
+        $has_content_before = $is_content_comment_line($first_deleted_line - $empty_lines_before - 1);
+
+        $empty_lines_after = 0;
+        while ($is_blank_comment_line($last_deleted_line + $empty_lines_after + 1)) {
+            $empty_lines_after++;
         }
+        $has_content_after = $is_content_comment_line($last_deleted_line + $empty_lines_after + 1);
+
+        if ($has_content_before && $has_content_after) {
+            // If there is content before and after the (at)param tags, and we found at least one empty line to delete,
+            // leave one of the empty lines in place to keep some grouping/separation between tags.
+            if ($empty_lines_before > 0) {
+                $empty_lines_before--;
+            } elseif ($empty_lines_after > 0) {
+                $empty_lines_after--;
+            }
+        }
+
+        $first_deleted_line -= $empty_lines_before;
+        $last_deleted_line += $empty_lines_after;
+
         $start_offset = $contents->getLineOffset($first_deleted_line);
         $end_offset = $contents->getLineOffset($last_deleted_line + 1);
         if (!$start_offset || !$end_offset) {
             return null;
         }
-        // Return an edit to delete the `(at)return RedundantType` and the surrounding blank comment lines
         return new FileEditSet([new FileEdit($start_offset, $end_offset, '')]);
     }
 

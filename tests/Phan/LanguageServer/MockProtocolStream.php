@@ -19,7 +19,6 @@ class MockProtocolStream extends Emitter implements ProtocolReader, ProtocolWrit
     /**
      * Sends a Message to the client
      *
-     * @param Message $msg
      * @return Promise<void>
      */
     public function write(Message $msg): Promise

@@ -227,7 +227,6 @@ class VariableTrackingScope
     /**
      * Equivalent to mergeBranchScopeList([$scope], true, [])
      *
-     * @param VariableTrackingBranchScope $scope
      * @return static
      */
     public function mergeWithSingleBranchScope(

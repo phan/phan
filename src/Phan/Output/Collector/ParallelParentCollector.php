@@ -74,7 +74,6 @@ class ParallelParentCollector implements IssueCollectorInterface
 
     /**
      * Collect issue
-     * @param IssueInstance $issue
      */
     public function collectIssue(IssueInstance $issue): void
     {

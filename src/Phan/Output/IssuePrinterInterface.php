@@ -15,15 +15,11 @@ interface IssuePrinterInterface
 
     /**
      * Emit an issue to the configured OutputInterface
-     *
-     * @param IssueInstance $instance
      */
     public function print(IssueInstance $instance): void;
 
     /**
      * Sets the OutputInterface instance that issues will be printed to.
-     *
-     * @param OutputInterface $output
      */
     public function configureOutput(OutputInterface $output): void;
 }

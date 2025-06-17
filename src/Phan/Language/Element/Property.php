@@ -359,8 +359,6 @@ class Property extends ClassElement
 
     /**
      * Record whether this property contains `static` anywhere in the original union type.
-     *
-     * @param bool $has_static
      */
     public function setHasStaticInUnionType(bool $has_static): void
     {

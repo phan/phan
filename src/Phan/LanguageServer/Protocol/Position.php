@@ -41,8 +41,6 @@ class Position
      *  - 0 if the positions match
      *  - a negative number if $this is before $position
      *  - a positive number otherwise
-     *
-     * @param Position $position
      */
     public function compare(Position $position): int
     {

@@ -19,8 +19,6 @@ final class FileIssueFilter implements IssueFilterInterface
 
     /**
      * FileIssueFilter constructor.
-     *
-     * @param IgnoredFilesFilterInterface $ignored_files_filter
      */
     public function __construct(
         IgnoredFilesFilterInterface $ignored_files_filter

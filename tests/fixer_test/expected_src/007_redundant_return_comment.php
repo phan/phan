@@ -25,3 +25,19 @@ class C7 {
 }
 echo C7::countValues([]);
 echo my_strlen('x');
+
+/**
+ * Useful description
+ * @return int
+ * Some text that might belong to the return annotation
+ */
+function textAfterReturn(): int {
+    return 42;
+}
+
+/**
+ * Useful description
+ */
+function usingPhanReturn(): int {
+    return 42;
+}
