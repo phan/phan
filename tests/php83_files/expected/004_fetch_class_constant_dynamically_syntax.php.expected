@@ -1,4 +1,6 @@
-%s:13 PhanInvalidNode Class constant name must be a string or a variable (PHP 8.3+), got NULL
-%s:14 PhanInvalidNode Class constant name must be a string or a variable (PHP 8.3+), got NULL
-%s:17 PhanInvalidNode Class constant name must be a string or a variable (PHP 8.3+), got NULL
-%s:18 PhanInvalidNode Class constant name must be a string or a variable (PHP 8.3+), got NULL
+%s:9 PhanInvalidNode array{}
+%s:10 PhanInvalidNode null
+%s:14 PhanInvalidNode 123
+%s:22 PhanInvalidNode array{}
+%s:23 PhanInvalidNode null
+%s:27 PhanInvalidNode 123

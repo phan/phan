@@ -2203,21 +2203,41 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
-        if (\PHP_VERSION_ID >= 80300) {
+        $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['const']);
+
+        if (PHP_VERSION_ID < 80300) {
+            // Only string is allowed in PHP 8.2 and earlier
+            if (!is_string($constant_name)) {
+                throw new IssueException(
+                    Issue::fromType(Issue::InvalidNode)(
+                        $this->context->getFile(),
+                        $node->lineno,
+                        [$const_type]
+                    )
+                );
+            }
+        } else {
+            // String and string type variables are allowed in PHP 8.3 and later
             if ($constant_name instanceof Node) {
                 $constant_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $constant_name);
             }
-        }
-        if (!is_string($constant_name)) {
-            $this->emitIssue(
-                Issue::InvalidNode,
-                $node->lineno,
-                "Class constant name must be a string or a variable (PHP 8.3+), got " . (is_object($constant_name) ? get_class($constant_name) : gettype($constant_name))
-            );
-            throw new NodeException(
-                $node,
-                "Class constant name must be a string or a variable (PHP 8.3+)"
-            );
+            if (!is_string($constant_name)) {
+                if (!$const_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
+                    // If we know the name node can't be a string, throw an IssueException
+                    throw new IssueException(
+                        Issue::fromType(Issue::InvalidNode)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [$const_type]
+                        )
+                    );
+                }
+                // Unable to infer type
+                throw new NodeException(
+                    $node,
+                    'Cannot infer type of const name'
+                );
+            }
         }
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
