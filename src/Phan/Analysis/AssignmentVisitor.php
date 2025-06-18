@@ -1336,10 +1336,9 @@ class AssignmentVisitor extends AnalysisVisitor
                     return;
                 }
             }
-            if (PHP_VERSION_ID >= 80300) {
-                if ($method instanceof Method && strcasecmp($method->getName(), '__clone') === 0 && $property->isReadOnly()) {
-                    return;
-                }
+            $allowed_methods = Config::get_closest_minimum_target_php_version_id() >= 80300 ? [ '__construct', '__clone' ] : [ '__construct' ];
+            if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true)) {
+                return;
             }
         }
         $this->emitIssue(

@@ -1,0 +1,1 @@
+%s:17 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \C1's property $php declared at %s:8 (immutability of properties is enforced at runtime)
