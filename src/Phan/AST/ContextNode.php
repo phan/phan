@@ -2203,7 +2203,6 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
-        $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['const']);
 
         if (PHP_VERSION_ID < 80300) {
             // Only string is allowed in PHP 8.2 and earlier
@@ -2212,7 +2211,7 @@ class ContextNode
                     Issue::fromType(Issue::InvalidNode)(
                         $this->context->getFile(),
                         $node->lineno,
-                        [$const_type]
+                        ['Non-literal constant names are not valid in PHP < 8.3']
                     )
                 );
             }
@@ -2222,10 +2221,11 @@ class ContextNode
                 $constant_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $constant_name);
             }
             if (!is_string($constant_name)) {
+                $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['const']);
                 if (!$const_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
                     // If we know the name node can't be a string, throw an IssueException
                     throw new IssueException(
-                        Issue::fromType(Issue::InvalidNode)(
+                        Issue::fromType(Issue::TypeInvalidConstantName)(
                             $this->context->getFile(),
                             $node->lineno,
                             [$const_type]

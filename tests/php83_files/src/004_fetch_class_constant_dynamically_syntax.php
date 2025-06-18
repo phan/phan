@@ -1,7 +1,7 @@
 <?php
 // support https://wiki.php.net/rfc/dynamic_class_constant_fetch
 class C5 {
-    const string MY_CONST = 'bar';
+    const MY_CONST = 'bar';
 }
 $constName = 'MY_CONST';
 echo C5::MY_CONST;

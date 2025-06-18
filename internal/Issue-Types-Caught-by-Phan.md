@@ -3455,6 +3455,14 @@ Invalid @phan-closure-scope: expected a class name, got {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0537_closure_scope.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0537_closure_scope.php#L8).
 
+## PhanTypeInvalidConstantName
+
+```
+Saw a class constant fetch with a name of type {TYPE} but expected the name to be a string
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php83_files/expected/004_fetch_class_constant_dynamically_syntax.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php83_files/src/004_fetch_class_constant_dynamically_syntax.php#L9).
+
 ## PhanTypeInvalidDimOffset
 
 ```
