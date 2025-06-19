@@ -1,7 +1,40 @@
 Phan NEWS
 
-??? ?? 202?, Phan 5.4.7 (dev)
+June 30 2025, Phan 5.5.0
 -----------------------
+New features(Analysis):
+- Update real signatures of internal functions for PHP 8.1, add version for PHP 8.2, 8.3, and 8.4. [#4960](https://github.com/phan/phan/pull/4960)
+- Support [dynamic class constant fetch](https://www.php.net/releases/8.3/en.php#dynamic_class_constant_fetch) in PHP >= 8.3.
+  New issue type, `PhanTypeInvalidConstantName`, emitted when the dynamic constant name cannot be a string. [#4963](https://github.com/phan/phan/pull/4963)
+- Add basic support for [deep-cloning of readonly properties](https://wiki.php.net/rfc/readonly_amendments#proposal_2readonly_properties_can_be_reinitialized_during_cloning)
+  in PHP >= 8.3. [#4962](https://github.com/phan/phan/issues/4962)
+- Warn when a subclass of a generic class does not use @extends or @inherit to substitute template types [#4993](https://github.com/phan/phan/pull/4993)
+  New issue type: `PhanGenericMissingParameters`
+- New plugin, `AsymmetricVisibilityPlugin` to analyze properties with asymmetric visibility when running in PHP 8.4.
+  New issue types: `PhanPluginAsymmetricVisibilityNoType`, `PhanPluginAsymmetricVisibilityLessRestrictive` [#4996](https://github.com/phan/phan/pull/4996)
+
+Bug fixes:
+- Fix type inference for properties with a PHPDoc type of `static` in assignments [#4883](https://github.com/phan/phan/issues/4883)
+- Fix type inference for `json_decode` returning objects vs associative arrays [#4745](https://github.com/phan/phan/issues/4745)
+- Fix infinite loop detection with calls to `openssl_error_string`, `ob_get_level`, and `error_get_last` [#4971](https://github.com/phan/phan/pull/4971)
+- Do not emit `PhanPossiblyInfiniteRecursionSameParams` if an array element or object property was modified [#4972](https://github.com/phan/phan/issues/4972)
+- Do not treat `non-empty-string` as a subtype of `callable-string`. Treat `callable-array` as a subtype of `non-empty-array` [#4974](https://github.com/phan/phan/pull/4974)
+- Properly infer template types when analyzing property assignments [#4987](https://github.com/phan/phan/pull/4987)
+- Fix edge cases when parsing generic types [#4992](https://github.com/phan/phan/pull/4992)
+- Do not infer all iterator key/value types from PHPDoc as real types [#4986](https://github.com/phan/phan/issues/4986)
+
+Miscellaneous:
+- Update PHP >= 8.1 signatures of internal functions for [resource to object migration](https://www.php.net/manual/en/migration81.incompatible.php#migration81.incompatible.resource2object) [#4960](https://github.com/phan/phan/pull/4960)
+- Emit `PhanTypeInvalidDimOffset` when accessing a string offset of a union type containing `string` [#4709](https://github.com/phan/phan/issues/4709)
+- Mark `imap_header()` as removed in PHP 8.0
+- Infer key/element types more accurately for callable-array [#4977](https://github.com/phan/phan/pull/4977)
+- Infer parameter default type more accurately [#4398](https://github.com/phan/phan/issues/4398)
+
+Plugins:
+- Fix PHPDocToRealTypesPlugin suggesting union types containing `mixed` as a non-standalone type [#4952](https://github.com/phan/phan/issues/4952)
+- Make PHPDocRedundantPlugin detect redundant `@param` annotations.
+  This only warns if _all_ the `@param` are redundant, and does not flag individual redundant parameters. [#4955](https://github.com/phan/phan/issues/4955)
+- Make UseReturnValuePlugin not require using the return value of `similar_text` when the `&$percent` argument is passed. [#4979](https://github.com/phan/phan/pull/4979) [#4981](https://github.com/phan/phan/pull/4981)
 
 June 9 2025, Phan 5.4.6
 -----------------------
