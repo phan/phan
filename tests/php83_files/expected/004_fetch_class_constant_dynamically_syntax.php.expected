@@ -1,0 +1,6 @@
+%s:9 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type array{} but expected the name to be a string
+%s:10 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type null but expected the name to be a string
+%s:14 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type 123 but expected the name to be a string
+%s:22 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type array{} but expected the name to be a string
+%s:23 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type null but expected the name to be a string
+%s:27 PhanTypeInvalidConstantName Saw a class constant fetch with a name of type 123 but expected the name to be a string

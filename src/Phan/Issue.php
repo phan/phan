@@ -244,6 +244,7 @@ class Issue
     public const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
     public const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
     public const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
+    public const TypeInvalidConstantName = 'PhanTypeInvalidConstantName';
     public const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     public const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     public const TypeMismatchPropertyDefault        = 'PhanTypeMismatchPropertyDefault';
@@ -2636,6 +2637,14 @@ class Issue
                 "Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string",
                 self::REMEDIATION_B,
                 10103
+            ),
+            new Issue(
+                self::TypeInvalidConstantName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Saw a class constant fetch with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10188
             ),
             new Issue(
                 self::TypeErrorInInternalCall,

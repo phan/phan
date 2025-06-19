@@ -2203,8 +2203,41 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
-        if (!is_string($constant_name)) {
-            throw new AssertionError('$constant_name must be a string');
+
+        if (PHP_VERSION_ID < 80300) {
+            // Only string is allowed in PHP 8.2 and earlier
+            if (!is_string($constant_name)) {
+                throw new IssueException(
+                    Issue::fromType(Issue::InvalidNode)(
+                        $this->context->getFile(),
+                        $node->lineno,
+                        ['Non-literal constant names are not valid in PHP < 8.3']
+                    )
+                );
+            }
+        } else {
+            // String and string type variables are allowed in PHP 8.3 and later
+            if ($constant_name instanceof Node) {
+                $constant_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $constant_name);
+            }
+            if (!is_string($constant_name)) {
+                $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['const']);
+                if (!$const_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
+                    // If we know the name node can't be a string, throw an IssueException
+                    throw new IssueException(
+                        Issue::fromType(Issue::TypeInvalidConstantName)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [$const_type]
+                        )
+                    );
+                }
+                // Unable to infer type
+                throw new NodeException(
+                    $node,
+                    'Cannot infer type of const name'
+                );
+            }
         }
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
