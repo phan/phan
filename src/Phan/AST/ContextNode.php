@@ -2207,13 +2207,7 @@ class ContextNode
         if (PHP_VERSION_ID < 80300) {
             // Only string is allowed in PHP 8.2 and earlier
             if (!is_string($constant_name)) {
-                throw new IssueException(
-                    Issue::fromType(Issue::InvalidNode)(
-                        $this->context->getFile(),
-                        $node->lineno,
-                        ['Non-literal constant names are not valid in PHP < 8.3']
-                    )
-                );
+                throw new AssertionError('$constant_name must be a string in PHP < 8.3');
             }
         } else {
             // String and string type variables are allowed in PHP 8.3 and later
