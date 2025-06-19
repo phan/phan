@@ -51,11 +51,12 @@ final class CallableParamPlugin extends PluginV3 implements
         /**
          * @param list<Node|int|float|string> $args
          */
-        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($params): void {
+        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $_) use ($params): void {
             // TODO: Implement support for variadic callable arguments.
             foreach ($params as $i => $flags) {
                 $arg = $args[$i] ?? null;
-                if ($arg === null) {
+                $param = $function->getParameterForCaller($i);
+                if ($arg === null || $param === null) {
                     continue;
                 }
 
@@ -63,9 +64,7 @@ final class CallableParamPlugin extends PluginV3 implements
 
                 if ($flags & self::PARAM_HAS_CALLABLE) {
                     // Fetch possible functions for the provided callable argument.
-                    // As an intentional side effect, this warns about invalid callables.
-                    // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
-                    $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
+                    $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, false);
                     if ($function_like_list) {
                         $references[] = $function_like_list;
                     }
@@ -73,8 +72,7 @@ final class CallableParamPlugin extends PluginV3 implements
 
                 if ($flags & self::PARAM_HAS_CLASSSTRING) {
                     // Fetch possible classes.
-                    // As an intentional side effect, this warns about invalid/undefined class names.
-                    $class_list = UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg);
+                    $class_list = UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg, false);
                     if ($class_list) {
                         $references[] = $class_list;
                     }
@@ -84,6 +82,32 @@ final class CallableParamPlugin extends PluginV3 implements
                     foreach ($references as $reference_list) {
                         foreach ($reference_list as $addressable) {
                             $addressable->addReference($context);
+                        }
+                    }
+                }
+
+                if (!$references) {
+                    // It's not a valid callable and/or class-string, but before we emit issues,
+                    // first check if we're dealing with a union type where some other types are valid.
+                    $other_param_types = $param->getUnionType()->eraseRealTypeSet()->makeFromFilter(static function (Type $type) use ($flags): bool {
+                        if ($type instanceof CallableInterface && ($flags & self::PARAM_HAS_CALLABLE)) {
+                            return false;
+                        }
+                        if ($type instanceof ClassStringType && ($flags & self::PARAM_HAS_CLASSSTRING)) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    $valid_as_other_types = !$other_param_types->isEmpty() &&
+                        UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg)
+                            ->canCastToUnionType($other_param_types, $code_base);
+                    if (!$valid_as_other_types) {
+                        // Do it again, emitting issues this time.
+                        if ($flags & self::PARAM_HAS_CALLABLE) {
+                            UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
+                        }
+                        if ($flags & self::PARAM_HAS_CLASSSTRING) {
+                            UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg, true);
                         }
                     }
                 }
@@ -168,10 +192,6 @@ final class CallableParamPlugin extends PluginV3 implements
         // See https://github.com/phan/phan/issues/1204 for note on function_exists() (not supported right now)
         $result['\\ReflectionFunction::__construct'] = self::generateClosure([0 => self::PARAM_HAS_CALLABLE]);
         $result['\\ReflectionClass::__construct'] = self::generateClosure([0 => self::PARAM_HAS_CLASSSTRING]);
-
-        // When a codebase calls function_exists(string|callable) to **check** if a function exists,
-        // don't emit PhanUndeclaredFunctionInCallable as a side effect.
-        unset($result['\\function_exists']);
 
         // Don't do redundant work extracting function definitions for commonly invoked functions.
         // TODO: Get actual statistics on how frequently used these are

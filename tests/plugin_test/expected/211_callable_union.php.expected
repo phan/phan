@@ -1,14 +1,5 @@
-src/211_callable_union.php:17 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 0, but callable arrays must be of size 2
-src/211_callable_union.php:18 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 3, but callable arrays must be of size 2
 src/211_callable_union.php:19 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
 src/211_callable_union.php:34 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 0, but callable arrays must be of size 2
 src/211_callable_union.php:35 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 3, but callable arrays must be of size 2
-src/211_callable_union.php:36 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
-src/211_callable_union.php:49 PhanUndeclaredFunctionInCallable Call to undeclared function stdClass in callable
-src/211_callable_union.php:50 PhanUndeclaredClassReference Reference to undeclared class \strval
 src/211_callable_union.php:51 PhanUndeclaredClassReference Reference to undeclared class \puppies
 src/211_callable_union.php:51 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
-src/211_callable_union.php:65 PhanUndeclaredFunctionInCallable Call to undeclared function stdClass in callable
-src/211_callable_union.php:66 PhanUndeclaredClassReference Reference to undeclared class \strval
-src/211_callable_union.php:67 PhanUndeclaredClassReference Reference to undeclared class \puppies
-src/211_callable_union.php:67 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
