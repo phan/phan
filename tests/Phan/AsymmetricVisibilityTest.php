@@ -43,6 +43,8 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
     }
 
     /**
+     * Runs test to check Asymmetric Visibility
+     *
      * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getCases
      */
@@ -79,7 +81,7 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
     }
 
     /**
-     * @return array<mixed,array{0:string,1:string,2:string,3:string|null,4:string,5:string|null,6:string,7:string|null}>
+     * Provides a list of test cases
      */
     public static function getCases(): iterable
     {
@@ -131,8 +133,7 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
      */
     private function parseFile(string $file): void
     {
-        /** @var string $code */
-        $code = \file_get_contents(ASYMMETRIC_VISIBILITY_TEST_FILE_DIR . '/' . $file . '.php');
+        $code = (string) \file_get_contents(ASYMMETRIC_VISIBILITY_TEST_FILE_DIR . '/' . $file . '.php');
         Analysis::parseNodeInContext(
             $this->code_base,
             new Context(),
