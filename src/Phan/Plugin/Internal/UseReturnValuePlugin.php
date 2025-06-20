@@ -625,7 +625,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'octdec' => true,
     'opendir' => true,
     'openssl_encrypt' => true,
-    'openssl_error_string' => true,
+    'openssl_error_string' => self::MUST_USE_WITH_SIDE_EFFECTS,
     'openssl_random_pseudo_bytes' => true,
     'openssl_x509_verify' => true,
     'ord' => true,
