@@ -20,6 +20,7 @@ sed -i "s,unexpected token \"=\",unexpected '='," $ACTUAL_PATH
 # This outputs the
 echo
 echo "Comparing the output:"
+sed -i -e 's/src\\/src\//g' $ACTUAL_PATH
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then

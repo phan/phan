@@ -29,6 +29,8 @@ sed -i -e 's/jsonSerialize() : mixed/jsonSerialize()/' \
 
 sed -i -e 's,@phan-stub-for-extension json@.*$,@phan-stub-for-extension json@%s,' $ACTUAL_PATH
 
+sed -i -e 's/src\\/src\//g' $ACTUAL_PATH
+
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
 echo

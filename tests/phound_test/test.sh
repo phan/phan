@@ -50,7 +50,8 @@ fi
 #   for example, 'foo.php:10' might otherwise appear ahead of 'foo.php:9' when treated as a string.
 #
 # Together, these order by clauses ensure the output is ordered by file and line number.
-ACTUAL=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type')
+ACTUAL=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type' \
+    | sed -e 's/src\\/src\//g')
 
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.

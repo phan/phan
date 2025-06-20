@@ -65,6 +65,8 @@ cp -r src src_copy
 echo
 echo "Comparing the output:"
 
+sed -i -e 's/src_copy\\/src_copy\//g' $ACTUAL_PATH
+
 if type colordiff >/dev/null; then
     DIFF=colordiff
 else
