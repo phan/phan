@@ -42,7 +42,10 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
-    /** @dataProvider getCases */
+    /**
+     * @suppress PhanThrowTypeAbsentForCall
+     * @dataProvider getCases
+     */
     public function testAsymmetricVisibility(
         string $file,
         string $fqcn,
@@ -51,7 +54,7 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
         string $prop2Visibility,
         ?string $prop2SetVisibility,
         string $prop3Visibility,
-        ?string $prop3SetVisibility,
+        ?string $prop3SetVisibility
     ): void {
         if (\PHP_VERSION_ID < 80400) {
             $this->markTestSkipped("PHP 8.4 is required");
@@ -75,6 +78,9 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
         $this->assertEquals($prop3SetVisibility, $p->getVisibilitySetName());
     }
 
+    /**
+     * @return array<mixed,array{0:string,1:string,2:string,3:string|null,4:string,5:string|null,6:string,7:string|null}>
+     */
     public static function getCases(): iterable
     {
         yield 'No Asymmetric Visibility is used' => [
@@ -120,15 +126,17 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
 
     }
 
+    /**
+     * @suppress PhanUndeclaredConstant
+     */
     private function parseFile(string $file): void
     {
+        /** @var string $code */
+        $code = \file_get_contents(ASYMMETRIC_VISIBILITY_TEST_FILE_DIR . '/' . $file . '.php');
         Analysis::parseNodeInContext(
             $this->code_base,
             new Context(),
-            \ast\parse_code(
-                \file_get_contents(ASYMMETRIC_VISIBILITY_TEST_FILE_DIR . '/' . $file . '.php'),
-                Config::AST_VERSION
-            )
+            \ast\parse_code($code, Config::AST_VERSION)
         );
     }
 
