@@ -33,14 +33,16 @@ final class CallableParamPlugin extends PluginV3 implements
     HandleLazyLoadInternalFunctionCapability
 {
 
+    public const PARAM_HAS_CALLABLE = (1 << 0);
+    public const PARAM_HAS_CLASSSTRING = (1 << 1);
+
     /**
-     * @param list<int> $callable_params
-     * @param list<int> $class_params
+     * @param array<int,int> $params
      * @phan-return Closure(CodeBase,Context,FunctionInterface,array,?Node):void
      */
-    private static function generateClosure(array $callable_params, array $class_params): Closure
+    private static function generateClosure(array $params): Closure
     {
-        $key = \json_encode([$callable_params, $class_params]);
+        $key = \json_encode($params);
         static $cache = [];
         $closure = $cache[$key] ?? null;
         if ($closure !== null) {
@@ -49,46 +51,40 @@ final class CallableParamPlugin extends PluginV3 implements
         /**
          * @param list<Node|int|float|string> $args
          */
-        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($callable_params, $class_params): void {
+        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($params): void {
             // TODO: Implement support for variadic callable arguments.
-            foreach ($callable_params as $i) {
+            foreach ($params as $i => $flags) {
                 $arg = $args[$i] ?? null;
                 if ($arg === null) {
                     continue;
                 }
 
-                // Fetch possible functions for the provided callable argument.
-                // As an intentional side effect, this warns about invalid callables.
-                // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
-                $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
-                if (count($function_like_list) === 0) {
-                    // Nothing to do
-                    continue;
-                }
+                $references = [];
 
-                if (Config::get_track_references()) {
-                    foreach ($function_like_list as $function) {
-                        $function->addReference($context);
+                if ($flags & self::PARAM_HAS_CALLABLE) {
+                    // Fetch possible functions for the provided callable argument.
+                    // As an intentional side effect, this warns about invalid callables.
+                    // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
+                    $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
+                    if ($function_like_list) {
+                        $references[] = $function_like_list;
                     }
                 }
-                // self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
-            }
-            foreach ($class_params as $i) {
-                $arg = $args[$i] ?? null;
-                if ($arg === null) {
-                    continue;
+
+                if ($flags & self::PARAM_HAS_CLASSSTRING) {
+                    // Fetch possible classes.
+                    // As an intentional side effect, this warns about invalid/undefined class names.
+                    $class_list = UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg);
+                    if ($class_list) {
+                        $references[] = $class_list;
+                    }
                 }
 
-                // Fetch possible classes. As an intentional side effect, this warns about invalid/undefined class names.
-                $class_list = UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg);
-                if (count($class_list) === 0) {
-                    // Nothing to do
-                    continue;
-                }
-
-                if (Config::get_track_references()) {
-                    foreach ($class_list as $class) {
-                        $class->addReference($context);
+                if ($references && Config::get_track_references()) {
+                    foreach ($references as $reference_list) {
+                        foreach ($reference_list as $addressable) {
+                            $addressable->addReference($context);
+                        }
                     }
                 }
             }
@@ -103,30 +99,31 @@ final class CallableParamPlugin extends PluginV3 implements
      */
     private static function generateClosureForFunctionInterface(FunctionInterface $function): ?Closure
     {
-        $callable_params = [];
-        $class_params = [];
+        $params = [];
         foreach ($function->getParameterList() as $i => $param) {
+            $params[$i] = 0;
             // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
             // Explicitly require at least one type to be `callable`
             if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type): bool {
                 // TODO: More specific closure for CallableDeclarationType
                 return $type instanceof CallableInterface;
             })) {
-                $callable_params[] = $i;
+                $params[$i] |= self::PARAM_HAS_CALLABLE;
             }
             if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type): bool {
                 return $type instanceof ClassStringType;
             })) {
-                $class_params[] = $i;
+                $params[$i] |= self::PARAM_HAS_CLASSSTRING;
             }
         }
 
-        if (count($callable_params) === 0 && count($class_params) === 0) {
+        $params = array_filter($params);
+        if (count($params) === 0) {
             return null;
         }
         // Generate a de-duplicated closure.
         // fqsen can be global_function or ClassName::method
-        return self::generateClosure($callable_params, $class_params);
+        return self::generateClosure($params);
     }
 
     /**
@@ -169,8 +166,8 @@ final class CallableParamPlugin extends PluginV3 implements
 
         // new ReflectionFunction('my_func') is a usage of my_func()
         // See https://github.com/phan/phan/issues/1204 for note on function_exists() (not supported right now)
-        $result['\\ReflectionFunction::__construct'] = self::generateClosure([0], []);
-        $result['\\ReflectionClass::__construct'] = self::generateClosure([], [0]);
+        $result['\\ReflectionFunction::__construct'] = self::generateClosure([0 => self::PARAM_HAS_CALLABLE]);
+        $result['\\ReflectionClass::__construct'] = self::generateClosure([0 => self::PARAM_HAS_CLASSSTRING]);
 
         // When a codebase calls function_exists(string|callable) to **check** if a function exists,
         // don't emit PhanUndeclaredFunctionInCallable as a side effect.
