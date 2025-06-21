@@ -709,13 +709,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // MixedType can cast to other types
                 return $asserted_object_type;
             }
-            if (!$type->isObject()) {
+            if (!$type->isPossiblyObject()) {
                 // ignore non-object types
                 continue;
             }
-            if (!$type->hasObjectWithKnownFQSEN()) {
+            if ($type->isObject() && !$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
-                // TODO: Handle isPossiblyObject/iterable
                 return $asserted_object_type;
             }
             $type = $type->withIsNullable(false);
@@ -749,13 +748,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // MixedType can cast to other types
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
-            if (!$type->isObject()) {
+            if (!$type->isPossiblyObject()) {
                 // ignore non-object types
                 continue;
             }
-            if (!$type->hasObjectWithKnownFQSEN()) {
+            if ($type->isObject() && !$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
-                // TODO: Handle isPossiblyObject/iterable
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             $type = $type->withIsNullable(false);
