@@ -2711,12 +2711,17 @@ class Type implements Stringable
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
+     * @param bool $omit_missing
+     * If the type is missing some type parameters expected by the class,
+     * omit them in the result instead of returning empty union types.
+     *
      * @return array<string,UnionType>
      * A map from template type identifier to a concrete type
      */
-    public function getTemplateParameterTypeMap(CodeBase $code_base): array
+    public function getTemplateParameterTypeMap(CodeBase $code_base, bool $omit_missing = false): array
     {
-        return $this->memoize(__METHOD__, /** @return array<string,UnionType> */ function () use ($code_base): array {
+        $key = __METHOD__ . ($omit_missing ? '!' : '');
+        return $this->memoize($key, /** @return array<string,UnionType> */ function () use ($code_base, $omit_missing): array {
             if (!$this->isObjectWithKnownFQSEN()) {
                 return [];
             }
@@ -2735,6 +2740,8 @@ class Type implements Stringable
             foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
                 if (isset($template_parameter_type_list[$i])) {
                     $map[$identifier] = $template_parameter_type_list[$i];
+                } elseif (!$omit_missing) {
+                    $map[$identifier] = UnionType::empty();
                 }
             }
 

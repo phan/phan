@@ -1022,7 +1022,9 @@ class Method extends ClassElement implements FunctionInterface
         UnionType $object_union_type
     ): Method {
         if ($this->hasTemplateType()) {
-            $clone = $this->cloneWithTemplateParameterTypeMap($object_union_type->getTemplateParameterTypeMap($code_base));
+            $clone = $this->cloneWithTemplateParameterTypeMap(
+                $object_union_type->getTemplateParameterTypeMap($code_base, true)
+            );
             if (!$clone->hasTemplateType()) {
                 // If resolved all of the template types, return the clone with concrete types.
                 if (Config::get_track_references()) {

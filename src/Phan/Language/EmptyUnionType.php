@@ -149,14 +149,19 @@ final class EmptyUnionType extends UnionType
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
+     * @param bool $omit_missing
+     * If the type is missing some type parameters expected by the class,
+     * omit them in the result instead of returning empty union types.
+     *
      * TODO: Defer resolving the template parameters until parse ends. Low priority.
      *
-     * @return UnionType[]
+     * @return array<string,UnionType>
      * A map from template type identifiers to the UnionType
      * to replace it with
      */
     public function getTemplateParameterTypeMap(
-        CodeBase $code_base
+        CodeBase $code_base,
+        bool $omit_missing = false
     ): array {
         return [];
     }
