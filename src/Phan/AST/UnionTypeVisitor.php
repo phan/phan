@@ -3468,7 +3468,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         foreach ($node_type->getTypeSet() as $sub_type) {
             if ($sub_type instanceof LiteralStringType) {
                 $value = $sub_type->getValue();
-                if (!\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $value)) {
+                if (!\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*/', $value)) {
                     $is_valid = false;
                     continue;
                 }
