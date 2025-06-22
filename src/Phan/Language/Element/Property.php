@@ -114,7 +114,7 @@ class Property extends ClassElement
     }
 
     /**
-     * Returns the visibility for this property (for issue messages and stubs)
+     * Returns the visibility for this property in context of reading (for issue messages and stubs)
      */
     public function getVisibilityName(): string
     {
@@ -127,9 +127,30 @@ class Property extends ClassElement
         }
     }
 
+    /**
+     * Returns the visibility for this property in context of setting (for issue messages and stubs)
+     */
+    public function getVisibilitySetName(): ?string
+    {
+        if ($this->isPrivateSet()) {
+            return 'private';
+        } elseif ($this->isProtectedSet()) {
+            return 'protected';
+        } elseif ($this->isPublicSet()) {
+            return 'public';
+        }
+
+        return null;
+    }
+
     public function __toString(): string
     {
         $string = $this->getVisibilityName() . ' ';
+
+        $visibilitySet = $this->getVisibilitySetName();
+        if (null !== $visibilitySet) {
+            $string .= $visibilitySet . '(set) ';
+        }
 
         if ($this->isStatic()) {
             $string .= 'static ';
@@ -538,5 +559,32 @@ class Property extends ClassElement
     public function getDefaultType(): ?UnionType
     {
         return $this->default_type;
+    }
+
+    /**
+     * True if this is a property publicly settable
+     */
+    public function isPublicSet(): bool
+    {
+        // TODO: use \ast\flags\MODIFIER_PUBLIC_SET from https://github.com/nikic/php-ast/pull/250
+        return $this->getFlagsHasState(1024);
+    }
+
+    /**
+     * True if this is a property protected settable
+     */
+    public function isProtectedSet(): bool
+    {
+        // TODO: use \ast\flags\MODIFIER_PROTECTED_SET from https://github.com/nikic/php-ast/pull/250
+        return $this->getFlagsHasState(2048);
+    }
+
+    /**
+     * True if this is a property privately settable
+     */
+    public function isPrivateSet(): bool
+    {
+        // TODO: use \ast\flags\MODIFIER_PRIVATE_SET from https://github.com/nikic/php-ast/pull/250
+        return $this->getFlagsHasState(4096);
     }
 }
