@@ -369,7 +369,7 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node): ?UnionType
     {
         if (!($node instanceof Node)) {
-            return Type::nonLiteralFromObject($node)->asRealUnionType();
+            return Type::fromObject($node)->asRealUnionType();
         }
         // XXX: This could be made more precise and handle things like unary/binary ops.
         // However, this doesn't know about constants that haven't been parsed yet.
