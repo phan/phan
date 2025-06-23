@@ -1,0 +1,6 @@
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type object|string
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $second - it has union type object|string
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $reset - it has union type object|string%S
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type int|null(real=int|null|string)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $k - it has union type int
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type object|string
