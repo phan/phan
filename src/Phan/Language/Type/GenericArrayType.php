@@ -545,13 +545,13 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type instanceof GenericArrayType) {
-                // e.g. ListType, GenericArrayType
-                $key_types |= $type->key_type;
-            } elseif ($type instanceof ArrayShapeType) {
+            if ($type instanceof ArrayShapeType) {
                 if ($type->isNotEmptyArrayShape()) {
                     $key_types |= $type->getKeyType();
                 }
+            } elseif ($type instanceof GenericArrayInterface) {
+                // e.g. ListType, GenericArrayType
+                $key_types |= $type->getKeyType();
             }
             // Treating ArrayType as mixed or excluding ArrayType would both cause false positives. Ignore ArrayType.
             // TODO: Support IterableType for non-arrays?
