@@ -761,7 +761,6 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'session_regenerate_id' => true,
     'session_status' => true,
     'sha1' => true,
-    'similar_text' => true,
     'simplexmlelement::asxml' => true,
     'simplexmlelement::attributes' => true,
     'simplexmlelement::children' => true,
@@ -905,6 +904,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'reflectionmethod::invokeargs' => false,  // may be a void
     'rename' => false,  // some code is optimistic
     'reset' => false,  // move array cursor
+    'similar_text' => SELF::SPECIAL_CASE, // takes value by ref
     'session_id' => false,  // Triggers regeneration
     'strtok' => false,  // advances a cursor if called with 1 argument - Any argument position can be ignored.
     'trait_exists' => self::SPECIAL_CASE,  // triggers class autoloader to load the trait
