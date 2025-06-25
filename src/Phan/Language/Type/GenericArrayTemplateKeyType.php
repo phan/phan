@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
@@ -63,9 +64,28 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         });
     }
 
+    public function __toString(): string
+    {
+        $string = 'array<' . $this->template_key_type->__toString() . ','
+            . $this->element_type->__toString() . '>';
+
+        if ($this->is_nullable) {
+            $string = '?' . $string;
+        }
+
+        return $string;
+    }
+
     public function hasTemplateTypeRecursive(): bool
     {
         return true;
+    }
+
+    public function getTypesRecursively(): Generator
+    {
+        yield $this;
+        yield from $this->template_key_type->getTypesRecursively();
+        yield from $this->element_type->getTypesRecursively();
     }
 
     /**
