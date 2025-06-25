@@ -83,4 +83,13 @@ class CallableArrayType extends ArrayType implements GenericArrayInterface
     public function genericArrayElementUnionType(): UnionType {
         return UnionType::fromFullyQualifiedPHPDocString('string|object');
     }
+
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof NonEmptyGenericArrayType) {
+            return $type->getKeyType() !== NonEmptyGenericArrayType::KEY_STRING &&
+                $this->genericArrayElementUnionType()->isStrictSubtypeOf($code_base, $type->genericArrayElementUnionType());
+        }
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
+    }
 }
