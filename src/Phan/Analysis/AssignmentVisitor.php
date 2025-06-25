@@ -1118,6 +1118,21 @@ class AssignmentVisitor extends AnalysisVisitor
         // thus yield a supertype of the intended type. However, we can't resolve `static` in the right context here,
         // and the PHPDoc type isn't meant to be replaced with concrete types as in Property::inheritStaticUnionType().
         $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
+
+        // Map template types to concrete types
+        if ($property_union_type->hasTemplateTypeRecursive()) {
+            // Get the type of the object to which the property belongs
+            $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr'] ?? null
+            );
+
+            $property_union_type = $property_union_type->withTemplateParameterTypeMap(
+                $expression_type->getTemplateParameterTypeMap($this->code_base)
+            );
+        }
+
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
             if ($resolved_right_type->canCastToExpandedUnionType(
