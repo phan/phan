@@ -1088,6 +1088,7 @@ class UnionType implements Serializable, Stringable
     /**
      * @return UnionType
      * Removes template types from this union type, e.g. converts T|\stdClass to \stdClass.
+     * You probably don't want to use this method.
      * @suppress PhanUnreferencedPublicMethod
      */
     public function withoutTemplateTypeRecursive(): UnionType

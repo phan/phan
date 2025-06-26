@@ -2480,7 +2480,7 @@ class Type implements Stringable
             if ($method_type->hasTemplateTypeRecursive()) {
                 $method_type = $method_type->withTemplateParameterTypeMap(
                     $iterator_type->getTemplateParameterTypeMap($code_base)
-                )->withoutTemplateTypeRecursive();
+                );
             }
             $new_expanded_types = null;
             // TODO: Support getIterator returning a union type with more than one type.
@@ -2523,7 +2523,7 @@ class Type implements Stringable
             if ($result->hasTemplateTypeRecursive()) {
                 $result = $result->withTemplateParameterTypeMap(
                     $iterator_type->getTemplateParameterTypeMap($code_base)
-                )->withoutTemplateTypeRecursive();
+                );
             }
             return $result;
         }
@@ -2576,7 +2576,7 @@ class Type implements Stringable
             if ($method_type->hasTemplateTypeRecursive()) {
                 $method_type = $method_type->withTemplateParameterTypeMap(
                     $iterator_type->getTemplateParameterTypeMap($code_base)
-                )->withoutTemplateTypeRecursive();
+                );
             }
             $new_expanded_types = null;
             // TODO: Support getIterator returning a union type with more than one type.
@@ -2619,7 +2619,7 @@ class Type implements Stringable
             if ($result->hasTemplateTypeRecursive()) {
                 $result = $result->withTemplateParameterTypeMap(
                     $iterator_type->getTemplateParameterTypeMap($code_base)
-                )->withoutTemplateTypeRecursive();
+                );
             }
             return $result;
         }
