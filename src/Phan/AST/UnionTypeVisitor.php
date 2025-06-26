@@ -2871,7 +2871,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map template types to concrete types
             if ($union_type->hasTemplateTypeRecursive()) {
-                // Get the type of the object calling the property
+                // Get the type of the object to which the property belongs
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,

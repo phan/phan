@@ -63,6 +63,8 @@ $tuple_a = new Tuple2(42, 'string');
 
 f($tuple_a->e0, $tuple_a->e1);
 f($tuple_a->getE0(), $tuple_a->getE1());
+$tuple_a->e0 = 42;
 
 f($tuple_a->e1, $tuple_a->e0);
 f($tuple_a->getE1(), $tuple_a->getE0());
+$tuple_a->e1 = 42;

@@ -7,3 +7,4 @@
 %s:64 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->e1 of type 'string' but \f() takes int defined at %s:61
 %s:65 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->getE0() of type 42 but \f() takes string defined at %s:61
 %s:65 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->getE1() of type 'string' but \f() takes int defined at %s:61
+%s:70 PhanTypeMismatchPropertyProbablyReal Assigning 42 of type 42 to property but \Tuple2->e1 is 'string' (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
