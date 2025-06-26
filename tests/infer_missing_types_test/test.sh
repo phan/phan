@@ -28,6 +28,7 @@ echo "Comparing the output:"
 sed -i \
     -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
     -e 's/ or interface \\ArrayAccess//' \
+    -e 's/src\\/src\//g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

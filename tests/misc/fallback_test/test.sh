@@ -70,6 +70,7 @@ sed -i \
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"
+sed -i -e 's/src\\/src\//g' $ACTUAL_PATH
 if type colordiff 2>/dev/null >/dev/null; then
     DIFF=colordiff
 else

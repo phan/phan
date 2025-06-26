@@ -17,6 +17,7 @@ rm -f $ACTUAL_PATH || exit 1
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"
+sed -i -e 's/src\\/src\//g' $ACTUAL_PATH
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
