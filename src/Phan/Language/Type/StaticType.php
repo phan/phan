@@ -100,15 +100,10 @@ final class StaticType extends StaticOrSelfType
         return true;
     }
 
-    public function __toString(): string
+    /** @override */
+    public function asFQSENString(): string
     {
-        $string = $this->name;
-
-        if ($this->is_nullable) {
-            $string = '?' . $string;
-        }
-
-        return $string;
+        return $this->name;
     }
 
     /**
