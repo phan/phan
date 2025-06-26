@@ -6326,10 +6326,12 @@ class UnionType implements Serializable, Stringable
      */
     public function usesTemplateType(TemplateType $template_type): bool
     {
-        $new_union_type = $this->withTemplateParameterTypeMap([
-            $template_type->getName() => UnionType::fromFullyQualifiedPHPDocString('mixed'),
-        ]);
-        return !$this->isEqualTo($new_union_type);
+        foreach ($this->getTypesRecursively() as $type) {
+            if ($type === $template_type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

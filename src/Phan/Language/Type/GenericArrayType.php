@@ -944,6 +944,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function getTypesRecursively(): Generator
     {
         yield $this;
+        // This is not really needed for the current uses of this method, but it's right in theory
+        yield from self::unionTypeForKeyType($this->key_type)->getTypesRecursively();
         yield from $this->element_type->getTypesRecursively();
     }
 
