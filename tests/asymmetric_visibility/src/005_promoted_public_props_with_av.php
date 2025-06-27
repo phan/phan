@@ -2,6 +2,7 @@
 
 class PromotedPublicPropsWithAV
 {
+    // Restart AppVeyor build
     public function __construct(
         public public(set) string $prop1 = 'value',
         public protected(set) int $prop2 = 0,
