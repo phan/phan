@@ -1,0 +1,6 @@
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (public) of property \AsymmetricVisibilityRestrictiveness->publicReadPublicSet must not be weaker than set visibility (public)
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (protected) of property \AsymmetricVisibilityRestrictiveness->protectedReadPublicSet must not be weaker than set visibility (public)
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (protected) of property \AsymmetricVisibilityRestrictiveness->protectedReadProtectedSet must not be weaker than set visibility (protected)
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (private) of property \AsymmetricVisibilityRestrictiveness->privateReadPublicSet must not be weaker than set visibility (public)
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (private) of property \AsymmetricVisibilityRestrictiveness->privateReadProtectedSet must not be weaker than set visibility (protected)
+%s:%d PhanPluginAsymmetricVisibilityLessRestrictive Visibility (private) of property \AsymmetricVisibilityRestrictiveness->privateReadPrivateSet must not be weaker than set visibility (private)
