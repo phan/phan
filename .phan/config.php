@@ -689,5 +689,6 @@ return [
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
         // 'UnusedSuppressionPlugin',
+        'AsymmetricVisibilityPlugin',
     ],
 ];

@@ -25,6 +25,7 @@ final class PHP84Test extends AbstractPhanFileTest
             'UnknownElementTypePlugin',
             'UnreachableCodePlugin',
             'UseReturnValuePlugin',
+            'AsymmetricVisibilityPlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
         'autoload_internal_extension_signatures' => [
