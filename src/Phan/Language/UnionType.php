@@ -1053,6 +1053,11 @@ class UnionType implements Serializable, Stringable
             }
         }
 
+        if ($has_template && !$concrete_type_list && $this->real_type_set) {
+            // Can't have an empty union type with a real type set
+            $concrete_type_list = UnionType::typeSetFromString('mixed');
+        }
+
         return $has_template ? UnionType::of($concrete_type_list, $this->real_type_set) : $this;
     }
 
