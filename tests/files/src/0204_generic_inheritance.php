@@ -44,10 +44,17 @@ class C4 extends C1 {
     public function __construct($p) {
         parent::__construct($p);
     }
+
+    /** @return T2 $p */
+    public function get() {
+        return $this->p;
+    }
 }
 
-f((new C4('string'))->p);
+f((new C4(false))->p);
 f((new C4(42))->p);
+f((new C4(false))->get());
+f((new C4(42))->get());
 
 /**
  * @inherits NotFound<string>

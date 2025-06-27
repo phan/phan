@@ -15,6 +15,11 @@ class Container {
         return $this->t;
     }
 
+    /** @return T */
+    function getValueFoo(): Foo {
+        return $this->t;
+    }
+
     /**
      * Returns a Container<T> (or Container<null> when called with 0 arguments).
      * @template T
@@ -83,6 +88,10 @@ function newContainerUnparameterized($value = null) {
     return $cont;
 }
 
+// Classes for test case below
+class Foo {}
+class Bar extends Foo {}
+
 $a = new Container(new stdClass);
 $b = Container::newTyped(new stdClass);
 $c = Container::newWithEmptyUnion(new stdClass);
@@ -100,6 +109,24 @@ $ee = $e->getValue();
 $ff = $f->getValue();
 $gg = $g->getValue();
 '@phan-debug-var $aa, $bb, $cc, $dd, $ee, $ff, $gg';
+
+$aC = new Container(new Bar);
+$bC = Container::newTyped(new Bar);
+$cC = Container::newWithEmptyUnion(new Bar);
+$dC = Container::newUnparameterized(new Bar);
+$eC = newContainerTyped(new Bar);
+$fC = newContainerWithEmptyUnion(new Bar);
+$gC = newContainerUnparameterized(new Bar);
+'@phan-debug-var $aC, $bC, $cC, $dC, $eC, $fC, $gC';
+
+$aaC = $aC->getValueFoo();
+$bbC = $bC->getValueFoo();
+$ccC = $cC->getValueFoo();
+$ddC = $dC->getValueFoo();
+$eeC = $eC->getValueFoo();
+$ffC = $fC->getValueFoo();
+$ggC = $gC->getValueFoo();
+'@phan-debug-var $aaC, $bbC, $ccC, $ddC, $eeC, $ffC, $ggC';
 
 $a0 = new Container();
 $b0 = Container::newTyped();

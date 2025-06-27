@@ -75,13 +75,23 @@ class Tuple2 {
     }
 
     /** @return T0 */
-    public function failAnotherGeneric() {
+    public function failWrongGenericGet() {
         return $this->e1;
+    }
+
+    /** @param T0 $e0 */
+    public function failWrongGenericSet($e0) {
+        return $this->e1 = $e0;
     }
 
     /** @return T0 */
     public static function failStatic() {
         return 42;
+    }
+
+    /** @return T0 */
+    public static function failStaticLeak() {
+        return getUnparameterizedTuple()->e0;
     }
 
 }

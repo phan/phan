@@ -1,37 +1,52 @@
 %s:9 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type static(real=static)
-%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
-%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
-%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
-%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T>(real=\Container<T>)
-%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T|null>(real=\Container<T|null>)
-%s:71 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T>(real=\Container<T>)
-%s:81 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<mixed>(real=\Container<mixed>)
-%s:81 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<mixed|null>(real=\Container<mixed|null>)
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \Container<\stdClass>(real=\Container<\stdClass>)
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \Container<\stdClass>
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \Container<>
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \Container
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \Container<\stdClass>
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \Container<>
-%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \Container
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $aa - it has union type \stdClass
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $bb - it has union type \stdClass
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $cc - it has union type (empty union type)
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $dd - it has union type T
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $ee - it has union type \stdClass
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $ff - it has union type (empty union type)
-%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $gg - it has union type T
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $a0 - it has union type \Container<null>(real=\Container<null>)
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $b0 - it has union type \Container<null>
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $c0 - it has union type \Container<>
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $d0 - it has union type \Container
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $e0 - it has union type \Container<null>
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $f0 - it has union type \Container<>
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $g0 - it has union type \Container
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $aa0 - it has union type null
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $bb0 - it has union type null
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $cc0 - it has union type (empty union type)
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $dd0 - it has union type T
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $ee0 - it has union type null
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $ff0 - it has union type (empty union type)
-%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $gg0 - it has union type T
+%s:18 PhanTypeMismatchDeclaredReturn Doc-block of getValueFoo contains declared return type T which is incompatible with the return type \Foo declared in the signature
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
+%s:53 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
+%s:65 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T>(real=\Container<T>)
+%s:65 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T|null>(real=\Container<T|null>)
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<T>(real=\Container<T>)
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<mixed>(real=\Container<mixed>)
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $cont - it has union type \Container<mixed|null>(real=\Container<mixed|null>)
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \Container<\stdClass>(real=\Container<\stdClass>)
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \Container<\stdClass>
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \Container<>
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \Container
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \Container<\stdClass>
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \Container<>
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \Container
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $aa - it has union type \stdClass
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $bb - it has union type \stdClass
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $cc - it has union type (empty union type)
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $dd - it has union type T
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $ee - it has union type \stdClass
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $ff - it has union type (empty union type)
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $gg - it has union type T
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $aC - it has union type \Container<\Bar>(real=\Container<\Bar>)
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $bC - it has union type \Container<\Bar>
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $cC - it has union type \Container<>
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $dC - it has union type \Container
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $eC - it has union type \Container<\Bar>
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $fC - it has union type \Container<>
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $gC - it has union type \Container
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $aaC - it has union type \Bar(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $bbC - it has union type \Bar(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ccC - it has union type mixed(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ddC - it has union type T(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $eeC - it has union type \Bar(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ffC - it has union type mixed(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ggC - it has union type T(real=\Foo)
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $a0 - it has union type \Container<null>(real=\Container<null>)
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $b0 - it has union type \Container<null>
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $c0 - it has union type \Container<>
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $d0 - it has union type \Container
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $e0 - it has union type \Container<null>
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $f0 - it has union type \Container<>
+%s:137 PhanDebugAnnotation @phan-debug-var requested for variable $g0 - it has union type \Container
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $aa0 - it has union type null
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $bb0 - it has union type null
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $cc0 - it has union type (empty union type)
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $dd0 - it has union type T
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ee0 - it has union type null
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ff0 - it has union type (empty union type)
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $gg0 - it has union type T
