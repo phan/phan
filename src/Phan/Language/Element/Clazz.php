@@ -2820,6 +2820,21 @@ class Clazz extends AddressableElement
         if ($parent->isFinal()) {
             $this->emitExtendsFinalClassWarning($code_base, $parent);
         }
+        if ($parent->isGeneric() ) {
+            // Should have @extends/@inherits substituting all type parameters, otherwise they will
+            // be substituted with the empty union type, which is almost never what you want.
+            $parent_type = $this->getParentTypeOption();
+            if (
+                !$parent_type->isDefined() ||
+                count($parent_type->get()->getTemplateParameterTypeList()) < count($parent->getTemplateTypeMap())
+            ) {
+                $this->emitGenericMissingParametersWarning(
+                    $code_base, $parent,
+                    count($parent->getTemplateTypeMap()),
+                    count($parent_type->get()->getTemplateParameterTypeList())
+                );
+            }
+        }
 
         // Tell the parent to import its own parents first
 
@@ -2892,6 +2907,29 @@ class Clazz extends AddressableElement
                     $ancestor->getFileRef()->getLineNumberStart()
                 );
             }
+        }
+    }
+
+    private function emitGenericMissingParametersWarning(
+        CodeBase $code_base,
+        Clazz $ancestor,
+        int $expected_count,
+        int $actual_count
+    ): void {
+        $context = $this->getContext();
+        if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::GenericMissingParameters)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::GenericMissingParameters,
+                $this->parent_type_lineno ?: $context->getLineNumberStart(),
+                (string)$this->fqsen,
+                $expected_count,
+                (string)$ancestor->getFQSEN(),
+                $actual_count,
+                $ancestor->getFileRef()->getFile(),
+                $ancestor->getFileRef()->getLineNumberStart()
+            );
         }
     }
 
