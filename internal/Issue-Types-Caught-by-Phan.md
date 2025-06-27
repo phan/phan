@@ -4860,6 +4860,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0203
 Global variable {VARIABLE} may not be assigned an instance of a generic class
 ```
 
+## PhanGenericMissingParameters
+
+```
+Class {CLASS} must substitute all {COUNT} template parameters when inheriting {CLASS} (found {COUNT}) defined at {FILE}:{LINE} (use @extends or @inherit)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0987_generic_missing_extends.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0987_generic_missing_extends.php#L10).
+
 ## PhanTemplateTypeConstant
 
 This is emitted when a class constant's PHPDoc contains a type declared in a class's phpdoc template annotations.

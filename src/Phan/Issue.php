@@ -636,6 +636,7 @@ class Issue
     public const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
     public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
     public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
+    public const GenericMissingParameters = 'PhanGenericMissingParameters';
 
     // Issue::CATEGORY_COMMENT
     public const DebugAnnotation                  = 'PhanDebugAnnotation';
@@ -5481,6 +5482,14 @@ class Issue
                 "Template type {TYPE} not declared in parameters of function/method {FUNCTIONLIKE} (or Phan can't extract template types for this use case)",
                 self::REMEDIATION_B,
                 14006
+            ),
+            new Issue(
+                self::GenericMissingParameters,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Class {CLASS} must substitute all {COUNT} template parameters when inheriting {CLASS} (found {COUNT}) defined at {FILE}:{LINE} (use @extends or @inherit)",
+                self::REMEDIATION_B,
+                14007
             ),
 
             // Issue::CATEGORY_INTERNAL

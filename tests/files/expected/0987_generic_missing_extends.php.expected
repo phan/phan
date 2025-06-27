@@ -1,0 +1,3 @@
+%s:10 PhanGenericMissingParameters Class \Err1 must substitute all 2 template parameters when inheriting \Generic (found 0) defined at %s:7 (use @extends or @inherit)
+%s:15 PhanGenericMissingParameters Class \Err2 must substitute all 2 template parameters when inheriting \Generic (found 0) defined at %s:7 (use @extends or @inherit)
+%s:20 PhanGenericMissingParameters Class \Err3 must substitute all 2 template parameters when inheriting \Generic (found 1) defined at %s:7 (use @extends or @inherit)
