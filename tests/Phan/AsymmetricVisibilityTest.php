@@ -125,7 +125,16 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
             'private',
             'private',
         ];
-
+        yield 'Constructor promoted properties with Asymmetric Visibility' => [
+            '005_promoted_public_props_with_av',
+            '\PromotedPublicPropsWithAV',
+            'public',
+            'public',
+            'public',
+            'protected',
+            'public',
+            'private',
+        ];
     }
 
     /**
