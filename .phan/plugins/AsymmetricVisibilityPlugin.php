@@ -8,6 +8,9 @@ use Phan\Language\Element\Property;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzePropertyCapability;
 
+/**
+ * This file checks Asymmetric Visibility
+ */
 class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapability
 {
     /**
@@ -27,9 +30,9 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
         }
 
         if (
-            false === $property->isPublicSet() &&
-            false === $property->isProtectedSet() &&
-            false === $property->isPrivateSet()
+            !$property->isPublicSet() &&
+            !$property->isProtectedSet() &&
+            !$property->isPrivateSet()
         ) {
             return;
         }
@@ -42,14 +45,14 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
                 "Property with asymmetric visibility {PROPERTY} must have a declared type",
                 [$property->getRepresentationForIssue()],
                 Issue::SEVERITY_CRITICAL,
-                Issue::REMEDIATION_A,
+                Issue::REMEDIATION_A
             );
         }
 
         $isVisibilityLessRestrictiveThanSet = false;
         if ($property->isPublicSet()) {
             $isVisibilityLessRestrictiveThanSet = true;
-        } else if ($property->isProtectedSet() && false === $property->isPublic()) {
+        } else if ($property->isProtectedSet() && !$property->isPublic()) {
             $isVisibilityLessRestrictiveThanSet = true;
         } else if ($property->isPrivateSet() && $property->isPrivate()) {
             $isVisibilityLessRestrictiveThanSet = true;
@@ -63,10 +66,10 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
                 [
                     $property->getVisibilityName(),
                     $property->getRepresentationForIssue(),
-                    $property->getVisibilitySetName()
+                    (string) $property->getVisibilitySetName()
                 ],
                 Issue::SEVERITY_CRITICAL,
-                Issue::REMEDIATION_A,
+                Issue::REMEDIATION_A
             );
         }
         //
