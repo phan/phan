@@ -25,6 +25,11 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
         CodeBase $code_base,
         Property $property
     ): void {
+        // TODO: this condition can be removed after https://github.com/nikic/php-ast/pull/250 is merged
+        if (\PHP_VERSION_ID < 80400) {
+            return;
+        }
+
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }
