@@ -3773,29 +3773,10 @@ class Clazz extends AddressableElement
      */
     public function resolveParentTemplateType(array $template_parameter_type_map): UnionType
     {
-        if (\count($template_parameter_type_map) === 0) {
-            return UnionType::empty();
+        if ($this->parent_type !== null) {
+            return $this->parent_type->withTemplateParameterTypeMap($template_parameter_type_map);
         }
-        if ($this->parent_type === null) {
-            return UnionType::empty();
-        }
-        if (!$this->parent_type->hasTemplateParameterTypes()) {
-            return UnionType::empty();
-        }
-        $parent_template_parameter_type_list = $this->parent_type->getTemplateParameterTypeList();
-        $changed = false;
-        foreach ($parent_template_parameter_type_list as $i => $template_type) {
-            $new_template_type = $template_type->withTemplateParameterTypeMap($template_parameter_type_map);
-            if ($template_type === $new_template_type) {
-                continue;
-            }
-            $parent_template_parameter_type_list[$i] = $new_template_type;
-            $changed = true;
-        }
-        if (!$changed) {
-            return UnionType::empty();
-        }
-        return Type::fromType($this->parent_type, $parent_template_parameter_type_list)->asPHPDocUnionType();
+        return UnionType::empty();
     }
 
     /**
