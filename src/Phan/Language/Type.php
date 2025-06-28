@@ -2810,24 +2810,23 @@ class Type implements Stringable
 
         // Recurse up the tree to include all types
         $representation = $this->__toString();
-        $recursive_union_type_builder = new UnionTypeBuilder();
+        $recursive_union_type_builder = new UnionTypeBuilder([$this]);
+
+        $template_union_type = UnionType::empty();
+        if (count($this->template_parameter_type_list) > 0) {
+            $template_union_type = $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))
+                ->asExpandedTypes($code_base, $recursion_depth + 1);
+            $template_union_type = $template_union_type->withType($this);
+        }
+
         foreach ($union_type->getTypeSet() as $clazz_type) {
             if ($clazz_type->__toString() !== $representation) {
                 $recursive_union_type_builder->addUnionType(
-                    $clazz_type->asExpandedTypes(
-                        $code_base,
-                        $recursion_depth + 1
-                    )
+                    $clazz_type->asExpandedTypes($code_base, $recursion_depth + 1)
                 );
             } else {
                 $recursive_union_type_builder->addType($clazz_type);
             }
-        }
-        if (count($this->template_parameter_type_list) > 0) {
-            $recursive_union_type_builder->addUnionType(
-                $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))
-                    ->asExpandedTypes($code_base, $recursion_depth + 1)
-            );
         }
 
         // Add in aliases
@@ -2840,7 +2839,8 @@ class Type implements Stringable
             );
         }
 
-        return $recursive_union_type_builder->getPHPDocUnionType();
+        $result = $recursive_union_type_builder->getPHPDocUnionType();
+        return $result->withUnionType($template_union_type);
     }
 
     /**
@@ -2902,35 +2902,26 @@ class Type implements Stringable
         $union_type = $union_type->withUnionType(
             $clazz->getUnionType()->withIsNullable($this->is_nullable)
         );
-
-        if (count($this->template_parameter_type_list) > 0) {
-            $template_union_type = $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1);
-            $template_union_type = $template_union_type->withType($this);
-        } else {
-            $template_union_type = UnionType::empty();
-        }
-
         $additional_union_type = $clazz->getAdditionalTypes();
         if ($additional_union_type !== null) {
             $union_type = $union_type->withUnionType($additional_union_type->withIsNullable($this->is_nullable));
         }
 
+        // Recurse up the tree to include all types
         $representation = $this->__toString();
         $recursive_union_type_builder = new UnionTypeBuilder([$this]);
-        // Recurse up the tree to include all types
+
+        $template_union_type = UnionType::empty();
         if (count($this->template_parameter_type_list) > 0) {
-            $recursive_union_type_builder->addUnionType(
-                $template_union_type
-            );
+            $template_union_type = $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))
+                ->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1);
+            $template_union_type = $template_union_type->withType($this);
         }
 
         foreach ($union_type->getTypeSet() as $clazz_type) {
             if ($clazz_type->__toString() !== $representation) {
                 $recursive_union_type_builder->addUnionType(
-                    $clazz_type->asExpandedTypesPreservingTemplate(
-                        $code_base,
-                        $recursion_depth + 1
-                    )
+                    $clazz_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1)
                 );
             } else {
                 $recursive_union_type_builder->addType($clazz_type);
@@ -2948,10 +2939,7 @@ class Type implements Stringable
         }
 
         $result = $recursive_union_type_builder->getPHPDocUnionType();
-        if (!$template_union_type->isEmpty()) {
-            return $result->replaceWithTemplateTypes($template_union_type);
-        }
-        return $result;
+        return $result->replaceWithTemplateTypes($template_union_type);
     }
 
     /**
