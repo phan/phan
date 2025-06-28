@@ -2527,7 +2527,7 @@ class Type implements Stringable
             }
             return $result;
         }
-        return StringType::instance(false)->asPHPDocUnionType();
+        return StringType::instance(false)->asRealUnionType();
     }
 
     /**

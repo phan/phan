@@ -45,7 +45,7 @@ class CallableArrayType extends ArrayType implements GenericArrayInterface
     public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
-        return IntType::instance(false)->asPHPDocUnionType();
+        return IntType::instance(false)->asRealUnionType();
     }
 
     /**
@@ -81,7 +81,7 @@ class CallableArrayType extends ArrayType implements GenericArrayInterface
     }
 
     public function genericArrayElementUnionType(): UnionType {
-        return UnionType::fromFullyQualifiedPHPDocString('string|object');
+        return UnionType::fromFullyQualifiedRealString('string|object');
     }
 
     protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool

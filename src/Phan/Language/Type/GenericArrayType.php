@@ -289,7 +289,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function iterableValueUnionType(?CodeBase $code_base = null): UnionType
     {
-        return $this->element_type->asPHPDocUnionType();
+        return $this->element_type->asRealUnionType();
     }
 
     /**
@@ -309,7 +309,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function genericArrayElementUnionType(): UnionType
     {
-        return $this->element_type->asPHPDocUnionType();
+        return $this->element_type->asRealUnionType();
     }
 
     public function __toString(): string
@@ -574,9 +574,9 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         static $string_union_type = null;
         static $int_or_string_union_type = null;
         if ($int_union_type === null) {
-            $int_union_type = UnionType::fromFullyQualifiedPHPDocString('int');
-            $string_union_type = UnionType::fromFullyQualifiedPHPDocString('string');
-            $int_or_string_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
+            $int_union_type = UnionType::fromFullyQualifiedRealString('int');
+            $string_union_type = UnionType::fromFullyQualifiedRealString('string');
+            $int_or_string_union_type = UnionType::fromFullyQualifiedRealString('int|string');
         }
         switch ($key_type) {
             case self::KEY_INT:
