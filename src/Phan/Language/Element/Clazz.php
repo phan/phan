@@ -516,42 +516,6 @@ class Clazz extends AddressableElement
      */
     public function setParentType(Type $parent_type, int $lineno = 0): void
     {
-        if ($this->getInternalScope()->hasAnyTemplateType()) {
-            // Get a reference to the local list of templated
-            // types. We'll use this to map templated types on the
-            // parent to locally templated types.
-            $template_type_map =
-                $this->getInternalScope()->getTemplateTypeMap();
-
-            // Figure out if the given parent type contains any template
-            // types.
-            $contains_templated_type = false;
-            foreach ($parent_type->getTemplateParameterTypeList() as $union_type) {
-                foreach ($union_type->getTypeSet() as $type) {
-                    if (isset($template_type_map[$type->getName()])) {
-                        $contains_templated_type = true;
-                        break 2;
-                    }
-                }
-            }
-
-            // If necessary, map the template parameter type list through the
-            // local list of templated types.
-            if ($contains_templated_type) {
-                $parent_type = Type::fromType(
-                    $parent_type,
-                    \array_map(static function (UnionType $union_type) use ($template_type_map): UnionType {
-                        return UnionType::of(
-                            \array_map(static function (Type $type) use ($template_type_map): Type {
-                                return $template_type_map[$type->getName()] ?? $type;
-                            }, $union_type->getTypeSet()),
-                            []
-                        );
-                    }, $parent_type->getTemplateParameterTypeList())
-                );
-            }
-        }
-
         $this->parent_type = $parent_type;
         $this->parent_type_lineno = $lineno;
 
