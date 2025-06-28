@@ -2826,6 +2826,7 @@ class Type implements Stringable
         if (count($this->template_parameter_type_list) > 0) {
             $recursive_union_type_builder->addUnionType(
                 $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))
+                    ->asExpandedTypes($code_base, $recursion_depth + 1)
             );
         }
 
