@@ -92,6 +92,8 @@ use function trim;
  * A plain Type represents a class instance.
  * Separate subclasses exist for NativeType, ArrayType, ScalarType, TemplateType, etc.
  *
+ * All instances of Type are interned, and can be compared using `===`, since Type
+ * objects representing the same type will always be the same class instance.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanSuspiciousTruthyString

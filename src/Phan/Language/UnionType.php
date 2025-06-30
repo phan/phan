@@ -75,6 +75,11 @@ use function substr;
  * (This was the most efficient representation, since most union types have 0, 1, or 2 unique types in practice)
  * To add/remove a type to a UnionType, you replace it with a UnionType that had that type added.
  *
+ * Unlike Type, UnionType objects are not interned. Two UnionTypes representing the same type may
+ * not even compare equal with `==`, because the order of entries in the list of Types may be
+ * different. Code dealing with UnionType should not depend on the order. Types are always shown in
+ * canonical order when printing the objects, e.g. in __toString().
+ *
  * @see AnnotatedUnionType for the way Phan represents extra information about types
  * @see https://github.com/phan/phan/wiki/About-Union-Types
  *
