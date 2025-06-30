@@ -332,7 +332,7 @@ class ArrayType extends IterableType
      */
     public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
-        return UnionType::fromFullyQualifiedPHPDocString('int|string');
+        return UnionType::fromFullyQualifiedRealString('int|string');
     }
 
     /**

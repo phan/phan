@@ -1088,6 +1088,7 @@ class UnionType implements Serializable, Stringable
     /**
      * @return UnionType
      * Removes template types from this union type, e.g. converts T|\stdClass to \stdClass.
+     * You probably don't want to use this method.
      * @suppress PhanUnreferencedPublicMethod
      */
     public function withoutTemplateTypeRecursive(): UnionType
@@ -3982,7 +3983,7 @@ class UnionType implements Serializable, Stringable
                     }
                 }
             }
-            $new_real_type_builder->addUnionType($key_union_type);
+            $new_real_type_builder->addUnionType($key_union_type->getRealUnionType());
         }
         $type_set = $new_type_builder->getTypeSet();
         $real_type_set = $new_real_type_builder->getTypeSet();
@@ -4028,7 +4029,7 @@ class UnionType implements Serializable, Stringable
                 $real_builder->clearTypeSet();
                 break;
             }
-            $real_builder->addUnionType($element_type);
+            $real_builder->addUnionType($element_type->getRealUnionType());
         }
 
         static $array_type_nonnull = null;
