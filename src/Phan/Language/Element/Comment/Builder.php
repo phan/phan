@@ -222,23 +222,25 @@ final class Builder
     }
 
     /** @internal */
-    public const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    /** @internal */
+    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
      * An individual line of a comment
      *
      * @return UnionType
-     * The declared return type
+     * The declared return or throws type
      */
-    private function returnTypeFromCommentLine(
+    private function returnOrThrowsTypeFromCommentLine(
         string $line,
         int $i
     ): UnionType {
-        $return_union_type_string = '';
+        $union_type_string = '';
 
-        if (\preg_match(self::RETURN_COMMENT_REGEX, $line, $match)) {
-            $return_union_type_string = $match[2];
+        if (\preg_match(self::RETURN_OR_THROWS_COMMENT_REGEX, $line, $match)) {
+            $union_type_string = $match[2];
             $raw_match = $match[0];
             $end_offset = (int)\strpos($line, $raw_match) + \strlen($raw_match);
             $char_at_end_offset = $line[$end_offset] ?? ' ';
@@ -247,7 +249,7 @@ final class Builder
                     Issue::UnextractableAnnotationSuffix,
                     $this->guessActualLineLocation($i),
                     \trim($line),
-                    $return_union_type_string,
+                    $union_type_string,
                     $char_at_end_offset
                 );
             }
@@ -259,16 +261,14 @@ final class Builder
             );
         }
         // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
-        $return_union_type_string = self::rewritePHPDocType($return_union_type_string);
+        $union_type_string = self::rewritePHPDocType($union_type_string);
 
-        $return_union_type = UnionType::fromStringInContext(
-            $return_union_type_string,
+        return UnionType::fromStringInContext(
+            $union_type_string,
             $this->context,
             Type::FROM_PHPDOC,
             $this->code_base
         );
-
-        return $return_union_type;
     }
 
     private static function rewritePHPDocType(
@@ -754,7 +754,7 @@ final class Builder
             return;
         }
         $return_comment = $this->return_comment;
-        $new_type = $this->returnTypeFromCommentLine($line, $i);
+        $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);
         if ($return_comment) {
             $return_comment->setType($return_comment->getType()->withUnionType($new_type));
         } else {
@@ -768,7 +768,7 @@ final class Builder
             return;
         }
         $this->throw_union_type = $this->throw_union_type->withUnionType(
-            $this->returnTypeFromCommentLine($line, $i)
+            $this->returnOrThrowsTypeFromCommentLine($line, $i)
         );
     }
 
@@ -855,12 +855,12 @@ final class Builder
                 return;
             case 'phan-real-return':
                 if ($this->checkCompatible('@phan-real-return', Comment::FUNCTION_LIKE, $i)) {
-                    $this->phan_overrides['real-return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i)->asRealUnionType(), $this->guessActualLineLocation($i));
+                    $this->phan_overrides['real-return'] = new ReturnComment($this->returnOrThrowsTypeFromCommentLine($line, $i)->asRealUnionType(), $this->guessActualLineLocation($i));
                 }
                 return;
             case 'phan-return':
                 if ($this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i)) {
-                    $this->phan_overrides['return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
+                    $this->phan_overrides['return'] = new ReturnComment($this->returnOrThrowsTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
                 }
                 return;
             case 'phan-override':
