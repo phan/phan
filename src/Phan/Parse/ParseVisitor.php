@@ -230,8 +230,16 @@ class ParseVisitor extends ScopeVisitor
             // set that on the class
             $inherited_type_option = $comment->getInheritedTypeOption();
             if ($inherited_type_option->isDefined()) {
-                $class->setParentType($inherited_type_option->get());
+                if ($class->isClass()) {
+                    // TODO: Emit issue if this does not match `class ... extends`
+                    $class->setParentType($inherited_type_option->get());
+                } else {
+                    // TODO: Support generic interfaces
+                    // TODO: Emit issue if this does not match `interface ... extends`
+                    // TODO: Support more than one @extends
+                }
             }
+
             $class->setMixinTypes($comment->getMixinTypes());
 
             // Add any implemented interfaces
