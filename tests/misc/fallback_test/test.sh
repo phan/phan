@@ -10,6 +10,18 @@ echo "PHP_VERSION_ID=$PHP_VERSION_ID";
 
 for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
     original_path="$path"
+    if [[ "$PHP_VERSION_ID" -ge 70300 ]]; then
+        alternate_path=${original_path/.expected/.expected73}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
+    if [[ "$PHP_VERSION_ID" -ge 70400 ]]; then
+        alternate_path=${original_path/.expected/.expected74}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
     if [[ "$PHP_VERSION_ID" -ge 80000 ]]; then
         alternate_path=${original_path/.expected/.expected80}
         if [ -f "$alternate_path" ]; then

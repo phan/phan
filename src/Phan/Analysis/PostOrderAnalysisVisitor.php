@@ -3152,7 +3152,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $params_node = $node->children['params'];
         // @phan-suppress-next-line PhanUndeclaredProperty
-        if (isset($params_node->polyfill_has_trailing_comma)) {
+        if (isset($params_node->polyfill_has_trailing_comma) && Config::get_closest_minimum_target_php_version_id() < 80000) {
             $this->emitIssue(
                 Issue::CompatibleTrailingCommaParameterList,
                 end($params_node->children)->lineno ?? $params_node->lineno,
