@@ -67,7 +67,7 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
                 $code_base,
                 $property->getContext(),
                 'PhanPluginAsymmetricVisibilityLessRestrictive',
-                "Visibility ({VISIBILITY}) of property {PROPERTY} must not be weaker than set visibility ({SET_VISIBILITY})",
+                "Visibility ({CODE}) of property {PROPERTY} must not be weaker than set visibility ({CODE})",
                 [
                     $property->getVisibilityName(),
                     $property->getRepresentationForIssue(),

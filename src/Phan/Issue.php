@@ -15,6 +15,7 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\ConversionSpec;
 use Phan\Plugin\ConfigPluginSet;
+use RuntimeException;
 use Stringable;
 
 /**
@@ -849,13 +850,12 @@ class Issue
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE);
             if (!$replacement_exists) {
-                \error_log(\sprintf(
+                throw new RuntimeException(\sprintf(
                     "No coloring info for issue message (%s), key {%s}. Valid template types: %s",
                     $template,
                     $key,
                     \implode(', ', \array_keys(self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
                 ));
-                return '%s';
             }
             return self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$key];
         }, $template);
