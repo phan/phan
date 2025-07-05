@@ -804,7 +804,7 @@ class Clazz extends AddressableElement
                 // type through it
                 if ($type_option->isDefined()
                     && !$property->hasUnresolvedFutureUnionType()
-                    && $property->getUnionType()->hasTemplateType()
+                    && $property->getUnionType()->hasTemplateTypeRecursive()
                 ) {
                     $property->setUnionType(
                         $property->getUnionType()->withTemplateParameterTypeMap(
@@ -1852,7 +1852,7 @@ class Clazz extends AddressableElement
             // return type and parameter types through it
             if ($type_option->isDefined()) {
                 // Map the method's return type
-                if ($method->getUnionType()->hasTemplateType()) {
+                if ($method->getUnionType()->hasTemplateTypeRecursive()) {
                     $method->setUnionType(
                         $method->getUnionType()->withTemplateParameterTypeMap(
                             $type_option->get()->getTemplateParameterTypeMap(
@@ -1866,7 +1866,7 @@ class Clazz extends AddressableElement
                 $method->setParameterList(
                     \array_map(static function (Parameter $parameter) use ($type_option, $code_base): Parameter {
 
-                        if (!$parameter->getUnionType()->hasTemplateType()) {
+                        if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                             return $parameter;
                         }
 

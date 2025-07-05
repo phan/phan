@@ -52,3 +52,6 @@ assertInt($err1->t->t);
 
 $err2 = new IntContainerContainer(new StringContainer('oops'));
 assertInt($err2->t->t);
+
+$ok3 = new ContainerContainer(new Container('ok'));
+assertInt($ok3->t->t); // err
