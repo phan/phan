@@ -32,6 +32,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\PluginV3\StopParamAnalysisException;
 use Phan\Suggestion;
@@ -1200,11 +1201,28 @@ final class ArgumentType
         }
 
         if ($alternate_parameter_type->hasTemplateTypeRecursive()) {
-            // Don't worry about **unresolved** template types.
-            // We resolve them if possible in ContextNode->getMethod()
-            //
-            // TODO: Warn about the type without the templates?
-            return;
+            if (
+                $argument_type_resolved->hasTemplateTypeRecursive() &&
+
+                // The caller function and the called function both are methods belonging to the same class
+                $context->isInMethodScope() &&
+                $method instanceof Method &&
+                $context->getClassInScope($code_base) === $method->getClass($code_base) &&
+
+                // None of template types in the argument or the parameter come from their methods
+                // (so they must come from the class instead)
+                !self::hasTemplateTypeFromFunctionRecursive($alternate_parameter_type, $method) &&
+                !self::hasTemplateTypeFromFunctionRecursive($argument_type_resolved, $context->getFunctionLikeInScope($code_base))
+            ) {
+                // Continue, we can warn about these generic types not matching, as they're both from the same class.
+
+            } else {
+                // Don't worry about **unresolved** template types.
+                // We resolve them if possible in ContextNode->getMethod()
+                //
+                // TODO: Warn about the type without the templates?
+                return;
+            }
         }
         // FIXME: This may be obsolete after changing canCastToDeclaredType
         if ($alternate_parameter_type->hasTemplateParameterTypes()) {
@@ -1236,6 +1254,15 @@ final class ArgumentType
         }
         // Check suppressions and emit the issue
         self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+    }
+
+    private static function hasTemplateTypeFromFunctionRecursive(UnionType $union_type, FunctionInterface $function): bool {
+        foreach ($union_type->getTypesRecursively() as $type) {
+            if ($type instanceof TemplateType && $function->declaresTemplateTypeInComment($type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static function maybeWarnProvidingUnusedParameter(

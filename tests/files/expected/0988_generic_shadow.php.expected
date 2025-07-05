@@ -2,6 +2,8 @@
 %s:73 PhanTypeMismatchReturn Returning $this->getA() of type X but getYErr2() is declared to return Y
 %s:78 PhanTypeMismatchReturn Returning $this->getX() of type X but getYErr3() is declared to return Y
 %s:93 PhanTypeMismatchProperty Assigning $y of type Y to property but \ShadowPair->a is X
+%s:98 PhanTypeMismatchArgument Argument 1 ($a) is $y of type Y but \ShadowPair::setA() takes X defined at %s:32
+%s:103 PhanTypeMismatchArgument Argument 1 ($x) is $y of type Y but \ShadowPair::setX() takes X defined at %s:82
 %s:141 PhanTypeMismatchProperty Assigning $bar->a of type 'a' to property but \Pair->b is 1
 %s:142 PhanTypeMismatchProperty Assigning $bar->getA() of type 'a' to property but \Pair->b is 1
 %s:143 PhanTypeMismatchProperty Assigning $bar->getX() of type 'a' to property but \Pair->b is 1
