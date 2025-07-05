@@ -171,8 +171,8 @@ $test->optionNull = null;
 // OK:
 $test->someFoo = new Some(new Foo);
 // Error:
-$test->someFoo = maybeFoo();
-$test->someFoo = new None;
+$test->someFoo = maybeFoo(); // Error (not detected, maybe a bug, maybe we allow it because of common parent type?)
+$test->someFoo = new None; // Error (not detected, maybe a bug, maybe we allow it because of common parent type?)
 $test->someFoo = new Some(null);
 $test->someFoo = new NoneNull;
 $test->someFoo = new Foo;
