@@ -161,6 +161,16 @@ class Parameter
     }
 
     /**
+     * Change the parameter type to another.
+     * @param UnionType $other
+     * @internal For Method::cloneWithTemplateParameterTypeMap()
+     */
+    public function setUnionType(UnionType $other): void
+    {
+        $this->type = $other;
+    }
+
+    /**
      * Add types (from another comment) to this comment parameter.
      *
      * @param UnionType $other

@@ -1102,6 +1102,23 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
 
+        // Map the parameters' PHPDoc types as well
+        // (the final union type may not have been computed yet)
+        if ($comment = $method->getComment()) {
+            $comment = clone($comment);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            foreach ($comment->getAndMutateParameters() as &$comment_param) {
+                if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                    $comment_param = clone($comment_param);
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $comment_param->setUnionType(
+                        $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+                    );
+                }
+            }
+            $method->setComment($comment);
+        }
+
         return $method;
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use AssertionError;
+use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -620,6 +621,21 @@ class Comment
     public function getParameterMap(): array
     {
         return $this->parameter_map;
+    }
+
+    /**
+     * Yield every parameter by reference, allowing the caller to change them.
+     * @return Generator<CommentParameter>
+     * @internal For Method::cloneWithTemplateParameterTypeMap()
+     */
+    public function &getAndMutateParameters(): Generator
+    {
+        foreach ($this->parameter_list as &$parameter) {
+            yield $parameter;
+        }
+        foreach ($this->parameter_map as &$parameter) {
+            yield $parameter;
+        }
     }
 
     /**

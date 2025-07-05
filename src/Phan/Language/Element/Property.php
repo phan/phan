@@ -579,6 +579,14 @@ class Property extends ClassElement
             );
         }
 
+        // Map the property's PHPDoc type as well
+        // (the final union type may not have been computed yet)
+        if ($property->getPHPDocUnionType()->hasTemplateTypeRecursive()) {
+            $property->setPHPDocUnionType(
+                $property->getPHPDocUnionType()->withTemplateParameterTypeMap($template_type_map)
+            );
+        }
+
         return $property;
     }
 
