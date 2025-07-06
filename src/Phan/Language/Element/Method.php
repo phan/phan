@@ -97,9 +97,6 @@ class Method extends ClassElement implements FunctionInterface
             $fqsen
         );
         $context = $context->withScope($internal_scope);
-        if ($type->hasTemplateType()) {
-            $this->recordHasTemplateType();
-        }
         parent::__construct(
             $context,
             FullyQualifiedMethodName::canonicalName($name),
@@ -132,20 +129,36 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * Sets hasTemplateType to true if it finds any template types in the parameters or methods
+     * Sets hasTemplateType to true if it finds any template types in the parameters or methods,
+     * or false otherwise. This should be always called after modifying the return or param types.
      */
     public function checkForTemplateTypes(): void
     {
         if ($this->getUnionType()->hasTemplateTypeRecursive()) {
-            $this->recordHasTemplateType();
+            $this->recordHasTemplateType(true);
             return;
         }
         foreach ($this->parameter_list as $parameter) {
             if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                $this->recordHasTemplateType();
+                $this->recordHasTemplateType(true);
                 return;
             }
         }
+        if ($this->comment) {
+            foreach ($this->comment->getParameterList() as $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->recordHasTemplateType(true);
+                    return;
+                }
+            }
+            foreach ($this->comment->getParameterMap() as $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->recordHasTemplateType(true);
+                    return;
+                }
+            }
+        }
+        $this->recordHasTemplateType(false);
     }
 
     /**
@@ -547,12 +560,6 @@ class Method extends ClassElement implements FunctionInterface
             $element_context,
             $node->children['attributes'] ?? null
         ));
-        foreach ($parameter_list as $parameter) {
-            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                $method->recordHasTemplateType();
-                break;
-            }
-        }
 
         // Add each parameter to the scope of the function
         // NOTE: it's important to clone this,
@@ -642,6 +649,8 @@ class Method extends ClassElement implements FunctionInterface
         $element_context->freeElementReference();
         // Populate the original return type.
         $method->setOriginalReturnType();
+
+        $method->checkForTemplateTypes();
 
         return $method;
     }
@@ -995,9 +1004,13 @@ class Method extends ClassElement implements FunctionInterface
         return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
     }
 
-    private function recordHasTemplateType(): void
+    private function recordHasTemplateType(bool $has_template_type): void
     {
-        $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::HAS_TEMPLATE_TYPE,
+            $has_template_type
+        ));
     }
 
     /**
@@ -1010,10 +1023,6 @@ class Method extends ClassElement implements FunctionInterface
     ): Method {
         if ($this->hasTemplateType()) {
             $clone = $this->cloneWithTemplateParameterTypeMap($object_union_type->getTemplateParameterTypeMap($code_base));
-
-            // Check if we have really resolved all types
-            $clone->setPhanFlags($clone->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
-            $clone->checkForTemplateTypes();
             if (!$clone->hasTemplateType()) {
                 // If resolved all of the template types, return the clone with concrete types.
                 if (Config::get_track_references()) {
@@ -1075,6 +1084,9 @@ class Method extends ClassElement implements FunctionInterface
             }
             $method->setComment($comment);
         }
+
+        // We may have removed all template types, check if we still need to treat this method as generic
+        $method->checkForTemplateTypes();
 
         return $method;
     }
