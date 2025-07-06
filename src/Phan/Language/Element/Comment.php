@@ -19,7 +19,6 @@ use Phan\Language\Element\Comment\ReturnComment;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
-use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\StringUtil;
 
@@ -111,7 +110,7 @@ class Comment
     protected $template_type_list = [];
 
     /**
-     * @var Option<Type>|None
+     * @var Option<Type>
      * Classes may specify their inherited type explicitly
      * via `(at)inherits Type`.
      */
@@ -147,7 +146,7 @@ class Comment
     protected $throw_union_type;
 
     /**
-     * @var Option<Type>|None
+     * @var Option<Type>
      * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */
@@ -183,7 +182,7 @@ class Comment
      * @param list<TemplateType> $template_type_list
      * A list of template types parameterizing a generic class
      *
-     * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
+     * @param Option<Type> $inherited_type
      * An override on the type of the extended class
      *
      * @param ?ReturnComment $return_comment
@@ -197,7 +196,7 @@ class Comment
      *
      * @param array<string,mixed> $phan_overrides
      *
-     * @param Option<Type>|None $closure_scope
+     * @param Option<Type> $closure_scope
      * For closures: Allows us to document the class of the object
      * to which a closure will be bound.
      *
