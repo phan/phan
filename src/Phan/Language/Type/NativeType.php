@@ -275,41 +275,11 @@ abstract class NativeType extends Type
 
     /**
      * @param CodeBase $code_base @phan-unused-param
-     * The code base to use in order to find super classes, etc.
-     *
      * @param int $recursion_depth @phan-unused-param
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Does nothing for Native Types, but GenericArrayType is an exception to that.
-     * @override
+     * @override Does nothing for Native Types, but GenericArrayType is an exception to that.
      */
-    public function asExpandedTypes(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        return $this->asPHPDocUnionType();
-    }
-
-    /**
-     * @param CodeBase $code_base @phan-unused-param
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param int $recursion_depth @phan-unused-param
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Does nothing for Native Types, but GenericArrayType is an exception to that.
-     * @override
-     */
-    public function asExpandedTypesPreservingTemplate(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
         return $this->asPHPDocUnionType();
     }
 

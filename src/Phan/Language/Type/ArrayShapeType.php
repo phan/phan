@@ -9,7 +9,6 @@ use Exception;
 use Generator;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\AnnotatedUnionType;
@@ -19,7 +18,6 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use RuntimeException;
 
 /**
  * This is generated from phpdoc such as array{field:int}
@@ -609,98 +607,27 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param int $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
-     *
-     * @throws RuntimeException if the maximum recursion depth is exceeded
      * @override
      */
-    public function asExpandedTypes(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
-            $result_fields = [];
-            foreach ($this->field_types as $key => $union_type) {
-                // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
-                // and has a depth limit of 10.
-                // Don't increase recursion_depth here, it's too easy to reach.
-                try {
-                    $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
-                } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
-                }
-                if ($union_type->isPossiblyUndefined()) {
-                    // array{key?:string} should become array{key?:string}.
-                    $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
-                }
-                $result_fields[$key] = $expanded_field_type;
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
+        $result_fields = [];
+        foreach ($this->field_types as $key => $union_type) {
+            // UnionType already increments recursion_depth before calling asExpandedTypesPreservingTemplate on a subclass of Type,
+            // and has a depth limit of 10.
+            // Don't increase recursion_depth here, it's too easy to reach.
+            try {
+                $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
+            } catch (RecursionDepthException $_) {
+                $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
             }
-            // TODO: if the expanded types are different from the original type, maybe include both?
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
-        });
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param int $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
-     *
-     * @throws RuntimeException if the maximum recursion depth is exceeded
-     * @override
-     */
-    public function asExpandedTypesPreservingTemplate(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
-            $result_fields = [];
-            foreach ($this->field_types as $key => $union_type) {
-                // UnionType already increments recursion_depth before calling asExpandedTypesPreservingTemplate on a subclass of Type,
-                // and has a depth limit of 10.
-                // Don't increase recursion_depth here, it's too easy to reach.
-                try {
-                    $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
-                } catch (RecursionDepthException $_) {
-                    $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
-                }
-                if ($union_type->isPossiblyUndefined()) {
-                    // array{key?:string} should become array{key?:string}.
-                    $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
-                }
-                $result_fields[$key] = $expanded_field_type;
+            if ($union_type->isPossiblyUndefined()) {
+                // array{key?:string} should become array{key?:string}.
+                $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
             }
-            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
-        });
+            $result_fields[$key] = $expanded_field_type;
+        }
+        return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asPHPDocUnionType();
     }
 
     /**

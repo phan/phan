@@ -12,14 +12,11 @@ use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug\Frame;
-use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Language\UnionTypeBuilder;
 
 /**
  * Phan's representation for the types `array<string,MyClass>` and `MyClass[]`
@@ -340,173 +337,41 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
      * @override
      */
-    public function asExpandedTypes(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
+        $union_type = $this->asPHPDocUnionType();
+
+        $element_type = $this->element_type;
+        if (!$element_type->isObjectWithKnownFQSEN()) {
+            return $union_type;
         }
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
-            $union_type = $this->asPHPDocUnionType();
-
-            $element_type = $this->element_type;
-            if (!$element_type->isObjectWithKnownFQSEN()) {
-                return $union_type;
-            }
-            $class_fqsen = FullyQualifiedClassName::fromType($element_type);
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $class_union_type = $clazz->getUnionType();
-            $additional_union_type = $clazz->getAdditionalTypes();
-            if ($additional_union_type !== null) {
-                $class_union_type = $class_union_type->withUnionType($additional_union_type);
-            }
-
-            // TODO: Use helpers for list, non-empty-array, etc.
-            foreach ($class_union_type->getTypeSet() as $type) {
-                $union_type = $union_type->withType(static::fromElementType($type, $this->is_nullable, $this->key_type));
-            }
-
-            // Recurse up the tree to include all types
-            $recursive_union_type_builder = new UnionTypeBuilder();
-            $representation = $this->__toString();
-            try {
-                foreach ($union_type->getTypeSet() as $generic_array_type) {
-                    if ($generic_array_type->__toString() !== $representation) {
-                        $recursive_union_type_builder->addUnionType(
-                            $generic_array_type->asExpandedTypes(
-                                $code_base,
-                                $recursion_depth + 1
-                            )
-                        );
-                    } else {
-                        $recursive_union_type_builder->addType($generic_array_type);
-                    }
-                }
-            } catch (RecursionDepthException $_) {
-                return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
-            }
-
-            // Add in aliases
-            // (If enable_class_alias_support is false, this will do nothing)
-            if (Config::getValue('enable_class_alias_support')) {
-                $this->addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
-            }
-            return $recursive_union_type_builder->getPHPDocUnionType();
-        });
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
-     * @override
-     */
-    public function asExpandedTypesPreservingTemplate(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
+        $class_fqsen = FullyQualifiedClassName::fromType($this->element_type);
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $union_type;
         }
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth): UnionType {
-            $union_type = $this->asPHPDocUnionType();
+        $type = $this->element_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1);
 
-            $class_fqsen = FullyQualifiedClassName::fromType($this->element_type);
-
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $class_union_type = $clazz->getUnionType();
-            $additional_union_type = $clazz->getAdditionalTypes();
-            if ($additional_union_type !== null) {
-                $class_union_type = $class_union_type->withUnionType($additional_union_type);
-            }
-
-            $union_type = $union_type->withUnionType(
-                $class_union_type->asGenericArrayTypes($this->key_type)
-            );
-
-            // Recurse up the tree to include all types
-            $recursive_union_type_builder = new UnionTypeBuilder();
-            $representation = $this->__toString();
-            try {
-                foreach ($union_type->getTypeSet() as $clazz_type) {
-                    if ($clazz_type->__toString() !== $representation) {
-                        $recursive_union_type_builder->addUnionType(
-                            $clazz_type->asExpandedTypesPreservingTemplate(
-                                $code_base,
-                                $recursion_depth + 1
-                            )
-                        );
-                    } else {
-                        $recursive_union_type_builder->addType($clazz_type);
-                    }
-                }
-            } catch (RecursionDepthException $_) {
-                return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
-            }
-
-            // Add in aliases
-            // (If enable_class_alias_support is false, this will do nothing)
-            if (Config::getValue('enable_class_alias_support')) {
-                $this->addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
-            }
-            return $recursive_union_type_builder->getPHPDocUnionType();
-        });
-    }
-
-    // (If enable_class_alias_support is false, this will not be called)
-    private function addClassAliases(
-        CodeBase $code_base,
-        UnionTypeBuilder $union_type_builder,
-        FullyQualifiedClassName $class_fqsen
-    ): void {
-        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
-        foreach ($fqsen_aliases as $alias_fqsen_record) {
-            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-            $union_type_builder->addType(
-                $alias_fqsen->asType()->asGenericArrayType($this->key_type)
-            );
+        if ($type->typeCount() < 2) {
+            return static::fromElementType(
+                $type->getTypeSet()[0],
+                $this->is_nullable,
+                $this->key_type
+            )->asPHPDocUnionType();
+        } else {
+            return UnionType::of( array_values(
+                GenericMultiArrayType::fromElementTypes(
+                    $type->getTypeSet(),
+                    $this->is_nullable,
+                    $this->key_type,
+                    $this->isDefinitelyNonEmptyArray(),
+                    $this instanceof ListType,
+                    $this instanceof AssociativeArrayType
+                )->asIndividualTypeInstances()
+            ) );
         }
     }
 

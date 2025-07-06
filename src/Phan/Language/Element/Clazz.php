@@ -518,9 +518,6 @@ class Clazz extends AddressableElement
     {
         $this->parent_type = $parent_type;
         $this->parent_type_lineno = $lineno;
-
-        // Add the parent to the union type of this class
-        $this->addAdditionalType($parent_type);
     }
 
     /**
@@ -3758,6 +3755,9 @@ class Clazz extends AddressableElement
         };
     }
 
+    /**
+     * Add a type for Type::asExpandedTypes(), other than a parent type.
+     */
     public function addAdditionalType(Type $type): void
     {
         $this->additional_union_types = ($this->additional_union_types ?? UnionType::empty())->withType($type);
@@ -3766,17 +3766,6 @@ class Clazz extends AddressableElement
     public function getAdditionalTypes(): ?UnionType
     {
         return $this->additional_union_types;
-    }
-
-    /**
-     * @param array<string,UnionType> $template_parameter_type_map
-     */
-    public function resolveParentTemplateType(array $template_parameter_type_map): UnionType
-    {
-        if ($this->parent_type !== null) {
-            return $this->parent_type->withTemplateParameterTypeMap($template_parameter_type_map);
-        }
-        return UnionType::empty();
     }
 
     /**
