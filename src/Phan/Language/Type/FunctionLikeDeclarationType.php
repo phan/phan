@@ -239,26 +239,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
-     * @param CodeBase $code_base @unused-param
-     * @unused-param $recursion_depth
+     * @param CodeBase $code_base @phan-unused-param
+     * @param int $recursion_depth @phan-unused-param
+     * @override Don't include \Closure in the expanded types. It interferes with type casting checking
      */
-    public function asExpandedTypes(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        return $this->asPHPDocUnionType();
-    }
-
-    /**
-     * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
-     * @param CodeBase $code_base @unused-param
-     * @unused-param $recursion_depth
-     */
-    public function asExpandedTypesPreservingTemplate(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
         return $this->asPHPDocUnionType();
     }
 

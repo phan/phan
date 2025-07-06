@@ -21,10 +21,15 @@
 %s:153 PhanTypeMismatchProperty Assigning $bar->a of type 'a' to property but \ShadowPair->b is B
 %s:154 PhanTypeMismatchProperty Assigning $bar->getA() of type 'a' to property but \ShadowPair->b is B
 %s:155 PhanTypeMismatchProperty Assigning $bar->getX() of type 'a' to property but \ShadowPair->b is B
+%s:156 PhanTypeMismatchArgument Argument 1 ($b) is $bar->a of type 'a' but \ShadowPair::setB() takes 1 defined at %s:37
+%s:157 PhanTypeMismatchArgument Argument 1 ($b) is $bar->getA() of type 'a' but \ShadowPair::setB() takes 1 defined at %s:37
+%s:158 PhanTypeMismatchArgument Argument 1 ($b) is $bar->getX() of type 'a' but \ShadowPair::setB() takes 1 defined at %s:37
 %s:159 PhanTypeMismatchArgument Argument 1 ($y) is $bar->a of type 'a' but \ShadowPair::setY() takes 1 defined at %s:87
 %s:160 PhanTypeMismatchArgument Argument 1 ($y) is $bar->getA() of type 'a' but \ShadowPair::setY() takes 1 defined at %s:87
 %s:161 PhanTypeMismatchArgument Argument 1 ($y) is $bar->getX() of type 'a' but \ShadowPair::setY() takes 1 defined at %s:87
 %s:163 PhanTypeMismatchProperty Assigning $foo->a of type 'a' to property but \ShadowPair->b is B
 %s:164 PhanTypeMismatchProperty Assigning $foo->getA() of type 'a' to property but \ShadowPair->b is B
+%s:165 PhanTypeMismatchArgument Argument 1 ($b) is $foo->a of type 'a' but \ShadowPair::setB() takes 1 defined at %s:37
+%s:166 PhanTypeMismatchArgument Argument 1 ($b) is $foo->getA() of type 'a' but \ShadowPair::setB() takes 1 defined at %s:37
 %s:167 PhanTypeMismatchArgument Argument 1 ($y) is $foo->a of type 'a' but \ShadowPair::setY() takes 1 defined at %s:87
 %s:168 PhanTypeMismatchArgument Argument 1 ($y) is $foo->getA() of type 'a' but \ShadowPair::setY() takes 1 defined at %s:87

@@ -4422,21 +4422,14 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type.
+     * Expands class types to all inherited classes, returning a superset of this type.
+     * This method is usually used when deciding whether a type can cast to another type.
+     * See Type::asExpandedTypes() for details.
      */
     public function asExpandedTypes(
         CodeBase $code_base,
-        int $recursion_depth = 0
+        int $recursion_depth = 0,
+        bool $preserving_template = false
     ): UnionType {
         // TODO: Preserve the original real types without expanding them?
         if ($recursion_depth >= 12) {
@@ -4450,7 +4443,8 @@ class UnionType implements Serializable, Stringable
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($type_set)->asExpandedTypes(
                 $code_base,
-                $recursion_depth + 1
+                $recursion_depth + 1,
+                $preserving_template
             )->withRealTypeSet($this->real_type_set);
         }
         // 2 or more union types to merge
@@ -4460,7 +4454,8 @@ class UnionType implements Serializable, Stringable
             $builder->addUnionType(
                 $type->asExpandedTypes(
                     $code_base,
-                    $recursion_depth + 1
+                    $recursion_depth + 1,
+                    $preserving_template
                 )
             );
         }
@@ -4468,72 +4463,13 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type, not removing template types
+     * See `asExpandedTypes(..., preserving_template: true)`.
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
     ): UnionType {
-        if ($recursion_depth >= 12) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-
-        $type_set = $this->type_set;
-        if (\count($type_set) === 0) {
-            return self::$empty_instance;
-        } elseif (\count($type_set) === 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            return \reset($type_set)->asExpandedTypesPreservingTemplate(
-                $code_base,
-                $recursion_depth + 1
-            )->withRealTypeSet($this->real_type_set);
-        }
-        // 2 or more union types to merge
-
-        $builder = new UnionTypeBuilder();
-        foreach ($type_set as $type) {
-            $builder->addUnionType(
-                $type->asExpandedTypesPreservingTemplate(
-                    $code_base,
-                    $recursion_depth + 1
-                )
-            );
-        }
-        return UnionType::of($builder->getTypeSet(), $this->real_type_set);
-    }
-
-    /**
-     * Remove all types with the same FQSENs as $template_union_type with the types.
-     * Then, return this with $template_union_type added.
-     */
-    public function replaceWithTemplateTypes(UnionType $template_union_type): UnionType
-    {
-        if ($template_union_type->isEmpty()) {
-            return $this;
-        }
-        $new_type_set = $this->type_set;
-        foreach ($this->type_set as $i => $type) {
-            // TODO: Handle recursion
-            if ($template_union_type->hasTypeWithFQSEN($type)) {
-                unset($new_type_set[$i]);
-                if ($type->isNullable()) {
-                    // Preserve nullable
-                    $template_union_type = $template_union_type->nullableClone();
-                }
-            }
-        }
-        $new_type_set = \array_merge($new_type_set, $template_union_type->getTypeSet());
-        return UnionType::of($new_type_set, $this->real_type_set);
+        return $this->asExpandedTypes($code_base, $recursion_depth, true);
     }
 
     /**

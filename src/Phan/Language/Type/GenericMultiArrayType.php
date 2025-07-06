@@ -6,7 +6,6 @@ namespace Phan\Language\Type;
 
 use InvalidArgumentException;
 use Phan\CodeBase;
-use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -258,73 +257,12 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
+     * @param CodeBase $code_base @phan-unused-param
+     * @param int $recursion_depth @phan-unused-param
      * @override
      */
-    public function asExpandedTypes(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-
-        // TODO: Use UnionType::merge from a future change?
-        $result = new UnionTypeBuilder();
-        try {
-            foreach ($this->element_types as $type) {
-                $result->addUnionType(
-                    GenericArrayType::fromElementType(
-                        $type,
-                        $this->is_nullable,
-                        $this->key_type
-                    )->asExpandedTypes($code_base, $recursion_depth + 1)
-                );
-            }
-        } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
-        }
-        return $result->getPHPDocUnionType();
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands class types to all inherited classes returning
-     * a superset of this type.
-     * @override
-     */
-    public function asExpandedTypesPreservingTemplate(
-        CodeBase $code_base,
-        int $recursion_depth = 0
-    ): UnionType {
-        // We're going to assume that if the type hierarchy
-        // is taller than some value we probably messed up
-        // and should bail out.
-        if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-
+    protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
+    {
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionTypeBuilder();
         try {
