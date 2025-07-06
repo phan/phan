@@ -2354,10 +2354,12 @@ class ContextNode
             throw new AssertionError('Node must be an anonymous class node');
         }
 
-        $class_name = 'anonymous_class_'
-            . \substr(\md5(
-                $this->context->getFile() . $this->context->getLineNumberStart()
-            ), 0, 8);
+        $hash_material =
+            $this->context->getFile() . '|' .
+            $this->node->lineno . '|' .
+            $this->node->children['__declId'];
+
+        $class_name = 'anonymous_class_' . \substr(\md5($hash_material), 0, 8);
 
         return $class_name;
     }

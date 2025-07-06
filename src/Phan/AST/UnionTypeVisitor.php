@@ -3369,7 +3369,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $anonymous_class_name =
                 (new ContextNode(
                     $this->code_base,
-                    $this->context,
+                    (clone $this->context)->withLineNumberStart($node->lineno),
                     $node
                 ))->getUnqualifiedNameForAnonymousClass();
 
