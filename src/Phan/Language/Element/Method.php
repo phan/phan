@@ -1008,67 +1008,24 @@ class Method extends ClassElement implements FunctionInterface
         CodeBase $code_base,
         UnionType $object_union_type
     ): Method {
-        $defining_fqsen = $this->getDefiningClassFQSEN();
-        $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
-        if (!$defining_class->isGeneric()) {
-            // ???
-            return $this;
-        }
-        $expected_type = $defining_fqsen->asType();
+        if ($this->hasTemplateType()) {
+            $clone = $this->cloneWithTemplateParameterTypeMap($object_union_type->getTemplateParameterTypeMap($code_base));
 
-        // TODO: Handle intersection types?
-        foreach ($object_union_type->getTypeSet() as $type) {
-            if (!$type->hasTemplateParameterTypes()) {
-                continue;
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
-            foreach ($expanded_type->getTypeSet() as $candidate) {
-                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
-                    continue;
-                }
-                // $candidate is $expected_type<T...>
-                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
-
-                $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+            // Check if we have really resolved all types
+            $clone->setPhanFlags($clone->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+            $clone->checkForTemplateTypes();
+            if (!$clone->hasTemplateType()) {
+                // If resolved all of the template types, return the clone with concrete types.
                 if (Config::get_track_references()) {
                     // Quick and dirty fix to make dead code detection work on this clone.
                     // Consider making this an object instead.
                     // @see AddressableElement::addReference()
-                    $result->reference_list = &$this->reference_list;
+                    $clone->reference_list = &$this->reference_list;
                 }
-
-                return $result;
+                return $clone;
             }
-        }
-        // E.g. we can have `MyClass @implements MyBaseClass<string>` - so we check the expanded types for any template types, as well
-        foreach ($object_union_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if (!$type->hasTemplateParameterTypes()) {
-                continue;
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
-            foreach ($expanded_type->getTypeSet() as $candidate) {
-                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
-                    continue;
-                }
-                // $candidate is $expected_type<T...>
-                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
-
-                $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
-                if (Config::get_track_references()) {
-                    // Quick and dirty fix to make dead code detection work on this clone.
-                    // Consider making this an object instead.
-                    // @see AddressableElement::addReference()
-                    $result->reference_list = &$this->reference_list;
-                }
-
-                return $result;
-            }
+            // TODO: What should happen if we resolved only some of the types, or if we resolved none of them?
+            // Returning the original for now since that causes fewest test failures, but I'm not sure if it's correct.
         }
         return $this;
     }

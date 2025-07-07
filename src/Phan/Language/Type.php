@@ -4005,6 +4005,7 @@ class Type implements Stringable
 
     /**
      * Returns true if this is `MyNs\MyClass<T..>` when $type is `MyNs\MyClass`
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isTemplateSubtypeOf(Type $type): bool
     {
