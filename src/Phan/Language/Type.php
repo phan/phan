@@ -3695,8 +3695,6 @@ class Type implements Stringable
         if ($arg_list === '') {
             return [];
         }
-        // TODO: Would need to use a different approach if templates were ever supported
-        //       e.g. The magic method parsing doesn't support commas?
         return \array_map('trim', self::extractNameList($arg_list));
     }
 
