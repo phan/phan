@@ -113,7 +113,7 @@ class NonEmptyStringType extends StringType
     {
         if ($type instanceof ScalarType) {
             if ($type instanceof StringType) {
-                if ($type instanceof LiteralStringType) {
+                if ($type instanceof LiteralStringType || $type instanceof CallableStringType) {
                     return false;
                 }
                 return true;

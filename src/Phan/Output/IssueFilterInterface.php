@@ -12,7 +12,6 @@ use Phan\IssueInstance;
 interface IssueFilterInterface
 {
     /**
-     * @param IssueInstance $issue
      * @return bool true if the issue should be reported
      */
     public function supports(IssueInstance $issue): bool;

@@ -470,10 +470,6 @@ function M9InnerFunction($first_arg, \M9Example $second_arg) {
 EOT;
 
     /**
-     * @param string $property_label
-     * @param ?string $property_insert_text
-     * @param ?string $insert_text_for_substr
-     * @param bool $for_vscode
      * @return list<array{0:Position,1:array,2:bool}>
      */
     private static function createCompletionBasicTestCases(string $property_label, ?string $property_insert_text, ?string $insert_text_for_substr, bool $for_vscode): array
@@ -883,7 +879,6 @@ EOT;
 
     /**
      * @dataProvider hoverInOtherFileProvider
-     * @param ?string $expected_hover_markup
      */
     public function testHoverInOtherFile(string $new_file_contents, Position $position, ?string $expected_hover_markup, ?string $requested_uri = null): void
     {

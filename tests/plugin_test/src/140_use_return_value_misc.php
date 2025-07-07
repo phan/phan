@@ -31,3 +31,8 @@ preg_match_all('/x/', 'executable');
 preg_match_all('/x/', 'executable', $matches);
 var_export($matches, 0);
 var_export($matches, 1);
+
+// Should warn
+similar_text( 'foo', 'bar' );
+// Should not warn
+similar_text( 'foo', 'bar', $percent );

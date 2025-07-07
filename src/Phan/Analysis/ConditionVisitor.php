@@ -709,13 +709,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // MixedType can cast to other types
                 return $asserted_object_type;
             }
-            if (!$type->isObject()) {
+            if (!$type->isPossiblyObject()) {
                 // ignore non-object types
                 continue;
             }
-            if (!$type->hasObjectWithKnownFQSEN()) {
+            if ($type->isObject() && !$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
-                // TODO: Handle isPossiblyObject/iterable
                 return $asserted_object_type;
             }
             $type = $type->withIsNullable(false);
@@ -749,13 +748,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // MixedType can cast to other types
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
-            if (!$type->isObject()) {
+            if (!$type->isPossiblyObject()) {
                 // ignore non-object types
                 continue;
             }
-            if (!$type->hasObjectWithKnownFQSEN()) {
+            if ($type->isObject() && !$type->hasObjectWithKnownFQSEN()) {
                 // Anything that can cast to $asserted_object_type should become $asserted_object_type
-                // TODO: Handle isPossiblyObject/iterable
                 return UnionType::of($new_type_set, $old_type->getRealTypeSet());
             }
             $type = $type->withIsNullable(false);
@@ -871,8 +869,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /**
-         * @param string $extract_types
-         * @param UnionType $default_if_empty
          * @return Closure(CodeBase,Context,Variable,array):void
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty, bool $allow_undefined = false): Closure {

@@ -31,9 +31,6 @@ final class VariableTrackingLoopScope extends VariableTrackingBranchScope
 
     /**
      * Record a statement that was unreachable due to break/continue statements.
-     *
-     * @param VariableTrackingBranchScope $skipped_loop_scope
-     * @param bool $exits
      */
     public function recordSkippedScope(VariableTrackingBranchScope $skipped_loop_scope, bool $exits): void
     {

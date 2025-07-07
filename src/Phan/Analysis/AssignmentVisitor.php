@@ -46,8 +46,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 
-use function strcasecmp;
-
 /**
  * Analyzes assignments.
  */
@@ -1116,7 +1114,25 @@ class AssignmentVisitor extends AnalysisVisitor
         // know what the array structure of the parameter is
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
-        $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($this->context);
+        // TODO: If the property is inherited, this will resolve `static` in the context of the parent class, and
+        // thus yield a supertype of the intended type. However, we can't resolve `static` in the right context here,
+        // and the PHPDoc type isn't meant to be replaced with concrete types as in Property::inheritStaticUnionType().
+        $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
+
+        // Map template types to concrete types
+        if ($property_union_type->hasTemplateTypeRecursive()) {
+            // Get the type of the object to which the property belongs
+            $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr'] ?? null
+            );
+
+            $property_union_type = $property_union_type->withTemplateParameterTypeMap(
+                $expression_type->getTemplateParameterTypeMap($this->code_base)
+            );
+        }
+
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
             if ($resolved_right_type->canCastToExpandedUnionType(
@@ -1325,10 +1341,12 @@ class AssignmentVisitor extends AnalysisVisitor
         $is_from_phpdoc = $property->isFromPHPDoc();
         if (!$is_from_phpdoc && $this->context->isInFunctionLikeScope()) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
-            if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
+            $allowed_methods = Config::get_closest_minimum_target_php_version_id() >= 80300 ? [ '__construct', '__clone' ] : [ '__construct' ];
+            if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true)) {
                 $class_type = $class_fqsen->asType();
                 if ($property->getClassFQSEN()->asType()->isSubtypeOf($class_type, $this->code_base)) {
-                    // This is a constructor setting its own properties or a base class's properties.
+                    // This is a constructor setting its own properties or a base class's properties,
+                    // or a deep-cloned property in PHP 8.3+.
                     // TODO: Could support private methods
                     return;
                 }

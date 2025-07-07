@@ -159,6 +159,10 @@ return [
       'old' => ['int', 'context'=>'resource', 'stream'=>'resource', 'length='=>'int'],
       'new' => ['int', 'context'=>'HashContext', 'stream'=>'resource', 'length='=>'int'],
     ],
+    'json_decode' => [
+      'old' => ['mixed', 'json'=>'string', 'assoc='=>'bool', 'depth='=>'int', 'flags='=>'int'],
+      'new' => ['mixed', 'json'=>'string', 'associative='=>'?bool', 'depth='=>'int', 'flags='=>'int'],
+    ],
     'SQLite3::openBlob' => [
       'old' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'database='=>'string'],
       'new' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'database='=>'string', 'flags='=>'int'],

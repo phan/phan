@@ -179,8 +179,6 @@ class FileRef implements \Serializable
 
     /**
      * Get a string representation of the context
-     *
-     * @return string
      */
     public function __toString(): string
     {

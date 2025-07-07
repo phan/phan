@@ -1,0 +1,4 @@
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $iKey - it has union type string
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $iVal - it has union type string
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $aKey - it has union type int
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $aVal - it has union type string

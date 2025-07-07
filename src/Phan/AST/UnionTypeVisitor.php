@@ -836,7 +836,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return null;
                 }
             }
-            $result = (new ContextNode($code_base, $context, $node))->getEquivalentPHPValue();
+            $result = (new ContextNode($code_base, $context, $node))->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, false);
 
             if ($result instanceof Node) {
                 return null;
@@ -854,7 +854,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Returns the union type from a type in a parameter/return signature of a function-like.
      * This preserves `self` and `static`
-     * @param Node $node
      */
     public function fromTypeInSignature(Node $node): UnionType
     {
@@ -1347,7 +1346,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($context_node === null) {
                     $context_node = new ContextNode($this->code_base, $this->context, null);
                 }
-                $key_node = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
+                $key_node = $context_node->getEquivalentPHPValueForNode(
+                    $key_node,
+                    ContextNode::RESOLVE_CONSTANTS,
+                    $this->should_catch_issue_exception
+                );
                 if (\is_object($key_node)) {
                     return null;
                 }
@@ -2041,7 +2044,12 @@ class UnionTypeVisitor extends AnalysisVisitor
     private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type): ?UnionType
     {
         $dim_node = $node->children['dim'];
-        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+        if ($dim_node instanceof Node) {
+            $dim_value = (new ContextNode($this->code_base, $this->context, $dim_node))
+                ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
+        } else {
+            $dim_value = $dim_node;
+        }
         // TODO: detect and warn about null
         $has_non_empty_array = false;
         $check_invalid_dim = !($node->flags & self::FLAG_IGNORE_NULLABLE);
@@ -2156,22 +2164,20 @@ class UnionTypeVisitor extends AnalysisVisitor
          *           but have unknown array shapes in $union_type
          */
         $has_generic_array = false;
-        $has_string = false;
+        $has_valid_string_access = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
                 if ($type instanceof StringType) {
-                    $has_string = true;
                     if (\is_int($dim_value) || \filter_var($dim_value, \FILTER_VALIDATE_INT) !== false) {
                         // If we request a string offset from a string, that's not valid. Only accept integer dimensions as valid.
                         // in php, indices of strings can be negative
+                        $has_valid_string_access = true;
                         if ($resulting_element_type instanceof UnionType) {
                             $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
                         } else {
                             $resulting_element_type = StringType::instance(false)->asPHPDocUnionType();
                         }
-                    } else {
-                        // TODO: Warn about string indices of strings?
                     }
                 } elseif ($type->isArrayLike($code_base) || $type->isObject() || $type instanceof MixedType) {
                     if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
@@ -2204,15 +2210,15 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if ($resulting_element_type === null) {
-            if (!$has_string && !$has_generic_array) {
-                // This is exclusively array shape types.
+            if (!$has_valid_string_access && !$has_generic_array) {
+                // This is exclusively array shape and non-array types.
                 // Return false to indicate that the offset doesn't exist in any of those array shape types.
                 return false;
             }
             return null;
         }
-        if ($has_string || $has_generic_array) {
-            if ($has_string && $has_generic_array) {
+        if ($has_valid_string_access || $has_generic_array) {
+            if ($has_valid_string_access && $has_generic_array) {
                 return null;
             }
             if ($resulting_element_type->hasRealTypeSet()) {
@@ -2865,7 +2871,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map template types to concrete types
             if ($union_type->hasTemplateTypeRecursive()) {
-                // Get the type of the object calling the property
+                // Get the type of the object to which the property belongs
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -3363,7 +3369,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $anonymous_class_name =
                 (new ContextNode(
                     $this->code_base,
-                    $this->context,
+                    (clone $this->context)->withLineNumberStart($node->lineno),
                     $node
                 ))->getUnqualifiedNameForAnonymousClass();
 
@@ -3462,7 +3468,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         foreach ($node_type->getTypeSet() as $sub_type) {
             if ($sub_type instanceof LiteralStringType) {
                 $value = $sub_type->getValue();
-                if (!\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $value)) {
+                if (!\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*/', $value)) {
                     $is_valid = false;
                     continue;
                 }
@@ -4042,7 +4048,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($method_name instanceof Node)) {
                 $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
             }
-            $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
+            $method_name = (new ContextNode($code_base, $context, $method_name))
+                ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
             if (!is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name, $this->should_catch_issue_exception);
                 if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
@@ -4176,7 +4183,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $orig_node = $node;
         if ($node instanceof Node) {
-            $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
+            $node = (new ContextNode($this->code_base, $this->context, $node))
+                ->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, $this->should_catch_issue_exception);
         }
         if (is_string($node)) {
             if (strpos($node, '::') !== false) {

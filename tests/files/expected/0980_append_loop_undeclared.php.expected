@@ -1,0 +1,2 @@
+%s:14 PhanCoalescingAlwaysNullInLoop Using $emptyArray[$arrayIdx] of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)
+%s:23 PhanCoalescingAlwaysNullInLoop Using $emptyArray[$arrayIdx] of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary. (in a loop body - this is likely a false positive)

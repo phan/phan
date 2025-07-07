@@ -165,11 +165,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
      */
     public function getReturnTypeOverrides(CodeBase $code_base): array
     {
-        // Unit tests invoke this repeatedly. Cache it.
-        static $overrides = null;
-        if ($overrides === null) {
-            $overrides = self::getReturnTypeOverridesStatic($code_base);
-        }
-        return $overrides;
+        // Cannot cache this as it depends on the CodeBase.
+        return self::getReturnTypeOverridesStatic($code_base);
     }
 }

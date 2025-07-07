@@ -1,9 +1,76 @@
 Phan NEWS
 
-??? ?? 202?, Phan 5.4.6 (dev)
+??? ?? 202?, Phan 5.5.1 (dev)
 -----------------------
+
+June 30 2025, Phan 5.5.0
+-----------------------
+New features(Analysis):
+- Update real signatures of internal functions for PHP 8.1, add version for PHP 8.2, 8.3, and 8.4. [#4960](https://github.com/phan/phan/pull/4960)
+- Support [dynamic class constant fetch](https://www.php.net/releases/8.3/en.php#dynamic_class_constant_fetch) in PHP >= 8.3.
+  New issue type, `PhanTypeInvalidConstantName`, emitted when the dynamic constant name cannot be a string. [#4963](https://github.com/phan/phan/pull/4963)
+- Add basic support for [deep-cloning of readonly properties](https://wiki.php.net/rfc/readonly_amendments#proposal_2readonly_properties_can_be_reinitialized_during_cloning)
+  in PHP >= 8.3. [#4962](https://github.com/phan/phan/issues/4962)
+- Warn when a subclass of a generic class does not use @extends or @inherit to substitute template types [#4993](https://github.com/phan/phan/pull/4993)
+  New issue type: `PhanGenericMissingParameters`
+- New plugin, `AsymmetricVisibilityPlugin` to analyze properties with asymmetric visibility when running in PHP 8.4.
+  New issue types: `PhanPluginAsymmetricVisibilityNoType`, `PhanPluginAsymmetricVisibilityLessRestrictive` [#4996](https://github.com/phan/phan/pull/4996)
+
+Bug fixes:
+- Fix type inference for properties with a PHPDoc type of `static` in assignments [#4883](https://github.com/phan/phan/issues/4883)
+- Fix type inference for `json_decode` returning objects vs associative arrays [#4745](https://github.com/phan/phan/issues/4745)
+- Fix infinite loop detection with calls to `openssl_error_string`, `ob_get_level`, and `error_get_last` [#4971](https://github.com/phan/phan/pull/4971)
+- Do not emit `PhanPossiblyInfiniteRecursionSameParams` if an array element or object property was modified [#4972](https://github.com/phan/phan/issues/4972)
+- Do not treat `non-empty-string` as a subtype of `callable-string`. Treat `callable-array` as a subtype of `non-empty-array` [#4974](https://github.com/phan/phan/pull/4974)
+- Properly infer template types when analyzing property assignments [#4987](https://github.com/phan/phan/pull/4987)
+- Fix edge cases when parsing generic types [#4992](https://github.com/phan/phan/pull/4992)
+- Do not infer all iterator key/value types from PHPDoc as real types [#4986](https://github.com/phan/phan/issues/4986)
+
 Miscellaneous:
-- Require php-ast 1.1.2 or newer in PHP 8.4+ if php-ast is installed.
+- Update PHP >= 8.1 signatures of internal functions for [resource to object migration](https://www.php.net/manual/en/migration81.incompatible.php#migration81.incompatible.resource2object) [#4960](https://github.com/phan/phan/pull/4960)
+- Emit `PhanTypeInvalidDimOffset` when accessing a string offset of a union type containing `string` [#4709](https://github.com/phan/phan/issues/4709)
+- Mark `imap_header()` as removed in PHP 8.0
+- Infer key/element types more accurately for callable-array [#4977](https://github.com/phan/phan/pull/4977)
+- Infer parameter default type more accurately [#4398](https://github.com/phan/phan/issues/4398)
+
+Plugins:
+- Fix PHPDocToRealTypesPlugin suggesting union types containing `mixed` as a non-standalone type [#4952](https://github.com/phan/phan/issues/4952)
+- Make PHPDocRedundantPlugin detect redundant `@param` annotations.
+  This only warns if _all_ the `@param` are redundant, and does not flag individual redundant parameters. [#4955](https://github.com/phan/phan/issues/4955)
+- Make UseReturnValuePlugin not require using the return value of `similar_text` when the `&$percent` argument is passed. [#4979](https://github.com/phan/phan/pull/4979) [#4981](https://github.com/phan/phan/pull/4981)
+
+June 9 2025, Phan 5.4.6
+-----------------------
+New features(Analysis):
+- Infer that `json_encode` always returns a string in PHP >= 7.3 when `JSON_THROW_ON_ERROR` is used [#4946](https://github.com/phan/phan/pull/4946)
+
+New features(CLI, Configs):
+- Allow passing `--minimum-target-php-version=native` from the command line. [#4939](https://github.com/phan/phan/pull/4939)
+
+Bug fixes:
+- Fix type of the `$gc` argument to `session_set_save_handler` [#4891](https://github.com/phan/phan/pull/4891)
+- Update various `IntlDateFormatter` signatures [#4898](https://github.com/phan/phan/issues/4898)
+- Fix various false positives when using `enable_class_alias_support` and two aliases refer to each other [#4897](https://github.com/phan/phan/pull/4897)
+- Fix deprecation warnings when using the CSV printer in PHP 8.4 [#4913](https://github.com/phan/phan/pull/4913)
+- Fix false positive `PhanParamTooFewInternal` with `exit()` in PHP 8.4 [#4888](https://github.com/phan/phan/issues/4888)
+- Fix edge case false positives for inferred type of properties of `$this` [#4916](https://github.com/phan/phan/issues/4916)
+- Fix false positive `PhanPossiblyUndeclaredVariable` in loops when redundant condition detection is enabled [#4885](https://github.com/phan/phan/issues/4885), [#4617](https://github.com/phan/phan/issues/4617)
+- Fix crash in PHP >= 8.3 due to increment or decrement on non-literal strings [#4860](https://github.com/phan/phan/issues/4860)
+
+Plugins:
+- Fix `dir()` and `getdir()` being reversed in DeprecateAliasPlugin [#4882](https://github.com/phan/phan/pull/4882)
+- Make PHPDocRedundantPlugin handle magic methods [#4931](https://github.com/phan/phan/pull/4931)
+- Fix UnknownElementTypePlugin flagging variadic parameters with `mixed` type [#4927](https://github.com/phan/phan/issues/4927)
+- Update PHPDocToRealTypesPlugin for PHP 8 [#4936](https://github.com/phan/phan/pull/4936)
+
+Miscellaneous:
+- Require php-ast 1.1.2 or newer in PHP 8.4+ if php-ast is installed. [#4895](https://github.com/phan/phan/pull/4895)
+- Support automatically setting target PHP version from composer.json for PHP >= 8.2 [#4903](https://github.com/phan/phan/pull/4903), [#4940](https://github.com/phan/phan/pull/4940)
+- Allow netresearch/jsonmapper ^5.0 [#4901](https://github.com/phan/phan/issues/4901)
+- Update tests for PHP 8.4 [#4902](https://github.com/phan/phan/pull/4902), [#4907](https://github.com/phan/phan/pull/4907), [#4909](https://github.com/phan/phan/pull/4909), [#4911](https://github.com/phan/phan/pull/4911)
+  [#4912](https://github.com/phan/phan/pull/4912), [#4917](https://github.com/phan/phan/pull/4917), [#4923](https://github.com/phan/phan/pull/4923), [#4925](https://github.com/phan/phan/pull/4925), [#4934](https://github.com/phan/phan/pull/4934)
+- Support analyzing `exit()` in PHP 8.4 [#4908](https://github.com/phan/phan/pull/4908)
+- Consistently disable the garbage collector for all entry points [#4928](https://github.com/phan/phan/pull/4928)
 
 Aug 13 2024, Phan 5.4.5
 -----------------------

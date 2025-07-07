@@ -323,20 +323,8 @@ final class IntersectionType extends Type
     }
 
     /**
-     * @override
-     */
-    protected function computeExpandedTypes(CodeBase $code_base, int $recursion_depth): UnionType
-    {
-        $recursive_union_type_builder = new UnionTypeBuilder();
-        $recursive_union_type_builder->addType($this);
-        foreach ($this->type_parts as $type) {
-            $recursive_union_type_builder->addUnionType($type->asExpandedTypes($code_base, $recursion_depth + 1));
-        }
-
-        return $recursive_union_type_builder->getPHPDocUnionType();
-    }
-
-    /**
+     * @param CodeBase $code_base @phan-unused-param
+     * @param int $recursion_depth @phan-unused-param
      * @override
      */
     protected function computeExpandedTypesPreservingTemplate(CodeBase $code_base, int $recursion_depth): UnionType
@@ -722,7 +710,7 @@ final class IntersectionType extends Type
     }
 
     /**
-     * @suppress PhanPluginUnknownArrayMethodParamType
+     * @param mixed ...$args
      * @no-named-arguments
      */
     private function allTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool

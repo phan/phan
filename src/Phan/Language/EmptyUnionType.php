@@ -1155,48 +1155,26 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param int $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type.
+     * Expands class types to all inherited classes, returning a superset of this type.
+     * This method is usually used when deciding whether a type can cast to another type.
+     * See Type::asExpandedTypes() for details.
      */
     public function asExpandedTypes(
         CodeBase $code_base,
-        int $recursion_depth = 0
+        int $recursion_depth = 0,
+        bool $preserving_template = false
     ): UnionType {
         return $this;
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param int $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type.
+     * See `asExpandedTypes(..., preserving_template: true)`.
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
     ): UnionType {
         return $this;
-    }
-
-    public function replaceWithTemplateTypes(UnionType $template_union_type): UnionType
-    {
-        return $template_union_type->eraseRealTypeSetRecursively();
     }
 
     public function hasTypeWithFQSEN(Type $other): bool
@@ -1243,6 +1221,10 @@ final class EmptyUnionType extends UnionType
      */
     public function asNormalizedTypes(): UnionType
     {
+        return $this;
+    }
+
+    public function asSignatureUnionType(): UnionType {
         return $this;
     }
 

@@ -68,7 +68,6 @@ class ASTHasher
     }
 
     /**
-     * @param Node $node
      * @return string a newly computed 16-byte binary key
      */
     private static function computeHash(Node $node): string

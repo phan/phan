@@ -27,42 +27,15 @@ class PhanTuple2 {
         $this->e1 = $e1;
     }
 
-    /** @return T0 */
-    public function getE0() {
-        return $this->e0;
-    }
-
-    /** @return T1 */
-    public function getE1() {
-        return $this->e1;
-    }
-
-    /** @return T0 */
-    public function failMismatch() {
-        return 42;
-    }
-
-    /** @return T0 */
-    public function failVoid() {
-    }
-
-    /** @return T0 */
-    public function failAnotherGeneric() {
-        return $this->e1;
-    }
-
-    /** @return T0 */
-    public static function failStatic() {
-        return 42;
-    }
-
 }
 
-function f(string $p0, int $p1) {}
+function check(int $p0, string $p1) {}
+function check2(bool $p0, string $p1) {}
+
 $tuple_a = new PhanTuple2(42, 'string');
 
-f($tuple_a->e0, $tuple_a->e1);
-f($tuple_a->getE0(), $tuple_a->getE1());
+// Valid code
+check($tuple_a->e0, $tuple_a->e1);
 
-f($tuple_a->e1, $tuple_a->e0);
-f($tuple_a->getE1(), $tuple_a->getE0());
+// Invalid code
+check($tuple_a->e1, $tuple_a->e0);

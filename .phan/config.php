@@ -34,7 +34,7 @@ return [
     // and checks for undefined classes/methods/functions)
     //
     // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-    // `'8.0'`, `'8.1'`, `null`.
+    // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `null`.
     // If this is set to `null`,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute Phan.
@@ -45,7 +45,7 @@ return [
 
     // The PHP version that will be used for feature/syntax compatibility warnings.
     // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-    // `'8.0'`, `'8.1'`, `null`.
+    // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `null`.
     // If this is set to `null`, Phan will first attempt to infer the value from
     // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
     // If that could not be determined, then Phan assumes `target_php_version`.
@@ -516,7 +516,6 @@ return [
         'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
         'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
-        'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
         'phar'        => '.phan/internal_stubs/phar.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',
@@ -690,5 +689,6 @@ return [
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
         // 'UnusedSuppressionPlugin',
+        'AsymmetricVisibilityPlugin',
     ],
 ];

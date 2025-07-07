@@ -24,7 +24,6 @@ interface AddressableElementInterface extends TypedElementInterface
 
     /**
      * Sets the fully qualified structural element name of this element.
-     * @param FQSEN $fqsen
      */
     public function setFQSEN(FQSEN $fqsen): void;
 
@@ -55,8 +54,6 @@ interface AddressableElementInterface extends TypedElementInterface
     /**
      * Track a location $file_ref in which this typed structural element
      * is referenced.
-     *
-     * @param FileRef $file_ref
      */
     public function addReference(FileRef $file_ref): void;
 
@@ -102,8 +99,6 @@ interface AddressableElementInterface extends TypedElementInterface
 
     /**
      * Set this element as deprecated or not deprecated
-     *
-     * @param bool $is_deprecated
      */
     public function setIsDeprecated(bool $is_deprecated): void;
 

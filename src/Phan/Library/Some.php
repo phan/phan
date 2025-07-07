@@ -43,7 +43,7 @@ class Some extends Option
     }
 
     /**
-     * @param T $else used in the None sibling class (@phan-unused-param)
+     * @param mixed $else used in the None sibling class (@phan-unused-param)
      * @return T
      */
     public function getOrElse($else)

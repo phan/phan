@@ -260,7 +260,6 @@ class ArrayType extends IterableType
         }
         $type_set[] = ArrayShapeType::combineWithPrecedence(
             ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
-            // TODO: Add possibly_undefined annotations in union
             ArrayShapeType::union($left_array_shape_types)
         );
         $real_type_set = $left->hasRealTypeSet() ? self::computeRealTypeSetForArrayShapeTypeWithField($left, $field_dim_value, $field_type) : [];
@@ -333,7 +332,7 @@ class ArrayType extends IterableType
      */
     public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
-        return UnionType::fromFullyQualifiedPHPDocString('int|string');
+        return UnionType::fromFullyQualifiedRealString('int|string');
     }
 
     /**

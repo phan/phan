@@ -435,6 +435,9 @@ class ASTReverter
             },
             ast\AST_ARRAY_ELEM => static function (Node $node): string {
                 $value_representation = self::toShortString($node->children['value']);
+                if ($node->flags & ast\flags\ARRAY_ELEM_REF) {
+                    $value_representation = "&$value_representation";
+                }
                 $key_node = $node->children['key'];
                 if ($key_node !== null) {
                     return self::toShortString($key_node) . '=>' . $value_representation;

@@ -902,13 +902,13 @@ trait FunctionTrait
         // see if the type of the default is cool with the
         // specified type.
         if ($parameter->hasDefaultValue()) {
-            $default_type = $parameter->getDefaultValueType();
-            $default_is_null = $default_type->isType(NullType::instance(false));
+            $default_literal_type = $parameter->getDefaultValueLiteralType();
+            $default_is_null = $default_literal_type->isType(NullType::instance(false));
             // If the default type isn't null and can't cast
             // to the parameter's declared type, emit an
             // issue.
             if (!$default_is_null) {
-                if (!$default_type->canCastToUnionType(
+                if (!$default_literal_type->canCastToUnionType(
                     $parameter->getUnionType(),
                     $code_base
                 )) {
@@ -919,7 +919,7 @@ trait FunctionTrait
                         $function->getFileRef()->getLineNumberStart(),
                         (string)$parameter->getUnionType(),
                         $parameter_name,
-                        (string)$default_type
+                        (string)$default_literal_type
                     );
                 }
             }
@@ -939,18 +939,27 @@ trait FunctionTrait
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
-                $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances()->withRealTypeSet($parameter->getNonVariadicUnionType()->getRealTypeSet());
+                $param_nonvariadic_type = $parameter->getNonVariadicUnionType();
                 if ($was_empty) {
+                    $default_type = $default_literal_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                        ->withRealTypeSet($param_nonvariadic_type->getRealTypeSet());
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
                         $parameter->addUnionType(MixedType::instance(false)->asPHPDocUnionType());
                     }
                 } else {
-                    // Don't add both `int` and `?int` to the same set.
-                    foreach ($default_type->getTypeSet() as $default_type_part) {
-                        if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
+                    $flattened_default_type = $default_literal_type->withFlattenedArrayShapeTypeInstances();
+                    foreach ($flattened_default_type->getTypeSet() as $default_type_part) {
+                        if (!$param_nonvariadic_type->hasType($default_type_part)) {
                             // if ($parameter->isCloneOfVariadic()) { throw new \Error("Impossible\n"); }
-                            $parameter->addType($default_type_part);
+                            $non_literal_default_type_part = $default_type_part->asNonLiteralType();
+                            if (
+                                !$param_nonvariadic_type->hasType($non_literal_default_type_part) &&
+                                // Don't add both `int` and `?int` to the same set.
+                                !$param_nonvariadic_type->hasType($non_literal_default_type_part->withIsNullable(true))
+                            ) {
+                                $parameter->addType($non_literal_default_type_part);
+                            }
                         }
                     }
                 }

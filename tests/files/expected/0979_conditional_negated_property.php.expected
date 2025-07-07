@@ -1,0 +1,2 @@
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $propBefore - it has union type null|string
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $propAfter - it has union type null|string

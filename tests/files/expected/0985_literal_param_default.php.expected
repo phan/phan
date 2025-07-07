@@ -1,0 +1,4 @@
+%s:24 PhanTypeMismatchArgumentReal Argument 1 ($a) is [] of type array{} but \NS985\testNullableWithNonNullDefault() takes ?int defined at %s:22
+%s:27 PhanTypeMismatchArgumentReal Argument 1 ($a) is [] of type array{} but \NS985\testNullableWithNullDefault() takes ?int defined at %s:25
+%s:30 PhanTypeMismatchArgumentReal Argument 1 ($a) is [] of type array{} but \NS985\testNonNullableWithNonNullDefault() takes int defined at %s:28
+%s:33 PhanTypeMismatchArgumentReal Argument 1 ($a) is [] of type array{} but \NS985\testNonNullableWithNullDefault() takes ?int defined at %s:31

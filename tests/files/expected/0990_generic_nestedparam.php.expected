@@ -1,0 +1,6 @@
+%s:45 PhanTypeMismatchArgument Argument 1 ($x) is $ok1->t->t of type X but \assertInt() takes int defined at %s:40
+%s:48 PhanTypeMismatchArgument Argument 1 ($x) is $ok2->t->t of type X but \assertInt() takes int defined at %s:40
+%s:50 PhanTypeMismatchArgumentProbablyReal Argument 1 ($t) is new Container('oops') of type \Container|\Container<'oops'> but \IntContainerContainer::__construct() takes \Container<int> (no real type) defined at %s:30 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:51 PhanTypeMismatchArgument Argument 1 ($x) is $err1->t->t of type X but \assertInt() takes int defined at %s:40
+%s:53 PhanTypeMismatchArgumentProbablyReal Argument 1 ($t) is new StringContainer('oops') of type \Container|\Container<string>|\StringContainer but \IntContainerContainer::__construct() takes \Container<int> (no real type) defined at %s:30 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:54 PhanTypeMismatchArgument Argument 1 ($x) is $err2->t->t of type X but \assertInt() takes int defined at %s:40

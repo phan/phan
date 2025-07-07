@@ -299,9 +299,6 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
 
     /**
      * Determine which issue type should be used when Phan finds an undefined var
-     *
-     * @param Context $context
-     * @param string $variable_name
      */
     public static function chooseIssueForUndeclaredVariable(Context $context, string $variable_name): string
     {

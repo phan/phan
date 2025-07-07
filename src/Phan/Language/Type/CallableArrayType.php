@@ -15,7 +15,7 @@ use Phan\Language\UnionType;
  * NOTE: A CallableArrayType is not technically a list type because [1 => $methodName, 0 => $classOrObject] is also callable.
  * @phan-pure
  */
-class CallableArrayType extends ArrayType
+class CallableArrayType extends ArrayType implements GenericArrayInterface
 {
     use NativeTypeTrait;
 
@@ -45,7 +45,7 @@ class CallableArrayType extends ArrayType
     public function iterableKeyUnionType(CodeBase $code_base): UnionType
     {
         // Reduce false positive partial type mismatch errors
-        return IntType::instance(false)->asPHPDocUnionType();
+        return IntType::instance(false)->asRealUnionType();
     }
 
     /**
@@ -54,7 +54,7 @@ class CallableArrayType extends ArrayType
      */
     public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
-        return UnionType::fromFullyQualifiedPHPDocString('string|object');
+        return $this->genericArrayElementUnionType();
     }
 
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
@@ -70,5 +70,26 @@ class CallableArrayType extends ArrayType
         return $other instanceof CallableType
             || $other instanceof CallableDeclarationType
             || parent::canCastToDeclaredType($code_base, $context, $other);
+    }
+
+    public function isDefinitelyNonEmptyArray(): bool {
+        return true;
+    }
+
+    public function getKeyType(): int {
+        return GenericArrayType::KEY_INT;
+    }
+
+    public function genericArrayElementUnionType(): UnionType {
+        return UnionType::fromFullyQualifiedRealString('string|object');
+    }
+
+    protected function isSubtypeOfNonNullableType(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof NonEmptyGenericArrayType) {
+            return $type->getKeyType() !== NonEmptyGenericArrayType::KEY_STRING &&
+                $this->genericArrayElementUnionType()->isStrictSubtypeOf($code_base, $type->genericArrayElementUnionType());
+        }
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 }

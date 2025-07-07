@@ -72,7 +72,6 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
     /**
      * Placeholder for getTestFiles dataProvider
      *
-     * @param string $source_dir
      * @return array<string,array{0:array,1:string}>
      */
     final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array
@@ -237,9 +236,8 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
 
         if ($_ENV['PHAN_DUMP_NEW_TEST_EXPECTATION'] ?? null) {
             if (!\preg_match($wanted_re_full, $output)) {
-                // This assumes linux/unix output, could be patched to support Windows if needed.
-                // Then run `for file in tests/**/*.expected*.new; do mv $file ${file/\.new/}; done`
-                // to copy all of the tests
+                // Run `for file in $(find tests -name *.expected*.new); do mv $file ${file/\.new/}; done`
+                // to overwrite test expectations with the generated outputs.
                 $suggested_re = \preg_replace('@\./tests/\S*\.php([78]\d*)?@', '%s', $output);
                 $suggested_re = \preg_replace('/closure_[^\(]*\(/', 'closure_%s(', $suggested_re);
                 \file_put_contents($expected_file_path . '.new', $suggested_re);

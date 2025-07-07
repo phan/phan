@@ -1,0 +1,4 @@
+src_copy/010_union_types.php:8 PhanPluginCanUseUnionParamType Can use \SplObjectStorage|\stdClass|null as the type of parameter $c of testUnionTypes
+src_copy/010_union_types.php:8 PhanPluginCanUseUnionParamType Can use array|string as the type of parameter $a of testUnionTypes
+src_copy/010_union_types.php:8 PhanPluginCanUseUnionParamType Can use bool|float|int|string as the type of parameter $b of testUnionTypes
+src_copy/010_union_types.php:8 PhanPluginCanUseUnionReturnType Can use int|string as a return type of testUnionTypes

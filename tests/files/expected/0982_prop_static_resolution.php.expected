@@ -1,0 +1,6 @@
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $base - it has union type \NS982\HasStaticProp
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $child - it has union type \NS982\ChildWithStaticProp|\NS982\HasStaticProp
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $baseProp - it has union type \NS982\HasStaticProp
+%s:32 PhanTypeMismatchPropertyProbablyReal Assigning $this of type \NS982\UnrelatedClass|static to property but \NS982\HasStaticProp->staticProp is \NS982\HasStaticProp (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:35 PhanDebugAnnotation @phan-debug-var requested for variable $childProp - it has union type \NS982\ChildWithStaticProp|\NS982\HasStaticProp
+%s:39 PhanTypeMismatchPropertyProbablyReal Assigning $this of type \NS982\UnrelatedClass|static to property but \NS982\ChildWithStaticProp->staticProp is \NS982\HasStaticProp (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

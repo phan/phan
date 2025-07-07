@@ -52,8 +52,14 @@ class Parameter extends Variable
     public const REFERENCE_IGNORED = 4;
 
     public const PARAM_MODIFIER_VISIBILITY_FLAGS = ast\flags\PARAM_MODIFIER_PUBLIC | ast\flags\PARAM_MODIFIER_PRIVATE | ast\flags\PARAM_MODIFIER_PROTECTED;
+    // TODO: use
+    //  - \ast\flags\MODIFIER_PUBLIC_SET
+    //  - \ast\flags\MODIFIER_PROTECTED_SET
+    //  - \ast\flags\MODIFIER_PRIVATE_SET
+    // from https://github.com/nikic/php-ast/pull/250
+    public const PARAM_MODIFIER_ASYMMETRIC_VISIBILITY_FLAGS = 1024 | 2048 | 4096;
     /** NOTE: Currently, any of these flags imply that constructor property promotion is being used */
-    public const PARAM_MODIFIER_FLAGS = self::PARAM_MODIFIER_VISIBILITY_FLAGS | ast\flags\MODIFIER_READONLY;
+    public const PARAM_MODIFIER_FLAGS = self::PARAM_MODIFIER_VISIBILITY_FLAGS | self::PARAM_MODIFIER_ASYMMETRIC_VISIBILITY_FLAGS | ast\flags\MODIFIER_READONLY;
 
     // __construct(Context $context, string $name, UnionType $type, int $flags) inherited from Variable
 
@@ -369,7 +375,7 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node): ?UnionType
     {
         if (!($node instanceof Node)) {
-            return Type::nonLiteralFromObject($node)->asRealUnionType();
+            return Type::fromObject($node)->asRealUnionType();
         }
         // XXX: This could be made more precise and handle things like unary/binary ops.
         // However, this doesn't know about constants that haven't been parsed yet.

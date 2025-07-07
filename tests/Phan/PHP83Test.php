@@ -27,6 +27,13 @@ final class PHP83Test extends AbstractPhanFileTest
             'UseReturnValuePlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
+        'autoload_internal_extension_signatures' => [
+            'intl'    => '.phan/internal_stubs/intl.phan_php',
+            'ldap'    => '.phan/internal_stubs/ldap.phan_php',
+            'pgsql'   => '.phan/internal_stubs/pgsql.phan_php',
+            'sockets' => '.phan/internal_stubs/sockets.phan_php',
+            'zip'     => '.phan/internal_stubs/zip.phan_php',
+        ],
     ];
 
     public static function setUpBeforeClass(): void

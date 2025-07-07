@@ -23,6 +23,8 @@ rm -f $ACTUAL_PATH || exit 1
 echo
 echo "Comparing the output:"
 
+sed -i -e 's/src\\/src\//g' $ACTUAL_PATH
+
 if type colordiff >/dev/null; then
     DIFF="colordiff"
 else

@@ -30,7 +30,6 @@ interface TypedElementInterface extends Stringable
 
     /**
      * Set the type of this element
-     * @param UnionType $type
      */
     public function setUnionType(UnionType $type): void;
 

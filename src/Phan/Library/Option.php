@@ -22,8 +22,9 @@ abstract class Option
      * If this has a value, return that value.
      * Otherwise, return $else
      *
-     * @param T $else
-     * @return T
+     * @template E
+     * @param E $else
+     * @return T|E
      */
     abstract public function getOrElse($else);
 

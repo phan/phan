@@ -15,6 +15,7 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\ConversionSpec;
 use Phan\Plugin\ConfigPluginSet;
+use RuntimeException;
 use Stringable;
 
 /**
@@ -244,6 +245,7 @@ class Issue
     public const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
     public const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
     public const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
+    public const TypeInvalidConstantName = 'PhanTypeInvalidConstantName';
     public const TypeErrorInInternalCall = 'PhanTypeErrorInInternalCall';
     public const TypeErrorInOperation = 'PhanTypeErrorInOperation';
     public const TypeMismatchPropertyDefault        = 'PhanTypeMismatchPropertyDefault';
@@ -635,6 +637,7 @@ class Issue
     public const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
     public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
     public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
+    public const GenericMissingParameters = 'PhanGenericMissingParameters';
 
     // Issue::CATEGORY_COMMENT
     public const DebugAnnotation                  = 'PhanDebugAnnotation';
@@ -847,13 +850,12 @@ class Issue
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE);
             if (!$replacement_exists) {
-                \error_log(\sprintf(
+                throw new RuntimeException(\sprintf(
                     "No coloring info for issue message (%s), key {%s}. Valid template types: %s",
                     $template,
                     $key,
                     \implode(', ', \array_keys(self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
                 ));
-                return '%s';
             }
             return self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$key];
         }, $template);
@@ -2636,6 +2638,14 @@ class Issue
                 "Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string",
                 self::REMEDIATION_B,
                 10103
+            ),
+            new Issue(
+                self::TypeInvalidConstantName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Saw a class constant fetch with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10188
             ),
             new Issue(
                 self::TypeErrorInInternalCall,
@@ -5473,6 +5483,14 @@ class Issue
                 self::REMEDIATION_B,
                 14006
             ),
+            new Issue(
+                self::GenericMissingParameters,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Class {CLASS} must substitute all {COUNT} template parameters when inheriting {CLASS} (found {COUNT}) defined at {FILE}:{LINE} (use @extends or @inherit)",
+                self::REMEDIATION_B,
+                14007
+            ),
 
             // Issue::CATEGORY_INTERNAL
             new Issue(
@@ -5938,7 +5956,6 @@ class Issue
 
     /**
      * @param list<mixed> $template_parameters
-     * @return IssueInstance
      */
     public function __invoke(
         string $file,

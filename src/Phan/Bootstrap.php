@@ -13,6 +13,11 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Library\StringUtil;
 
+// Phan does a ton of GC and this offers a major speed
+// improvement if your system can handle it (which it
+// should be able to)
+gc_disable();
+
 // Listen for all errors
 error_reporting(E_ALL);
 
@@ -351,10 +356,6 @@ function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2): 
  * This is a named function instead of a closure to make stack traces easier to read.
  *
  * @suppress PhanAccessMethodInternal
- * @param int $errno
- * @param string $errstr
- * @param string $errfile
- * @param int $errline
  */
 function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {

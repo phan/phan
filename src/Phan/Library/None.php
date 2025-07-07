@@ -9,7 +9,7 @@ use Exception;
 /**
  * This represents the absence of a value in an Option.
  *
- * @inherits Option<null>
+ * @inherits Option<never>
  * @phan-pure
  */
 final class None extends Option
@@ -41,7 +41,6 @@ final class None extends Option
      * @template E
      * @param E $else
      * @return E
-     * @suppress PhanParamSignatureMismatch
      */
     public function getOrElse($else)
     {

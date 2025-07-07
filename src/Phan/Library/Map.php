@@ -101,6 +101,7 @@ class Map extends SplObjectStorage
     /**
      * @return Map<K,V>
      * A new map with each value cloned (keys remain uncloned)
+     * @suppress PhanTypePossiblyInvalidCloneNotObject phan does not support base types of template types yet.
      */
     public function deepCopyValues(): Map
     {

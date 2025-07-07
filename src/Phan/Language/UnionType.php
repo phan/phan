@@ -75,6 +75,11 @@ use function substr;
  * (This was the most efficient representation, since most union types have 0, 1, or 2 unique types in practice)
  * To add/remove a type to a UnionType, you replace it with a UnionType that had that type added.
  *
+ * Unlike Type, UnionType objects are not interned. Two UnionTypes representing the same type may
+ * not even compare equal with `==`, because the order of entries in the list of Types may be
+ * different. Code dealing with UnionType should not depend on the order. Types are always shown in
+ * canonical order when printing the objects, e.g. in __toString().
+ *
  * @see AnnotatedUnionType for the way Phan represents extra information about types
  * @see https://github.com/phan/phan/wiki/About-Union-Types
  *
@@ -597,8 +602,6 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param ?\ReflectionType $reflection_type
-     *
      * @return UnionType
      * A UnionType with 0 or more nullable/non-nullable Types
      * (limited to at most 1 in php 7, unlimited in php 8)
@@ -1055,6 +1058,11 @@ class UnionType implements Serializable, Stringable
             }
         }
 
+        if ($has_template && !$concrete_type_list && $this->real_type_set) {
+            // Can't have an empty union type with a real type set
+            $concrete_type_list = UnionType::typeSetFromString('mixed');
+        }
+
         return $has_template ? UnionType::of($concrete_type_list, $this->real_type_set) : $this;
     }
 
@@ -1085,6 +1093,7 @@ class UnionType implements Serializable, Stringable
     /**
      * @return UnionType
      * Removes template types from this union type, e.g. converts T|\stdClass to \stdClass.
+     * You probably don't want to use this method.
      * @suppress PhanUnreferencedPublicMethod
      */
     public function withoutTemplateTypeRecursive(): UnionType
@@ -3979,7 +3988,7 @@ class UnionType implements Serializable, Stringable
                     }
                 }
             }
-            $new_real_type_builder->addUnionType($key_union_type);
+            $new_real_type_builder->addUnionType($key_union_type->getRealUnionType());
         }
         $type_set = $new_type_builder->getTypeSet();
         $real_type_set = $new_real_type_builder->getTypeSet();
@@ -4025,7 +4034,7 @@ class UnionType implements Serializable, Stringable
                 $real_builder->clearTypeSet();
                 break;
             }
-            $real_builder->addUnionType($element_type);
+            $real_builder->addUnionType($element_type->getRealUnionType());
         }
 
         static $array_type_nonnull = null;
@@ -4413,21 +4422,14 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type.
+     * Expands class types to all inherited classes, returning a superset of this type.
+     * This method is usually used when deciding whether a type can cast to another type.
+     * See Type::asExpandedTypes() for details.
      */
     public function asExpandedTypes(
         CodeBase $code_base,
-        int $recursion_depth = 0
+        int $recursion_depth = 0,
+        bool $preserving_template = false
     ): UnionType {
         // TODO: Preserve the original real types without expanding them?
         if ($recursion_depth >= 12) {
@@ -4441,7 +4443,8 @@ class UnionType implements Serializable, Stringable
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($type_set)->asExpandedTypes(
                 $code_base,
-                $recursion_depth + 1
+                $recursion_depth + 1,
+                $preserving_template
             )->withRealTypeSet($this->real_type_set);
         }
         // 2 or more union types to merge
@@ -4451,7 +4454,8 @@ class UnionType implements Serializable, Stringable
             $builder->addUnionType(
                 $type->asExpandedTypes(
                     $code_base,
-                    $recursion_depth + 1
+                    $recursion_depth + 1,
+                    $preserving_template
                 )
             );
         }
@@ -4459,72 +4463,13 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base to use in order to find super classes, etc.
-     *
-     * @param $recursion_depth
-     * This thing has a tendency to run-away on me. This tracks
-     * how bad I messed up by seeing how far the expanded types
-     * go
-     *
-     * @return UnionType
-     * Expands all class types to all inherited classes returning
-     * a superset of this type, not removing template types
+     * See `asExpandedTypes(..., preserving_template: true)`.
      */
     public function asExpandedTypesPreservingTemplate(
         CodeBase $code_base,
         int $recursion_depth = 0
     ): UnionType {
-        if ($recursion_depth >= 12) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
-        }
-
-        $type_set = $this->type_set;
-        if (\count($type_set) === 0) {
-            return self::$empty_instance;
-        } elseif (\count($type_set) === 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            return \reset($type_set)->asExpandedTypesPreservingTemplate(
-                $code_base,
-                $recursion_depth + 1
-            )->withRealTypeSet($this->real_type_set);
-        }
-        // 2 or more union types to merge
-
-        $builder = new UnionTypeBuilder();
-        foreach ($type_set as $type) {
-            $builder->addUnionType(
-                $type->asExpandedTypesPreservingTemplate(
-                    $code_base,
-                    $recursion_depth + 1
-                )
-            );
-        }
-        return UnionType::of($builder->getTypeSet(), $this->real_type_set);
-    }
-
-    /**
-     * Remove all types with the same FQSENs as $template_union_type with the types.
-     * Then, return this with $template_union_type added.
-     */
-    public function replaceWithTemplateTypes(UnionType $template_union_type): UnionType
-    {
-        if ($template_union_type->isEmpty()) {
-            return $this;
-        }
-        $new_type_set = $this->type_set;
-        foreach ($this->type_set as $i => $type) {
-            // TODO: Handle recursion
-            if ($template_union_type->hasTypeWithFQSEN($type)) {
-                unset($new_type_set[$i]);
-                if ($type->isNullable()) {
-                    // Preserve nullable
-                    $template_union_type = $template_union_type->nullableClone();
-                }
-            }
-        }
-        $new_type_set = \array_merge($new_type_set, $template_union_type->getTypeSet());
-        return UnionType::of($new_type_set, $this->real_type_set);
+        return $this->asExpandedTypes($code_base, $recursion_depth, true);
     }
 
     /**
@@ -4767,9 +4712,21 @@ class UnionType implements Serializable, Stringable
      */
     public static function getLatestRealFunctionSignatureMap(int $target_php_version): array
     {
+        if ($target_php_version >= 80400) {
+            static $map_84;
+            return $map_84 ?? ($map_84 = self::computeLatestRealFunctionSignatureMap(''));
+        }
+        if ($target_php_version >= 80300) {
+            static $map_83;
+            return $map_83 ?? ($map_83 = self::computeLatestRealFunctionSignatureMap('_php83'));
+        }
+        if ($target_php_version >= 80200) {
+            static $map_82;
+            return $map_82 ?? ($map_82 = self::computeLatestRealFunctionSignatureMap('_php82'));
+        }
         if ($target_php_version >= 80100) {
             static $map_81;
-            return $map_81 ?? ($map_81 = self::computeLatestRealFunctionSignatureMap(''));
+            return $map_81 ?? ($map_81 = self::computeLatestRealFunctionSignatureMap('_php81'));
         }
         if ($target_php_version >= 80000) {
             static $map_80;
@@ -5030,6 +4987,30 @@ class UnionType implements Serializable, Stringable
             return $type_set;
         }
         return $result_type_set;
+    }
+
+    /**
+     * Returns the corresponding union type that would be used in a signature.
+     * Callers are responsible for making sure that this representation can be used in the given
+     * minimum target PHP version.
+     */
+    public function asSignatureUnionType(): self
+    {
+        $nonreal_type = $this->eraseRealTypeSet();
+
+        static $mixed_union_type = null;
+        if ($nonreal_type->hasMixedOrNonEmptyMixedType()) {
+            // `mixed` can only be used as a standalone type (not even nullable).
+            $mixed_union_type = $mixed_union_type ?? MixedType::instance(false)->asPHPDocUnionType();
+            return $mixed_union_type;
+        }
+        if ($nonreal_type->containsNullableLabeled() && $nonreal_type->typeCount() > 1) {
+            // Use X|Y|null instead of ?X|?Y
+            $nonreal_type = $nonreal_type->nonNullableClone()->withType(NullType::instance(false));
+        }
+        return $nonreal_type->asMappedUnionType(static function (Type $type): Type {
+            return $type->asSignatureType();
+        });
     }
 
     /**
@@ -6292,10 +6273,12 @@ class UnionType implements Serializable, Stringable
      */
     public function usesTemplateType(TemplateType $template_type): bool
     {
-        $new_union_type = $this->withTemplateParameterTypeMap([
-            $template_type->getName() => UnionType::fromFullyQualifiedPHPDocString('mixed'),
-        ]);
-        return !$this->isEqualTo($new_union_type);
+        foreach ($this->getTypesRecursively() as $type) {
+            if ($type === $template_type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

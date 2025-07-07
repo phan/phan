@@ -363,7 +363,6 @@ class CodeBase
 
     /**
      * Sets the currently analyzed file, to improve Phan's crash reporting.
-     * @param string|null $current_analyzed_file
      */
     public function setCurrentAnalyzedFile(?string $current_analyzed_file): void
     {
@@ -506,7 +505,6 @@ class CodeBase
     }
 
     /**
-     * @param string $file_name
      * @return bool - true if caller should replace contents
      */
     public function beforeReplaceFileContents(string $file_name): bool

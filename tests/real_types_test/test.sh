@@ -28,6 +28,7 @@ sed -i \
     -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
     -e 's/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g' \
     -e 's/strlen(): Argument #1 (\$string) must be of type string/strlen() expects parameter 1 to be string/g' \
+    -e 's/src\\/src\//g' \
     $ACTUAL_PATH
 
 if type colordiff >/dev/null; then

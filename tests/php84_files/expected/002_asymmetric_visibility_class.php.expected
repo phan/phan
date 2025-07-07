@@ -1,0 +1,3 @@
+%s:%d PhanPluginAsymmetricVisibilityNoType Property with asymmetric visibility \Book->price must have a declared type
+%s:%d PhanPluginUnknownPropertyType Property \Book->price has an initial type that cannot be inferred (Types inferred after analysis: float)
+%s:%d PhanPluginAsymmetricVisibilityNoType Property with asymmetric visibility \Book->author must have a declared type

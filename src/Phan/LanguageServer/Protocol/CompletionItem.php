@@ -68,15 +68,6 @@ class CompletionItem
      */
     public $insertText;
 
-    /**
-     * @param string|null     $label
-     * @param int|null        $kind
-     * @param string|null     $detail
-     * @param string|null     $documentation
-     * @param string|null     $sortText
-     * @param string|null     $filterText
-     * @param string|null     $insertText
-     */
     public function __construct(
         ?string $label = null,
         ?int $kind = null,

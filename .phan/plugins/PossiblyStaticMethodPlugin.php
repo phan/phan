@@ -105,7 +105,6 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     }
 
     /**
-     * @param FunctionInterface $method
      * @return ?Node - returns null if there's no statement list to analyze
      */
     private static function getStatementListToAnalyze(FunctionInterface $method): ?Node

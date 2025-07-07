@@ -26,8 +26,6 @@ class Message
 
     /**
      * Parses a message
-     *
-     * @param string $msg
      */
     public static function parse(string $msg): Message
     {

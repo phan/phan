@@ -193,7 +193,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         [$arg_names, $method_name] = $check_infinite_recursion;
         foreach ($arg_names as $arg_name) {
-            if (\count(self::$variable_graph->def_lines[$arg_name] ?? []) !== 1) {
+            if (
+                \count(self::$variable_graph->def_lines[$arg_name] ?? []) !== 1 ||
+                \count(self::$variable_graph->const_expr_declarations[$arg_name] ?? []) !== 0
+            ) {
                 return;
             }
         }
@@ -1171,11 +1174,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         'rand' => true,
         'array_rand' => true,
         'mt_rand' => true,
+        'openssl_error_string' => true,
         'openssl_random_pseudo_bytes' => true,
         'random_bytes' => true,
         'random_int' => true,
         'next' => true,
         'prev' => true,
+        'ob_get_level' => true,
+        'error_get_last' => true,
     ];
 
     private static function isNonDeterministicCall(Node $node): bool

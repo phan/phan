@@ -2203,8 +2203,35 @@ class ContextNode
         }
 
         $constant_name = $node->children['const'];
-        if (!is_string($constant_name)) {
-            throw new AssertionError('$constant_name must be a string');
+
+        if (PHP_VERSION_ID < 80300) {
+            // Only string is allowed in PHP 8.2 and earlier
+            if (!is_string($constant_name)) {
+                throw new AssertionError('$constant_name must be a string in PHP < 8.3');
+            }
+        } else {
+            // String and string type variables are allowed in PHP 8.3 and later
+            if ($constant_name instanceof Node) {
+                $constant_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $constant_name);
+            }
+            if (!is_string($constant_name)) {
+                $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['const']);
+                if (!$const_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $this->code_base)) {
+                    // If we know the name node can't be a string, throw an IssueException
+                    throw new IssueException(
+                        Issue::fromType(Issue::TypeInvalidConstantName)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [$const_type]
+                        )
+                    );
+                }
+                // Unable to infer type
+                throw new NodeException(
+                    $node,
+                    'Cannot infer type of const name'
+                );
+            }
         }
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
@@ -2327,10 +2354,12 @@ class ContextNode
             throw new AssertionError('Node must be an anonymous class node');
         }
 
-        $class_name = 'anonymous_class_'
-            . \substr(\md5(
-                $this->context->getFile() . $this->context->getLineNumberStart()
-            ), 0, 8);
+        $hash_material =
+            $this->context->getFile() . '|' .
+            $this->node->lineno . '|' .
+            $this->node->children['__declId'];
+
+        $class_name = 'anonymous_class_' . \substr(\md5($hash_material), 0, 8);
 
         return $class_name;
     }
@@ -2658,7 +2687,7 @@ class ContextNode
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
      */
-    public function getEquivalentPHPValueForNode($node, int $flags)
+    public function getEquivalentPHPValueForNode($node, int $flags, bool $should_catch_issue_exception = true)
     {
         if (!($node instanceof Node)) {
             return $node;
@@ -2700,7 +2729,9 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~(self::RESOLVE_CONSTANTS | self::RESOLVE_ONLY_CONSTANT_VARS | self::RESOLVE_DONT_USE_VARS));
+                    $recursiveFlags = $flags & ~(self::RESOLVE_CONSTANTS | self::RESOLVE_ONLY_CONSTANT_VARS | self::RESOLVE_DONT_USE_VARS);
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))
+                        ->getEquivalentPHPValueForNode($new_node, $recursiveFlags, $should_catch_issue_exception);
                 }
                 return $new_node;
             case ast\AST_CLASS_CONST:
@@ -2716,7 +2747,8 @@ class ContextNode
                 $new_node = $constant->getNodeForValue();
                 if (is_object($new_node)) {
                     // Avoid infinite recursion, only resolve once
-                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                    $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))
+                        ->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS, $should_catch_issue_exception);
                 }
                 return $new_node;
             case ast\AST_CLASS_NAME:
@@ -2773,7 +2805,8 @@ class ContextNode
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node
+            $node,
+            $should_catch_issue_exception
         );
         $value = $node_type->asValueOrNullOrSelf();
         if (\is_object($value)) {
@@ -2981,9 +3014,9 @@ class ContextNode
      *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
      *   Otherwise, this returns $node.
      */
-    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT)
+    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT, bool $should_catch_issue_exception = true)
     {
-        return $this->getEquivalentPHPValueForNode($this->node, $flags);
+        return $this->getEquivalentPHPValueForNode($this->node, $flags, $should_catch_issue_exception);
     }
 
     /**
@@ -3016,8 +3049,12 @@ class ContextNode
      *
      * @suppress PhanPartialTypeMismatchReturn the flags prevent this from returning an array
      */
-    public function getEquivalentPHPScalarValue()
+    public function getEquivalentPHPScalarValue(bool $should_catch_issue_exception = true)
     {
-        return $this->getEquivalentPHPValueForNode($this->node, self::RESOLVE_SCALAR_DEFAULT);
+        return $this->getEquivalentPHPValueForNode(
+            $this->node,
+            self::RESOLVE_SCALAR_DEFAULT,
+            $should_catch_issue_exception
+        );
     }
 }

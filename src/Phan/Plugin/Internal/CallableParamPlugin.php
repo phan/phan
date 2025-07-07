@@ -208,11 +208,7 @@ final class CallableParamPlugin extends PluginV3 implements
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
     {
-        // Unit tests invoke this repeatedly. Cache it.
-        static $analyzers = null;
-        if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
-        }
-        return $analyzers;
+        // Cannot cache this as it depends on the CodeBase.
+        return self::getAnalyzeFunctionCallClosuresStatic($code_base);
     }
 }

@@ -3152,7 +3152,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $params_node = $node->children['params'];
         // @phan-suppress-next-line PhanUndeclaredProperty
-        if (isset($params_node->polyfill_has_trailing_comma)) {
+        if (isset($params_node->polyfill_has_trailing_comma) && Config::get_closest_minimum_target_php_version_id() < 80000) {
             $this->emitIssue(
                 Issue::CompatibleTrailingCommaParameterList,
                 end($params_node->children)->lineno ?? $params_node->lineno,
@@ -3171,9 +3171,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
-        if ($minimum_target_php_version_id >= 80200) {
-            return;
-        }
 
         if ($type->kind === ast\AST_TYPE_INTERSECTION) {
             if ($minimum_target_php_version_id < 80100) {
@@ -3234,7 +3231,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         } elseif ($inner_type->flags === ast\flags\TYPE_TRUE) {
-            if ($minimum_target_php_version_id < 82000) {
+            if ($minimum_target_php_version_id < 80200) {
                 $this->emitIssue(
                     Issue::CompatibleTrueType,
                     $inner_type->lineno,
@@ -3242,11 +3239,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         } elseif (!$is_union && \in_array($inner_type->flags, [ast\flags\TYPE_NULL, ast\flags\TYPE_FALSE], true)) {
-            $this->emitIssue(
-                Issue::CompatibleStandaloneType,
-                $inner_type->lineno,
-                ASTReverter::toShortTypeString($type)
-            );
+            if ($minimum_target_php_version_id < 80200) {
+                $this->emitIssue(
+                    Issue::CompatibleStandaloneType,
+                    $inner_type->lineno,
+                    ASTReverter::toShortTypeString( $type )
+                );
+            }
         }
     }
 
@@ -3967,10 +3966,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Analyze whether a method is callable
-     *
-     * @param Method $method
-     * @param Node $node
-     * @param bool $is_static_call
      */
     private function analyzeMethodVisibility(
         Method $method,
@@ -4030,9 +4025,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyze the parameters and arguments for a call
      * to the given method or function
-     *
-     * @param FunctionInterface $method
-     * @param Node $node
      */
     private function analyzeCallToFunctionLike(
         FunctionInterface $method,
@@ -5146,9 +5138,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Check if the class is using PHP4-style constructor (without having its own __construct method)
-     *
-     * @param Clazz $class
-     * @param Method $method
      */
     private function checkForPHP4StyleConstructor(Clazz $class, Method $method): void
     {

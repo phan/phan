@@ -182,7 +182,6 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * Returns a (possibly incomplete) list of methods overriding this one.
-     * @param CodeBase $code_base
      * @return list<Method>
      * @suppress PhanUnreferencedPublicMethod May be called by plugins (#4502)
      */

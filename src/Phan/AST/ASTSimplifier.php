@@ -30,7 +30,6 @@ class ASTSimplifier
     }
 
     /**
-     * @param Node $node
      * @return non-empty-list<Node> (Equivalent list of nodes to [$node], possibly a clone with modifications)
      */
     private static function apply(Node $node): array

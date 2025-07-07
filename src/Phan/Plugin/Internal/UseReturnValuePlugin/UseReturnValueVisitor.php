@@ -483,6 +483,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return !self::isSecondArgumentEqualToConst($node, 'false');
             case 'preg_match':
             case 'preg_match_all':
+            case 'similar_text':
                 return \count($node->children['args']->children) >= 3;
         }
         return true;

@@ -54,6 +54,7 @@ final class ASTReverterTest extends BaseTest
             ['array(2,3=>4)', '[2,3=>4]'],
             ["['x'=>'var']"],
             ['[2]'],
+            ['[&$x]'],
         ];
     }
 }
