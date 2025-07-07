@@ -562,6 +562,27 @@ class Property extends ClassElement
     }
 
     /**
+     * Clone this, substituting the given types for template types in our type.
+     * @param array<string,UnionType> $template_type_map
+     * A map from template type identifier to a concrete type
+     */
+    public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
+    {
+        $property = clone($this);
+
+        if (
+            !$property->hasUnresolvedFutureUnionType()
+            && $property->getUnionType()->hasTemplateTypeRecursive()
+        ) {
+            $property->setUnionType(
+                $property->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+            );
+        }
+
+        return $property;
+    }
+
+    /**
      * True if this is a property publicly settable
      */
     public function isPublicSet(): bool

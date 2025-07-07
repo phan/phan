@@ -1031,6 +1031,15 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 // $candidate is $expected_type<T...>
                 $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
+
+                $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+                if (Config::get_track_references()) {
+                    // Quick and dirty fix to make dead code detection work on this clone.
+                    // Consider making this an object instead.
+                    // @see AddressableElement::addReference()
+                    $result->reference_list = &$this->reference_list;
+                }
+
                 return $result;
             }
         }
@@ -1049,6 +1058,15 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 // $candidate is $expected_type<T...>
                 $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
+
+                $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+                if (Config::get_track_references()) {
+                    // Quick and dirty fix to make dead code detection work on this clone.
+                    // Consider making this an object instead.
+                    // @see AddressableElement::addReference()
+                    $result->reference_list = &$this->reference_list;
+                }
+
                 return $result;
             }
         }
@@ -1056,25 +1074,35 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Clone this, substituting the given types for template types in our return and parameter types.
      * @param array<string,UnionType> $template_type_map
      * A map from template type identifier to a concrete type
      */
-    private function cloneWithTemplateParameterTypeMap(array $template_type_map): Method
+    public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
     {
-        $result = clone($this);
-        $result->cloneParameterList();
-        foreach ($result->parameter_list as $parameter) {
-            $parameter->setUnionType($parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        $method = clone($this);
+
+        // Clone the parameter list, so that modifying the parameters won't modify the others.
+        $method->cloneParameterList();
+
+        // Map the method's return type
+        if ($method->getUnionType()->hasTemplateTypeRecursive()) {
+            $method->setUnionType(
+                $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+            );
         }
-        $result->setUnionType($result->getUnionType()->withTemplateParameterTypeMap($template_type_map));
-        $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
-        if (Config::get_track_references()) {
-            // Quick and dirty fix to make dead code detection work on this clone.
-            // Consider making this an object instead.
-            // @see AddressableElement::addReference()
-            $result->reference_list = &$this->reference_list;
+
+        // Map each method parameter
+        // Note: We've already cloned the parameter list above, so we can mutate them
+        foreach ($method->getParameterList() as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                $parameter->setUnionType(
+                    $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+                );
+            }
         }
-        return $result;
+
+        return $method;
     }
 
     /**
