@@ -26,7 +26,8 @@ echo X::test();
 $cb = #[MyAttribute()]
     fn(
         #[namespace\MyAttribute(MISSING_CONSTANT)]
-        int $x) => $x * 2 + 1;
+        int $x
+    ) => $x * 2 + 1;
 $cb2 = #[MyAttribute(),]
     fn() => 2;
 $cb(1);
