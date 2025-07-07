@@ -586,50 +586,18 @@ class ParameterTypesAnalyzer
         }
         $mismatch_details = '';
 
-        // Get the parameters for that method
-        $overridden_parameter_list = $overridden_method->getParameterList();
-
-        // If we have a parent type defined, map the method's
-        // return type and parameter types through it
+        // If we have a parent type defined, map the method's parameter and return value types
+        // to the context of the current class, so that we can compare them directly later.
         $type_option = $class->getParentTypeOption();
-
-        // Map overridden method parameter types through any
-        // template type parameters we may have
         if ($type_option->isDefined()) {
-            $overridden_parameter_list =
-                \array_map(static function (Parameter $parameter) use ($type_option, $code_base): Parameter {
-
-                    if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                        return $parameter;
-                    }
-
-                    $mapped_parameter = clone($parameter);
-
-                    $mapped_parameter->setUnionType(
-                        $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
-                            $type_option->get()->getTemplateParameterTypeMap(
-                                $code_base
-                            )
-                        )
-                    );
-
-                    return $mapped_parameter;
-                }, $overridden_parameter_list);
+            $overridden_method_mapped = $overridden_method->cloneWithTemplateParameterTypeMap(
+                $type_option->get()->getTemplateParameterTypeMap($code_base)
+            );
+        } else {
+            $overridden_method_mapped = $overridden_method;
         }
-
-        // Map overridden method return type through any template
-        // type parameters we may have
-        $overridden_return_union_type = $overridden_method->getUnionType();
-        if ($type_option->isDefined()
-            && $overridden_return_union_type->hasTemplateTypeRecursive()
-        ) {
-            $overridden_return_union_type =
-                $overridden_return_union_type->withTemplateParameterTypeMap(
-                    $type_option->get()->getTemplateParameterTypeMap(
-                        $code_base
-                    )
-                );
-        }
+        $overridden_parameter_list = $overridden_method_mapped->getParameterList();
+        $overridden_return_union_type = $overridden_method_mapped->getUnionType();
 
         // Determine if the signatures match up
         $signatures_match = true;
