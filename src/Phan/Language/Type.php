@@ -2234,8 +2234,6 @@ class Type implements Stringable
     }
     /**
      * Check if there is any way this type or a subclass could cast to $other.
-     * TODO: Handle intersection types?
-     * TODO: Override this for IntersectionType source
      * (does not check for mixed)
      */
     public function canPossiblyCastToClass(CodeBase $code_base, Type $other): bool
@@ -3055,8 +3053,6 @@ class Type implements Stringable
     protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof IntersectionType) {
-            // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
-            // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
             return self::matchesAllOtherTypeParts(function (Type $part) use ($code_base): bool {
                 return $this->canCastToNonNullableType($part, $code_base);
             }, $type);
@@ -3169,8 +3165,6 @@ class Type implements Stringable
     protected function canCastToNonNullableTypeWithoutConfig(Type $type, CodeBase $code_base): bool
     {
         if ($type instanceof IntersectionType) {
-            // TODO: Pretty much everything needs to have a CodeBase for intersection types to be checked properly
-            // (e.g. to confirm that ArrayObject can cast to Countable&ArrayAccess)
             return self::matchesAllOtherTypeParts(function (Type $part) use ($code_base): bool {
                 return $this->canCastToNonNullableTypeWithoutConfig($part, $code_base);
             }, $type);

@@ -1152,10 +1152,6 @@ final class ArgumentType
             $alternate_parameter_type = $alternate_parameter->getNonVariadicUnionType()->withStaticResolvedInFunctionLike($alternate_method);
 
             // See if the argument can be cast to the parameter.
-            // TODO: In order for intersection types to work (e.g. casting ArrayObject to ArrayAccess&Countable),
-            // the codebase must be passed into canCastToUnionType (instead of expanding types), because ArrayAccess|Countable is not a type that casts to ArrayAccess&Countable
-            //
-            // TODO: Stop expanding the argument type
             if ($argument_type_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
                 if ($alternate_parameter_type->hasRealTypeSet() && $argument_type->hasRealTypeSet()) {
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
