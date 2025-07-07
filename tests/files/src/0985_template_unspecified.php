@@ -33,12 +33,12 @@ class Container {
     }
 
     /**
-     * Returns a Container<> (parameter is the empty union type). This may be a bug, but it's interesting.
+     * Returns a Container<T> (or Container<never> when called with 0 arguments).
      * @template T
      * @param T ...$values
      * @return static<T>
      */
-    static function newWithEmptyUnion(...$values) {
+    static function newVariadic(...$values) {
         $that = new static($values[0] ?? null);
         '@phan-debug-var $that';
         return $that;
@@ -72,7 +72,7 @@ function newContainerTyped($value = null) {
  * @param T ...$values
  * @return Container<T>
  */
-function newContainerWithEmptyUnion(...$values) {
+function newContainerVariadic(...$values) {
     $cont = new Container($values[0] ?? null);
     '@phan-debug-var $cont';
     return $cont;
@@ -94,10 +94,10 @@ class Bar extends Foo {}
 
 $a = new Container(new stdClass);
 $b = Container::newTyped(new stdClass);
-$c = Container::newWithEmptyUnion(new stdClass);
+$c = Container::newVariadic(new stdClass);
 $d = Container::newUnparameterized(new stdClass);
 $e = newContainerTyped(new stdClass);
-$f = newContainerWithEmptyUnion(new stdClass);
+$f = newContainerVariadic(new stdClass);
 $g = newContainerUnparameterized(new stdClass);
 '@phan-debug-var $a, $b, $c, $d, $e, $f, $g';
 
@@ -112,10 +112,10 @@ $gg = $g->getValue();
 
 $aC = new Container(new Bar);
 $bC = Container::newTyped(new Bar);
-$cC = Container::newWithEmptyUnion(new Bar);
+$cC = Container::newVariadic(new Bar);
 $dC = Container::newUnparameterized(new Bar);
 $eC = newContainerTyped(new Bar);
-$fC = newContainerWithEmptyUnion(new Bar);
+$fC = newContainerVariadic(new Bar);
 $gC = newContainerUnparameterized(new Bar);
 '@phan-debug-var $aC, $bC, $cC, $dC, $eC, $fC, $gC';
 
@@ -130,10 +130,10 @@ $ggC = $gC->getValueFoo();
 
 $a0 = new Container();
 $b0 = Container::newTyped();
-$c0 = Container::newWithEmptyUnion();
+$c0 = Container::newVariadic();
 $d0 = Container::newUnparameterized();
 $e0 = newContainerTyped();
-$f0 = newContainerWithEmptyUnion();
+$f0 = newContainerVariadic();
 $g0 = newContainerUnparameterized();
 '@phan-debug-var $a0, $b0, $c0, $d0, $e0, $f0, $g0';
 

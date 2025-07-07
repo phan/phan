@@ -1,0 +1,12 @@
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type 1[]
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type 1[]|2[]
+%s:29 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type 'x'[]|1[]
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int[]|string[]
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type 1
+%s:35 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type 1|2
+%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type 'x'|1
+%s:39 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type int|string
+%s:46 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type never[]
+%s:48 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \var_dump($value, ...$values) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type non-empty-array<int,42>|non-empty-array<mixed,never>(real=non-empty-array<int,42>|non-empty-mixed)
+%s:53 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type never

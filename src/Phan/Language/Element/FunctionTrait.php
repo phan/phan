@@ -32,6 +32,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticOrSelfType;
@@ -1693,7 +1694,7 @@ trait FunctionTrait
             if ($i === $skip_index) {
                 continue;
             }
-            $closure_for_type = $parameter->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+            $closure_for_type = $parameter->getNonVariadicUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
             if (!$closure_for_type) {
                 continue;
             }
@@ -1703,6 +1704,24 @@ trait FunctionTrait
                  * @param list<Node|UnionType|mixed> $arguments
                  */
                 static function (array $arguments, Context $context) use ($code_base, $i, $closure_for_type, $parameter): UnionType {
+                    if ($parameter->isVariadic()) {
+                        $args = array_slice($arguments, $i);
+                        if (!$args) {
+                            return NeverType::instance(false)->asRealUnionType();
+                        }
+                        $union_type = UnionType::empty();
+                        foreach ($args as $arg_value) {
+                            if ($arg_value instanceof UnionType) {
+                                // This helper method has two callers - one passes in an array of union types, another passes in the raw nodes.
+                                $arg_type = $arg_value;
+                            } else {
+                                $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg_value);
+                            }
+                            $union_type = $union_type->withUnionType($closure_for_type($arg_type, $context));
+                        }
+                        return $union_type;
+                    }
+
                     $arg_value = $arguments[$i] ?? ($parameter->hasDefaultValue() ? $parameter->getDefaultValueLiteralType() : null);
                     if ($arg_value !== null) {
                         if ($arg_value instanceof UnionType) {
