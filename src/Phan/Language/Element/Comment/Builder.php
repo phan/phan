@@ -1335,8 +1335,6 @@ final class Builder
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
-                // TODO: Would need to use a different approach if templates were ever supported
-                //       e.g. The magic method parsing doesn't support commas?
                 $params_strings = self::extractMethodParts($arg_list);
                 foreach ($params_strings as $i => $param_string) {
                     $param = $this->magicParamFromMagicMethodParamString($param_string, $i, $comment_line_offset);
