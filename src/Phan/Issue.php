@@ -5257,7 +5257,7 @@ class Issue
                 self::CompatibleIntersectionType,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Cannot use intersection types ({TYPE}) before php 8.0",
+                "Cannot use intersection types ({TYPE}) before php 8.1",
                 self::REMEDIATION_B,
                 3045
             ),

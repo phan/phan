@@ -556,7 +556,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0511
 ## PhanCompatibleIntersectionType
 
 ```
-Cannot use intersection types ({TYPE}) before php 8.0
+Cannot use intersection types ({TYPE}) before php 8.1
 ```
 
 ## PhanCompatibleIterableTypePHP70
