@@ -1,0 +1,4 @@
+%s:41 PhanTypeMismatchProperty Assigning ($foo as a field) of type non-empty-array<int,T&\B> to property but \X->d is (T&\A)[]
+%s:43 PhanTypeMismatchArgument Argument 1 ($x) is $foo of type (T&\B)|T|\B but \X::c() takes T&\A defined at %s:22
+%s:49 PhanTypeMismatchProperty Assigning ($foo as a field) of type non-empty-array<int,T> to property but \X->d is (T&\A)[]
+%s:51 PhanTypeMismatchArgument Argument 1 ($x) is $foo of type T but \X::c() takes T&\A defined at %s:22

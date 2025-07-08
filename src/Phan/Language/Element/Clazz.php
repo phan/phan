@@ -786,7 +786,16 @@ class Clazz extends AddressableElement
         // TODO: defer template properties until the analysis phase? They might not be parsed or resolved yet.
         $original_property_fqsen = $property->getFQSEN();
         if ($original_property_fqsen !== $property_fqsen) {
-            $property = clone($property);
+            // If we have a parent type defined, map the property's
+            // type through it
+            if ($type_option->isDefined()) {
+                $property = $property->cloneWithTemplateParameterTypeMap(
+                    $type_option->get()->getTemplateParameterTypeMap($code_base)
+                );
+            } else {
+                $property = clone($property);
+            }
+
             $property->setFQSEN($property_fqsen);
             if ($property->hasStaticInUnionType()) {
                 $property->inheritStaticUnionType($original_property_fqsen->getFullyQualifiedClassName(), $this->fqsen);
@@ -797,29 +806,6 @@ class Clazz extends AddressableElement
             // Also, for inheritance purposes, treat protected properties the same way.
             if ($from_trait) {
                 $property->setDefiningFQSEN($property_fqsen);
-            }
-
-            try {
-                // If we have a parent type defined, map the property's
-                // type through it
-                if ($type_option->isDefined()
-                    && !$property->hasUnresolvedFutureUnionType()
-                    && $property->getUnionType()->hasTemplateType()
-                ) {
-                    $property->setUnionType(
-                        $property->getUnionType()->withTemplateParameterTypeMap(
-                            $type_option->get()->getTemplateParameterTypeMap(
-                                $code_base
-                            )
-                        )
-                    );
-                }
-            } catch (IssueException $exception) {
-                Issue::maybeEmitInstance(
-                    $code_base,
-                    $property->getContext(),
-                    $exception->getIssueInstance()
-                );
             }
         }
 
@@ -1837,53 +1823,25 @@ class Clazz extends AddressableElement
 
         if ($method->getFQSEN() !== $method_fqsen) {
             $original_method = $method;
-            $method = clone($method);
+
+            // If we have a parent type defined, map the method's
+            // return type and parameter types through it
+            if ($type_option->isDefined()) {
+                $method = $method->cloneWithTemplateParameterTypeMap(
+                    $type_option->get()->getTemplateParameterTypeMap($code_base)
+                );
+            } else {
+                $method = clone($method);
+            }
+
             $method->setFQSEN($method_fqsen);
             // When we inherit it from the ancestor class, it may be an override in the ancestor class,
             // but that doesn't imply it's an override in *this* class.
             $method->setIsOverride($is_override);
             $method->setIsOverriddenByAnother(false);
 
-            // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
-            $method->cloneParameterList();
+            // Make inferred return type for a method affect inherited methods
             $method->ensureClonesReturnType($original_method);
-
-            // If we have a parent type defined, map the method's
-            // return type and parameter types through it
-            if ($type_option->isDefined()) {
-                // Map the method's return type
-                if ($method->getUnionType()->hasTemplateType()) {
-                    $method->setUnionType(
-                        $method->getUnionType()->withTemplateParameterTypeMap(
-                            $type_option->get()->getTemplateParameterTypeMap(
-                                $code_base
-                            )
-                        )
-                    );
-                }
-
-                // Map each method parameter
-                $method->setParameterList(
-                    \array_map(static function (Parameter $parameter) use ($type_option, $code_base): Parameter {
-
-                        if (!$parameter->getUnionType()->hasTemplateType()) {
-                            return $parameter;
-                        }
-
-                        $mapped_parameter = clone($parameter);
-
-                        $mapped_parameter->setUnionType(
-                            $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
-                                $type_option->get()->getTemplateParameterTypeMap(
-                                    $code_base
-                                )
-                            )
-                        );
-
-                        return $mapped_parameter;
-                    }, $method->getParameterList())
-                );
-            }
         }
         if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.

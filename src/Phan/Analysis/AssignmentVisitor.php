@@ -1135,8 +1135,8 @@ class AssignmentVisitor extends AnalysisVisitor
 
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
-            if ($resolved_right_type->canCastToExpandedUnionType(
-                $property_union_type,
+            if ($resolved_right_type->canCastToUnionType(
+                $property_union_type->asExpandedTypesPreservingTemplate($code_base),
                 $code_base
             )) {
                 $this->addTypesToProperty($property, $node);
@@ -1155,9 +1155,8 @@ class AssignmentVisitor extends AnalysisVisitor
                                   ->withFlattenedArrayShapeOrLiteralTypeInstances()
                                   ->withStaticResolvedInContext($this->context);
 
-                // TODO: More precise than canCastToExpandedUnionType
-                if (!$new_types->canCastToExpandedUnionType(
-                    $property_union_type,
+                if (!$new_types->canCastToUnionType(
+                    $property_union_type->asExpandedTypesPreservingTemplate($code_base),
                     $code_base
                 )) {
                     // echo "Emitting warning for $new_types\n";
@@ -1186,14 +1185,14 @@ class AssignmentVisitor extends AnalysisVisitor
         } else {
             // This is a regular assignment, not an assignment to an offset
             if (!$resolved_right_type->canCastToUnionType(
-                $property_union_type->asExpandedTypes($code_base),
+                $property_union_type->asExpandedTypesPreservingTemplate($code_base),
                 $code_base
             )
                 && !($resolved_right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                 && !$clazz->hasDynamicProperties($code_base)
                 && !$property->isDynamicProperty()
             ) {
-                if ($resolved_right_type->nonNullableClone()->canCastToUnionType($property_union_type->asExpandedTypes($code_base), $code_base) &&
+                if ($resolved_right_type->nonNullableClone()->canCastToUnionType($property_union_type->asExpandedTypesPreservingTemplate($code_base), $code_base) &&
                         !$resolved_right_type->isType(NullType::instance(false))) {
                     if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
                         return $this->context;

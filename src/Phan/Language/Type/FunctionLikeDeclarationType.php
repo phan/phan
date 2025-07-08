@@ -924,7 +924,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @param list<string> $suppress_issue_list
+     * @param array<string,int> $suppress_issue_list
      * @return never
      */
     public function setSuppressIssueSet(array $suppress_issue_list): void

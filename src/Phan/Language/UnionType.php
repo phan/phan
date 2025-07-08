@@ -2192,6 +2192,7 @@ class UnionType implements Serializable, Stringable
      * to include all ancestor types
      *
      * TODO: ensure that this is only called after the parse phase is over.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function canCastToExpandedUnionType(
         UnionType $target,

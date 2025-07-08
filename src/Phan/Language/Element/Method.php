@@ -97,9 +97,6 @@ class Method extends ClassElement implements FunctionInterface
             $fqsen
         );
         $context = $context->withScope($internal_scope);
-        if ($type->hasTemplateType()) {
-            $this->recordHasTemplateType();
-        }
         parent::__construct(
             $context,
             FullyQualifiedMethodName::canonicalName($name),
@@ -132,20 +129,36 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * Sets hasTemplateType to true if it finds any template types in the parameters or methods
+     * Sets hasTemplateType to true if it finds any template types in the parameters or methods,
+     * or false otherwise. This should be always called after modifying the return or param types.
      */
     public function checkForTemplateTypes(): void
     {
         if ($this->getUnionType()->hasTemplateTypeRecursive()) {
-            $this->recordHasTemplateType();
+            $this->recordHasTemplateType(true);
             return;
         }
         foreach ($this->parameter_list as $parameter) {
             if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                $this->recordHasTemplateType();
+                $this->recordHasTemplateType(true);
                 return;
             }
         }
+        if ($this->comment) {
+            foreach ($this->comment->getParameterList() as $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->recordHasTemplateType(true);
+                    return;
+                }
+            }
+            foreach ($this->comment->getParameterMap() as $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->recordHasTemplateType(true);
+                    return;
+                }
+            }
+        }
+        $this->recordHasTemplateType(false);
     }
 
     /**
@@ -547,12 +560,6 @@ class Method extends ClassElement implements FunctionInterface
             $element_context,
             $node->children['attributes'] ?? null
         ));
-        foreach ($parameter_list as $parameter) {
-            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                $method->recordHasTemplateType();
-                break;
-            }
-        }
 
         // Add each parameter to the scope of the function
         // NOTE: it's important to clone this,
@@ -642,6 +649,8 @@ class Method extends ClassElement implements FunctionInterface
         $element_context->freeElementReference();
         // Populate the original return type.
         $method->setOriginalReturnType();
+
+        $method->checkForTemplateTypes();
 
         return $method;
     }
@@ -995,9 +1004,13 @@ class Method extends ClassElement implements FunctionInterface
         return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
     }
 
-    private function recordHasTemplateType(): void
+    private function recordHasTemplateType(bool $has_template_type): void
     {
-        $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::HAS_TEMPLATE_TYPE,
+            $has_template_type
+        ));
     }
 
     /**
@@ -1008,73 +1021,74 @@ class Method extends ClassElement implements FunctionInterface
         CodeBase $code_base,
         UnionType $object_union_type
     ): Method {
-        $defining_fqsen = $this->getDefiningClassFQSEN();
-        $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
-        if (!$defining_class->isGeneric()) {
-            // ???
-            return $this;
-        }
-        $expected_type = $defining_fqsen->asType();
-
-        // TODO: Handle intersection types?
-        foreach ($object_union_type->getTypeSet() as $type) {
-            if (!$type->hasTemplateParameterTypes()) {
-                continue;
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
-            foreach ($expanded_type->getTypeSet() as $candidate) {
-                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
-                    continue;
+        if ($this->hasTemplateType()) {
+            $clone = $this->cloneWithTemplateParameterTypeMap($object_union_type->getTemplateParameterTypeMap($code_base));
+            if (!$clone->hasTemplateType()) {
+                // If resolved all of the template types, return the clone with concrete types.
+                if (Config::get_track_references()) {
+                    // Quick and dirty fix to make dead code detection work on this clone.
+                    // Consider making this an object instead.
+                    // @see AddressableElement::addReference()
+                    $clone->reference_list = &$this->reference_list;
                 }
-                // $candidate is $expected_type<T...>
-                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
-                return $result;
+                return $clone;
             }
-        }
-        // E.g. we can have `MyClass @implements MyBaseClass<string>` - so we check the expanded types for any template types, as well
-        foreach ($object_union_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if (!$type->hasTemplateParameterTypes()) {
-                continue;
-            }
-            if (!$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
-            foreach ($expanded_type->getTypeSet() as $candidate) {
-                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
-                    continue;
-                }
-                // $candidate is $expected_type<T...>
-                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
-                return $result;
-            }
+            // TODO: What should happen if we resolved only some of the types, or if we resolved none of them?
+            // Returning the original for now since that causes fewest test failures, but I'm not sure if it's correct.
         }
         return $this;
     }
 
     /**
+     * Clone this, substituting the given types for template types in our return and parameter types.
      * @param array<string,UnionType> $template_type_map
      * A map from template type identifier to a concrete type
      */
-    private function cloneWithTemplateParameterTypeMap(array $template_type_map): Method
+    public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
     {
-        $result = clone($this);
-        $result->cloneParameterList();
-        foreach ($result->parameter_list as $parameter) {
-            $parameter->setUnionType($parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        $method = clone($this);
+
+        // Clone the parameter list, so that modifying the parameters won't modify the others.
+        $method->cloneParameterList();
+
+        // Map the method's return type
+        if ($method->getUnionType()->hasTemplateTypeRecursive()) {
+            $method->setUnionType(
+                $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+            );
         }
-        $result->setUnionType($result->getUnionType()->withTemplateParameterTypeMap($template_type_map));
-        $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
-        if (Config::get_track_references()) {
-            // Quick and dirty fix to make dead code detection work on this clone.
-            // Consider making this an object instead.
-            // @see AddressableElement::addReference()
-            $result->reference_list = &$this->reference_list;
+
+        // Map each method parameter
+        // Note: We've already cloned the parameter list above, so we can mutate them
+        foreach ($method->getParameterList() as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                $parameter->setUnionType(
+                    $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+                );
+            }
         }
-        return $result;
+
+        // Map the parameters' PHPDoc types as well
+        // (the final union type may not have been computed yet)
+        if ($comment = $method->getComment()) {
+            $comment = clone($comment);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            foreach ($comment->getAndMutateParameters() as &$comment_param) {
+                if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                    $comment_param = clone($comment_param);
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $comment_param->setUnionType(
+                        $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map)
+                    );
+                }
+            }
+            $method->setComment($comment);
+        }
+
+        // We may have removed all template types, check if we still need to treat this method as generic
+        $method->checkForTemplateTypes();
+
+        return $method;
     }
 
     /**
