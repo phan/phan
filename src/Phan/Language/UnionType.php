@@ -1003,6 +1003,10 @@ class UnionType implements Serializable, Stringable
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
+     * @param bool $omit_missing
+     * If the type is missing some type parameters expected by the class,
+     * omit them in the result instead of returning empty union types.
+     *
      * TODO: Defer resolving the template parameters until parse ends. Low priority.
      *
      * @return array<string,UnionType>
@@ -1010,7 +1014,8 @@ class UnionType implements Serializable, Stringable
      * to replace it with
      */
     public function getTemplateParameterTypeMap(
-        CodeBase $code_base
+        CodeBase $code_base,
+        bool $omit_missing = false
     ): array {
         if ($this->isEmpty()) {
             return [];
@@ -1022,9 +1027,9 @@ class UnionType implements Serializable, Stringable
              * @param array<string,UnionType> $map
              * @return array<string,UnionType>
              */
-            static function (array $map, Type $type) use ($code_base): array {
+            static function (array $map, Type $type) use ($code_base, $omit_missing): array {
                 return \array_merge(
-                    $type->getTemplateParameterTypeMap($code_base),
+                    $type->getTemplateParameterTypeMap($code_base, $omit_missing),
                     $map
                 );
             },

@@ -18,10 +18,10 @@
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $aa - it has union type \stdClass
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $bb - it has union type \stdClass
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $cc - it has union type \stdClass
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $dd - it has union type T
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $dd - it has union type (empty union type)
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $ee - it has union type \stdClass
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $ff - it has union type \stdClass
-%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $gg - it has union type T
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $gg - it has union type (empty union type)
 %s:119 PhanDebugAnnotation @phan-debug-var requested for variable $aC - it has union type \Container<\Bar>(real=\Container<\Bar>)
 %s:119 PhanDebugAnnotation @phan-debug-var requested for variable $bC - it has union type \Container<\Bar>
 %s:119 PhanDebugAnnotation @phan-debug-var requested for variable $cC - it has union type \Container<\Bar>
@@ -32,10 +32,10 @@
 %s:128 PhanDebugAnnotation @phan-debug-var requested for variable $aaC - it has union type \Bar(real=\Foo)
 %s:128 PhanDebugAnnotation @phan-debug-var requested for variable $bbC - it has union type \Bar(real=\Foo)
 %s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ccC - it has union type \Bar(real=\Foo)
-%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ddC - it has union type T(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ddC - it has union type mixed(real=\Foo)
 %s:128 PhanDebugAnnotation @phan-debug-var requested for variable $eeC - it has union type \Bar(real=\Foo)
 %s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ffC - it has union type \Bar(real=\Foo)
-%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ggC - it has union type T(real=\Foo)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $ggC - it has union type mixed(real=\Foo)
 %s:137 PhanDebugAnnotation @phan-debug-var requested for variable $a0 - it has union type \Container<null>(real=\Container<null>)
 %s:137 PhanDebugAnnotation @phan-debug-var requested for variable $b0 - it has union type \Container<null>
 %s:137 PhanDebugAnnotation @phan-debug-var requested for variable $c0 - it has union type \Container<never>
@@ -46,7 +46,7 @@
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $aa0 - it has union type null
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $bb0 - it has union type null
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $cc0 - it has union type never
-%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $dd0 - it has union type T
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $dd0 - it has union type (empty union type)
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ee0 - it has union type null
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ff0 - it has union type never
-%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $gg0 - it has union type T
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $gg0 - it has union type (empty union type)

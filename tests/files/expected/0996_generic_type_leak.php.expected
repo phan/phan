@@ -1,0 +1,5 @@
+%s:6 PhanGenericConstructorTypes Missing template parameter for type T on constructor for generic class \X
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $x1 - it has union type \X(real=\X)
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $y1 - it has union type (empty union type)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $x2 - it has union type \X<mixed>(real=\X<mixed>)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $y2 - it has union type mixed
