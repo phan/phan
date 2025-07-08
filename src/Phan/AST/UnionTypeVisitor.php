@@ -2617,12 +2617,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getConst();
-        } catch (IssueException $exception) {
-            Issue::maybeEmitInstance(
-                $this->code_base,
-                $this->context,
-                $exception->getIssueInstance()
-            );
+        } catch (IssueException $_) {
+            // Ignore, we may not have loaded the constant yet
             return UnionType::empty();
         }
 

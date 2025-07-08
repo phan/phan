@@ -1318,7 +1318,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             // We need to do this in order to check keys and (after the first 5) values in AST arrays.
             // Other parts of the AST may also not be covered.
-            // (This issue may be a duplicate)
             Issue::maybeEmitInstance(
                 $this->code_base,
                 $context,
