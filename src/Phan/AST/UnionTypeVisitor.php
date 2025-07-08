@@ -3744,31 +3744,34 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param int|string|float|Node $node the node to fetch CallableType instances for.
-     * @param bool $log_error whether or not to log errors while searching @phan-unused-param
+     * @param bool $log_error whether or not to log errors while searching
      * @return list<FunctionInterface>
-     * TODO: use log_error
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error): array
     {
         try {
-            $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+            $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
         } catch (FQSENException $e) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
-                $context->getLineNumberStart(),
-                $e->getFQSEN()
-            );
+            if ($log_error) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
+                    $context->getLineNumberStart(),
+                    $e->getFQSEN()
+                );
+            }
             return [];
         } catch (\InvalidArgumentException $_) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::InvalidFQSENInCallable,
-                $context->getLineNumberStart(),
-                '(unknown)'
-            );
+            if ($log_error) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::InvalidFQSENInCallable,
+                    $context->getLineNumberStart(),
+                    '(unknown)'
+                );
+            }
             return [];
         }
         $functions = [];
@@ -3797,9 +3800,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Fetch known classes for a place where a class name was provided as a string or string expression.
      * Warn if this is an invalid class name.
      * @param \ast\Node|string|int|float $node
+     * @param bool $log_error whether or not to log errors while searching
      * @return list<Clazz>
      */
-    public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node): array
+    public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node, bool $log_error = true): array
     {
         $results = [];
         $strings = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node)->asStringScalarValues();
@@ -3807,33 +3811,39 @@ class UnionTypeVisitor extends AnalysisVisitor
             try {
                 $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($string);
             } catch (FQSENException $e) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                    $context->getLineNumberStart(),
-                    $e->getFQSEN()
-                );
+                if ($log_error) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                        $context->getLineNumberStart(),
+                        $e->getFQSEN()
+                    );
+                }
                 continue;
             } catch (\InvalidArgumentException $_) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::InvalidFQSENInClasslike,
-                    $context->getLineNumberStart(),
-                    '(unknown)'
-                );
+                if ($log_error) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::InvalidFQSENInClasslike,
+                        $context->getLineNumberStart(),
+                        '(unknown)'
+                    );
+                }
                 continue;
             }
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 // TODO: Different issue type?
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::UndeclaredClassReference,
-                    $context->getLineNumberStart(),
-                    (string)$fqsen
-                );
+                if ($log_error) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::UndeclaredClassReference,
+                        $context->getLineNumberStart(),
+                        (string)$fqsen
+                    );
+                }
                 continue;
             }
             $results[] = $code_base->getClassByFQSEN($fqsen);
@@ -3850,7 +3860,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node): array
     {
-        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, true);
     }
 
     /**
@@ -4039,7 +4049,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return list<FullyQualifiedMethodName>
      * A list of `FullyQualifiedMethodName`s associated with the given node
      */
-    private function methodFQSENListFromParts($class_or_expr, $method_name, bool $from_array): array
+    private function methodFQSENListFromParts($class_or_expr, $method_name, bool $from_array, bool $log_error): array
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -4052,7 +4062,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
             if (!is_string($method_name)) {
                 $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name, $this->should_catch_issue_exception);
-                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
+                if ($log_error && !$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -4100,20 +4110,24 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
         } catch (FQSENException $e) {
-            $this->emitIssue(
-                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                $context->getLineNumberStart(),
-                $e->getFQSEN()
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                    $context->getLineNumberStart(),
+                    $e->getFQSEN()
+                );
+            }
             return [];
         }
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-            $this->emitIssue(
-                Issue::UndeclaredClassInCallable,
-                $context->getLineNumberStart(),
-                (string)$class_fqsen,
-                "$class_fqsen::" . (is_string($method_name) ? $method_name : '(unknown)')
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    Issue::UndeclaredClassInCallable,
+                    $context->getLineNumberStart(),
+                    (string)$class_fqsen,
+                    "$class_fqsen::" . (is_string($method_name) ? $method_name : '(unknown)')
+                );
+            };
             return [];
         }
         if (!is_string($method_name)) {
@@ -4121,15 +4135,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $class = $code_base->getClassByFQSEN($class_fqsen);
         if (!$class->hasMethodWithName($code_base, $method_name, true)) {
-            $this->emitIssue(
-                Issue::UndeclaredStaticMethodInCallable,
-                $context->getLineNumberStart(),
-                "$class_fqsen::$method_name"
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    Issue::UndeclaredStaticMethodInCallable,
+                    $context->getLineNumberStart(),
+                    "$class_fqsen::$method_name"
+                );
+            };
             return [];
         }
         $method = $class->getMethodByName($code_base, $method_name);
-        if (!$method->isStatic()) {
+        if ($log_error && !$method->isStatic()) {
             $this->emitIssue(
                 Issue::StaticCallToNonStatic,
                 $context->getLineNumberStart(),
@@ -4145,7 +4161,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @see ContextNode::getFunction() for a similar function
      * @return list<FullyQualifiedFunctionName>
      */
-    private function functionFQSENListFromFunctionName(string $function_name): array
+    private function functionFQSENListFromFunctionName(string $function_name, bool $log_error): array
     {
         // TODO: Catch invalid code such as call_user_func('\\\\x\\\\y')
         try {
@@ -4159,11 +4175,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             return [];
         }
         if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
-            $this->emitIssue(
-                Issue::UndeclaredFunctionInCallable,
-                $this->context->getLineNumberStart(),
-                $function_name
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    Issue::UndeclaredFunctionInCallable,
+                    $this->context->getLineNumberStart(),
+                    $function_name
+                );
+            }
             return [];
         }
         return [$function_fqsen];
@@ -4171,6 +4189,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param string|Node $node
+     * @param bool $log_error whether or not to log errors while searching
      *
      * @return list<FullyQualifiedFunctionLikeName>
      * A list of `FullyQualifiedFunctionLikeName`s associated with the given node
@@ -4179,7 +4198,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function functionLikeFQSENListFromNode($node): array
+    private function functionLikeFQSENListFromNode($node, bool $log_error): array
     {
         $orig_node = $node;
         if ($node instanceof Node) {
@@ -4189,32 +4208,36 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (is_string($node)) {
             if (strpos($node, '::') !== false) {
                 [$class_name, $method_name] = \explode('::', $node, 2);
-                return $this->methodFQSENListFromParts($class_name, $method_name, false);
+                return $this->methodFQSENListFromParts($class_name, $method_name, false, $log_error);
             }
-            return $this->functionFQSENListFromFunctionName($node);
+            return $this->functionFQSENListFromFunctionName($node, $log_error);
         }
         if (\is_array($node)) {
             if (\count($node) !== 2) {
-                $this->emitIssue(
-                    Issue::TypeInvalidCallableArraySize,
-                    $orig_node->lineno ?? $this->context->getLineNumberStart(),
-                    \count($node)
-                );
+                if ($log_error) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidCallableArraySize,
+                        $orig_node->lineno ?? $this->context->getLineNumberStart(),
+                        \count($node)
+                    );
+                }
                 return [];
             }
             $i = 0;
             foreach ($node as $key => $_) {
                 if ($key !== $i) {
-                    $this->emitIssue(
-                        Issue::TypeInvalidCallableArrayKey,
-                        $orig_node->lineno ?? $this->context->getLineNumberStart(),
-                        $i
-                    );
+                    if ($log_error) {
+                        $this->emitIssue(
+                            Issue::TypeInvalidCallableArrayKey,
+                            $orig_node->lineno ?? $this->context->getLineNumberStart(),
+                            $i
+                        );
+                    }
                     return [];
                 }
                 $i++;
             }
-            return $this->methodFQSENListFromParts($node[0], $node[1], true);
+            return $this->methodFQSENListFromParts($node[0], $node[1], true, $log_error);
         }
         if (!($node instanceof Node)) {
             // TODO: Warn?
