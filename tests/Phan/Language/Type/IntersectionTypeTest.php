@@ -79,7 +79,6 @@ final class IntersectionTypeTest extends BaseTest
 
         // This is only checking the first layer of template types
         'getTemplateParameterTypeList',
-        'getTemplateParameterTypeMap',
         'getTemplateTypeExtractorClosure', // TODO: Not sure how to implement
 
         'isGenerator', // this is a final class, why would it be in an intersection type

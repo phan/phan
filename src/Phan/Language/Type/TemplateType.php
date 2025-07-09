@@ -123,6 +123,21 @@ final class TemplateType extends Type
     }
 
     /**
+     * @unused-param $code_base
+     */
+    public function getTemplateParameterTypeMap(CodeBase $code_base, bool $omit_missing = false): array
+    {
+        if (!$omit_missing) {
+            return [
+                $this->template_type_identifier => UnionType::empty()
+            ];
+        }
+        return [
+            $this->template_type_identifier => $this->asPHPDocUnionType()
+        ];
+    }
+
+    /**
      * @param array<string,UnionType> $template_parameter_type_map
      * A map from template type identifiers to concrete types
      *

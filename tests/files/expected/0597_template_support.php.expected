@@ -8,7 +8,7 @@
 %s:105 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::goodTemplateReturn(new stdClass()) of type \stdClass[] but \strlen() takes string
 %s:109 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $result of type \stdClass but \strlen() takes string
 %s:110 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::goodTemplateReturnFromArray(['key'=>rand(0, 10)]) of type int but \strlen() takes string
-%s:111 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::missingTemplateParams(['key'=>rand(0, 10)]) of type T[] but \strlen() takes string
+%s:111 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::missingTemplateParams(['key'=>rand(0, 10)]) of type array but \strlen() takes string
 %s:112 PhanTypeMismatchArgumentInternal Argument 1 ($string) is self::combinationIterable($it) of type array<int,\stdClass>|array<int,string> but \strlen() takes string
 %s:137 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $t->left of type \stdClass but \strlen() takes string
 %s:138 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $t->right of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string

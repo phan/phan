@@ -511,6 +511,20 @@ final class IntersectionType extends Type
         return $this->anyTypePartsMatchMethod(__FUNCTION__);
     }
 
+    public function getTemplateParameterTypeMap(CodeBase $code_base, bool $omit_missing = false): array
+    {
+        $map = [];
+        foreach ($this->type_parts as $type) {
+            // In a correctly formed intersection type, there can only be one actual class
+            // (if there are multiple, either they're redundant parent classes or the type is impossible),
+            // and the rest of the types must be interfaces. Since we don't support generic interfaces,
+            // that means there should be only one type with template parameters, so only one non-empty
+            // map, which means that there should never be a conflict if we do this.
+            $map += $type->getTemplateParameterTypeMap($code_base, $omit_missing);
+        }
+        return $map;
+    }
+
     /**
      * @param array<string,UnionType> $template_parameter_type_map
      * A map from template type identifiers to concrete types
