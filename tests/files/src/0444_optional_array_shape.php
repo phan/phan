@@ -18,9 +18,9 @@ acceptsOptionArray(['strKey' => 2]);  // should warn
 acceptsOptionArray(['strKey' => 'value']);
 acceptsOptionArray(['strKey' => null]);  // should warn
 acceptsOptionArray(['intKey' => 2]);
-acceptsOptionArray(['intKey' => 'value']);
-acceptsOptionArray(['intKey' => null]);
-acceptsOptionArray(['intKey' => 'value', 'strKey' => 'value']);
+acceptsOptionArray(['intKey' => 'value']);  // should warn
+acceptsOptionArray(['intKey' => null]);  // should warn
+acceptsOptionArray(['intKey' => 'value', 'strKey' => 'value']);  // should warn
 
 /**
  * @param array{nullableStrKey:?string=} $options
@@ -33,8 +33,8 @@ function acceptsOptionArrayB(array $options = []) {
 
 acceptsOptionArrayB([]);
 acceptsOptionArrayB(['nullableStrKey' => 'value']);
-acceptsOptionArrayB(['nullableStrKey' => null]);  // should not warn
-acceptsOptionArrayB(['nullableStrKey' => 2]);  // should not warn
+acceptsOptionArrayB(['nullableStrKey' => null]);
+acceptsOptionArrayB(['nullableStrKey' => 2]);  // should warn
 
 // Mixed, so we don't know
 acceptsOptionArray($GLOBALS);
