@@ -8,7 +8,7 @@
 %s:32 PhanDebugAnnotation @phan-debug-var requested for variable $y2 - it has union type (empty union type)
 %s:41 PhanTypeMismatchReturn Returning new X() of type \X<> but getX3() is declared to return \X&\I
 %s:44 PhanDebugAnnotation @phan-debug-var requested for variable $x3 - it has union type \X&\I
-%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $y3 - it has union type T
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $y3 - it has union type (empty union type)
 %s:51 PhanCommentParamOnEmptyParamList Saw an @param annotation for $x, but the param list of function getX4() : \X|\X<U>; is empty
 %s:54 PhanTemplateTypeNotDeclaredInFunctionParams Template type U not declared in parameters of function/method getX4() (or Phan can't extract template types for this use case)
 %s:58 PhanDebugAnnotation @phan-debug-var requested for variable $x4 - it has union type \X<>(real=\X)
