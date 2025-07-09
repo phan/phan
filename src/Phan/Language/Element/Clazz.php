@@ -38,7 +38,6 @@ use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
-use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
@@ -3812,7 +3811,7 @@ class Clazz extends AddressableElement
                         }
                         /** @param list<\ast\Node|mixed> $unused_arg_list */
                         $template_type_resolver = static function (array $unused_arg_list, Context $unused_context): UnionType {
-                            return MixedType::instance(false)->asPHPDocUnionType();
+                            return UnionType::empty();
                         };
                     }
                     $template_type_resolvers[] = $template_type_resolver;
