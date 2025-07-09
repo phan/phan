@@ -1,0 +1,2 @@
+%s:2 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{k?:1}
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array{k:1|2}(real=array{k:2})

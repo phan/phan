@@ -732,6 +732,24 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         } else {
             $combination = $left->field_types + $right->field_types;
         }
+
+        // Handle possibly undefined keys present in either array
+        foreach ($right->field_types as $i => $type) {
+            if (isset($left->field_types[$i])) {
+                // Both arrays have this key. There are four cases:
+                // {k: A}  + {k: B}  === {k: A}
+                // {k: A}  + {k?: B} === {k: A}
+                // {k?: A} + {k: B}  === {k: A|B}
+                // {k?: A} + {k?: B} === {k?: A|B}
+                // So, if it's possibly undefined in the left array, we compute the union,
+                // and marked as possibly undefined if it was possibly undefined in the right array.
+                if ($left->field_types[$i]->isPossiblyUndefined()) {
+                    $combination[$i] = ($left->field_types[$i])->withUnionType($type)
+                        ->withIsPossiblyUndefined($type->isPossiblyUndefined());
+                }
+            }
+        }
+
         return self::fromFieldTypes($combination, false);
     }
 

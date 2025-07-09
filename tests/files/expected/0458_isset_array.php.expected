@@ -9,4 +9,4 @@
 %s:30 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{key:mixed,0:?string,1:int} but \strlen() takes string
 %s:32 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{0:?string,1:int} but \strlen() takes string
 %s:43 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{0:string,1:int} but \strlen() takes string
-%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{0?:null,1:int} but \strlen() takes string
+%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $data of type array{0:?string|null,1:int} but \strlen() takes string
