@@ -1,7 +1,36 @@
 Phan NEWS
 
-??? ?? 202?, Phan 5.5.1 (dev)
+August 6 2025, Phan 5.5.1
 -----------------------
+New features:
+- Add GitHub Issue Printer for GitHub Actions [#5025](https://github.com/phan/phan/issues/5025)
+- Check write access for property using asymmetric visibility.
+  New issue type: `PhanAccessSetPropertyWrongContext` [#5027](https://github.com/phan/phan/pull/5027)
+
+Bug fixes:
+- Fixed crash when using PHPDocRedundantPlugin on doc comment containing `@throws` [#5003](https://github.com/phan/phan/issues/5003)
+- Infer intersection types in `instanceof` with generic types [#4673](https://github.com/phan/phan/issues/4673)
+- Distinguish anonymous classes on the same line [#4823](https://github.com/phan/phan/issues/4823)
+- Do not warn for trailing commas in function calls when using the polyfill parser in PHP 8 [#5008](https://github.com/phan/phan/pull/5008)
+- Ignore `@extends` and `@inherit` used on interfaces, to avoid false positive `PhanAccessWrongInheritanceCategoryInternal` issues
+  (phan does not support generic interfaces yet) [#5002](https://github.com/phan/phan/issues/5002)
+- Addressed various limitations in analysis of generic types [#5013](https://github.com/phan/phan/pull/5013)
+- Prevent generic type parameters from leaking out of function calls where some generic types aren't filled [#4982](https://github.com/phan/phan/issues/4982)
+- Do not emit issues about invalid callables for parameters taking `string|callable` or `array|callable` [](https://github.com/phan/phan/issues/1648)
+- Do not emit `PhanUndeclaredConstant` etc. when the constant may not be loaded yet [#4855](https://github.com/phan/phan/issues/4855)
+- Fix the issue message for `CompatibleIntersectionType` to state that PHP 8.1 is required, not PHP 8.0 [#5017](https://github.com/phan/phan/pull/5017)
+- Handle possibly undefined keys when merging array shapes [#4864](https://github.com/phan/phan/issues/4864)
+- Type checks involving generic classes and inheritance now detect more errors when the parent and child type parameters are not the same,
+  and provide substituted template types in error messages. [#5011](https://github.com/phan/phan/pull/5011)
+- Support validating callable arrays where the object is of intersection type [#4851](https://github.com/phan/phan/issues/4851)
+- Handle PhanAttributeWrongTarget for constructor property promotion [#4915](https://github.com/phan/phan/issues/4915)
+- Improve handling of promoted properties also declared via doc comments [#5022](https://github.com/phan/phan/issues/5022)
+- Improve handling of never-typed functions and methods [#4779](https://github.com/phan/phan/issues/4779)
+- Improve real type inference for array union [#5029](https://github.com/phan/phan/issues/5029)
+
+Internal changes:
+- The (`@internal`) `Builder::RETURN_COMMENT_REGEX` constant no longer matches `@throws` tags. `Builder::RETURN_OR_THROWS_COMMENT_REGEX` does now [#5004](https://github.com/phan/phan/pull/5004)
+- Throw an exception when emitting issues with an invalid format string [#5005](https://github.com/phan/phan/pull/5005)
 
 June 30 2025, Phan 5.5.0
 -----------------------
