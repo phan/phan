@@ -3889,7 +3889,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $result_types = [];
         $class = null;
-        foreach ($object_types->getTypeSet() as $object_type) {
+        foreach ($object_types->getUniqueFlattenedTypeSet() as $object_type) {
             // TODO: support templates here.
             if ($object_type instanceof ObjectType || $object_type instanceof TemplateType) {
                 continue;
