@@ -1128,9 +1128,10 @@ class AssignmentVisitor extends AnalysisVisitor
                 $node->children['expr'] ?? null
             );
 
-            $property_union_type = $property_union_type->withTemplateParameterTypeMap(
+            $property = $property->cloneWithTemplateParameterTypeMap(
                 $expression_type->getTemplateParameterTypeMap($this->code_base)
             );
+            $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
         }
 
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);

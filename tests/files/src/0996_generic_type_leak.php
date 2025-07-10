@@ -16,7 +16,7 @@ function getX1(): X {
     return new X;
 }
 $x1 = getX1();
-$y1 = $x1->u; // whatever the type of this is, it must not be "T"
+$y1 = $x1->u; $x1->u[] = 123;
 '@phan-debug-var $x1, $y1';
 
 
