@@ -3866,7 +3866,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return list<FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
-    private function methodFQSENListFromObjectAndMethodName($class_or_expr, string $method_name): array
+    private function methodFQSENListFromObjectAndMethodName($class_or_expr, string $method_name, bool $log_error): array
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -3878,18 +3878,20 @@ class UnionTypeVisitor extends AnalysisVisitor
         $object_types = $union_type->objectTypes();
         if ($object_types->isEmpty()) {
             if (!$union_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
-                $this->emitIssue(
-                    Issue::TypeInvalidCallableObjectOfMethod,
-                    $context->getLineNumberStart(),
-                    (string)$union_type,
-                    $method_name
-                );
+                if ($log_error) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidCallableObjectOfMethod,
+                        $context->getLineNumberStart(),
+                        (string)$union_type,
+                        $method_name
+                    );
+                }
             }
             return [];
         }
         $result_types = [];
         $class = null;
-        foreach ($object_types->getTypeSet() as $object_type) {
+        foreach ($object_types->getUniqueFlattenedTypeSet() as $object_type) {
             // TODO: support templates here.
             if ($object_type instanceof ObjectType || $object_type instanceof TemplateType) {
                 continue;
@@ -3897,23 +3899,27 @@ class UnionTypeVisitor extends AnalysisVisitor
             $class_fqsen = FullyQualifiedClassName::fromType($object_type);
             if ($object_type instanceof StaticOrSelfType) {
                 if (!$context->isInClassScope()) {
-                    $this->emitIssue(
-                        Issue::ContextNotObjectInCallable,
-                        $context->getLineNumberStart(),
-                        (string)$class_fqsen,
-                        "$class_fqsen::$method_name"
-                    );
+                    if ($log_error) {
+                        $this->emitIssue(
+                            Issue::ContextNotObjectInCallable,
+                            $context->getLineNumberStart(),
+                            (string)$class_fqsen,
+                            "$class_fqsen::$method_name"
+                        );
+                    }
                     continue;
                 }
                 $class_fqsen = $context->getClassFQSEN();
             }
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                $this->emitIssue(
-                    Issue::UndeclaredClassInCallable,
-                    $context->getLineNumberStart(),
-                    (string)$class_fqsen,
-                    "$class_fqsen::$method_name"
-                );
+                if ($log_error) {
+                    $this->emitIssue(
+                        Issue::UndeclaredClassInCallable,
+                        $context->getLineNumberStart(),
+                        (string)$class_fqsen,
+                        "$class_fqsen::$method_name"
+                    );
+                }
                 continue;
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
@@ -3929,12 +3935,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if (\count($result_types) === 0 && $class instanceof Clazz) {
             // TODO: Include suggestion for method name
-            $this->emitIssue(
-                Issue::UndeclaredMethodInCallable,
-                $context->getLineNumberStart(),
-                $method_name,
-                (string)$union_type
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    Issue::UndeclaredMethodInCallable,
+                    $context->getLineNumberStart(),
+                    $method_name,
+                    (string)$union_type
+                );
+            }
         }
         return $result_types;
     }
@@ -4094,7 +4102,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     if (!is_string($method_name)) {
                         return [];
                     }
-                    return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name);
+                    return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name, $log_error);
                 }
                 if (\in_array(\strtolower($class_fqsen->getName()), ['static', 'self', 'parent'], true)) {
                     $this->emitDeprecatedPartiallySupportedCallable($class_fqsen->getName(), $method_name);

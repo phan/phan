@@ -1,0 +1,10 @@
+%s:19 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \A
+%s:20 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \A
+%s:24 PhanUndeclaredMethodInCallable Call to undeclared method func in callable. Possible object type(s) for that method are \B
+%s:25 PhanUndeclaredMethodInCallable Call to undeclared method func in callable. Possible object type(s) for that method are \B
+%s:28 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \B
+%s:29 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \B
+%s:40 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \A&\B
+%s:41 PhanUndeclaredMethodInCallable Call to undeclared method oops in callable. Possible object type(s) for that method are \A&\B
+%s:48 PhanUndeclaredMethodInCallable Call to undeclared method func in callable. Possible object type(s) for that method are \B&\C
+%s:49 PhanUndeclaredMethodInCallable Call to undeclared method func in callable. Possible object type(s) for that method are \B&\C
