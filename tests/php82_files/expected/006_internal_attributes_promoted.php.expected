@@ -1,2 +1,0 @@
-%s:5 PhanAttributeWrongTarget Saw use of attribute \SensitiveParameter declared at internal:0 which supports being declared on \Attribute::TARGET_PARAMETER but it was declared on public string $password which requires an attribute declared to support \Attribute::TARGET_PROPERTY
-%s:6 PhanAttributeWrongTarget Saw use of attribute \InternalAttribForProperties declared at internal:%d which supports being declared on \Attribute::TARGET_PROPERTY but it was declared on public string $password which requires an attribute declared to support \Attribute::TARGET_PARAMETER
