@@ -2752,7 +2752,7 @@ Maintenance:
 Language Server/Daemon mode:
 + Add `--output-mode <mode>` to `phan_client`. (#1568)
 
-  Supported formats: `phan_client` (default), `text`, `json`, `csv`, `codeclimate`, `checkstyle`, or `pylint`
+  Supported formats: `phan_client` (default), `text`, `json`, `csv`, `codeclimate`, `checkstyle`, `pylint`, `html`, or `github`
 + Add `--color` to `phan_client` (e.g. for use with `--output-mode text`)
 + Add `--language-server-completion-vscode`. This is a workaround to make completion of variables and static properties work in [the Phan plugin for VS Code](https://github.com/tysonandre/vscode-php-phan)
 + Include Phan's signature types in hover text for internal and user-defined methods (instead of just the real types) (#2309)

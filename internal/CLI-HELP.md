@@ -51,7 +51,7 @@ Usage: ./phan [options] [files...]
   `.phan/config.php`).
 
  -m, --output-mode <mode>
-  Output mode from 'text', 'verbose', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', or 'html'
+  Output mode from 'text', 'verbose', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'html', or 'github'
 
  -o, --output <filename>
   Output filename
