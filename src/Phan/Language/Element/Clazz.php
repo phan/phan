@@ -1028,6 +1028,9 @@ class Clazz extends AddressableElement
         );
 
         $property = null;
+        $is_write = $is_known_assignment;
+
+        $accessing_class = $context->getClassFQSENOrNull();
 
         // Figure out if we have the property and
         // figure out if the property is accessible.
@@ -1058,7 +1061,8 @@ class Clazz extends AddressableElement
 
             $is_property_accessible = $property->isAccessibleFromClass(
                 $code_base,
-                $context->getClassFQSENOrNull()
+                $accessing_class,
+                !$is_write
             );
         }
         if ($is_static && $property) {
@@ -1138,6 +1142,49 @@ class Clazz extends AddressableElement
 
             return $property;
         } elseif ($property) {
+            if (
+                $is_write
+                && $property->isPrivateSet()
+                && $accessing_class !== $property->getDefiningClassFQSEN()
+            ) {
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessSetPropertyWrongContext)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [
+                            'private(set)',
+                            $property->asPropertyFQSENString(),
+                            $property->getContext()->getFile(),
+                            $property->getContext()->getLineNumberStart(),
+                            $context->getFile(),
+                            $context->getLineNumberStart()
+                        ]
+                    )
+                );
+            }
+            if (
+                $is_write
+                && $property->isProtectedSet()
+                && (
+                    null === $accessing_class || $property->checkCanAccessProtectedElement($code_base, $accessing_class)
+                )
+            ) {
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessSetPropertyWrongContext)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [
+                            'protected(set)',
+                            $property->asPropertyFQSENString(),
+                            $property->getContext()->getFile(),
+                            $property->getContext()->getLineNumberStart(),
+                            $context->getFile(),
+                            $context->getLineNumberStart()
+                        ]
+                    )
+                );
+            }
+
             // If we have a property, but it's inaccessible, emit
             // an issue
             if ($property->isPrivate()) {

@@ -228,37 +228,62 @@ abstract class ClassElement extends AddressableElement
      * @param CodeBase $code_base used for access checks to protected properties
      * @param ?FullyQualifiedClassName $accessing_class_fqsen the class FQSEN of the current scope.
      *                                    null if in the global scope.
+     * @param bool $forRead context for accessibility
      * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
+     * @suppress PhanUnusedPublicMethodParameter
      */
-    public function isAccessibleFromClass(CodeBase $code_base, ?FullyQualifiedClassName $accessing_class_fqsen): bool
-    {
+    public function isAccessibleFromClass(
+        CodeBase $code_base,
+        ?FullyQualifiedClassName $accessing_class_fqsen,
+        bool $forRead = true
+    ): bool {
         if ($this->isPublic()) {
             return true;
         }
+
         if (!$accessing_class_fqsen) {
             // Accesses from outside class scopes can only access public FQSENs
             return false;
         }
-        $defining_fqsen = $this->getDefiningClassFQSEN();
-        if ($defining_fqsen === $accessing_class_fqsen) {
+
+        if ($this->isAccessedFromSameClass($accessing_class_fqsen)){
             return true;
         }
-        $real_defining_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-        if ($real_defining_fqsen === $accessing_class_fqsen) {
-            return true;
-        }
+
         if ($this->isPrivate()) {
-            if ($code_base->hasClassWithFQSEN($defining_fqsen)) {
-                $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
-                foreach ($defining_class->getTraitFQSENList() as $trait_fqsen) {
-                    if ($trait_fqsen === $accessing_class_fqsen) {
-                        return true;
-                    }
+            return $this->isPrivatelyAccessibleByClass($code_base, $accessing_class_fqsen);
+        }
+
+        return $this->checkCanAccessProtectedElement($code_base, $accessing_class_fqsen);
+    }
+
+    protected function isAccessedFromSameClass(FullyQualifiedClassName $accessing_fqsen): bool {
+        $defining_fqsen = $this->getDefiningClassFQSEN();
+        if ($defining_fqsen === $accessing_fqsen) {
+            return true;
+        }
+
+        $real_defining_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if ($real_defining_fqsen === $accessing_fqsen) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPrivatelyAccessibleByClass(CodeBase $code_base, FullyQualifiedClassName $accessing_fqsen): bool {
+        $defining_fqsen = $this->getDefiningClassFQSEN();
+
+        if ($code_base->hasClassWithFQSEN($defining_fqsen)) {
+            $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
+            foreach ($defining_class->getTraitFQSENList() as $trait_fqsen) {
+                if ($trait_fqsen === $accessing_fqsen) {
+                    return true;
                 }
             }
-            return false;
         }
-        return self::checkCanAccessProtectedElement($code_base, $defining_fqsen, $accessing_class_fqsen);
+
+        return false;
     }
 
     /**
@@ -266,8 +291,9 @@ abstract class ClassElement extends AddressableElement
      *
      * Precondition: The property in $defining_fqsen is protected.
      */
-    private static function checkCanAccessProtectedElement(CodeBase $code_base, FullyQualifiedClassName $defining_fqsen, FullyQualifiedClassName $accessing_class_fqsen): bool
+    public function checkCanAccessProtectedElement(CodeBase $code_base, FullyQualifiedClassName $accessing_class_fqsen): bool
     {
+        $defining_fqsen = $this->getDefiningClassFQSEN();
         $accessing_class_type = $accessing_class_fqsen->asType();
         $type_of_class_of_property = $defining_fqsen->asType();
 
