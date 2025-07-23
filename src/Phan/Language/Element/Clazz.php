@@ -1158,7 +1158,7 @@ class Clazz extends AddressableElement
                             $property->getContext()->getLineNumberStart(),
                             $context->getFile(),
                             $context->getLineNumberStart()
-                        ],
+                        ]
                     )
                 );
             }
@@ -1180,7 +1180,7 @@ class Clazz extends AddressableElement
                             $property->getContext()->getLineNumberStart(),
                             $context->getFile(),
                             $context->getLineNumberStart()
-                        ],
+                        ]
                     )
                 );
             }

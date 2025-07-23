@@ -230,6 +230,7 @@ abstract class ClassElement extends AddressableElement
      *                                    null if in the global scope.
      * @param bool $forRead context for accessibility
      * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
+     * @suppress PhanUnusedPublicMethodParameter
      */
     public function isAccessibleFromClass(
         CodeBase $code_base,
