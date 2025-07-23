@@ -7,6 +7,7 @@ namespace Phan\Language\Element;
 use ast;
 use Closure;
 use Phan\AST\ASTReverter;
+use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -615,5 +616,40 @@ class Property extends ClassElement
     {
         // TODO: use \ast\flags\MODIFIER_PRIVATE_SET from https://github.com/nikic/php-ast/pull/250
         return $this->getFlagsHasState(4096);
+    }
+
+    /**
+     * @param CodeBase $code_base used for access checks to protected properties
+     * @param ?FullyQualifiedClassName $accessing_class_fqsen the class FQSEN of the current scope.
+     *                                    null if in the global scope.
+     * @param bool $forRead context for accessibility
+     * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
+     */
+    public function isAccessibleFromClass(
+        CodeBase $code_base,
+        ?FullyQualifiedClassName $accessing_class_fqsen,
+        bool $forRead = true
+    ): bool {
+        // Asymmetric visibility
+        if (!$forRead && ($this->isPrivateSet() || $this->isProtectedSet())) {
+            if (!$accessing_class_fqsen) {
+                // private(set) and protected(set) can not be accessed from outside class scope
+                return false;
+            }
+
+            if ($this->isAccessedFromSameClass($accessing_class_fqsen)) {
+                return true;
+            }
+
+            if ($this->isPrivateSet()) {
+                return $this->isPrivatelyAccessibleByClass($code_base, $accessing_class_fqsen);
+            }
+
+            if ($this->isProtectedSet()) {
+                return $this->checkCanAccessProtectedElement($code_base, $accessing_class_fqsen);
+            }
+        }
+
+        return parent::isAccessibleFromClass($code_base, $accessing_class_fqsen, $forRead);
     }
 }

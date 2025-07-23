@@ -575,6 +575,7 @@ class Issue
     public const AccessOverridesFinalConstant           = 'PhanAccessOverridesFinalConstant';
     // TODO: Should probably also warn about the declaration
     public const AccessNonPublicAttribute               = 'PhanAccessNonPublicAttribute';
+    public const AccessSetPropertyWrongContext          = 'PhanAccessSetPropertyWrongContext';
 
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
@@ -4992,6 +4993,14 @@ class Issue
                 "Declaration of class constant {CONST} overrides final constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1035
+            ),
+            new Issue(
+                self::AccessSetPropertyWrongContext,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot modify {TYPE} property {PROPERTY} defined at {FILE}:{LINE} from {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1037
             ),
 
             // Issue::CATEGORY_COMPATIBLE
