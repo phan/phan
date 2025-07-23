@@ -81,6 +81,9 @@ class Flags
     // @abstract tag on class constants or other elements
     public const IS_PHPDOC_ABSTRACT = (1 << 29);
 
+    // only set on properties
+    public const IS_PROMOTED_PROPERTY = (1 << 30);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

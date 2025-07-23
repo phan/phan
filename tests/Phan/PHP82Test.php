@@ -36,6 +36,15 @@ final class PHP82Test extends AbstractPhanFileTest
         foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
+
+        // For testing an internal attribute that supports properties but not
+        // parameters
+        Config::setValue(
+            'autoload_internal_extension_signatures',
+            [
+                '_fake' => \Phan\Config::getProjectRootDirectory() . '/tests/.phan_for_test/attributes.phan_php',
+            ]
+        );
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 

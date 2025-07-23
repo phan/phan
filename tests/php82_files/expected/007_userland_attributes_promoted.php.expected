@@ -1,0 +1,2 @@
+%s:11 PhanAttributeWrongTarget Saw use of attribute \MyPropAttribute declared at %s:4 which supports being declared on \Attribute::TARGET_PROPERTY but it was declared on public string $password which requires an attribute declared to support \Attribute::TARGET_PARAMETER
+%s:12 PhanAttributeWrongTarget Saw use of attribute \MyParamAttribute declared at %s:7 which supports being declared on \Attribute::TARGET_PARAMETER but it was declared on public string $password which requires an attribute declared to support \Attribute::TARGET_PROPERTY

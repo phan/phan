@@ -15,6 +15,7 @@ use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -206,18 +207,42 @@ class AttributeAnalyzer
                 $expected_flags = $class->getAttributeFlags($code_base);
                 $actual_flag = self::getTargetConstantForElement($element);
                 if (!($actual_flag & $expected_flags)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $declaration->getContext(),
-                        Issue::AttributeWrongTarget,
-                        $attribute_lineno,
-                        $fqsen,
-                        $class->getContext()->getFile(),
-                        $class->getContext()->getLineNumberStart(),
-                        self::getTargetNames($expected_flags),
-                        $element,
-                        self::getTargetNames($actual_flag)
-                    );
+                    // Internal attributes that support either parameters or
+                    // properties can be added to constructor property promotion
+                    // without any errors, see php/php-src#9661. We still need
+                    // the error for userland attributes though, see
+                    // php/php-src#18466
+                    $shouldEmit = true;
+                    if ($class->isPHPInternal()) {
+                        if ($element instanceof Property
+                            && ($element->getPhanFlags() & Flags::IS_PROMOTED_PROPERTY)
+                            && ($actual_flag === Attribute::TARGET_PROPERTY)
+                            && ($expected_flags & Attribute::TARGET_PARAMETER)
+                        ) {
+                            $shouldEmit = false;
+                        }
+                        if ($element instanceof Parameter
+                            && ($element->getFlags() & Parameter::PARAM_MODIFIER_FLAGS)
+                            && ($actual_flag === Attribute::TARGET_PARAMETER)
+                            && ($expected_flags & Attribute::TARGET_PROPERTY)
+                        ) {
+                            $shouldEmit = false;
+                        }
+                    }
+                    if ($shouldEmit) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $declaration->getContext(),
+                            Issue::AttributeWrongTarget,
+                            $attribute_lineno,
+                            $fqsen,
+                            $class->getContext()->getFile(),
+                            $class->getContext()->getLineNumberStart(),
+                            self::getTargetNames($expected_flags),
+                            $element,
+                            self::getTargetNames($actual_flag)
+                        );
+                    }
                 }
                 // TODO: Pass this to the method call analyzer?
                 $class->addReference($declaration->getContext());

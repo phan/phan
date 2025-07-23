@@ -760,6 +760,9 @@ class ParseVisitor extends ScopeVisitor
                 );
             }
         }
+        if ($from_parameter) {
+            $phan_flags |= Flags::IS_PROMOTED_PROPERTY;
+        }
         $property->setPhanFlags($phan_flags);
         $property->setDocComment($doc_comment);
 
