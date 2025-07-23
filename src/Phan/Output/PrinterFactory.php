@@ -7,6 +7,7 @@ namespace Phan\Output;
 use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Output\Printer\CodeClimatePrinter;
 use Phan\Output\Printer\CSVPrinter;
+use Phan\Output\Printer\GitHubPrinter;
 use Phan\Output\Printer\HTMLPrinter;
 use Phan\Output\Printer\JSONPrinter;
 use Phan\Output\Printer\PlainTextPrinter;
@@ -26,7 +27,7 @@ class PrinterFactory
      */
     public function getTypes(): array
     {
-        return ['text', 'verbose', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'html'];
+        return ['text', 'verbose', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'html', 'github'];
     }
 
     /**
@@ -56,6 +57,9 @@ class PrinterFactory
                 break;
             case 'verbose':
                 $printer = new VerbosePlainTextPrinter();
+                break;
+            case 'github':
+                $printer = new GitHubPrinter();
                 break;
             case 'text':
             default:
