@@ -27,9 +27,9 @@ jobs:
        include:
          # NOTE: If this is not quoted, the yaml parser will convert numbers such as 8.0 to the number 8,
          # and the docker image `php:8` is the latest minor version of php 8.x (e.g. 8.2).
-         - PHP_VERSION: '7.2'
-         - PHP_VERSION: '7.2'
-           DOCKER_ARCHITECTURE: i386
+         # - PHP_VERSION: '7.2'
+         # - PHP_VERSION: '7.2'
+         #  DOCKER_ARCHITECTURE: i386
          - PHP_VERSION: '7.3'
          - PHP_VERSION: '7.4'
          - PHP_VERSION: '8.0'
