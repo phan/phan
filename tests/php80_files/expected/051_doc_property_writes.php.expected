@@ -1,0 +1,2 @@
+%s:7 PhanReadOnlyPHPDocProperty Possibly zero write references to PHPDoc @property \Demo51->writtenViaPropertyPromotion
+%s:14 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public string $writtenViaPropertyPromotion of \Demo51::__construct(string $writtenViaPropertyPromotion, string $writtenManually)
