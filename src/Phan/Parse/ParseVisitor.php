@@ -517,6 +517,22 @@ class ParseVisitor extends ScopeVisitor
             true
         );
         if (!$property) {
+            // Might be added via PHP doc comments, in which case we still want
+            // to handle it
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $class->getFQSEN(),
+                $parameter->getName()
+            );
+            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+                if ($old_property->getDefiningFQSEN() === $property_fqsen
+                    && $old_property->isFromPHPDoc()
+                ) {
+                    $property = $old_property;
+                }
+            }
+        }
+        if (!$property) {
             return;
         }
         $property->setAttributeList($parameter->getAttributeList());
