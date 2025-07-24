@@ -1,1 +1,0 @@
-%s:9 PhanPluginAlwaysReturnMethod Method \Test::indirectExit has a return type of never, but may fail to return a value

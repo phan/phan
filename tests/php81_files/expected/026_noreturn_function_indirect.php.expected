@@ -1,1 +1,0 @@
-%s:7 PhanPluginAlwaysReturnFunction Function \indirectExit has a return type of never, but may fail to return a value

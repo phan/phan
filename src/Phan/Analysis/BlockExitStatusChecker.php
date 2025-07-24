@@ -8,6 +8,13 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\CodeBase;
+use Phan\Exception\FQSENException;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\NeverType;
 
 use function count;
 
@@ -73,8 +80,18 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         self::STATUS_PROCEED |
         self::STATUS_GOTO;
 
-    public function __construct()
-    {
+    /** @var ?CodeBase */
+    private $code_base;
+
+    /** @var ?Context */
+    private $context;
+
+    public function __construct(
+        ?CodeBase $code_base = null,
+        ?Context $context = null
+    ) {
+        $this->code_base = $code_base;
+        $this->context = $context;
     }
 
     /**
@@ -539,7 +556,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
-        $status = self::computeStatusOfCall($node);
+        $status = $this->computeStatusOfCall($node);
         $node->flags = $status;
         return $status;
     }
@@ -551,8 +568,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitStaticCall(Node $node): int
     {
-        // TODO: The expression or arguments might unconditionally throw, though that is rare in practice.
-        return ($node->flags & self::STATUS_BITMASK) ?: self::STATUS_PROCEED;
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfStaticCall($node);
+        $node->flags = $status;
+        return $status;
     }
 
     /**
@@ -564,8 +586,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitMethodCall(Node $node): int
     {
-        // TODO: The expression or arguments might unconditionally throw, though that is rare in practice.
-        return ($node->flags & self::STATUS_BITMASK) ?: self::STATUS_PROCEED;
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfMethodCall($node);
+        $node->flags = $status;
+        return $status;
     }
 
     /**
@@ -580,7 +607,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return ($node->flags & self::STATUS_BITMASK) ?: self::STATUS_PROCEED;
     }
 
-    private static function computeStatusOfCall(Node $node): int
+    /**
+     * @suppress PhanImpossibleTypeComparison
+     */
+    private function computeStatusOfCall(Node $node): int
     {
         $expression = $node->children['expr'];
         if ($expression instanceof Node) {
@@ -618,8 +648,168 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }
+        if ($function_name !== false && $this->code_base !== null && $this->context !== null) {
+            try {
+                $function_fqsen = FullyQualifiedFunctionName::fromStringInContext(
+                    $function_name,
+                    $this->context
+                );
+            } catch (FQSENException $e) {
+                // @phan-suppress-previous-line PhanUnusedVariableCaughtException
+                // Cannot find, cannot infer
+                return self::STATUS_PROCEED;
+            }
+            if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                $function = $this->code_base->getFunctionByFQSEN($function_fqsen);
+                $returnUnion = $function->getUnionType();
+                $unionTypes = $returnUnion->getTypeSet();
+                $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
+                if ($isNeverReturn) {
+                    return self::STATUS_NOT_RETURN_BITMASK;
+                }
+            }
+        }
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
         // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
+        return self::STATUS_PROCEED;
+    }
+
+    private function computeStatusOfStaticCall(Node $node): int
+    {
+        if ($this->code_base === null || $this->context === null) {
+            return self::STATUS_PROCEED;
+        }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a closure, not calling it.
+            return self::STATUS_PROCEED;
+        }
+
+        $class = $node->children['class'];
+        if ($class instanceof Node) {
+            if ($class->kind !== ast\AST_NAME) {
+                return self::STATUS_PROCEED;  // best guess
+            }
+            $class_name = $class->children['name'];
+            if (!\is_string($class_name)) {
+                return self::STATUS_PROCEED;
+            }
+        } else {
+            if (!\is_string($class)) {
+                return self::STATUS_THROW;  // Probably impossible.
+            }
+            $class_name = $class;
+        }
+
+        $method = $node->children['method'];
+        if ($method instanceof Node) {
+            if ($method->kind !== ast\AST_NAME) {
+                return self::STATUS_PROCEED;  // best guess
+            }
+            $method_name = $method->children['name'];
+            if (!\is_string($method_name)) {
+                return self::STATUS_PROCEED;
+            }
+        } else {
+            if (!\is_string($method)) {
+                return self::STATUS_THROW;  // Probably impossible.
+            }
+            $method_name = $method;
+        }
+        // Look for the class and method
+        if ($class_name === 'self') {
+            $class_fqsen = $this->context->getClassFQSEN();
+        } else {
+            try {
+                $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+                    $class_name,
+                    $this->context
+                );
+            } catch (FQSENException $e) {
+                // @phan-suppress-previous-line PhanUnusedVariableCaughtException
+                // Cannot find, cannot infer
+                return self::STATUS_PROCEED;
+            }
+        }
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class_fqsen,
+            $method_name
+        );
+
+        if ($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+            $method = $this->code_base->getMethodByFQSEN($method_fqsen);
+            $returnUnion = $method->getUnionType();
+            $unionTypes = $returnUnion->getTypeSet();
+            $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
+            if ($isNeverReturn) {
+                return self::STATUS_NOT_RETURN_BITMASK;
+            }
+        }
+        // TODO: Could allow .phan/config.php or plugins to define additional behaviors
+        return self::STATUS_PROCEED;
+    }
+
+    private function computeStatusOfMethodCall(Node $node): int
+    {
+        if ($this->code_base === null || $this->context === null) {
+            return self::STATUS_PROCEED;
+        }
+        if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
+            // This is creating a closure, not calling it.
+            return self::STATUS_PROCEED;
+        }
+
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            if ($expr->kind !== ast\AST_VAR) {
+                return self::STATUS_PROCEED;  // best guess
+            }
+            $var_name = $expr->children['name'];
+            if (!\is_string($var_name)) {
+                return self::STATUS_PROCEED;
+            }
+        } else {
+            if (!\is_string($expr)) {
+                return self::STATUS_THROW;  // Probably impossible.
+            }
+            $var_name = $expr;
+        }
+
+        $method = $node->children['method'];
+        if ($method instanceof Node) {
+            if ($method->kind !== ast\AST_NAME) {
+                return self::STATUS_PROCEED;  // best guess
+            }
+            $method_name = $method->children['name'];
+            if (!\is_string($method_name)) {
+                return self::STATUS_PROCEED;
+            }
+        } else {
+            if (!\is_string($method)) {
+                return self::STATUS_THROW;  // Probably impossible.
+            }
+            $method_name = $method;
+        }
+        if ($var_name === 'this') {
+            $class_fqsen = $this->context->getClassFQSEN();
+        } else {
+            // TODO not yet handled
+            return self::STATUS_PROCEED;
+        }
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class_fqsen,
+            $method_name
+        );
+
+        if ($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+            $method = $this->code_base->getMethodByFQSEN($method_fqsen);
+            $returnUnion = $method->getUnionType();
+            $unionTypes = $returnUnion->getTypeSet();
+            $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
+            if ($isNeverReturn) {
+                return self::STATUS_NOT_RETURN_BITMASK;
+            }
+        }
+        // TODO: Could allow .phan/config.php or plugins to define additional behaviors
         return self::STATUS_PROCEED;
     }
 
