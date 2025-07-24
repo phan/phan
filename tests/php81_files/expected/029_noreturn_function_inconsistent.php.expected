@@ -1,0 +1,2 @@
+%s:3 PhanPluginAlwaysReturnFunction Function \inconsistentExit has a return type of never, but may fail to return a value
+%s:3 PhanTypeMissingReturnReal Method \inconsistentExit is declared to return never in its real type signature but has no return value
