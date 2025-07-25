@@ -1,0 +1,6 @@
+%s:%d PhanAccessSetPropertyWrongContext Cannot modify private(set) property \AsymmetricVisibilityChild->publicReadPrivateSet defined at %s:%d from %s:%d
+%s:%d PhanAccessSetPropertyWrongContext Cannot modify protected(set) property \AsymmetricVisibilityBase->publicReadProtectedSet defined at %s:%d from %s:%d
+%s:%d PhanAccessSetPropertyWrongContext Cannot modify private(set) property \AsymmetricVisibilityBase->publicReadPrivateSet defined at %s:%d from %s:%d
+%s:%d PhanAccessPropertyProtected Cannot access protected property \AsymmetricVisibilityBase->protectedReadPrivateSet defined at %s:%d
+%s:%d PhanAccessSetPropertyWrongContext Cannot modify private(set) property \AsymmetricVisibilityBase->protectedReadPrivateSet defined at %s:%d from %s:%d
+%s:%d PhanAccessPropertyProtected Cannot access protected property \AsymmetricVisibilityBase->protectedReadPrivateSet defined at %s:%d
