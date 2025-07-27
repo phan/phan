@@ -24,3 +24,5 @@ echo strlen(C16::staticMethod(...)(new stdClass()));
 // Test detection of unused results
 C16::staticMethod(...);
 (new C16())->instanceMethod(...);
+
+// @phan-file-suppress PhanPluginAlwaysReturnMethod

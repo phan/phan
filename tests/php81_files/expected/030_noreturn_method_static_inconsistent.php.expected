@@ -1,0 +1,1 @@
+%s:5 PhanPluginNeverReturnMethod Method \Test::inconsistentExit has a return type of never, but may try to return a value

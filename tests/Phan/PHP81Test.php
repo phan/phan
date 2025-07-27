@@ -25,6 +25,7 @@ final class PHP81Test extends AbstractPhanFileTest
             'UnknownElementTypePlugin',
             'UnreachableCodePlugin',
             'UseReturnValuePlugin',
+            'AlwaysReturnPlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
     ];

@@ -58,8 +58,10 @@ This is stricter than Phan's default checks (Phan accepts a function or method t
 
 - **PhanPluginInconsistentReturnMethod**: `Method {METHOD} has no return type and will inconsistently return or not return`
 - **PhanPluginAlwaysReturnMethod**: `Method {METHOD} has a return type of {TYPE}, but may fail to return a value`
+- **PhanPluginNeverReturnMethod**: `Method {METHOD} has a return type of never, but may try to return a value`
 - **PhanPluginInconsistentReturnFunction**: `Function {FUNCTION} has no return type and will inconsistently return or not return`
 - **PhanPluginAlwaysReturnFunction**: `Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value`
+- **PhanPluginNeverReturnFunction**: `Function {FUNCTION} has a return type of {TYPE}, but may try to return a value`
 
 #### DuplicateArrayKeyPlugin.php
 
