@@ -128,8 +128,11 @@ class ArrayType extends IterableType
      */
     private static function combineArrayTypeListsOverriding(array $left_types, array $right_types, bool $is_assignment, bool $is_real): array
     {
-        if ($is_real && !$right_types) {
-            return [];
+        if ($is_real && (!$left_types || !$right_types)) {
+            // Can't properly infer the overrides if we don't know the exact types.
+            // TODO: This could maybe still try and infer partial shape types, but that's a bit tricky because
+            // ArrayShapeType alone cannot be used as a partial type.
+            return [ArrayType::instance(false)];
         }
         $result = [];
         $left_array_shape_types = [];
@@ -147,11 +150,18 @@ class ArrayType extends IterableType
                 return [ArrayType::instance(false)];
             }
         }
+        $left_has_only_shape_types = $left_array_shape_types && !$result;
         $right_array_shape_types = [];
         foreach ($right_types as $type) {
             if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
-                    $right_array_shape_types[] = $type;
+                    // When computing real types, do not use exact shapes from the RHS unless we know the exact shape of
+                    // the LHS and can be certain that the key from the RHS will be used. Else just infer unshaped types
+                    if ($is_real && !$left_has_only_shape_types) {
+                        $result[] = $type->asSignatureType();
+                    } else {
+                        $right_array_shape_types[] = $type;
+                    }
                 } else {
                     $result[] = $type;
                 }
