@@ -1037,6 +1037,12 @@ Synchronization for most applications is much better implemented using channels,
 'PDO' => 'Represents a connection between PHP and a database server.',
 'PDOException' => 'Represents an error raised by PDO. You should not throw a `PDOException` from your own code. See Exceptions for more information about Exceptions in PHP.',
 'PDOStatement' => 'Represents a prepared statement and, after the statement is executed, an associated result set.',
+'Phan\Tests\Language\Internal\ConstantDocumentationMapTest' => 'This is a sanity check that Phan\'s property signature map has the correct structure
+and can be parsed into a property signature.',
+'Phan\Tests\Language\Internal\FunctionSignatureMapTest' => 'This is a sanity check that Phan\'s function signature map has the correct structure
+and can be parsed into a function signature.',
+'Phan\Tests\Language\Internal\PropertyMapTest' => 'This is a sanity check that Phan\'s property signature map has the correct structure
+and can be parsed into a property signature.',
 'Phar' => 'The Phar class provides a high-level interface to accessing and creating phar archives.',
 'PharData' => 'The PharData class provides a high-level interface to accessing and creating non-executable tar and zip archives. Because these archives do not contain a stub and cannot be executed by the phar extension, it is possible to create and manipulate regular zip and tar files using the PharData class even if `phar.readonly` php.ini setting is `1`.',
 'PharException' => 'The PharException class provides a phar-specific exception class for try/catch blocks.',
