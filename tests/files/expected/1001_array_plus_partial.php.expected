@@ -1,0 +1,4 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array|array<int,false>(real=array)
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array|array<string,int>(real=array)
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array|array{first:int}(real=array)
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{first:int,second:'string'}(real=array)
