@@ -2816,7 +2816,7 @@ class Type implements Stringable
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        if ($recursion_depth >= 20) {
+        if ($recursion_depth >= 24) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
