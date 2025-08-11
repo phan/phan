@@ -596,8 +596,7 @@ class Property extends ClassElement
      */
     public function isPublicSet(): bool
     {
-        // TODO: use \ast\flags\MODIFIER_PUBLIC_SET from https://github.com/nikic/php-ast/pull/250
-        return $this->getFlagsHasState(1024);
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_PUBLIC_SET);
     }
 
     /**
@@ -605,8 +604,7 @@ class Property extends ClassElement
      */
     public function isProtectedSet(): bool
     {
-        // TODO: use \ast\flags\MODIFIER_PROTECTED_SET from https://github.com/nikic/php-ast/pull/250
-        return $this->getFlagsHasState(2048);
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_PROTECTED_SET);
     }
 
     /**
@@ -614,8 +612,7 @@ class Property extends ClassElement
      */
     public function isPrivateSet(): bool
     {
-        // TODO: use \ast\flags\MODIFIER_PRIVATE_SET from https://github.com/nikic/php-ast/pull/250
-        return $this->getFlagsHasState(4096);
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_PRIVATE_SET);
     }
 
     /**
