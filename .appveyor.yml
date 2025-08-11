@@ -89,7 +89,7 @@ build_script:
 
     SET AST_ZIP_BASENAME=php_ast-%PHP_AST_VERSION%-%PHP_EXT_VERSION%-nts-%VC%-x64.zip
 
-    curl -fsS https://pecl.php.net/package/ast/1.1.3/windows/%PHP_AST_VERSION%/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
+    curl -fsS https://downloads.php.net/~windows/pecl/releases/ast/%PHP_AST_VERSION%/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
