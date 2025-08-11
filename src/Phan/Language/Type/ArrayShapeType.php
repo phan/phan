@@ -901,26 +901,30 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context, bool $warn = true): ?FunctionInterface
     {
         if (\count($this->field_types) !== 2) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::TypeInvalidCallableArraySize,
-                $context->getLineNumberStart(),
-                \count($this->field_types)
-            );
+            if ($warn) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidCallableArraySize,
+                    $context->getLineNumberStart(),
+                    \count( $this->field_types )
+                );
+            }
             return null;
         }
         $i = 0;
         foreach ($this->field_types as $key => $_) {
             if ($key !== $i) {
                 // TODO: Be more consistent about emitting issues in Type->asFunctionInterfaceOrNull and its subclasses (e.g. if missing __invoke)
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TypeInvalidCallableArrayKey,
-                    $context->getLineNumberStart(),
-                    $i
-                );
+                if ($warn) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeInvalidCallableArrayKey,
+                        $context->getLineNumberStart(),
+                        $i
+                    );
+                }
                 return null;
             }
             $i++;

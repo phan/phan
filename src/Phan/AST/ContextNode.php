@@ -1084,54 +1084,7 @@ class ContextNode
             return [];
         }
         // The least common case: A dynamic function call such as $x(), (self::$x)(), etc.
-        return $this->getFunctionLikeFromDynamicExpression();
-    }
-
-    /**
-     * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
-     * Precondition: expr->kind !== ast\AST_NAME
-     *
-     * @return \Generator<void, FunctionInterface, void, void>
-     */
-    private function getFunctionLikeFromDynamicExpression(): \Generator
-    {
-        $code_base = $this->code_base;
-        $context = $this->context;
-        $expression = $this->node;
-        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expression)->withStaticResolvedInContext($context);
-        if ($union_type->isEmpty()) {
-            return;
-        }
-
-        $has_type = false;
-        foreach ($union_type->getTypeSet() as $type) {
-            $func = $type->asFunctionInterfaceOrNull($code_base, $context);
-            if ($func) {
-                yield $func;
-                $has_type = true;
-            }
-        }
-        if (!$has_type) {
-            if (!$union_type->hasPossiblyCallableType($code_base)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TypeInvalidCallable,
-                    $expression->lineno ?? $context->getLineNumberStart(),
-                    $union_type
-                );
-                return;
-            }
-        }
-        if (Config::get_strict_method_checking() && $union_type->containsDefiniteNonCallableType($code_base)) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::TypePossiblyInvalidCallable,
-                $expression->lineno ?? $context->getLineNumberStart(),
-                $union_type
-            );
-        }
+        return UnionTypeVisitor::getFunctionLikesFromCallableNode($this->code_base, $this->context, $this->node, true);
     }
 
     /**
