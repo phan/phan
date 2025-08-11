@@ -123,5 +123,18 @@ class Shim
         if (!defined('ast\flags\CLASS_READONLY')) {
             define('ast\flags\CLASS_READONLY', 0x20000000);
         }
+        if (!defined('ast\flags\MODIFIER_PUBLIC_SET')) {
+            define('ast\flags\MODIFIER_PUBLIC_SET', 0x30000000);
+        }
+        if (!defined('ast\flags\MODIFIER_PROTECTED_SET')) {
+            define('ast\flags\MODIFIER_PROTECTED_SET', 0x40000000);
+        }
+        if (!defined('ast\flags\MODIFIER_PRIVATE_SET')) {
+            define('ast\flags\MODIFIER_PRIVATE_SET', 0x50000000);
+        }
+        if (!defined('ast\flags\BINARY_PIPE')) {
+            // @phan-suppress-next-line PhanUnreferencedConstant Will be used in future
+            define('ast\flags\BINARY_PIPE', 0x60000000);
+        }
     }
 }
