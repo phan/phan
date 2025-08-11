@@ -4171,11 +4171,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         try {
             $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
         } catch (FQSENException $e) {
-            $this->emitIssue(
-                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
-                $this->context->getLineNumberStart(),
-                $function_name
-            );
+            if ($log_error) {
+                $this->emitIssue(
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
+                    $this->context->getLineNumberStart(),
+                    $function_name
+                );
+            }
             return [];
         }
         if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {

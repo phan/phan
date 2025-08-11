@@ -1,5 +1,7 @@
 src/211_callable_union.php:19 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
 src/211_callable_union.php:34 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 0, but callable arrays must be of size 2
 src/211_callable_union.php:35 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 3, but callable arrays must be of size 2
-src/211_callable_union.php:51 PhanUndeclaredClassReference Reference to undeclared class \puppies
-src/211_callable_union.php:51 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
+src/211_callable_union.php:52 PhanUndeclaredClassReference Reference to undeclared class \puppies
+src/211_callable_union.php:52 PhanUndeclaredFunctionInCallable Call to undeclared function puppies in callable
+src/211_callable_union.php:53 PhanInvalidFQSENInCallable Possible call to a function 'not--even**a\valid//FQSEN' with an invalid FQSEN.
+src/211_callable_union.php:53 PhanInvalidFQSENInClasslike Possible use of a classlike 'not--even**a\valid//FQSEN' with an invalid FQSEN.
