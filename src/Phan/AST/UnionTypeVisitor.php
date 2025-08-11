@@ -4248,26 +4248,61 @@ class UnionTypeVisitor extends AnalysisVisitor
             return [];
         }
 
-        // Get the types associated with the node
-        $union_type = self::unionTypeFromNode(
+        $functions = self::getFunctionLikesFromCallableNode(
             $this->code_base,
             $this->context,
             $node,
-            $this->should_catch_issue_exception
+            !$this->should_catch_issue_exception && $log_error
         );
+        $fqsens = [];
+        foreach( $functions as $func ) {
+            $fqsens[] = $func->getFQSEN();
+        }
+        return $fqsens;
+    }
 
-        $closure_types = [];
-        foreach ($union_type->getTypeSet() as $type) {
-            if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
-                // TODO: Support class instances with __invoke()
-                $fqsen = $type->asFQSEN();
-                if (!($fqsen instanceof FullyQualifiedFunctionLikeName)) {
-                    throw new AssertionError('Expected fqsen of closure to be a FullyQualifiedFunctionLikeName');
-                }
-                $closure_types[] = $fqsen;
+    /**
+     * @param Node|string|bool|int|float|null $node
+     * @param bool $log_error whether or not to log errors while searching
+     * @return iterable<FunctionInterface>
+     */
+    public static function getFunctionLikesFromCallableNode(CodeBase $code_base, Context $context, $node, bool $log_error): iterable {
+        $node_type = self::unionTypeFromNode($code_base, $context, $node, !$log_error)->withStaticResolvedInContext($context);
+
+        if ($node_type->isEmpty()) {
+            return;
+        }
+
+        $has_type = false;
+        foreach ($node_type->getTypeSet() as $type) {
+            $func = $type->asFunctionInterfaceOrNull($code_base, $context, $log_error);
+            if ($func) {
+                yield $func;
+                $has_type = true;
             }
         }
-        return $closure_types;
+
+        if ($log_error) {
+            if ( !$has_type && !$node_type->hasPossiblyCallableType( $code_base ) ) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidCallable,
+                    $node->lineno ?? $context->getLineNumberStart(),
+                    $node_type
+                );
+                return;
+            }
+            if ( Config::get_strict_method_checking() && $node_type->containsDefiniteNonCallableType( $code_base ) ) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypePossiblyInvalidCallable,
+                    $node->lineno ?? $context->getLineNumberStart(),
+                    $node_type
+                );
+            }
+        }
     }
 
     /**

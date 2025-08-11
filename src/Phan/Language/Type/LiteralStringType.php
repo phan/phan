@@ -445,7 +445,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     {
         // parse 'function_name' or 'class_name::method_name'
         // NOTE: In other subclasses of Type, calling this might recurse.
-        $function_like_fqsens = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $this->value, true);
+        $function_like_fqsens = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $this->value, $warn);
         return $function_like_fqsens[0] ?? null;
     }
 
