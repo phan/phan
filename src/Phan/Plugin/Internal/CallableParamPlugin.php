@@ -15,6 +15,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClassStringType;
+use Phan\Language\Type\ClosureType;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
@@ -130,7 +131,8 @@ final class CallableParamPlugin extends PluginV3 implements
             // Explicitly require at least one type to be `callable`
             if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type): bool {
                 // TODO: More specific closure for CallableDeclarationType
-                return $type instanceof CallableInterface;
+                // TODO: Use `Type::isCallable`? It might be slower though.
+                return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
                 $params[$i] |= self::PARAM_HAS_CALLABLE;
             }
