@@ -147,7 +147,7 @@ class ArrayType extends IterableType
                 if ($is_real) {
                     return self::computeRealTypeSetFromArrayTypeLists($right_types, $is_assignment);
                 }
-                return [ArrayType::instance(false)];
+                $result[] = ArrayType::instance(false);
             }
         }
         $left_has_only_shape_types = $left_array_shape_types && !$result;
@@ -172,7 +172,7 @@ class ArrayType extends IterableType
                     if ($is_real) {
                         return self::computeRealTypeSetFromArrayTypeLists($right_types, $is_assignment);
                     }
-                    return [$type];
+                    $result[] = $type;
                 }
             } elseif ($is_real) {
                 // TODO: More robust handling of non-arrays
