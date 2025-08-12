@@ -4438,7 +4438,7 @@ class UnionType implements Serializable, Stringable
         bool $preserving_template = false
     ): UnionType {
         // TODO: Preserve the original real types without expanding them?
-        if ($recursion_depth >= 12) {
+        if ($recursion_depth >= 24) {
             throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
