@@ -181,6 +181,10 @@ return [
       'old' => ['string|false', 'ftp'=>'resource'],
       'new' => ['string|false', 'ftp'=>'FTP\Connection'],
     ],
+    'hash' => [
+      'old' => ['string', 'algo'=>'string', 'data'=>'string', 'binary='=>'bool'],
+      'new' => ['string', 'algo'=>'string', 'data'=>'string', 'binary='=>'bool', 'options='=>'array'],
+    ],
     'imap_append' => [
       'old' => ['bool', 'imap'=>'resource', 'folder'=>'string', 'message'=>'string', 'options='=>'string', 'internal_date='=>'string'],
       'new' => ['bool', 'imap'=>'IMAP\Connection', 'folder'=>'string', 'message'=>'string', 'options='=>'string', 'internal_date='=>'string'],
