@@ -37,6 +37,14 @@ use function strlen;
 final class VariableTrackerPlugin extends PluginV3 implements
     PostAnalyzeNodeCapability
 {
+    /**
+     * Check whether a variable with the given name should be exempt from UnusedVariable warnings. Returns true
+     * for variables like $_, $unused*, and $raii*
+     */
+    public static function shouldExemptUnusedVariableWithName(string $variable_name): bool
+    {
+        return \preg_match('/^(_$|(unused|raii))/iD', $variable_name) > 0;
+    }
 
     /**
      * @return string the name of a visitor
@@ -396,8 +404,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if ($variable_name === 'this') {
                 continue;
             }
-            if (\preg_match('/^(_$|(unused|raii))/iD', $variable_name) > 0) {
-                // Skip over $_, $unused*, and $raii*
+            if (VariableTrackerPlugin::shouldExemptUnusedVariableWithName($variable_name)) {
                 continue;
             }
             if (Variable::isSuperglobalVariableWithName($variable_name)) {
