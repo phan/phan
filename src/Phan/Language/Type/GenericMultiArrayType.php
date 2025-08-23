@@ -125,6 +125,11 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      */
     public function asIndividualTypeInstances(): array
     {
+        $normalized_types = UnionType::normalizeMultiTypes($this->element_types);
+        // Normalize e.g. `A|null` to `?A`, because otherwise we'd expand this multi-type to
+        // `A[]|null[]` and Phan can't deduce later that it's the same type as `(?A)[]`. (#5049)
+        $normalized_types = UnionType::of($normalized_types)->asNormalizedTypes()->getTypeSet();
+
         return \array_map(function (Type $type): GenericArrayType {
             if ($this->always_has_elements) {
                 if ($this->is_list) {
@@ -141,7 +146,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 }
                 return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
             }
-        }, UnionType::normalizeMultiTypes($this->element_types));
+        }, $normalized_types);
     }
 
     /**

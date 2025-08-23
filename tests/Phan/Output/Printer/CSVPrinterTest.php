@@ -27,7 +27,7 @@ final class CSVPrinterTest extends BaseTest
 
         $lines = \array_map(
             /**
-             * @return array<int,null>|array<int,string>
+             * @return array<int,?string>
              */
             static function(string $line): array {
                 return str_getcsv($line, ",", '"', "\\");
@@ -35,7 +35,7 @@ final class CSVPrinterTest extends BaseTest
             \explode("\n", $output->fetch())
         );
         // str_getcsv() returns [0 => null] if passed the empty string.
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
         $fields = \array_combine($lines[0], $lines[1]);
         $this->assertSame("test.php", $fields["filename"]);
         $this->assertSame("0", $fields["line"]);
