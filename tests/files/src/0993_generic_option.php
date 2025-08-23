@@ -213,3 +213,25 @@ test(new Some(null));
 test(new NoneNull);
 test(new Foo);
 test(null);
+
+
+// Test union types with unspecified type parameters (#5052)
+
+/** @return Option<mixed> */
+function maybeMixed1() {
+    return rand() ? new Some(42) : new None;
+}
+
+function maybeMixed2(): Option {
+    return rand() ? new Some(42) : new None;
+}
+
+$option0 = rand() ? new Some(42) : new None;
+$option1 = maybeMixed1();
+$option2 = maybeMixed2();
+'@phan-debug-var $option0, $option1, $option2';
+
+$val0 = $option0->getOrElse(null);
+$val1 = $option1->getOrElse(null);
+$val2 = $option2->getOrElse(null);
+'@phan-debug-var $val0, $val1, $val2';

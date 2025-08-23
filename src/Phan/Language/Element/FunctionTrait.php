@@ -1653,7 +1653,7 @@ trait FunctionTrait
                 );
                 /** @param list<\ast\Node|mixed> $unused_arg_list */
                 $parameter_extractor = static function (array $unused_arg_list, Context $unused_context): UnionType {
-                    return UnionType::empty();
+                    return MixedType::instance(false)->asPHPDocUnionType();
                 };
             }
             $parameter_extractor_map[$template_type->getName()] = $parameter_extractor;

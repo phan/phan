@@ -24,3 +24,9 @@
 %s:213 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is new NoneNull() of type \NS993\NoneNull|\NS993\Option|\NS993\Option<null> but \NS993\test() takes \NS993\Option<\NS993\Foo> (no real type) defined at %s:204 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:214 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is new Foo() of type \NS993\Foo but \NS993\test() takes \NS993\Option<\NS993\Foo> (no real type) defined at %s:204 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:215 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is null of type null but \NS993\test() takes \NS993\Option<\NS993\Foo> (no real type) defined at %s:204 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:231 PhanDebugAnnotation @phan-debug-var requested for variable $option0 - it has union type \NS993\None|\NS993\Some<42>(real=\NS993\None|\NS993\Some<42>)
+%s:231 PhanDebugAnnotation @phan-debug-var requested for variable $option1 - it has union type \NS993\Option<mixed>
+%s:231 PhanDebugAnnotation @phan-debug-var requested for variable $option2 - it has union type \NS993\Option(real=\NS993\Option)
+%s:236 PhanDebugAnnotation @phan-debug-var requested for variable $val0 - it has union type 42|null
+%s:236 PhanDebugAnnotation @phan-debug-var requested for variable $val1 - it has union type mixed|null
+%s:236 PhanDebugAnnotation @phan-debug-var requested for variable $val2 - it has union type mixed|null
