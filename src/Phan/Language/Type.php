@@ -2711,7 +2711,7 @@ class Type implements Stringable
      *
      * @param bool $omit_missing
      * If the type is missing some type parameters expected by the class,
-     * omit them in the result instead of returning empty union types.
+     * omit them in the result instead of returning the mixed type.
      *
      * @return array<string,UnionType>
      * A map from template type identifier to a concrete type
@@ -2739,7 +2739,7 @@ class Type implements Stringable
                 if (isset($template_parameter_type_list[$i])) {
                     $map[$identifier] = $template_parameter_type_list[$i];
                 } elseif (!$omit_missing) {
-                    $map[$identifier] = UnionType::empty();
+                    $map[$identifier] = MixedType::instance(false)->asPHPDocUnionType();
                 }
             }
 
