@@ -568,16 +568,19 @@ EOB;
                     break;
                 case 'l':
                 case 'syntax-check':
-                    $path = $value;
-                    if (!is_string($path)) {
-                        $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path) ?: 'invalid'), 1);
+                    // Handle both single files and arrays of files (when multiple -l options are provided)
+                    $paths = is_array($value) ? $value : [$value];
+                    foreach ($paths as $path) {
+                        if (!is_string($path)) {
+                            $this->print_usage_on_error = $print_usage_on_error;
+                            $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path) ?: 'invalid'), 1);
+                        }
+                        if (!file_exists($path)) {
+                            $this->print_usage_on_error = $print_usage_on_error;
+                            $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path) ?: 'invalid'), 1);
+                        }
+                        $this->file_list[] = $path;
                     }
-                    if (!file_exists($path)) {
-                        $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path) ?: 'invalid'), 1);
-                    }
-                    $this->file_list[] = $path;
                     break;
                 case 'h':
                 case 'help':
