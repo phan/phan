@@ -1,0 +1,2 @@
+%s:5 PhanUnusedVariableDeclarationCaughtException Variable $unused for caught exception is declared as unused. Omit the variable instead.
+%s:6 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.

@@ -32,6 +32,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
+use Phan\Plugin\Internal\VariableTrackerPlugin;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
@@ -820,6 +821,19 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ))->getVariableName();
 
         if ($variable_name !== '') {
+            if (
+                VariableTrackerPlugin::shouldExemptUnusedVariableWithName($variable_name) &&
+                Config::get_closest_minimum_target_php_version_id() >= 80000
+            ) {
+                // If the variable is declared as unused, suggest a non-capturing catch when possible. Other
+                // variables are handled in VariableTrackerElementVisitor, as we check whether they're used.
+                $this->emitIssue(
+                    Issue::UnusedVariableDeclarationCaughtException,
+                    $node->lineno,
+                    $variable_name
+                );
+            }
+
             $variable = Variable::fromNodeInContext(
                 $var_node,
                 $this->context,

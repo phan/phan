@@ -1708,6 +1708,14 @@ Unused definition of variable ${VARIABLE} as a caught exception
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/054_shadowed_exception.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/054_shadowed_exception.php#L6).
 
+## PhanUnusedVariableDeclarationCaughtException
+
+```
+Variable ${VARIABLE} for caught exception is declared as unused. Omit the variable instead.
+```
+
+e.g. [these issues](https://github.com/phan/phan/tree/v5/tests/php81_files/expected/032_noncapturing_catch.php.expected) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php81_files/src/032_noncapturing_catch.php).
+
 ## PhanUnusedVariableGlobal
 
 ```

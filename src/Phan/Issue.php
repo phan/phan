@@ -495,6 +495,7 @@ class Issue
     public const UselessBinaryAddRight                 = 'PhanUselessBinaryAddRight';
     public const SuspiciousBinaryAddLists              = 'PhanSuspiciousBinaryAddLists';
     public const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
+    public const UnusedVariableDeclarationCaughtException = 'PhanUnusedVariableDeclarationCaughtException';
     public const UnusedGotoLabel                       = 'PhanUnusedGotoLabel';
     public const UnusedVariableReference               = 'PhanUnusedVariableReference';
     public const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
@@ -4314,6 +4315,14 @@ class Issue
                 'Unused definition of variable ${VARIABLE} as a caught exception',
                 self::REMEDIATION_B,
                 6046
+            ),
+            new Issue(
+                self::UnusedVariableDeclarationCaughtException,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Variable ${VARIABLE} for caught exception is declared as unused. Omit the variable instead.',
+                self::REMEDIATION_B,
+                6098
             ),
             new Issue(
                 self::UnusedVariableReference,
