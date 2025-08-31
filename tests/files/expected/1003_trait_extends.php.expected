@@ -1,0 +1,2 @@
+%s:8 PhanUndeclaredMethod Call to undeclared method \NS1003a\T::m (Did you mean expr->f())
+%s:8 PhanUndeclaredProperty Reference to undeclared property \NS1003a\T->p

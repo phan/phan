@@ -233,6 +233,12 @@ class ParseVisitor extends ScopeVisitor
                 if ($class->isClass()) {
                     // TODO: Emit issue if this does not match `class ... extends`
                     $class->setParentType($inherited_type_option->get());
+                } elseif ($class->isTrait()) {
+                    // This seems to work only by accident; traits are not supposed to have parent classes.
+                    // However, users rely on it, and it's kind of neat to have. See discussion on #5002.
+                    // TODO: Emit issue if this does not match the `use` on the referenced class
+                    // TODO: Emit issue if there is a `use` on any other class (and not a subclass)
+                    $class->setParentType($inherited_type_option->get());
                 } else {
                     // TODO: Support generic interfaces
                     // TODO: Emit issue if this does not match `interface ... extends`
