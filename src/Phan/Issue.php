@@ -337,6 +337,7 @@ class Issue
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
     public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
     public const DeprecatedImplicitNullableParam = 'PhanDeprecatedImplicitNullableParam';
+    public const DeprecatedConstructorObjectParamInternal = 'PhanDeprecatedConstructorObjectParamInternal';
 
     // Issue::CATEGORY_PARAMETER
     public const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -3257,6 +3258,14 @@ class Issue
                 'Implicit nullable parameters ({TYPE} {PARAMETER} = null) have been deprecated in PHP 8.4',
                 self::REMEDIATION_B,
                 5012
+            ),
+            new Issue(
+                self::DeprecatedConstructorObjectParamInternal,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Argument {INDEX} (${PARAMETER}) of type {TYPE} may be an object but passing objects to {FUNCTIONLIKE} has been deprecated in PHP 8.5',
+                self::REMEDIATION_B,
+                5013
             ),
 
             // Issue::CATEGORY_PARAMETER

@@ -938,6 +938,14 @@ Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
 
+## PhanDeprecatedConstructorObjectParamInternal
+
+```
+Argument {INDEX} (${PARAMETER}) of type {TYPE} may be an object but passing objects to {FUNCTIONLIKE} has been deprecated in PHP 8.5
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/016_ArrayObject_with_object.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/016_ArrayObject_with_object.php#L12).
+
 ## PhanDeprecatedEncapsVar
 
 ```
