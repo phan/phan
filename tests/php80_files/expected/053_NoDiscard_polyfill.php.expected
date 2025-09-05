@@ -1,9 +1,6 @@
-%s:18 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
-%s:25 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
-%s:31 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
-%s:38 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withoutSideEffects() defined at %s:%d
-%s:40 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::instanceMethod() defined at %s:%d
-%s:41 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::staticMethod() defined at %s:%d
-%s:43 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withSideEffects() defined at %s:%d
-%s:45 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::instanceMethod() defined at %s:%d
-%s:46 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::staticMethod() defined at %s:%d
+%s:43 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withoutSideEffects() defined at %s:%d
+%s:45 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::instanceMethod() defined at %s:%d
+%s:46 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::staticMethod() defined at %s:%d
+%s:48 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withSideEffects() defined at %s:%d
+%s:50 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::instanceMethod() defined at %s:%d
+%s:51 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::staticMethod() defined at %s:%d

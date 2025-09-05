@@ -1,6 +1,11 @@
 <?php
 // Polyfill the PHP 8.5 support for NoDiscard <https://wiki.php.net/rfc/marking_return_value_as_important>
 
+/**
+ * @phan-file-suppress PhanUndeclaredClassAttribute `NoDiscard` is undeclared until 8.5,
+ * tests need to pass for both the attribute existing and not existing
+ */
+
 function withoutSideEffects(): int {
 	return 1;
 }
