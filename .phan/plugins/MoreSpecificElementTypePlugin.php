@@ -77,12 +77,12 @@ class MoreSpecificElementTypePlugin extends PluginV3 implements
             return;
         }
         if ($return_type->isEmpty()) {
-            self::$method_blacklist->attach($fqsen);
+            self::$method_blacklist->offsetSet($fqsen);
             self::$method_return_types->offsetUnset($fqsen);
             return;
         }
         if (self::$method_return_types->offsetExists($fqsen)) {
-            self::$method_return_types->offsetGet($fqsen)->types->attach($return_type);
+            self::$method_return_types->offsetGet($fqsen)->types->offsetSet($return_type);
         } else {
             self::$method_return_types->offsetSet($fqsen, new ElementTypeInfo($function, [$return_type]));
         }
