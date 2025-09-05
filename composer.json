@@ -19,6 +19,17 @@
         "sort-packages": true,
         "platform": {
             "php": "7.2.24"
+        },
+        "preferred-install": "source",
+        "allow-plugins": {
+            "cweagans/composer-patches": true
+        }
+    },
+    "extra": {
+        "patches": {
+            "tysonandre/var_representation_polyfill": [
+                "patches/var_representation.patch"
+            ]
         }
     },
     "require": {
@@ -28,6 +39,7 @@
         "ext-tokenizer": "*",
         "composer/semver": "^1.4|^2.0|^3.0",
         "composer/xdebug-handler": "^2.0|^3.0",
+        "cweagans/composer-patches": "^1.7",
         "felixfbecker/advanced-json-rpc": "^3.0.4",
         "microsoft/tolerant-php-parser": "0.1.2",
         "netresearch/jsonmapper": "^1.6.0|^2.0|^3.0|^4.0|^5.0",

@@ -1,0 +1,16 @@
+diff --git a/ci/test_dockerized.sh b/ci/test_dockerized.sh
+old mode 100755
+new mode 100644
+diff --git a/src/VarRepresentation/Encoder.php b/src/VarRepresentation/Encoder.php
+index 92745e5..5f1602d 100644
+--- a/src/VarRepresentation/Encoder.php
++++ b/src/VarRepresentation/Encoder.php
+@@ -154,7 +154,7 @@ class Encoder
+                         break;
+                     case \T_STRING:
+                         switch ($token[1]) {
+-                            case 'NULL';
++                            case 'NULL':
+                                 $values[] = 'null';
+                             break 2;
+                             /*
