@@ -561,6 +561,9 @@ class Type implements Stringable
                     case 'non-zero-int':
                         $value = new NonZeroIntType($is_nullable);
                         break;
+                    case 'self':
+                        $value = new SelfType($is_nullable);
+                        break;
                 }
             }
             if (!$value) {
