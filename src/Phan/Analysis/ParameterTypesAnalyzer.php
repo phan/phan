@@ -573,19 +573,6 @@ class ParameterTypesAnalyzer
         // Get the class that the overridden method lives on
         $o_class = $overridden_method->getClass($code_base);
 
-        // A lot of analyzeOverrideRealSignature is redundant.
-        // However, phan should consistently emit both issue types if one of them is suppressed.
-        self::analyzeOverrideRealSignature($code_base, $method, $class, $overridden_method, $o_class);
-
-        // Phan needs to complain in some cases, such as a trait existing for an abstract method defined in the class.
-        // PHP also checks if a trait redefines a method in the class.
-        if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
-            // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
-            // TODO: Fix edge cases caused by hack changing FQSEN of private methods
-            return;
-        }
-        $mismatch_details = '';
-
         // If we have a parent type defined, map the method's parameter and return value types
         // to the context of the current class, so that we can compare them directly later.
         $type_option = $class->getParentTypeOption();
@@ -596,6 +583,21 @@ class ParameterTypesAnalyzer
         } else {
             $overridden_method_mapped = $overridden_method;
         }
+
+        // A lot of analyzeOverrideRealSignature is redundant.
+        // However, phan should consistently emit both issue types if one of them is suppressed.
+        // This may modify $method by inheriting PHPDoc types from $overridden_method_mapped.
+        self::analyzeOverrideRealSignature($code_base, $method, $class, $overridden_method_mapped, $o_class);
+
+        // Phan needs to complain in some cases, such as a trait existing for an abstract method defined in the class.
+        // PHP also checks if a trait redefines a method in the class.
+        if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+            // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
+            // TODO: Fix edge cases caused by hack changing FQSEN of private methods
+            return;
+        }
+        $mismatch_details = '';
+
         $overridden_parameter_list = $overridden_method_mapped->getParameterList();
         $overridden_return_union_type = $overridden_method_mapped->getUnionType();
 
