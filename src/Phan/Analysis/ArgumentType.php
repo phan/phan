@@ -25,6 +25,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -1130,6 +1132,18 @@ final class ArgumentType
         $alternate_parameter = null;
         $alternate_parameter_type = null;  // TODO: Properly merge "possibly undefined" union types - without this, undefined is inferred instead of possibly undefined
 
+        // Check ArrayObject and ArrayIterator
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+        $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+        $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
+        $deprecatedParam = false;
+        if ($method->getFQSEN() === FullyQualifiedMethodName::make($arrayObj, '__construct')
+            || $method->getFQSEN() === FullyQualifiedMethodName::make($arrayIter, '__construct')
+        ) {
+            $deprecatedParam = true;
+        }
+
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             // Get the parameter associated with this argument
             $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
@@ -1177,6 +1191,20 @@ final class ArgumentType
                 }
                 if ($alternate_parameter->shouldWarnIfProvided()) {
                     self::maybeWarnProvidingUnusedParameter($code_base, $context, $lineno, $method, $alternate_parameter, $i);
+                }
+                if ($deprecatedParam && $i === 0) {
+                    if (!$argument_type_expanded_resolved->objectTypes()->isEmpty()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DeprecatedConstructorObjectParamInternal,
+                            $lineno,
+                            ($i + 1),
+                            $alternate_parameter->getName(),
+                            $argument_type_resolved,
+                            $method->getRepresentationForIssue()
+                        );
+                    }
                 }
                 return;
             }
