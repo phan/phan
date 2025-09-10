@@ -1615,6 +1615,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
+        // TODO: Is `withAddedClassForResolvedSelf` still needed? (this is the only use of that method)
         $method_return_type = $is_trait ? $method->getRealReturnType()->withAddedClassForResolvedSelf($method->getContext()) : $method->getUnionType();
 
         // Check for failing to return a value, or returning a value in a void method.
@@ -1649,6 +1650,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $is_mismatch = false;
             if (!$method->isReturnTypeUndefined()) {
                 $resolved_expression_type = $expression_type->withStaticResolvedInContext($context);
+                $method_return_type = $method_return_type->withStaticResolvedInContext($context);
                 // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!$this->checkCanCastToReturnType($resolved_expression_type, $method_return_type)) {
