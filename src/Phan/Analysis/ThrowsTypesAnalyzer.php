@@ -43,7 +43,8 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ): void {
-        foreach ($method->getOwnThrowsUnionType()->getTypeSet() as $type) {
+        // TODO: There could be some special handling here for intersection types
+        foreach ($method->getOwnThrowsUnionType()->getUniqueFlattenedTypeSet() as $type) {
             // TODO: When analyzing the method body, only check the valid exceptions
             self::analyzeSingleThrowType($code_base, $method, $type);
         }
