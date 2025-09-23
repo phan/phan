@@ -47,7 +47,6 @@ use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
-use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarRawType;
