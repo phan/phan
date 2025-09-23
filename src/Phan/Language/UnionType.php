@@ -47,6 +47,7 @@ use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarRawType;
@@ -1888,6 +1889,7 @@ class UnionType implements Serializable, Stringable
     private static function toNonTruthyTypeSet(array $type_set): array
     {
         $result = [];
+        $has_mixed = false;
         foreach ($type_set as $type) {
             if (!$type->isPossiblyTruthy()) {
                 $result[] = $type;
@@ -1895,6 +1897,26 @@ class UnionType implements Serializable, Stringable
             }
             if ($type->isAlwaysTruthy()) {
                 // don't add null/false to the resulting type
+                continue;
+            }
+
+            // Special handling for MixedType - it could be any falsey value
+            if ($type instanceof Type\MixedType && !($type instanceof Type\NonEmptyMixedType || $type instanceof Type\NonNullMixedType)) {
+                // For mixed type, we can't narrow it down to a single falsey type
+                // We need to preserve that it could be any falsey value
+                // Don't return a mixed type, return all possible falsey types
+                if (!$has_mixed) {
+                    $has_mixed = true;
+                    // Build the falsey types manually to avoid static initialization issues
+                    // that can cause problems with PHPUnit's global state isolation
+                    $result[] = NullType::instance(false);
+                    $result[] = FalseType::instance(false);
+                    $result[] = LiteralIntType::instanceForValue(0, false);
+                    $result[] = LiteralStringType::instanceForValue('', false);
+                    $result[] = LiteralStringType::instanceForValue('0', false);
+                    $result[] = LiteralFloatType::instanceForValue(0.0, false);
+                    $result[] = ArrayShapeType::empty(false);
+                }
                 continue;
             }
 
