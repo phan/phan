@@ -1343,8 +1343,9 @@ class AssignmentVisitor extends AnalysisVisitor
             $method = $this->context->getFunctionLikeInScope($this->code_base);
             $allowed_methods = Config::get_closest_minimum_target_php_version_id() >= 80300 ? [ '__construct', '__clone' ] : [ '__construct' ];
             if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true)) {
-                $class_type = $class_fqsen->asType();
-                if ($property->getClassFQSEN()->asType()->isSubtypeOf($class_type, $this->code_base)) {
+                $method_class_fqsen = $this->context->getClassFQSEN();
+                $property_class_type = $class_fqsen->asType();
+                if ($method_class_fqsen->asType()->isSubtypeOf($property_class_type, $this->code_base) || $method_class_fqsen === $class_fqsen) {
                     // This is a constructor setting its own properties or a base class's properties,
                     // or a deep-cloned property in PHP 8.3+.
                     // TODO: Could support private methods
