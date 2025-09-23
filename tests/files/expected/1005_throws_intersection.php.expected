@@ -1,0 +1,4 @@
+%s:13 PhanTypeInvalidThrowsIsInterface @throws annotation of test1 has suspicious interface type \ExceptionA for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
+%s:13 PhanTypeInvalidThrowsIsInterface @throws annotation of test1 has suspicious interface type \ExceptionB for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
+%s:29 PhanTypeInvalidThrowsNonThrowable @throws annotation of test3 has suspicious class type \NotAnException, which does not extend Error/Exception
+%s:29 PhanUndeclaredTypeThrowsType @throws type of test3 has undeclared type \NotDefinedException
