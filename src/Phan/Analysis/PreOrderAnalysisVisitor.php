@@ -726,12 +726,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitAssign(Node $node): Context
     {
-        if (Config::get_closest_minimum_target_php_version_id() < 70100) {
-            $var_node = $node->children['var'];
-            if ($var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
-                BlockAnalysisVisitor::analyzeArrayAssignBackwardsCompatibility($this->code_base, $this->context, $var_node);
-            }
-        }
         return $this->context;
     }
 
@@ -767,24 +761,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $node->children['class']
         );
         if (!isset($node->children['var'])) {
-            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-                $this->emitIssue(
-                    Issue::CompatibleNonCapturingCatch,
-                    $node->lineno,
-                    ASTReverter::toShortString($node->children['class'])
-                );
-            }
+            // PHP 8.1+ supports non-capturing catch statements
         }
 
         try {
             $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));
 
-            if (Config::get_closest_minimum_target_php_version_id() < 70100 && \count($class_list) > 1) {
-                $this->emitIssue(
-                    Issue::CompatibleMultiExceptionCatchPHP70,
-                    $node->lineno
-                );
-            }
 
             foreach ($class_list as $class) {
                 $class->addReference($this->context);
@@ -821,10 +803,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ))->getVariableName();
 
         if ($variable_name !== '') {
-            if (
-                VariableTrackerPlugin::shouldExemptUnusedVariableWithName($variable_name) &&
-                Config::get_closest_minimum_target_php_version_id() >= 80000
-            ) {
+            if (VariableTrackerPlugin::shouldExemptUnusedVariableWithName($variable_name)) {
                 // If the variable is declared as unused, suggest a non-capturing catch when possible. Other
                 // variables are handled in VariableTrackerElementVisitor, as we check whether they're used.
                 $this->emitIssue(

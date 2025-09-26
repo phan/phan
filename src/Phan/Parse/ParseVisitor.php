@@ -577,13 +577,6 @@ class ParseVisitor extends ScopeVisitor
                 Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                 $real_union_type = UnionType::empty();
             }
-            if (Config::get_closest_minimum_target_php_version_id() < 70400) {
-                $this->emitIssue(
-                    Issue::CompatibleTypedProperty,
-                    $type_node->lineno,
-                    ((string)$real_union_type) ?: '(unknown)'
-                );
-            }
         } else {
             $real_union_type = UnionType::empty();
         }
@@ -772,15 +765,6 @@ class ParseVisitor extends ScopeVisitor
         $phan_flags = $property_comment->getPhanFlagsForProperty();
         if ($flags & ast\flags\MODIFIER_READONLY) {
             $phan_flags |= Flags::IS_READ_ONLY;
-            if (($original_flags & ast\flags\MODIFIER_READONLY) && Config::get_closest_minimum_target_php_version_id() < 80100) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $context_for_property,
-                    Issue::CompatibleReadonlyProperty,
-                    $lineno,
-                    $property
-                );
-            }
         }
         if ($from_parameter) {
             $phan_flags |= Flags::IS_PROMOTED_PROPERTY;

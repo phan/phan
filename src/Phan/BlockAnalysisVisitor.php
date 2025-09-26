@@ -1293,10 +1293,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $value_node = $node->children['value'];
         if ($value_node instanceof Node) {
             // should be a parse error when not a Node
+            // Note: The array assign backwards compatibility check was removed as we now require PHP 8.1+
             if ($value_node->kind === ast\AST_ARRAY) {
-                if (Config::get_closest_minimum_target_php_version_id() < 70100) {
-                    self::analyzeArrayAssignBackwardsCompatibility($code_base, $context, $value_node);
-                }
+                // No version check needed since PHP 8.1+ supports array assignments properly
             }
 
             $context = (new AssignmentVisitor(
@@ -1333,32 +1332,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    /**
-     * Analyze an expression such as `[$a] = $values` or `list('key' => $v) = $values` for backwards compatibility issues
-     * Precondition: minimum_target_php_version_id >-= 70100
-     */
-    public static function analyzeArrayAssignBackwardsCompatibility(CodeBase $code_base, Context $context, Node $node): void
-    {
-        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::CompatibleShortArrayAssignPHP70,
-                $node->lineno
-            );
-        }
-        foreach ($node->children as $array_elem) {
-            if (isset($array_elem->children['key'])) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::CompatibleKeyedArrayAssignPHP70,
-                    $array_elem->lineno
-                );
-                break;
-            }
-        }
-    }
 
 
     /**

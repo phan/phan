@@ -1,5 +1,0 @@
-%s:4 PhanUnreferencedPublicProperty Possibly zero references to public property \Demo->value
-%s:12 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \Demo may be an object but passing objects to \ArrayObject::__construct() has been deprecated in PHP 8.5
-%s:13 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \Demo may be an object but passing objects to \ArrayIterator::__construct() has been deprecated in PHP 8.5
-%s:16 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \Demo|array{0:\Demo} may be an object but passing objects to \ArrayObject::__construct() has been deprecated in PHP 8.5
-%s:17 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \Demo|array{0:\Demo} may be an object but passing objects to \ArrayIterator::__construct() has been deprecated in PHP 8.5

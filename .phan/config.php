@@ -50,8 +50,8 @@ return [
     // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
     // If that could not be determined, then Phan assumes `target_php_version`.
     //
-    // For analyzing Phan 3.x, this is determined to be `'7.2'` from `"version": "^7.2.0"`.
-    'minimum_target_php_version' => '7.2',
+    // For analyzing Phan 6.x, this is determined to be `'8.1'` from `"version": "^8.1.0"`.
+    'minimum_target_php_version' => '8.1',
 
     // Default: true. If this is set to true,
     // and target_php_version is newer than the version used to run Phan,

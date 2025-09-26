@@ -582,22 +582,13 @@ class Issue
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
     public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
-    public const CompatibleNullableTypePHP70        = 'PhanCompatibleNullableTypePHP70';
     public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
-    public const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
-    public const CompatibleNeverType                = 'PhanCompatibleNeverType';
-    public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
-    public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
-    public const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
-    public const CompatibleObjectTypePHP71          = 'PhanCompatibleObjectTypePHP71';
-    public const CompatibleMixedType                = 'PhanCompatibleMixedType';
     public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
     public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
     public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
     public const CompatibleUseMixed                 = 'PhanCompatibleUseMixed';
     public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
-    public const CompatibleNonCapturingCatch        = 'PhanCompatibleNonCapturingCatch';
     public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
@@ -606,25 +597,13 @@ class Issue
     public const CompatibleDimAlternativeSyntax     = 'PhanCompatibleDimAlternativeSyntax';
     public const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
     public const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
-    public const CompatibleTypedProperty            = 'PhanCompatibleTypedProperty';
     public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
-    public const CompatibleScalarTypePHP56          = 'PhanCompatibleScalarTypePHP56';
-    public const CompatibleAnyReturnTypePHP56       = 'PhanCompatibleAnyReturnTypePHP56';
-    public const CompatibleReadonlyProperty         = 'PhanCompatibleReadonlyProperty';
-    public const CompatibleIntersectionType         = 'PhanCompatibleIntersectionType';
-    public const CompatibleUnionType                = 'PhanCompatibleUnionType';
-    public const CompatibleStaticType               = 'PhanCompatibleStaticType';
     public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
-    public const CompatibleArrowFunction            = 'PhanCompatibleArrowFunction';
     public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
-    public const CompatibleNullsafeOperator         = 'PhanCompatibleNullsafeOperator';
     public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
-    public const CompatibleTrailingCommaArgumentList = 'PhanCompatibleTrailingCommaArgumentList';
-    public const CompatibleTrailingCommaParameterList = 'PhanCompatibleTrailingCommaParameterList';
     public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
     public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
-    public const CompatibleConstructorPropertyPromotion  = 'PhanCompatibleConstructorPropertyPromotion';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
     public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
@@ -5039,14 +5018,6 @@ class Issue
                 3001
             ),
             new Issue(
-                self::CompatibleNullableTypePHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Nullable type '{TYPE}' is not compatible with PHP 7.0",
-                self::REMEDIATION_B,
-                3002
-            ),
-            new Issue(
                 self::CompatibleShortArrayAssignPHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5061,62 +5032,6 @@ class Issue
                 "Using array keys in an array destructuring assignment is not compatible with PHP 7.0",
                 self::REMEDIATION_B,
                 3004
-            ),
-            new Issue(
-                self::CompatibleVoidTypePHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Return type '{TYPE}' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
-                self::REMEDIATION_B,
-                3005
-            ),
-            new Issue(
-                self::CompatibleNeverType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Return type '{TYPE}' means that a function will not return normally starting in PHP 8.1. In PHP 8.0, 'never' refers to a class/interface with the name 'never'",
-                self::REMEDIATION_B,
-                3043
-            ),
-            new Issue(
-                self::CompatibleStandaloneType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use {TYPE} as a standalone type before php 8.2.",
-                self::REMEDIATION_B,
-                3050
-            ),
-            new Issue(
-                self::CompatibleTrueType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use {TYPE} as a type before php 8.2.",
-                self::REMEDIATION_B,
-                3051
-            ),
-            new Issue(
-                self::CompatibleIterableTypePHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Return type '{TYPE}' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'",
-                self::REMEDIATION_B,
-                3006
-            ),
-            new Issue(
-                self::CompatibleObjectTypePHP71,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
-                self::REMEDIATION_B,
-                3007
-            ),
-            new Issue(
-                self::CompatibleMixedType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Type '{TYPE}' refers to any value starting in PHP 8.0. In PHP 7.4 and earlier, it refers to a class/interface with the name 'mixed'",
-                self::REMEDIATION_B,
-                3029
             ),
             new Issue(
                 self::CompatibleUseVoidPHP70,
@@ -5157,14 +5072,6 @@ class Issue
                 "Catching multiple exceptions is not supported before PHP 7.1",
                 self::REMEDIATION_B,
                 3011
-            ),
-            new Issue(
-                self::CompatibleNonCapturingCatch,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Catching exceptions without a variable is not supported before PHP 8.0 in catch ({CLASS})",
-                self::REMEDIATION_B,
-                3031
             ),
             new Issue(
                 self::CompatibleNegativeStringOffset,
@@ -5239,14 +5146,6 @@ class Issue
                 self::REMEDIATION_B,
                 3020
             ),
-            new Issue(
-                self::CompatibleTypedProperty,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Cannot use typed properties before php 7.4. This property group has type {TYPE}",
-                self::REMEDIATION_B,
-                3021
-            ),
             // TODO mention that they will be treated like regular methods.
             new Issue(
                 self::CompatiblePHP8PHP4Constructor,
@@ -5265,46 +5164,6 @@ class Issue
                 3023
             ),
             new Issue(
-                self::CompatibleScalarTypePHP56,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "In PHP 5.6, scalar types such as {TYPE} in type signatures are treated like class names",
-                self::REMEDIATION_B,
-                3024
-            ),
-            new Issue(
-                self::CompatibleAnyReturnTypePHP56,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "In PHP 5.6, return types ({TYPE}) are not supported",
-                self::REMEDIATION_B,
-                3025
-            ),
-            new Issue(
-                self::CompatibleIntersectionType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use intersection types ({TYPE}) before php 8.1",
-                self::REMEDIATION_B,
-                3045
-            ),
-            new Issue(
-                self::CompatibleUnionType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use union types ({TYPE}) before php 8.0",
-                self::REMEDIATION_B,
-                3026
-            ),
-            new Issue(
-                self::CompatibleStaticType,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Cannot use static return types before php 8.0",
-                self::REMEDIATION_B,
-                3027
-            ),
-            new Issue(
                 self::CompatibleThrowExpression,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5321,22 +5180,6 @@ class Issue
                 3032
             ),
             new Issue(
-                self::CompatibleArrowFunction,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use arrow functions before php 7.4 in {CODE}",
-                self::REMEDIATION_B,
-                3033
-            ),
-            new Issue(
-                self::CompatibleNullsafeOperator,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use nullsafe operator before php 8.0 in {CODE}",
-                self::REMEDIATION_B,
-                3034
-            ),
-            new Issue(
                 self::CompatibleNamedArgument,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5351,33 +5194,6 @@ class Issue
                 "Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.",
                 self::REMEDIATION_B,
                 3041
-            ),
-            // NOTE: The fact that the native php-ast does not track trailing commas is by design.
-            // It exposes the information that php's implementation stores internally,
-            // and that information is not available because php itself does not need it.
-            new Issue(
-                self::CompatibleTrailingCommaParameterList,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Cannot use trailing commas in parameter or closure use lists before php 8.0 in declaration of {FUNCTIONLIKE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.",
-                self::REMEDIATION_B,
-                3036
-            ),
-            new Issue(
-                self::CompatibleTrailingCommaArgumentList,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Cannot use trailing commas in argument lists before php 7.3 in {CODE}. NOTE: THIS ISSUE CAN ONLY DETECTED BY THE POLYFILL.",
-                self::REMEDIATION_B,
-                3037
-            ),
-            new Issue(
-                self::CompatibleConstructorPropertyPromotion,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Cannot use constructor property promotion before php 8.0 for {PARAMETER} of {METHOD}",
-                self::REMEDIATION_B,
-                3038
             ),
             new Issue(
                 self::CompatibleAttributeGroupOnSameLine,
@@ -5410,14 +5226,6 @@ class Issue
                 "Final class constants were not supported prior to php 8.1",
                 self::REMEDIATION_B,
                 3044
-            ),
-            new Issue(
-                self::CompatibleReadonlyProperty,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use readonly modifier on property {PROPERTY} before php 8.1",
-                self::REMEDIATION_B,
-                3046
             ),
             new Issue(
                 self::CompatibleAccessMethodOnTraitDefinition,

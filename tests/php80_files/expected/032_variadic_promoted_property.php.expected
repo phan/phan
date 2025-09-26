@@ -1,6 +1,4 @@
 %s:2 PhanUnreferencedClass Possibly zero references to class \VariadicPromotedProperty
-%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public ...$rest of \VariadicPromotedProperty::__construct(int $value, ...$rest)
-%s:3 PhanCompatibleConstructorPropertyPromotion Cannot use constructor property promotion before php 8.0 for public int $value of \VariadicPromotedProperty::__construct(int $value, ...$rest)
 %s:3 PhanInvalidNode Cannot declare variadic promoted property
 %s:3 PhanPluginUnknownMethodParamType Method \VariadicPromotedProperty::__construct has no declared or inferred parameter type for $rest
 %s:3 PhanWriteOnlyPublicProperty Possibly zero read references to public property \VariadicPromotedProperty->value

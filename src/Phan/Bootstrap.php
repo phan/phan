@@ -37,15 +37,14 @@ if (function_exists('uopz_allow_exit') && !ini_get('uopz.disable')) {
     }
 }
 
-if (PHP_VERSION_ID < 70200) {
+if (PHP_VERSION_ID < 80100) {
     fprintf(
         STDERR,
-        "ERROR: Phan 5.x requires PHP 7.2+ to run, but PHP %s is installed." . PHP_EOL,
+        "ERROR: Phan 6.x requires PHP 8.1+ to run, but PHP %s is installed." . PHP_EOL,
         PHP_VERSION
     );
-    fwrite(STDERR, "PHP 7.1 reached its end of life in December 2019." . PHP_EOL);
+    fwrite(STDERR, "PHP 8.0 reached its end of life in November 2023." . PHP_EOL);
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
-    // The version of vendor libraries this depends on will also require php 7.1
     exit(1);
 }
 
@@ -66,11 +65,11 @@ function phan_output_ast_installation_instructions(): void
         $extension_dir .= ' (extension directory does not exist and may need to be changed)';
     }
     if (DIRECTORY_SEPARATOR === '\\') {
-        if (PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
+        if (PHP_VERSION_ID >= 80100 || !preg_match('/[a-zA-Z]/', PHP_VERSION)) {
             // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
             // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
             // The older release https://pecl.php.net/package/ast/1.0.16/windows has releases for PHP 7.3 and 7.4
-            $version = PHP_VERSION_ID >= 80000 ? LATEST_KNOWN_PHP_AST_VERSION : '1.0.16';
+            $version = LATEST_KNOWN_PHP_AST_VERSION;
             fprintf(
                 STDERR,
                 PHP_EOL . "Windows users can download php-ast from https://downloads.php.net/~windows/pecl/releases/ast/%s/php_ast-%s-%s-%s-%s-%s.zip" . PHP_EOL,
@@ -79,16 +78,16 @@ function phan_output_ast_installation_instructions(): void
                 PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
                 // @phan-suppress-next-line PhanImpossibleCondition, PHP_ZTS is a boolean, but phan assumes it is always false
                 PHP_ZTS ? 'ts' : 'nts',
-                PHP_VERSION_ID >= 80000 ? 'vs16' : 'vc15',
+                'vs16',
                 PHP_INT_SIZE == 4 ? 'x86' : 'x64'
             );
             fwrite(STDERR, "(if that link doesn't work, check https://downloads.php.net/~windows/pecl/releases/ast/ )" . PHP_EOL);
-            fwrite(STDERR, "php-ast 1.0.11 is the minimum php-ast version needed for ast version 85. https://pecl.php.net/package/ast/1.0.11/windows does not supply dlls for php 7.2 because php-ast 1.0.11 was published after security support for php 7.2 was dropped" . PHP_EOL);
+            fwrite(STDERR, "php-ast 1.0.14 is the minimum php-ast version needed for PHP 8.1+." . PHP_EOL);
 
             fwrite(STDERR, "To install php-ast, add php_ast.dll from the zip to $extension_dir," . PHP_EOL);
         } else {
             if (PHP_VERSION_ID < 70300) {
-                fwrite(STDERR, "php-ast 1.0.11 is the minimum php-ast version needed for ast version 85. https://pecl.php.net/package/ast/1.0.11/windows does not supply dlls for php 7.2 because php-ast 1.0.11 was published after security support for php 7.2 was dropped" . PHP_EOL);
+                fwrite(STDERR, "php-ast 1.0.14 is the minimum php-ast version needed for PHP 8.1+." . PHP_EOL);
             } else {
                 fprintf(STDERR, "Releases for php %s may not yet be available at https://downloads.php.net/~windows/pecl/releases/ast/" . PHP_EOL, PHP_VERSION);
             }
@@ -162,21 +161,11 @@ if (extension_loaded('ast')) {
         $phan_output_ast_too_old_and_exit('1.1.1', '8.3');
     } elseif (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.1.0') < 0) {
         $phan_output_ast_too_old_and_exit('1.1.0', '8.2');
-    } elseif (PHP_VERSION_ID >= 80100 && version_compare($ast_version, '1.0.14') < 0) {
+    } elseif (version_compare($ast_version, '1.0.14') < 0) {
         $phan_output_ast_too_old_and_exit('1.0.14', '8.1');
-    } elseif (PHP_VERSION_ID >= 80000 && version_compare($ast_version, '1.0.11') < 0) {
-        $phan_output_ast_too_old_and_exit('1.0.11', '8.0');
-    } elseif (PHP_VERSION_ID >= 70400 && version_compare($ast_version, '1.0.2') < 0) {
-        fprintf(
-            STDERR,
-            "WARNING: Phan 5.x requires php-ast 1.0.2+ to properly analyze ASTs for php 7.4+ (1.0.15+ is recommended). php-ast %s and php %s is installed." . PHP_EOL,
-            $ast_version,
-            PHP_VERSION
-        );
-        phan_output_ast_installation_instructions();
     } elseif (version_compare($ast_version, '1.0.0') <= 0) {
         $error_message = sprintf(
-            "Phan 5.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
+            "Phan 6.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
             Config::MINIMUM_AST_EXTENSION_VERSION,
             Config::AST_VERSION,
             $ast_version
@@ -187,7 +176,7 @@ if (extension_loaded('ast')) {
         exit(1);
     }
     // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
-    if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
+    if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID >= 80100 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
         // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
         // But don't warn for upcoming versions without a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);

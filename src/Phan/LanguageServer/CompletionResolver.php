@@ -364,13 +364,10 @@ class CompletionResolver
         if (($parent_node->kind ?? null) === ast\AST_STMT_LIST) {
             \array_push($token_candidates, ...self::COMPLETING_STATEMENT_TOKENS);
         }
-        // Suggest additional tokens that can be used in all supported php versions of this project.
-        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
-            $token_candidates[] = 'match';
-        }
-        if (Config::get_closest_minimum_target_php_version_id() >= 70400) {
-            $token_candidates[] = 'fn';
-        }
+        // Since we now require PHP 8.1+, these tokens are always available
+        $token_candidates[] = 'match';
+        $token_candidates[] = 'fn';
+        $token_candidates[] = 'readonly';
         \sort($token_candidates);
         foreach ($token_candidates as $token) {
             if (\stripos($token, $incomplete_constant_name) !== 0) {

@@ -1537,14 +1537,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->warnTypeMissingReturn($func, $node);
         }
         $uses = $node->children['uses'] ?? null;
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        if (isset($uses->polyfill_has_trailing_comma) && Config::get_closest_minimum_target_php_version_id() < 80000) {
-            $this->emitIssue(
-                Issue::CompatibleTrailingCommaParameterList,
-                end($uses->children)->lineno ?? $uses->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
         $this->analyzeNoOp($node, Issue::NoopClosure);
         $this->checkForFunctionInterfaceIssues($node, $func);
         return $this->context;
@@ -1560,13 +1552,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitArrowFunc(Node $node): Context
     {
-        if (Config::get_closest_minimum_target_php_version_id() < 70400) {
-            $this->emitIssue(
-                Issue::CompatibleArrowFunction,
-                $node->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
         return $this->visitClosure($node);
     }
 
@@ -3152,14 +3137,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
         $params_node = $node->children['params'];
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        if (isset($params_node->polyfill_has_trailing_comma) && Config::get_closest_minimum_target_php_version_id() < 80000) {
-            $this->emitIssue(
-                Issue::CompatibleTrailingCommaParameterList,
-                end($params_node->children)->lineno ?? $params_node->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
         foreach ($params_node->children as $param) {
             $this->checkUnionTypeCompatibility($param->children['type']);
         }
@@ -3171,34 +3148,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$type) {
             return;
         }
-        $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
 
         if ($type->kind === ast\AST_TYPE_INTERSECTION) {
-            if ($minimum_target_php_version_id < 80100) {
-                // TODO: Warn about false|false, false|null, etc in php 8.0.
-                $this->emitIssue(
-                    Issue::CompatibleIntersectionType,
-                    $type->lineno,
-                    ASTReverter::toShortString($type)
-                );
-            }
             foreach ($type->children as $node) {
                 $this->checkUnionTypeCompatibility($node);
             }
             return;
         }
         if ($type->kind === ast\AST_TYPE_UNION) {
-            if ($minimum_target_php_version_id < 80000) {
-                $this->emitIssue(
-                    Issue::CompatibleUnionType,
-                    $type->lineno,
-                    ASTReverter::toShortString($type)
-                );
-            }
             foreach ($type->children as $node) {
                 $this->checkUnionTypeCompatibility($node, true);
             }
-            // TODO: Warn about false|false, false|null, etc in php 8.0.
             return;
         }
         if ($type->kind === ast\AST_NULLABLE_TYPE) {
@@ -3224,48 +3184,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return;
         }
-        if ($inner_type->flags === ast\flags\TYPE_STATIC) {
-            if ($minimum_target_php_version_id < 80000) {
-                $this->emitIssue(
-                    Issue::CompatibleStaticType,
-                    $inner_type->lineno
-                );
-            }
-        } elseif ($inner_type->flags === ast\flags\TYPE_TRUE) {
-            if ($minimum_target_php_version_id < 80200) {
-                $this->emitIssue(
-                    Issue::CompatibleTrueType,
-                    $inner_type->lineno,
-                    'true'
-                );
-            }
-        } elseif (!$is_union && \in_array($inner_type->flags, [ast\flags\TYPE_NULL, ast\flags\TYPE_FALSE], true)) {
-            if ($minimum_target_php_version_id < 80200) {
-                $this->emitIssue(
-                    Issue::CompatibleStandaloneType,
-                    $inner_type->lineno,
-                    ASTReverter::toShortTypeString( $type )
-                );
-            }
-        }
     }
 
     public function visitNullsafeMethodCall(Node $node): Context
     {
-        $this->checkNullsafeOperatorCompatibility($node);
         return $this->visitMethodCall($node);
     }
 
-    private function checkNullsafeOperatorCompatibility(Node $node): void
-    {
-        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-            $this->emitIssue(
-                Issue::CompatibleNullsafeOperator,
-                $node->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
-    }
 
     /**
      * @param Node $node
@@ -3414,14 +3339,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::ArgumentUnpackingUsedWithNamedArgument,
                 $node->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        if (isset($node->polyfill_has_trailing_comma) && Config::get_closest_minimum_target_php_version_id() < 70300) {
-            $this->emitIssue(
-                Issue::CompatibleTrailingCommaArgumentList,
-                end($node->children)->lineno ?? $node->lineno,
                 ASTReverter::toShortString($node)
             );
         }
@@ -3666,7 +3583,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     public function visitNullsafeProp(Node $node): Context
     {
-        $this->checkNullsafeOperatorCompatibility($node);
         return $this->analyzeProp($node, false);
     }
 
