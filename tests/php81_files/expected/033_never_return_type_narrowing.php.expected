@@ -1,0 +1,8 @@
+%s:3 PhanUnreferencedClass Possibly zero references to class \TestNeverReturnTypeNarrowing
+%s:22 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testEmptyWithNeverReturn()
+%s:31 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testIssetWithNeverReturn()
+%s:40 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testIsNullWithNeverReturn()
+%s:49 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testMultipleConditionsWithNeverReturn()
+%s:59 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testNestedIfWithNeverReturn()
+%s:73 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testComplexConditionsWithNeverReturn()
+%s:82 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNeverReturnTypeNarrowing::testNoNarrowingWithoutNeverReturn()
