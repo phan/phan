@@ -2195,7 +2195,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     // Don't merge this scope into the outer scope
                     // e.g. "if (false) { anything }"
                     $excluded_elem_count++;
-                } elseif (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
+                } elseif (((new BlockExitStatusChecker($this->code_base, $this->context))->__invoke($stmts_node) & BlockExitStatusChecker::STATUS_MAYBE_PROCEED) === 0) {
                     // e.g. "if (!is_string($x)) { return; }" or break
                     $excluded_elem_count++;
                     if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
@@ -2234,6 +2234,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
                 \array_slice($child_context_list, 0, $first_unconditionally_true_index)
             ))->mergePossiblySingularChildContextList();
+        } elseif (count($child_context_list) === 0 && $excluded_elem_count > 0) {
+            // If no child contexts fall through but some branches were excluded (e.g. they never return),
+            // then use the fallthrough context which has the negated conditions applied.
+            // This handles cases like "if (empty($x)) { never_return(); }" where $x should be non-empty after the if.
+            $context = $fallthrough_context;
         } else {
             // For if statements, we need to merge the contexts
             // of all child context into a single scope based
