@@ -52,6 +52,22 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
     }
 
     /**
+     * Update the context for this visitor instance.
+     * This allows reusing visitor instances with different contexts for performance optimization.
+     *
+     * @param Context $context
+     * The new context to use
+     *
+     * @return static
+     * Returns the same visitor instance with updated context
+     */
+    public function withContext(Context $context): self
+    {
+        $this->context = $context;
+        return $this;
+    }
+
+    /**
      * @param string $issue_type
      * The type of issue to emit such as Issue::ParentlessClass
      *

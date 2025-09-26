@@ -100,6 +100,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Update the context and parent node list for this visitor instance.
+     * This allows reusing visitor instances with different contexts for performance optimization.
+     *
+     * @param Context $context
+     * The new context to use
+     *
+     * @param list<Node> $parent_node_list
+     * The parent node list to use
+     *
+     * @return static
+     * Returns the same visitor instance with updated context and parent node list
+     */
+    public function withContextAndParentNodeList(Context $context, array $parent_node_list): self
+    {
+        $this->context = $context;
+        $this->parent_node_list = $parent_node_list;
+        return $this;
+    }
+
+    /**
      * Default visitor for node kinds that do not have
      * an overriding method
      *

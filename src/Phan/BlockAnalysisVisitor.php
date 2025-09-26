@@ -78,6 +78,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     private $parent_node_list = [];
 
     /**
+     * @var ?PreOrderAnalysisVisitor
+     * Cached PreOrderAnalysisVisitor instance for performance optimization
+     */
+    private $cached_pre_order_visitor = null;
+
+    /**
+     * @var ?PostOrderAnalysisVisitor
+     * Cached PostOrderAnalysisVisitor instance for performance optimization
+     */
+    private $cached_post_order_visitor = null;
+
+    /**
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
@@ -157,10 +169,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->visitNamespace($node);
+        $context = $this->getPreOrderVisitor($context)->visitNamespace($node);
 
         // We already imported namespace constants earlier; use those.
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -580,10 +589,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+        $context = $this->getPreOrderVisitor($context)->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -1378,10 +1384,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->visitDoWhile($node);
+        $context = $this->getPreOrderVisitor($context)->visitDoWhile($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -3183,10 +3186,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // indicating the state of the world within the
         // given node
         // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+        $context = $this->getPreOrderVisitor($context)->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -3217,12 +3217,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
-        $context = (new PostOrderAnalysisVisitor(
-            $this->code_base,
+        // Use cached PostOrderAnalysisVisitor for performance optimization
+        $context = $this->getPostOrderVisitor(
             $context->withLineNumberStart($node->lineno),
             $this->parent_node_list
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+        )->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // let any configured plugins analyze the node
         ConfigPluginSet::instance()->postAnalyzeNode(
@@ -3255,10 +3254,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+        $context = $this->getPreOrderVisitor($context)->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -3315,5 +3311,55 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Get a cached PreOrderAnalysisVisitor instance with the given context.
+     * Creates the visitor on first use for performance optimization.
+     *
+     * @param Context $context
+     * The context to use for analysis
+     *
+     * @return PreOrderAnalysisVisitor
+     * Cached visitor instance with updated context
+     */
+    private function getPreOrderVisitor(Context $context): PreOrderAnalysisVisitor
+    {
+        if ($this->cached_pre_order_visitor === null) {
+            $this->cached_pre_order_visitor = new PreOrderAnalysisVisitor(
+                $this->code_base,
+                $context
+            );
+            return $this->cached_pre_order_visitor;
+        }
+
+        return $this->cached_pre_order_visitor->withContext($context);
+    }
+
+    /**
+     * Get a cached PostOrderAnalysisVisitor instance with the given context and parent node list.
+     * Creates the visitor on first use for performance optimization.
+     *
+     * @param Context $context
+     * The context to use for analysis
+     *
+     * @param list<Node> $parent_node_list
+     * The parent node list to use
+     *
+     * @return PostOrderAnalysisVisitor
+     * Cached visitor instance with updated context and parent node list
+     */
+    private function getPostOrderVisitor(Context $context, array $parent_node_list): PostOrderAnalysisVisitor
+    {
+        if ($this->cached_post_order_visitor === null) {
+            $this->cached_post_order_visitor = new PostOrderAnalysisVisitor(
+                $this->code_base,
+                $context,
+                $parent_node_list
+            );
+            return $this->cached_post_order_visitor;
+        }
+
+        return $this->cached_post_order_visitor->withContextAndParentNodeList($context, $parent_node_list);
     }
 }
