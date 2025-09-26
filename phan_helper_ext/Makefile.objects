@@ -1,0 +1,9 @@
+-include phan_helper.dep
+phan_helper.lo: /home/rasmus/phan/php_extension/phan_helper.c
+	$(LIBTOOL) --tag=CC --mode=compile $(CC) -I. -I/home/rasmus/phan/php_extension $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)   -DZEND_COMPILE_DL_EXT=1 -c /home/rasmus/phan/php_extension/phan_helper.c -o phan_helper.lo  -MMD -MF phan_helper.dep -MT phan_helper.lo
+$(phplibdir)/phan_helper.la: ./phan_helper.la
+	$(LIBTOOL) --tag=CC --mode=install cp ./phan_helper.la $(phplibdir)
+
+./phan_helper.la: $(shared_objects_phan_helper) $(PHAN_HELPER_SHARED_DEPENDENCIES)
+	$(LIBTOOL) --tag=CC --mode=link $(CC) -shared $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS)  -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_phan_helper) $(PHAN_HELPER_SHARED_LIBADD)
+
