@@ -10,6 +10,7 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\AssignmentVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
+use Phan\Analysis\CombinedAnalysisVisitor;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\LoopConditionVisitor;
@@ -3235,6 +3236,23 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Combined pre-order and post-order analysis using CombinedAnalysisVisitor.
+     * This is an optimized version that reduces visitor object instantiation overhead.
+     *
+     * @param Context $context - The context before analysis
+     * @param Node $node - An AST node we'd like to analyze
+     * @return Context - The updated context after both analysis phases
+     */
+    private function combinedAnalyze(Context $context, Node $node): Context
+    {
+        return (new CombinedAnalysisVisitor(
+            $this->code_base,
+            $context,
+            $this->parent_node_list
+        ))->analyzeBoth($node);
+    }
+
+    /**
      * Analyzes a node of type \ast\AST_GROUP_USE
      * This is the same as visit(), but does not recurse into the child nodes.
      *
@@ -3250,24 +3268,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno
         );
 
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base,
-            $context
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
-
-        // Let any configured plugins do a pre-order
-        // analysis of the node.
-        ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base,
-            $context,
-            $node
-        );
-
-        return $this->postOrderAnalyze($context, $node);
+        return $this->combinedAnalyze($context, $node);
     }
 
     /**
