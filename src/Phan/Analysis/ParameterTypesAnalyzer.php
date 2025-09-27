@@ -800,8 +800,8 @@ class ParameterTypesAnalyzer
                 if ($overridden_is_void && $current_is_empty && !$overridden_method->isPHPInternal()) {
                     $is_exception_to_rule = false;
                 } else {
-                    // Empty return types cannot override specific return types
-                    if ($current_is_empty && !$overridden_return_union_type->isEmpty()) {
+                    // Empty return types cannot override specific return types, except for tentative return types
+                    if ($current_is_empty && !$overridden_return_union_type->isEmpty() && !$overridden_method->hasTentativeReturnType()) {
                         $is_exception_to_rule = false;
                     } else {
                         $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||

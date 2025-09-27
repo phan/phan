@@ -45,7 +45,7 @@ return [
       'new' => ['void', 'iterator'=>'Traversable|array|iterable'],
     ],
     'pg_close' => [
-      'old' => ['bool', 'connection='=>'?resource'],
+      'old' => ['bool', 'connection='=>'?pgsql\connection'],
       'new' => ['true', 'connection='=>'?pgsql\connection'],
     ],
   ],
