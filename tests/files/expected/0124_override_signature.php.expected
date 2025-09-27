@@ -7,7 +7,7 @@
 %s:18 PhanParamSignatureRealMismatchHasNoParamType Declaration of function f($a) should be compatible with function f(int $a) (parameter #1 with no type in the real signature cannot replace original parameter with type 'int' in the real signature) defined in %s:3
 %s:25 PhanParamSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
 %s:25 PhanParamSignatureRealMismatchReturnType Declaration of function g() : int should be compatible with function g() : string (method where the return type in the real signature is 'int' cannot override method where the return type in the real signature is 'string') defined in %s:22
-%s:28 PhanTypeMissingReturn Method \C9::g is declared to return string in phpdoc but has no return value
+%s:28 PhanParamSignatureRealMismatchReturnType Declaration of function g() should be compatible with function g() : string (method where the return type in the real signature is '' cannot override method where the return type in the real signature is 'string') defined in %s:22
 %s:35 PhanParamSignatureMismatch Declaration of function h(int $a) should be compatible with function h($a) defined in %s:32 (Cannot use int $a with a real type to override parameter $a without a real type)
 %s:35 PhanParamSignatureRealMismatchHasParamType Declaration of function h(int $a) should be compatible with function h($a) (parameter #1 has type 'int' in the real signature which cannot replace original parameter with no type in the real signature) defined in %s:32
 %s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = 'default') defined in %s:46 (Saw fewer optional parameters in the override)
