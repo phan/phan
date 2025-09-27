@@ -36,6 +36,7 @@ class Map extends SplObjectStorage
      *
      * @return K
      * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
+     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - Deliberately overriding internal method signature.
      */
     #[ReturnTypeWillChange]
     public function key()
@@ -47,6 +48,7 @@ class Map extends SplObjectStorage
      * We redefine the current value to the current value rather
      * than the current key
      * @return V
+     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - Deliberately overriding internal method signature.
      */
     #[ReturnTypeWillChange]
     public function current()

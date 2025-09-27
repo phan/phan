@@ -800,10 +800,15 @@ class ParameterTypesAnalyzer
                 if ($overridden_is_void && $current_is_empty && !$overridden_method->isPHPInternal()) {
                     $is_exception_to_rule = false;
                 } else {
-                    $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
-                        ($return_union_type->hasIterable($code_base) &&
-                        ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
-                         $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
+                    // Empty return types cannot override specific return types
+                    if ($current_is_empty && !$overridden_return_union_type->isEmpty()) {
+                        $is_exception_to_rule = false;
+                    } else {
+                        $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
+                            ($return_union_type->hasIterable($code_base) &&
+                            ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
+                             $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
+                    }
                 }
                 if (!$is_exception_to_rule) {
                     $is_possibly_compatible = false;
