@@ -891,7 +891,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Checks if a condition node or literal value is unconditionally truthy or falsy.
      */
-    public static function checkCondUnconditionalTruthiness(\ast\Node|float|int|string $cond): ?bool
+    public static function checkCondUnconditionalTruthiness(\ast\Node|float|int|string|null $cond): ?bool
     {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
@@ -4184,7 +4184,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param string|Node $node
+     * @param int|float|string|Node $node
      * @param bool $log_error whether or not to log errors while searching
      *
      * @return list<FullyQualifiedFunctionLikeName>
@@ -4194,7 +4194,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function functionLikeFQSENListFromNode(\ast\Node|string $node, bool $log_error): array
+    private function functionLikeFQSENListFromNode(\ast\Node|float|int|string $node, bool $log_error): array
     {
         $orig_node = $node;
 
