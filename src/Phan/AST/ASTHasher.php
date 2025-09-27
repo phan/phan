@@ -8,10 +8,8 @@ use ast\Node;
 
 use function is_float;
 use function is_int;
-use function is_null;
 use function is_object;
 use function is_string;
-use function md5;
 
 /**
  * This converts a PHP AST Node into a hash.
@@ -24,7 +22,7 @@ class ASTHasher
      * @return string a 16-byte binary key for the array key
      * @internal
      */
-    public static function hashKey($node): string
+    public static function hashKey(int|null|string $node): string
     {
         if (is_string($node)) {
             return md5($node, true);
@@ -43,7 +41,7 @@ class ASTHasher
      * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key for the Node which is unlikely to overlap for ordinary code
      */
-    public static function hash($node): string
+    public static function hash(\ast\Node|float|int|null|string $node): string
     {
         if (!is_object($node)) {
             // hashKey
@@ -57,11 +55,10 @@ class ASTHasher
                 }
             } elseif (is_float($node)) {
                 return "\0\0\0\0\0\0\0\1" . \pack('e', $node);
-            } elseif (is_null($node)) {
+            } else {
+                // $node must be null
                 return "\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0";
             }
-            // This is not a valid AST, give up
-            return md5((string) $node, true);
         }
         // @phan-suppress-next-line PhanUndeclaredProperty
         return $node->hash ?? ($node->hash = self::computeHash($node));

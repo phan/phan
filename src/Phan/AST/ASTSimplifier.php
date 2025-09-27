@@ -185,7 +185,7 @@ class ASTSimplifier
      * @internal the way this behaves may change
      * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
-    public static function isExpressionWithoutSideEffects($node): bool
+    public static function isExpressionWithoutSideEffects(\ast\Node|float|int|string $node): bool
     {
         if (!($node instanceof Node)) {
             return true;
@@ -532,9 +532,8 @@ class ASTSimplifier
 
     /**
      * Creates a Node for `if (!COND) { break; }`
-     * @param Node|string|int|float $cond_node
      */
-    private static function makeBreakWithNegatedConditional($cond_node, int $lineno): Node
+    private static function makeBreakWithNegatedConditional(\ast\Node|float|int|string $cond_node, int $lineno): Node
     {
         $break_if_elem = new Node(
             ast\AST_IF_ELEM,

@@ -30,7 +30,7 @@ final class VerbosePlainTextPrinter extends PlainTextPrinter
         $absolute_path = Config::projectPath($instance->getFile());
         try {
             $entry = FileCache::getOrReadEntry($absolute_path);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $lines = $entry->getLines();

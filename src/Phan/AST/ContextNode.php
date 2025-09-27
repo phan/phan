@@ -311,7 +311,7 @@ class ContextNode
     private function emitIssue(
         string $issue_type,
         int $lineno,
-        ...$parameters
+        \Phan\Language\FQSEN|\Phan\Language\Type|\Phan\Language\UnionType|bool|float|int|string ...$parameters
     ): void {
         Issue::maybeEmit(
             $this->code_base,
@@ -391,7 +391,7 @@ class ContextNode
                     $this->context,
                     $trait_insteadof_class_name
                 ))->getTraitFQSEN($adaptations_map);
-            } catch (\Exception $_) {
+            } catch (\Exception) {
                 $trait_insteadof_fqsen = null;
             }
             if (!$trait_insteadof_fqsen) {
@@ -669,7 +669,7 @@ class ContextNode
      * @throws IssueException
      */
     public function getMethod(
-        $method_name,
+        \ast\Node|string $method_name,
         bool $is_static,
         bool $is_direct = false,
         bool $is_new_expression = false
@@ -713,7 +713,7 @@ class ContextNode
      * @throws IssueException
      */
     public function getMethodList(
-        $method_name,
+        \ast\Node|string $method_name,
         bool $is_static,
         bool $is_direct = false,
         bool $is_new_expression = false
@@ -758,7 +758,7 @@ class ContextNode
      * @throws IssueException
      */
     private function getMethodListInternal(
-        $method_name,
+        \ast\Node|string $method_name,
         bool $is_static,
         bool $is_direct,
         bool $is_new_expression,
@@ -814,9 +814,7 @@ class ContextNode
             }
         }
 
-        if (!\is_string($method_name)) {
-            throw new AssertionError("Method name must be a string. Found non-string in context.");
-        }
+        // $method_name must be a string at this point
 
         $node = $this->node;
         if (!($node instanceof Node)) {
@@ -919,7 +917,7 @@ class ContextNode
                             $this->code_base,
                             UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
                         );
-                    } catch (RecursionDepthException $_) {
+                    } catch (RecursionDepthException) {
                     }
                 }
                 $methods[] = $method;
@@ -1354,7 +1352,7 @@ class ContextNode
     {
         try {
             return $this->getVariable();
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // Swallow it
         }
 
@@ -1397,7 +1395,7 @@ class ContextNode
                 $variable->setUnionType($union_type->convertUndefinedToNullable());
             }
             return $variable;
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // Swallow exceptions fetching the variable
         }
         // Create a new variable, and set its union type to null if that wouldn't create false positives.
@@ -2674,7 +2672,7 @@ class ContextNode
                 }
                 try {
                     $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
-                } catch (Exception $_) {
+                } catch (Exception) {
                     // Is there a need to catch IssueException as well?
                     return $node;
                 }
@@ -2693,7 +2691,7 @@ class ContextNode
                 }
                 try {
                     $constant = (new ContextNode($this->code_base, $this->context, $node))->getClassConst();
-                } catch (\Exception $_) {
+                } catch (\Exception) {
                     return $node;
                 }
                 // TODO: Recurse, but don't try to resolve constants again
@@ -2707,7 +2705,7 @@ class ContextNode
             case ast\AST_CLASS_NAME:
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node, false)->asSingleScalarValueOrNull() ?? $node;
-                } catch (\Exception $_) {
+                } catch (\Exception) {
                     return $node;
                 }
             case ast\AST_MAGIC_CONST:
@@ -2795,7 +2793,7 @@ class ContextNode
      *         this gets a raw PHP value for the binary operation represented by $node.
      *         Otherwise, this returns $node.
      */
-    private function getValueForBinaryOp(Node $node, int $flags)
+    private function getValueForBinaryOp(Node $node, int $flags): \ast\Node|array|bool|float|int|null|string
     {
         $left_value = $this->getEquivalentPHPValueForNode($node->children['left'], $flags);
         if ($left_value instanceof Node) {
@@ -2806,7 +2804,6 @@ class ContextNode
             return $node;
         }
         try {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument throwing an Error is caught
             return InferValue::computeBinaryOpResult($left_value, $right_value, $node->flags);
         } catch (Error $e) {
             self::handleErrorInOperation($node, $e);
@@ -2830,7 +2827,7 @@ class ContextNode
      *         then this gets a raw PHP value for the unary operation represented by $node.
      *         Otherwise, this returns $node.
      */
-    private function getValueForUnaryOp(Node $node, int $flags)
+    private function getValueForUnaryOp(Node $node, int $flags): \ast\Node|array|bool|float|int|null|string
     {
         $operand_value = $this->getEquivalentPHPValueForNode($node->children['expr'], $flags);
         // fprintf(STDERR, "Computing unary op for %s : operand = %s\n", \Phan\Debug::nodeToString($node), json_encode($operand_value));
@@ -2853,7 +2850,7 @@ class ContextNode
      *         If this could be resolved and we're certain of the value, this gets a raw PHP boolean for $node.
      *         Otherwise, this returns $node.
      */
-    private function getValueForEmptyCheck(Node $node, int $flags)
+    private function getValueForEmptyCheck(Node $node, int $flags): \ast\Node|bool
     {
         $expr_value = $this->getEquivalentPHPValueForNode($node->children['expr'], $flags);
         if ($expr_value instanceof Node) {
@@ -2870,7 +2867,7 @@ class ContextNode
      *         this gets a raw PHP boolean for $node.
      *         Otherwise, this returns $node.
      */
-    private function getValueForIssetCheck(Node $node, int $flags)
+    private function getValueForIssetCheck(Node $node, int $flags): \ast\Node|bool
     {
         $var_value = $this->getEquivalentPHPValueForNode($node->children['var'], $flags);
         if ($var_value instanceof Node) {
@@ -2907,7 +2904,7 @@ class ContextNode
      *         this gets a raw result for $node (currently limited to booleans, e.g. is_string($var).
      *         Otherwise, this returns $node.
      */
-    private function getValueForCall(Node $node, int $flags)
+    private function getValueForCall(Node $node, int $flags): \ast\Node|bool
     {
         $arg_list = $node->children['args']->children;
         // arg_list[0] should always be set.
@@ -2938,7 +2935,7 @@ class ContextNode
      * or the original node if that could not be determined
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getValueForMagicConst()
+    public function getValueForMagicConst(): \ast\Node|array|bool|float|int|null|string
     {
         $node = $this->node;
         if (!($node instanceof Node && $node->kind === ast\AST_MAGIC_CONST)) {
@@ -2951,7 +2948,7 @@ class ContextNode
      * @return array|string|int|float|bool|null|Node the value of the corresponding PHP magic constant (e.g. __FILE__),
      * or the original node if that could not be determined
      */
-    public function getValueForMagicConstByNode(Node $node)
+    public function getValueForMagicConstByNode(Node $node): \ast\Node|array|bool|float|int|null|string
     {
         $result = (new UnionTypeVisitor($this->code_base, $this->context))->visitMagicConst($node)->asSingleScalarValueOrNullOrSelf();
         return is_object($result) ? $node : $result;

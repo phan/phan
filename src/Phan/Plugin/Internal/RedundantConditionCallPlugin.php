@@ -63,7 +63,7 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
                 $arg = $args[0];
                 try {
                     $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg, false);
-                } catch (Exception $_) {
+                } catch (Exception) {
                     return;
                 }
                 if (!$union_type->hasRealTypeSet()) {

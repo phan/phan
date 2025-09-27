@@ -50,7 +50,7 @@ class RegexAnalyzer
         $regex = $regex_node instanceof Node ? (new ContextNode($code_base, $context, $regex_node))->getEquivalentPHPScalarValue() : $regex_node;
         try {
             $regex_group_keys = RegexKeyExtractor::getKeys($regex);
-        } catch (InvalidArgumentException $_) {
+        } catch (InvalidArgumentException) {
             $regex_group_keys = null;
         }
         if (\count($argument_list) > 3) {

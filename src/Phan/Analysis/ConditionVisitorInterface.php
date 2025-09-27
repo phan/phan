@@ -31,35 +31,29 @@ interface ConditionVisitorInterface
     public function getContext(): Context;
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x == true)`
      */
     public function updateVariableToBeEqual(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x === 'literal')`
      */
     public function updateVariableToBeIdentical(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
     public function updateVariableToBeNotIdentical(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
@@ -71,28 +65,23 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeCompared(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         int $flags
     ): Context;
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
      */
     public function updateVariableToBeNotEqual(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
     /**
      * Returns a context where the variable for $object_node has the class found in $expr_node
-     *
-     * @param Node|string|int|float $object_node
-     * @param Node|string|int|float|bool $expr_node
      */
-    public function analyzeClassAssertion($object_node, $expr_node): ?Context;
+    public function analyzeClassAssertion(\ast\Node|float|int|string $object_node, \ast\Node|bool|float|int|string $expr_node): ?Context;
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.

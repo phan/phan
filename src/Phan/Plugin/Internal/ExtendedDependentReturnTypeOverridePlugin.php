@@ -42,7 +42,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
         int $min_args,
         ?int $max_args = null
     ): Closure {
-        $max_args = $max_args ?? $min_args;
+        $max_args ??= $min_args;
         /**
          * @param list<Node|string|int|float> $args
          */

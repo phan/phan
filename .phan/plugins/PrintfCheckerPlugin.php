@@ -88,7 +88,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param bool|int|string|float|Node|array|null $ast_node
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node): ?PrimitiveValue
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, \ast\Node|array|bool|float|int|null|string $ast_node): ?PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {
@@ -241,7 +241,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                 try {
                     $result = \with_disabled_phan_error_handler(
                         /** @return string|false */
-                        static function () use ($format_string, $sprintf_args) {
+                        static function () use ($format_string, $sprintf_args): bool|string {
                             // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
                             return @\vsprintf($format_string, $sprintf_args);
                         }
@@ -390,10 +390,10 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param FunctionInterface $function
      * @param Node|array|string|float|int|bool|resource|null $pattern_node
-     * @param ?(Node|string|int|float)[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
+     * @param list<\ast\Node|string|int|float>|null $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
-    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes): void
+    protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, array|null $arg_nodes): void
     {
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
@@ -609,7 +609,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                                 break;
                             }
                         }
-                    } catch (CodeBaseException $_) {
+                    } catch (CodeBaseException) {
                         // Swallow "Cannot find class", go on to emit issue.
                     }
                     if ($can_cast_to_string) {

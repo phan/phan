@@ -64,14 +64,14 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $this->checkCall($function, $args, $node);
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
         }
     }
 
     /**
      * @param Node|string|int|float|null $arg_node
      */
-    private static function extractName($arg_node): ?string
+    private static function extractName(\ast\Node|float|int|null|string $arg_node): ?string
     {
         if (!$arg_node instanceof Node) {
             return null;
@@ -390,7 +390,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, false, true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
@@ -420,7 +420,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, true, true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument

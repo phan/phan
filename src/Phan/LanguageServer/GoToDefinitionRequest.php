@@ -167,7 +167,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             }
             try {
                 $this->recordDefinitionOfTypeFQSEN($code_base, $type_fqsen);
-            } catch (CodeBaseException $_) {
+            } catch (CodeBaseException) {
                 continue;
             }
         }
@@ -263,7 +263,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             }
             try {
                 $this->recordDefinitionOfTypeFQSEN($code_base, $type_fqsen);
-            } catch (CodeBaseException $_) {
+            } catch (CodeBaseException) {
                 continue;
             }
         }

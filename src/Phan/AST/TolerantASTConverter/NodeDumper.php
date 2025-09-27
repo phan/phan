@@ -93,7 +93,7 @@ class NodeDumper
         $name = get_class($ast_node);
         if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
-            $name = (string)substr($name, 20);
+            $name = substr($name, 20);
         }
         return $name;
     }
@@ -107,7 +107,7 @@ class NodeDumper
         $name = get_class($token);
         if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
-            $name = (string)substr($name, 20);
+            $name = substr($name, 20);
         }
         return $name;
     }
@@ -117,7 +117,7 @@ class NodeDumper
      * @param string $padding (to be echoed before the current node
      * @throws Exception for invalid $ast_node values
      */
-    public function dumpTreeAsString($ast_node, string $key = '', string $padding = ''): string
+    public function dumpTreeAsString(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token|null $ast_node, string $key = '', string $padding = ''): string
     {
         if ($ast_node instanceof Node) {
             $first_part = \sprintf(
@@ -144,10 +144,10 @@ class NodeDumper
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
                 \Phan\Library\StringUtil::jsonEncode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
             );
+        } elseif ($ast_node === null) { // @phan-suppress-current-line PhanSuspiciousValueComparison intentional null check
+            return 'null';
         } elseif (\is_scalar($ast_node)) {
             return \var_representation($ast_node);
-        } elseif ($ast_node === null) {
-            return 'null';
         } else {
             $type = is_object($ast_node) ? get_class($ast_node) : gettype($ast_node);
             throw new \InvalidArgumentException("Unexpected type of \$ast_node was seen in dumper: " . $type);
@@ -161,7 +161,7 @@ class NodeDumper
      * @suppress PhanUnreferencedPublicMethod
      * @suppress PhanPluginRemoveDebugEcho
      */
-    public function dumpTree($ast_node, string $key = '', string $padding = ''): void
+    public function dumpTree(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $ast_node, string $key = '', string $padding = ''): void
     {
         echo $this->dumpTreeAsString($ast_node, $key, $padding);
     }

@@ -127,7 +127,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             if (file_exists($absolute_path)) {
                 return $absolute_path;
             }
-            $first_absolute_path = $first_absolute_path ?? $absolute_path;
+            $first_absolute_path ??= $absolute_path;
         }
         // If we searched every directory in include_paths, but none existed,
         // then give up and return the first (missing) resolved path.

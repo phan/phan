@@ -269,11 +269,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 static function (): self {
                     // Reuse the exception to save time generating an unused stack trace.
                     static $exception;
-                    $exception = ($exception ?? new Exception());
+                    $exception ??= new Exception();
                     throw $exception;
                 }
             );
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return null;
         }
     }

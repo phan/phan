@@ -73,7 +73,7 @@ final class MiscParamPlugin extends PluginV3 implements
      */
     private static function shouldWarnAboutImpossibleInArray(CodeBase $code_base, Context $context, array $args, ?UnionType $needle_type = null, ?UnionType $haystack_type = null): bool
     {
-        $haystack_type = $haystack_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+        $haystack_type ??= UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
         if (!$haystack_type->hasRealTypeSet()) {
             return false;
         }
@@ -83,7 +83,7 @@ final class MiscParamPlugin extends PluginV3 implements
             return true;
         }
 
-        $needle_type = $needle_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+        $needle_type ??= UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
         if (!$needle_type->hasRealTypeSet()) {
             return false;
         }
@@ -117,7 +117,7 @@ final class MiscParamPlugin extends PluginV3 implements
      */
     private static function shouldWarnAboutImpossibleArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?UnionType $key_type = null, ?UnionType $array_type = null): bool
     {
-        $array_type = $array_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+        $array_type ??= UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
         if (!$array_type->hasRealTypeSet()) {
             return false;
         }
@@ -126,7 +126,7 @@ final class MiscParamPlugin extends PluginV3 implements
         })) {
             return true;
         }
-        $key_type = $key_type ?? UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+        $key_type ??= UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
         if (!$key_type->hasRealTypeSet()) {
             return false;
         }
@@ -682,7 +682,7 @@ final class MiscParamPlugin extends PluginV3 implements
                     $exception->getIssueInstance()
                 );
                 return null;
-            } catch (NodeException $_) {
+            } catch (NodeException) {
                 return null;
             }
         };
@@ -1052,7 +1052,7 @@ final class MiscParamPlugin extends PluginV3 implements
             if ($name instanceof Node) {
                 try {
                     $name_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $name, false);
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     // If this is really an issue, we'll emit it in the analysis phase when we have all of the element definitions.
                     return;
                 }
@@ -1094,7 +1094,7 @@ final class MiscParamPlugin extends PluginV3 implements
             if ($class_alias_first_param instanceof Node) {
                 try {
                     $name_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_alias_first_param, false);
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     return;
                 }
 
@@ -1116,7 +1116,7 @@ final class MiscParamPlugin extends PluginV3 implements
                             );
                         }
                     }
-                } catch (FQSENException $_) {
+                } catch (FQSENException) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,

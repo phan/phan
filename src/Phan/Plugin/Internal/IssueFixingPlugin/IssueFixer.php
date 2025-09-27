@@ -151,7 +151,7 @@ class IssueFixer
         if ($next === false) {
             return $end;
         }
-        $remaining = (string)\substr($file_contents, $end, $next - $end);
+        $remaining = \substr($file_contents, $end, $next - $end);
         if (\trim($remaining) === '') {
             return $next + 1;
         }

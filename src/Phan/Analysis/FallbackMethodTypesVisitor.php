@@ -75,7 +75,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
             }
             // echo json_encode(array_map('strval', $result));
             return $result;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             return [];
         }
     }
@@ -186,11 +186,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
         }
     }
 
-    /**
-     * @param int|string|float|bool $var_name
-     * @param int|string|float|Node $expr
-     */
-    private function associateTypeWithExpression($var_name, $expr): void
+    private function associateTypeWithExpression(bool|float|int|string $var_name, \ast\Node|float|int|string $expr): void
     {
         if (isset($this->unknowns[$var_name])) {
             // No point in checking.
@@ -215,16 +211,13 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
                 return (new UnionTypeVisitor($this->code_base, $this->context, false))->__invoke($expr);
             }
             return (new FallbackUnionTypeVisitor($this->code_base, $this->context))->__invoke($expr);
-        } catch (Exception $_) {
+        } catch (Exception) {
         }
         // TODO: Handle binary ops such as %, >, ternary, etc.
         return null;
     }
 
-    /**
-     * @param int|string|float|bool $var_name
-     */
-    private function associateType($var_name, UnionType $type): void
+    private function associateType(bool|float|int|string $var_name, UnionType $type): void
     {
         if (!$type->isEmpty()) {
             $this->known_types[$var_name][] = $type;

@@ -75,7 +75,7 @@ trait ElementFutureUnionType
 
         try {
             return $future_union_type->get();
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             return null;
         }
     }

@@ -34,7 +34,7 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
     public static function hasPossibleImpact(
         CodeBase $code_base,
         Context $context,
-        $node
+        \ast\Node|float|int|null|string $node
     ): bool {
         if (!($node instanceof Node)) {
             return false;
@@ -43,7 +43,7 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
         try {
             (new self($code_base, $context, self::NOT_A_VALID_FQSEN_KEY))($node);
             return false;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             return true;
         }
     }

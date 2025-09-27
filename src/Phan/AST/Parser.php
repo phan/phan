@@ -221,7 +221,7 @@ class Parser
         $errors = [];
         try {
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Generic fallback. TODO: log.
             throw $native_parse_error;
         }
@@ -376,7 +376,7 @@ class Parser
             $errors = & $new_errors;
             try {
                 self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, true, $request, $errors);
-            } catch (Throwable $_) {
+            } catch (Throwable) {
                 // ignore this exception
             }
         }
@@ -533,7 +533,7 @@ class Parser
         if ($i >= \strlen($file_contents)) {
             return '';
         }
-        $rest = (string)\substr($file_contents, $i + 1);
+        $rest = \substr($file_contents, $i + 1);
         if (\strcasecmp(\substr($rest, 0, 5), "<?php") === 0) {
             // declare(strict_types=1) must be the first part of the script.
             // Even empty php tags aren't allowed prior to it, so avoid adding empty tags if possible.
@@ -588,7 +588,7 @@ class Parser
     public static function getKindName(int $kind): string
     {
         static $use_native = null;
-        $use_native = ($use_native ?? self::shouldUseNativeAST());
+        $use_native ??= self::shouldUseNativeAST();
         if ($use_native) {
             return \ast\get_kind_name($kind);
         }

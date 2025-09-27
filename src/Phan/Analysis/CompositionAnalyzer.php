@@ -47,7 +47,7 @@ class CompositionAnalyzer
             }
             try {
                 $property_union_type = $property->getDefaultType() ?? UnionType::empty();
-            } catch (IssueException $_) {
+            } catch (IssueException) {
                 $property_union_type = UnionType::empty();
             }
 
@@ -88,7 +88,7 @@ class CompositionAnalyzer
                 // types from the default to perform this check.
                 try {
                     $inherited_property_union_type = $inherited_property->getDefaultType() ?? UnionType::empty();
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     $inherited_property_union_type = UnionType::empty();
                 }
                 // Don't complain about incompatible types if the base property is private, #4426

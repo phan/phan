@@ -118,7 +118,7 @@ final class StringUtil
         $spaces = strspn($str, " \t", $last_line_index + 1);
 
         // On Windows, the "\r" must also be removed from the last line of the heredoc
-        $inner = (string)substr($str, $first_line_index + 1, $last_line_index - ($first_line_index + 1) - ($str[$last_line_index - 1] === "\r" ? 1 : 0));
+        $inner = substr($str, $first_line_index + 1, $last_line_index - ($first_line_index + 1) - ($str[$last_line_index - 1] === "\r" ? 1 : 0));
 
         if ($spaces > 0) {
             $inner = preg_replace("/^" . substr($str, $last_line_index + 1, $spaces) . "/m", '', $inner);
@@ -140,7 +140,7 @@ final class StringUtil
      * @return string String with escape sequences parsed
      * @throws InvalidNodeException for invalid code points
      */
-    public static function parseEscapeSequences($str, ?string $quote): string
+    public static function parseEscapeSequences(bool|string $str, ?string $quote): string
     {
         if (!is_string($str)) {
             // Invalid AST input; give up

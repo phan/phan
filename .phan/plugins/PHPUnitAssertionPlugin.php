@@ -224,7 +224,7 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                         }
                         try {
                             return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asPHPDocUnionType();
-                        } catch (\Exception $_) {
+                        } catch (\Exception) {
                             return UnionType::empty();
                         }
                     },

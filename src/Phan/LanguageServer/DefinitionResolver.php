@@ -152,7 +152,7 @@ class DefinitionResolver
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $union_type = UnionType::fromStringInContext($selected_fragment, $context, Type::FROM_PHPDOC);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // fprintf(STDERR, "Unexpected error in " . __METHOD__ . ": " . $_->getMessage() . "\n");
             return false;
         }
@@ -172,7 +172,7 @@ class DefinitionResolver
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $fqsen = FullyQualifiedFunctionName::make('', $selected_fragment);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return false;
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
@@ -180,7 +180,7 @@ class DefinitionResolver
             if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedFunctionName::make($context->getNamespace(), $selected_fragment);
-                } catch (Exception $_) {
+                } catch (Exception) {
                     return false;
                 }
             }
@@ -201,7 +201,7 @@ class DefinitionResolver
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $fqsen = FullyQualifiedGlobalConstantName::make('', $selected_fragment);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return false;
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
@@ -209,7 +209,7 @@ class DefinitionResolver
             if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $selected_fragment);
-                } catch (Exception $_) {
+                } catch (Exception) {
                     return false;
                 }
             }
@@ -232,7 +232,7 @@ class DefinitionResolver
     ): void {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
-        } catch (FQSENException $_) {
+        } catch (FQSENException) {
             // Hopefully warn elsewhere
             return;
         }
@@ -267,7 +267,7 @@ class DefinitionResolver
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
             $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);
-        } catch (NodeException | IssueException | CodeBaseException $_) {
+        } catch (NodeException | IssueException | CodeBaseException) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $property, true);
@@ -288,7 +288,7 @@ class DefinitionResolver
         }
         try {
             $class_const = (new ContextNode($code_base, $context, $node))->getClassConst();
-        } catch (NodeException | IssueException | CodeBaseException $_) {
+        } catch (NodeException | IssueException | CodeBaseException) {
             return; // ignore
         }
         // Class constants can't be objects, so there's no point in "Go To Type Definition" for now.
@@ -300,7 +300,7 @@ class DefinitionResolver
     {
         try {
             $global_const = (new ContextNode($code_base, $context, $node))->getConst();
-        } catch (NodeException | IssueException | CodeBaseException $_) {
+        } catch (NodeException | IssueException | CodeBaseException) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $global_const, false);
@@ -319,7 +319,7 @@ class DefinitionResolver
         // Get the variable or superglobal
         try {
             $variable = (new ContextNode($code_base, $context, $node))->getVariable();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
 
@@ -334,7 +334,7 @@ class DefinitionResolver
         try {
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
             self::locateConstructorDefinitionForUnionType($request, $code_base, $union_type);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Hopefully warn elsewhere
             return;
         }
@@ -377,7 +377,7 @@ class DefinitionResolver
         }
         try {
             $method = (new ContextNode($code_base, $context, $node))->getMethod($method_name, $is_static, true);
-        } catch (IssueException | NodeException $_) {
+        } catch (IssueException | NodeException) {
             // ignore
             return;
         }
@@ -390,7 +390,7 @@ class DefinitionResolver
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
                 $request->recordDefinitionElement($code_base, $function_interface, true);
             }
-        } catch (NodeException | IssueException $_) {
+        } catch (NodeException | IssueException) {
             // ignore
             return;
         }
@@ -433,7 +433,7 @@ class DefinitionResolver
             if (is_string($name)) {
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . \ltrim($name, '\\'));
-                } catch (AssertionError | FQSENException $_) {
+                } catch (AssertionError | FQSENException) {
                     return;  // ignore, probably still typing the requested definition
                 }
                 if ($code_base->hasClassWithFQSEN($class_fqsen)) {

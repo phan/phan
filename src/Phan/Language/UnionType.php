@@ -4565,7 +4565,7 @@ class UnionType implements Serializable, Stringable
         if ($i !== false) {
             $result = UnionType::fromFullyQualifiedPHPDocAndRealString(
                 substr($serialized, 0, $i),
-                (string)substr($serialized, $i + 1)
+                substr($serialized, $i + 1)
             );
             $this->type_set = $result->getTypeSet();
             $this->real_type_set = $result->getRealTypeSet();
@@ -4916,7 +4916,7 @@ class UnionType implements Serializable, Stringable
         static $mixed_union_type = null;
         if ($nonreal_type->hasMixedOrNonEmptyMixedType()) {
             // `mixed` can only be used as a standalone type (not even nullable).
-            $mixed_union_type = $mixed_union_type ?? MixedType::instance(false)->asPHPDocUnionType();
+            $mixed_union_type ??= MixedType::instance(false)->asPHPDocUnionType();
             return $mixed_union_type;
         }
         if ($nonreal_type->containsNullableLabeled() && $nonreal_type->typeCount() > 1) {
@@ -5580,7 +5580,7 @@ class UnionType implements Serializable, Stringable
                     return true;
                 }
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             // Swallow "Cannot find class", go on to emit issue
         }
         return false;
@@ -5707,7 +5707,7 @@ class UnionType implements Serializable, Stringable
                     }
                     // throws error for bool/null
                     $value = ~$value;
-                } catch (\Error $_) {
+                } catch (\Error) {
                     continue;
                 }
 

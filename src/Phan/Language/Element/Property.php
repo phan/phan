@@ -164,7 +164,7 @@ class Property extends ClassElement
             if ($union_type !== '') {
                 $string .= "$union_type ";
             } // Don't emit 2 spaces if there is no union type
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // do nothing
         }
 
@@ -514,7 +514,7 @@ class Property extends ClassElement
                         $union_type->asNonLiteralType()  // Make issue messages less verbose for property declarations. Same as ParseVisitor::addProperty
                     );
             }
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             $union_type = UnionType::empty();
         }
 

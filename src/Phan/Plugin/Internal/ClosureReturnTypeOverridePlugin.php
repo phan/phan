@@ -340,7 +340,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                     );
                     try {
                         $variable_clone = clone($cnode->getVariable());
-                    } catch (\Exception $_) {
+                    } catch (\Exception) {
                         continue;
                     }
                     $variable_clone->setUnionType(UnionType::empty());

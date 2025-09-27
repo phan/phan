@@ -15,20 +15,14 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
-use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\IterableType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
-use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
 use function array_merge;
@@ -58,7 +52,7 @@ class ParameterTypesAnalyzer
     ): void {
         try {
             self::analyzeParameterTypesInner($code_base, $method);
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
         }
     }
 
@@ -300,7 +294,7 @@ class ParameterTypesAnalyzer
         //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
         try {
             $overridden_method_list = $method->getOverriddenMethods($code_base);
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             if (strcasecmp($method->getDefiningFQSEN()->getName(), $method->getFQSEN()->getName()) !== 0) {
                 // Give up, this is probably a renamed trait method that overrides another trait method.
                 return;
@@ -360,7 +354,6 @@ class ParameterTypesAnalyzer
             self::warnOverridingFinalMethod($code_base, $method, $class, $overridden_method);
         }
 
-        $construct_access_signature_mismatch_thrown = false;
         if ($method->getName() === '__construct') {
             // PHP 8.1+ doesn't throw ConstructAccessSignatureMismatch for visibility changes
 
@@ -554,7 +547,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if (!$construct_access_signature_mismatch_thrown && $overridden_method->isStrictlyMoreVisibleThan($method)) {
+        if ($overridden_method->isStrictlyMoreVisibleThan($method)) {
             if ($overridden_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
@@ -865,7 +858,7 @@ class ParameterTypesAnalyzer
             $parameter_type = $parameter->getNonVariadicUnionType();
             // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $overridden_method
             if (!$parameter_type->isEmpty()) {
-                $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
+                $comment_parameter_map ??= self::extractCommentParameterMap($method);
                 $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
                 if ($comment_parameter) {
                     $comment_parameter_type = $comment_parameter->getUnionType();
@@ -943,7 +936,7 @@ class ParameterTypesAnalyzer
         string $internal_issue_type,
         string $phpdoc_issue_type,
         ?int $lineno,
-        ...$args
+        int|string ...$args
     ): void {
         if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
             Issue::maybeEmit(
@@ -1185,7 +1178,7 @@ class ParameterTypesAnalyzer
                 if ($o_clazz->isTrait()) {
                     $issue_type = Issue::AccessOverridesFinalMethodInTrait;
                 }
-            } catch (CodeBaseException $_) {
+            } catch (CodeBaseException) {
             }
 
             Issue::maybeEmit(

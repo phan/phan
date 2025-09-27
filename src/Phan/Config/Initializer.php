@@ -429,7 +429,7 @@ EOT;
         }
         try {
             $version_constraint = self::parseConstraintsForRange($php_version_constraint);
-        } catch (\UnexpectedValueException $_) {
+        } catch (\UnexpectedValueException) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
         // Not going to suggest 5.6 - analyzing with 7.0 might detect some functions that were removed
@@ -601,7 +601,7 @@ EOT;
                 return true;
             }
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
-        } catch (ParseError | CompileError | ParseException $_) {
+        } catch (ParseError | CompileError | ParseException) {
             return false;
         }
     }

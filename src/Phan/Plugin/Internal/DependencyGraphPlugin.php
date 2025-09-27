@@ -689,7 +689,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         $context = $this->context;
         try {
             $class_fqsen = $context->getClassFQSEN();
-        } catch (Throwable $unused_e) {
+        } catch (Throwable) {
             return;
         }
         if ($context->isInGlobalScope()) {
@@ -717,7 +717,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         $context = $this->context;
         try {
             $class_fqsen = $context->getClassFQSEN();
-        } catch (Throwable $unused_e) {
+        } catch (Throwable) {
             return;
         }
         if ($context->isInGlobalScope()) {
@@ -744,7 +744,7 @@ class DependencyGraphVisitor extends PluginAwarePostAnalysisVisitor
         $context = $this->context;
         try {
             $class_fqsen = $context->getClassFQSEN();
-        } catch (Throwable $unused_e) {
+        } catch (Throwable) {
             return;
         }
         if ($context->isInGlobalScope()) {

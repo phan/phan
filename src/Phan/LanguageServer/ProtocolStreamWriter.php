@@ -66,7 +66,7 @@ class ProtocolStreamWriter implements ProtocolWriter
             $bytesWritten = @\fwrite($this->output, $message);
 
             if ($bytesWritten > 0) {
-                $message = (string)\substr($message, $bytesWritten);
+                $message = \substr($message, $bytesWritten);
             }
 
             // Determine if this message was completely sent

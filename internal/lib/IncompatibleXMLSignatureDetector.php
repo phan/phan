@@ -131,7 +131,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             }
             $full_path = "$dir/$basename";
             if (is_file($full_path)) {
-                $normalized_name = strtolower(str_replace('-', '_', (string)substr($basename, 0, -4)));
+                $normalized_name = strtolower(str_replace('-', '_', substr($basename, 0, -4)));
                 $result[$full_path] = $normalized_name;
             }
         }

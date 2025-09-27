@@ -45,11 +45,8 @@ class RedundantCondition
     /**
      * Choose a more specific issue name based on where the issue was emitted from.
      * In loops, Phan's checks have higher false positives.
-     *
-     * @param Node|int|float|string $node
-     * @param string $issue_name
      */
-    public static function chooseSpecificImpossibleOrRedundantIssueKind($node, Context $context, string $issue_name): string
+    public static function chooseSpecificImpossibleOrRedundantIssueKind(\ast\Node|float|int|string $node, Context $context, string $issue_name): string
     {
         if (ParseVisitor::isNonVariableExpr($node)) {
             return $issue_name;
@@ -72,7 +69,7 @@ class RedundantCondition
      * @param Closure(UnionType):bool $is_still_issue
      */
     public static function emitInstance(
-        $node,
+        \ast\Node|float|int|string $node,
         CodeBase $code_base,
         Context $context,
         string $issue_name,
@@ -119,7 +116,7 @@ class RedundantCondition
      * @return ?Closure(Context):(?UnionType) A closure to fetch the type, or null if the inferred type isn't expected to vary.
      * @internal
      */
-    public static function getLoopNodeTypeFetcher(CodeBase $code_base, $node): ?Closure
+    public static function getLoopNodeTypeFetcher(CodeBase $code_base, \ast\Node|float|int|null|string $node): ?Closure
     {
         if (!($node instanceof Node)) {
             // This scalar won't change.
@@ -151,18 +148,17 @@ class RedundantCondition
             }
             try {
                 return UnionTypeVisitor::unionTypeFromNode($code_base, $context_after_loop, $node, false)->getRealUnionType();
-            } catch (Exception $_) {
+            } catch (Exception) {
                 return null;
             }
         };
     }
 
     /**
-     * @param Node|string|int|float $node
      * @return associative-array<int|string, string> the set of variable names.
      * @internal
      */
-    public static function getVariableSet($node): array
+    public static function getVariableSet(\ast\Node|float|int|string $node): array
     {
         if (!$node instanceof Node) {
             return [];
@@ -190,9 +186,8 @@ class RedundantCondition
      * Returns true for if $node is an expression that wouldn't be null, but for which isset($var_node) can return false.
      *
      * e.g. `isset($str[5])`
-     * @param Node|string|int|float $node
      */
-    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, $node): bool
+    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node): bool
     {
         if (!$node instanceof Node) {
             return false;

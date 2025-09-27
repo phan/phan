@@ -166,7 +166,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     $value = is_float($value) ? (string)$value : (string)filter_var($value, FILTER_VALIDATE_FLOAT);
                     $old_index = $numeric_set[$value] ?? null;
                     if ($value === (string)$original_value) {
-                        $old_index = $old_index ?? $fuzzy_numeric_set[$value] ?? null;
+                        $old_index ??= $fuzzy_numeric_set[$value] ?? null;
                         $numeric_set[$value] = $i;
                     } else {
                         $fuzzy_numeric_set[$value] = $i;
@@ -308,7 +308,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param int|string|float|bool|null $key
      */
-    private function warnAboutDuplicateArrayKey(Node $entry, $key, Node $old_entry): void
+    private function warnAboutDuplicateArrayKey(Node $entry, bool|float|int|null|string $key, Node $old_entry): void
     {
         if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
             $this->emitPluginIssue(
@@ -343,7 +343,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeSwitchKey($key): string
+    private static function normalizeSwitchKey(bool|float|int|null|string $key): string
     {
         if (is_int($key)) {
             return (string)$key;
@@ -361,7 +361,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeKey($key): string
+    private static function normalizeKey(bool|float|int|null|string $key): string
     {
         if (is_int($key)) {
             return (string)$key;

@@ -134,7 +134,7 @@ final class GenericMultiType extends Type implements MultiType
             foreach ($this->types as $type) {
                 $result->addUnionType($type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1));
             }
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
             return MixedType::instance(false)->asPHPDocUnionType();
         }
         return $result->getPHPDocUnionType();

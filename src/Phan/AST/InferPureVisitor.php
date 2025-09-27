@@ -237,7 +237,7 @@ class InferPureVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    final protected function maybeInvoke($node): void
+    final protected function maybeInvoke(\ast\Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->__invoke($node);
@@ -353,7 +353,7 @@ class InferPureVisitor extends AnalysisVisitor
         $this->__invoke($node->children['args']);
         try {
             $class_list = (new ContextNode($this->code_base, $this->context, $name_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
-        } catch (Exception $_) {
+        } catch (Exception) {
             throw new NodeException($name_node);
         }
         if (!$class_list) {
@@ -404,7 +404,7 @@ class InferPureVisitor extends AnalysisVisitor
                 $this->checkCalledFunction($node, $function);
                 $found_function = true;
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             // ignore it.
         }
         if (!$found_function) {
@@ -432,7 +432,7 @@ class InferPureVisitor extends AnalysisVisitor
                 $this->context,
                 $class
             );
-        } catch (Exception $_) {
+        } catch (Exception) {
             throw new NodeException($class, 'could not get type');
         }
         // TODO: Check all classes in union and intersection types instead up to a limit?
@@ -452,7 +452,7 @@ class InferPureVisitor extends AnalysisVisitor
         }
         try {
             $class = $this->code_base->getClassByFQSEN($class_fqsen);
-        } catch (Exception $_) {
+        } catch (Exception) {
             throw new NodeException($node);
         }
         if (!$class->hasMethodWithName($this->code_base, $method, true)) {

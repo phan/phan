@@ -762,7 +762,7 @@ class Context extends FileRef
 
         try {
             $element = $this->getElementInScope($code_base);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return false;
         }
         if ($element instanceof ClassElement) {

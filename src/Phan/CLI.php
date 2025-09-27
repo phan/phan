@@ -2728,7 +2728,7 @@ EOB
                 '<' . '?php 42;',
                 Config::AST_VERSION
             );
-        } catch (\LogicException $_) {
+        } catch (\LogicException) {
             self::printHelpSection(
                 'ERROR: Unknown AST version ('
                 . Config::AST_VERSION
@@ -2757,7 +2757,7 @@ EOB
                 true
             );
             exit(EXIT_FAILURE);
-        } catch (\ParseError $_) {
+        } catch (\ParseError) {
             // error message may validate with locale and version, don't validate that.
         }
     }

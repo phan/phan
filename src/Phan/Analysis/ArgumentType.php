@@ -81,7 +81,7 @@ final class ArgumentType
         if ($method->hasFunctionCallAnalyzer()) {
             try {
                 $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children ?? [], $node);
-            } catch (StopParamAnalysisException $_) {
+            } catch (StopParamAnalysisException) {
                 return;
             }
         }
@@ -214,7 +214,7 @@ final class ArgumentType
                     $context,
                     $class_node
                 );
-            } catch (Exception $_) {
+            } catch (Exception) {
                 return;
             }
             if ($class_type->isEmpty() || $class_type->hasPossiblyObjectTypes()) {
@@ -373,10 +373,9 @@ final class ArgumentType
      * 1. The minimum possible number of arguments from unpacking this array.
      * 2. Whether the exact number of arguments is unknown.
      *
-     * @param Node|float|int|string $expr
      * @return array{0:int, 1:bool} [$min_size, $has_unknown]
      */
-    private static function estimateMinArraySize(CodeBase $code_base, Context $context, $expr): array
+    private static function estimateMinArraySize(CodeBase $code_base, Context $context, \ast\Node|float|int|string $expr): array
     {
         if (!$expr instanceof Node) {
             return [0, false];
@@ -1006,7 +1005,7 @@ final class ArgumentType
     private static function warnVoidTypeArgument(
         CodeBase $code_base,
         Context $context,
-        $argument,
+        \ast\Node|float|int|null|string $argument,
         Node $node
     ): void {
         Issue::maybeEmit(
@@ -1115,13 +1114,13 @@ final class ArgumentType
      * @param Node|string|int|float $argument_node
      * @param ?Node $node the node of the call TODO: Default
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, $argument_node, ?Node $node): void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, \ast\Node|float|int|string $argument_node, ?Node $node): void
     {
         // Expand it to include all parent types up the chain
         try {
             $argument_type_resolved = $argument_type->withStaticResolvedInContext($context);
             $argument_type_expanded_resolved = $argument_type_resolved->asExpandedTypes($code_base);
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
             return;
         }
 
@@ -1271,7 +1270,7 @@ final class ArgumentType
                             return;
                         }
                     }
-                } catch (CodeBaseException $_) {
+                } catch (CodeBaseException) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -1331,16 +1330,13 @@ final class ArgumentType
         );
     }
 
-    /**
-     * @param Node|string|int|float $argument_node
-     */
     private static function warnInvalidArgumentType(
         CodeBase $code_base,
         Context $context,
         FunctionInterface $method,
         Parameter $alternate_parameter,
         UnionType $alternate_parameter_type,
-        $argument_node,
+        \ast\Node|float|int|string $argument_node,
         UnionType $argument_type,
         UnionType $argument_type_expanded,
         UnionType $argument_type_expanded_resolved,
@@ -1523,10 +1519,7 @@ final class ArgumentType
         );
     }
 
-    /**
-     * @param Node|string|int|float $argument_node
-     */
-    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, $argument_node, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i): void
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, \ast\Node|float|int|string $argument_node, UnionType $argument_type, Variable $alternate_parameter, UnionType $parameter_type, int $lineno, int $i): void
     {
         if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
             return;
@@ -1628,7 +1621,7 @@ final class ArgumentType
      *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
-    public static function isExpressionReturningReference(CodeBase $code_base, Context $context, $node): bool
+    public static function isExpressionReturningReference(CodeBase $code_base, Context $context, \ast\Node|float|int|null|string $node): bool
     {
         if (!($node instanceof Node)) {
             return false;
@@ -1680,7 +1673,7 @@ final class ArgumentType
                             return true;
                         }
                     }
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     // Swallow any issue exceptions here. They'll be caught elsewhere.
                 }
             }

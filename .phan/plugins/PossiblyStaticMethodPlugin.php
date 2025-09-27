@@ -123,9 +123,10 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      * @param Node|int|string|float|null $node
      * @return bool - returns true if the node allows its method to be static
      */
-    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, $node): bool
+    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, \ast\Node|float|int|null|string $node): bool
     {
         if (!($node instanceof Node)) {
+            // @phan-suppress-next-line PhanImpossibleCondition AST children can be arrays
             if (is_array($node)) {
                 foreach ($node as $child_node) {
                     if (!self::nodeCanBeStatic($code_base, $method, $child_node)) {
@@ -199,7 +200,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
         }
         try {
             $method = (new ContextNode($code_base, new ElementContext($method), $node))->getMethod($method_name, true, false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // This might be an instance method if we don't know what it is
             return true;
         }

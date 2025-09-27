@@ -31,23 +31,18 @@ trait TolerantASTConverterTrait
      * FIXME static will behave differently in php 8.1
      * @suppress PhanAbstractStaticMethodCallInTrait
      */
-    protected static function phpParserNonValueNodeToAstNode($n)
+    protected static function phpParserNonValueNodeToAstNode(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n): \ast\Node|array|bool|float|int|null|string
     {
         static $callback_map;
         static $fallback_closure;
         if (\is_null($callback_map)) {
             $callback_map = static::initHandleMap();
             /**
-             * @param PhpParser\Node|Token $n
              * @return ast\Node - Not a real node, but a node indicating the TODO
              * @throws InvalidArgumentException for invalid node classes
              * @throws Error if the environment variable AST_THROW_INVALID is set (for debugging)
              */
-            $fallback_closure = static function ($n, int $unused_start_line): \ast\Node {
-                if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    // @phan-suppress-next-line PhanThrowTypeMismatchForCall debugDumpNodeOrToken can throw
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . TolerantASTConverter::debugDumpNodeOrToken($n));
-                }
+            $fallback_closure = static function (\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n, int $unused_start_line): \ast\Node {
                 return TolerantASTConverter::astStub($n);
             };
         }
@@ -61,23 +56,18 @@ trait TolerantASTConverterTrait
      * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
      * @suppress PhanAbstractStaticMethodCallInTrait
      */
-    protected static function phpParserNodeToAstNode($n)
+    protected static function phpParserNodeToAstNode(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n): \ast\Node|array|float|int|null|string
     {
         static $callback_map;
         static $fallback_closure;
         if (\is_null($callback_map)) {
             $callback_map = static::initHandleMap();
             /**
-             * @param PhpParser\Node|Token $n
              * @return ast\Node - Not a real node, but a node indicating the TODO
              * @throws InvalidArgumentException|Exception for invalid node classes
              * @throws Error if the environment variable AST_THROW_INVALID is set to debug.
              */
-            $fallback_closure = static function ($n, int $unused_start_line): \ast\Node {
-                if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . TolerantASTConverter::debugDumpNodeOrToken($n));
-                }
-
+            $fallback_closure = static function (\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n, int $unused_start_line): \ast\Node {
                 return TolerantASTConverter::astStub($n);
             };
         }

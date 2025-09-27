@@ -364,7 +364,7 @@ class DeprecateAliasPlugin extends PluginV3 implements
         foreach (self::KNOWN_ALIASES as $alias => $original_name) {
             try {
                 $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($alias);
-            } catch (Exception $_) {
+            } catch (Exception) {
                 continue;
             }
             if (!$code_base->hasFunctionWithFQSEN($fqsen)) {

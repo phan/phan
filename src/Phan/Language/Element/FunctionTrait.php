@@ -1416,7 +1416,7 @@ trait FunctionTrait
         $this->did_analyze_return_types = true;
         try {
             $this->analyzeReturnTypesInner($code_base);
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
         }
     }
 

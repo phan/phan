@@ -198,7 +198,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                     $counter->unused_locations[$key] = $this->context;
                 }
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
         }
     }
 
@@ -340,7 +340,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, false, true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->checkIfUsingFunctionThatNeverReturns([$method], $node);
@@ -404,7 +404,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, true, true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
 

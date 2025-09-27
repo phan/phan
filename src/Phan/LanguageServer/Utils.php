@@ -82,7 +82,7 @@ class Utils
             return $filepath;
         }
         if ($filepath[0] === '/') {
-            $filepath = (string)\substr($filepath, 1);
+            $filepath = \substr($filepath, 1);
         }
         return \str_replace('/', '\\', $filepath);
     }

@@ -34,7 +34,7 @@ class HasTypeCondition implements BinaryCondition
         $context = $visitor->getContext();
         try {
             $variable = $visitor->getVariableFromScope($var, $context);
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return $context;
         }
         if (\is_null($variable)) {

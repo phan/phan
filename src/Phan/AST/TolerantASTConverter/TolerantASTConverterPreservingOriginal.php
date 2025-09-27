@@ -38,10 +38,10 @@ class TolerantASTConverterPreservingOriginal extends TolerantASTConverter
 
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
+     * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
      * @override
      */
-    protected static function phpParserNodeToAstNode($n)
+    protected static function phpParserNodeToAstNode(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n): \ast\Node|array|float|int|null|string
     {
         $ast_node = parent::phpParserNodeToAstNode($n);
         if ($ast_node instanceof ast\Node) {
@@ -55,7 +55,7 @@ class TolerantASTConverterPreservingOriginal extends TolerantASTConverter
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
      * @override
      */
-    protected static function phpParserNonValueNodeToAstNode($n)
+    protected static function phpParserNonValueNodeToAstNode(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n): \ast\Node|array|bool|float|int|null|string
     {
         $ast_node = parent::phpParserNonValueNodeToAstNode($n);
         if ($ast_node instanceof ast\Node) {

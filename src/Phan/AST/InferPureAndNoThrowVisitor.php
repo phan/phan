@@ -51,7 +51,7 @@ class InferPureAndNoThrowVisitor extends InferPureSnippetVisitor
      * Check if the statements and expressions found in $node are unlikely to throw
      * @param Node|int|string|float|null $node
      */
-    public static function isUnlikelyToThrow(CodeBase $code_base, Context $context, $node): bool
+    public static function isUnlikelyToThrow(CodeBase $code_base, Context $context, \ast\Node|float|int|null|string $node): bool
     {
         if (!$node instanceof Node) {
             return true;
@@ -59,7 +59,7 @@ class InferPureAndNoThrowVisitor extends InferPureSnippetVisitor
         try {
             (new self($code_base, $context))->__invoke($node);
             return true;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             return false;
         }
     }
@@ -103,7 +103,7 @@ class InferPureAndNoThrowVisitor extends InferPureSnippetVisitor
         $this->__invoke($node->children['args']);
         try {
             $class_list = (new ContextNode($this->code_base, $this->context, $name_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
-        } catch (Exception $_) {
+        } catch (Exception) {
             throw new NodeException($name_node);
         }
         if (!$class_list) {

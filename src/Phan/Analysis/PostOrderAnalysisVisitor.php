@@ -55,7 +55,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
-use function end;
 use function implode;
 use function sprintf;
 use function strtolower;
@@ -548,7 +547,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return;
                     }
                 }
-            } catch (CodeBaseException | RecursionDepthException $_) {
+            } catch (CodeBaseException | RecursionDepthException) {
                 // Swallow "Cannot find class" or recursion exceptions, go on to emit issue
             }
             $this->emitIssue(
@@ -746,7 +745,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             return $context;
                         }
                     }
-                } catch (CodeBaseException $_) {
+                } catch (CodeBaseException) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -1264,13 +1263,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // TODO: Compute the real type set.
                         $new_type = Type::fromObject($value)->asPHPDocUnionType();
                     }
-                } catch (\Throwable $_) {
+                } catch (\Throwable) {
                     // ignore
                 }
             }
             try {
                 $variable = (new ContextNode($this->code_base, $this->context, $var))->getVariableStrict();
-            } catch (IssueException | NodeException $_) {
+            } catch (IssueException | NodeException) {
                 return $this->context;
             }
             $variable = clone $variable;
@@ -1323,7 +1322,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $context,
                 $exception->getIssueInstance()
             );
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -1361,7 +1360,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -1426,7 +1425,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $exception->getIssueInstance()
                 );
-            } catch (Exception $_) {
+            } catch (Exception) {
                 // Swallow any other types of exceptions. We'll log the errors
                 // elsewhere.
             }
@@ -1468,7 +1467,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $exception->getIssueInstance()
                 );
-            } catch (Exception $_) {
+            } catch (Exception) {
                 // Swallow any other types of exceptions. We'll log the errors
                 // elsewhere.
             }
@@ -1536,7 +1535,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ) {
             $this->warnTypeMissingReturn($func, $node);
         }
-        $uses = $node->children['uses'] ?? null;
         $this->analyzeNoOp($node, Issue::NoopClosure);
         $this->checkForFunctionInterfaceIssues($node, $func);
         return $this->context;
@@ -1729,7 +1727,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
      * @param Node|string|int|float|null $inner_node
      */
-    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, $inner_node): void
+    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, \ast\Node|float|int|null|string $inner_node): void
     {
         if ($this->shouldSuppressIssue(Issue::TypeMismatchReturnReal, $lineno)) {
             // Suppressing TypeMismatchReturnReal also suppresses less severe return type mismatches
@@ -1948,7 +1946,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     '\Generator<' . implode(',', $template_type_list) . '>'
                 );
             }
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
         }
 
         if ($type_list_count > 1) {
@@ -2103,7 +2101,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Stop allowing base classes to cast to subclasses
             return $expression_type->canCastToUnionType($method_return_type, $this->code_base);
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
             return false;
         }
     }
@@ -2129,7 +2127,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         UnionType $expression_type,
         UnionType $method_return_type,
         int $lineno,
-        $inner_node
+        \ast\Node|float|int|null|string $inner_node
     ): bool {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
@@ -2190,7 +2188,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function returnExpressionToShortString($node): string
+    private static function returnExpressionToShortString(\ast\Node|float|int|null|string $node): string
     {
         return $node !== null ? ASTReverter::toShortString($node) : 'void';
     }
@@ -2210,10 +2208,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param ?Node|?string|?int|?float $node
-     * @return \Generator<int, array{0: UnionType, 1:Node|string|int|float|null}>
+     * @param \ast\Node|float|int|null|string $node
+     * @return \Generator<int, array{0: UnionType, 1:\ast\Node|string|int|float|null}>
      */
-    private function getReturnTypes(Context $context, $node, int $return_lineno): \Generator
+    private function getReturnTypes(Context $context, \ast\Node|float|int|null|string $node, int $return_lineno): \Generator
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
@@ -2464,7 +2462,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context = $this->analyzeAssert($this->context, $node);
                 }
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             // ignore it.
         }
 
@@ -2554,7 +2552,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (Exception $_) {
+        } catch (Exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
         }
@@ -2596,7 +2594,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($type instanceof LiteralStringType) {
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type->getValue());
-                } catch (FQSENException $_) {
+                } catch (FQSENException) {
                     // Probably already emitted elsewhere, but emit anyway
                     Issue::maybeEmit(
                         $this->code_base,
@@ -2642,7 +2640,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Node|int|string|float|null $node
      */
-    public static function isStaticNameNode($node, bool $allow_self): bool
+    public static function isStaticNameNode(\ast\Node|float|int|null|string $node, bool $allow_self): bool
     {
         if (!$node instanceof Node) {
             return false;
@@ -2825,7 +2823,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (Exception $_) {
+        } catch (Exception) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -3036,7 +3034,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             $this->checkForAbstractPrivateMethodInTrait($class, $method);
             $this->checkForPHP4StyleConstructor($class, $method);
-        } catch (Exception $_) {
+        } catch (Exception) {
         }
 
         if (!$method->isAbstract()
@@ -3143,7 +3141,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->checkUnionTypeCompatibility($node->children['returnType']);
     }
 
-    private function checkUnionTypeCompatibility(?Node $type, bool $is_union = false): void
+    private function checkUnionTypeCompatibility(?Node $type): void
     {
         if (!$type) {
             return;
@@ -3157,7 +3155,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($type->kind === ast\AST_TYPE_UNION) {
             foreach ($type->children as $node) {
-                $this->checkUnionTypeCompatibility($node, true);
+                $this->checkUnionTypeCompatibility($node);
             }
             return;
         }
@@ -3236,7 +3234,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
             return $this->context;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -3424,7 +3422,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             // TODO: check if array_type has array but not ArrayAccess.
             // If that is true, then assert that $dim_type can cast to `int|string`
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
         }
         return $context;
@@ -3689,7 +3687,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // We'll check out some reasons it might not exist
             // before logging the issue
             $exception_or_null = $exception;
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Swallow any exceptions. We'll catch it later.
         }
 
@@ -4075,7 +4073,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     }
                     $variable->setUnionType($variable->getUnionType()->eraseRealTypeSetRecursively());
                 }
-            } catch (NodeException $_) {
+            } catch (NodeException) {
                 return;
             }
         } elseif ($argument->kind === ast\AST_STATIC_PROP
@@ -4103,7 +4101,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $this->context,
                         $exception->getIssueInstance()
                     );
-                } catch (Exception $_) {
+                } catch (Exception) {
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
@@ -4137,7 +4135,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $context,
                     $argument
                 ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
-            } catch (NodeException $_) {
+            } catch (NodeException) {
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
             }
@@ -4166,7 +4164,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $context,
                         $exception->getIssueInstance()
                     );
-                } catch (Exception $_) {
+                } catch (Exception) {
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
@@ -4273,7 +4271,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getClosure();
 
             $method->addReference($inner_context);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Swallow it
         }
     }
@@ -4701,7 +4699,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument
                 ))->getOrCreateVariableForReferenceParameter($parameter, $method->getRealParameterForCaller($parameter_offset));
-            } catch (NodeException $_) {
+            } catch (NodeException) {
                 // Could not figure out the node name
                 return;
             }
@@ -4712,7 +4710,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument
                 ))->getProperty($argument->kind === ast\AST_STATIC_PROP);
-            } catch (IssueException | NodeException $_) {
+            } catch (IssueException | NodeException) {
                 // Hopefully caught elsewhere
             }
         }
@@ -5077,7 +5075,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $method->getRepresentationForIssue()
                     );
                 }
-            } catch (CodeBaseException $_) {
+            } catch (CodeBaseException) {
                 // actually __construct always exists as per Phan's current logic, so this exception won't be thrown.
                 // but just in case let's leave this here
             }

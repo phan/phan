@@ -236,9 +236,8 @@ trait ConditionVisitorUtil
 
     /**
      * Warn about a scalar expression literal node that is always truthy or always falsey, in a place expecting a condition.
-     * @param int|string|float $node
      */
-    public function warnRedundantOrImpossibleScalar($node): void
+    public function warnRedundantOrImpossibleScalar(float|int|string $node): void
     {
         // TODO: Add LiteralFloatType so that this can consistently warn about floats
         $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
@@ -318,7 +317,7 @@ trait ConditionVisitorUtil
         if (!$type) {
             try {
                 $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node, false);
-            } catch (Exception $_) {
+            } catch (Exception) {
                 return;
             }
             if (!$type->hasRealTypeSet()) {
@@ -366,7 +365,7 @@ trait ConditionVisitorUtil
      * overridden in subclasses
      * @param Node|mixed $node @unused-param
      */
-    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, $node): string
+    protected function chooseIssueForUnconditionallyTrue(bool $is_negated, mixed $node): string
     {
         return $is_negated ? Issue::ImpossibleCondition : Issue::RedundantCondition;
     }
@@ -494,13 +493,10 @@ trait ConditionVisitorUtil
         );
     }
 
-    /**
-     * @param int|string|float $value
-     */
     final protected function removeLiteralScalarFromVariable(
         Node $var_node,
         Context $context,
-        $value,
+        float|int|string $value,
         bool $strict_equality
     ): Context {
         if (!is_int($value) && !is_string($value)) {
@@ -672,7 +668,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it
         }
         return $context;
@@ -731,7 +727,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it
         }
         return $context;
@@ -740,9 +736,8 @@ trait ConditionVisitorUtil
     /**
      * Returns true if `$node` is an `ast\Node` representing the PHP variable `$this`.
      *
-     * @param Node|string|int|float $node
      */
-    public static function isThisVarNode($node): bool
+    public static function isThisVarNode(\ast\Node|float|int|string $node): bool
     {
         return $node instanceof Node && $node->kind === ast\AST_VAR &&
             $node->children['name'] === 'this';
@@ -824,7 +819,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it
         }
         return $context;
@@ -912,44 +907,40 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x === 'literal')`
      */
     final public function updateVariableToBeIdentical(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
-        $context = $context ?? $this->context;
+        $context ??= $this->context;
         try {
             $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
             if (!$expr_type) {
                 return $context;
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return $context;
         }
         return $this->updateVariableWithNewType($var_node, $context, $expr_type, true, false);
     }
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x == true)`
      */
     final public function updateVariableToBeEqual(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
-        $context = $context ?? $this->context;
+        $context ??= $this->context;
         try {
             $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
             if (!$expr_type) {
                 return $context;
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return $context;
         }
         return $this->updateVariableWithNewType($var_node, $context, $expr_type, true, true);
@@ -963,7 +954,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeCompared(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         int $flags
     ): Context {
         $context = $this->context;
@@ -1022,7 +1013,7 @@ trait ConditionVisitorUtil
                     $variable
                 );
                 return $context;
-            } catch (\Exception $_) {
+            } catch (\Exception) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -1036,10 +1027,10 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeNotIdentical(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
-        $context = $context ?? $this->context;
+        $context ??= $this->context;
         try {
             if ($expr instanceof Node) {
                 $value = (new ContextNode($this->code_base, $context, $expr))->getEquivalentPHPValueForControlFlowAnalysis();
@@ -1061,24 +1052,22 @@ trait ConditionVisitorUtil
             } else {
                 return $this->removeLiteralScalarFromVariable($var_node, $context, $expr, true);
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
         return $context;
     }
 
     /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
      * @return Context - Context after inferring type from an expression such as `if ($x != 'literal')`
      * @suppress PhanSuspiciousTruthyCondition, PhanSuspiciousTruthyString didn't implement special handling of `if ($x != [...])`
      */
     final public function updateVariableToBeNotEqual(
         Node $var_node,
-        $expr,
+        \ast\Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
-        $context = $context ?? $this->context;
+        $context ??= $this->context;
 
         $var_name = $var_node->children['name'] ?? null;
         // http://php.net/manual/en/types.comparisons.php#types.comparisions-loose @phan-suppress-current-line PhanPluginPossibleTypoComment, UnusedSuppression
@@ -1111,7 +1100,7 @@ trait ConditionVisitorUtil
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
                     return $this->removeTrueFromVariable($var_node, $context);
                 }
-            } catch (\Exception $_) {
+            } catch (\Exception) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -1119,11 +1108,9 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x !== false)`
      */
-    public function analyzeAndUpdateToBeIdentical($left, $right): Context
+    public function analyzeAndUpdateToBeIdentical(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1133,11 +1120,9 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x != false)`
      */
-    public function analyzeAndUpdateToBeEqual($left, $right): Context
+    public function analyzeAndUpdateToBeEqual(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1147,11 +1132,9 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
      * @return Context - Context after inferring type from an expression such as `if ($x !== false)`
      */
-    public function analyzeAndUpdateToBeNotIdentical($left, $right): Context
+    public function analyzeAndUpdateToBeNotIdentical(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1160,12 +1143,7 @@ trait ConditionVisitorUtil
         );
     }
 
-    /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
-     * @param BinaryCondition $condition
-     */
-    protected function analyzeBinaryConditionPattern($left, $right, BinaryCondition $condition): Context
+    protected function analyzeBinaryConditionPattern(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right, BinaryCondition $condition): Context
     {
         if ($left instanceof Node) {
             $result = $this->analyzeBinaryConditionSide($left, $right, $condition);
@@ -1183,12 +1161,10 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node $var_node
-     * @param Node|int|string|float $expr_node
      * @param BinaryCondition $condition
      * @suppress PhanPartialTypeMismatchArgument
      */
-    private function analyzeBinaryConditionSide(Node $var_node, $expr_node, BinaryCondition $condition): ?Context
+    private function analyzeBinaryConditionSide(Node $var_node, \ast\Node|float|int|string $expr_node, BinaryCondition $condition): ?Context
     {
         '@phan-var ConditionVisitorUtil|ConditionVisitorInterface $this';
         $kind = $var_node->kind;
@@ -1239,11 +1215,8 @@ trait ConditionVisitorUtil
 
     /**
      * Returns a context where the variable for $object_node has the class found in $expr_node
-     *
-     * @param Node|string|int|float $object_node
-     * @param Node|string|int|float|bool $expr_node
      */
-    public function analyzeClassAssertion($object_node, $expr_node): ?Context
+    public function analyzeClassAssertion(\ast\Node|float|int|string $object_node, \ast\Node|bool|float|int|string $expr_node): ?Context
     {
         if (!($object_node instanceof Node)) {
             return null;
@@ -1271,7 +1244,7 @@ trait ConditionVisitorUtil
         $fqsen_string = '\\' . $expr_value;
         try {
             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
-        } catch (FQSENException $_) {
+        } catch (FQSENException) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
@@ -1305,18 +1278,16 @@ trait ConditionVisitorUtil
             return $this->context->withScopeVariable(
                 $variable
             );
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
         return null;
     }
 
     /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
      * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
-    public function analyzeAndUpdateToBeNotEqual($left, $right): Context
+    public function analyzeAndUpdateToBeNotEqual(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1326,11 +1297,9 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
      * @return Context - Context after inferring type from a comparison expression such as `if ($x['field'] > 0)`
      */
-    protected function analyzeAndUpdateToBeCompared($left, $right, int $flags): Context
+    protected function analyzeAndUpdateToBeCompared(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right, int $flags): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1496,7 +1465,7 @@ trait ConditionVisitorUtil
      * @param Context $context
      * @param list<mixed> $args
      */
-    protected function modifyComplexExpression($node, Closure $type_modification_callback, Context $context, array $args): Context
+    protected function modifyComplexExpression(\ast\Node|float|int|string $node, Closure $type_modification_callback, Context $context, array $args): Context
     {
         for (;;) {
             if (!$node instanceof Node) {
@@ -1658,10 +1627,9 @@ trait ConditionVisitorUtil
     }
 
     /**
-     * @param Node|string|int|float $node
      * @return ?string the name of the variable in a chain of field accesses such as $varName['field'][$i]
      */
-    private static function getVarNameOfDimNode($node): ?string
+    private static function getVarNameOfDimNode(\ast\Node|float|int|string $node): ?string
     {
         // Loop to support getting the var name in is_array($x['field'][0])
         while (true) {

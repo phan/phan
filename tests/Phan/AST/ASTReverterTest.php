@@ -20,7 +20,7 @@ final class ASTReverterTest extends BaseTest
      */
     public function testRevertShorthand(string $snippet, ?string $expected = null): void
     {
-        $expected = $expected ?? $snippet;
+        $expected ??= $snippet;
         $file_contents = '<' . '?php ' . $snippet . ';';
         $statements = \ast\parse_code($file_contents, Config::AST_VERSION);
         $this->assertSame(1, \count($statements->children));

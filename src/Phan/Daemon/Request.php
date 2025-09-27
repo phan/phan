@@ -549,12 +549,12 @@ class Request
                 // Override some parameters and keep other parameters such as temporary_file_mapping_contents
                 $request[self::PARAM_FILES] = [$request['file']];
                 $request[self::PARAM_METHOD] = 'analyze_files';
-                $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
+                $request[self::PARAM_FORMAT] ??= 'json';
                 // Fall through, this is an alias of analyze_files
             case 'analyze_files':
                 // Analyze the list of strings provided in "files"
                 $files = $request[self::PARAM_FILES] ?? null;
-                $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
+                $request[self::PARAM_FORMAT] ??= 'json';
                 $error_message = null;
                 if (\is_array($files) && count($files)) {
                     foreach ($files as $file) {

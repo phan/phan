@@ -11,7 +11,6 @@ use Phan\AST\ArrowFunc;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
-use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -697,7 +696,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $func_return_type,
                     $this->code_base
                 );
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
                 return;
             }
             if (!$func_return_type_can_cast) {
@@ -718,7 +717,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @unused-param
      * A node to parse
      *
      * @return Context

@@ -107,7 +107,7 @@ class PureMethodInferrer
         $visitor = InferPureVisitor::fromFunction($code_base, $method, $graph);
         try {
             ($visitor)($node);
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             // $context = $method->getContext();
             // echo "Skipping due to {$method->getFQSEN()} {$context->getFile()}:{$_->getNode()->lineno}: {$_->getFile()}:{$_->getLine()}: {$_->getMessage()}\n";
             // \Phan\Debug::printNode($_->getNode());

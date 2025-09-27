@@ -645,7 +645,6 @@ class ParseVisitor extends ScopeVisitor
      */
     private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes, bool $from_parameter): ?Property
     {
-        $original_flags = $flags;
         if ($class->getFlags() & ast\flags\CLASS_READONLY) {
             $flags |= ast\flags\MODIFIER_READONLY;
         }
@@ -800,7 +799,7 @@ class ParseVisitor extends ScopeVisitor
                     }
                     // We successfully resolved the union type. We no longer need $future_union_type
                     $future_union_type = null;
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     // Do nothing
                 }
                 if ($future_union_type === null) {
@@ -893,7 +892,7 @@ class ParseVisitor extends ScopeVisitor
                     $this->context,
                     $node
                 ))->getConst()->getUnionType()->eraseRealTypeSetRecursively();
-            } catch (IssueException $_) {
+            } catch (IssueException) {
                 // ignore
             }
         }
@@ -1368,7 +1367,7 @@ class ParseVisitor extends ScopeVisitor
         if ($name instanceof Node) {
             try {
                 $name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name, false);
-            } catch (IssueException $_) {
+            } catch (IssueException) {
                 // If this is really an issue, we'll emit it in the analysis phase when we have all of the element definitions.
                 return;
             }
@@ -1711,7 +1710,7 @@ class ParseVisitor extends ScopeVisitor
     ): void {
         $i = \strrpos($name, '\\');
         if ($i !== false) {
-            $name_fragment = (string)\substr($name, $i + 1);
+            $name_fragment = \substr($name, $i + 1);
         } else {
             $name_fragment = $name;
         }
@@ -1737,7 +1736,7 @@ class ParseVisitor extends ScopeVisitor
                     $context
                 );
             }
-        } catch (InvalidArgumentException | FQSENException $_) {
+        } catch (InvalidArgumentException | FQSENException) {
             Issue::maybeEmit(
                 $code_base,
                 $context,
@@ -2129,7 +2128,7 @@ class ParseVisitor extends ScopeVisitor
         try {
             self::checkIsNonVariableExpression($n);
             return true;
-        } catch (InvalidArgumentException $_) {
+        } catch (InvalidArgumentException) {
             return false;
         }
     }

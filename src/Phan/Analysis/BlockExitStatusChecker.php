@@ -120,10 +120,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED;
     }
 
-    /**
-     * @param Node|string|int|float $cond
-     */
-    private static function isTruthyLiteral($cond): bool
+    private static function isTruthyLiteral(\ast\Node|float|int|string $cond): bool
     {
         if ($cond instanceof Node) {
             // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
@@ -814,9 +811,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * @param ?(Node|string|int|float) $constant_ast
+     * @param \ast\Node|float|int|null|string $constant_ast
      */
-    private static function computeTriggerErrorStatusCodeForConstant($constant_ast): int
+    private static function computeTriggerErrorStatusCodeForConstant(\ast\Node|float|int|null|string $constant_ast): int
     {
         // return PROCEED if this can't be determined.
         // TODO: Could check for integer literals

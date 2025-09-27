@@ -26,7 +26,7 @@ class DumpHTMLStyles
             }
             $name = 'color';
             if (preg_match('/^bg_/', $color_component)) {
-                $color_component = (string)substr($color_component, 3);
+                $color_component = substr($color_component, 3);
                 $name = 'background-color';
             }
             switch ($color_component) {

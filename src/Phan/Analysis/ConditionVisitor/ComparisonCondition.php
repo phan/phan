@@ -75,7 +75,7 @@ class ComparisonCondition implements BinaryCondition
     /**
      * @param bool|int|float|string|null $value
      */
-    private function assertsPositiveNumber($value): bool
+    private function assertsPositiveNumber(bool|float|int|null|string $value): bool
     {
         if ($this->flags === ast\flags\BINARY_IS_GREATER) {
             return $value >= 0;
@@ -93,7 +93,7 @@ class ComparisonCondition implements BinaryCondition
      *
      * @param bool|int|float|string|null $value
      */
-    private function assertsZeroOrLess($value): bool
+    private function assertsZeroOrLess(bool|float|int|null|string $value): bool
     {
         if ($this->flags === ast\flags\BINARY_IS_SMALLER) {
             return $value > 0 && $value <= 1;

@@ -280,7 +280,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                     )->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1)
                 );
             }
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
             return ArrayType::instance($this->is_nullable)->asPHPDocUnionType();
         }
         return $result->getPHPDocUnionType();

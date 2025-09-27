@@ -45,7 +45,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @param Node|string|int|float|null $node
      */
-    private function findSelectedNode($node): Node
+    private function findSelectedNode(\ast\Node|float|int|null|string $node): Node
     {
         $candidates = [];
         $this->findSelectedNodeInner($node, $candidates);
@@ -54,10 +54,10 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     }
 
     /**
-     * @param Node|int|string|float|null $node
+     * @param \ast\Node|int|string|float|null|array $node
      * @param list<Node> &$candidates
      */
-    private function findSelectedNodeInner($node, array &$candidates): void
+    private function findSelectedNodeInner(\ast\Node|float|int|null|string|array $node, array &$candidates): void
     {
         if ($node instanceof Node) {
             if (\property_exists($node, 'isSelected')) {

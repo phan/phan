@@ -1222,7 +1222,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ): void {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1299,7 +1299,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ): void {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1346,7 +1346,7 @@ EOT
                 $position->line,
                 $position->character,
                 (string)\json_encode($cur_line),
-                (string)\substr($cur_line, $position->character, 10)
+                \substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSameUnorderedArray($expected_definition_response, $definition_response, $message);
@@ -1381,7 +1381,7 @@ EOT
         ?string $requested_uri,
         bool $pcntl_enabled
     ): void {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
@@ -1425,7 +1425,7 @@ EOT
                 $position->line,
                 $position->character,
                 (string)\json_encode($cur_line),
-                (string)\substr($cur_line, $position->character, 10)
+                \substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSameUnorderedArray($expected_hover_response, $hover_response, $message);
@@ -1678,7 +1678,7 @@ EOT;
      */
     private function assertHasEmptyPublishDiagnosticsNotification($proc_out, ?string $requested_uri = null): void
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         $diagnostics_response = self::awaitResponse($proc_out);
         $error_message = "Unexpected response: " . \json_encode($diagnostics_response);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, $error_message);
@@ -1693,7 +1693,7 @@ EOT;
      */
     private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, ?string $requested_uri = null): void
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         $diagnostics_response = self::awaitResponse($proc_out);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . \json_encode($diagnostics_response));
         $uri = $diagnostics_response['params']['uri'];
@@ -1806,7 +1806,7 @@ EOT;
      */
     private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, ?string $requested_uri = null): array
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1833,7 +1833,7 @@ EOT;
      */
     private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, ?string $requested_uri = null): array
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1864,7 +1864,7 @@ EOT;
      */
     private function writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, ?string $requested_uri = null): array
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
@@ -1891,7 +1891,7 @@ EOT;
      */
     private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, ?string $requested_uri = null, bool $is_repeated = false): array
     {
-        $requested_uri = $requested_uri ?? self::getDefaultFileURI();
+        $requested_uri ??= self::getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 

@@ -55,7 +55,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
      *
      * @param Node|int|string|float|null $node
      */
-    public static function isSideEffectFreeSnippet(CodeBase $code_base, Context $context, $node): bool
+    public static function isSideEffectFreeSnippet(CodeBase $code_base, Context $context, \ast\Node|float|int|null|string $node): bool
     {
         if (!$node instanceof Node) {
             return true;
@@ -63,7 +63,7 @@ class InferPureSnippetVisitor extends InferPureVisitor
         try {
             (new self($code_base, $context))->__invoke($node);
             return true;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             return false;
         }
     }

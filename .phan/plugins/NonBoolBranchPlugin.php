@@ -70,7 +70,7 @@ class NonBoolBranchVisitor extends PluginAwarePreAnalysisVisitor
             // evaluate the type of conditional expression
             try {
                 $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $condition);
-            } catch (IssueException $_) {
+            } catch (IssueException) {
                 return $this->context;
             }
             if (!$union_type->isEmpty() && !$union_type->isExclusivelyBoolTypes()) {

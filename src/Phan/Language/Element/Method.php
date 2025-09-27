@@ -601,7 +601,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setIsOverrideIntended($comment->isOverrideIntended());
         $method->setSuppressIssueSet($comment->getSuppressIssueSet());
 
-        $class = $class ?? $context->getClassInScope($code_base);
+        $class ??= $context->getClassInScope($code_base);
 
         if ($method->isMagicCall() || $method->isMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);

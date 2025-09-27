@@ -61,10 +61,10 @@ class ArrowFunc
      * @param int|string $name the name of the variable being used by this arrow func.
      *                         may need to handle `${'0'}`?
      */
-    private function recordUse($name, Node $n): void
+    private function recordUse(int|string $name, Node $n): void
     {
         if ($name !== 'this') {
-            $this->uses[$name] = $this->uses[$name] ?? $n;
+            $this->uses[$name] ??= $n;
         }
     }
 

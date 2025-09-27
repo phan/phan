@@ -840,7 +840,7 @@ class CodeBase
         try {
             $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
             $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
-        } catch (FQSENException $_) {
+        } catch (FQSENException) {
             // Fixes uncaught Phan\Exception\InvalidFQSENException for #2222
             // Just give up on analyzing uses of the class "OCI-Lob" and anything similar - It's invalid because of the hyphen.
         }
@@ -2237,7 +2237,7 @@ class CodeBase
                     $suggestions[] = $fqsen;
                 }
             }
-        } catch (Exception $_) {
+        } catch (Exception) {
             // ignore
         }
         return $suggestions;

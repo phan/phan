@@ -207,7 +207,7 @@ function check_fields(string $function_name, array $fields, array $signatures): 
     // echo $function_name . "\n";
     try {
         $function = load_internal_function($function_name);
-    } catch (ReflectionException $_) {
+    } catch (ReflectionException) {
         return;
     }
     $real_return_type = (string)$function->getReturnType();

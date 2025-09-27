@@ -141,7 +141,7 @@ EOT
         }
         $default_target_php_version = $options['target-php-version'] ?? sprintf('%d.%d', PHP_MAJOR_VERSION, PHP_MINOR_VERSION);
         $options['target-php-version'] = $default_target_php_version;
-        $options['minimum-target-php-version'] = $options['minimum-target-php-version'] ?? $default_target_php_version;
+        $options['minimum-target-php-version'] ??= $default_target_php_version;
         foreach ([
             'debug',
             'color',

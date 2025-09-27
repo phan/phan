@@ -250,7 +250,6 @@ class PhanPhpShellUtils
      * Generate completions for accessing instance property or methods where the object instance is known
      *
      * @return list<string>
-     * @suppress PhanCompatibleObjectTypePHP71
      */
     public function generateCompletionsForInstancePropertyOfObject(object $object, string $instance_element_prefix): array
     {

@@ -773,7 +773,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         try {
             Phan::finishAnalyzingRemainingStatements($this->code_base, $analysis_request, $analyze_file_path_list, $temporary_file_mapping);
-        } catch (ExitException $_) {
+        } catch (ExitException) {
             // This is normal, do nothing
         }
 

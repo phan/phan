@@ -161,7 +161,7 @@ final class Builder
                 if ($is_var && $variable_name === '' && $this->comment_type === Comment::ON_PROPERTY) {
                     $end_offset = (int)\strpos($line, $match[0]) + \strlen($match[0]);
                     $char_at_end_offset = $line[$end_offset] ?? ' ';
-                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', (string)\substr($line, $end_offset))) {  // Not a control character or space
+                    if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', \substr($line, $end_offset))) {  // Not a control character or space
                         $this->emitIssue(
                             Issue::UnextractableAnnotationSuffix,
                             $this->guessActualLineLocation($i),
@@ -244,7 +244,7 @@ final class Builder
             $raw_match = $match[0];
             $end_offset = (int)\strpos($line, $raw_match) + \strlen($raw_match);
             $char_at_end_offset = $line[$end_offset] ?? ' ';
-            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', (string)\substr($line, $end_offset))) {  // Not a control character or space
+            if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', \substr($line, $end_offset))) {  // Not a control character or space
                 $this->emitIssue(
                     Issue::UnextractableAnnotationSuffix,
                     $this->guessActualLineLocation($i),
@@ -933,7 +933,7 @@ final class Builder
                 return;
             case 'phan-inherits':
             case 'phan-extends':
-                $this->maybeParsePhanInherits($i, $line, (string)\substr($type, 5));
+                $this->maybeParsePhanInherits($i, $line, \substr($type, 5));
                 return;
             case 'phan-read-only':
                 $this->setPhanAccessFlag($i, false, 'phan-read-only');

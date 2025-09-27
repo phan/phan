@@ -713,7 +713,6 @@ final class UnionTypeTest extends BaseTest
         $php84_delta = require("$signatures_dir/FunctionSignatureMap_php84_delta.php");
         $php83_delta = require("$signatures_dir/FunctionSignatureMap_php83_delta.php");
         $php82_delta = require("$signatures_dir/FunctionSignatureMap_php82_delta.php");
-        $php81_delta = require("$signatures_dir/FunctionSignatureMap_php81_delta.php");
 
         $this->assertDeltasApply($php84_map, $php83_map, $php84_delta, 'php84_delta');
         $this->assertDeltasApply($php83_map, $php82_map, $php83_delta, 'php83_delta');

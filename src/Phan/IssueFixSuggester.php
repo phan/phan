@@ -531,7 +531,7 @@ class IssueFixSuggester
             if ($class->hasConstantWithName($code_base, $name)) {
                 return ["self::$name"];
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // ignore
         }
         return [];
@@ -567,7 +567,7 @@ class IssueFixSuggester
                     return ['$this->' . $name];
                 }
             }
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // ignore
         }
         return [];

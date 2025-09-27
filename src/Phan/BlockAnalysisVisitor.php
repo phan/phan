@@ -344,10 +344,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    /**
-     * @param int|string|float|Node $key_node
-     */
-    private function analyzeArrayKeyType($key_node, int $start_line): void
+    private function analyzeArrayKeyType(\ast\Node|float|int|string $key_node, int $start_line): void
     {
         if (is_object($key_node)) {
             $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
@@ -383,12 +380,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    /**
-     * @param Node $node
-     * @param Context $context
-     * @param int|float|string|null $child_node (probably not null)
-     */
-    private function handleScalarStmt(Node $node, Context $context, $child_node): void
+    private function handleScalarStmt(Node $node, Context $context, float|int|null|string $child_node): void
     {
         if (\is_string($child_node)) {
             $consumed = false;
@@ -771,7 +763,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 BlockExitStatusChecker::willUnconditionallyProceed($stmts_node)
             ))->__invoke($condition_node);
         } elseif (Config::getValue('redundant_condition_detection')) {
-            $condition_node = $condition_node ?? new Node(
+            $condition_node ??= new Node(
                 ast\AST_CONST,
                 0,
                 ['name' => new Node(ast\AST_NAME, ast\flags\NAME_NOT_FQ, ['name' => 'true'], $node->lineno)],
@@ -1127,7 +1119,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Returns true if this is probably a loop variable without side effects
      * (e.g. not a reference, not modifying properties, etc)
      */
-    private static function isLoopVariableWithoutSideEffects($node): bool
+    private static function isLoopVariableWithoutSideEffects(\ast\Node|float|int|null|string $node): bool
     {
         if (!$node instanceof Node) {
             return true;
@@ -1175,7 +1167,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 if ($type->isTraversable($this->code_base)) {
                     continue;
                 }
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
             }
             $this->warnAboutNonTraversableType($node, $type);
             $has_object = true;
@@ -1294,9 +1286,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($value_node instanceof Node) {
             // should be a parse error when not a Node
             // Note: The array assign backwards compatibility check was removed as we now require PHP 8.1+
-            if ($value_node->kind === ast\AST_ARRAY) {
-                // No version check needed since PHP 8.1+ supports array assignments properly
-            }
+            // Note: array assignments are supported since we require PHP 8.1+
 
             $context = (new AssignmentVisitor(
                 $code_base,
@@ -1726,10 +1716,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     private const NOOP_SWITCH_COND_ANALYZER = [null, null, null];
 
     /**
-     * @param Node|int|string|float $switch_case_node
      * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}
      */
-    private function createSwitchConditionAnalyzer($switch_case_node): array
+    private function createSwitchConditionAnalyzer(\ast\Node|float|int|string $switch_case_node): array
     {
         $switch_kind = ($switch_case_node->kind ?? null);
         try {
@@ -1817,7 +1806,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     },
                 ];
             }
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // do nothing, we warn elsewhere
         }
         return self::NOOP_SWITCH_COND_ANALYZER;
@@ -2005,7 +1994,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ?Closure $match_variable_condition,
         ?Closure $match_variable_negated_condition,
         Node $arm_node,
-        $match_cond_node,
+        \ast\Node|float|int|string $match_cond_node,
         ?UnionType $cond_type
     ): array {
         ConfigPluginSet::instance()->preAnalyzeNode(
@@ -2183,11 +2172,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     // TODO: Could add a check for conditions that are unconditionally falsey and warn
                     if (!$inferred_cond_value instanceof Node && $inferred_cond_value) {
                         // TODO: Could warn if this is not a condition on a static variable
-                        $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                        $first_unconditionally_true_index ??= \count($child_context_list);
                     }
                     $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($condition_node);
                 } elseif ($condition_node) {
-                    $first_unconditionally_true_index = $first_unconditionally_true_index ?? \count($child_context_list);
+                    $first_unconditionally_true_index ??= \count($child_context_list);
                 }
                 // If cond_node was null, it would be an else statement.
             } finally {
@@ -2275,13 +2264,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return [$child_context, $fallthrough_context];
     }
 
-    /**
-     * @param Node|string|int|float $condition_node
-     */
     private function analyzeAndGetUpdatedContextAndAssertTruthy(
         Context $context,
         Node $parent_node,
-        $condition_node
+        \ast\Node|float|int|string $condition_node
     ): Context {
         if (!$condition_node instanceof Node) {
             return $context;
@@ -2323,11 +2309,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Returns a closure to analyze the conditions for match expressions for a match arm
      *
-     * @param Node|int|string|float $match_case_node
      * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}
      * @see self::createSwitchConditionAnalyzer() - Based on that but uses strict equality instead
      */
-    private function createMatchConditionAnalyzer($match_case_node): array
+    private function createMatchConditionAnalyzer(\ast\Node|float|int|string $match_case_node): array
     {
         $match_kind = ($match_case_node->kind ?? null);
         try {
@@ -2406,7 +2391,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     },
                 ];
             }
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // do nothing, we warn elsewhere
         }
         return self::NOOP_SWITCH_COND_ANALYZER;

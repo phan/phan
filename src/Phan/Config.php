@@ -1177,10 +1177,9 @@ class Config
     // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     /**
-     * @return mixed
      * @phan-hardcode-return-type
      */
-    public static function getValue(string $name)
+    public static function getValue(string $name): mixed
     {
         return self::$configuration[$name];
     }
@@ -1197,10 +1196,9 @@ class Config
     }
 
     /**
-     * @param string $name
-     * @param mixed $value
+     * Sets a configuration value and triggers any necessary side effects.
      */
-    public static function setValue(string $name, $value): void
+    public static function setValue(string $name, mixed $value): void
     {
         self::$configuration[$name] = $value;
         switch ($name) {
@@ -1432,10 +1430,7 @@ class Config
         return Paths::toAbsolutePath(self::getProjectRootDirectory(), $relative_path);
     }
 
-    /**
-     * @param mixed $value
-     */
-    private static function errSuffixGotType($value): string
+    private static function errSuffixGotType(mixed $value): string
     {
         return ", but got type '" . gettype($value) . "'";
     }

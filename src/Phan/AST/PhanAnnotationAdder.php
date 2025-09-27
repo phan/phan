@@ -199,7 +199,7 @@ class PhanAnnotationAdder
     /**
      * @param Node|array|int|string|float|bool|null $node
      */
-    public static function applyFull($node): void
+    public static function applyFull(\ast\Node|array|bool|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $closure = self::$closures_for_kind[$node->kind] ?? null;
@@ -223,7 +223,7 @@ class PhanAnnotationAdder
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function applyToScopeInner($node): void
+    private static function applyToScopeInner(\ast\Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $kind = $node->kind;

@@ -77,7 +77,7 @@ call_user_func(static function (): void {
                         return null;
                     }
                 }
-            } catch (Exception $_) {
+            } catch (Exception) {
                 continue;
             }
             //fwrite(STDERR, "name is: " . get_class($node->parent) . "\n");

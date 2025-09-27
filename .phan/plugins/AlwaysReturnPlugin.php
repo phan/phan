@@ -182,10 +182,9 @@ final class AlwaysReturnPlugin extends PluginV3 implements
     }
 
     /**
-     * @param Func|Method $func
      * @return ?Node - returns null if there's no statement list to analyze
      */
-    private static function getStatementListToAnalyze($func): ?Node
+    private static function getStatementListToAnalyze(Func|Method $func): ?Node
     {
         if (!$func->hasNode()) {
             return null;

@@ -356,7 +356,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                     $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false)
                 );
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             // ignore it.
         }
     }
@@ -398,7 +398,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $context,
                 $node
             ))->getMethod($method_name, false, true);
-        } catch (IssueException | NodeException $_) {
+        } catch (IssueException | NodeException) {
             // do nothing, PostOrderAnalysisVisitor should catch this
             return;
         }
@@ -440,7 +440,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $context,
                 $node
             ))->getMethod($method_name, true, true);
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Ignore IssueException, unexpected exceptions, etc.
             return;
         }

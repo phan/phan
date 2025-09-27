@@ -221,7 +221,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 $node,
                 false
             );
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return $this->context;
         }
 
@@ -271,7 +271,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
                 $node,
                 false
             );
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             return $this->context;
         }
 
@@ -750,7 +750,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     protected function emitIssue(
         string $issue_type,
         int $lineno,
-        ...$parameters
+        \Phan\Language\FQSEN|\Phan\Language\Type|\Phan\Language\UnionType|int|string ...$parameters
     ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,

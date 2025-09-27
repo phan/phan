@@ -426,7 +426,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     protected function emitIssue(
         string $issue_type,
         int $lineno,
-        ...$parameters
+        \Phan\Language\FQSEN|\Phan\Language\Type|\Phan\Language\UnionType|int|string ...$parameters
     ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,
@@ -892,7 +892,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
             return;
         }
-        $common_left_fields = $common_left_fields ?? [];
+        $common_left_fields ??= [];
         if ($common_left_fields === \array_values($common_left_fields) && $possible_right_fields === \array_values($possible_right_fields)) {
             foreach (\array_merge($left->getRealTypeSet(), $right->getRealTypeSet()) as $type) {
                 if ($type instanceof ArrayShapeType) {

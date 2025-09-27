@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+// Phan requires PHP 8.1 or newer
+if (PHP_VERSION_ID < 80100) {
+    // @phan-suppress-next-line PhanPluginRemoveDebugCall
+    fwrite(STDERR, "Phan requires PHP 8.1 or newer. Current version: " . PHP_VERSION . "\n");
+    exit(1);
+}
+
 if (!(file_exists(__DIR__ . '/../vendor/autoload.php') || file_exists(__DIR__ . '/../../../autoload.php'))) {
     // @phan-suppress-next-line PhanPluginRemoveDebugCall
     fwrite(

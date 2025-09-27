@@ -85,7 +85,7 @@ class FileRef implements \Serializable
         $n = \strlen($root_directory);
         if (\strncmp($path, $root_directory, $n) === 0) {
             if (\in_array($path[$n] ?? '', [\DIRECTORY_SEPARATOR, '/'], true)) {
-                $path = (string)\substr($path, $n + 1);
+                $path = \substr($path, $n + 1);
                 // Strip any extra beginning directory separators
                 $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
                 return $path;
@@ -101,7 +101,7 @@ class FileRef implements \Serializable
             $n = \strlen($root_directory_realpath);
             if (\strncmp($path, $root_directory_realpath, $n) === 0) {
                 if (\in_array($path[$n] ?? '', [\DIRECTORY_SEPARATOR, '/'], true)) {
-                    $path = (string)\substr($path, $n + 1);
+                    $path = \substr($path, $n + 1);
                     // Strip any extra beginning directory separators
                     $path = \ltrim($path, '/' . \DIRECTORY_SEPARATOR);
                     return $path;

@@ -91,7 +91,7 @@ class RedundantAssignmentPreAnalysisVisitor extends PluginAwarePreAnalysisVisito
         }
         try {
             $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr, false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         if (count($expr_type->getRealTypeSet()) !== 1) {

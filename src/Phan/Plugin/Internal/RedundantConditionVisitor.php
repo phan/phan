@@ -37,7 +37,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $var_node = $node->children['expr'];
         try {
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node, false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         if (!$type->hasRealTypeSet()) {
@@ -272,7 +272,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     }
                 }
             }
-        } catch (Error $_) {
+        } catch (Error) {
             return false;
         }
 
@@ -284,10 +284,10 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {
-                $left_type_fetcher = $left_type_fetcher ?? static function (Context $_) use ($left): UnionType {
+                $left_type_fetcher ??= static function (Context $_) use ($left): UnionType {
                     return $left;
                 };
-                $right_type_fetcher = $right_type_fetcher ?? static function (Context $_) use ($right): UnionType {
+                $right_type_fetcher ??= static function (Context $_) use ($right): UnionType {
                     return $right;
                 };
 
@@ -378,8 +378,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $left_node = null,
         $right_node = null
     ): void {
-        $left_node = $left_node ?? $node->children['left'];
-        $right_node = $right_node ?? $node->children['right'];
+        $left_node ??= $node->children['left'];
+        $right_node ??= $node->children['right'];
         $issue_args = [
             ASTReverter::toShortString($left_node),
             $left,
@@ -483,7 +483,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $var_node = $node->children['var'];
         try {
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node, false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         if (!$type->hasRealTypeSet()) {
@@ -576,7 +576,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         try {
             $type = UnionTypeVisitor::unionTypeFromNode($code_base, $this->context, $expr_node, false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         if (!$type->hasRealTypeSet()) {

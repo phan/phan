@@ -215,7 +215,7 @@ class MoreSpecificElementTypeVisitor extends PluginAwarePostAnalysisVisitor
         }
         try {
             $function = $this->context->getFunctionLikeInScope($this->code_base);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         if ($function->hasYield()) {
@@ -233,7 +233,7 @@ class MoreSpecificElementTypeVisitor extends PluginAwarePostAnalysisVisitor
             // Fetch the list of valid classes, and warn about any undefined classes.
             // (We have more specific issue types such as PhanNonClassMethodCall below, don't emit PhanTypeExpected*)
             $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Phan should already throw for this
             return;
         }

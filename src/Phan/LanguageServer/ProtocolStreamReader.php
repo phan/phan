@@ -103,7 +103,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                         // MessageBody::parse can throw an Error, maybe log an error?
                         try {
                             $msg = new Message(MessageBody::parse($this->buffer), $this->headers);
-                        } catch (Exception $_) {
+                        } catch (Exception) {
                             $msg = null;
                         }
                         if ($msg) {

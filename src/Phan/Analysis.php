@@ -111,7 +111,7 @@ class Analysis
         // TODO: Figure out why Phan doesn't suggest combining these catches except in language server mode
         try {
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (ParseError | CompileError | ParseException $_) {
+        } catch (ParseError | CompileError | ParseException) {
             return $context;
         }
 
@@ -378,7 +378,7 @@ class Analysis
                             $method = $code_base->getMethodByFQSEN($fqsen);
                             $method->setDependentReturnTypeClosure($closure);
 
-                            $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                            $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
                             if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
                                 continue;
                             }
@@ -431,7 +431,7 @@ class Analysis
                             $method = $class->getMethodByName($code_base, $method_name);
                             $method->addFunctionCallAnalyzer($closure, $plugin);
 
-                            $methods_by_defining_fqsen = $methods_by_defining_fqsen ?? $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                            $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
                             $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
                             if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
                                 continue;
@@ -482,7 +482,7 @@ class Analysis
             CLI::progress('classes', $i++ / count($classes), null);
             try {
                 $class->analyze($code_base);
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
                 continue;
             }
             AttributeAnalyzer::analyzeAttributesOfClass(
@@ -562,7 +562,7 @@ class Analysis
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
-        } catch (ParseException | ParseError | CompileError $_) {
+        } catch (ParseException | ParseError | CompileError) {
             // Issue::SyntaxError was already emitted.
             return $context;
         }

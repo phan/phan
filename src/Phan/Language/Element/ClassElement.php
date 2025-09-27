@@ -307,7 +307,7 @@ abstract class ClassElement extends AddressableElement
             if ($type_of_class_of_property->isSubclassOf($accessing_class_type, $code_base)) {
                 return true;
             }
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
         }
         return false;
     }

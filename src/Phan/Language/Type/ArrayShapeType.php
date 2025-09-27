@@ -618,7 +618,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             // Don't increase recursion_depth here, it's too easy to reach.
             try {
                 $expanded_field_type = $union_type->asExpandedTypesPreservingTemplate($code_base, $recursion_depth);
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
                 $expanded_field_type = MixedType::instance(false)->asPHPDocUnionType();
             }
             if ($union_type->isPossiblyUndefined()) {
@@ -941,7 +941,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     if (!$code_base->hasClassWithFQSEN($fqsen)) {
                         continue;
                     }
-                } catch (Exception $_) {
+                } catch (Exception) {
                     continue;
                 }
             } elseif ($type->isObjectWithKnownFQSEN()) {

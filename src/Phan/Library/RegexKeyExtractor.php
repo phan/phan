@@ -211,7 +211,7 @@ class RegexKeyExtractor
             throw new InvalidArgumentException("Failed to find match for '$start_chr'");
         }
 
-        $inner = (string)\substr($pattern, 1, $end_pos - 1);
+        $inner = \substr($pattern, 1, $end_pos - 1);
         if ($i !== false) {
             // Unescape '/x\/y/' as 'x/y'
             $inner = \str_replace('\\' . $start_chr, $start_chr, $inner);

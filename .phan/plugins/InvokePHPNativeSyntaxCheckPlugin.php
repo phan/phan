@@ -302,7 +302,7 @@ class InvokeExecutionPromise
     {
         try {
             while (strlen($file_contents) > 0) {
-                $bytes_written = with_disabled_phan_error_handler(/** @return int|false */ static function () use ($stream, $file_contents) {
+                $bytes_written = with_disabled_phan_error_handler(/** @return int|false */ static function () use ($stream, $file_contents): bool|int {
                     return @fwrite($stream, $file_contents);
                 });
                 if ($bytes_written === false) {

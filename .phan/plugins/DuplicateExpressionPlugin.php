@@ -165,7 +165,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         try {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: handle
             $result_representation = ASTReverter::toShortString(InferValue::computeBinaryOpResult($left, $right, $flags));
-        } catch (Error $_) {
+        } catch (Error) {
             $result_representation = '(unknown)';
         }
         $this->emitPluginIssue(
@@ -266,7 +266,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * This could be more permissive about what constants are allowed (e.g. user-defined constants, real constants like PI, etc.),
      * but that may cause more false positives.
      */
-    private static function resolveLiteralValue(Node $node)
+    private static function resolveLiteralValue(Node $node): \ast\Node|bool|null
     {
         if ($node->kind !== ast\AST_CONST) {
             return $node;
@@ -361,10 +361,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    /**
-     * @param int|string $true_node_hash
-     */
-    private function checkBinaryOpOfConditional(Node $cond_node, $true_node_hash): void
+    private function checkBinaryOpOfConditional(Node $cond_node, int|string $true_node_hash): void
     {
         if ($cond_node->flags !== ast\flags\BINARY_IS_NOT_IDENTICAL) {
             return;
@@ -382,10 +379,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    /**
-     * @param int|string $true_node_hash
-     */
-    private function checkUnaryOpOfConditional(Node $cond_node, $true_node_hash): void
+    private function checkUnaryOpOfConditional(Node $cond_node, int|string $true_node_hash): void
     {
         if ($cond_node->flags !== ast\flags\UNARY_BOOL_NOT) {
             return;
@@ -423,10 +417,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         return $node->kind === ast\AST_CONST && strcasecmp((string)($node->children['name']->children['name'] ?? ''), 'null') === 0;
     }
 
-    /**
-     * @param ?(Node|string|int|float) $x_node
-     */
-    private function warnDuplicateConditionalNullCoalescing(string $expr, $x_node): void
+    private function warnDuplicateConditionalNullCoalescing(string $expr, \ast\Node|float|int|null|string $x_node): void
     {
         $this->emitPluginIssue(
             $this->code_base,

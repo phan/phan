@@ -383,7 +383,7 @@ class CompletionResolver
             $insert_text = null;
             if (!CompletionRequest::useVSCodeCompletion()) {
                 if (\stripos($token, $incomplete_constant_name) === 0) {
-                    $insert_text = (string)\substr($token, \strlen($incomplete_constant_name));
+                    $insert_text = \substr($token, \strlen($incomplete_constant_name));
                     if (\preg_match('/[a-zA-Z]/', $incomplete_constant_name, $match)) {
                         $is_upper = $match[0] >= 'A' && $match[0] <= 'Z';
                         $insert_text = $is_upper ? \strtoupper($insert_text) : \strtolower($insert_text);

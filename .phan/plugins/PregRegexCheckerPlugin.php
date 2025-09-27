@@ -103,7 +103,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
             return;
         }
 
-        $inner = (string)\substr($pattern, 1, $end_pos - 1);
+        $inner = \substr($pattern, 1, $end_pos - 1);
         if ($i !== false) {
             // Unescape '/x\/y/' as 'x/y'
             $inner = \str_replace('\\' . $start_chr, $start_chr, $inner);
@@ -111,7 +111,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         foreach (self::tokenizeRegexParts($inner) as $part) {
             // If special handling of newlines is given, don't warn.
             // If PCRE_EXTENDED is given, this was likely a false positive (E.g. # can be a comment)
-            if ($part === '$' && !preg_match('/[mDx]/', (string) substr($pattern, $end_pos + 1))) {
+            if ($part === '$' && !preg_match('/[mDx]/', substr($pattern, $end_pos + 1))) {
                 yield ['PhanPluginPregRegexDollarAllowsNewline', 'Call to {FUNCTION} used \'$\' in {STRING_LITERAL}, which allows a newline character \'\n\' before the end of the string. Add D to qualifiers to forbid the newline, m to match any newline, or suppress this issue if this is deliberate'];
             }
         }
@@ -162,15 +162,12 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     }
 
     /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param Node|string|int|float $pattern
      * @return array<string,string>
      */
     private static function extractStringsFromStringOrArray(
         CodeBase $code_base,
         Context $context,
-        $pattern
+        \ast\Node|float|int|string $pattern
     ): array {
         if (\is_string($pattern)) {
             return [$pattern => $pattern];
@@ -221,7 +218,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         foreach ($all_matches as $match) {
             $key = $match[1];
             if ($key[0] === '{') {
-                $key = (string)\substr($key, 1, -1);
+                $key = \substr($key, 1, -1);
             }
             if ($key[0] >= '0' && $key[0] <= '9') {
                 // Edge case: Convert '09' to 9
@@ -235,7 +232,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
      * @param string[] $patterns 1 or more regex patterns
      * @param Node|string|int|float $replacement_node
      */
-    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node): void
+    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, \ast\Node|float|int|string $replacement_node): void
     {
         $replacement_templates = self::extractStringsFromStringOrArray($code_base, $context, $replacement_node);
         $pattern_keys = null;
@@ -244,7 +241,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         // > $replacement may contain references of the form \\n or $n, with the latter form being the preferred one.
         try {
             foreach ($replacement_templates as $replacement_template) {
-                $pattern_keys = $pattern_keys ?? self::computePatternKeys($patterns);
+                $pattern_keys ??= self::computePatternKeys($patterns);
                 $regex_group_keys = self::extractTemplateKeys($replacement_template);
                 foreach ($regex_group_keys as $key => $reference_string) {
                     if (!isset($pattern_keys[$key])) {
@@ -259,7 +256,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
                     }
                 }
             }
-        } catch (InvalidArgumentException $_) {
+        } catch (InvalidArgumentException) {
             // TODO: Is this warned about elsewhere?
             return;
         }

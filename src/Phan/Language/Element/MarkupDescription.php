@@ -169,7 +169,7 @@ class MarkupDescription
                 }
                 $checked_class_fqsens[$fqsen_string] = true;
                 return self::extractDescriptionFromDocCommentOfAncestorOfClassElement($element, $code_base);
-            } catch (Exception $_) {
+            } catch (Exception) {
                 // ignore
             }
         }
@@ -239,7 +239,7 @@ class MarkupDescription
                                 return "Construct an instance of `{$class->getFQSEN()}`.\n\n$class_description";
                             }
                         }
-                    } catch (Exception $_) {
+                    } catch (Exception) {
                     }
                 }
             } elseif ($element instanceof ConstantInterface) {
@@ -448,7 +448,7 @@ class MarkupDescription
         $line = \rtrim($line);
         $pos = \strpos($line, '*');
         if ($pos !== false) {
-            return (string)\substr($line, $pos + 1);
+            return \substr($line, $pos + 1);
         } else {
             return \ltrim($line, "\n\t ");
         }
@@ -513,7 +513,7 @@ class MarkupDescription
                 if ($line === '') {
                     continue;
                 }
-                $lines[$i] = (string)\substr($line, $min_whitespace);
+                $lines[$i] = \substr($line, $min_whitespace);
             }
         }
         return $lines;

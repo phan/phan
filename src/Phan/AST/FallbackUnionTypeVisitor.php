@@ -93,7 +93,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
     public static function unionTypeFromNode(
         CodeBase $code_base,
         Context $context,
-        $node
+        \ast\Node|float|int|string $node
     ): UnionType {
         if ($node instanceof Node) {
             return (new self($code_base, $context))->__invoke($node);
@@ -562,7 +562,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 $this->context,
                 $node
             ))->getConst();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return UnionType::empty();
         }
 
@@ -602,7 +602,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 return $union_type->eraseRealTypeSet();
             }
             return $union_type;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             // ignore, this should warn elsewhere
         }
 
@@ -651,7 +651,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
             }
 
             return $possible_types ?? UnionType::empty();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return UnionType::empty();
         }
     }
@@ -704,7 +704,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 }
             }
             return $possible_types ?? UnionType::empty();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return UnionType::empty();
         }
     }
@@ -745,7 +745,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
             }
             $method = $class->getMethodByName($this->code_base, $method_name);
             return $method->getUnionType();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return UnionType::empty();
         }
     }

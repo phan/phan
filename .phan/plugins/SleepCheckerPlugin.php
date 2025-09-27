@@ -109,10 +109,10 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param Node|int|string|float|null $node
+     * @param \ast\Node|int|string|float|null|array $node
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeStatementsOfSleep($node, array &$sleep_properties = []): void
+    private function analyzeStatementsOfSleep(\ast\Node|float|int|null|string|array $node, array &$sleep_properties = []): void
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
@@ -147,7 +147,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
      * @param int $lineno
      * @param array<string,true> $sleep_properties
      */
-    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties): void
+    private function analyzeReturnValue(\ast\Node|float|int|null|string $expr_node, int $lineno, array &$sleep_properties): void
     {
         $context = (clone $this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {

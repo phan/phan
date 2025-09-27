@@ -88,7 +88,7 @@ final class ClassStringType extends StringType
                 // Convert string arguments to the classes they represent
                 try {
                     $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($string);
-                } catch (\Exception $_) {
+                } catch (\Exception) {
                     continue;
                 }
                 // Include the type, which may or may not be undefined

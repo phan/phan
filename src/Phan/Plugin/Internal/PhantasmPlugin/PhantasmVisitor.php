@@ -41,7 +41,7 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $node
             ))->getClassConst();
-        } catch (Exception $_) {
+        } catch (Exception) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
             return;

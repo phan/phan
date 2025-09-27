@@ -88,7 +88,7 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $node
      * @return ?bool if this is the name of a boolean, the value. Otherwise, returns null.
      */
-    private static function getBoolConst($node): ?bool
+    private static function getBoolConst(\ast\Node|float|int|null|string $node): ?bool
     {
         if (!$node instanceof Node) {
             return null;
@@ -126,10 +126,7 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
         $this->suggestBoolSimplification($node, $node->children['cond'], !$value_if_true);
     }
 
-    /**
-     * @param Node|string|int|float $inner_expr
-     */
-    private function suggestBoolSimplification(Node $node, $inner_expr, bool $negate): void
+    private function suggestBoolSimplification(Node $node, \ast\Node|float|int|string $inner_expr, bool $negate): void
     {
         if (!self::isDefinitelyBool(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $inner_expr))) {
             return;

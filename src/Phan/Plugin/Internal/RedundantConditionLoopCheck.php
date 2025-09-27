@@ -197,7 +197,7 @@ class RedundantConditionLoopCheck
         if ($expr instanceof Node) {
             try {
                 $expr = (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr, false))->asSingleScalarValueOrNullOrSelf();
-            } catch (\Exception $_) {
+            } catch (\Exception) {
                 return [];
             }
         }

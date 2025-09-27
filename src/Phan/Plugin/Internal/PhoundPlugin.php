@@ -125,7 +125,7 @@ EOD
                 $this->context,
                 $node
             ))->getMethodList('__construct', false, false, true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'method');
@@ -142,7 +142,7 @@ EOD
                 $this->context,
                 $node
             ))->getMethodList($node->children['method'], false, false); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'method');
@@ -170,7 +170,7 @@ EOD
                 $this->context,
                 $node
             ))->getMethodList($node->children['method'], true, false); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'method');
@@ -187,7 +187,7 @@ EOD
                 $this->context,
                 $node
             ))->getClassConstList();
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'const');
@@ -204,7 +204,7 @@ EOD
                 $this->context,
                 $node
             ))->getPropertyList(true);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'prop');
@@ -221,7 +221,7 @@ EOD
                 $this->context,
                 $node
             ))->getPropertyList(false);
-        } catch (Exception $_) {
+        } catch (Exception) {
             return;
         }
         $this->genericVisitClassElements($elements, 'prop');

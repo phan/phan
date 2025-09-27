@@ -98,7 +98,7 @@ class Debug
         }
         try {
             return Parser::getKindName($kind);
-        } catch (LogicException $_) {
+        } catch (LogicException) {
             return "UNKNOWN_KIND($kind)";
         }
     }

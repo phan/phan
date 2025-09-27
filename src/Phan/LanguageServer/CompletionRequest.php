@@ -120,7 +120,7 @@ final class CompletionRequest extends NodeInfoRequest
                 $insert_text = '$' . $element->getName();
             }
             if (is_string($prefix) && is_string($insert_text) && \strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
-                $insert_text = (string)\substr($insert_text, strlen($prefix));
+                $insert_text = \substr($insert_text, strlen($prefix));
             }
         }
         $item->insertText = $insert_text;

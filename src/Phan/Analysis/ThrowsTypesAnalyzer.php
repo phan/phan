@@ -35,7 +35,7 @@ class ThrowsTypesAnalyzer
     ): void {
         try {
             self::analyzeThrowsTypesInner($code_base, $method);
-        } catch (RecursionDepthException $_) {
+        } catch (RecursionDepthException) {
         }
     }
 
@@ -166,7 +166,7 @@ class ThrowsTypesAnalyzer
 
         try {
             $overridden_method_list = $method->getOverriddenMethods($code_base);
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             return;
         }
 

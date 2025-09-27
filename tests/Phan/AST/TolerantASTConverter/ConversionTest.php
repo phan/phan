@@ -60,7 +60,7 @@ final class ConversionTest extends BaseTest
         try {
             ast\parse_code('', $ast_version);
             return true;
-        } catch (\LogicException $_) {
+        } catch (\LogicException) {
             return false;
         }
     }
@@ -109,9 +109,9 @@ final class ConversionTest extends BaseTest
     }
 
     /**
-     * @param ast\Node|int|string|float|null $node
+     * @param \ast\Node|int|string|float|null|array $node
      */
-    private static function normalizeOriginalAST($node): void
+    private static function normalizeOriginalAST(\ast\Node|float|int|null|string|array $node): void
     {
         if ($node instanceof ast\Node) {
             $kind = $node->kind;

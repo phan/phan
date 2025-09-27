@@ -339,7 +339,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
 
             return $method->isOverride() || $method->isOverriddenByAnother();
-        } catch (Exception $_) {
+        } catch (Exception) {
             // should not happen
             return false;
         }
@@ -386,7 +386,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             try {
                 $class = $context->getClassInScope($this->code_base);
                 return $class->isFinal();
-            } catch (CodeBaseException $_) {
+            } catch (CodeBaseException) {
             }
         }
         return false;
