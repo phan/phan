@@ -800,11 +800,13 @@ class ParameterTypesAnalyzer
                 if ($overridden_is_void && $current_is_empty && !$overridden_method->isPHPInternal()) {
                     $is_exception_to_rule = false;
                 } else {
-                    // Empty return types cannot override specific return types, except for tentative return types
-                    if ($current_is_empty && !$overridden_return_union_type->isEmpty() && !$overridden_method->hasTentativeReturnType()) {
+                    // Empty return types cannot override specific return types, except for tentative return types on real methods
+                    if ($current_is_empty && !$overridden_return_union_type->isEmpty() &&
+                        !($overridden_method->hasTentativeReturnType() && !$method->isFromPHPDoc() && !$overridden_method->isFromPHPDoc())) {
                         $is_exception_to_rule = false;
                     } else {
-                        $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
+                        $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) ||
+                                                ($overridden_method->hasTentativeReturnType() && !$method->isFromPHPDoc() && !$overridden_method->isFromPHPDoc())) ||
                             ($return_union_type->hasIterable($code_base) &&
                             ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
                              $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
