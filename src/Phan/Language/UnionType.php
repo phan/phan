@@ -4675,16 +4675,15 @@ class UnionType implements Serializable, Stringable
      */
     private static function computeLatestFunctionSignatureMap(): array
     {
-        // Load the base PHP 8.0 map and apply PHP 8.1 delta to make 8.1 the new base
+        // Load the base PHP 8.1 map (updated from PHP 8.0 baseline in PHP 8.1+ migration)
         $map = [];
         $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMap.php');
         foreach ($map_raw as $key => $value) {
             $map[\strtolower($key)] = $value;
         }
 
-        // Apply PHP 8.1 delta to make it the new baseline since we require PHP 8.1+
-        $php81_delta = require(__DIR__ . '/Internal/FunctionSignatureMap_php81_delta.php');
-        return self::applyDeltaToGetNewerSignatures($map, $php81_delta);
+        // Base map is now PHP 8.1, so no delta application needed for the latest version
+        return $map;
     }
 
     /**
@@ -4706,7 +4705,7 @@ class UnionType implements Serializable, Stringable
             static $map_82;
             return $map_82 ?? ($map_82 = self::computeLatestRealFunctionSignatureMap('_php82'));
         }
-        // For PHP 8.0 and below, default to PHP 8.1 since we require PHP 8.1+
+        // For PHP 8.1 and below, default to PHP 8.1 since we require PHP 8.1+
         static $map_81;
         return $map_81 ?? ($map_81 = self::computeLatestRealFunctionSignatureMap('_php81'));
     }

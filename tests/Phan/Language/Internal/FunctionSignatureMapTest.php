@@ -95,7 +95,6 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTest
      */
     public function testRealFunctionSignatureMap(int $php_version_id): void
     {
-        $this->markTestSkipped('Real function signature map test needs fixing after PHP 8.1 baseline migration - many functions missing from merged signature maps');
         $map = UnionType::internalFunctionSignatureMap($php_version_id);
         // @phan-suppress-next-line PhanAccessMethodInternal
         $real_map = UnionType::getLatestRealFunctionSignatureMap($php_version_id);
