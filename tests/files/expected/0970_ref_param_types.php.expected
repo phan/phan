@@ -1,6 +1,13 @@
+%s:6 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
+%s:8 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:13 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type 1|2|3
+%s:20 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
+%s:23 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:29 PhanDebugAnnotation @phan-debug-var requested for variable $var2 - it has union type 4|5|6
+%s:35 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
+%s:38 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:44 PhanDebugAnnotation @phan-debug-var requested for variable $var3 - it has union type 7|8|9
 %s:60 PhanDebugAnnotation @phan-debug-var requested for variable $var4 - it has union type 10|11|12
 %s:71 PhanDebugAnnotation @phan-debug-var requested for variable $var5 - it has union type 13|14
+%s:90 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:95 PhanDebugAnnotation @phan-debug-var requested for variable $var6 - it has union type 15|16

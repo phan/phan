@@ -1,1 +1,3 @@
+%s:10 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
+%s:24 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:28 PhanCoalescingNeverNull Using non-null $info of type array{0:2}|array{} as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.

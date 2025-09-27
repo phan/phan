@@ -1,2 +1,4 @@
+%s:16 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
+%s:32 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
 %s:37 PhanRedundantCondition Redundant attempt to cast $a of type 'exception'|'x' to truthy
 %s:63 PhanRedundantCondition Redundant attempt to cast $a of type 'other'|'x' to truthy
