@@ -1,5 +1,0 @@
-%s:19 PhanPluginUnknownArrayFunctionParamType Function testTruePositive1() has a parameter type of array for $foo, but does not specify any key types or value types
-%s:30 PhanPluginUnknownFunctionParamType Function testTruePositive2() has no declared or inferred parameter type for $foo
-%s:50 PhanPluginUnknownArrayMethodParamType Method \NS50\TestWithMethods::testTruePositive1 has a parameter type of array for $foo, but does not specify any key types or value types
-%s:61 PhanPluginUnknownMethodParamType Method \NS50\TestWithMethods::testTruePositive2 has no declared or inferred parameter type for $foo
-
