@@ -1,2 +1,3 @@
 src/204_redundant_assignment.php:3 PhanUnreferencedClass Possibly zero references to class \TestClass
 src/204_redundant_assignment.php:4 PhanUnreferencedPrivateMethod Possibly zero references to private method \TestClass::task()
+src/204_redundant_assignment.php:9 PhanUnusedVariableDeclarationCaughtException Variable $_ for caught exception is declared as unused. Omit the variable instead.
