@@ -366,9 +366,9 @@ final class UnionTypeTest extends BaseTest
 
     public function testTemplateNullableTypes(): void
     {
-        $this->assertRegExp('/^' . Type::type_regex . '$/', 'TypeTestClass<A1|null,B2|null>', 'type_regex does not support nested pipes');
-        $this->assertRegExp('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null>', 'type_regex_or_this does not support nested pipes');
-        $this->assertRegExp('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null,B2|null>', 'type_regex_or_this does not support nested pipes');
+        $this->assertMatchesRegularExpression('/^' . Type::type_regex . '$/', 'TypeTestClass<A1|null,B2|null>', 'type_regex does not support nested pipes');
+        $this->assertMatchesRegularExpression('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null>', 'type_regex_or_this does not support nested pipes');
+        $this->assertMatchesRegularExpression('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null,B2|null>', 'type_regex_or_this does not support nested pipes');
         $union_type = self::makePHPDocUnionType('TypeTestClass<A1,B2|null>');
         $this->assertSame(1, $union_type->typeCount());
         $types = $union_type->getTypeSet();
@@ -463,7 +463,7 @@ final class UnionTypeTest extends BaseTest
      */
     public function testUnparseableUnionType(string $type): void
     {
-        $this->assertNotRegExp(self::VALID_UNION_TYPE_REGEX, $type, "'$type' should be unparseable");
+        $this->assertDoesNotMatchRegularExpression(self::VALID_UNION_TYPE_REGEX, $type, "'$type' should be unparseable");
     }
 
     /** @return list<array{0:string}> */

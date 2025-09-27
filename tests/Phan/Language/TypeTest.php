@@ -50,7 +50,7 @@ final class TypeTest extends CodeBaseAwareTest
 {
     private function makePHPDocType(string $type_string): Type
     {
-        $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string'");
+        $this->assertMatchesRegularExpression('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string'");
         return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC, $this->code_base);
     }
 
@@ -67,7 +67,7 @@ final class TypeTest extends CodeBaseAwareTest
      */
     public function assertParsesAsType(Type $expected_type, string $type_string): void
     {
-        $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string, "Failed to parse '$type_string'");
+        $this->assertMatchesRegularExpression(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string, "Failed to parse '$type_string'");
         $this->assertSameType($expected_type, self::makePHPDocType($type_string));
     }
 
@@ -355,7 +355,7 @@ final class TypeTest extends CodeBaseAwareTest
 
     private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string): void
     {
-        $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string, "Failed to parse '$union_type_string'");
+        $this->assertMatchesRegularExpression(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
         $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type), "expected closure/callable class for $normalized_type_string");
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
@@ -789,8 +789,8 @@ final class TypeTest extends CodeBaseAwareTest
      */
     public function testArrayShape(string $normalized_union_type_string, string $type_string): void
     {
-        $this->assertRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
-        $this->assertRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
+        $this->assertMatchesRegularExpression('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
+        $this->assertMatchesRegularExpression('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
         $actual_type = self::makePHPDocType($type_string);
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         $this->assertSame($normalized_union_type_string, $expected_flattened_type->__toString());
@@ -867,8 +867,8 @@ final class TypeTest extends CodeBaseAwareTest
     /** @dataProvider unparsableTypeProvider */
     public function testUnparsableType(string $type_string): void
     {
-        $this->assertNotRegExp('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
-        $this->assertNotRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
+        $this->assertDoesNotMatchRegularExpression('@^' . Type::type_regex . '$@', $type_string, "Failed to parse '$type_string' with type_regex");
+        $this->assertDoesNotMatchRegularExpression('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
     /** @return array<int,array> */

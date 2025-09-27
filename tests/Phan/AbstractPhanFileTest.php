@@ -158,7 +158,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
             $expected_output = \trim(\file_get_contents($expected_file_path));
         }
         if (!in_array(\basename($expected_file_path), self::WHITELIST, true)) {
-            $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
+            $this->assertDoesNotMatchRegularExpression('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
         }
 
         // Overlay any test-specific config modifiers
@@ -257,7 +257,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         }
          */
 
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             $wanted_re_full,
             $output,
             "Unexpected output in {$test_file_list[0]}"
