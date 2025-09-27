@@ -1,1 +1,3 @@
-%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $variableName of type 'testVariable' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
+%s:9 PhanUndeclaredFunction%SCall to undeclared function \each()%S
+%s:10 PhanUndeclaredFunction%SCall to undeclared function \each()%S
+%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is $variableName of type 'testVariable' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)%S

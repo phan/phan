@@ -794,9 +794,10 @@ class ParameterTypesAnalyzer
                 //
                 // TODO: Narrow this to check for non-objects?
                 // Special case: void return types cannot be overridden by empty return types
+                // BUT only for user-defined methods, not internal methods (implementing interfaces is OK)
                 $overridden_is_void = $overridden_return_union_type->isVoidType();
                 $current_is_empty = $return_union_type->isEmpty();
-                if ($overridden_is_void && $current_is_empty) {
+                if ($overridden_is_void && $current_is_empty && !$overridden_method->isPHPInternal()) {
                     $is_exception_to_rule = false;
                 } else {
                     $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
