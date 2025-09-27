@@ -65,21 +65,6 @@
             <directory>tests/Phan/Library</directory>
             <directory>tests/Phan/Output</directory>
         </testsuite>
-        <testsuite name="PHP70Test">
-            <file>tests/Phan/PHP70Test.php</file>
-        </testsuite>
-        <testsuite name="PHP72Test">
-            <file>tests/Phan/PHP72Test.php</file>
-        </testsuite>
-        <testsuite name="PHP73Test">
-            <file>tests/Phan/PHP73Test.php</file>
-        </testsuite>
-        <testsuite name="PHP74Test">
-            <file>tests/Phan/PHP74Test.php</file>
-        </testsuite>
-        <testsuite name="PHP80Test">
-            <file>tests/Phan/PHP80Test.php</file>
-        </testsuite>
         <testsuite name="PHP81Test">
             <file>tests/Phan/PHP81Test.php</file>
         </testsuite>
