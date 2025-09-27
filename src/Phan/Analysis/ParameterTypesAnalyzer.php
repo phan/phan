@@ -789,14 +789,21 @@ class ParameterTypesAnalyzer
                 //
                 // php 7.4 adds https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.type-variance
                 //
-                // For example, allow `foo(): SubClass` to override `foo(): BaseClass`
+                // For return types (covariant): allow `foo(): SubClass` to override `foo(): BaseClass`
                 // in php 8.1, allow `foo(): never` to override any base type
                 //
                 // TODO: Narrow this to check for non-objects?
-                $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
-                    ($return_union_type->hasIterable($code_base) &&
-                    ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
-                     $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
+                // Special case: void return types cannot be overridden by empty return types
+                $overridden_is_void = $overridden_return_union_type->isVoidType();
+                $current_is_empty = $return_union_type->isEmpty();
+                if ($overridden_is_void && $current_is_empty) {
+                    $is_exception_to_rule = false;
+                } else {
+                    $is_exception_to_rule = ($return_union_type->isStrictSubtypeOf($code_base, $overridden_return_union_type) || $overridden_method->hasTentativeReturnType()) ||
+                        ($return_union_type->hasIterable($code_base) &&
+                        ($overridden_return_union_type->hasType(IterableType::instance(true)) ||
+                         $overridden_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable()));
+                }
                 if (!$is_exception_to_rule) {
                     $is_possibly_compatible = false;
 
