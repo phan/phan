@@ -20,12 +20,7 @@ else
     DOCKER_LABEL="php"
 fi
 
-if [[ "$PHP_VERSION" == 7.2 ]]; then
-    # `buster` is not available for 7.2 anymore, so `alpine` need to be used for 7.2
-    DOCKER_FILE="tests/docker/Dockerfile-alpine"
-else
-    DOCKER_FILE="tests/docker/Dockerfile"
-fi
+DOCKER_FILE="tests/docker/Dockerfile"
 
 DOCKER_IMAGE="phan-test-runner:$DOCKER_LABEL"
 docker build --network=host --build-arg="PHP_IMAGE=$PHP_IMAGE" --build-arg="PHP_VERSION=$PHP_VERSION" --tag="$DOCKER_IMAGE" -f $DOCKER_FILE .
