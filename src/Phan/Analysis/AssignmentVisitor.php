@@ -199,7 +199,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $node
             ))->getMethod($method_name, false, true);
             $this->checkAssignmentToFunctionResult($node, [$method]);
-        } catch (Exception $_) {
+        } catch (Exception) {
             // ignore it
         }
         return $this->context;
@@ -277,7 +277,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $function->getUnionType()
                 );
             }
-        } catch (CodeBaseException $_) {
+        } catch (CodeBaseException) {
             // ignore it.
         }
     }
@@ -445,9 +445,14 @@ class AssignmentVisitor extends AnalysisVisitor
                     );
                     $element_type = $get_fallback_element_type();
                 } else {
-                    if ($element_type->hasRealTypeSet()) {
+                    // At this point, $element_type must be UnionType (null and false cases handled above)
+                    if (!($element_type instanceof UnionType)) {
+                        // This should not happen, but handle it safely
+                        $element_type = $get_fallback_element_type();
+                    } elseif ($element_type->hasRealTypeSet()) {
                         $element_type = self::withComputedRealUnionType($element_type, $this->right_type, function (UnionType $new_right_type) use ($key_value): UnionType {
-                            return UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($new_right_type, $key_value, false, $this->code_base) ?: UnionType::empty();
+                            $result = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($new_right_type, $key_value, false, $this->code_base);
+                            return $result instanceof UnionType ? $result : UnionType::empty();
                         });
                     }
                 }
@@ -455,6 +460,10 @@ class AssignmentVisitor extends AnalysisVisitor
                 $element_type = $get_fallback_element_type();
             }
 
+            if (!($element_type instanceof UnionType)) {
+                // This should not happen, but handle it safely
+                $element_type = $get_fallback_element_type();
+            }
             $this->analyzeValueNodeOfShapedArray($element_type, $child_node->children['value']);
         }
 
@@ -481,12 +490,9 @@ class AssignmentVisitor extends AnalysisVisitor
         return $inferred_type->withRealTypeSet($real_inferred_type->getTypeSet());
     }
 
-    /**
-     * @param Node|string|int|float $value_node
-     */
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
-        $value_node
+        \ast\Node|float|int|string $value_node
     ): void {
         if (!$value_node instanceof Node) {
             return;
@@ -525,7 +531,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Set the element type on each element of
                 // the list
                 $this->analyzeSetUnionType($property, $element_type, $value_node);
-            } catch (UnanalyzableException | NodeException $_) {
+            } catch (UnanalyzableException | NodeException) {
                 // Ignore it. There's nothing we can do.
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -556,7 +562,7 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzeSetUnionType(
         TypedElementInterface $element,
         UnionType $element_type,
-        $node
+        \ast\Node|float|int|null|string $node
     ): void {
         // Let the caller warn about possibly undefined offsets, e.g. ['field' => $value] = ...
         // TODO: Convert real types to nullable?
@@ -574,15 +580,13 @@ class AssignmentVisitor extends AnalysisVisitor
      * when typed properties could be used.
      *
      * Static version of analyzeSetUnionType
-     *
-     * @param Node|string|int|float $node
      */
     public static function analyzeSetUnionTypeInContext(
         CodeBase $code_base,
         Context $context,
         TypedElementInterface $element,
         UnionType $element_type,
-        $node
+        \ast\Node|float|int|string $node
     ): void {
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
@@ -608,7 +612,7 @@ class AssignmentVisitor extends AnalysisVisitor
         Context $context,
         PassByReferenceVariable $reference_element,
         UnionType $new_type,
-        $node
+        \ast\Node|float|int|string $node
     ): void {
         $element = $reference_element->getElement();
         while ($element instanceof PassByReferenceVariable) {
@@ -755,7 +759,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Set the element type on each element of
                     // the list
                     $this->analyzeSetUnionType($property, $element_type, $value_node);
-                } catch (UnanalyzableException | NodeException $_) {
+                } catch (UnanalyzableException | NodeException) {
                     // Ignore it. There's nothing we can do.
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -783,7 +787,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param int|false $expect_int_keys_lineno
      * @param int|false $expect_string_keys_lineno
      */
-    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno): void
+    private function checkMismatchArrayDestructuringKey(bool|int $expect_int_keys_lineno, bool|int $expect_string_keys_lineno): void
     {
         if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
             $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($this->right_type);
@@ -968,7 +972,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['expr']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT, Issue::TypeExpectedObjectPropAccess);
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it.
             //
@@ -1049,7 +1053,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             try {
                 return $this->analyzePropAssignment($class_with_property, $property, $node);
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
                 return $this->context;
             }
         }
@@ -1067,7 +1071,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 ))->getOrCreateProperty($property_name, false);
 
                 $this->addTypesToProperty($property, $node);
-            } catch (\Exception $_) {
+            } catch (\Exception) {
                 // swallow it
             }
         } elseif (\count($class_list) > 0) {
@@ -1586,7 +1590,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             //
@@ -1621,7 +1625,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
             try {
                 return $this->analyzePropAssignment($clazz, $property, $node);
-            } catch (RecursionDepthException $_) {
+            } catch (RecursionDepthException) {
                 return $this->context;
             }
         }
@@ -1818,7 +1822,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $this->code_base,
                             $this->context
                         );
-                    } catch (IssueException | NodeException $_) {
+                    } catch (IssueException | NodeException) {
                         // Hopefully caught elsewhere
                     }
                 }
@@ -2005,7 +2009,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $map_type_set = static function (array $type_set) use ($assign_type, &$can_cast): array {
             foreach ($type_set as $i => $type) {
                 if ($type instanceof ListType) {
-                    $result = ($can_cast[0] = ($can_cast[0] ?? $assign_type->hasTypeMatchingCallback(static function (Type $other_type): bool {
+                    $can_cast[0] ??= $assign_type->hasTypeMatchingCallback(static function (Type $other_type): bool {
                         if (!$other_type instanceof ArrayType) {
                             return false;
                         }
@@ -2017,13 +2021,14 @@ class AssignmentVisitor extends AnalysisVisitor
                             return true;
                         }
                         return false;
-                    })));
+                    });
+                    $result = $can_cast[0];
                     if ($result) {
                         continue;
                     }
                     $type_set[$i] = NonEmptyGenericArrayType::fromElementType($type->genericArrayElementType(), $type->isNullable(), $type->getKeyType());
                 } elseif ($type instanceof GenericArrayType) {
-                    $result = ($can_cast[1] = ($can_cast[1] ?? $assign_type->hasTypeMatchingCallback(static function (Type $other_type): bool {
+                    $can_cast[1] ??= $assign_type->hasTypeMatchingCallback(static function (Type $other_type): bool {
                         if (!$other_type instanceof ArrayType) {
                             return false;
                         }
@@ -2035,7 +2040,8 @@ class AssignmentVisitor extends AnalysisVisitor
                             return true;
                         }
                         return false;
-                    })));
+                    });
+                    $result = $can_cast[1];
                     if (!$result) {
                         continue;
                     }

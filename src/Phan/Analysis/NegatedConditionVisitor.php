@@ -335,7 +335,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
 
@@ -494,7 +494,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it
         }
 
@@ -833,11 +833,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
 
         $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
-        if (!$dim_union_type) {
+        if ($dim_union_type === null || $dim_union_type === false) {
             // There are other types, this dimension does not exist yet.
             // Whether or not the union type already has array shape types, don't change the type
             return $union_type;
         }
+        // At this point, $dim_union_type must be UnionType
         if ($remove_offset) {
             return $union_type->withoutArrayShapeField($dim_value);
         } else {
@@ -970,7 +971,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
         $union_type = $variable->getUnionType();
         $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
-        if (!$dim_union_type) {
+        if ($dim_union_type === null || $dim_union_type === false) {
             // There are other types, this dimension does not exist yet
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return $context;
@@ -982,7 +983,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $variable
             );
             // TODO finish
-        } elseif ($dim_union_type->containsNullableOrUndefined() || $dim_union_type->containsFalsey()) {
+        }
+        // At this point, $dim_union_type must be UnionType
+        if (!($dim_union_type instanceof UnionType)) {
+            // This should not happen, but handle it safely
+            return $context;
+        }
+        if ($dim_union_type->containsNullableOrUndefined() || $dim_union_type->containsFalsey()) {
             if (!$non_nullable) {
                 // The offset in question already exists in the array shape type, and we won't be changing it.
                 // (E.g. array_key_exists('key', $x) where $x is array{key:?int,other:string})

@@ -192,6 +192,151 @@ Phan configuration is in `.phan/config.php`. Key settings:
 3. Use `./dump_ast.php` to inspect AST structure
 4. Check context state with `$this->context->getDebugRepresentation()`
 
+### Debugging Failing Tests
+
+When Phan tests fail, use this systematic approach to diagnose and fix issues:
+
+#### 1. Understanding Test Structure
+```bash
+# Test files are organized in tests/files/src/ with corresponding expected output
+tests/files/src/0540_invalid_method_name.php      # Test case
+tests/files/expected/0540_invalid_method_name.php.expected  # Expected warnings
+
+# Run specific test to see actual vs expected output
+./vendor/bin/phpunit --filter="testFiles.*0540_invalid_method_name"
+```
+
+#### 2. Analyzing Test Failures
+When tests fail, examine:
+- **Expected output format**: Uses `%s` placeholders for file paths in `.expected` files
+- **Line numbers**: Critical for matching expected warnings to actual code lines
+- **Issue types**: Must match exactly (e.g., `PhanTypeInvalidCallableMethodName`)
+- **Error messages**: Complete message text must match expected format
+
+**Example failure analysis:**
+```bash
+# Failed assertion shows exact mismatch
+Failed asserting that 'actual_output' matches PCRE pattern "/expected_regex/"
+
+# Key patterns to identify:
+- Missing expected warnings (test expects warnings that aren't generated)
+- Extra warnings (test generates warnings not in expected output)
+- Wrong line numbers (warnings on different lines than expected)
+- Incorrect issue types (wrong PhanXxx error type)
+```
+
+#### 3. Common Test Failure Patterns
+
+**Pattern 1: Missing Expected Warnings**
+- **Cause**: Code changes broke the analysis that should emit warnings
+- **Debug**: Check if the analysis visitor is being called for the relevant node types
+- **Fix**: Ensure analysis logic correctly identifies the problematic patterns
+
+**Pattern 2: Extra Warnings (False Positives)**
+- **Cause**: Analysis is too broad and flagging valid code
+- **Debug**: Check if conditions are too permissive
+- **Fix**: Add more specific checks to avoid false positives
+
+**Pattern 3: Wrong Line Numbers**
+- **Cause**: Analysis is emitting warnings at wrong location
+- **Debug**: Check `$node->lineno` vs `$context->getLineNumberStart()`
+- **Fix**: Use appropriate line number source for the warning
+
+**Pattern 4: Wrong Issue Types**
+- **Cause**: Emitting wrong issue type for the condition
+- **Debug**: Check `Issue::` constants being used
+- **Fix**: Use correct issue type that matches expected output
+
+#### 4. Debugging Strategies
+
+**Strategy 1: Isolate the Problem**
+```bash
+# Run just the failing test to focus on the issue
+./vendor/bin/phpunit --filter="testFiles.*problem_test"
+
+# Run Phan directly on the test file to see raw output
+./phan --target-php-version 8.4 tests/files/src/problem_test.php
+```
+
+**Strategy 2: Compare Expected vs Actual**
+```bash
+# View expected output
+cat tests/files/expected/problem_test.php.expected
+
+# Get actual output and compare
+./phan tests/files/src/problem_test.php 2>&1 | diff - tests/files/expected/problem_test.php.expected
+```
+
+**Strategy 3: Trace Analysis Flow**
+- Add debug output in relevant visitor methods
+- Use `error_log()` to trace execution flow
+- Check if the right visitor methods are being called for the AST nodes
+
+**Strategy 4: Verify Context**
+- Check current context scope and variables
+- Verify node structure with `./dump_ast.php`
+- Ensure proper parent-child relationships in AST
+
+#### 5. Type System Issues
+
+When dealing with type-related test failures:
+
+**Understanding Type Flow:**
+- Method return types can be `UnionType|bool|null`
+- Calling code may expect only `UnionType|null`
+- Add explicit type checks before method calls on union types
+
+**Common Type Fixes:**
+```php
+// Before: Assumes $result is always UnionType
+if ($result->hasRealTypeSet()) { ... }
+
+// After: Defensive type checking
+if ($result instanceof UnionType && $result->hasRealTypeSet()) { ... }
+```
+
+#### 6. Test-Driven Development Workflow
+
+1. **Write test first**: Create test case with expected warnings
+2. **Run test**: Confirm it fails with current implementation
+3. **Implement fix**: Add analysis logic to emit expected warnings
+4. **Verify fix**: Ensure test passes and no regressions
+5. **Run full suite**: Check that other tests still pass
+
+#### 7. Common Pitfalls
+
+**Redundant Conditions:**
+- Phan flags redundant type checks after earlier validation
+- Solution: Remove redundant `is_string()` checks when type is already confirmed
+
+**Control Flow Analysis:**
+- Phan tracks type changes through conditional branches
+- Consider all possible execution paths when adding type checks
+
+**AST Node Handling:**
+- Different node types (`AST_ARRAY_ELEM` vs `AST_VAR`) need different handling
+- Extract actual values from array elements before processing
+
+**Scope and Context:**
+- Analysis context affects what variables and types are available
+- Ensure proper context is passed to analysis methods
+
+#### 8. Self-Analysis Warnings
+
+When Phan reports warnings about its own code:
+```bash
+# Check specific warnings
+./phan --target-php-version 8.4 2>&1 | grep "PhanTypeMismatch"
+
+# Focus on specific files
+./phan src/Phan/AST/UnionTypeVisitor.php 2>&1 | grep "PhanRedundantCondition"
+```
+
+Fix these by:
+- Adding defensive type checking
+- Removing redundant conditions after earlier validation
+- Ensuring method signatures match actual usage
+
 ## Important Notes
 
 - **php-ast Extension Required**: Version 1.1.3+ needed for PHP 8.4 analysis

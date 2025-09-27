@@ -223,7 +223,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A new or an unchanged context resulting from
      * analyzing the short-circuiting logical and.
      */
-    private function analyzeShortCircuitingAnd($left, $right): Context
+    private function analyzeShortCircuitingAnd(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
@@ -249,7 +249,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * analyzing the short-circuiting logical or.
      * @suppress PhanSuspiciousTruthyString deliberate check
      */
-    private function analyzeShortCircuitingOr($left, $right): Context
+    private function analyzeShortCircuitingOr(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
     {
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
@@ -514,7 +514,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * @param bool $non_nullable if an offset is created, will it be non-nullable?
      */
-    private function withSetArrayShapeTypes(UnionType $union_type, $dim_node, Context $context, bool $non_nullable): UnionType
+    private function withSetArrayShapeTypes(UnionType $union_type, \ast\Node|bool|float|int|string $dim_node, Context $context, bool $non_nullable): UnionType
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
@@ -523,13 +523,19 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
 
         $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value, false, $this->code_base);
-        if (!$dim_union_type) {
+        if ($dim_union_type === null || $dim_union_type === false) {
             // There are other types, this dimension does not exist yet
             if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
                 return $union_type;
             }
             return ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asPHPDocUnionType());
-        } elseif ($dim_union_type->containsNullableOrUndefined()) {
+        }
+        // At this point, $dim_union_type must be UnionType
+        if (!($dim_union_type instanceof UnionType)) {
+            // This should not happen, but handle it safely
+            return $union_type;
+        }
+        if ($dim_union_type->containsNullableOrUndefined()) {
             if (!$non_nullable && !$dim_union_type->isPossiblyUndefined()) {
                 // The offset in question already exists in the array shape type, and we won't be changing it.
                 // (E.g. array_key_exists('key', $x) where $x is array{key:?int,other:string})
@@ -648,7 +654,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it
         }
 
@@ -856,7 +862,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             try {
                 $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
-            } catch (FQSENException $_) {
+            } catch (FQSENException) {
                 throw new IssueException(Issue::fromType(Issue::TypeComparisonToInvalidClass)(
                     $context->getFile(),
                     $context->getLineNumberStart(),
@@ -1118,7 +1124,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $_) {
+        } catch (\Exception) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
 

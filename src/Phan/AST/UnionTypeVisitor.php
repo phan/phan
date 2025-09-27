@@ -154,7 +154,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public static function unionTypeFromNode(
         CodeBase $code_base,
         Context $context,
-        $node,
+        \ast\Node|bool|float|int|null|string $node,
         bool $should_catch_issue_exception = true
     ): UnionType {
         if (!($node instanceof Node)) {
@@ -822,9 +822,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param int|float|string|Node $node
+     * Returns the union type from a literal value or constant expression.
      */
-    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node): ?UnionType
+    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node): ?UnionType
     {
         if ($node instanceof Node) {
             // TODO: There are a lot more types of expressions that have known union types that this doesn't handle.
@@ -832,7 +832,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (\in_array($node->kind, [\ast\AST_CONST, \ast\AST_CLASS_CONST, \ast\AST_CLASS_NAME], true)) {
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node, false);
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     return null;
                 }
             }
@@ -845,9 +845,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromObjectExtended($result)->asRealUnionType();
         }
         // Otherwise, this is an int/float/string.
-        if (!is_scalar($node)) {
-            throw new TypeError('node must be Node or scalar');
-        }
         return Type::fromObject($node)->asRealUnionType();
     }
 
@@ -892,9 +889,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param int|float|string|Node $cond
+     * Checks if a condition node or literal value is unconditionally truthy or falsy.
      */
-    public static function checkCondUnconditionalTruthiness($cond): ?bool
+    public static function checkCondUnconditionalTruthiness(\ast\Node|float|int|string $cond): ?bool
     {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
@@ -917,10 +914,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Otherwise, this is an int/float/string.
         // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
         // (e.g. "0" and 0.0 and '' are false)
-        if (!is_scalar($cond)) {
-            // Phan should have emitted a PhanSyntaxError elsewhere
-            return null;
-        }
         return (bool)$cond;
     }
 
@@ -1655,7 +1648,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map each argument to its type
             /** @param Node|string|int|float $arg_node */
-            $arg_type_list = \array_map(function ($arg_node): UnionType {
+            $arg_type_list = \array_map(function (\ast\Node|float|int|string $arg_node): UnionType {
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -1841,7 +1834,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!$dim_type->isEmpty()) {
                 try {
                     $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->hasArrayAccess($code_base);
-                } catch (RecursionDepthException $_) {
+                } catch (RecursionDepthException) {
                     $should_check = false;
                 }
                 if ($should_check) {
@@ -1944,7 +1937,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return $element_types;
                     }
                 }
-            } catch (CodeBaseException | RecursionDepthException $_) {
+            } catch (CodeBaseException | RecursionDepthException) {
                 // ignore
             }
 
@@ -2119,6 +2112,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             return NullType::instance(false)->asRealUnionType();
         }
+        // At this point, $resulting_element_type must be UnionType (null and false cases handled above)
+        if (!($resulting_element_type instanceof UnionType)) {
+            // This should not happen, but handle it safely
+            return null;
+        }
         return $resulting_element_type;
     }
 
@@ -2126,7 +2124,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param list<Type> $real_type_set
      * @param int|string|float|bool|null $dim_value a scalar dimension.
      */
-    private static function couldRealTypesHaveKey(array $real_type_set, $dim_value): bool
+    private static function couldRealTypesHaveKey(array $real_type_set, bool|float|int|null|string $dim_value): bool
     {
         if (\is_float($dim_value)) {
             $dim_value = (int)$dim_value;
@@ -2153,11 +2151,11 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param UnionType $union_type a union type with at least one top-level array shape type
      * @param int|string|float|bool|null $dim_value a scalar dimension. TODO: Warn about null?
-     * @return ?UnionType|?false
+     * @return UnionType|bool|null
      *  returns false if there the offset was invalid and there are no ways to get that offset
      *  returns null if the dim_value offset could not be found, but there were other generic array types
      */
-    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value, bool $is_computing_real_type_set, CodeBase $code_base)
+    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, bool|float|int|null|string $dim_value, bool $is_computing_real_type_set, CodeBase $code_base): \Phan\Language\UnionType|bool|null
     {
         /**
          * @var bool $has_non_array_shape_type this will be true if there are types that support array access
@@ -2617,7 +2615,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getConst();
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // Ignore, we may not have loaded the constant yet
             return UnionType::empty();
         }
@@ -2692,7 +2690,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $union_type->eraseRealTypeSet();
             }
             return $union_type;
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             // ignore, this should warn elsewhere
         }
 
@@ -2930,11 +2928,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         } catch (UnanalyzableMagicPropertyException $exception) {
             $class = $exception->getClass();
             return $class->getMethodByName($this->code_base, '__get')->getUnionType();
-        } catch (NodeException $_) {
+        } catch (NodeException) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }
-        $property_name = $property_name ?? $node->children['prop'];
+        $property_name ??= $node->children['prop'];
         if (\is_string($property_name) && $expr_node instanceof Node &&
                 $expr_node->kind === ast\AST_VAR &&
                 $expr_node->children['name'] === 'this'
@@ -3157,7 +3155,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                                     $this->should_catch_issue_exception
                                 )
                             );
-                        } catch (RecursionDepthException $_) {
+                        } catch (RecursionDepthException) {
                         }
                     }
 
@@ -3197,11 +3195,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     } else {
                         $combined_union_type = $union_type;
                     }
-                } catch (IssueException $_) {
+                } catch (IssueException) {
                     continue;
                 }
             }
-        } catch (IssueException $_) {
+        } catch (IssueException) {
             // Swallow it
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
@@ -3678,7 +3676,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return \Generator|Clazz[]
      */
-    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node)
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node): \Generator|array
     {
         return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
     }
@@ -3743,7 +3741,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param bool $log_error whether or not to log errors while searching
      * @return list<FunctionInterface>
      */
-    public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error): array
+    public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node, bool $log_error): array
     {
         try {
             $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
@@ -3758,7 +3756,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
             return [];
-        } catch (\InvalidArgumentException $_) {
+        } catch (\InvalidArgumentException) {
             if ($log_error) {
                 Issue::maybeEmit(
                     $code_base,
@@ -3799,7 +3797,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param bool $log_error whether or not to log errors while searching
      * @return list<Clazz>
      */
-    public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node, bool $log_error = true): array
+    public static function classListFromClassNameNode(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node, bool $log_error = true): array
     {
         $results = [];
         $strings = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node)->asStringScalarValues();
@@ -3817,7 +3815,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     );
                 }
                 continue;
-            } catch (\InvalidArgumentException $_) {
+            } catch (\InvalidArgumentException) {
                 if ($log_error) {
                     Issue::maybeEmit(
                         $code_base,
@@ -3854,19 +3852,16 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return list<FullyQualifiedFunctionLikeName>
      * @suppress PhanUnreferencedPublicMethod may be used in the future.
      */
-    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node): array
+    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, \ast\Node|string $node): array
     {
         return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, true);
     }
 
     /**
-     * @param string|Node $class_or_expr
-     * @param string $method_name
-     *
      * @return list<FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
-    private function methodFQSENListFromObjectAndMethodName($class_or_expr, string $method_name, bool $log_error): array
+    private function methodFQSENListFromObjectAndMethodName(\ast\Node|string|int|float $class_or_expr, string $method_name, bool $log_error): array
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -4001,9 +3996,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param ?string|?int|?float|?bool|?Node $method_name
+     * @param \ast\Node|bool|float|int|null|string $method_name
      */
-    private function emitDeprecatedPartiallySupportedCallable(string $class_name, $method_name): void
+    private function emitDeprecatedPartiallySupportedCallable(string $class_name, \ast\Node|bool|float|int|null|string $method_name): void
     {
         if (!is_string($method_name)) {
             $method_name = '(unknown)';
@@ -4018,9 +4013,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
     }
     /**
-     * @param ?string|?int|?float|?bool|?Node $class_name
+     * @param \ast\Node|bool|float|int|null|string $class_name
      */
-    private function emitDeprecatedPartiallySupportedCallableAlternateScope($class_name, string $method_name): void
+    private function emitDeprecatedPartiallySupportedCallableAlternateScope(\ast\Node|bool|float|int|null|string $class_name, string $method_name): void
     {
         $this->emitIssue(
             Issue::DeprecatedPartiallySupportedCallableAlternateScope,
@@ -4031,9 +4026,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param ?string|?int|?float|?bool|?Node $method_name
+     * @param \ast\Node|bool|float|int|null|string $method_name
      */
-    private function emitNonObjectContextInCallableIssue(string $class_name, $method_name): void
+    private function emitNonObjectContextInCallableIssue(string $class_name, \ast\Node|bool|float|int|null|string $method_name): void
     {
         if (!is_string($method_name)) {
             $method_name = '(unknown)';
@@ -4047,37 +4042,39 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param string|Node $class_or_expr
-     * @param string|Node $method_name
-     *
      * @return list<FullyQualifiedMethodName>
      * A list of `FullyQualifiedMethodName`s associated with the given node
      */
-    private function methodFQSENListFromParts($class_or_expr, $method_name, bool $from_array, bool $log_error): array
+    private function methodFQSENListFromParts(\ast\Node|string|int|float $class_or_expr, \ast\Node|string|int|float $method_name, bool $from_array, bool $log_error): array
     {
         $code_base = $this->code_base;
         $context = $this->context;
 
         if (!is_string($method_name)) {
-            if (!($method_name instanceof Node)) {
-                $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
-            }
+            // $method_name must be a Node at this point
+            $original_method_name = $method_name;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
             $method_name = (new ContextNode($code_base, $context, $method_name))
                 ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
             if (!is_string($method_name)) {
-                $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name, $this->should_catch_issue_exception);
-                if ($log_error && !$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeInvalidCallableMethodName,
-                        $method_name->lineno ?? $context->getLineNumberStart(),
-                        $method_name_type
-                    );
+                if ($log_error && $from_array) {
+                    $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $original_method_name, false);
+
+                    // Only emit error if we have a known non-string type that cannot cast to string
+                    if (!$method_name_type->isEmpty() && !$method_name_type->canCastToUnionType(StringType::instance(false)->asPHPDocUnionType(), $code_base)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeInvalidCallableMethodName,
+                            $original_method_name->lineno ?? $context->getLineNumberStart(),
+                            $method_name_type
+                        );
+                    }
                 }
+                return [];
             }
         }
-        if ($from_array && is_string($method_name) && strpos($method_name, '::') !== false) {
+        if ($from_array && strpos($method_name, '::') !== false) {
             $this->emitDeprecatedPartiallySupportedCallableAlternateScope($class_or_expr, $method_name);
         }
         try {
@@ -4099,13 +4096,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $class_fqsen = (new ContextNode($code_base, $context, $class_or_expr))->resolveClassNameInContext();
                 if (!$class_fqsen) {
-                    if (!is_string($method_name)) {
-                        return [];
-                    }
                     return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name, $log_error);
                 }
                 if (\in_array(\strtolower($class_fqsen->getName()), ['static', 'self', 'parent'], true)) {
-                    $this->emitDeprecatedPartiallySupportedCallable($class_fqsen->getName(), $method_name);
                     if (!$context->isInClassScope()) {
                         $this->emitNonObjectContextInCallableIssue((string)$class_fqsen, $method_name);
                         return [];
@@ -4129,12 +4122,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::UndeclaredClassInCallable,
                     $context->getLineNumberStart(),
                     (string)$class_fqsen,
-                    "$class_fqsen::" . (is_string($method_name) ? $method_name : '(unknown)')
+                    "$class_fqsen::$method_name"
                 );
             };
-            return [];
-        }
-        if (!is_string($method_name)) {
             return [];
         }
         $class = $code_base->getClassByFQSEN($class_fqsen);
@@ -4204,9 +4194,48 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function functionLikeFQSENListFromNode($node, bool $log_error): array
+    private function functionLikeFQSENListFromNode(\ast\Node|string $node, bool $log_error): array
     {
         $orig_node = $node;
+
+        // Handle AST_ARRAY nodes directly before trying to resolve them
+        if ($node instanceof Node && $node->kind === \ast\AST_ARRAY) {
+            $elements = $node->children;
+            if (\count($elements) !== 2) {
+                if ($log_error) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidCallableArraySize,
+                        $orig_node->lineno ?? $this->context->getLineNumberStart(),
+                        \count($elements)
+                    );
+                }
+                return [];
+            }
+            $i = 0;
+            foreach ($elements as $key => $_) {
+                if ($key !== $i) {
+                    if ($log_error) {
+                        $this->emitIssue(
+                            Issue::TypeInvalidCallableArrayKey,
+                            $orig_node->lineno ?? $this->context->getLineNumberStart(),
+                            $i
+                        );
+                    }
+                    return [];
+                }
+                $i++;
+            }
+            // Extract the actual values from array elements
+            $class_expr = $elements[0] instanceof \ast\Node && $elements[0]->kind === \ast\AST_ARRAY_ELEM
+                ? $elements[0]->children['value']
+                : $elements[0];
+            $method_expr = $elements[1] instanceof \ast\Node && $elements[1]->kind === \ast\AST_ARRAY_ELEM
+                ? $elements[1]->children['value']
+                : $elements[1];
+
+            return $this->methodFQSENListFromParts($class_expr, $method_expr, true, $log_error);
+        }
+
         if ($node instanceof Node) {
             $node = (new ContextNode($this->code_base, $this->context, $node))
                 ->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, $this->should_catch_issue_exception);
@@ -4268,7 +4297,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param bool $log_error whether or not to log errors while searching
      * @return iterable<FunctionInterface>
      */
-    public static function getFunctionLikesFromCallableNode(CodeBase $code_base, Context $context, $node, bool $log_error): iterable {
+    public static function getFunctionLikesFromCallableNode(CodeBase $code_base, Context $context, \ast\Node|bool|float|int|null|string $node, bool $log_error): iterable {
         $node_type = self::unionTypeFromNode($code_base, $context, $node, !$log_error)->withStaticResolvedInContext($context);
 
         if ($node_type->isEmpty()) {
@@ -4308,14 +4337,10 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param Node|string|float|int $node
-     *
      * @return ?UnionType (Returns null when mixed)
      * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
      */
-    public static function unionTypeOfArrayKeyForNode(CodeBase $code_base, Context $context, $node): ?UnionType
+    public static function unionTypeOfArrayKeyForNode(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node): ?UnionType
     {
         $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
         return self::arrayKeyUnionTypeOfUnionType($arg_type);
@@ -4368,7 +4393,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public static function anyStringLiteralForNode(
         CodeBase $code_base,
         Context $context,
-        $node
+        \ast\Node|array|bool|float|int|null|string $node
     ): ?string {
         if (!($node instanceof Node)) {
             return is_string($node) ? $node : null;
