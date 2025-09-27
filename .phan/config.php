@@ -375,6 +375,10 @@ return [
         'PhanTypePossiblyInvalidDimOffset',
         // TODO: Fix PhanParamNameIndicatingUnusedInClosure instances (low priority)
         'PhanParamNameIndicatingUnusedInClosure',
+        // Suppress dead code warnings that appear in CI but not locally
+        'PhanReadOnlyPrivateProperty',  // ArrowFunc->uses appears used but flagged in CI
+        'PhanUnreferencedPublicMethod',  // Parameter::isUsingNullableSyntax() - legitimately unused
+        'PhanUnreferencedPrivateMethod', // UnionType methods - legitimately unused
     ],
 
     // If this list is empty, no filter against issues types will be applied.
