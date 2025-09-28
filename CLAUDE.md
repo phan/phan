@@ -6,8 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Phan is a static analyzer for PHP that prefers to minimize false-positives. It attempts to prove incorrectness rather than correctness and has a comprehensive understanding of PHP's type system, including union types, generics, and array shapes.
 
-**Current Focus**: PHP 8.4 Property Hooks Support - The codebase is being prepared to support PHP 8.4's new property hooks feature. See PHP84_PROPERTY_HOOKS_IMPLEMENTATION.md for detailed implementation plans.
-
 ## Essential Commands
 
 ### Building and Running Phan
@@ -128,36 +126,6 @@ php phan --plugin InvokePHPNativeSyntaxCheckPlugin
    - `@suppress` annotations in PHPDoc
    - File-level suppressions
    - Config-based suppression
-
-## Performance Optimization: phan_helper Extension
-
-Phan supports an optional native C extension (`phan_helper`) that provides significant performance improvements for critical operations:
-
-### Key Optimizations
-- **Object Deduplication**: 30x+ faster than PHP's `array_unique()` for Type objects
-- **FQSEN Parsing**: 1.6x faster parsing of Fully Qualified Structural Element Names
-
-### Implementation
-- `src/Phan/Library/PhanHelper.php`: Wrapper class with automatic fallback to PHP implementations
-- `src/Phan/Language/UnionType.php`: Uses extension for `getUniqueTypes()` - a critical hot path
-- Extension only includes functions with proven performance benefits (many were removed after benchmarking showed PHP built-ins were faster)
-
-### Usage
-- Extension is optional - Phan works correctly without it
-- To enable: Uncomment `extension=phan_helper.so` in `/etc/php8/conf.d/phan_helper.ini`
-- Benchmark with: `php benchmarks/phan_helper_benchmark.php`
-
-## PHP 8.4 Property Hooks Implementation
-
-The codebase is being extended to support PHP 8.4 property hooks. Key areas being modified:
-
-1. **AST Constants**: Adding `AST_PROPERTY_HOOK` and `AST_PROPERTY_HOOK_SHORT_BODY`
-2. **Property Class**: Extended to store hook methods
-3. **ParseVisitor**: Modified to detect and parse hooks
-4. **Analysis**: Updated for get/set hook type checking
-5. **New Issue Types**: Property hook-specific warnings
-
-See `PHP84_PROPERTY_HOOKS_IMPLEMENTATION.md` for detailed implementation guide.
 
 ## Configuration
 
