@@ -1,0 +1,3 @@
+%s:20 PhanTemplateTypeShadowsClass Template type T is already declared in the containing class
+%s:36 PhanTemplateTypeDuplicate Template type T is already declared in this comment
+%s:49 PhanTemplateTypeDuplicate Template type U is already declared in this comment
