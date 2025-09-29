@@ -125,7 +125,8 @@ class TolerantASTConverter
     public const AST_VERSION = 85;
 
     // The versions that this supports
-    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION];
+    // Version 120 is supported for PHP 8.4+ (property hooks, closure name field removal)
+    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION, 120];
 
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
@@ -226,6 +227,11 @@ class TolerantASTConverter
      * @var int - A version in SUPPORTED_AST_VERSIONS
      */
     protected static $php_version_id_parsing = PHP_VERSION_ID;
+
+    /**
+     * @var int - The AST version being used for parsing (80, 85, or 120)
+     */
+    protected static $ast_version_parsing = self::AST_VERSION;
 
     /**
      * @var int - Internal counter for declarations, to generate __declId in `ast\Node`s for declarations.
@@ -360,6 +366,7 @@ class TolerantASTConverter
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS, true)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
+        self::$ast_version_parsing = $ast_version;
         $this->startParsing($file_contents);
         $stmts = static::phpParserNodeToAstNode($parser_node);
         // return static::normalizeNamespaces($stmts);
@@ -2046,16 +2053,23 @@ class TolerantASTConverter
                 $line
             );
         }
+        $children = [
+            'type' => $type,
+            'name' => $name,
+            'default' => $default,
+            'attributes' => $attributes,
+            'docComment' => null,
+        ];
+
+        // AST version 110+ adds 'hooks' field to AST_PARAM (always null for regular parameters)
+        if (self::$ast_version_parsing >= 110) {
+            $children['hooks'] = null;
+        }
+
         return new ast\Node(
             ast\AST_PARAM,
             $flags,
-            [
-                'type' => $type,
-                'name' => $name,
-                'default' => $default,
-                'attributes' => $attributes,
-                'docComment' => null,
-            ],
+            $children,
             $line
         );
     }
@@ -2811,6 +2825,12 @@ class TolerantASTConverter
         $start_line = self::getStartLine($n);
 
         $children['docComment'] = static::extractPhpdocComment($n) ?? $doc_comment;
+
+        // AST version 110+ adds 'hooks' field to AST_PROP_ELEM
+        if (self::$ast_version_parsing >= 110) {
+            $children['hooks'] = null;  // TODO: Parse property hooks when tolerant-php-parser supports them
+        }
+
         return new ast\Node(ast\AST_PROP_ELEM, 0, $children, $start_line);
     }
 
@@ -3286,7 +3306,10 @@ class TolerantASTConverter
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, ?string $doc_comment = null, ?string $name = null, int $end_lineno = 0, int $decl_id = -1): ast\Node
     {
         $decl_children = [];
-        $decl_children['name'] = $name;
+        // AST version 110+ removes the 'name' field from closures
+        if (!($kind === ast\AST_CLOSURE && self::$ast_version_parsing >= 110)) {
+            $decl_children['name'] = $name;
+        }
         $decl_children['docComment'] = $doc_comment;
         $decl_children += $children;
         if ($decl_id >= 0) {

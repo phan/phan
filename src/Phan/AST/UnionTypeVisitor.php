@@ -2952,6 +2952,26 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitCall(Node $node): UnionType
     {
         $expression = $node->children['expr'];
+        // AST version 120 represents clone as AST_CALL instead of AST_CLONE
+        // Redirect to visitClone to handle it correctly
+        if ($expression instanceof Node &&
+            $expression->kind === \ast\AST_NAME &&
+            $expression->children['name'] === 'clone') {
+            // Convert AST_CALL structure to AST_CLONE structure
+            // AST_CALL has args in children['args']->children[0]
+            // AST_CLONE has expr in children['expr']
+            $args = $node->children['args'];
+            if ($args instanceof Node && isset($args->children[0])) {
+                $clone_node = new Node(
+                    \ast\AST_CLONE,
+                    0,
+                    ['expr' => $args->children[0]],
+                    $node->lineno
+                );
+                return $this->visitClone($clone_node);
+            }
+            return UnionType::empty();
+        }
         $function_list_generator = (new ContextNode(
             $this->code_base,
             $this->context,
