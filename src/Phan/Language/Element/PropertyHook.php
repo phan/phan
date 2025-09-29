@@ -160,7 +160,6 @@ class PropertyHook
      * Get the union type returned by this hook (for 'get' hooks)
      * or accepted by this hook (for 'set' hooks).
      *
-     * @return UnionType
      * @suppress PhanUnusedPublicNoOverrideMethodParameter
      */
     public function getUnionType(): UnionType
