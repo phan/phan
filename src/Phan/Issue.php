@@ -48,6 +48,8 @@ class Issue
     public const PrivateFinalMethod             = 'PhanPrivateFinalMethod';
     public const PrivateFinalConstant           = 'PhanPrivateFinalConstant';
     public const ReadonlyPropertyMissingType    = 'PhanReadonlyPropertyMissingType';
+    public const PropertyHookWithDefaultValue   = 'PhanPropertyHookWithDefaultValue';
+    public const ReadonlyPropertyHasSetHook     = 'PhanReadonlyPropertyHasSetHook';
 
     // Issue::CATEGORY_UNDEFINED
     public const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -254,6 +256,9 @@ class Issue
     public const TypeMismatchPropertyReal          = 'PhanTypeMismatchPropertyReal';
     public const TypeMismatchPropertyRealByRef     = 'PhanTypeMismatchPropertyRealByRef';
     public const TypeMismatchPropertyByRef         = 'PhanTypeMismatchPropertyByRef';
+    public const PropertyHookIncompatibleReturnType = 'PhanPropertyHookIncompatibleReturnType';
+    public const PropertyHookIncompatibleParamType  = 'PhanPropertyHookIncompatibleParamType';
+    public const PropertyHookFinalOverride          = 'PhanPropertyHookFinalOverride';
     public const ImpossibleCondition               = 'PhanImpossibleCondition';
     public const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
     public const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
@@ -1036,6 +1041,22 @@ class Issue
                 'Readonly property ${PROPERTY} must have a declared type',
                 self::REMEDIATION_A,
                 17021
+            ),
+            new Issue(
+                self::PropertyHookWithDefaultValue,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_NORMAL,
+                'Property {PROPERTY} has both hooks and a default value - hooks with default values are not allowed',
+                self::REMEDIATION_A,
+                17022
+            ),
+            new Issue(
+                self::ReadonlyPropertyHasSetHook,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Readonly property {PROPERTY} cannot have a set hook',
+                self::REMEDIATION_A,
+                17023
             ),
             new Issue(
                 self::PrivateFinalMethod,
@@ -2692,6 +2713,30 @@ class Issue
                 "{CODE} of type {TYPE} may end up assigned to property {PROPERTY} of type {TYPE} by reference at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10151
+            ),
+            new Issue(
+                self::PropertyHookIncompatibleReturnType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Property hook {PROPERTY}::{METHOD} returns {CODE} of type {TYPE} but property is declared as {TYPE}",
+                self::REMEDIATION_B,
+                10200
+            ),
+            new Issue(
+                self::PropertyHookIncompatibleParamType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Property hook {PROPERTY}::{METHOD} parameter {PARAMETER} has type {TYPE} which is incompatible with property type {TYPE}",
+                self::REMEDIATION_B,
+                10201
+            ),
+            new Issue(
+                self::PropertyHookFinalOverride,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Cannot override final property hook {PROPERTY}::{METHOD} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10202
             ),
             new Issue(
                 self::ImpossibleCondition,

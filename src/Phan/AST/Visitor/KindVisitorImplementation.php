@@ -351,6 +351,16 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitPropertyHook(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitPropertyHookShortBody(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitReturn(Node $node)
     {
         return $this->visit($node);
