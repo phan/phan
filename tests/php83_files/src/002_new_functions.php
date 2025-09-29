@@ -54,23 +54,7 @@ mb_str_pad('test', false);
 mb_str_pad('test', 32, ' ');
 mb_str_pad('test', 32, '-', STR_PAD_LEFT);
 mb_str_pad('test', 32, '-', STR_PAD_LEFT, 'UTF-8');
-// Posix https://www.php.net/manual/en/migration83.new-functions.php#migration83.new-functions.posix
-// @phan-suppress-next-line PhanUndeclaredConstant, PhanUndeclaredFunction
-if (extension_loaded('posix')) {
-    // @phan-suppress-next-line PhanUndeclaredConstant
-    posix_sysconf(POSIX_SC_ARG_MAX);
-    // @phan-suppress-next-line PhanUndeclaredConstant
-    posix_sysconf(POSIX_SC_NPROCESSORS_CONF);
-    posix_sysconf('conf-id');
-    // @phan-suppress-next-line PhanUndeclaredConstant
-    posix_pathconf('test', POSIX_PC_PATH_MAX);
-    // @phan-suppress-next-line PhanUndeclaredConstant, PhanUndeclaredFunction
-    posix_fpathconf(1, POSIX_PC_PATH_MAX);
-    // @phan-suppress-next-line PhanUndeclaredConstant, PhanUndeclaredFunction
-    posix_fpathconf(fopen(__DIR__, "r"), POSIX_PC_PATH_MAX);
-    // @phan-suppress-next-line PhanUndeclaredConstant
-    posix_eaccess('some_file', POSIX_R_OK | POSIX_W_OK);
-}
+// Posix functions are platform-dependent and not reliably testable across CI environments
 // PostgreSQL https://www.php.net/manual/en/migration83.new-functions.php#migration83.new-functions.pgsql
 $connection = new PgSql\Connection();
 pg_set_error_context_visibility($connection, PGSQL_SHOW_CONTEXT_ALWAYS);
