@@ -842,6 +842,18 @@ class TolerantASTConverter
                 }
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
+                // AST version 120 represents clone as AST_CALL instead of AST_CLONE
+                if (self::$ast_version_parsing >= 120) {
+                    return new ast\Node(
+                        ast\AST_CALL,
+                        0,
+                        [
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'clone'], $start_line),
+                            'args' => new ast\Node(ast\AST_ARG_LIST, 0, [static::phpParserNodeToAstNode($n->expression)], $start_line),
+                        ],
+                        $start_line
+                    );
+                }
                 return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => static function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line): ast\Node {
@@ -2932,13 +2944,19 @@ class TolerantASTConverter
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
         $const_start_line = $const_elems[0]->lineno ?? $start_line;
         $const_list_node = new ast\Node(ast\AST_CLASS_CONST_DECL, 0, $const_elems, $const_start_line);
+        $children = [
+            'const' => $const_list_node,
+            'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
+        ];
+        // AST version 120+ adds 'type' field to AST_CLASS_CONST_GROUP
+        // Note: tolerant-php-parser doesn't support class const types yet, so always null
+        if (self::$ast_version_parsing >= 120) {
+            $children['type'] = null;
+        }
         return new ast\Node(
             ast\AST_CLASS_CONST_GROUP,
             $flags,
-            [
-                'const' => $const_list_node,
-                'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
-            ],
+            $children,
             $const_start_line
         );
     }
@@ -3306,8 +3324,8 @@ class TolerantASTConverter
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, ?string $doc_comment = null, ?string $name = null, int $end_lineno = 0, int $decl_id = -1): ast\Node
     {
         $decl_children = [];
-        // AST version 110+ removes the 'name' field from closures
-        if (!($kind === ast\AST_CLOSURE && self::$ast_version_parsing >= 110)) {
+        // AST version 110+ removes the 'name' field from closures and arrow functions
+        if (!(($kind === ast\AST_CLOSURE || $kind === ast\AST_ARROW_FUNC) && self::$ast_version_parsing >= 110)) {
             $decl_children['name'] = $name;
         }
         $decl_children['docComment'] = $doc_comment;
