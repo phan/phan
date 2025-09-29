@@ -143,7 +143,7 @@ if (extension_loaded('ast')) {
     }
     $phan_output_ast_too_old_and_exit = /** @return never */ static function (string $minimum_ast_version, string $php_version_bound) use ($ast_version): void {
         $error_message = sprintf(
-            "Phan 5.x requires php-ast %s+ to properly analyze ASTs for php %s+. php-ast %s and php %s is installed." . PHP_EOL,
+            "Phan 6.x requires php-ast %s+ to properly analyze ASTs for php %s+. php-ast %s and php %s is installed." . PHP_EOL,
             $minimum_ast_version,
             $php_version_bound,
             $ast_version,

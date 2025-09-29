@@ -84,7 +84,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '5.5.1';
+    public const PHAN_VERSION = '6.0.0-dev';
 
     /**
      * List of short flags passed to getopt
@@ -2775,7 +2775,7 @@ EOB
             }
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
             CLI::printErrorToStderr(sprintf(
-                "Phan 5.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
+                "Phan 6.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
                 Config::MINIMUM_AST_EXTENSION_VERSION,
                 $ast_version
             ));
@@ -2785,7 +2785,7 @@ EOB
             exit(1);
         }
         if (\version_compare($ast_version, '1.0.11') < 0) {
-            CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 5. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
+            CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 6. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
             // Reuse PHAN_SUPPRESS_AST_DEPRECATION for this purpose as well.
             if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
                 \phan_output_ast_installation_instructions();

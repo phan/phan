@@ -1,4 +1,4 @@
-# This tests against the supported versions of Phan 5.x.y (PHP 8.1+)
+# This tests against the supported versions of Phan 6.x.y (PHP 8.1+)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
 version: '{branch}.{build}'

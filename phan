@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 // @phan-file-suppress PhanPluginRemoveDebugAny
-if (PHP_VERSION_ID < 70200) {
-    fwrite(STDERR, "ERROR: Phan 5.x requires PHP 7.2+, but it is being run with PHP " . PHP_VERSION . PHP_EOL);
-    fwrite(STDERR, "PHP 7.1 reached its end of life in December 2019." . PHP_EOL);
+if (PHP_VERSION_ID < 80100) {
+    fwrite(STDERR, "ERROR: Phan 6.x requires PHP 8.1+, but it is being run with PHP " . PHP_VERSION . PHP_EOL);
+    fwrite(STDERR, "PHP 8.0 reached its end of life in November 2023." . PHP_EOL);
     fwrite(STDERR, "Exiting without analyzing code." . PHP_EOL);
     exit(1);
 }
