@@ -47,7 +47,7 @@ Phan is able to perform the following kinds of analysis:
 * Check for type safety on binary operations.
 * Check for valid and type safe return values on methods, functions, and closures.
 * Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
-* Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/v5/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
+* Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/v6/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
 * Check for unused variables and parameters. (Pass in `--unused-variable-detection`)
 * Check for redundant or impossible conditions and pointless casts. (Pass in `--redundant-condition-detection`)
 * Check for unused `use` statements.
@@ -82,7 +82,7 @@ Phan is able to perform the following kinds of analysis:
 
 See [Phan Issue Types](https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
-[\Phan\Issue](https://github.com/phan/phan/blob/v5/src/Phan/Issue.php) to see the
+[\Phan\Issue](https://github.com/phan/phan/blob/v6/src/Phan/Issue.php) to see the
 definition of each error type.
 
 Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
