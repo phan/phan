@@ -4,6 +4,6 @@
 %s:36 PhanTypeMismatchArgumentInternal Argument 2 ($depth) is false of type false but \json_validate() takes int
 %s:42 PhanTypeMismatchArgumentInternalProbablyReal Argument 4 ($auth_mode) is 'test' of type 'test' but \ldap_connect_wallet() takes int
 %s:53 PhanTypeMismatchArgumentInternal Argument 2 ($length) is false of type false but \mb_str_pad() takes int
-%s:60 PhanTypeMismatchArgumentInternalReal Argument 1 ($conf_id) is 'conf-id' of type 'conf-id' but \posix_sysconf() takes int
-%s:73 PhanTypeMismatchArgumentInternal Argument 2 ($max) is '1' of type '1' but \Random\Randomizer::getFloat() takes float
-%s:84 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type 12 but \str_decrement() takes string
+%s:61 PhanTypeMismatchArgumentInternalReal Argument 1 ($conf_id) is 'conf-id' of type 'conf-id' but \posix_sysconf() takes int
+%s:75 PhanTypeMismatchArgumentInternal Argument 2 ($max) is '1' of type '1' but \Random\Randomizer::getFloat() takes float
+%s:86 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type 12 but \str_decrement() takes string
