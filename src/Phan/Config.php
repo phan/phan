@@ -1394,27 +1394,21 @@ class Config
     }
 
     private const CLOSEST_TARGET_PHP_VERSION_ID_RANGES = [
-        '6.0' => 50600,
-        '7.1' => 70000,
-        '7.2' => 70100,
-        '7.3' => 70200,
-        '7.4' => 70300,
-        '8.0' => 70400,
-        '8.1' => 80000,
-        '8.2' => 80100,
-        '8.3' => 80200,
-        '8.4' => 80300,
+        '8.2' => 80100,  // For target < 8.2, use 8.1 features (80100)
+        '8.3' => 80200,  // For target < 8.3, use 8.2 features (80200)
+        '8.4' => 80300,  // For target < 8.4, use 8.3 features (80300)
+        '8.5' => 80400,  // For target < 8.5, use 8.4 features (80400)
     ];
 
     private static function computeClosestTargetPHPVersionId(string $version): int
     {
-        // for 7.4.11 or 7.4.0 or 7.4 return 7.4, etc.
+        // for 8.1.11 or 8.1.0 return 8.1, for 8.2.5 return 8.2, etc.
         foreach (self::CLOSEST_TARGET_PHP_VERSION_ID_RANGES as $compared_version_string => $resulting_version_id) {
             if (\version_compare($version, $compared_version_string) < 0) {
                 return $resulting_version_id;
             }
         }
-        return 80400;
+        return 80500;  // Default to future version for 8.5+
     }
 
     /**

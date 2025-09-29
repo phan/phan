@@ -194,12 +194,12 @@ final class CLITest extends BaseTest
             [
                 [
                     'color_issue_messages' => true,
-                    'target_php_version' => '7.1',
-                    'allow_method_param_type_widening' => false,
+                    'target_php_version' => '8.1',
+                    'allow_method_param_type_widening' => true,
                 ],
                 [
                     'color' => false,
-                    'target-php-version' => '7.1',
+                    'target-php-version' => '8.1',
                 ],
             ],
             [

@@ -6,9 +6,7 @@ namespace Phan\Analysis;
 
 use ast;
 use ast\Node;
-use Phan\AST\ASTReverter;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Attribute;
@@ -306,31 +304,6 @@ class AttributeAnalyzer
                 $attribute_lineno,
                 $fqsen
             );
-        }
-        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-            $attribute_group_start_lineno = $attribute->getGroupLineNumberStart();
-            $attribute_group_end_lineno = $attribute->getGroupLineNumberEnd();
-            if ($attribute_group_start_lineno === $element->getFileRef()->getLineNumberStart()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $declaration->getContext(),
-                    Issue::CompatibleAttributeGroupOnSameLine,
-                    $attribute_group_end_lineno,
-                    ASTReverter::toShortString($attribute->getGroup()),
-                    $element
-                );
-            }
-            if ($attribute_group_end_lineno > $attribute_group_start_lineno) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $declaration->getContext(),
-                    Issue::CompatibleAttributeGroupOnMultipleLines,
-                    $attribute_group_start_lineno,
-                    ASTReverter::toShortString($attribute->getGroup()),
-                    $element,
-                    $attribute_group_end_lineno
-                );
-            }
         }
     }
 }

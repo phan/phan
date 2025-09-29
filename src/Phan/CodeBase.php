@@ -2123,7 +2123,7 @@ class CodeBase
         }
         $target_php_version_config = Config::get_closest_target_php_version_id();
         $target_php_version = (int)\floor(\min($target_php_version_config, \PHP_VERSION_ID) / 100) * 100;
-        $targets = [50600, 70000, 70100, 70200, 70300, 70400, 80000];
+        $targets = [80100, 80200, 80300, 80400];
         $function_name_lower = strtolower($function_name);
         foreach ($targets as $i => $target) {
             // If $target_php_version is 7.1 only check for functions added in 7.2 or newer that weren't in the previous version.

@@ -899,11 +899,9 @@ EOT;
      */
     public function hoverInOtherFileProvider(): array
     {
-        // TODO: Extract the parameter defaults from php 8.0's stub files
-        // so they can be used in error messages for php 7?
-        $parse_code_default = \PHP_VERSION_ID >= 80000 ? "'string code'" : 'unknown';
-        $error_default_message = \PHP_VERSION_ID >= 80000 ? "''" : 'unknown';
-        $error_default_code = \PHP_VERSION_ID >= 80000 ? "0" : 'unknown';
+        $parse_code_default = "'string code'";
+        $error_default_message = "''";
+        $error_default_code = "0";
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
 <?php // line 0

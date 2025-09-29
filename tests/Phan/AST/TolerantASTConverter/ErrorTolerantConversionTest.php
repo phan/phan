@@ -282,9 +282,6 @@ EOT;
 
     public function testEmptyMatch(): void
     {
-        if (\PHP_VERSION_ID < 80000) {
-            $this->markTestSkipped("Requires php 8.0+");
-        }
         $incomplete_contents = <<<'EOT'
 <?php
 match {
@@ -305,9 +302,6 @@ EOT;
      */
     public function testEmptyMatchArm(): void
     {
-        if (\PHP_VERSION_ID < 80000) {
-            $this->markTestSkipped("Requires php 8.0+");
-        }
         $incomplete_contents = <<<'EOT'
 <?php
 match (1+) {

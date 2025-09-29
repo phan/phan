@@ -3032,7 +3032,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
 
-            $this->checkForAbstractPrivateMethodInTrait($class, $method);
+            // Abstract private methods in traits are allowed in PHP 8.0+ (our minimum is 8.1)
             $this->checkForPHP4StyleConstructor($class, $method);
         } catch (Exception) {
         }
@@ -3292,13 +3292,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 throw new AssertionError("Expected argument index to be an integer");
             }
             if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
-                if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-                    $this->emitIssue(
-                        Issue::CompatibleNamedArgument,
-                        $argument->lineno,
-                        ASTReverter::toShortString($argument)
-                    );
-                }
                 ['name' => $argument_name, 'expr' => $argument_expression] = $argument->children;
                 if ($argument_expression === null) {
                     throw new AssertionError("Expected argument to have an expression");
@@ -3468,13 +3461,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMatch(Node $node): Context
     {
-        if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-            $this->emitIssue(
-                Issue::CompatibleMatchExpression,
-                $node->lineno,
-                ASTReverter::toShortString($node)
-            );
-        }
         if ($this->isInNoOpPosition($node)) {
             if (!ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $this->context, $node->children['stmts'])) {
                 $this->emitIssue(
@@ -5096,43 +5082,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!($parent_node instanceof Node)) {
             return $this->context;
         }
-        if ($parent_node->kind !== ast\AST_STMT_LIST) {
-            if (Config::get_closest_minimum_target_php_version_id() < 80000) {
-                $this->emitIssue(
-                    Issue::CompatibleThrowExpression,
-                    $parent_node->lineno,
-                    ASTReverter::toShortString($parent_node)
-                );
-            }
-        }
+        // No additional processing needed for non-statement lists
 
         return $this->context;
     }
 
-    private function checkForAbstractPrivateMethodInTrait(Clazz $class, Method $method): void
-    {
-        // Skip PHP 8.0+
-        if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
-            return;
-        }
-
-        if (!$class->isTrait()) {
-            return;
-        }
-
-        if (!$method->isPrivate()) {
-            return;
-        }
-
-        if (!$method->isAbstract()) {
-            return;
-        }
-
-        $this->emitIssue(
-            Issue::CompatibleAbstractPrivateMethodInTrait,
-            $this->context->getLineNumberStart(),
-            (string)$class->getFQSEN(),
-            $method->getName()
-        );
-    }
 }

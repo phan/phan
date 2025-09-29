@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -182,7 +181,7 @@ class MixedType extends NativeType
 
     public function canUseInRealSignature(): bool
     {
-        return Config::get_closest_minimum_target_php_version_id() >= 80000;
+        return true; // Always true since minimum target is PHP 8.1
     }
 
     public function isPossiblyFalsey(): bool

@@ -51,7 +51,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         $string_union_type_real = StringType::instance(false)->asRealUnionType();
-        $string_union_type_with_false_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', 'string|false');
         $string_union_type_with_null_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', '?string');
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
@@ -99,31 +98,19 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         };
 
         /**
+         * @param CodeBase $code_base @phan-unused-param
+         * @param Context $context @phan-unused-param
          * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args
+         * @param list<Node|int|float|string> $args @phan-unused-param
          */
         $bcdiv_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) use (
-            $nullable_string_union_type,
-            $string_union_type
-        ): UnionType {
-            //PHP 8 will throw a DivisionByZero error instead of returning null
-            if (Config::get_closest_target_php_version_id() >= 80000) {
-                return $string_union_type;
-            }
-            if (count($args) <= 1) {
-                return $nullable_string_union_type;
-            }
-            $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
-            // @phan-suppress-next-line PhanSuspiciousTruthyString
-            if (\is_numeric($result) && $result) {
-                return $string_union_type;
-            }
-            return $nullable_string_union_type;
+        ) use ($string_union_type): UnionType {
+            // PHP 8+ will throw a DivisionByZero error instead of returning null
+            return $string_union_type;
         };
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
@@ -280,31 +267,19 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return $string_or_false_real_type;
         };
         /**
-         * @param list<Node|int|float|string> $args
+         * @param CodeBase $unused_code_base @phan-unused-param
+         * @param Context $unused_context @phan-unused-param
+         * @param Func $unused_function @phan-unused-param
+         * @param list<Node|int|float|string> $args @phan-unused-param
          */
         $substr_handler = static function (
             CodeBase $unused_code_base,
             Context $unused_context,
             Func $unused_function,
             array $args
-        ) use (
-            $string_or_false_real_type,
-            $string_union_type_with_false_in_real,
-            $string_union_type_real
-        ): UnionType {
-            if (Config::get_closest_target_php_version_id() >= 80000) {
-                if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
-                    // Avoid false positive PhanRedundantCondition in projects that need to support php versions before 8.0
-                    return $string_union_type_real;
-                }
-                // Avoid false positives with strict type checking and assume phpdoc type of string.
-                return $string_union_type_with_false_in_real;
-            }
-            if (count($args) >= 2 && is_int($args[1]) && $args[1] <= 0) {
-                // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
-                return $string_union_type_with_false_in_real;
-            }
-            return $string_or_false_real_type;
+        ) use ($string_union_type_real): UnionType {
+            // PHP 8.0+ behavior - both target and minimum are 8.1+
+            return $string_union_type_real;
         };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
@@ -392,7 +367,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args
         ): UnionType {
-            $is_php8 = Config::get_closest_target_php_version_id() >= 80000;
+            // Always PHP 8.1+ since that's our minimum version
             if (count($args) > 2) {
                 $limit = $args[2];
                 if ($limit instanceof Node) {
@@ -402,17 +377,20 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                     // PHP will only ever return an empty list if there is a negative limit for explode().
                     return UnionType::fromFullyQualifiedPHPDocAndRealString(
                         'list<string>',
-                        $is_php8 ? 'list<string>' : '?list<string>'
+                        'list<string>'
                     );
                 }
             }
             return UnionType::fromFullyQualifiedPHPDocAndRealString(
                 'non-empty-list<string>',
-                $is_php8 ? 'non-empty-list<string>' : '?non-empty-list<string>'
+                'non-empty-list<string>'
             );
         };
         /**
-         * @param list<Node|int|float|string> $args
+         * @param CodeBase $code_base @phan-unused-param
+         * @param Context $context @phan-unused-param
+         * @param Func $function @phan-unused-param
+         * @param list<Node|int|float|string> $args @phan-unused-param
          */
         $one_or_two_string_handler = static function (
             CodeBase $code_base,
@@ -420,17 +398,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $function,
             array $args
         ) use ($string_union_type_real): UnionType {
-            if (Config::get_closest_target_php_version_id() >= 80000) {
-                return $string_union_type_real;
-            }
-            if (count($args) >= 1 && count($args) <= 2) {
-                if (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->getRealUnionType()->isNonNullStringType()) {
-                    if (!isset($args[1]) || is_string($args[1]) || UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->getRealUnionType()->isNonNullStringType()) {
-                        return $string_union_type_real;
-                    }
-                }
-            }
-            return $function->getUnionType();
+            // PHP 8.0+ behavior - always return string
+            return $string_union_type_real;
         };
 
         // TODO: Handle flags of preg_split.

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\IssueInstance;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -114,10 +113,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
                 continue;
             }
             $union_type = $phpdoc_param->getNonVariadicUnionType()->asNormalizedTypes();
-            if (
-                $union_type->isEmpty() ||
-                ($union_type->typeCount() > 1 && Config::get_closest_minimum_target_php_version_id() < 80000)
-            ) {
+            if ($union_type->isEmpty()) {
                 continue;
             }
             if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
@@ -157,10 +153,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         }
         $union_type = $union_type->asNormalizedTypes();
 
-        if (
-            $union_type->isEmpty() ||
-            ($union_type->typeCount() > 1 && Config::get_closest_minimum_target_php_version_id() < 80000)
-        ) {
+        if ($union_type->isEmpty()) {
             return;
         }
         if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {

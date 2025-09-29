@@ -86,27 +86,19 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
 
         // NOTE: This is done to avoid ParseError in php-ast
         $suffixes = [];
-        if (\PHP_VERSION_ID < 70200) {
-            $suffixes[] = '71';
-        } elseif (\PHP_VERSION_ID >= 80000) {
-            if (\PHP_VERSION_ID >= 80400) {
-                $suffixes[] = '84';
-            }
-            if (\PHP_VERSION_ID >= 80300) {
-                $suffixes[] = '83';
-            }
-            if (\PHP_VERSION_ID >= 80200) {
-                $suffixes[] = '82';
-            }
-            if (\PHP_VERSION_ID >= 80100) {
-                $suffixes[] = '81';
-            }
-            $suffixes[] = '80';
-        } elseif (\PHP_VERSION_ID >= 70400) {
-            $suffixes[] = '74';
-        } else {
-            $suffixes[] = '72';
+        if (\PHP_VERSION_ID >= 80400) {
+            $suffixes[] = '84';
         }
+        if (\PHP_VERSION_ID >= 80300) {
+            $suffixes[] = '83';
+        }
+        if (\PHP_VERSION_ID >= 80200) {
+            $suffixes[] = '82';
+        }
+        if (\PHP_VERSION_ID >= 80100) {
+            $suffixes[] = '81';
+        }
+        $suffixes[] = '80';
 
         return \array_combine(
             $files,

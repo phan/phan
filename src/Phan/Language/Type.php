@@ -952,7 +952,7 @@ class Type implements Stringable
         if ($reflection_type instanceof \ReflectionNamedType) {
             $reflection_type_string = $reflection_type->getName();
             if ($reflection_type->allowsNull()) {
-                if (\PHP_VERSION_ID >= 80000 && $reflection_type_string === 'mixed') {
+                if ($reflection_type_string === 'mixed') {
                     return 'mixed';
                 }
                 return "?" . $reflection_type_string;

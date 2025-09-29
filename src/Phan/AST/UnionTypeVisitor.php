@@ -42,7 +42,6 @@ use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
@@ -2268,9 +2267,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
-     * @param bool $is_array_spread
-     * If true, this is the array spread operator,
+     * @param bool $is_array_spread @phan-unused-param
+     * Previously: If true, this is the array spread operator,
      * which tolerates integers that aren't consecutive.
+     * Now unused since PHP 8.1+ supports both cases.
      *
      * @return array{0:UnionType, 1:bool}
      * The set of types that are possibly produced by the
@@ -2315,7 +2315,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 return [$generic_types, false];
             }
-            $this->checkInvalidUnpackKeyType($node, $union_type, $is_array_spread);
+            // Array unpacking with string keys is supported in PHP 8.1+ (our minimum version)
             foreach ($union_type->iterableKeyUnionType($this->code_base)->getTypeSet() as $key_type) {
                 if ($key_type instanceof StringType) {
                     return [$generic_types, true];
@@ -2328,48 +2328,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         return [$generic_types, false];
     }
 
-    private function checkInvalidUnpackKeyType(Node $node, UnionType $union_type, bool $is_array_spread): void
-    {
-        $is_invalid_because_associative = false;
-        $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
-        // Treat foo(...$associativeArgs) as invalid unless the minimum target php version is 8.0 (i.e. array unpacking is supported)
-        if (!$is_array_spread && $minimum_target_php_version_id < 80000) {
-            foreach ($union_type->getTypeSet() as $type) {
-                if ($type->isIterable($this->code_base)) {
-                    if ($type instanceof AssociativeArrayType) {
-                        $is_invalid_because_associative = true;
-                    } else {
-                        $is_invalid_because_associative = false;
-                        break;
-                    }
-                }
-            }
-        }
-        $key_type = $union_type->iterableKeyUnionType($this->code_base);
-        // Check that this is possibly valid, e.g. array<int, mixed>, Generator<int, mixed>, or iterable<int, mixed>
-        // TODO: Warn if key_type contains nullable types (excluding VoidType)
-        // TODO: Warn about union types that are partially invalid.
-        if ($is_invalid_because_associative || (!$key_type->isEmpty() && !$key_type->hasTypeMatchingCallback(static function (Type $type) use ($minimum_target_php_version_id, $is_array_spread): bool {
-            if ($type instanceof IntType || $type instanceof MixedType) {
-                return true;
-            }
-            if ($type instanceof StringType) {
-                // TODO: Forbid invalid parameter identifiers such as 'foo-bar' in the overall array shape?
-                return ($is_array_spread ? $minimum_target_php_version_id >= 80100 : $minimum_target_php_version_id >= 80000);
-            }
-            return false;
-        }))) {
-            if (Config::get_closest_target_php_version_id() < 80100) {
-                throw new IssueException(
-                    Issue::fromType($is_array_spread ? Issue::TypeMismatchUnpackKeyArraySpread : Issue::TypeMismatchUnpackKey)(
-                        $this->context->getFile(),
-                        $node->lineno,
-                        [(string)$union_type, $key_type]
-                    )
-                );
-            }
-        }
-    }
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`

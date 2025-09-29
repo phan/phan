@@ -210,7 +210,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
         string $file_contents
     ): Generator {
         // @phan-suppress-next-line PhanUndeclaredClassReference
-        if (\PHP_VERSION_ID >= 80000 && \class_exists(PhpToken::class) && \method_exists(PhpToken::class, 'tokenize')) {
+        if (\class_exists(PhpToken::class) && \method_exists(PhpToken::class, 'tokenize')) {
             return self::yieldSuppressionCommentsPhpToken($file_contents);
         }
         return self::yieldSuppressionCommentsOld($file_contents);

@@ -601,12 +601,9 @@ class Parser
     {
         if (\PHP_VERSION_ID >= 80100) {
             $min_version = '1.0.14';
-        } elseif (\PHP_VERSION_ID >= 80000) {
-            $min_version = '1.0.10';
-        } elseif (\PHP_VERSION_ID >= 70400) {
-            $min_version = '1.0.2';
         } else {
-            $min_version = Config::MINIMUM_AST_EXTENSION_VERSION;
+            // This should not be reached since minimum PHP version is 8.1
+            $min_version = '1.0.10';
         }
         return \version_compare(\phpversion('ast') ?: '0.0.0', $min_version) >= 0;
     }
