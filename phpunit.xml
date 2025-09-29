@@ -1,92 +1,77 @@
-<phpunit
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/5.0/phpunit.xsd"
-        bootstrap="tests/bootstrap.php"
-        colors="true"
-        convertErrorsToExceptions="true"
-        convertNoticesToExceptions="true"
-        convertWarningsToExceptions="true"
-        stopOnError="true"
-        stopOnFailure="false"
-        stopOnIncomplete="false"
-        stopOnSkipped="false"
-        stopOnRisky="false"
-        backupStaticAttributes="true"
-        verbose="false">
-
-    <php>
-        <!-- Affects tests of CLI, etc. -->
-        <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true" />
-        <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true" />
-        <env name="PHAN_DISABLE_PROGRESS_BAR" value="1" force="true" />
-        <env name="PHAN_COLOR_SCHEME" value="" force="true" />
-        <ini name="serialize_precision" value="-1"/>
-    </php>
-
-    <testsuites>
-        <testsuite name="ForkPoolTest">
-            <file>tests/Phan/ForkPoolTest.php</file>
-        </testsuite>
-        <testsuite name="PhanTest">
-            <file>tests/Phan/PhanTest0.php</file>
-            <file>tests/Phan/PhanTest1.php</file>
-            <file>tests/Phan/PhanTest2.php</file>
-            <file>tests/Phan/PhanTest3.php</file>
-            <file>tests/Phan/PhanTest4.php</file>
-            <file>tests/Phan/PhanTest5.php</file>
-            <file>tests/Phan/PhanTest6.php</file>
-            <file>tests/Phan/PhanTest7.php</file>
-            <file>tests/Phan/PhanTest8.php</file>
-            <file>tests/Phan/PhanTestNew.php</file>
-        </testsuite>
-        <testsuite name="RasmusTest">
-            <file>tests/Phan/RasmusTest.php</file>
-        </testsuite>
-        <testsuite name="MultiFileTest">
-            <file>tests/Phan/MultiFileTest.php</file>
-        </testsuite>
-        <testsuite name="SoapTest">
-            <file>tests/Phan/SoapTest.php</file>
-        </testsuite>
-        <testsuite name="IntlTest">
-            <file>tests/Phan/IntlTest.php</file>
-        </testsuite>
-        <testsuite name="LanguageTest">
-            <directory>tests/Phan/Language</directory>
-        </testsuite>
-        <testsuite name="UtilTest">
-            <file>tests/Phan/AnalyzerTest.php</file>
-            <file>tests/Phan/DebugTest.php</file>
-            <directory>tests/Phan/Analysis</directory>
-            <directory>tests/Phan/AST</directory>
-            <directory>tests/Phan/Exception</directory>
-            <directory>tests/Phan/Internal</directory>
-            <directory>tests/Phan/LanguageServer</directory>
-            <directory>tests/Phan/Library</directory>
-            <directory>tests/Phan/Output</directory>
-        </testsuite>
-        <testsuite name="PHP81Test">
-            <file>tests/Phan/PHP81Test.php</file>
-        </testsuite>
-        <testsuite name="PHP82Test">
-            <file>tests/Phan/PHP82Test.php</file>
-        </testsuite>
-        <testsuite name="PHP83Test">
-            <file>tests/Phan/PHP83Test.php</file>
-        </testsuite>
-        <testsuite name="PHP84Test">
-            <file>tests/Phan/PHP84Test.php</file>
-        </testsuite>
-        <testsuite name="All">
-            <directory>tests/Phan</directory>
-        </testsuite>
-    </testsuites>
-    <filter>
-        <whitelist>
-            <directory>src/Phan</directory>
-            <exclude>
-                <directory>src/Phan/Language/Internal</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" backupStaticAttributes="true" verbose="false">
+  <coverage>
+    <include>
+      <directory>src/Phan</directory>
+    </include>
+    <exclude>
+      <directory>src/Phan/Language/Internal</directory>
+    </exclude>
+  </coverage>
+  <php>
+    <!-- Affects tests of CLI, etc. -->
+    <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true"/>
+    <env name="PHAN_DISABLE_COLOR_OUTPUT" value="" force="true"/>
+    <env name="PHAN_DISABLE_PROGRESS_BAR" value="1" force="true"/>
+    <env name="PHAN_COLOR_SCHEME" value="" force="true"/>
+    <ini name="serialize_precision" value="-1"/>
+  </php>
+  <testsuites>
+    <testsuite name="ForkPoolTest">
+      <file>tests/Phan/ForkPoolTest.php</file>
+    </testsuite>
+    <testsuite name="PhanTest">
+      <file>tests/Phan/PhanTest0.php</file>
+      <file>tests/Phan/PhanTest1.php</file>
+      <file>tests/Phan/PhanTest2.php</file>
+      <file>tests/Phan/PhanTest3.php</file>
+      <file>tests/Phan/PhanTest4.php</file>
+      <file>tests/Phan/PhanTest5.php</file>
+      <file>tests/Phan/PhanTest6.php</file>
+      <file>tests/Phan/PhanTest7.php</file>
+      <file>tests/Phan/PhanTest8.php</file>
+      <file>tests/Phan/PhanTestNew.php</file>
+    </testsuite>
+    <testsuite name="RasmusTest">
+      <file>tests/Phan/RasmusTest.php</file>
+    </testsuite>
+    <testsuite name="MultiFileTest">
+      <file>tests/Phan/MultiFileTest.php</file>
+    </testsuite>
+    <testsuite name="SoapTest">
+      <file>tests/Phan/SoapTest.php</file>
+    </testsuite>
+    <testsuite name="IntlTest">
+      <file>tests/Phan/IntlTest.php</file>
+    </testsuite>
+    <testsuite name="LanguageTest">
+      <directory>tests/Phan/Language</directory>
+    </testsuite>
+    <testsuite name="UtilTest">
+      <file>tests/Phan/AnalyzerTest.php</file>
+      <file>tests/Phan/DebugTest.php</file>
+      <directory>tests/Phan/Analysis</directory>
+      <directory>tests/Phan/AST</directory>
+      <directory>tests/Phan/Exception</directory>
+      <directory>tests/Phan/Internal</directory>
+      <directory>tests/Phan/LanguageServer</directory>
+      <directory>tests/Phan/Library</directory>
+      <directory>tests/Phan/Output</directory>
+    </testsuite>
+    <testsuite name="PHP81Test">
+      <file>tests/Phan/PHP81Test.php</file>
+    </testsuite>
+    <testsuite name="PHP82Test">
+      <file>tests/Phan/PHP82Test.php</file>
+    </testsuite>
+    <testsuite name="PHP83Test">
+      <file>tests/Phan/PHP83Test.php</file>
+    </testsuite>
+    <testsuite name="PHP84Test">
+      <file>tests/Phan/PHP84Test.php</file>
+    </testsuite>
+    <testsuite name="All">
+      <directory>tests/Phan</directory>
+    </testsuite>
+  </testsuites>
 </phpunit>

@@ -31,7 +31,7 @@ abstract class BaseTest extends TestCase
      *
      * @suppress PhanReadOnlyProtectedProperty, UnusedSuppression read by phpunit framework
      */
-    protected $backupStaticAttributesBlacklist = [
+    protected $backupStaticAttributesExcludeList = [
         'Phan\AST\PhanAnnotationAdder' => [
             'closures_for_kind',
         ],
