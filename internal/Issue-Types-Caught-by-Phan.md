@@ -3059,6 +3059,24 @@ Saw {CODE} exponentiating to a power of type {TYPE} (the result will always be 1
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0761_division_by_zero.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0761_division_by_zero.php#L14).
 
+## PhanPropertyHookFinalOverride
+
+```
+Cannot override final property hook {PROPERTY}::{METHOD} defined at {FILE}:{LINE}
+```
+
+## PhanPropertyHookIncompatibleParamType
+
+```
+Property hook {PROPERTY}::{METHOD} parameter {PARAMETER} has type {TYPE} which is incompatible with property type {TYPE}
+```
+
+## PhanPropertyHookIncompatibleReturnType
+
+```
+Property hook {PROPERTY}::{METHOD} returns {CODE} of type {TYPE} but property is declared as {TYPE}
+```
+
 ## PhanRedundantCondition
 
 ```
@@ -5321,6 +5339,18 @@ PHP warns about private method {METHOD} being final starting in php 8.0
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0951_private_final.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0951_private_final.php#L4).
+
+## PhanPropertyHookWithDefaultValue
+
+```
+Property {PROPERTY} has both hooks and a default value - hooks with default values are not allowed
+```
+
+## PhanReadonlyPropertyHasSetHook
+
+```
+Readonly property {PROPERTY} cannot have a set hook
+```
 
 ## PhanReadonlyPropertyMissingType
 
