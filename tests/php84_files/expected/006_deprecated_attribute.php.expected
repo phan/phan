@@ -1,0 +1,7 @@
+%s:42 PhanDeprecatedFunction Call to deprecated function \oldFunction() defined at %s:9
+%s:43 PhanDeprecatedFunction Call to deprecated function \oldFunctionWithMessage() defined at %s:13
+%s:44 PhanDeprecatedFunction Call to deprecated function \oldFunctionWithVersion() defined at %s:17
+%s:47 PhanDeprecatedFunction Call to deprecated function \MyClass::oldMethod() defined at %s:22
+%s:48 PhanDeprecatedFunction Call to deprecated function \MyClass::oldMethodWithMessage() defined at %s:25
+%s:50 PhanDeprecatedClassConstant Reference to deprecated class constant \Constants::OLD_CONSTANT defined at %s:33
+%s:51 PhanDeprecatedClassConstant Reference to deprecated class constant \Constants::OLD_CONSTANT_WITH_MESSAGE defined at %s:36

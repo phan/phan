@@ -254,9 +254,9 @@ class Func extends AddressableElement implements FunctionInterface
 
         $func->setNumberOfOptionalParameters(\count($parameter_list) - $required_parameter_count);
 
-        // Check to see if the comment specifies that the
+        // Check to see if the comment or #[Deprecated] attribute (PHP 8.4+) specifies that the
         // function is deprecated
-        $func->setIsDeprecated($comment->isDeprecated());
+        $func->setIsDeprecated($comment->isDeprecated() || $func->hasDeprecatedAttribute());
 
         // Set whether or not the function is internal to
         // the namespace.

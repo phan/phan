@@ -11,6 +11,17 @@ New features:
   - Return type compatibility validation (PhanPropertyHookIncompatibleReturnType)
   - Parameter type compatibility validation (PhanPropertyHookIncompatibleParamType)
   - Final hook override detection (PhanPropertyHookFinalOverride)
+- Support for PHP 8.4 #[Deprecated] attribute
+  - Recognize #[Deprecated] attribute on functions, methods, and class constants
+  - Works alongside existing @deprecated PHPDoc comment support
+  - Emits PhanDeprecatedFunction and PhanDeprecatedClassConstant warnings when deprecated elements are used
+- Support for new PHP 8.4 functions and methods
+  - DateTime::createFromTimestamp() / DateTimeImmutable::createFromTimestamp()
+  - DOMXPath::registerPHPFunctionNS()
+  - All new PHP 8.4 functions: array_find, array_find_key, array_any, array_all, mb_trim, mb_ltrim, mb_rtrim, mb_ucfirst, mb_lcfirst, and more
+- Full support for "new without parentheses" syntax (e.g., `new MyClass()->method()`)
+  - Type inference works correctly across method chains
+  - Property and array access supported
 
 Breaking changes:
 - Requires PHP 8.1+ to run (dropped PHP 8.0 support)

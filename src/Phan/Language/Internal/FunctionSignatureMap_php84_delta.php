@@ -6,6 +6,9 @@
  */
 return [
   'added' => [
+      'DateTime::createFromTimestamp' => ['static', 'timestamp'=>'int|float'],
+      'DateTimeImmutable::createFromTimestamp' => ['static', 'timestamp'=>'int|float'],
+      'DOMXPath::registerPHPFunctionNS' => ['void', 'namespaceURI'=>'string', 'name'=>'string', 'callable'=>'callable'],
       'intltz_get_iana_id' => ['string|false', 'timezoneId'=>'string'],
       'opcache_jit_blacklist' => ['void', 'closure'=>'callable'],
       'pcntl_getcpu' => ['int'],

@@ -31,4 +31,19 @@ trait HasAttributesTrait
     {
         return $this->attribute_list;
     }
+
+    /**
+     * Check if this element has a #[Deprecated] attribute (PHP 8.4+)
+     */
+    public function hasDeprecatedAttribute(): bool
+    {
+        foreach ($this->attribute_list as $attribute) {
+            $fqsen = $attribute->getFQSEN();
+            // Check for both \Deprecated and Deprecated (in root namespace)
+            if ($fqsen->__toString() === '\\Deprecated') {
+                return true;
+            }
+        }
+        return false;
+    }
 }
