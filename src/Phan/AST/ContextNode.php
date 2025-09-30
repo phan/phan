@@ -1101,14 +1101,21 @@ class ContextNode
     ): Func {
         if ($return_placeholder_for_undefined) {
             $functions = $this->code_base->getPlaceholdersForUndeclaredFunction($function_fqsen);
-            Issue::maybeEmitWithParameters(
-                $this->code_base,
-                $this->context,
-                Issue::UndeclaredFunction,
-                $this->node->lineno ?? $this->context->getLineNumberStart(),
-                [ "$function_fqsen()" ],
-                IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $this->context, $namespaced_function_fqsen ?? $function_fqsen, $suggest_in_global_namespace)
-            );
+            // Debug logging for exit
+            if (\strtolower($function_fqsen->getName()) === 'exit') {
+                \error_log("DEBUG ContextNode: exit lookup, found=" . count($functions) . " functions");
+            }
+            // Only emit UndeclaredFunction if no placeholder was found in the signature map
+            if (!$functions) {
+                Issue::maybeEmitWithParameters(
+                    $this->code_base,
+                    $this->context,
+                    Issue::UndeclaredFunction,
+                    $this->node->lineno ?? $this->context->getLineNumberStart(),
+                    [ "$function_fqsen()" ],
+                    IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $this->context, $namespaced_function_fqsen ?? $function_fqsen, $suggest_in_global_namespace)
+                );
+            }
             if ($functions) {
                 return $functions[0];
             }
