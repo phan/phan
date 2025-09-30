@@ -11,8 +11,4 @@ ADD composer.json composer.lock ./
 ADD patches patches
 RUN composer.phar install && composer.phar clear-cache
 
-# This adds another 30MB to the installation size
-# ADD internal/paratest internal/paratest
-# RUN cd internal/paratest && ./install.sh
-
 ADD . .

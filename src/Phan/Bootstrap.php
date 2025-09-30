@@ -364,11 +364,6 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler
         return true;
     }
-    if ($errno === E_USER_DEPRECATED && preg_match('/(^Passing a command as string when creating a |method is deprecated since Symfony 4\.4)/', $errstr)) {
-        // Suppress deprecation notices running `vendor/bin/paratest`.
-        // Don't execute the PHP internal error handler.
-        return true;
-    }
     if ($errno === E_DEPRECATED) {
         // Suppress PHP 8.5+ deprecations
         if (PHP_VERSION_ID >= 80500) {
@@ -382,9 +377,8 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
                 return true;
             }
         }
-        // Because php 7.2 is used in CI we're stuck on an unmaintained paratest version.
         // NOTE: Known issues with dynamic properties in tolerant-php-parser are fixed in `main` (but not 0.1.1) but there may be remaining unknown ones.
-        if (preg_match('/^Creation of dynamic property (ParaTest\\\\Runners|Microsoft\\\\PhpParser|Phan\\\\LanguageServer\\\\LanguageServer::)/', $errstr)) {
+        if (preg_match('/^Creation of dynamic property (Microsoft\\\\PhpParser|Phan\\\\LanguageServer\\\\LanguageServer::)/', $errstr)) {
             return true;
         }
         if (preg_match('/^Use of "\w+" in callables is deprecated/i', $errstr) && str_contains(str_replace('\\', '/', $errfile), 'vendor/webmozart/assert')) {
@@ -393,8 +387,7 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
             return true;
         }
         if (preg_match('/^(Constant |Method ReflectionParameter::getClass)/', $errstr)) {
-            // Suppress deprecation notices running `vendor/bin/paratest` in php 8
-            // Constants such as ENCHANT can be deprecated when calling constant()
+            // Suppress deprecation notices - constants such as ENCHANT can be deprecated when calling constant()
             return true;
         }
         if (preg_match('/^The Serializable interface is deprecated/', $errstr)) {
