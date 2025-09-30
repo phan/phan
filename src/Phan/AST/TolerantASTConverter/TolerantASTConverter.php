@@ -2969,10 +2969,10 @@ class TolerantASTConverter
             'const' => $const_list_node,
             'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
         ];
-        // AST version 120+ running on PHP 8.4+ adds 'type' field to AST_CLASS_CONST_GROUP
-        // (typed class constants are a PHP 8.4+ feature)
+        // AST version 120+ running on PHP 8.3+ adds 'type' field to AST_CLASS_CONST_GROUP
+        // (typed class constants are a PHP 8.3+ feature with php-ast 1.1.2+)
         // Note: tolerant-php-parser doesn't support class const types yet, so always null
-        if (self::$ast_version_parsing >= 120 && \PHP_VERSION_ID >= 80400) {
+        if (self::$ast_version_parsing >= 120 && \PHP_VERSION_ID >= 80300) {
             $children['type'] = null;
         }
         return new ast\Node(
