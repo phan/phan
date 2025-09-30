@@ -49,10 +49,10 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. It a
 ./tests/run_test PHP84Test                 # PHP 8.4 specific tests
 
 # Run all integration tests
-./tests/run_all_tests.sh
+./tests/run_all_tests
 
 # Run individual unit test file
-./vendor/bin/phpunit tests/Phan/Language/PropertyHookTest.php
+./vendor/bin/phpunit tests/Phan/Language/Internal/PropertyMapTest.php
 ```
 
 ### Development Tools
@@ -343,6 +343,193 @@ When writing tests that create Type instances, be aware of PHPUnit's global stat
 
 - PHP version-specific tests go in `tests/phpXX_files/` directories
 - Expected output files use `.expected` extension with `%s` for file paths
+- PHP version-specific expected output: Use `.expectedXX` suffix (e.g., `.expected84` for PHP 8.4)
 - Tests without plugin output should have empty expected files if no warnings are expected
 - Use `./tests/run_test TestName` for integration tests
 - Use `./vendor/bin/phpunit` for unit tests
+
+## PHP Version-Specific Behavior and Testing
+
+### AST Version 110/120 Support (PHP 8.4+)
+
+**Key Changes:**
+- AST version 120 represents `exit`/`die` as `AST_CALL` nodes instead of `AST_EXIT` nodes
+- PHP 8.4 made `exit()` a real function with `never` return type
+- TolerantASTConverter (fallback parser) must match php-ast extension behavior exactly
+
+**Critical Implementation Details:**
+
+1. **exit() Representation Varies by PHP Version:**
+   ```php
+   // On PHP 8.1-8.3 with AST 120: exit; produces AST_ARG_LIST with [null]
+   // On PHP 8.4+ with AST 120: exit; produces AST_ARG_LIST with empty array []
+
+   // TolerantASTConverter must check PHP_VERSION_ID:
+   $arg_list_children = $expr_node !== null ? [$expr_node] :
+       (\PHP_VERSION_ID >= 80400 ? [] : [null]);
+   ```
+
+2. **Function Signature Updates:**
+   - Add to `FunctionSignatureMap_php84_delta.php` in 'changed' section:
+     ```php
+     'exit' => [
+         'old' => ['', 'status='=>'string|int'],
+         'new' => ['never', 'status='=>'string|int'],
+     ],
+     ```
+
+3. **Config Setting to Avoid False Positives:**
+   ```php
+   // In .phan/config.php - allows exit() to be recognized on PHP < 8.4
+   'ignore_undeclared_functions_with_known_signatures' => true,
+   ```
+
+4. **Version-Specific Test Expectations:**
+   - Use `.expected` for PHP 8.1-8.3 behavior
+   - Use `.expected84` for PHP 8.4-specific behavior
+   - The `test.sh` script automatically selects the right file based on PHP version
+
+### Switching PHP Versions Locally
+
+```bash
+# Switch between PHP versions for testing
+sudo newphp 81  # Switch to PHP 8.1
+sudo newphp 84  # Switch to PHP 8.4
+
+# Verify current PHP version
+php -v
+
+# Test with specific PHP version
+./vendor/bin/phpunit --filter="testFallbackFromParser"
+```
+
+### TolerantASTConverter Testing
+
+The TolerantASTConverter fallback parser must produce identical AST output to the php-ast extension:
+
+**Test Pattern:**
+```bash
+# Run TolerantASTConverter tests to ensure fallback parser matches php-ast
+./vendor/bin/phpunit --filter="testFallbackFromParser"
+```
+
+**Common Issues:**
+- **Line number mismatches**: Fallback parser may calculate line numbers differently for multi-line attributes
+- **AST structure differences**: Must match php-ast extension exactly, including null vs empty array differences
+- **Windows-specific issues**: Some tests only fail on Windows (AppVeyor) due to path or parser differences
+
+### AppVeyor Configuration
+
+AppVeyor runs Windows CI builds. Key notes:
+
+**Configuration file:** `.appveyor.yml`
+
+**Branch filtering:**
+```yaml
+branches:
+  only:
+    - v5
+    - v6
+```
+
+**Disabling problematic tests:**
+```yaml
+# Disable PHP 8.4 temporarily if TolerantASTConverter has issues
+# - PHP_EXT_VERSION: '8.4'
+#   PHP_VERSION: '8.4.0'
+#   ...
+```
+
+**Common AppVeyor Issues:**
+- Symfony Console deprecation warnings on PHP 8.4 interfere with test output parsing
+- TolerantASTConverter line number issues are more visible on Windows
+- Can disable specific PHP versions while issues are being investigated
+
+### CI and PR Management Workflow
+
+**Typical workflow for feature branches:**
+
+1. **Create feature branch from base:**
+   ```bash
+   git checkout -b feature-name base-branch
+   ```
+
+2. **When base branch gets merged to main branch:**
+   ```bash
+   # Update PR target branch
+   gh pr edit PR_NUMBER --base v6
+
+   # Rebase feature branch onto new target
+   git fetch origin
+   git rebase origin/v6
+
+   # Force push rebased branch
+   git push --force-with-lease
+   ```
+
+3. **Trigger CI if it doesn't auto-start:**
+   ```bash
+   git commit --allow-empty -m "Trigger CI"
+   git push
+   ```
+
+4. **Monitor CI status:**
+   ```bash
+   gh pr checks PR_NUMBER
+   gh pr view PR_NUMBER
+   ```
+
+**Merge strategies:**
+- **Merge commit**: Best for feature branches - preserves history and makes features easy to revert
+- **Rebase and merge**: Creates linear history but loses feature branch context
+- **Squash and merge**: Loses individual commit history, use sparingly
+
+### PHP 8.4 Feature Implementation Patterns
+
+When adding new PHP 8.4 features:
+
+1. **Check if AST changes are needed:**
+   - Use `./dump_ast.php` to inspect AST structure
+   - Compare AST between PHP versions
+   - Update visitors in `KindVisitorImplementation.php` if new node types exist
+
+2. **Update function signatures:**
+   - Add new functions to `FunctionSignatureMap_php84_delta.php`
+   - Add return types to `FunctionSignatureMapReal.php`
+   - Keep alphabetical ordering in signature maps
+
+3. **Add version-specific tests:**
+   - Create test in `tests/php84_files/src/`
+   - Add expected output in `tests/php84_files/expected/`
+   - Use `.expected84` if behavior differs from earlier PHP versions
+
+4. **Test across all PHP versions:**
+   ```bash
+   # Test on PHP 8.1, 8.2, 8.3, 8.4
+   for ver in 81 82 83 84; do
+       sudo newphp $ver
+       ./vendor/bin/phpunit
+   done
+   ```
+
+### Common PHP 8.4 Changes Implemented
+
+**Property Hooks:**
+- New AST node types: `AST_PROPERTY_HOOK`, `AST_PROPERTY_HOOK_SHORT_BODY`
+- New property field: `hooks` in `AST_PROP_ELEM`
+- Implementation: `PropertyHook` element class, validation in `ParseVisitor`
+
+**#[Deprecated] Attribute:**
+- Check both PHPDoc `@deprecated` and `#[Deprecated]` attribute
+- Implementation in `HasAttributesTrait::hasDeprecatedAttribute()`
+- Works on functions, methods, and class constants
+
+**exit() as Function:**
+- Changed from language construct to function with `never` return type
+- AST representation changed in version 110/120
+- Version-specific behavior in TolerantASTConverter
+
+**New Without Parentheses:**
+- Syntax: `new MyClass()->method()`
+- Works automatically via php-ast, no special handling needed
+- Type inference works correctly across method chains
