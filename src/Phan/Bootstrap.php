@@ -360,12 +360,12 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     }
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations.
     // In PHP 8.0, "Unable" becomes uppercase.
-    if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/i', $errstr)) {
-        // Don't execute the PHP internal error handler
-        return true;
-    }
-    if ($errno === E_NOTICE) {
-        // Suppress PHP 8.5+ notices
+    if ($errno === E_WARNING) {
+        if (preg_match('/^stream_select.*unable to select/i', $errstr)) {
+            // Don't execute the PHP internal error handler
+            return true;
+        }
+        // Suppress PHP 8.5+ warnings
         if (PHP_VERSION_ID >= 80500) {
             // Float to int cast overflow - Phan intentionally casts large floats for type analysis
             if (preg_match('/The float .+ is not representable as an int, cast occurred/', $errstr)) {
