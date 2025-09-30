@@ -905,6 +905,10 @@ class TolerantASTConverter
                 // AST version 120 represents exit/die as AST_CALL instead of AST_EXIT
                 if (self::$ast_version_parsing >= 120) {
                     // Both exit and die are normalized to 'exit' in the AST with NAME_FQ flag
+                    // PHP 8.4+ changed exit() to a real function, so the AST representation changed:
+                    // - PHP 8.1-8.3: exit with no args has AST_ARG_LIST with [null]
+                    // - PHP 8.4+: exit with no args has AST_ARG_LIST with empty array
+                    $arg_list_children = $expr_node !== null ? [$expr_node] : (\PHP_VERSION_ID >= 80400 ? [] : [null]);
                     return new ast\Node(
                         ast\AST_CALL,
                         0,
@@ -913,8 +917,7 @@ class TolerantASTConverter
                             'args' => new ast\Node(
                                 ast\AST_ARG_LIST,
                                 0,
-                                // exit with no args has empty arg list, exit($expr) has one arg
-                                $expr_node !== null ? [$expr_node] : [],
+                                $arg_list_children,
                                 $start_line
                             ),
                         ],
