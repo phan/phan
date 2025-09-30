@@ -637,7 +637,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         }
         // In AST version 120+, exit/die are represented as AST_CALL instead of AST_EXIT
         // This happens regardless of the PHP version running Phan
-        if (\ast\get_supported_versions()[0] >= 120) {
+        if (\Phan\Config::AST_VERSION >= 120) {
             if ($function_name === 'exit' || $function_name === 'die') {
                 return self::STATUS_NORETURN;
             }
