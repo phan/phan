@@ -381,6 +381,10 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
             if (preg_match('/Using null as an array offset is deprecated/', $errstr)) {
                 return true;
             }
+            // SplObjectStorage::attach() deprecated in favor of ::offsetSet()
+            if (preg_match('/Method SplObjectStorage::attach\(\) is deprecated/', $errstr)) {
+                return true;
+            }
         }
         // Because php 7.2 is used in CI we're stuck on an unmaintained paratest version.
         // NOTE: Known issues with dynamic properties in tolerant-php-parser are fixed in `main` (but not 0.1.1) but there may be remaining unknown ones.
