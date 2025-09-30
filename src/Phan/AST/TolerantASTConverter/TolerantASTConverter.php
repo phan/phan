@@ -913,8 +913,8 @@ class TolerantASTConverter
                             'args' => new ast\Node(
                                 ast\AST_ARG_LIST,
                                 0,
-                                // exit/exit() always has one arg in the list: either the expression or null
-                                [$expr_node],
+                                // exit with no args has empty arg list, exit($expr) has one arg
+                                $expr_node !== null ? [$expr_node] : [],
                                 $start_line
                             ),
                         ],
