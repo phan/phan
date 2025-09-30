@@ -1111,10 +1111,10 @@ final class ArgumentType
      * for a call made from the line $lineno.
      *
      * @param int $i the index of the parameter.
-     * @param Node|string|int|float $argument_node
+     * @param Node|string|int|float|null $argument_node
      * @param ?Node $node the node of the call TODO: Default
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, \ast\Node|float|int|string $argument_node, ?Node $node): void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, \ast\Node|float|int|string|null $argument_node, ?Node $node): void
     {
         // Expand it to include all parent types up the chain
         try {
