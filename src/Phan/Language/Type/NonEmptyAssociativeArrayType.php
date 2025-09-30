@@ -44,7 +44,7 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
         $map = $canonical_object_maps[$map_index];
 
         if (!$map->contains($type)) {
-            $map->attach(
+            $map->offsetSet(
                 $type,
                 new NonEmptyAssociativeArrayType($type, $is_nullable, $key_type)
             );

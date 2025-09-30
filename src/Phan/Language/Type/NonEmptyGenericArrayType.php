@@ -44,7 +44,7 @@ final class NonEmptyGenericArrayType extends GenericArrayType implements NonEmpt
         $map = $canonical_object_maps[$map_index];
 
         if (!$map->contains($type)) {
-            $map->attach(
+            $map->offsetSet(
                 $type,
                 new NonEmptyGenericArrayType($type, $is_nullable, $key_type)
             );

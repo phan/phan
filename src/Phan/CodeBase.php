@@ -587,7 +587,7 @@ class CodeBase
         }
 
         foreach ($internal_function_name_list as $function_name) {
-            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
+            $this->internal_function_fqsen_set->offsetSet(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
         }
     }
 
@@ -867,7 +867,7 @@ class CodeBase
             $this->fqsen_alias_map->offsetSet($original, new Set());
         }
         $alias_record = new ClassAliasRecord($alias, $context, $lineno);
-        $this->fqsen_alias_map->offsetGet($original)->attach($alias_record);
+        $this->fqsen_alias_map->offsetGet($original)->offsetSet($alias_record);
 
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
@@ -1091,7 +1091,7 @@ class CodeBase
             $method->getFQSEN()
         )->addMethod($method);
 
-        $this->method_set->attach($method);
+        $this->method_set->offsetSet($method);
 
         // If we're doing dead code detection(or something else) and this is a
         // method, map the name to the FQSEN so we can do hail-
@@ -1100,7 +1100,7 @@ class CodeBase
             if (!isset($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
-            $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
+            $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->offsetSet($method);
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
@@ -1180,7 +1180,7 @@ class CodeBase
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
             // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
-            $set->attach($value);
+            $set->offsetSet($value);
         }
         return $set;
     }

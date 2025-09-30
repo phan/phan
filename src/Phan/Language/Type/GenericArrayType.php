@@ -255,7 +255,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         $map = $canonical_object_maps[$map_index];
 
         if (!$map->contains($type)) {
-            $map->attach(
+            $map->offsetSet(
                 $type,
                 new GenericArrayType($type, $is_nullable, $key_type)
             );

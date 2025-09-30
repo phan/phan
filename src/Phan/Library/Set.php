@@ -40,7 +40,7 @@ class Set extends \SplObjectStorage
     public function __construct($element_iterator = null)
     {
         foreach ($element_iterator ?? [] as $element) {
-            $this->attach($element);
+            $this->offsetSet($element);
         }
     }
 
@@ -66,7 +66,7 @@ class Set extends \SplObjectStorage
         $set = new Set();
         foreach ($this as $element) {
             if ($other->contains($element)) {
-                $set->attach($element);
+                $set->offsetSet($element);
             }
         }
         return $set;
@@ -178,7 +178,7 @@ class Set extends \SplObjectStorage
         $set = new Set();
         foreach ($this as $element) {
             if ($closure($element)) {
-                $set->attach($element);
+                $set->offsetSet($element);
             }
         }
         return $set;
@@ -197,7 +197,7 @@ class Set extends \SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $element) {
-            $set->attach($closure($element));
+            $set->offsetSet($closure($element));
         }
         return $set;
     }
