@@ -588,9 +588,9 @@ class Method extends ClassElement implements FunctionInterface
 
         $method->setNumberOfOptionalParameters(\count($parameter_list) - $required_parameter_count);
 
-        // Check to see if the comment specifies that the
+        // Check to see if the comment or #[Deprecated] attribute (PHP 8.4+) specifies that the
         // method is deprecated
-        $method->setIsDeprecated($comment->isDeprecated());
+        $method->setIsDeprecated($comment->isDeprecated() || $method->hasDeprecatedAttribute());
 
         // Set whether or not the method is internal to
         // the namespace.

@@ -1242,6 +1242,10 @@ class ParseVisitor extends ScopeVisitor
     private function handleClassConstantComment(ClassConstant $constant, Comment $comment): void
     {
         $constant->setIsDeprecated($comment->isDeprecated());
+        // Check for #[Deprecated] attribute (PHP 8.4+)
+        if ($constant->hasDeprecatedAttribute()) {
+            $constant->setIsDeprecated(true);
+        }
         $constant->setIsNSInternal($comment->isNSInternal());
         $constant->setIsOverrideIntended($comment->isOverrideIntended());
         $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
