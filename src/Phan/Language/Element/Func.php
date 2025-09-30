@@ -165,9 +165,12 @@ class Func extends AddressableElement implements FunctionInterface
     ): Func {
         // Create the skeleton function object from what
         // we know so far
+        // Note: In AST version 110+, closures no longer have a 'name' field
+        // (it was '{closure}' in earlier versions but was removed)
+        $name = $node->children['name'] ?? '{closure}';
         $func = new Func(
             $context,
-            (string)$node->children['name'],
+            (string)$name,
             UnionType::empty(),
             $node->flags,
             $fqsen,
