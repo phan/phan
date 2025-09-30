@@ -364,6 +364,15 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Don't execute the PHP internal error handler
         return true;
     }
+    if ($errno === E_NOTICE) {
+        // Suppress PHP 8.5+ notices
+        if (PHP_VERSION_ID >= 80500) {
+            // Float to int cast overflow - Phan intentionally casts large floats for type analysis
+            if (preg_match('/The float .+ is not representable as an int, cast occurred/', $errstr)) {
+                return true;
+            }
+        }
+    }
     if ($errno === E_DEPRECATED) {
         // Suppress PHP 8.5+ deprecations
         if (PHP_VERSION_ID >= 80500) {
