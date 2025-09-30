@@ -7,6 +7,7 @@ WORKDIR /phan
 RUN apt-get update && apt-get install -y unzip parallel colordiff sqlite3 && apt-get clean
 
 ADD composer.json composer.lock ./
+ADD patches patches
 RUN composer.phar install && composer.phar clear-cache
 
 # This adds another 30MB to the installation size
