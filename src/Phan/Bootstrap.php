@@ -373,7 +373,8 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         // Suppress PHP 8.5+ deprecations
         if (PHP_VERSION_ID >= 80500) {
             // symfony/string __wakeup()/__sleep() deprecations until Symfony 6.5 adds compatibility
-            if (preg_match('/(__wakeup|__sleep).*serialization magic method/', $errstr) && str_contains($errfile, 'vendor/symfony/string/')) {
+            // Note: These can be triggered from any file due to opcache unserialization
+            if (preg_match('/(__wakeup|__sleep).*serialization magic method/', $errstr)) {
                 return true;
             }
             // null as array offset is deprecated in PHP 8.5 - Phan intentionally uses null for type analysis
