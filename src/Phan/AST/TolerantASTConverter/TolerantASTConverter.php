@@ -915,7 +915,8 @@ class TolerantASTConverter
                             'args' => new ast\Node(
                                 ast\AST_ARG_LIST,
                                 0,
-                                $expr_node !== null ? [new ast\Node(ast\AST_ARG, 0, ['expr' => $expr_node, 'name' => null], $start_line)] : [],
+                                // In AST 120, arg list children are just the expression values directly
+                                $expr_node !== null ? [$expr_node] : [],
                                 $start_line
                             ),
                         ],
