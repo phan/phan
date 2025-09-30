@@ -46,6 +46,15 @@ Usage: ./phan [options] [files...]
   exclusion of any other directories or files passed in. This
   is unlikely to be useful.
 
+ -n
+  Quick analysis mode. Skip reading .phan/config.php and analyze
+  only the files specified as arguments.
+
+  Example: phan -n test1.php test2.php
+
+  This is useful for quick testing without setting up a full Phan
+  configuration.
+
  -k, --config-file <file>
   A path to a config file to load (instead of the default of
   `.phan/config.php`).
