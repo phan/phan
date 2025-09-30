@@ -1185,7 +1185,7 @@ final class ArgumentType
                         }
                     }
                 }
-                if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
+                if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1 && $argument_node !== null) {
                     self::analyzeParameterStrict($code_base, $context, $method, $argument_node, $argument_type, $alternate_parameter, $alternate_parameter_type, $lineno, $i);
                 }
                 if ($alternate_parameter->shouldWarnIfProvided()) {
@@ -1276,7 +1276,9 @@ final class ArgumentType
             }
         }
         // Check suppressions and emit the issue
-        self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        if ($argument_node !== null) {
+            self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        }
     }
 
     private static function hasTemplateTypeFromFunctionRecursive(UnionType $union_type, FunctionInterface $function): bool {
