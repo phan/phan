@@ -2967,24 +2967,31 @@ class UnionType implements Serializable, Stringable
             if ($class_type->isNativeType()) {
                 continue;
             }
-            // Get the class FQSEN
-            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
-
-            if ($class_type->isStaticType()) {
-                if (!$context->isInClassScope()) {
-                    throw new IssueException(
-                        Issue::fromType(Issue::ContextNotObject)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(),
-                            [
-                                $class_type->getName()
-                            ]
-                        )
-                    );
+            // Handle intersection types by iterating over their parts
+            $type_parts = $class_type instanceof IntersectionType ? $class_type->getTypeParts() : [$class_type];
+            foreach ($type_parts as $part) {
+                if ($part->isNativeType()) {
+                    continue;
                 }
-                yield $class_fqsen;
-            } else {
-                yield $class_fqsen;
+                // Get the class FQSEN
+                $class_fqsen = FullyQualifiedClassName::fromType($part);
+
+                if ($part->isStaticType()) {
+                    if (!$context->isInClassScope()) {
+                        throw new IssueException(
+                            Issue::fromType(Issue::ContextNotObject)(
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                [
+                                    $part->getName()
+                                ]
+                            )
+                        );
+                    }
+                    yield $class_fqsen;
+                } else {
+                    yield $class_fqsen;
+                }
             }
         }
     }
