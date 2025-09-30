@@ -901,6 +901,28 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ExitIntrinsicExpression' => static function (PhpParser\Node\Expression\ExitIntrinsicExpression $n, int $start_line): ast\Node {
                 $expression = $n->expression;
                 $expr_node = $expression !== null ? static::phpParserNodeToAstNode($expression) : null;
+
+                // AST version 120 represents exit/die as AST_CALL instead of AST_EXIT
+                if (self::$ast_version_parsing >= 120) {
+                    // Determine if this is 'exit' or 'die' from the exitOrDieKeyword
+                    $function_name = \strtolower($n->exitOrDieKeyword->getText($n->getFileContents()) ?? 'exit');
+
+                    return new ast\Node(
+                        ast\AST_CALL,
+                        0,
+                        [
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_NOT_FQ, ['name' => $function_name], $start_line),
+                            'args' => new ast\Node(
+                                ast\AST_ARG_LIST,
+                                0,
+                                $expr_node !== null ? [new ast\Node(ast\AST_ARG, 0, ['expr' => $expr_node, 'name' => null], $start_line)] : [],
+                                $start_line
+                            ),
+                        ],
+                        $start_line
+                    );
+                }
+
                 return new ast\Node(ast\AST_EXIT, 0, ['expr' => $expr_node], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\CallExpression' => static function (PhpParser\Node\Expression\CallExpression $n, int $start_line): ast\Node {
