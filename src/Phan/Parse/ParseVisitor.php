@@ -884,6 +884,10 @@ class ParseVisitor extends ScopeVisitor
         if ($from_parameter) {
             $phan_flags |= Flags::IS_PROMOTED_PROPERTY;
         }
+        // Check for #[Override] attribute (PHP 8.5+) in addition to @override PHPDoc
+        if ($property->hasOverrideAttribute()) {
+            $phan_flags |= Flags::IS_OVERRIDE_INTENDED;
+        }
         $property->setPhanFlags($phan_flags);
         $property->setDocComment($doc_comment);
 

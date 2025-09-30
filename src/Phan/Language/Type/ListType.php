@@ -47,7 +47,7 @@ class ListType extends GenericArrayType
 
         $map = $canonical_object_maps[$map_index];
 
-        if (!$map->contains($type)) {
+        if (!$map->offsetExists($type)) {
             $map->offsetSet(
                 $type,
                 new ListType($type, $is_nullable)

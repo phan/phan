@@ -65,7 +65,7 @@ class Set extends \SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $element) {
-            if ($other->contains($element)) {
+            if ($other->offsetExists($element)) {
                 $set->offsetSet($element);
             }
         }
@@ -154,7 +154,7 @@ class Set extends \SplObjectStorage
     public function containsAny(array $element_list): bool
     {
         foreach ($element_list as $element) {
-            if ($this->contains($element)) {
+            if ($this->offsetExists($element)) {
                 return true;
             }
         }

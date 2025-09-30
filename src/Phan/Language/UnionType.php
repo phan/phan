@@ -2058,7 +2058,7 @@ class UnionType implements Serializable, Stringable
         // type can cast to the given union type.
         foreach ($this_resolved_type_set as $type) {
             // First check if this contains the type as an optimization.
-            if ($other_resolved_type_set->contains($type)) {
+            if ($other_resolved_type_set->offsetExists($type)) {
                 continue;
             }
             $expanded_types = $type->asExpandedTypes($code_base);

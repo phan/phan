@@ -1,0 +1,3 @@
+%s:23 PhanNoDiscardReturnValueIgnored Return value of \mustUseReturnValue() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+%s:26 PhanNoDiscardReturnValueIgnored Return value of \Example::mustUseThis() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+%s:28 PhanNoDiscardReturnValueIgnored Return value of \Example::mustUseThisToo() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning

@@ -1077,6 +1077,12 @@ Saw a yield from statement with empty iterable type {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0774_empty_foreach.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0774_empty_foreach.php#L16).
 
+## PhanNoDiscardReturnValueIgnored
+
+```
+Return value of {FUNCTION} with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+```
+
 ## PhanNoopArray
 
 Emitted when you have an array that is not used in any way.

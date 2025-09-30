@@ -533,3 +533,143 @@ When adding new PHP 8.4 features:
 - Syntax: `new MyClass()->method()`
 - Works automatically via php-ast, no special handling needed
 - Type inference works correctly across method chains
+
+### PHP 8.5 Support Implementation
+
+**Overview:**
+PHP 8.5 support was added following the same patterns established for PHP 8.4. The implementation focuses on new attributes, function signatures, and deprecation warnings.
+
+**Key Changes Implemented:**
+
+1. **CI/CD Infrastructure:**
+   - Added PHP 8.5 to GitHub Actions matrix in `.github/workflows/phan.yml`
+   - Configured test environment with PHP 8.5 build and php-ast extension
+
+2. **Function Signature Updates:**
+   - Created `src/Phan/Language/Internal/FunctionSignatureMap_php85_delta.php`
+   - Added new PHP 8.5 functions with proper signatures
+   - Updated function return types (e.g., `exit()` with `never` return type)
+
+3. **#[NoDiscard] Attribute Support (PHP 8.5):**
+   - Added `hasNoDiscardAttribute()` method to `HasAttributesTrait.php`
+   - Created new issue type: `PhanNoDiscardReturnValueIgnored` (error ID 6099)
+   - Implemented checking in `PostOrderAnalysisVisitor::checkNoDiscardAttribute()`
+   - Detects when return values of functions/methods with #[NoDiscard] are ignored
+   - Supports suppression via `(void)` cast (PHP 8.5 feature)
+   - Validates all three call types: function calls, method calls, static calls
+   - Test file: `tests/php85_files/src/002_nodiscard_attribute.php`
+
+4. **#[Override] Attribute Extended to Properties (PHP 8.5):**
+   - Added `hasOverrideAttribute()` method to `HasAttributesTrait.php`
+   - Extended existing @override PHPDoc support to check for #[Override] attribute
+   - Updated `Method::fromNode()` to check both PHPDoc and attribute
+   - Updated `ParseVisitor::addProperty()` to set `IS_OVERRIDE_INTENDED` flag from attribute
+   - Already had property override validation via `CommentOverrideOnNonOverrideProperty`
+   - PHP 8.3 introduced #[Override] for methods, PHP 8.5 extends to properties
+
+5. **PHP 8.5 Deprecation Fixes:**
+   - Fixed `SplObjectStorage::attach()` deprecation (replaced with `offsetSet()`)
+   - Fixed `SplObjectStorage::contains()` deprecation (replaced with `offsetExists()`)
+   - Global replacement across entire codebase affected:
+     - `src/Phan/Language/Element/AddressableElement.php`
+     - `src/Phan/CodeBase.php`
+     - `src/Phan/Library/Set.php`
+     - `src/Phan/Library/Map.php`
+     - All array type classes (`GenericArrayType`, `ListType`, `AssociativeArrayType`, etc.)
+
+6. **Test Infrastructure:**
+   - Created `tests/php85_files/` directory structure
+   - Created `tests/php85_files/src/` for test cases
+   - Created `tests/php85_files/expected/` for expected output
+   - Added NoDiscard attribute test with expected warnings
+   - Fixed `IntersectionTypeTest` to skip `__unserialize` magic method
+   - Updated wiki documentation with new issue types
+
+**Implementation Patterns:**
+
+```php
+// Attribute detection pattern (HasAttributesTrait.php)
+public function hasNoDiscardAttribute(): bool
+{
+    foreach ($this->attribute_list as $attribute) {
+        $fqsen = $attribute->getFQSEN();
+        if ($fqsen->__toString() === '\\NoDiscard') {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Issue checking pattern (PostOrderAnalysisVisitor.php)
+private function checkNoDiscardAttribute(Node $node, $function_like): void
+{
+    // Type guard for Func/Method instances only
+    if (!($function_like instanceof \Phan\Language\Element\Func ||
+          $function_like instanceof \Phan\Language\Element\Method)) {
+        return;
+    }
+
+    // Check if return value is used
+    if (!$this->isInNoOpPosition($node)) {
+        return;
+    }
+
+    // Allow (void) cast suppression
+    $parent_node = \end($this->parent_node_list);
+    if ($parent_node instanceof Node &&
+        $parent_node->kind === \ast\AST_CAST &&
+        $parent_node->flags === \ast\flags\TYPE_VOID) {
+        return;
+    }
+
+    // Emit warning if attribute present
+    if ($function_like->hasNoDiscardAttribute()) {
+        $this->emitIssue(Issue::NoDiscardReturnValueIgnored, ...);
+    }
+}
+```
+
+**Testing Commands:**
+
+```bash
+# Test with PHP 8.5
+sudo newphp 85
+./vendor/bin/phpunit
+
+# Test NoDiscard attribute
+./phan --no-progress-bar tests/php85_files/src/002_nodiscard_attribute.php
+
+# Run full test suite across all versions
+for ver in 81 82 83 84 85; do
+    sudo newphp $ver
+    ./vendor/bin/phpunit
+done
+```
+
+**Pipe Operator (`|>`) Support (PHP 8.5):**
+- AST Representation: `AST_BINARY_OP` with flag `BINARY_PIPE` (261)
+- Implementation in `BinaryOperatorFlagVisitor::visitBinaryPipe()`
+- Type inference through piped call chains
+- Supports function calls, method calls, and static calls with first-class callables (`...`)
+- Chained pipes work left-to-right via nested AST_BINARY_OP nodes
+- Test file: `tests/php85_files/src/003_pipe_operator.php`
+
+**`(void)` Cast Support (PHP 8.5):**
+- Cast flag: `TYPE_VOID` (14) in `AST_CAST` nodes
+- Already supported via existing cast handling in `PostOrderAnalysisVisitor`
+- Used in NoDiscard implementation to suppress warnings: `(void) mustUseFunc();`
+- Mapped to string representation `'void'` in `NAME_FOR_CAST`
+
+**Remaining Features Not Yet Implemented:**
+
+- Closures in constant expressions - Not yet available in PHP 8.5 dev builds (still causes fatal error)
+- `#[DelayedTargetValidation]` - Intentionally skipped (internal PHP feature, limited static analysis value)
+
+**Issue ID Allocation:**
+
+When adding new issues, check for available IDs:
+```bash
+grep -oE '\b6[0-9]{3}\b' src/Phan/Issue.php | sort -u | tail -10
+```
+
+Note: The codebase had duplicate ID 6084 (fixed by reassigning to 6098). New NoDiscard issue uses ID 6099.

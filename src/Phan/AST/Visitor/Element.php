@@ -203,6 +203,7 @@ class Element
         flags\BINARY_COALESCE => 'visitBinaryCoalesce',
         flags\BINARY_IS_GREATER => 'visitBinaryIsGreater',
         flags\BINARY_IS_GREATER_OR_EQUAL => 'visitBinaryIsGreaterOrEqual',
+        flags\BINARY_PIPE => 'visitBinaryPipe',
     ];
 
     /**

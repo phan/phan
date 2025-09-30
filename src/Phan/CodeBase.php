@@ -1282,7 +1282,7 @@ class CodeBase
     public function hasFunctionWithFQSEN(
         FullyQualifiedFunctionName $fqsen
     ): bool {
-        $has_function = $this->fqsen_func_map->contains($fqsen);
+        $has_function = $this->fqsen_func_map->offsetExists($fqsen);
 
         if ($has_function) {
             return true;

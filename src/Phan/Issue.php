@@ -507,6 +507,7 @@ class Issue
     public const UnusedVariableStatic                  = 'PhanUnusedVariableStatic';
     public const UnusedVariableGlobal                  = 'PhanUnusedVariableGlobal';
     public const UnusedReturnBranchWithoutSideEffects  = 'PhanUnusedReturnBranchWithoutSideEffects';
+    public const NoDiscardReturnValueIgnored           = 'PhanNoDiscardReturnValueIgnored';
     public const RedundantArrayValuesCall                  = 'PhanRedundantArrayValuesCall';
     public const VariableDefinitionCouldBeConstant     = 'PhanVariableDefinitionCouldBeConstant';
     public const VariableDefinitionCouldBeConstantEmptyArray = 'PhanVariableDefinitionCouldBeConstantEmptyArray';
@@ -4388,6 +4389,14 @@ class Issue
                 'Possibly useless branch in a function where the return value must be used - all branches return values equivalent to {CODE} (previous return is at line {LINE})',
                 self::REMEDIATION_B,
                 6083
+            ),
+            new Issue(
+                self::NoDiscardReturnValueIgnored,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Return value of {FUNCTION} with #[\\NoDiscard] attribute is discarded - use (void) cast to suppress this warning',
+                self::REMEDIATION_B,
+                6099
             ),
             new Issue(
                 self::RedundantArrayValuesCall,

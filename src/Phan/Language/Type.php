@@ -400,6 +400,7 @@ class Type implements Stringable
      * @param array<mixed,mixed> $data
      * @throws Error this should not be called accidentally
      * @suppress PhanPluginRemoveDebugCall deliberate output before uncatchable Error
+     * @suppress PhanUnusedPublicNoOverrideMethodParameter
      * @return never
      */
     public function __unserialize(array $data): void

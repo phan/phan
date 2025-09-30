@@ -1,0 +1,4 @@
+%s:15 PhanTypeMismatchArgument Argument 1 (x) is array but \expectString() takes string
+%s:32 PhanTypeMismatchArgument Argument 1 (x) is int but \expectString() takes string
+%s:42 PhanTypeMismatchArgument Argument 1 (x) is int but \expectString() takes string
+%s:52 PhanTypeMismatchArgument Argument 1 (x) is string but \expectInt() takes int
