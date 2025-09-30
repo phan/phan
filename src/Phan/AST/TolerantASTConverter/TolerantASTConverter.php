@@ -913,8 +913,8 @@ class TolerantASTConverter
                             'args' => new ast\Node(
                                 ast\AST_ARG_LIST,
                                 0,
-                                // In AST 120, arg list children are just the expression values directly
-                                $expr_node !== null ? [$expr_node] : [],
+                                // exit/exit() always has one arg in the list: either the expression or null
+                                [$expr_node],
                                 $start_line
                             ),
                         ],
@@ -2969,9 +2969,10 @@ class TolerantASTConverter
             'const' => $const_list_node,
             'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
         ];
-        // AST version 120+ adds 'type' field to AST_CLASS_CONST_GROUP
+        // AST version 120+ running on PHP 8.4+ adds 'type' field to AST_CLASS_CONST_GROUP
+        // (typed class constants are a PHP 8.4+ feature)
         // Note: tolerant-php-parser doesn't support class const types yet, so always null
-        if (self::$ast_version_parsing >= 120) {
+        if (self::$ast_version_parsing >= 120 && \PHP_VERSION_ID >= 80400) {
             $children['type'] = null;
         }
         return new ast\Node(
