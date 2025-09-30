@@ -88,10 +88,10 @@ class CLI
 
     /**
      * List of short flags passed to getopt
-     * still available: g,n,w
+     * still available: g,w
      * @internal
      */
-    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:tuxXj:zhvs:SCP:I:DB:';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:';
 
     /**
      * List of long flags passed to getopt
@@ -439,12 +439,12 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
-        if (array_key_exists('no-config-file', $opts)) {
+        if (array_key_exists('no-config-file', $opts) || array_key_exists('n', $opts)) {
             if (array_key_exists('require-config-exists', $opts)) {
-                throw new ExitException('no-config-file conflicts with --require-config-exists');
+                throw new ExitException('no-config-file/-n conflicts with --require-config-exists');
             }
             if ($config_file_override !== null) {
-                throw new ExitException('no-config-file conflicts with --config-file');
+                throw new ExitException('no-config-file/-n conflicts with --config-file');
             }
         } else {
             $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts));
@@ -538,7 +538,9 @@ class CLI
                     break;
                 case 'k':
                 case 'config-file':
+                case 'n':
                 case 'no-config-file':
+                    // Config loading and positional args are handled earlier
                     break;
                 case 'm':
                 case 'output-mode':
@@ -1000,6 +1002,60 @@ class CLI
         }
         if (isset($opts['analyze-all-files'])) {
             Config::setValue('exclude_analysis_directory_list', []);
+        }
+
+        // Handle positional file arguments (especially useful with -n flag)
+        if (array_key_exists('n', $opts)) {
+            // Mark it so we only analyze the specified files
+            $this->file_list_only = true;
+
+            // Extract positional arguments from $argv
+            // PHP's getopt doesn't provide a way to get remaining args, so we parse manually
+            $positional_args = [];
+            $skip_next = false;
+            foreach (array_slice($argv, 1) as $arg) {
+                if ($skip_next) {
+                    $skip_next = false;
+                    continue;
+                }
+                // Skip options and their values
+                if (\str_starts_with($arg, '-')) {
+                    // Check if this option takes a value
+                    if (\preg_match('/^-[^-]/', $arg) && !\str_contains($arg, '=')) {
+                        // Short option might have a value - check if it requires one
+                        $short_opt = \substr($arg, 1, 1);
+                        if (\str_contains($short_opt . ':', self::GETOPT_SHORT_OPTIONS)) {
+                            $skip_next = true;
+                        }
+                    } elseif (\preg_match('/^--([^=]+)$/D', $arg, $matches)) {
+                        // Long option without = might have a value
+                        $long_opt = $matches[1] . ':';
+                        if (\in_array($long_opt, self::GETOPT_LONG_OPTIONS, true)) {
+                            $skip_next = true;
+                        }
+                    }
+                    continue;
+                }
+                // This is a positional argument (file path)
+                $positional_args[] = $arg;
+            }
+
+            // Add positional arguments as files to analyze
+            foreach ($positional_args as $file_path) {
+                if (!\is_file($file_path)) {
+                    throw new UsageException("File not found: $file_path", EXIT_FAILURE);
+                }
+                $this->file_list_in_config[] = $file_path;
+            }
+
+            if (empty($this->file_list_in_config)) {
+                throw new UsageException("-n requires at least one file argument", EXIT_FAILURE);
+            }
+
+            // For quick analysis of small number of files, disable progress bar by default
+            if (count($this->file_list_in_config) < 10 && !isset($opts['p']) && !isset($opts['progress-bar'])) {
+                Config::setValue('progress_bar', false);
+            }
         }
 
         $this->recomputeFileList();
@@ -1527,6 +1583,15 @@ EOT;
   A file containing a list of PHP files to be analyzed to the
   exclusion of any other directories or files passed in. This
   is unlikely to be useful.
+
+ -n
+  Quick analysis mode. Skip reading .phan/config.php and analyze
+  only the files specified as arguments.
+
+  Example: phan -n test1.php test2.php
+
+  This is useful for quick testing without setting up a full Phan
+  configuration.
 
  -k, --config-file <file>
   A path to a config file to load (instead of the default of

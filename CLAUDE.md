@@ -58,6 +58,9 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. It a
 ### Development Tools
 
 ```bash
+# Run Phan on one or more files without reading .phan/config.php
+./phan -n test1.php test2.php
+
 # Analyze a single PHP file with AST dump
 ./dump_ast.php <file.php>
 
@@ -388,20 +391,6 @@ When writing tests that create Type instances, be aware of PHPUnit's global stat
    - Use `.expected` for PHP 8.1-8.3 behavior
    - Use `.expected84` for PHP 8.4-specific behavior
    - The `test.sh` script automatically selects the right file based on PHP version
-
-### Switching PHP Versions Locally
-
-```bash
-# Switch between PHP versions for testing
-sudo newphp 81  # Switch to PHP 8.1
-sudo newphp 84  # Switch to PHP 8.4
-
-# Verify current PHP version
-php -v
-
-# Test with specific PHP version
-./vendor/bin/phpunit --filter="testFallbackFromParser"
-```
 
 ### TolerantASTConverter Testing
 
