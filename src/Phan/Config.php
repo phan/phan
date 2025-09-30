@@ -24,7 +24,10 @@ use const STDERR;
 
 /** @internal hack to use dynamic configuration in class constant */
 
-\define('Phan\AST_VERSION', \version_compare(\phpversion('ast') ?: '1.0.14', '1.0.11') >= 0 || \PHP_VERSION_ID >= 80100 ? 85 : 80);
+// Phan v6 always uses AST 120 since it requires PHP 8.1+ to run
+// This ensures consistent AST structure regardless of --target-php-version
+// Note: php-ast 1.1.3+ is required for AST version 120 support
+\define('Phan\AST_VERSION', 120);
 
 /**
  * Program configuration.

@@ -1,5 +1,8 @@
 <?php
-// Add support for deep-cloning of readonly properties <https://wiki.php.net/rfc/readonly_amendments>
+/**
+ * Add support for deep-cloning of readonly properties <https://wiki.php.net/rfc/readonly_amendments>
+ * @phan-file-suppress PhanUnreferencedPublicProperty, PhanUndeclaredFunction
+ */
 class C0 {
     public string $version = '8.2';
 }

@@ -125,7 +125,8 @@ class TolerantASTConverter
     public const AST_VERSION = 85;
 
     // The versions that this supports
-    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION];
+    // Version 120 is supported for PHP 8.4+ (property hooks, closure name field removal)
+    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION, 120];
 
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
@@ -226,6 +227,11 @@ class TolerantASTConverter
      * @var int - A version in SUPPORTED_AST_VERSIONS
      */
     protected static $php_version_id_parsing = PHP_VERSION_ID;
+
+    /**
+     * @var int - The AST version being used for parsing (80, 85, or 120)
+     */
+    protected static $ast_version_parsing = self::AST_VERSION;
 
     /**
      * @var int - Internal counter for declarations, to generate __declId in `ast\Node`s for declarations.
@@ -360,6 +366,7 @@ class TolerantASTConverter
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS, true)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
+        self::$ast_version_parsing = $ast_version;
         $this->startParsing($file_contents);
         $stmts = static::phpParserNodeToAstNode($parser_node);
         // return static::normalizeNamespaces($stmts);
@@ -835,6 +842,18 @@ class TolerantASTConverter
                 }
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
+                // AST version 120 represents clone as AST_CALL instead of AST_CLONE
+                if (self::$ast_version_parsing >= 120) {
+                    return new ast\Node(
+                        ast\AST_CALL,
+                        0,
+                        [
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'clone'], $start_line),
+                            'args' => new ast\Node(ast\AST_ARG_LIST, 0, [static::phpParserNodeToAstNode($n->expression)], $start_line),
+                        ],
+                        $start_line
+                    );
+                }
                 return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => static function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line): ast\Node {
@@ -882,6 +901,30 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ExitIntrinsicExpression' => static function (PhpParser\Node\Expression\ExitIntrinsicExpression $n, int $start_line): ast\Node {
                 $expression = $n->expression;
                 $expr_node = $expression !== null ? static::phpParserNodeToAstNode($expression) : null;
+
+                // AST version 120 represents exit/die as AST_CALL instead of AST_EXIT
+                if (self::$ast_version_parsing >= 120) {
+                    // Both exit and die are normalized to 'exit' in the AST with NAME_FQ flag
+                    // PHP 8.4+ changed exit() to a real function, so the AST representation changed:
+                    // - PHP 8.1-8.3: exit with no args has AST_ARG_LIST with [null]
+                    // - PHP 8.4+: exit with no args has AST_ARG_LIST with empty array
+                    $arg_list_children = $expr_node !== null ? [$expr_node] : (\PHP_VERSION_ID >= 80400 ? [] : [null]);
+                    return new ast\Node(
+                        ast\AST_CALL,
+                        0,
+                        [
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'exit'], $start_line),
+                            'args' => new ast\Node(
+                                ast\AST_ARG_LIST,
+                                0,
+                                $arg_list_children,
+                                $start_line
+                            ),
+                        ],
+                        $start_line
+                    );
+                }
+
                 return new ast\Node(ast\AST_EXIT, 0, ['expr' => $expr_node], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\CallExpression' => static function (PhpParser\Node\Expression\CallExpression $n, int $start_line): ast\Node {
@@ -2046,16 +2089,23 @@ class TolerantASTConverter
                 $line
             );
         }
+        $children = [
+            'type' => $type,
+            'name' => $name,
+            'default' => $default,
+            'attributes' => $attributes,
+            'docComment' => null,
+        ];
+
+        // AST version 110+ adds 'hooks' field to AST_PARAM (always null for regular parameters)
+        if (self::$ast_version_parsing >= 110) {
+            $children['hooks'] = null;
+        }
+
         return new ast\Node(
             ast\AST_PARAM,
             $flags,
-            [
-                'type' => $type,
-                'name' => $name,
-                'default' => $default,
-                'attributes' => $attributes,
-                'docComment' => null,
-            ],
+            $children,
             $line
         );
     }
@@ -2811,6 +2861,12 @@ class TolerantASTConverter
         $start_line = self::getStartLine($n);
 
         $children['docComment'] = static::extractPhpdocComment($n) ?? $doc_comment;
+
+        // AST version 110+ adds 'hooks' field to AST_PROP_ELEM
+        if (self::$ast_version_parsing >= 110) {
+            $children['hooks'] = null;  // TODO: Parse property hooks when tolerant-php-parser supports them
+        }
+
         return new ast\Node(ast\AST_PROP_ELEM, 0, $children, $start_line);
     }
 
@@ -2912,13 +2968,20 @@ class TolerantASTConverter
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
         $const_start_line = $const_elems[0]->lineno ?? $start_line;
         $const_list_node = new ast\Node(ast\AST_CLASS_CONST_DECL, 0, $const_elems, $const_start_line);
+        $children = [
+            'const' => $const_list_node,
+            'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
+        ];
+        // AST version 120+ running on PHP 8.3+ adds 'type' field to AST_CLASS_CONST_GROUP
+        // (typed class constants are a PHP 8.3+ feature with php-ast 1.1.2+)
+        // Note: tolerant-php-parser doesn't support class const types yet, so always null
+        if (self::$ast_version_parsing >= 120 && \PHP_VERSION_ID >= 80300) {
+            $children['type'] = null;
+        }
         return new ast\Node(
             ast\AST_CLASS_CONST_GROUP,
             $flags,
-            [
-                'const' => $const_list_node,
-                'attributes' => static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
-            ],
+            $children,
             $const_start_line
         );
     }
@@ -3286,7 +3349,10 @@ class TolerantASTConverter
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, ?string $doc_comment = null, ?string $name = null, int $end_lineno = 0, int $decl_id = -1): ast\Node
     {
         $decl_children = [];
-        $decl_children['name'] = $name;
+        // AST version 110+ removes the 'name' field from closures and arrow functions
+        if (!(($kind === ast\AST_CLOSURE || $kind === ast\AST_ARROW_FUNC) && self::$ast_version_parsing >= 110)) {
+            $decl_children['name'] = $name;
+        }
         $decl_children['docComment'] = $doc_comment;
         $decl_children += $children;
         if ($decl_id >= 0) {

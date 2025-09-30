@@ -1,5 +1,17 @@
 Phan NEWS
 
+TBD, Phan 6.0.0-dev
+-----------------------
+Breaking changes:
+- Requires PHP 8.1+ to run (dropped PHP 8.0 support)
+- Requires php-ast 1.1.3+ for PHP 8.4 analysis (AST version 110/120 support)
+
+Bug fixes:
+- Fixed AST version 110/120 compatibility for PHP 8.4
+  - Updated TolerantASTConverter to support AST version 120
+  - Fixed AST structural changes: closure 'name' field removal, parameter 'hooks' field addition, property 'hooks' field addition
+  - Fixed `clone` being incorrectly treated as a function call in AST version 110+ (it's now AST_CALL instead of AST_CLONE)
+
 August 6 2025, Phan 5.5.1
 -----------------------
 New features:

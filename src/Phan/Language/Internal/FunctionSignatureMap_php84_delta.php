@@ -19,6 +19,10 @@ return [
       'sodium_crypto_aead_aegis128l_keygen' => ['string'],
   ],
   'changed' => [
+      'exit' => [
+          'old' => ['', 'status='=>'string|int'],
+          'new' => ['never', 'status='=>'string|int'],
+      ],
   ],
   'removed' => [
   ],

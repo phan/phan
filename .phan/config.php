@@ -582,7 +582,8 @@ return [
     //
     // Even when this is false, Phan will still infer return values and check parameters of internal functions
     // if Phan has the signatures.
-    'ignore_undeclared_functions_with_known_signatures' => false,
+    // Changed to true to avoid false positives for exit/die in AST 120 on PHP < 8.4
+    'ignore_undeclared_functions_with_known_signatures' => true,
 
     'plugin_config' => [
         // A list of 1 or more PHP binaries (Absolute path or program name found in $PATH)
