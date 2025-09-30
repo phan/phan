@@ -370,6 +370,17 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         return true;
     }
     if ($errno === E_DEPRECATED) {
+        // Suppress PHP 8.5+ deprecations
+        if (PHP_VERSION_ID >= 80500) {
+            // symfony/string __wakeup()/__sleep() deprecations until Symfony 6.5 adds compatibility
+            if (preg_match('/(__wakeup|__sleep).*serialization magic method/', $errstr) && str_contains($errfile, 'vendor/symfony/string/')) {
+                return true;
+            }
+            // null as array offset is deprecated in PHP 8.5 - Phan intentionally uses null for type analysis
+            if (preg_match('/Using null as an array offset is deprecated/', $errstr)) {
+                return true;
+            }
+        }
         // Because php 7.2 is used in CI we're stuck on an unmaintained paratest version.
         // NOTE: Known issues with dynamic properties in tolerant-php-parser are fixed in `main` (but not 0.1.1) but there may be remaining unknown ones.
         if (preg_match('/^Creation of dynamic property (ParaTest\\\\Runners|Microsoft\\\\PhpParser|Phan\\\\LanguageServer\\\\LanguageServer::)/', $errstr)) {

@@ -578,10 +578,10 @@ PHP 8.5 support was added following the same patterns established for PHP 8.4. T
      - All array type classes (`GenericArrayType`, `ListType`, `AssociativeArrayType`, etc.)
 
    **Suppressed Deprecations (Temporary):**
-   - `symfony/string` v6.4.x: `__wakeup()/__sleep()` deprecations
+   - `symfony/string` v6.4.x: `__wakeup()/__sleep()` deprecations in PHP 8.5+
    - Reason: Symfony 7.x+ has fixes but requires PHP 8.2+ (Phan supports PHP 8.1+)
-   - Solution: Deprecation warnings suppressed in Docker CI for PHP 8.5 builds only
-   - Location: `tests/docker/Dockerfile` adds `error_reporting = E_ALL & ~E_DEPRECATED` for PHP 8.5+
+   - Solution: Deprecation warnings suppressed in `src/Phan/Bootstrap.php` error handler for PHP 8.5+
+   - Location: `phan_error_handler()` filters symfony/string serialization deprecations
    - TODO: Remove suppression once Symfony 6.5+ adds PHP 8.5 compatibility or Phan drops PHP 8.1
 
 6. **Test Infrastructure:**
