@@ -904,14 +904,12 @@ class TolerantASTConverter
 
                 // AST version 120 represents exit/die as AST_CALL instead of AST_EXIT
                 if (self::$ast_version_parsing >= 120) {
-                    // Determine if this is 'exit' or 'die' from the exitOrDieKeyword
-                    $function_name = \strtolower($n->exitOrDieKeyword->getText($n->getFileContents()) ?? 'exit');
-
+                    // Both exit and die are normalized to 'exit' in the AST with NAME_FQ flag
                     return new ast\Node(
                         ast\AST_CALL,
                         0,
                         [
-                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_NOT_FQ, ['name' => $function_name], $start_line),
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'exit'], $start_line),
                             'args' => new ast\Node(
                                 ast\AST_ARG_LIST,
                                 0,
