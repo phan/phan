@@ -34,6 +34,7 @@ use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\PropertyHook;
 use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -618,7 +619,8 @@ class ParseVisitor extends ScopeVisitor
                     . (clone $this->context)->withLineNumberStart($child_node->lineno)
                 );
             }
-            $this->addProperty(
+            $hooks_node = $child_node->children['hooks'] ?? null;
+            $property = $this->addProperty(
                 $class,
                 $property_name,
                 $default_node,
@@ -631,11 +633,127 @@ class ParseVisitor extends ScopeVisitor
                 $attributes,
                 false
             );
+            // Parse property hooks (PHP 8.4+)
+            if ($hooks_node instanceof Node && $property) {
+                $this->parsePropertyHooks($property, $hooks_node, $default_node);
+            }
         }
 
         return $this->context;
     }
 
+    /**
+     * Parse property hooks (PHP 8.4+) and attach them to the property
+     *
+     * @param Property $property The property to attach hooks to
+     * @param Node $hooks_node The AST_STMT_LIST containing property hooks
+     * @param ?(Node|string|float|int) $default_node The default value node if present
+     */
+    private function parsePropertyHooks(Property $property, Node $hooks_node, $default_node): void
+    {
+        if ($hooks_node->kind !== \ast\AST_STMT_LIST) {
+            return;
+        }
+
+        // Check for hooks with default value - not allowed in PHP
+        if ($default_node !== null) {
+            $this->emitIssue(
+                Issue::PropertyHookWithDefaultValue,
+                $property->getContext()->getLineNumberStart(),
+                $property->asPropertyFQSENString()
+            );
+        }
+
+        // Check for readonly property with set hook
+        if ($property->isReadOnly()) {
+            foreach ($hooks_node->children as $hook_node) {
+                if ($hook_node instanceof Node
+                    && $hook_node->kind === \ast\AST_PROPERTY_HOOK
+                    && $hook_node->children['name'] === 'set'
+                ) {
+                    $this->emitIssue(
+                        Issue::ReadonlyPropertyHasSetHook,
+                        $hook_node->lineno,
+                        $property->asPropertyFQSENString()
+                    );
+                }
+            }
+        }
+
+        foreach ($hooks_node->children as $hook_node) {
+            if (!($hook_node instanceof Node) || $hook_node->kind !== \ast\AST_PROPERTY_HOOK) {
+                continue;
+            }
+
+            $hook_name = $hook_node->children['name'];
+            if (!\is_string($hook_name) || !in_array($hook_name, ['get', 'set'], true)) {
+                continue;
+            }
+
+            // Extract hook parameters (typically only 'set' has params)
+            $params_node = $hook_node->children['params'];
+            $parameter_list = [];
+            if ($params_node instanceof Node) {
+                $parameter_list = Parameter::listFromNode(
+                    $this->context,
+                    $this->code_base,
+                    $params_node
+                );
+            }
+
+            // Extract hook body (can be short-form `get => expr` or full `get { stmts }`)
+            $stmts_node = $hook_node->children['stmts'];
+            $body_node = $stmts_node instanceof Node ? $stmts_node : null;
+
+            // Create PropertyHook object
+            $hook = new PropertyHook(
+                $hook_name,
+                $property->getFQSEN(),
+                $parameter_list,
+                $body_node,
+                $hook_node->flags,
+                (clone $this->context)->withLineNumberStart($hook_node->lineno)
+            );
+
+            // Extract and set hook attributes
+            // TODO: Implement attribute support for property hooks
+            // $hook_attributes = Attribute::fromNodeForAttributeList(
+            //     $this->code_base,
+            //     $this->context,
+            //     $hook_node->children['attributes'] ?? null
+            // );
+
+            // Attach hook to property
+            if ($hook_name === 'get') {
+                $property->setGetHook($hook);
+            } else {
+                $property->setSetHook($hook);
+
+                // Validate set hook parameter type compatibility
+                if (!empty($parameter_list)) {
+                    $set_param = $parameter_list[0];
+                    $set_param_type = $set_param->getNonVariadicUnionType();
+                    $property_type = $property->getUnionType();
+
+                    // Check if set parameter type is compatible with property type
+                    // The parameter should accept the property's type (property type can cast to param type)
+                    if (!$property_type->isEmpty() && !$set_param_type->isEmpty()) {
+                        if (!$property_type->canCastToUnionType($set_param_type, $this->code_base)) {
+                            $this->emitIssue(
+                                Issue::PropertyHookIncompatibleParamType,
+                                $hook_node->lineno,
+                                $property->getFQSEN()->getFullyQualifiedClassName(),
+                                'set',
+                                '$' . $set_param->getName(),
+                                $set_param_type,
+                                $property_type
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * @param ?(ast\Node|string|float|int) $default_node
@@ -1929,6 +2047,25 @@ class ParseVisitor extends ScopeVisitor
     {
         return $this->context;
     }
+
+    /**
+     * Visit a node with kind `\ast\AST_PROPERTY_HOOK`
+     * Property hooks are parsed in parsePropertyHooks(), so we don't need to do anything here
+     */
+    public function visitPropertyHook(Node $node): Context
+    {
+        return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_PROPERTY_HOOK_SHORT_BODY`
+     * Property hooks are parsed in parsePropertyHooks(), so we don't need to do anything here
+     */
+    public function visitPropertyHookShortBody(Node $node): Context
+    {
+        return $this->context;
+    }
+
     public function visitArray(Node $node): Context
     {
         return $this->context;

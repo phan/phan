@@ -320,6 +320,16 @@ interface KindVisitor
     public function visitPropElem(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_PROPERTY_HOOK`
+     */
+    public function visitPropertyHook(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_PROPERTY_HOOK_SHORT_BODY`
+     */
+    public function visitPropertyHookShortBody(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_RETURN`
      */
     public function visitReturn(Node $node);

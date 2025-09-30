@@ -1,0 +1,1 @@
+%s:107 PhanTypeMismatchArgument Argument 1 ($i) is new Request()->getMethod() of type string but \expectInt() takes int defined at %s:106

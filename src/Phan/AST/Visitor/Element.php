@@ -108,6 +108,8 @@ class Element
         ast\AST_PROP_DECL          => 'visitPropDecl',
         ast\AST_PROP_ELEM          => 'visitPropElem',
         ast\AST_PROP_GROUP         => 'visitPropGroup',
+        ast\AST_PROPERTY_HOOK      => 'visitPropertyHook',
+        ast\AST_PROPERTY_HOOK_SHORT_BODY => 'visitPropertyHookShortBody',
         ast\AST_RETURN             => 'visitReturn',
         ast\AST_STATIC             => 'visitStatic',
         ast\AST_STATIC_CALL        => 'visitStaticCall',

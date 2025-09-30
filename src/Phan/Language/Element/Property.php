@@ -55,6 +55,16 @@ class Property extends ClassElement
     private $default_type;
 
     /**
+     * @var ?PropertyHook The 'get' hook for this property (PHP 8.4+)
+     */
+    private $get_hook;
+
+    /**
+     * @var ?PropertyHook The 'set' hook for this property (PHP 8.4+)
+     */
+    private $set_hook;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -560,6 +570,71 @@ class Property extends ClassElement
     public function getDefaultType(): ?UnionType
     {
         return $this->default_type;
+    }
+
+    /**
+     * Set the 'get' hook for this property (PHP 8.4+)
+     */
+    public function setGetHook(?PropertyHook $hook): void
+    {
+        $this->get_hook = $hook;
+    }
+
+    /**
+     * Get the 'get' hook for this property (PHP 8.4+)
+     */
+    public function getGetHook(): ?PropertyHook
+    {
+        return $this->get_hook;
+    }
+
+    /**
+     * Set the 'set' hook for this property (PHP 8.4+)
+     */
+    public function setSetHook(?PropertyHook $hook): void
+    {
+        $this->set_hook = $hook;
+    }
+
+    /**
+     * Get the 'set' hook for this property (PHP 8.4+)
+     */
+    public function getSetHook(): ?PropertyHook
+    {
+        return $this->set_hook;
+    }
+
+    /**
+     * Check if this property has a 'get' hook
+     */
+    public function hasGetHook(): bool
+    {
+        return $this->get_hook !== null;
+    }
+
+    /**
+     * Check if this property has a 'set' hook
+     */
+    public function hasSetHook(): bool
+    {
+        return $this->set_hook !== null;
+    }
+
+    /**
+     * Check if this property has any hooks
+     */
+    public function hasHooks(): bool
+    {
+        return $this->get_hook !== null || $this->set_hook !== null;
+    }
+
+    /**
+     * Check if this is a virtual property (has hooks but no backing storage)
+     * Virtual properties have hooks but no default value.
+     */
+    public function isVirtual(): bool
+    {
+        return $this->hasHooks() && $this->default_type === null;
     }
 
     /**

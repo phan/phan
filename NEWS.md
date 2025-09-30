@@ -2,6 +2,16 @@ Phan NEWS
 
 TBD, Phan 6.0.0-dev
 -----------------------
+New features:
+- Full support for PHP 8.4 property hooks with AST version 110/120
+  - Parse and validate property hook syntax (get/set hooks)
+  - Parameter type checking for set hook parameters
+  - Validation of hooks with default values (PhanPropertyHookWithDefaultValue)
+  - Validation of readonly properties with set hooks (PhanReadonlyPropertyHasSetHook)
+  - Return type compatibility validation (PhanPropertyHookIncompatibleReturnType)
+  - Parameter type compatibility validation (PhanPropertyHookIncompatibleParamType)
+  - Final hook override detection (PhanPropertyHookFinalOverride)
+
 Breaking changes:
 - Requires PHP 8.1+ to run (dropped PHP 8.0 support)
 - Requires php-ast 1.1.3+ for PHP 8.4 analysis (AST version 110/120 support)

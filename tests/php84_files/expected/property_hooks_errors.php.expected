@@ -1,0 +1,3 @@
+%s:%d PhanPropertyHookWithDefaultValue Property \PropertyHookErrors->withDefault has both hooks and a default value - hooks with default values are not allowed
+%s:%d PhanReadonlyPropertyHasSetHook Readonly property \PropertyHookErrors->readonlyWithSet cannot have a set hook
+%s:%d PhanPropertyHookIncompatibleParamType Property hook \PropertyHookErrors::set parameter $value has type int which is incompatible with property type string
