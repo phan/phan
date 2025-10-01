@@ -133,10 +133,12 @@ class CLI
         'file-list-only:',
         'force-polyfill-parser',
         'force-polyfill-parser-with-original-tokens',
+        'force-full-analysis',
         'help',
         'help-annotations',
         'ignore-undeclared',
         'include-analysis-file-list:',
+        'incremental',
         'init',
         'init-level:',
         'init-analyze-dir:',
@@ -172,6 +174,7 @@ class CLI
         'native-syntax-check:',
         'no-color',
         'no-config-file',
+        'no-incremental',
         'no-progress-bar',
         'output:',
         'output-mode:',
@@ -890,6 +893,16 @@ class CLI
                 case 'force-polyfill-parser-with-original-tokens':
                     Config::setValue('use_polyfill_parser', true);
                     Config::setValue('__parser_keep_original_node', true);
+                    break;
+                case 'force-full-analysis':
+                    Config::setValue('force_full_analysis', true);
+                    // Don't disable incremental_analysis - we still want to save the manifest
+                    break;
+                case 'incremental':
+                    Config::setValue('incremental_analysis', true);
+                    break;
+                case 'no-incremental':
+                    Config::setValue('incremental_analysis', false);
                     break;
                 case 'memory-limit':
                     if (\preg_match('@^([1-9][0-9]*)([KMG])?$@D', $value, $match)) {
@@ -1729,6 +1742,18 @@ $init_help
   Use a slower parser (based on tolerant-php-parser) instead of the native parser,
   even if the native parser is available.
   Useful mainly for debugging.
+
+ --force-full-analysis
+  Force a full re-analysis of all files, ignoring the incremental analysis manifest.
+  By default, incremental analysis is enabled for CLI runs and only re-analyzes
+  changed files and their dependents. Use this flag after major config changes or
+  when troubleshooting incremental analysis issues.
+
+ --incremental
+  Force enable incremental analysis (auto-enabled for CLI runs by default).
+
+ --no-incremental
+  Disable incremental analysis. All files will be analyzed on every run.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.

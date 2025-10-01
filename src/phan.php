@@ -14,6 +14,12 @@ use Phan\Phan;
 // Create our CLI interface and load arguments
 $cli = CLI::fromArgv();
 
+// Suppress PHPUnit plugin warnings when in incremental analysis mode
+// since the plugin may not have full codebase context with partial analysis
+if (Config::getValue('incremental_analysis') !== false) {
+    \putenv('PHAN_PHPUNIT_ASSERTION_PLUGIN_QUIET=1');
+}
+
 // Build a code base based after parsing the configuration,
 // so that included_extension_subset will work.
 //

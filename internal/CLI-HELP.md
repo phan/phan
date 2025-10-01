@@ -112,13 +112,13 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {8.1,8.2,8.3,8.4,8.5,native}
+ --target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,8.2,8.3,8.4,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
    and checks for undefined classes/methods/functions)
 
- --minimum-target-php-version {8.1,8.2,8.3,8.4,8.5,native}
+ --minimum-target-php-version {5.6,7.0,7.1,7.2,7.3,7.4,8.0,8.1,8.2,8.3,8.4,native}
   The PHP version that will be used for feature/syntax compatibility warnings.
 
  -i, --ignore-undeclared
@@ -217,6 +217,18 @@ Usage: ./phan [options] [files...]
   Use a slower parser (based on tolerant-php-parser) instead of the native parser,
   even if the native parser is available.
   Useful mainly for debugging.
+
+ --force-full-analysis
+  Force a full re-analysis of all files, ignoring the incremental analysis manifest.
+  By default, incremental analysis is enabled for CLI runs and only re-analyzes
+  changed files and their dependents. Use this flag after major config changes or
+  when troubleshooting incremental analysis issues.
+
+ --incremental
+  Force enable incremental analysis (auto-enabled for CLI runs by default).
+
+ --no-incremental
+  Disable incremental analysis. All files will be analyzed on every run.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
