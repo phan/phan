@@ -252,8 +252,9 @@ class Phan implements IgnoredFilesFilterInterface
 
         $file_path_list = $file_path_lister();
 
-        // === INCREMENTAL ANALYSIS: Integration Point 1 - Load manifest and filter files ===
+        // === INCREMENTAL ANALYSIS: Integration Point 1 - Load manifest and determine files to analyze ===
         $incremental_manifest = null;
+        $incremental_files_to_analyze = null; // null means analyze all files
         if (Library\IncrementalAnalysis\Config::isEnabled()) {
             // Create manifest object for saving after analysis
             $incremental_manifest = new Library\IncrementalAnalysis\Manifest(
@@ -283,8 +284,9 @@ class Phan implements IgnoredFilesFilterInterface
                         ));
                     }
 
-                    // Filter file list to only changed files + dependents
-                    $file_path_list = $detector->getFilesToAnalyze();
+                    // Get filtered list of files to analyze (changed + dependents + had_issues)
+                    // But keep parsing all files to maintain full CodeBase state
+                    $incremental_files_to_analyze = \array_flip($detector->getFilesToAnalyze());
                 } else {
                     // First run or invalid manifest - full analysis
                     if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
@@ -297,12 +299,13 @@ class Phan implements IgnoredFilesFilterInterface
 
         $file_count = count($file_path_list);
         if ($file_count === 0) {
-            // Check if this is due to incremental analysis finding no changes
-            if ($incremental_manifest !== null && Library\IncrementalAnalysis\Config::isEnabled() && !Library\IncrementalAnalysis\Config::isForceFull()) {
-                \fwrite(STDERR, "No files need analysis (incremental analysis found no changes since last run)\n");
-                return false; // No issues found
-            }
             fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
+        }
+
+        // Check if incremental analysis means no files need analysis
+        if ($incremental_files_to_analyze !== null && count($incremental_files_to_analyze) === 0) {
+            \fwrite(STDERR, "No files need analysis (incremental analysis found no changes since last run)\n");
+            return false; // No issues found
         }
 
         // We'll construct a set of files that we'll
@@ -370,7 +373,10 @@ class Phan implements IgnoredFilesFilterInterface
                 // === END INCREMENTAL ANALYSIS ===
 
                 // Save this to the set of files to analyze
-                $analyze_file_path_list[] = $file_path;
+                // In incremental mode, only analyze files in the filtered set
+                if ($incremental_files_to_analyze === null || isset($incremental_files_to_analyze[$file_path])) {
+                    $analyze_file_path_list[] = $file_path;
+                }
             } catch (\AssertionError $assertion_error) {
                 CLI::printErrorToStderr("While parsing $file_path...\n");
                 fwrite(STDERR, "$assertion_error\n");

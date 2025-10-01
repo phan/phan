@@ -25,13 +25,9 @@ class Config
     {
         $value = PhanConfig::getValue('incremental_analysis');
 
-        // null = auto-detect (enable if not in daemon/language server mode or tests)
+        // Default is false (disabled) - must explicitly enable with -i or in config
         if ($value === null) {
-            // Disable during PHPUnit tests to avoid test interference
-            if (defined('PHAN_PHPUNIT_RUNNING') || \class_exists(\PHPUnit\Framework\TestCase::class, false)) {
-                return false;
-            }
-            return !CLI::isDaemonOrLanguageServer();
+            return false;
         }
 
         return (bool)$value;
