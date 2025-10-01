@@ -381,10 +381,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 if (!is_string($name)) {
                     break;
                 }
-                // The left-hand node ($node) is the usage of this variable
-                // We use the same node id so that phan will warn about unused declarations within loops
-                self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
-                // And the whole assignment operation is the redefinition of this variable
+                // Compound assignments (+=, -=, .=, etc.) both read and write the variable.
+                // We always record the read as a usage since the operation depends on it.
+                // Only warn if the RESULT of the compound assignment is never used.
+                self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
+
+                // The compound assignment operation creates a new definition
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope, null);
                 $this->scope->recordDefinition($name, $node);
                 return $this->scope;
