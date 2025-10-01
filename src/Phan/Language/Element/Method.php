@@ -11,6 +11,7 @@ use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
 use Phan\Language\FileRef;
@@ -570,6 +571,15 @@ class Method extends ClassElement implements FunctionInterface
             );
         }
         foreach ($comment->getTemplateTypeList() as $template_type) {
+            if (!$method->isStatic() && $method->getInternalScope()->hasTemplateType($template_type->getName())) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $element_context,
+                    Issue::TemplateTypeShadowsClass,
+                    $element_context->getLineNumberStart(),
+                    (string)$template_type
+                );
+            }
             $method->getInternalScope()->addTemplateType($template_type);
         }
 
