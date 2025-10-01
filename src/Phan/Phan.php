@@ -12,6 +12,7 @@ use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
@@ -325,6 +326,7 @@ class Phan implements IgnoredFilesFilterInterface
 
         $request = null;
         Type::clearAllMemoizations();
+        UnionType::clearAllMemoizations();
         if ($is_undoable_request) {
             if (!$code_base->isUndoTrackingEnabled()) {
                 throw new AssertionError("Expected undo tracking to be enabled");

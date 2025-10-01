@@ -13,6 +13,7 @@ use Phan\Daemon;
 use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\LanguageServer\CompletionRequest;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\GoToDefinitionRequest;
@@ -691,6 +692,7 @@ class Request
             // - changed_or_added_files has an entry for every added/modified file.
             // (would be 0 if a client analyzes one file, then analyzes a different file)
             Type::clearAllMemoizations();
+            UnionType::clearAllMemoizations();
         }
         // A progress bar doesn't make sense in a daemon which can theoretically process multiple requests at once.
         foreach ($changed_or_added_files as $file_path) {
@@ -746,6 +748,7 @@ class Request
             return;
         }
         Type::clearAllMemoizations();
+        UnionType::clearAllMemoizations();
 
         foreach ($changes_to_add as $file_path => $new_contents) {
             // Kick out anything we read from the former version

@@ -129,6 +129,11 @@ class UnionType implements Serializable, Stringable
     private $real_type_set;
 
     /**
+     * @var array<string,UnionType> - Maps a cache key to a canonical UnionType instance
+     */
+    private static $canonical_union_map = [];
+
+    /**
      * @param list<Type> $type_list
      * An optional list of types represented by this union
      * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
@@ -140,6 +145,30 @@ class UnionType implements Serializable, Stringable
     {
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
         $this->real_type_set = ($is_unique || \count($real_type_set) <= 1) ? $real_type_set : self::getUniqueTypes($real_type_set);
+    }
+
+    /**
+     * Generate a cache key for interning UnionType instances.
+     * The key is based on the object IDs of the types, sorted for consistency.
+     *
+     * @param Type[] $type_list
+     * @param Type[] $real_type_set
+     */
+    private static function computeCacheKey(array $type_list, array $real_type_set): string
+    {
+        // Sort by spl_object_id to ensure consistent keys regardless of order
+        $type_ids = \array_map('spl_object_id', $type_list);
+        \sort($type_ids, SORT_NUMERIC);
+
+        $key = 't:' . \implode(',', $type_ids);
+
+        if ($real_type_set) {
+            $real_ids = \array_map('spl_object_id', $real_type_set);
+            \sort($real_ids, SORT_NUMERIC);
+            $key .= '|r:' . \implode(',', $real_ids);
+        }
+
+        return $key;
     }
 
     /**
@@ -155,7 +184,15 @@ class UnionType implements Serializable, Stringable
                 if (\count($real_type_set) === 1) {
                     return \reset($real_type_set)->asRealUnionType();
                 }
-                return new self($real_type_set, false, $real_type_set);
+                // Intern multi-type real-only unions
+                $unique_real = self::getUniqueTypes($real_type_set);
+                $key = self::computeCacheKey($unique_real, $unique_real);
+                if (isset(self::$canonical_union_map[$key])) {
+                    return self::$canonical_union_map[$key];
+                }
+                $instance = new self($unique_real, true, $unique_real);
+                self::$canonical_union_map[$key] = $instance;
+                return $instance;
             }
             return self::$empty_instance;
         }
@@ -169,7 +206,18 @@ class UnionType implements Serializable, Stringable
             }
             return new self($type_list, true, $real_type_set);
         } else {
-            return new self($type_list, false, $real_type_set);
+            // Intern multi-type unions
+            $unique_types = self::getUniqueTypes($type_list);
+            $unique_real = $real_type_set ? self::getUniqueTypes($real_type_set) : [];
+            $key = self::computeCacheKey($unique_types, $unique_real);
+
+            if (isset(self::$canonical_union_map[$key])) {
+                return self::$canonical_union_map[$key];
+            }
+
+            $instance = new self($unique_types, true, $unique_real);
+            self::$canonical_union_map[$key] = $instance;
+            return $instance;
         }
     }
 
@@ -186,7 +234,14 @@ class UnionType implements Serializable, Stringable
                 if (\count($real_type_set) === 1) {
                     return \reset($real_type_set)->asRealUnionType();
                 }
-                return new self($real_type_set, true, $real_type_set);
+                // Intern multi-type real-only unions
+                $key = self::computeCacheKey($real_type_set, $real_type_set);
+                if (isset(self::$canonical_union_map[$key])) {
+                    return self::$canonical_union_map[$key];
+                }
+                $instance = new self($real_type_set, true, $real_type_set);
+                self::$canonical_union_map[$key] = $instance;
+                return $instance;
             }
             return self::$empty_instance;
         }
@@ -198,6 +253,16 @@ class UnionType implements Serializable, Stringable
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return \reset($type_list)->asRealUnionType();
             }
+        }
+        // Intern multi-type unions
+        if ($n > 1 || ($real_type_set && \count($real_type_set) > 1)) {
+            $key = self::computeCacheKey($type_list, $real_type_set);
+            if (isset(self::$canonical_union_map[$key])) {
+                return self::$canonical_union_map[$key];
+            }
+            $instance = new self($type_list, true, $real_type_set);
+            self::$canonical_union_map[$key] = $instance;
+            return $instance;
         }
         return new self($type_list, true, $real_type_set);
     }
@@ -221,6 +286,16 @@ class UnionType implements Serializable, Stringable
         if (\is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
         }
+    }
+
+    /**
+     * Clear the canonical union type map.
+     * This should be called before analysis phase in daemon mode,
+     * similar to Type::clearAllMemoizations().
+     */
+    public static function clearAllMemoizations(): void
+    {
+        self::$canonical_union_map = [];
     }
 
     /**
