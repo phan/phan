@@ -61,6 +61,8 @@ class ConfigEntry
         'exclude_analysis_directory_list' => self::CATEGORY_FILES,
         'include_analysis_file_list' => self::CATEGORY_FILES,
         'backward_compatibility_checks' => self::CATEGORY_ANALYSIS,
+        'incremental_analysis' => self::CATEGORY_ANALYSIS,
+        'force_full_analysis' => self::CATEGORY_ANALYSIS,
         'parent_constructor_required' => self::CATEGORY_ANALYSIS,
         'quick_mode' => self::CATEGORY_ANALYSIS,
         'analyze_signature_compatibility' => self::CATEGORY_ANALYSIS,
