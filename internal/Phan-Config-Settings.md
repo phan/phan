@@ -1,7 +1,26 @@
+<!-- This is mirrored at https://github.com/phan/phan/wiki/Phan-Config-Settings -->
+<!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
+<!-- This is regenerated from the comments and defaults in src/Phan/Config.php by tests/Phan/Internal/WikiConfigTest.php -->
+
+See [`\Phan\Config`](https://github.com/phan/phan/blob/v5/src/Phan/Config.php) for the most up to date list of configuration settings.
+
+Table of Contents
+=================
+
+Phan's configuration settings fall into the following categories:
+
+- [Configuring Files](#configuring-files)
+- [Issue Filtering](#issue-filtering)
+- [Analysis](#analysis)
+- [Analysis (of a PHP version)](#analysis-of-a-php-version)
+- [Type Casting](#type-casting)
+- [Dead Code Detection](#dead-code-detection)
+- [Output](#Output)
 
 # Configuring Files
 
-TODO: Document config category Configuring Files (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These settings can be used to control the files that Phan will parse and analyze,
+as well as the order in which these will be analyzed.
 
 ## analyzed_file_extensions
 
@@ -99,7 +118,7 @@ and folders from analysis.
 
 # Issue Filtering
 
-TODO: Document config category Issue Filtering (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These settings can be used to control what issues show up in Phan's output.
 
 ## baseline_path
 
@@ -172,7 +191,8 @@ Projects should almost always use [`suppress_issue_types`](#suppress_issue_types
 
 # Analysis
 
-TODO: Document config category Analysis (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These configuration settings affects the way that Phan analyzes your project.
+(E.g. they may enable/disable additional checks, or change the way that certain checks are carried out.)
 
 ## allow_missing_properties
 
@@ -684,7 +704,8 @@ are not documented in the PHPDoc of functions, methods, and closures.
 
 # Analysis (of a PHP Version)
 
-TODO: Document config category Analysis (of a PHP Version) (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These settings affect the way that Phan analyzes your project.
+The values you will want depend on what PHP versions you are checking for compatibility with.
 
 ## allow_method_param_type_widening
 
@@ -747,7 +768,8 @@ Note that the **only** effect of choosing `'5.6'` is to infer that functions rem
 
 # Type Casting
 
-TODO: Document config category Type Casting (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These configuration settings affect the rules Phan uses to check if a given type can be cast to another type.
+These affect what issues will be emitted, as well as the types that Phan will infer for elements.
 
 ## array_casts_as_null
 
@@ -848,7 +870,7 @@ Setting this to true will introduce numerous false positives
 
 # Dead Code Detection
 
-TODO: Document config category Dead Code Detection (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These settings affect how Phan will track what elements are referenced to warn about them.
 
 ## assume_real_types_for_internal_functions
 
@@ -953,7 +975,8 @@ Note: This does not affect warnings about redundant uses in the global namespace
 
 # Output
 
-TODO: Document config category Output (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+These settings will affect how the issues that Phan detects will be output,
+as well as how Phan will warn about being misconfigured.
 
 ## color_issue_messages_if_supported
 
