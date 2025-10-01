@@ -2783,6 +2783,7 @@ EOB
     {
         $current_dir = $start_directory;
         $visited = [];
+        $home_dir = \getenv('HOME') ?: \getenv('USERPROFILE'); // Unix / Windows
 
         while (true) {
             // Prevent infinite loops with symlinks
@@ -2792,6 +2793,7 @@ EOB
             }
             $visited[$real_dir] = true;
 
+            // Check for .phan/config.php in current directory
             $config_path = $current_dir . DIRECTORY_SEPARATOR . '.phan' . DIRECTORY_SEPARATOR . 'config.php';
 
             if (\file_exists($config_path)) {
@@ -2801,8 +2803,20 @@ EOB
                 ];
             }
 
-            // Stop if we shouldn't search parents or if we've reached the root
+            // Stop if we shouldn't search parents
             if (!$search_parents) {
+                break;
+            }
+
+            // Stop at home directory - don't search beyond user's home
+            if ($home_dir && $real_dir === \realpath($home_dir)) {
+                break;
+            }
+
+            // Check for project boundary markers before continuing upward
+            // This prevents us from leaving the project and finding configs in parent directories
+            if (self::isProjectBoundary($current_dir)) {
+                // Found project root but no .phan/config.php - stop here
                 break;
             }
 
@@ -2819,6 +2833,37 @@ EOB
             'config_path' => false,
             'project_root' => null,
         ];
+    }
+
+    /**
+     * Check if a directory represents a project boundary (VCS root or PHP project marker).
+     * Used to prevent upward config search from leaving the project.
+     *
+     * @param string $directory Directory path to check
+     * @return bool True if directory contains project boundary markers
+     */
+    private static function isProjectBoundary(string $directory): bool
+    {
+        // VCS directories - strong indicators of project root
+        if (\is_dir($directory . DIRECTORY_SEPARATOR . '.git')) {
+            return true;
+        }
+        if (\is_dir($directory . DIRECTORY_SEPARATOR . '.hg')) {
+            return true;
+        }
+        if (\is_dir($directory . DIRECTORY_SEPARATOR . '.svn')) {
+            return true;
+        }
+
+        // PHP project markers
+        if (\file_exists($directory . DIRECTORY_SEPARATOR . 'composer.json')) {
+            return true;
+        }
+        if (\file_exists($directory . DIRECTORY_SEPARATOR . 'composer.lock')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
