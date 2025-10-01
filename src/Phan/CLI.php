@@ -2795,7 +2795,7 @@ EOB
 
             // Stop at home directory - don't search in or beyond user's home
             // Check this BEFORE looking for config to avoid using ~/.phan/config.php
-            if ($home_dir && $real_dir === \realpath($home_dir)) {
+            if (\is_string($home_dir) && $home_dir !== '' && $real_dir === \realpath($home_dir)) {
                 break;
             }
 
