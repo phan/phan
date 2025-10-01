@@ -25,6 +25,7 @@ use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
+use Phan\Output\Filter\SubdirectoryIssueFilter;
 use Phan\Output\PrinterFactory;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
@@ -173,6 +174,7 @@ class CLI
         'no-color',
         'no-config-file',
         'no-progress-bar',
+        'no-search-parents',
         'output:',
         'output-mode:',
         'parent-constructor-required:',
@@ -192,6 +194,7 @@ class CLI
         'strict-property-checking',
         'strict-return-checking',
         'strict-type-checking',
+        'subdirectory-only',
         'target-php-version:',
         'unused-variable-detection',
         'use-fallback-parser',
@@ -407,6 +410,10 @@ class CLI
             fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
+
+        // Save the working directory first (where user ran phan)
+        Config::setWorkingDirectory($cwd);
+        // Initially set project root to cwd (may be updated by config discovery)
         Config::setProjectRootDirectory($cwd);
 
         if (array_key_exists('init', $opts)) {
@@ -439,6 +446,7 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
+        $search_parents = !array_key_exists('no-search-parents', $opts);
         if (array_key_exists('no-config-file', $opts) || array_key_exists('n', $opts)) {
             if (array_key_exists('require-config-exists', $opts)) {
                 throw new ExitException('no-config-file/-n conflicts with --require-config-exists');
@@ -447,7 +455,7 @@ class CLI
                 throw new ExitException('no-config-file/-n conflicts with --config-file');
             }
         } else {
-            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts));
+            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts), $search_parents);
         }
 
         // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
@@ -767,6 +775,9 @@ class CLI
                     Config::setValue('strict_property_checking', true);
                     Config::setValue('strict_return_checking', true);
                     break;
+                case 'subdirectory-only':
+                    Config::setValue('__subdirectory_only', true);
+                    break;
                 case 's':
                 case 'daemonize-socket':
                     self::checkCanDaemonize('unix', $key);
@@ -982,11 +993,22 @@ class CLI
 
         $output = $this->output;
         $printer = $factory->getPrinter($printer_type, $output);
-        $filter  = new ChainedIssueFilter([
+
+        // Build filter chain
+        $filters = [
             new FileIssueFilter(new Phan()),
             new MinimumSeverityFilter($minimum_severity),
             new CategoryIssueFilter($mask)
-        ]);
+        ];
+
+        // Add subdirectory filter if running from subdirectory of project
+        $working_dir = Config::getWorkingDirectory();
+        $project_root = Config::getProjectRootDirectory();
+        if ($working_dir !== $project_root) {
+            $filters[] = new SubdirectoryIssueFilter($working_dir);
+        }
+
+        $filter  = new ChainedIssueFilter($filters);
         $collector = new BufferingCollector($filter);
 
         self::checkAllArgsUsed($opts, $argv);
@@ -1396,8 +1418,15 @@ class CLI
                 Config::getValue('file_list')
             );
 
+            $directory_list = Config::getValue('directory_list');
+
+            // If no config file and no directories configured, default to current directory
+            if (empty($directory_list) && empty($this->file_list)) {
+                $directory_list = ['.'];
+            }
+
             // Merge in any directories given in the config
-            foreach (Config::getValue('directory_list') as $directory_name) {
+            foreach ($directory_list as $directory_name) {
                 $this->file_list = \array_merge(
                     $this->file_list,
                     self::directoryNameToFileList($directory_name)
@@ -1425,6 +1454,28 @@ class CLI
                     return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
             ));
+        }
+
+        // Filter to only subdirectory files if --subdirectory-only flag is set
+        if (Config::getValue('__subdirectory_only')) {
+            $working_dir = Config::getWorkingDirectory();
+            $project_root = Config::getProjectRootDirectory();
+
+            if ($working_dir !== $project_root) {
+                $working_prefix = \rtrim($working_dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+                $this->file_list = \array_values(\array_filter(
+                    $this->file_list,
+                    static function (string $file) use ($working_prefix): bool {
+                        // Convert to absolute path if relative
+                        if ($file[0] !== DIRECTORY_SEPARATOR && !(\strlen($file) >= 2 && $file[1] === ':')) {
+                            $file = Config::projectPath($file);
+                        }
+                        $file = \rtrim($file, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+                        return \str_starts_with($file, $working_prefix);
+                    }
+                ));
+            }
         }
     }
 
@@ -2720,24 +2771,100 @@ EOB
     }
 
     /**
-     * Look for a `.phan/config` file up to a few directories
-     * up the hierarchy and apply anything in there to
-     * the configuration.
+     * Search upward from the working directory to find a `.phan/config.php` file.
+     * Similar to how Git searches for `.git` directory.
+     *
+     * @param string $start_directory The directory to start searching from
+     * @param bool $search_parents Whether to search parent directories
+     * @return array{config_path: string|false, project_root: string|null}
+     *         Returns the config file path (or false if not found) and the project root directory
+     */
+    private static function findConfigFileUpward(string $start_directory, bool $search_parents): array
+    {
+        $current_dir = $start_directory;
+        $visited = [];
+
+        while (true) {
+            // Prevent infinite loops with symlinks
+            $real_dir = \realpath($current_dir);
+            if ($real_dir === false || isset($visited[$real_dir])) {
+                break;
+            }
+            $visited[$real_dir] = true;
+
+            $config_path = $current_dir . DIRECTORY_SEPARATOR . '.phan' . DIRECTORY_SEPARATOR . 'config.php';
+
+            if (\file_exists($config_path)) {
+                return [
+                    'config_path' => \realpath($config_path),
+                    'project_root' => $current_dir,
+                ];
+            }
+
+            // Stop if we shouldn't search parents or if we've reached the root
+            if (!$search_parents) {
+                break;
+            }
+
+            $parent_dir = \dirname($current_dir);
+            if ($parent_dir === $current_dir) {
+                // Reached filesystem root
+                break;
+            }
+
+            $current_dir = $parent_dir;
+        }
+
+        return [
+            'config_path' => false,
+            'project_root' => null,
+        ];
+    }
+
+    /**
+     * Look for a `.phan/config` file, optionally searching up the directory hierarchy.
+     * Similar to how Git searches for `.git` directory.
+     * @param bool $require_config_exists Whether to throw if config not found
+     * @param bool $search_parents Whether to search parent directories
      * @throws UsageException
      */
-    private function maybeReadConfigFile(bool $require_config_exists): void
+    private function maybeReadConfigFile(bool $require_config_exists, bool $search_parents): void
     {
-
-        // If the file doesn't exist here, try a directory up
         $config_file_name = $this->config_file;
-        $config_file_name =
-            StringUtil::isNonZeroLengthString($config_file_name)
-            ? \realpath($config_file_name)
-            : \implode(DIRECTORY_SEPARATOR, [
-                Config::getProjectRootDirectory(),
-                '.phan',
-                'config.php'
-            ]);
+
+        // If explicit config file path provided, use it directly
+        if (StringUtil::isNonZeroLengthString($config_file_name)) {
+            $config_file_name = \realpath($config_file_name);
+        } else {
+            // Search for config file, optionally checking parent directories
+            $result = self::findConfigFileUpward(Config::getProjectRootDirectory(), $search_parents);
+
+            if ($result['config_path'] !== false) {
+                $config_file_name = $result['config_path'];
+
+                // If config found in parent directory, update project root and show message
+                if ($result['project_root'] !== null && $result['project_root'] !== Config::getProjectRootDirectory()) {
+                    Config::setProjectRootDirectory($result['project_root']);
+
+                    // Show helpful message if running from subdirectory
+                    $working_dir = Config::getWorkingDirectory();
+                    if ($working_dir !== $result['project_root']) {
+                        $relative_working = \str_replace($result['project_root'] . DIRECTORY_SEPARATOR, '', $working_dir);
+                        $subdirectory_only = Config::getValue('__subdirectory_only');
+                        \fwrite(
+                            STDERR,
+                            "Using configuration from {$result['project_root']}/.phan/config.php\n" .
+                            "Analyzing files in subdirectory: {$relative_working}\n" .
+                            ($subdirectory_only
+                                ? "(Using --subdirectory-only: parsing and analyzing only files in subdirectory)\n"
+                                : "(Parsing all project files, reporting issues only in subdirectory. Use --subdirectory-only to parse only subdirectory files)\n")
+                        );
+                    }
+                }
+            } else {
+                $config_file_name = false;
+            }
+        }
 
         // Totally cool if the file isn't there
         if ($config_file_name === false || !\file_exists($config_file_name)) {
@@ -2748,11 +2875,20 @@ EOB
                     throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, UsageException::PRINT_EXTENDED);
                 } else {
                     $msg = sprintf(
-                        "Could not figure out the path for config file %s, but --require-config-exists was set",
-                        StringUtil::encodeValue($this->config_file)
+                        "Could not find a .phan/config.php file%s, but --require-config-exists was set",
+                        $search_parents ? ' in current or parent directories' : ' in current directory'
                     );
                     throw new UsageException($msg, EXIT_FAILURE, UsageException::PRINT_EXTENDED);
                 }
+            }
+
+            // No config file found - show helpful hint if not in special modes
+            if (!$this->file_list_only) {
+                \fwrite(
+                    STDERR,
+                    "No .phan/config.php found. Run 'phan --init' to create one.\n" .
+                    "Analyzing PHP files in current directory with default settings...\n"
+                );
             }
             return;
         }

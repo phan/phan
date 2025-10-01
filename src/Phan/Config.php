@@ -74,6 +74,13 @@ class Config
     private static $project_root_directory = null;
 
     /**
+     * @var string|null
+     * The working directory from which Phan was invoked.
+     * Used for subdirectory filtering when running from a subdirectory of the project.
+     */
+    private static $working_directory = null;
+
+    /**
      * Configuration options
      */
     private static $configuration = self::DEFAULT_CONFIGURATION;
@@ -1007,6 +1014,10 @@ class Config
 
         // This should only be set with `--always-exit-successfully-after-analysis`
         '__always_exit_successfully_after_analysis' => false,
+
+        // This should only be set with `--subdirectory-only`.
+        // When true, filters file list to only include files in/below working directory.
+        '__subdirectory_only' => false,
     ];
 
     public const COMPLETION_VSCODE = 'vscode';
@@ -1038,6 +1049,28 @@ class Config
         string $project_root_directory
     ): void {
         self::$project_root_directory = $project_root_directory;
+    }
+
+    /**
+     * @return string
+     * Get the working directory from which Phan was invoked.
+     * Defaults to the project root directory if not explicitly set.
+     * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
+     */
+    public static function getWorkingDirectory(): string
+    {
+        return self::$working_directory ?? self::getProjectRootDirectory();
+    }
+
+    /**
+     * @param string $working_directory
+     * Set the working directory from which Phan was invoked.
+     * Used for subdirectory filtering when running from a subdirectory of the project.
+     */
+    public static function setWorkingDirectory(
+        string $working_directory
+    ): void {
+        self::$working_directory = $working_directory;
     }
 
     /**
