@@ -53,14 +53,19 @@ class Initializer
                 throw new UsageException("phan --init refuses to run: The Phan config already exists at '$config_path'(Can pass --init-overwrite to force Phan to overwrite that file)", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
             }
         }
-        if (isset($opts['init-no-composer'])) {
+        // Auto-detect project type: check for composer.json
+        $composer_json_path = "$cwd/composer.json";
+        $has_composer = \file_exists($composer_json_path);
+
+        if (isset($opts['init-no-composer']) || !$has_composer) {
+            // No-composer mode: either explicitly requested or auto-detected
+            if (!$has_composer && !isset($opts['init-no-composer'])) {
+                echo "No composer.json found - creating basic configuration for non-Composer project.\n";
+            }
             $composer_settings = [];
             $vendor_path = null;
         } else {
-            $composer_json_path = "$cwd/composer.json";
-            if (!\file_exists($composer_json_path)) {
-                throw new UsageException("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
-            }
+            // Composer mode: load and validate composer.json
             $contents = \file_get_contents($composer_json_path);
             if (!is_string($contents)) {
                 throw new UsageException("phan --init failed to read contents of $composer_json_path", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
@@ -86,8 +91,7 @@ class Initializer
         }
         $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
         \file_put_contents($config_path, $settings_file_contents);
-        echo "Successfully initialized '$config_path' with the following contents\n\n";
-        echo $settings_file_contents;
+        echo "Successfully initialized '$config_path'\n";
     }
 
     /**
@@ -272,6 +276,9 @@ EOT;
         $is_weakest_level = $level >= 5;
 
         $cwd = \getcwd();
+        if (!\is_string($cwd)) {
+            throw new UsageException("Failed to get current working directory", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
+        }
         [$project_directory_list, $project_file_list] = self::extractAutoloadFilesAndDirectories('', $composer_settings);
         $minimum_severity = $is_weak_level ? Issue::SEVERITY_NORMAL : Issue::SEVERITY_LOW;
         if ($is_weakest_level) {
@@ -336,8 +343,11 @@ EOT;
             'exclude_file_regex' => $vendor_path !== null ? '@^vendor/.*/(tests?|Tests?)/@' : null,
             'exclude_file_list' => [],
             'exclude_analysis_directory_list' => $vendor_path !== null ? [
-                'vendor/'
-            ] : [],
+                'vendor/',
+                '.phan/'
+            ] : [
+                '.phan/'
+            ],
             'enable_include_path_checks' => !$is_weak_level,
             'processes' => 1,
             'analyzed_file_extensions' => ['php'],
@@ -402,12 +412,23 @@ EOT;
             }
             $phan_file_list[] = $extra_file;
         }
+
+        // Auto-discovery for non-composer projects
+        if ($vendor_path === null && count($phan_directory_list) === 0 && count(self::getArrayOption($opts, 'init-analyze-dir')) === 0) {
+            // No composer, no explicit directories specified - try auto-discovery
+            $discovered_dirs = self::autoDiscoverProjectDirectories($cwd);
+            $phan_directory_list = \array_merge($phan_directory_list, $discovered_dirs);
+        }
+
+        // Validation: ensure we have something to analyze
         if ($vendor_path !== null && count($project_directory_list) === 0 && count($project_file_list) === 0 && count($phan_file_list) === 0 && count($phan_directory_list) === 0) {
             throw new UsageException('phan --init expects composer.json to contain "autoload" psr-4 directories (and could not determine any directories or files to analyze)', EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
         }
 
         if (count($phan_file_list) === 0 && count($phan_directory_list) === 0) {
-            throw new UsageException("phan --init failed to find any directories or files to analyze, giving up.", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
+            // Last resort: if we still have nothing, use current directory
+            echo "Warning: No PHP files found in common directories. Using current directory as fallback.\n";
+            $phan_directory_list[] = '.';
         }
         \sort($phan_directory_list);
         \sort($phan_file_list);
@@ -560,6 +581,75 @@ EOT;
             return [$values];
         }
         return is_array($values) ? $values : [];
+    }
+
+    /**
+     * Auto-discover common PHP project directories in the given directory.
+     * Returns a list of relative directory paths that contain PHP files.
+     *
+     * @param string $cwd Current working directory (absolute path)
+     * @return list<string> List of discovered relative directory paths
+     */
+    private static function autoDiscoverProjectDirectories(string $cwd): array
+    {
+        // Common PHP project directory names
+        $common_dirs = ['src', 'lib', 'app', 'includes', 'public'];
+        $found_dirs = [];
+
+        foreach ($common_dirs as $dir) {
+            $path = "$cwd/$dir";
+            if (\is_dir($path)) {
+                // Check if it contains PHP files
+                if (self::directoryContainsPhpFiles($path)) {
+                    $found_dirs[] = $dir;
+                }
+            }
+        }
+
+        // If no common directories found, check if current directory has PHP files
+        if (count($found_dirs) === 0) {
+            if (self::directoryContainsPhpFiles($cwd)) {
+                echo "No standard directories found, will analyze current directory.\n";
+                return ['.'];
+            }
+        } else {
+            echo "Auto-discovered PHP directories: " . \implode(', ', $found_dirs) . "\n";
+        }
+
+        return $found_dirs;
+    }
+
+    /**
+     * Check if a directory contains any PHP files (non-recursively).
+     * This is used to avoid adding empty directories to the analysis list.
+     *
+     * @param string $directory_path Absolute path to directory
+     * @return bool True if directory contains at least one .php file
+     */
+    private static function directoryContainsPhpFiles(string $directory_path): bool
+    {
+        if (!\is_dir($directory_path) || !\is_readable($directory_path)) {
+            return false;
+        }
+
+        // Scan directory for PHP files (non-recursive check)
+        $files = @\scandir($directory_path);
+        if ($files === false) {
+            return false;
+        }
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $full_path = $directory_path . \DIRECTORY_SEPARATOR . $file;
+            // Check for .php files (both files and directories that might contain PHP files)
+            if (\is_file($full_path) && \substr($file, -4) === '.php') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
