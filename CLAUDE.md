@@ -6,6 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Phan is a static analyzer for PHP that prefers to minimize false-positives. It attempts to prove incorrectness rather than correctness and has a comprehensive understanding of PHP's type system, including union types, generics, and array shapes.
 
+## Branch Strategy
+
+**IMPORTANT**: All new pull requests should target the **`v6`** branch, not `v5`.
+
+- **v6**: Current development branch - target for all new PRs
+- **v5**: Maintenance branch for bug fixes only
+
+When creating PRs:
+```bash
+# Always create PR against v6
+gh pr create --base v6 --title "Your PR title" --body "PR description"
+```
+
 ## Essential Commands
 
 ### Building and Running Phan
