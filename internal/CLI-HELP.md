@@ -227,7 +227,7 @@ Usage: ./phan [options] [files...]
  --incremental
   Force enable incremental analysis (auto-enabled for CLI runs by default).
 
- --no-incremental
+ -N, --no-incremental
   Disable incremental analysis. All files will be analyzed on every run.
 
  -s, --daemonize-socket </path/to/file.sock>
