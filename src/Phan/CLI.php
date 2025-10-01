@@ -2793,6 +2793,12 @@ EOB
             }
             $visited[$real_dir] = true;
 
+            // Stop at home directory - don't search in or beyond user's home
+            // Check this BEFORE looking for config to avoid using ~/.phan/config.php
+            if ($home_dir && $real_dir === \realpath($home_dir)) {
+                break;
+            }
+
             // Check for .phan/config.php in current directory
             $config_path = $current_dir . DIRECTORY_SEPARATOR . '.phan' . DIRECTORY_SEPARATOR . 'config.php';
 
@@ -2805,11 +2811,6 @@ EOB
 
             // Stop if we shouldn't search parents
             if (!$search_parents) {
-                break;
-            }
-
-            // Stop at home directory - don't search beyond user's home
-            if ($home_dir && $real_dir === \realpath($home_dir)) {
                 break;
             }
 
