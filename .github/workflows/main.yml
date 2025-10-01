@@ -28,13 +28,10 @@ jobs:
          # NOTE: If this is not quoted, the yaml parser will convert numbers such as 8.1 to the number 8,
          # and the docker image `php:8` is the latest minor version of php 8.x (e.g. 8.4).
          - PHP_VERSION: '8.1'
-         - PHP_VERSION: '8.1'
-           DOCKER_ARCHITECTURE: i386
          - PHP_VERSION: '8.2'
-         - PHP_VERSION: '8.2'
-           DOCKER_ARCHITECTURE: i386
          - PHP_VERSION: '8.3'
          - PHP_VERSION: '8.4'
+         - PHP_VERSION: '8.5.0RC1-cli'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

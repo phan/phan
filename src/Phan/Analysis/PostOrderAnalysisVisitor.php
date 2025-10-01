@@ -842,6 +842,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         flags\BINARY_IS_GREATER_OR_EQUAL => '>=',
         flags\BINARY_SPACESHIP           => '<=>',
         flags\BINARY_COALESCE            => '??',
+        flags\BINARY_PIPE                => '|>',
     ];
 
     /**
@@ -2478,6 +2479,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $function,
                     $node
                 );
+                // Check if function has #[NoDiscard] attribute and return value is ignored
+                $this->checkNoDiscardAttribute($node, $function);
                 if ($function instanceof Func && \strcasecmp($function->getName(), 'assert') === 0 && $function->getFQSEN()->getNamespace() === '\\') {
                     $this->context = $this->analyzeAssert($this->context, $node);
                 }
@@ -2837,6 +2840,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method,
                 $node
             );
+
+            // Check if method has #[NoDiscard] attribute and return value is ignored
+            $this->checkNoDiscardAttribute($node, $method);
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -3288,6 +3294,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method,
             $node
         );
+
+        // Check if method has #[NoDiscard] attribute and return value is ignored
+        $this->checkNoDiscardAttribute($node, $method);
 
         return $this->context;
     }
@@ -4875,6 +4884,38 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 $issue_type,
                 $node->lineno
+            );
+        }
+    }
+
+    /**
+     * Check if a function/method call with #[NoDiscard] has its return value ignored
+     * @param Node $node the function/method call node
+     * @param Func|Method|mixed $function_like the function or method being called
+     */
+    private function checkNoDiscardAttribute(Node $node, $function_like): void
+    {
+        // Only check for Func and Method instances (not closures or other types)
+        if (!($function_like instanceof \Phan\Language\Element\Func || $function_like instanceof \Phan\Language\Element\Method)) {
+            return;
+        }
+
+        if (!$this->isInNoOpPosition($node)) {
+            // Return value is being used, no warning needed
+            return;
+        }
+
+        // Check if this is a (void) cast - that explicitly suppresses NoDiscard
+        $parent_node = \end($this->parent_node_list);
+        if ($parent_node instanceof Node && $parent_node->kind === \ast\AST_CAST && $parent_node->flags === \ast\flags\TYPE_VOID) {
+            return;
+        }
+
+        if ($function_like->hasNoDiscardAttribute()) {
+            $this->emitIssue(
+                Issue::NoDiscardReturnValueIgnored,
+                $node->lineno,
+                $function_like->getRepresentationForIssue()
             );
         }
     }

@@ -16,7 +16,10 @@
         }
     ],
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "cweagans/composer-patches": true
+        }
     },
     "require": {
         "php": "^8.1.0",
@@ -43,6 +46,7 @@
         "ext-var_representation": "Suggested for converting values to strings in issue messages"
     },
     "require-dev": {
+        "cweagans/composer-patches": "^1.7",
         "phpunit/phpunit": "^9.0"
     },
     "autoload": {
@@ -51,5 +55,12 @@
     "autoload-dev": {
         "psr-4": {"Phan\\Tests\\": "tests/Phan"}
     },
-    "bin": ["phan", "phan_client", "tocheckstyle"]
+    "bin": ["phan", "phan_client", "tocheckstyle"],
+    "extra": {
+        "patches": {
+            "tysonandre/var_representation_polyfill": {
+                "Fix deprecated semicolon in switch case for PHP 8.5 compatibility": "patches/var_representation_polyfill_php85_compat.patch"
+            }
+        }
+    }
 }

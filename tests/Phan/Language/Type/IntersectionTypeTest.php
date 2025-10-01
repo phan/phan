@@ -17,6 +17,7 @@ final class IntersectionTypeTest extends BaseTest
     private const SKIPPED_METHOD_NAMES = [
         // Magic methods
         '__wakeup',
+        '__unserialize',
         '__clone',
         'memoize',  // From a trait
         'asPHPDocUnionType',

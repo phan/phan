@@ -124,7 +124,7 @@ class Map extends SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $value) {
-            $set->attach($value);
+            $set->offsetSet($value);
         }
         return $set;
     }
@@ -139,7 +139,7 @@ class Map extends SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $key => $_) {
-            $set->attach($key);
+            $set->offsetSet($key);
         }
         return $set;
     }

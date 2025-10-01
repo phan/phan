@@ -46,4 +46,34 @@ trait HasAttributesTrait
         }
         return false;
     }
+
+    /**
+     * Check if this element has a #[NoDiscard] attribute (PHP 8.5+)
+     */
+    public function hasNoDiscardAttribute(): bool
+    {
+        foreach ($this->attribute_list as $attribute) {
+            $fqsen = $attribute->getFQSEN();
+            // Check for both \NoDiscard and NoDiscard (in root namespace)
+            if ($fqsen->__toString() === '\\NoDiscard') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if this element has a #[Override] attribute (PHP 8.3+ for methods, PHP 8.5+ for properties)
+     */
+    public function hasOverrideAttribute(): bool
+    {
+        foreach ($this->attribute_list as $attribute) {
+            $fqsen = $attribute->getFQSEN();
+            // Check for both \Override and Override (in root namespace)
+            if ($fqsen->__toString() === '\\Override') {
+                return true;
+            }
+        }
+        return false;
+    }
 }

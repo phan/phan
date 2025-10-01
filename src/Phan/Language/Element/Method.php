@@ -236,7 +236,7 @@ class Method extends ClassElement implements FunctionInterface
             $is_overridden_by_another
         ));
         if ($is_overridden_by_another && $fqsen) {
-            $this->method_overrides->attach($fqsen);
+            $this->method_overrides->offsetSet($fqsen);
         }
     }
 
@@ -596,9 +596,9 @@ class Method extends ClassElement implements FunctionInterface
         // the namespace.
         $method->setIsNSInternal($comment->isNSInternal());
 
-        // Set whether or not the comment indicates that the method is intended
-        // to override another method.
-        $method->setIsOverrideIntended($comment->isOverrideIntended());
+        // Set whether or not the comment or #[Override] attribute (PHP 8.3+) indicates
+        // that the method is intended to override another method.
+        $method->setIsOverrideIntended($comment->isOverrideIntended() || $method->hasOverrideAttribute());
         $method->setSuppressIssueSet($comment->getSuppressIssueSet());
 
         $class ??= $context->getClassInScope($code_base);
