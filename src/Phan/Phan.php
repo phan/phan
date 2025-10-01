@@ -252,8 +252,55 @@ class Phan implements IgnoredFilesFilterInterface
 
         $file_path_list = $file_path_lister();
 
+        // === INCREMENTAL ANALYSIS: Integration Point 1 - Load manifest and filter files ===
+        $incremental_manifest = null;
+        if (Library\IncrementalAnalysis\Config::isEnabled()) {
+            // Create manifest object for saving after analysis
+            $incremental_manifest = new Library\IncrementalAnalysis\Manifest(
+                Library\IncrementalAnalysis\Config::getManifestPath(),
+                Library\IncrementalAnalysis\Config::getConfigHash(),
+                Library\IncrementalAnalysis\Config::getPhanVersion(),
+                Library\IncrementalAnalysis\Config::getPhpVersion(),
+                Library\IncrementalAnalysis\Config::getAstVersion()
+            );
+
+            // Only try to load and filter if not forcing full analysis
+            if (!Library\IncrementalAnalysis\Config::isForceFull()) {
+                if ($incremental_manifest->load()) {
+                    // Manifest loaded successfully - detect changes
+                    $detector = new Library\IncrementalAnalysis\ChangeDetector($incremental_manifest);
+                    $stats = $detector->detectChanges($file_path_list);
+
+                    if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
+                        \fwrite(STDERR, \sprintf(
+                            "Incremental mode: %d changed, %d new, %d deleted → %d to analyze (%.1f%% saved)\n",
+                            $stats['changed'],
+                            $stats['new'],
+                            $stats['deleted'],
+                            $stats['to_analyze'],
+                            (1 - $stats['to_analyze'] / max(1, \count($file_path_list))) * 100
+                        ));
+                    }
+
+                    // Filter file list to only changed files + dependents
+                    $file_path_list = $detector->getFilesToAnalyze();
+                } else {
+                    // First run or invalid manifest - full analysis
+                    if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
+                        \fwrite(STDERR, "Incremental mode: No valid manifest, performing full analysis\n");
+                    }
+                }
+            }
+        }
+        // === END INCREMENTAL ANALYSIS ===
+
         $file_count = count($file_path_list);
         if ($file_count === 0) {
+            // Check if this is due to incremental analysis finding no changes
+            if ($incremental_manifest !== null && Library\IncrementalAnalysis\Config::isEnabled() && !Library\IncrementalAnalysis\Config::isForceFull()) {
+                \fwrite(STDERR, "No files need analysis (incremental analysis found no changes since last run)\n");
+                return false; // No issues found
+            }
             fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
         }
 
@@ -273,6 +320,13 @@ class Phan implements IgnoredFilesFilterInterface
         // analysis after.
         CLI::progress('parse', 0.0, null, 0, $file_count);
         $code_base->setCurrentParsedFile(null);
+
+        // === INCREMENTAL ANALYSIS: Integration Point 2 - Start dependency tracking ===
+        if ($incremental_manifest !== null) {
+            Library\IncrementalAnalysis\DependencyTracker::reset();
+        }
+        // === END INCREMENTAL ANALYSIS ===
+
         foreach ($file_path_list as $i => $file_path) {
             $file_path = (string)$file_path;
 
@@ -290,8 +344,29 @@ class Phan implements IgnoredFilesFilterInterface
                 continue;
             }
             try {
+                // === INCREMENTAL ANALYSIS: Integration Point 2 - Track dependencies for this file ===
+                if ($incremental_manifest !== null) {
+                    Library\IncrementalAnalysis\DependencyTracker::startFile($file_path);
+                }
+                // === END INCREMENTAL ANALYSIS ===
+
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path);
+
+                // === INCREMENTAL ANALYSIS: Integration Point 2 - Update manifest with file metadata ===
+                if ($incremental_manifest !== null) {
+                    $metadata = Library\IncrementalAnalysis\FileHasher::getFileMetadata($file_path);
+                    $dependencies = Library\IncrementalAnalysis\DependencyTracker::getDependencies($file_path);
+                    $incremental_manifest->updateFile(
+                        $file_path,
+                        $metadata['hash'],
+                        $metadata['size'],
+                        $metadata['mtime'],
+                        $dependencies
+                    );
+                    Library\IncrementalAnalysis\DependencyTracker::endFile();
+                }
+                // === END INCREMENTAL ANALYSIS ===
 
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
@@ -381,7 +456,7 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->disableUndoTracking();
         }
 
-        return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
+        return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping, $incremental_manifest);
     }
 
     private static function preloadBeforeForkingAnalysisWorkers(CodeBase $code_base): void
@@ -449,9 +524,10 @@ class Phan implements IgnoredFilesFilterInterface
         CodeBase $code_base,
         ?Request $request,
         array $analyze_file_path_list,
-        array $temporary_file_mapping
+        array $temporary_file_mapping,
+        ?Library\IncrementalAnalysis\Manifest $incremental_manifest = null
     ): bool {
-        try {
+        try{
             // With parsing complete, we need to tell the code base to
             // start hydrating any requested elements on their way out.
             // Hydration expands class types, imports parent methods,
@@ -619,6 +695,23 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Collect all issues, blocking
             self::display();
+
+            // === INCREMENTAL ANALYSIS: Integration Point 3 - Save manifest ===
+            if ($incremental_manifest !== null) {
+                $incremental_manifest->buildReverseDependencies();
+                $incremental_manifest->save();
+
+                if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
+                    $stats = $incremental_manifest->getStats();
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall - intentional debug output
+                    \fwrite(STDERR, \sprintf(
+                        "Incremental manifest saved: %d files, %d dependencies\n",
+                        $stats['file_count'],
+                        $stats['total_dependencies']
+                    ));
+                }
+            }
+            // === END INCREMENTAL ANALYSIS ===
 
             if (Config::getValue('print_memory_usage_summary')) {
                 self::printMemoryUsageSummary();

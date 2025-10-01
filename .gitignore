@@ -1,5 +1,7 @@
 vendor
 .phan/data
+.phan/incremental-manifest.json
+.phan/incremental-manifest.json.tmp
 composer.phar
 \#*#
 /build
