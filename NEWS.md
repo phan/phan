@@ -3,6 +3,12 @@ Phan NEWS
 TBD, Phan 6.0.0-dev
 -----------------------
 New features:
+- Full support for PHP 8.5 features:
+  - #[NoDiscard] attribute support with detection of ignored return values (PhanNoDiscardReturnValueIgnored)
+  - #[Override] attribute extended to properties (in addition to methods)
+  - Pipe operator (`|>`) with full type inference through piped call chains
+  - `(void)` cast support for suppressing NoDiscard warnings
+  - Updated function signatures for PHP 8.5 standard library changes
 - Full support for PHP 8.4 property hooks with AST version 110/120
   - Parse and validate property hook syntax (get/set hooks)
   - Parameter type checking for set hook parameters
@@ -25,7 +31,7 @@ New features:
 
 Breaking changes:
 - Requires PHP 8.1+ to run (dropped PHP 8.0 support)
-- Requires php-ast 1.1.3+ for PHP 8.4 analysis (AST version 110/120 support)
+- Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
 
 Bug fixes:
 - Fixed AST version 110/120 compatibility for PHP 8.4
