@@ -10,4 +10,3 @@ src/119_increment_decrement_unused.php:15 PhanUnusedVariable Unused definition o
 src/119_increment_decrement_unused.php:21 PhanPluginUseReturnValueNoopVoid The function/method \test_loop119b() is declared to return void and it has no side effects
 src/119_increment_decrement_unused.php:21 PhanUnreferencedFunction Possibly zero references to function \test_loop119b()
 src/119_increment_decrement_unused.php:22 PhanSideEffectFreeForBody Saw a for loop which probably has no side effects
-src/119_increment_decrement_unused.php:23 PhanUnusedVariable Unused definition of variable $j

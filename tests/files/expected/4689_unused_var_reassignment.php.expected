@@ -1,0 +1,10 @@
+%s:6 PhanUnusedVariable Unused definition of variable $a
+%s:11 PhanUnusedVariable Unused definition of variable $a
+%s:12 PhanUnusedVariable Unused definition of variable $a
+%s:27 PhanUnusedVariable Unused definition of variable $a
+%s:33 PhanUnusedVariable Unused definition of variable $a
+%s:48 PhanUnusedVariable Unused definition of variable $x
+%s:49 PhanUnusedVariable Unused definition of variable $x
+%s:57 PhanUnusedVariable Unused definition of variable $n
+%s:64 PhanUnusedVariable Unused definition of variable $val
+%s:65 PhanUnusedVariable Unused definition of variable $val
