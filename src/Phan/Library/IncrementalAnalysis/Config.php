@@ -28,12 +28,40 @@ class Config
         // null = auto-detect (enable if not in daemon/language server mode or tests)
         if ($value === null) {
             // Disable during PHPUnit tests to avoid test interference
-            if (defined('PHAN_PHPUNIT_RUNNING') || \class_exists(\PHPUnit\Framework\TestCase::class, false)) {
+            // Check PHAN_PHPUNIT_RUNNING first as it's more reliable
+            if (defined('PHAN_PHPUNIT_RUNNING') && \constant('PHAN_PHPUNIT_RUNNING')) {
+                if (self::isDebugEnabled()) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall - intentional debug output
+                    \fwrite(STDERR, "Incremental analysis: Disabled (PHAN_PHPUNIT_RUNNING detected)\n");
+                }
                 return false;
             }
-            return !CLI::isDaemonOrLanguageServer();
+            if (\class_exists(\PHPUnit\Framework\TestCase::class, false)) {
+                if (self::isDebugEnabled()) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall - intentional debug output
+                    \fwrite(STDERR, "Incremental analysis: Disabled (PHPUnit test class detected)\n");
+                }
+                return false;
+            }
+            $enabled = !CLI::isDaemonOrLanguageServer();
+            if (self::isDebugEnabled()) {
+                // @phan-suppress-next-line PhanPluginRemoveDebugCall - intentional debug output
+                \fwrite(STDERR, \sprintf(
+                    "Incremental analysis: %s (auto-detected, daemon/language server: %s)\n",
+                    $enabled ? 'Enabled' : 'Disabled',
+                    CLI::isDaemonOrLanguageServer() ? 'yes' : 'no'
+                ));
+            }
+            return $enabled;
         }
 
+        if (self::isDebugEnabled()) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall - intentional debug output
+            \fwrite(STDERR, \sprintf(
+                "Incremental analysis: %s (explicitly configured)\n",
+                $value ? 'Enabled' : 'Disabled'
+            ));
+        }
         return (bool)$value;
     }
 
@@ -73,6 +101,7 @@ class Config
             'plugin_config' => PhanConfig::getValue('plugin_config'),
             'suppress_issue_types' => PhanConfig::getValue('suppress_issue_types'),
             'whitelist_issue_types' => PhanConfig::getValue('whitelist_issue_types'),
+            'baseline_path' => PhanConfig::getValue('baseline_path'),
             'quick_mode' => PhanConfig::getValue('quick_mode'),
             'backward_compatibility_checks' => PhanConfig::getValue('backward_compatibility_checks'),
             'dead_code_detection' => PhanConfig::getValue('dead_code_detection'),

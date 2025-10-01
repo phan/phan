@@ -299,6 +299,16 @@ class Phan implements IgnoredFilesFilterInterface
             // Check if this is due to incremental analysis finding no changes
             if ($incremental_manifest !== null && Library\IncrementalAnalysis\Config::isEnabled() && !Library\IncrementalAnalysis\Config::isForceFull()) {
                 \fwrite(STDERR, "No files need analysis (incremental analysis found no changes since last run)\n");
+                // Save manifest even though no files were analyzed - it's already loaded and valid
+                $incremental_manifest->save();
+                if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
+                    $stats = $incremental_manifest->getStats();
+                    \fwrite(STDERR, \sprintf(
+                        "Incremental manifest saved: %d files, %d dependencies\n",
+                        $stats['file_count'],
+                        $stats['total_dependencies']
+                    ));
+                }
                 return false; // No issues found
             }
             fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
