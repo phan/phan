@@ -4900,6 +4900,14 @@ constant {CONST} may not have a template type
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/189_class_constant_badtype.php#L9).
 
+## PhanTemplateTypeDuplicate
+
+```
+Template type {TYPE} is already declared in this comment
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/1006_generic_type_duplicate.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/1006_generic_type_duplicate.php#L29).
+
 ## PhanTemplateTypeNotDeclaredInFunctionParams
 
 ```
@@ -4915,6 +4923,14 @@ Template type {TYPE} not used in return value of function/method {FUNCTIONLIKE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0577_unknown_tags.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0577_unknown_tags.php#L20).
+
+## PhanTemplateTypeShadowsClass
+
+```
+Template type {TYPE} is already declared in the containing class
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/1006_generic_type_duplicate.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/1006_generic_type_duplicate.php#L20).
 
 ## PhanTemplateTypeStaticMethod
 

@@ -641,6 +641,8 @@ class Issue
     public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
     public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
     public const GenericMissingParameters = 'PhanGenericMissingParameters';
+    public const TemplateTypeDuplicate = 'PhanTemplateTypeDuplicate';
+    public const TemplateTypeShadowsClass = 'PhanTemplateTypeShadowsClass';
 
     // Issue::CATEGORY_COMMENT
     public const DebugAnnotation                  = 'PhanDebugAnnotation';
@@ -5517,6 +5519,22 @@ class Issue
                 "Class {CLASS} must substitute all {COUNT} template parameters when inheriting {CLASS} (found {COUNT}) defined at {FILE}:{LINE} (use @extends or @inherit)",
                 self::REMEDIATION_B,
                 14007
+            ),
+            new Issue(
+                self::TemplateTypeDuplicate,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} is already declared in this comment",
+                self::REMEDIATION_B,
+                14008
+            ),
+            new Issue(
+                self::TemplateTypeShadowsClass,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} is already declared in the containing class",
+                self::REMEDIATION_B,
+                14009
             ),
 
             // Issue::CATEGORY_INTERNAL

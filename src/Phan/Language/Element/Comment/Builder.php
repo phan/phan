@@ -664,6 +664,13 @@ final class Builder
             if ($this->checkCompatible("@$tag_name", Comment::HAS_TEMPLATE_ANNOTATION, $i)) {
                 $template_type = $this->templateTypeFromCommentLine($line);
                 if ($template_type) {
+                    if (isset($this->template_type_list[$template_type->getName()])) {
+                        $this->emitIssue(
+                            Issue::TemplateTypeDuplicate,
+                            $this->guessActualLineLocation($i),
+                            (string)$template_type
+                        );
+                    }
                     $this->template_type_list[$template_type->getName()] = $template_type;
                 }
             }
