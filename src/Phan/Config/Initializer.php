@@ -344,8 +344,11 @@ EOT;
             'exclude_file_regex' => $vendor_path !== null ? '@^vendor/.*/(tests?|Tests?)/@' : null,
             'exclude_file_list' => [],
             'exclude_analysis_directory_list' => $vendor_path !== null ? [
-                'vendor/'
-            ] : [],
+                'vendor/',
+                '.phan/'
+            ] : [
+                '.phan/'
+            ],
             'enable_include_path_checks' => !$is_weak_level,
             'processes' => 1,
             'analyzed_file_extensions' => ['php'],
