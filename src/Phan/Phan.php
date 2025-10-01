@@ -273,10 +273,11 @@ class Phan implements IgnoredFilesFilterInterface
 
                     if (Library\IncrementalAnalysis\Config::isDebugEnabled()) {
                         \fwrite(STDERR, \sprintf(
-                            "Incremental mode: %d changed, %d new, %d deleted → %d to analyze (%.1f%% saved)\n",
+                            "Incremental mode: %d changed, %d new, %d deleted, %d had issues → %d to analyze (%.1f%% saved)\n",
                             $stats['changed'],
                             $stats['new'],
                             $stats['deleted'],
+                            $stats['had_issues'],
                             $stats['to_analyze'],
                             (1 - $stats['to_analyze'] / max(1, \count($file_path_list))) * 100
                         ));
@@ -693,11 +694,36 @@ class Phan implements IgnoredFilesFilterInterface
             // Indicate that --progress-bar or --debug has finished, if needed.
             CLI::endProgressBar();
 
+            // === INCREMENTAL ANALYSIS: Integration Point 3a - Collect issues before display ===
+            $issues_by_file = [];
+            if ($incremental_manifest !== null) {
+                // Group issues by file path BEFORE display() which may flush them
+                foreach ((self::$issue_collector)->getCollectedIssues() as $issue) {
+                    $file_path = $issue->getFile();
+                    if (!isset($issues_by_file[$file_path])) {
+                        $issues_by_file[$file_path] = 0;
+                    }
+                    $issues_by_file[$file_path]++;
+                }
+            }
+            // === END INCREMENTAL ANALYSIS ===
+
             // Collect all issues, blocking
             self::display();
 
-            // === INCREMENTAL ANALYSIS: Integration Point 3 - Save manifest ===
+            // === INCREMENTAL ANALYSIS: Integration Point 3b - Save manifest ===
             if ($incremental_manifest !== null) {
+                // Mark files that were analyzed with whether they have issues
+                // Only update files that were actually analyzed - preserve has_issues for others
+                $analyzed_files = \array_flip($analyze_file_path_list);
+                foreach ($incremental_manifest->getAllFiles() as $file_path) {
+                    // Only update has_issues flag for files that were analyzed this run
+                    if (isset($analyzed_files[$file_path])) {
+                        $has_issues = isset($issues_by_file[$file_path]);
+                        $incremental_manifest->markFileHasIssues($file_path, $has_issues);
+                    }
+                }
+
                 $incremental_manifest->buildReverseDependencies();
                 $incremental_manifest->save();
 

@@ -44,7 +44,7 @@ class ChangeDetector
      * Detect which files have changed
      *
      * @param list<string> $current_files All files in the project
-     * @return array{changed:int,new:int,deleted:int,to_analyze:int}
+     * @return array{changed:int,new:int,deleted:int,had_issues:int,to_analyze:int}
      */
     public function detectChanges(array $current_files): array
     {
@@ -80,10 +80,23 @@ class ChangeDetector
         // Expand to dependents
         $this->expandToDependents();
 
+        // Include files that had issues in the last run
+        // This ensures users always see issues until they're fixed
+        $files_with_issues = $this->manifest->getFilesWithIssues();
+        $had_issues_count = 0;
+        foreach ($files_with_issues as $file_path) {
+            // Only add if file still exists and isn't already being analyzed
+            if (isset($current_file_set[$file_path]) && !\in_array($file_path, $this->files_to_analyze, true)) {
+                $this->files_to_analyze[] = $file_path;
+                $had_issues_count++;
+            }
+        }
+
         return [
             'changed' => count($this->changed_files),
             'new' => count($this->new_files),
             'deleted' => count($this->deleted_files),
+            'had_issues' => $had_issues_count,
             'to_analyze' => count($this->files_to_analyze),
         ];
     }

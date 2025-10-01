@@ -34,7 +34,7 @@ class Manifest
     /** @var string */
     private $manifest_path;
 
-    /** @var array<string,array{hash:string,size:int,mtime:int,dependencies:array}> */
+    /** @var array<string,array{hash:string,size:int,mtime:int,dependencies:array,has_issues:bool}> */
     private $files = [];
 
     /** @var array<string,list<string>> Reverse dependency map (FQSEN -> files that use it) */
@@ -220,11 +220,15 @@ class Manifest
         int $mtime,
         array $dependencies
     ): void {
+        // Preserve has_issues flag if it exists
+        $has_issues = $this->files[$file_path]['has_issues'] ?? false;
+
         $this->files[$file_path] = [
             'hash' => $hash,
             'size' => $size,
             'mtime' => $mtime,
             'dependencies' => $dependencies,
+            'has_issues' => $has_issues,
         ];
     }
 
@@ -329,5 +333,39 @@ class Manifest
             'total_size' => $total_size,
             'total_dependencies' => $total_deps,
         ];
+    }
+
+    /**
+     * Mark whether a file has unsuppressed issues
+     */
+    public function markFileHasIssues(string $file_path, bool $has_issues): void
+    {
+        if (isset($this->files[$file_path])) {
+            $this->files[$file_path]['has_issues'] = $has_issues;
+        }
+    }
+
+    /**
+     * Check if a file had issues in the last run
+     */
+    public function fileHadIssues(string $file_path): bool
+    {
+        return $this->files[$file_path]['has_issues'] ?? false;
+    }
+
+    /**
+     * Get all files that had issues in the last run
+     *
+     * @return list<string>
+     */
+    public function getFilesWithIssues(): array
+    {
+        $files_with_issues = [];
+        foreach ($this->files as $file_path => $file_data) {
+            if ($file_data['has_issues'] ?? false) {
+                $files_with_issues[] = $file_path;
+            }
+        }
+        return $files_with_issues;
     }
 }
