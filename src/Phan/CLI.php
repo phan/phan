@@ -92,7 +92,7 @@ class CLI
      * still available: g,w
      * @internal
      */
-    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:N';
 
     /**
      * List of long flags passed to getopt
@@ -912,6 +912,7 @@ class CLI
                 case 'incremental':
                     Config::setValue('incremental_analysis', true);
                     break;
+                case 'N':
                 case 'no-incremental':
                     Config::setValue('incremental_analysis', false);
                     break;
@@ -1803,7 +1804,7 @@ $init_help
  --incremental
   Force enable incremental analysis (auto-enabled for CLI runs by default).
 
- --no-incremental
+ -N, --no-incremental
   Disable incremental analysis. All files will be analyzed on every run.
 
  -s, --daemonize-socket </path/to/file.sock>
