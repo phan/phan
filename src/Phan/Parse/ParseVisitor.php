@@ -52,6 +52,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
+use Phan\Library\IncrementalAnalysis\DependencyTracker;
 use Phan\Library\None;
 
 use function count;
@@ -174,6 +175,9 @@ class ParseVisitor extends ScopeVisitor
             // so that the class definition is available there.
             $this->code_base->addClass($class);
 
+            // Track class declaration for incremental analysis
+            DependencyTracker::track($class_fqsen->__toString(), 'declares');
+
             // Get a comment on the class declaration
             $comment = Comment::fromStringInContext(
                 $doc_comment,
@@ -225,6 +229,9 @@ class ParseVisitor extends ScopeVisitor
 
                 // Set the parent for the class
                 $class->setParentType($parent_fqsen->asType(), $extends_node->lineno);
+
+                // Track parent class dependency for incremental analysis
+                DependencyTracker::track($parent_fqsen->__toString(), 'extends');
             }
 
             // If the class explicitly sets its overriding extension type,
@@ -255,12 +262,14 @@ class ParseVisitor extends ScopeVisitor
                     throw new AssertionError('Expected list of AST_NAME nodes');
                 }
                 $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
+                $interface_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($name);
                 $class->addInterfaceClassFQSEN(
-                    FullyQualifiedClassName::fromFullyQualifiedString(
-                        $name
-                    ),
+                    $interface_fqsen,
                     $name_node->lineno
                 );
+
+                // Track interface dependency for incremental analysis
+                DependencyTracker::track($interface_fqsen->__toString(), 'implements');
             }
         } finally {
             $class->setDidFinishParsing(true);
@@ -1374,6 +1383,9 @@ class ParseVisitor extends ScopeVisitor
             $code_base->addFunction($func);
         }
 
+        // Track function declaration for incremental analysis
+        DependencyTracker::track($function_fqsen->__toString(), 'declares');
+
         // Send the context into the function and reset the scope
         $context = $this->context->withScope(
             $func->getInternalScope()
@@ -1936,6 +1948,9 @@ class ParseVisitor extends ScopeVisitor
         $code_base->addGlobalConstant(
             $constant
         );
+
+        // Track constant declaration for incremental analysis
+        DependencyTracker::track($fqsen->__toString(), 'declares');
     }
 
     /**

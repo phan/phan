@@ -279,6 +279,15 @@ class Config
         // `InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
         'backward_compatibility_checks' => true,
 
+        // Enable incremental analysis to only re-analyze changed files and their dependents.
+        // null = auto-detect (enabled for CLI mode, disabled for daemon/language server mode)
+        // true = force enable, false = force disable
+        'incremental_analysis' => null,
+
+        // Force a full re-analysis, ignoring the incremental manifest.
+        // This is useful after major config changes or when the incremental analysis is misbehaving.
+        'force_full_analysis' => false,
+
         // A set of fully qualified class-names for which
         // a call to `parent::__construct()` is required.
         'parent_constructor_required' => [],
@@ -1589,6 +1598,10 @@ class Config
             'autoload_internal_extension_signatures' => $is_associative_string_array,
             'included_extension_subset' => $is_string_list_or_null,
             'backward_compatibility_checks' => $is_bool,
+            'incremental_analysis' => static function (mixed $value): bool {
+                return $value === null || \is_bool($value);
+            },
+            'force_full_analysis' => $is_bool,
             'baseline_path' => $is_string_or_null,
             'baseline_summary_type' => $is_string,
             'cache_polyfill_asts' => $is_bool,

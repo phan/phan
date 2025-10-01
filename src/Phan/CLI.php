@@ -92,7 +92,7 @@ class CLI
      * still available: g,w
      * @internal
      */
-    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:N';
 
     /**
      * List of long flags passed to getopt
@@ -134,10 +134,12 @@ class CLI
         'file-list-only:',
         'force-polyfill-parser',
         'force-polyfill-parser-with-original-tokens',
+        'force-full-analysis',
         'help',
         'help-annotations',
         'ignore-undeclared',
         'include-analysis-file-list:',
+        'incremental',
         'init',
         'init-level:',
         'init-analyze-dir:',
@@ -173,6 +175,7 @@ class CLI
         'native-syntax-check:',
         'no-color',
         'no-config-file',
+        'no-incremental',
         'no-progress-bar',
         'no-search-parents',
         'output:',
@@ -659,6 +662,9 @@ class CLI
                     $this->output = new StreamOutput($output_file);
                     break;
                 case 'i':
+                case 'incremental':
+                    Config::setValue('incremental_analysis', true);
+                    break;
                 case 'ignore-undeclared':
                     $mask &= ~Issue::CATEGORY_UNDEFINED;
                     break;
@@ -901,6 +907,14 @@ class CLI
                 case 'force-polyfill-parser-with-original-tokens':
                     Config::setValue('use_polyfill_parser', true);
                     Config::setValue('__parser_keep_original_node', true);
+                    break;
+                case 'force-full-analysis':
+                    Config::setValue('force_full_analysis', true);
+                    // Don't disable incremental_analysis - we still want to save the manifest
+                    break;
+                case 'N':
+                case 'no-incremental':
+                    Config::setValue('incremental_analysis', false);
                     break;
                 case 'memory-limit':
                     if (\preg_match('@^([1-9][0-9]*)([KMG])?$@D', $value, $match)) {
@@ -1684,8 +1698,12 @@ $init_help
  --minimum-target-php-version {8.1,8.2,8.3,8.4,8.5,native}
   The PHP version that will be used for feature/syntax compatibility warnings.
 
- -i, --ignore-undeclared
+ --ignore-undeclared
   Ignore undeclared functions and classes
+
+ -i, --incremental
+  Enable incremental analysis. Only changed files and their dependents
+  will be analyzed on subsequent runs. Significantly speeds up re-analysis.
 
  -y, --minimum-severity <level>
   Minimum severity level (low=0, normal=5, critical=10) to report.
@@ -1780,6 +1798,16 @@ $init_help
   Use a slower parser (based on tolerant-php-parser) instead of the native parser,
   even if the native parser is available.
   Useful mainly for debugging.
+
+ --force-full-analysis
+  Force a full re-analysis of all files, ignoring the incremental analysis manifest.
+  When incremental analysis is enabled (-i), only changed files and their dependents
+  are re-analyzed. Use this flag after major config changes or when troubleshooting
+  incremental analysis issues.
+
+ -N, --no-incremental
+  Disable incremental analysis (useful if enabled in .phan/config.php).
+  All files will be analyzed on every run.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.

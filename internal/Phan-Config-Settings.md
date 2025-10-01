@@ -362,6 +362,13 @@ The default is the empty array (Don't suppress any warnings)
 
 (Default: `[]`)
 
+## force_full_analysis
+
+Force a full re-analysis, ignoring the incremental manifest.
+This is useful after major config changes or when the incremental analysis is misbehaving.
+
+(Default: `false`)
+
 ## generic_types_enabled
 
 Enable or disable support for generic templated
@@ -440,6 +447,14 @@ When this is an array, [`ignore_undeclared_functions_with_known_signatures`](#ig
 (because many of those functions will be outside of the configured list)
 
 Also see [`ignore_undeclared_functions_with_known_signatures`](#ignore_undeclared_functions_with_known_signatures) to warn about using unknown functions.
+
+(Default: `null`)
+
+## incremental_analysis
+
+Enable incremental analysis to only re-analyze changed files and their dependents.
+null = auto-detect (enabled for CLI mode, disabled for daemon/language server mode)
+true = force enable, false = force disable
 
 (Default: `null`)
 
