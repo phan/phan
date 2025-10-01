@@ -91,8 +91,7 @@ class Initializer
         }
         $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
         \file_put_contents($config_path, $settings_file_contents);
-        echo "Successfully initialized '$config_path' with the following contents\n\n";
-        echo $settings_file_contents;
+        echo "Successfully initialized '$config_path'\n";
     }
 
     /**
