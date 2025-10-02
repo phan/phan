@@ -23,12 +23,12 @@
  * '-d' flag.
  */
 return [
-    // Supported values: '7.0', '7.1', '7.2', null.
     // If this is set to null,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute phan.
-    // TODO: This might not get picked up?
-    'target_php_version' => '7.1',
+    'target_php_version' => '8.1',
+
+    'minimum_target_php_version' => '8.1',
 
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type
@@ -54,9 +54,8 @@ return [
     // This is set to true for a unit test.
     'ignore_undeclared_functions_with_known_signatures' => true,
 
-    // Set to true in order to attempt to detect unused variables.
-    // dead_code_detection will also enable unused variable detection.
-    'unused_variable_detection' => true,
+    // This will also enable unused variable detection.
+    'dead_code_detection' => true,
 
     // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
     //
@@ -116,4 +115,14 @@ return [
 
     // Not changing all of these tests to `PhanUnusedPublicNoOverrideMethodParameter` from `PhanUnusedPublicMethodParameter`
     'unused_variable_detection_assume_override_exists' => true,
+
+    'plugins' => [
+        'DuplicateArrayKeyPlugin',
+        'EmptyMethodAndFunctionPlugin',
+        'UnknownElementTypePlugin',
+        'UnreachableCodePlugin',
+        'UseReturnValuePlugin',
+        'AlwaysReturnPlugin',
+    ],
+    'plugin_config' => ['infer_pure_methods' => true],
 ];
