@@ -46,8 +46,16 @@ class Config
      */
     public static function getManifestPath(): string
     {
+        // If there's a .phan/config.php in the working directory, use that location
+        // Otherwise fall back to project root directory
+        // This ensures manifest is saved where user expects it, even with symlinks
+        $working_dir = PhanConfig::getWorkingDirectory();
+        if (file_exists($working_dir . '/.phan/config.php')) {
+            return $working_dir . '/.phan/incremental-manifest.php';
+        }
+
         $project_root = PhanConfig::getProjectRootDirectory();
-        return $project_root . '/.phan/incremental-manifest.json';
+        return $project_root . '/.phan/incremental-manifest.php';
     }
 
     /**

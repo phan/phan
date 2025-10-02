@@ -128,8 +128,65 @@ class ChangeDetector
             $to_analyze = array_merge($to_analyze, $dependent_files);
         }
 
+        // Namespace-level invalidation: Extract namespace prefixes from changed FQSENs
+        // and re-analyze all files that declare symbols in those namespaces.
+        // This is a very conservative over-invalidation strategy to catch cross-directory
+        // function calls and dependencies that aren't explicitly tracked.
+        $changed_namespaces = [];
+        foreach ($changed_fqsens as $fqsen) {
+            // Extract namespace from FQSEN (e.g., \Foo\Bar\Baz\MyClass -> Foo\Bar\Baz)
+            $namespace = self::extractNamespace($fqsen);
+            if ($namespace !== '') {
+                $changed_namespaces[$namespace] = true;
+
+                // Also invalidate parent namespaces to catch broader dependencies
+                // e.g., if Foo\Bar\Baz changes, also invalidate Foo\Bar and Foo
+                $parts = \explode('\\', $namespace);
+                $current = '';
+                foreach ($parts as $part) {
+                    $current = $current === '' ? $part : $current . '\\' . $part;
+                    $changed_namespaces[$current] = true;
+                }
+            }
+        }
+
+        // Add all files that declare symbols in affected namespaces
+        if (count($changed_namespaces) > 0) {
+            foreach ($this->manifest->getAllFiles() as $file_path) {
+                $file_fqsens = $this->manifest->getDeclaredFQSENs($file_path);
+                foreach ($file_fqsens as $fqsen) {
+                    $namespace = self::extractNamespace($fqsen);
+                    if ($namespace !== '' && isset($changed_namespaces[$namespace])) {
+                        $to_analyze[] = $file_path;
+                        break; // File already added, no need to check more FQSENs
+                    }
+                }
+            }
+        }
+
         // Deduplicate and store
         $this->files_to_analyze = array_values(array_unique($to_analyze));
+    }
+
+    /**
+     * Extract namespace from FQSEN
+     *
+     * @param string $fqsen Fully qualified structural element name
+     * @return string Namespace (without leading backslash)
+     */
+    private static function extractNamespace(string $fqsen): string
+    {
+        // Remove leading backslash if present
+        $fqsen = \ltrim($fqsen, '\\');
+
+        // Find last backslash to separate namespace from element name
+        $last_backslash = \strrpos($fqsen, '\\');
+        if ($last_backslash === false) {
+            // No namespace (global namespace)
+            return '';
+        }
+
+        return \substr($fqsen, 0, $last_backslash);
     }
 
     /**
