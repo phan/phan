@@ -44,6 +44,7 @@ class ASTHasher
                 return "\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0";
             }
         }
+
         // Cache the hash on the node object to avoid recomputing
         // @phan-suppress-next-line PhanUndeclaredProperty
         return $node->hash ?? ($node->hash = \phan_ast_hash($node));
