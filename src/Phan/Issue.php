@@ -183,7 +183,6 @@ class Issue
     public const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
     public const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     public const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
-    public const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
     public const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     public const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     public const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -2264,14 +2263,6 @@ class Issue
                 'Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10040
-            ),
-            new Issue(
-                self::TypeMismatchUnpackKey,
-                self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
-                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
-                self::REMEDIATION_B,
-                10041
             ),
             new Issue(
                 self::TypeMismatchUnpackValue,

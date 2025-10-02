@@ -1,3 +1,1 @@
-%s:2 PhanUnreferencedClass Possibly zero references to class \Test49
-%s:6 PhanUnreferencedPublicMethod Possibly zero references to public method \Test49::save()
 %s:9 PhanDebugAnnotation @phan-debug-var requested for variable $scheme - it has union type 'file:'(real=string)

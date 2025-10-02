@@ -1,4 +1,3 @@
-%s:10 PhanUnusedPublicNoOverrideMethodParameter Parameter $x is never used
 %s:14 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of % is string (expected number)
 %s:17 PhanParamTooFew Call with 0 arg(s) to Closure(array $x) which requires 1 arg(s) defined at %s:5
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $fn1() of type array but \strlen() takes string

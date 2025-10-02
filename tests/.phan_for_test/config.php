@@ -54,8 +54,7 @@ return [
     // This is set to true for a unit test.
     'ignore_undeclared_functions_with_known_signatures' => true,
 
-    // This will also enable unused variable detection.
-    'dead_code_detection' => true,
+    'unused_variable_detection' => true,
 
     // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
     //
@@ -115,14 +114,4 @@ return [
 
     // Not changing all of these tests to `PhanUnusedPublicNoOverrideMethodParameter` from `PhanUnusedPublicMethodParameter`
     'unused_variable_detection_assume_override_exists' => true,
-
-    'plugins' => [
-        'DuplicateArrayKeyPlugin',
-        'EmptyMethodAndFunctionPlugin',
-        'UnknownElementTypePlugin',
-        'UnreachableCodePlugin',
-        'UseReturnValuePlugin',
-        'AlwaysReturnPlugin',
-    ],
-    'plugin_config' => ['infer_pure_methods' => true],
 ];

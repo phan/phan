@@ -2,4 +2,3 @@
 %s:11 PhanTypeMismatchArgument Argument 1 ($foo) is ['key'=>'value'] of type array{key:'value'} but \Test37::__construct() takes array<string,int> defined at %s:9
 %s:16 PhanTypeMismatchDefault Default value for string $arg can't be 1
 %s:16 PhanTypeMismatchPropertyDefaultReal Default value for string $arg can't be 1 of type int
-%s:16 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Invalid37->arg

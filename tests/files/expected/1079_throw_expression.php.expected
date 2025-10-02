@@ -1,5 +1,3 @@
-%s:6 PhanPluginUnknownArrayFunctionParamType Function test_throw_expression() has a parameter type of array for $array, but does not specify any key types or value types
-%s:6 PhanUnreferencedFunction Possibly zero references to function \test_throw_expression()
 %s:8 PhanUnusedVariable Unused definition of variable $value
 %s:9 PhanUnusedVariable Unused definition of variable $x
 %s:12 PhanUnusedVariable Unused definition of variable $value
@@ -11,5 +9,3 @@
 %s:26 PhanRedundantCondition Redundant attempt to cast $condition of type true to truthy
 %s:27 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
 %s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type 0 to 10 of type 10 with operator '<' in a loop (likely a false positive)
-%s:34 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: never)
-%s:34 PhanUnreferencedClosure Possibly zero references to Closure()

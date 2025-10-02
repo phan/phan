@@ -1,11 +1,2 @@
-%s:7 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \MyAttr33::X
-%s:8 PhanPluginUnknownPropertyType Property \MyAttr33::$property has an initial type that cannot be inferred
-%s:8 PhanUnreferencedPublicProperty Possibly zero references to public property \MyAttr33::$property
-%s:9 PhanEmptyPublicMethod Empty public method \MyAttr33::__construct()
-%s:12 PhanUnreferencedFunction Possibly zero references to function \a()
 %s:18 PhanNoopClosure Unused closure
-%s:18 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
-%s:18 PhanUnreferencedClosure Possibly zero references to Closure()
-%s:19 PhanEmptyClosure Empty closure Closure()
 %s:19 PhanNoopClosure Unused closure
-%s:19 PhanUnreferencedClosure Possibly zero references to Closure()

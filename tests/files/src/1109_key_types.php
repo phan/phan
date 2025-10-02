@@ -4,7 +4,7 @@ declare(strict_types=1);
 class Test37
 {
     /**
-     * @param array<string,int> $foo TODO: Fix false positive PhanPluginUnknownArrayPropertyType
+     * @param array<string,int> $foo
      */
     public function __construct(public array $foo) {}
 }

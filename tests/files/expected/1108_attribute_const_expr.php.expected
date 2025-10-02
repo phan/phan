@@ -1,2 +1,1 @@
 %s:2 PhanInvalidConstantExpression Constant expression contains invalid operations (intdiv(2, 1))
-%s:3 PhanUnreferencedClass Possibly zero references to class \X36

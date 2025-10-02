@@ -1,2 +1,1 @@
-%s:2 PhanPluginUnknownFunctionParamType Function named() has no declared or inferred parameter type for $args
 %s:5 PhanSuspiciousNamedArgumentForVariadic Passing named argument to a variadic parameter $args of the same name in a call to \named(...$args). This will set the array offset "args" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).

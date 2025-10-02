@@ -3824,14 +3824,6 @@ Returning {CODE} of type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} 
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0956_return_super_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0956_return_super_type.php#L13).
 
-## PhanTypeMismatchUnpackKey
-
-```
-When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be consecutive integers starting from 0
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/039_argument_unpack.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/039_argument_unpack.php#L7).
-
 ## PhanTypeMismatchUnpackValue
 
 ```

@@ -1,5 +1,5 @@
 <?php
-/** @phan-file-suppress PhanPluginUseReturnValueNoopVoid, PhanUnreferencedFunction, PhanPluginDescriptionlessCommentOnFunction */
+/** @phan-file-suppress PhanPluginDescriptionlessCommentOnFunction */
 /** @phan-file-suppress PhanPluginCanUsePHP71Void, PhanPluginNoCommentOnFunction */
 
 function getPossiblyEmptyArray(): array {

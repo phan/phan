@@ -1,4 +1,3 @@
-%s:3 PhanPluginUnknownMethodReturnType Method \C24::main() has no declared or inferred return type
 %s:7 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:7 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
 %s:7 PhanParamTooFew Call with 1 arg(s) to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) which requires 2 arg(s) defined at %s:3

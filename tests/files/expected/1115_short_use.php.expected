@@ -1,3 +1,1 @@
-%s:4 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: object)
 %s:4 PhanUndeclaredThis Variable $this is undeclared (Did you mean (function instead of static function for Closure() at line 4))
-%s:4 PhanUnreferencedClosure Possibly zero references to Closure()

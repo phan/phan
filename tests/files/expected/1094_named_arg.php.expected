@@ -1,13 +1,7 @@
-%s:5 PhanEmptyFunction Empty function \noargs()
-%s:5 PhanPluginUseReturnValueNoopVoid The function/method \noargs() is declared to return void and it has no side effects
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $flag - it has union type bool(real=bool)
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $flag - it has union type false(real=bool)
 %s:7 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type ?\stdClass(real=?\stdClass)
-%s:7 PhanPluginUseReturnValueNoopVoid The function/method \test_named_arg() is declared to return void and it has no side effects
-%s:7 PhanUnusedGlobalFunctionParameter Parameter $a is never used
-%s:7 PhanUnusedGlobalFunctionParameter Parameter $flag is never used
-%s:7 PhanUnusedGlobalFunctionParameter Parameter $other is never used
 %s:12 PhanPositionalArgumentAfterNamedArgument Saw positional argument (new stdClass()) after a named argument a: 1
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($a) is null of type null but \test_named_arg() takes int defined at %s:7
 %s:14 PhanTypeMismatchArgumentReal Argument 2 ($other) is true of type true but \test_named_arg() takes ?\stdClass defined at %s:7
