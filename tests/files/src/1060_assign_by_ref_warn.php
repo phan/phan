@@ -1,6 +1,6 @@
 <?php
 
-namespace NS21;
+namespace NS1060;
 
 use stdClass;
 

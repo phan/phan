@@ -1,6 +1,6 @@
 <?php
 
-namespace NS18;
+namespace NS1144;
 
 use ArrayObject;
 use Attribute;

@@ -1,6 +1,6 @@
 <?php
 
-namespace NS22;
+namespace NS1148;
 use BackedEnum;
 use UnitEnum;
 

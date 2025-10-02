@@ -1,5 +1,5 @@
 <?php
-namespace NS46;
+namespace NS1118;
 
 trait Tr {
     public static function double(int $a): int {

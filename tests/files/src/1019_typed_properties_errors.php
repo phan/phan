@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace NS11;
+namespace NS1019;
 
 use ArrayObject;
 

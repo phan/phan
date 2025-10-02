@@ -1,6 +1,6 @@
 <?php
 
-namespace NS970;
+namespace NS1070;
 
 /**
  * @no-named-arguments

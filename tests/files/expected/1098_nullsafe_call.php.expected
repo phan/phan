@@ -1,4 +1,3 @@
-%s:2 PhanPluginUnknownArrayFunctionReturnType Function \test26() has a return type of array, but does not specify key or value types
 %s:4 PhanNonClassMethodCall Call to method invalidMethod on non-class type null
 %s:6 PhanNonClassMethodCall Call to method length on non-class type string
 %s:10 PhanUndeclaredMethod Call to undeclared method \ArrayObject::undeclaredMethod

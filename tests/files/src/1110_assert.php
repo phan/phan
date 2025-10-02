@@ -1,5 +1,5 @@
 <?php
-namespace NS;
+namespace NS1110;
 function assert(bool $x): void {
     if (!$x) {
         throw new \RuntimeException("Fail");

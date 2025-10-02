@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-class Test37
+class Test1109
 {
     /**
      * @param array<string,int> $foo

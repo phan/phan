@@ -1,5 +1,5 @@
 <?php
-
+/** @suppress PhanUnusedVariable */
 ( static function ($val) {
     $noFlags = json_encode($val);
     '@phan-debug-var $noFlags';

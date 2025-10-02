@@ -1,5 +1,5 @@
 <?php
-namespace NS19;
+namespace NS1145;
 
 enum Suit: string {
     case Hearts;  // missing value

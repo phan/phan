@@ -1,6 +1,6 @@
 <?php
 
-namespace NS12;
+namespace NS1138;
 
 enum MyUnitEnum {
     case FIRST;

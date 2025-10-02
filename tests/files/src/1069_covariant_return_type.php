@@ -1,36 +1,32 @@
-<?php
+<?php declare(strict_types=1);
 
-// Phan supports php 7.4's covariant return types
-// when the configured 'closest_minimum_target_php_version' is '7.4' or newer.
-// (it looks for the version range in composer.json as a fallback)
-namespace NS31;
+// Phan supports covariant return types
 
-declare(strict_types=1);
+namespace NS1069;
 
-
-class SubClass {
+class BaseClass {
 
 }
 
-class BaseClass extends SubClass {
+class SubClass extends BaseClass {
 
 }
 
 interface FooFactoryInterface {
-    public function build(BaseClass $o): SubClass;
-}
-
-interface BarFactorInterface extends FooFactoryInterface {
     public function build(SubClass $o): BaseClass;
 }
 
+interface BarFactorInterface extends FooFactoryInterface {
+    public function build(BaseClass $o): SubClass;
+}
+
 class BarFactory implements FooFactoryInterface {
-    public function build(SubClass $o): BaseClass {
-        return new BaseClass();
+    public function build(BaseClass $o): SubClass {
+        return new SubClass();
     }
 }
 
-if (is_a((new BarFactory)->build(new SubClass()), BaseClass::class)) {
+if (is_a((new BarFactory)->build(new BaseClass()), SubClass::class)) {
     echo "\nSUCCESS\n";
 } else {
     echo "\nFAIL\n";

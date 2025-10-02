@@ -1,6 +1,6 @@
 <?php
 
-namespace NS40;
+namespace NS1112;
 
 class a
 {

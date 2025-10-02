@@ -1,6 +1,6 @@
 <?php
 
-namespace Test974;
+namespace NS1071;
 
 interface Foo {}
 interface Foo2 {}

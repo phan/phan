@@ -1,6 +1,6 @@
 <?php
 
-namespace NS37;
+namespace NS1109;
 
 use Attribute;
 

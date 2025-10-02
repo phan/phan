@@ -1,5 +1,5 @@
 <?php
-namespace NS24;
+namespace NS1150;
 
 class Foo {
     public readonly int $bar;
