@@ -8,7 +8,7 @@ class Checker8 {
     }
 }
 function test8(?string $unknown) {
-    $exitAndLog = function (string $message): never {
+    $exitAndLog = static function (string $message): never {
         exit($message);
     };
 

@@ -1,6 +1,6 @@
 <?php
 
-class Test {
+class Test223NoreturnMethodInstanceInconsistent {
 
     public function inconsistentExit(string $val): never {
         if ($val === "yes") {
@@ -9,4 +9,4 @@ class Test {
     }
 }
 
-(new Test)->inconsistentExit("yes");
+(new Test223NoreturnMethodInstanceInconsistent)->inconsistentExit("yes");

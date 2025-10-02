@@ -821,6 +821,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0774
 Return value of {FUNCTION} with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/212_NoDiscard_polyfill.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/212_NoDiscard_polyfill.php#L43).
+
 ## PhanNoopArray
 
 Emitted when you have an array that is not used in any way.

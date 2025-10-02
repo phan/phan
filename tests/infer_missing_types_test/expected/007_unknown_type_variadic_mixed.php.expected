@@ -1,0 +1,4 @@
+src/007_unknown_type_variadic_mixed.php:19 PhanPluginUnknownArrayFunctionParamType Function testTruePositive1() has a parameter type of array for $foo, but does not specify any key types or value types
+src/007_unknown_type_variadic_mixed.php:30 PhanPluginUnknownFunctionParamType Function testTruePositive2() has no declared or inferred parameter type for $foo
+src/007_unknown_type_variadic_mixed.php:50 PhanPluginUnknownArrayMethodParamType Method \NS007\TestWithMethods::testTruePositive1 has a parameter type of array for $foo, but does not specify any key types or value types
+src/007_unknown_type_variadic_mixed.php:61 PhanPluginUnknownMethodParamType Method \NS007\TestWithMethods::testTruePositive2 has no declared or inferred parameter type for $foo

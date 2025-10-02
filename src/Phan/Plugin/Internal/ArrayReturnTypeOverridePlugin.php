@@ -16,7 +16,6 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\FalseType;

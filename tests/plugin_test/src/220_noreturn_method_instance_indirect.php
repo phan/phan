@@ -1,6 +1,6 @@
 <?php
 
-class Test {
+class Test220NoreturnMethodInstanceIndirect {
 
     public function doExit(): never {
         exit();
@@ -11,4 +11,4 @@ class Test {
     }
 }
 
-(new Test)->indirectExit();
+(new Test220NoreturnMethodInstanceIndirect)->indirectExit();

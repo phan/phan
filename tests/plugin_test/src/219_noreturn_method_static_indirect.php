@@ -1,6 +1,6 @@
 <?php
 
-class Test {
+class Test219NoreturnMethodStaticIndirect {
 
     public static function doExit(): never {
         exit();
@@ -11,4 +11,4 @@ class Test {
     }
 }
 
-Test::indirectExit();
+Test219NoreturnMethodStaticIndirect::indirectExit();

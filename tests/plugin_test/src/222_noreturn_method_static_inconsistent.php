@@ -1,6 +1,6 @@
 <?php
 
-class Test {
+class Test222NoreturnMethodStaticInconsistent {
 
     public static function inconsistentExit(string $val): never {
         if ($val === "yes") {
@@ -9,4 +9,4 @@ class Test {
     }
 }
 
-Test::inconsistentExit("yes");
+Test222NoreturnMethodStaticInconsistent::inconsistentExit("yes");

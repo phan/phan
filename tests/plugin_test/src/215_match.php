@@ -1,5 +1,7 @@
 <?php
 
+/* @phan-file-suppress PhanUnreferencedFunction */
+
 function test_duplicates(int $key, int $other): int|string {
     return match($key) {
         1, 2, 2 => 'x',

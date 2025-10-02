@@ -8,11 +8,11 @@ class Test1109
      */
     public function __construct(public array $foo) {}
 }
-$x = (new Test37(['key' => 'value']))->foo;
+$x = (new Test1109(['key' => 'value']))->foo;
 '@phan-debug-var $x';
 
-class Invalid37
+class Invalid1109
 {
     public function __construct(public string $arg = 1) {}
 }
-var_export(new Invalid37('x'));
+var_export(new Invalid1109('x'));

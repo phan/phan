@@ -1,6 +1,6 @@
 <?php
 
-namespace NS50;
+namespace NS007;
 
 // Test unknown type detection for variadic parameters with `mixed` type.
 // @phan-file-suppress PhanUnreferencedFunction,PhanUnreferencedClass,PhanUnreferencedPublicMethod
