@@ -534,6 +534,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0198
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0133_unserialize_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0133_unserialize_types.php#L3).
 
+## PhanCompatibleStandaloneType
+
+```
+Cannot use {TYPE} as a standalone type before php 8.2.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1020_union_type_errors.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1020_union_type_errors.php#L18)
+
 ## PhanCompatibleSyntaxNotice
 
 This is used for notices that are emitted while Phan is parsing with the native parser.
@@ -550,6 +558,14 @@ Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0977_trait_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0977_trait_constant.php#L3).
+
+## PhanCompatibleTrueType
+
+```
+Cannot use {TYPE} as a type before php 8.2.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php82_files/expected/003_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php82_files/src/003_true.php#L2).
 
 ## PhanCompatibleUnparenthesizedTernary
 

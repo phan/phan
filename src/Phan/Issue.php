@@ -586,6 +586,8 @@ class Issue
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
     public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
+    public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
+    public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
@@ -5037,6 +5039,22 @@ class Issue
                 "{CLASS} expression may not be PHP 7 compatible",
                 self::REMEDIATION_B,
                 3001
+            ),
+            new Issue(
+                self::CompatibleStandaloneType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a standalone type before php 8.2.",
+                self::REMEDIATION_B,
+                3050
+            ),
+            new Issue(
+                self::CompatibleTrueType,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Cannot use {TYPE} as a type before php 8.2.",
+                self::REMEDIATION_B,
+                3051
             ),
             new Issue(
                 self::CompatibleAutoload,
