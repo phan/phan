@@ -459,24 +459,6 @@ Declaring a custom assert() function is a fatal error in PHP 8.0+ because the fu
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/038_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/038_assert.php#L3).
 
-## PhanCompatibleAttributeGroupOnMultipleLines
-
-NOTE: This is done on a best effort basis - The native php-ast parser does not provide the actual end line numbers for attribute groups.
-
-```
-Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/032_attributes_repeatable.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/032_attributes_repeatable.php#L11).
-
-## PhanCompatibleAttributeGroupOnSameLine
-
-```
-Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/033_attribute_line_compat.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/033_attribute_line_compat.php#L5).
-
 ## PhanCompatibleAutoload
 
 ```
@@ -521,14 +503,6 @@ In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Sh
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0511_implode.php#L7).
 
-## PhanCompatibleMatchExpression
-
-```
-Cannot use match expressions before php 8.0 in {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/019_match.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/019_match.php#L3).
-
 ## PhanCompatiblePHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
@@ -568,14 +542,6 @@ Currently unused.
 ```
 Saw a parse notice: {DETAILS}
 ```
-
-## PhanCompatibleThrowExpression
-
-```
-Cannot use throw as an expression before php 8.0 in {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/018_match.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/018_match.php#L4).
 
 ## PhanCompatibleTraitConstant
 
@@ -3865,14 +3831,6 @@ When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/039_argument_unpack.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/039_argument_unpack.php#L7).
-
-## PhanTypeMismatchUnpackKeyArraySpread
-
-```
-When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be integers before PHP 8.1
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php74_files/expected/021_associative_array_casting_rules.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php74_files/src/021_associative_array_casting_rules.php#L11).
 
 ## PhanTypeMismatchUnpackValue
 

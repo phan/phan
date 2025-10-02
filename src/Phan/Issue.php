@@ -184,7 +184,6 @@ class Issue
     public const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     public const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
     public const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
-    public const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
     public const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     public const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     public const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -597,10 +596,6 @@ class Issue
     public const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
     public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
-    public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
-    public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
-    public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
-    public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
@@ -2277,14 +2272,6 @@ class Issue
                 'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
                 self::REMEDIATION_B,
                 10041
-            ),
-            new Issue(
-                self::TypeMismatchUnpackKeyArraySpread,
-                self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
-                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers before PHP 8.1',
-                self::REMEDIATION_B,
-                10109
             ),
             new Issue(
                 self::TypeMismatchUnpackValue,
@@ -5127,44 +5114,12 @@ class Issue
                 3023
             ),
             new Issue(
-                self::CompatibleThrowExpression,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use throw as an expression before php 8.0 in {CODE}",
-                self::REMEDIATION_B,
-                3028
-            ),
-            new Issue(
-                self::CompatibleMatchExpression,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use match expressions before php 8.0 in {CODE}",
-                self::REMEDIATION_B,
-                3032
-            ),
-            new Issue(
                 self::CompatibleAssertDeclaration,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
                 "Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.",
                 self::REMEDIATION_B,
                 3041
-            ),
-            new Issue(
-                self::CompatibleAttributeGroupOnSameLine,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}",
-                self::REMEDIATION_B,
-                3039
-            ),
-            new Issue(
-                self::CompatibleAttributeGroupOnMultipleLines,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable",
-                self::REMEDIATION_B,
-                3040
             ),
             new Issue(
                 self::CompatibleSerializeInterfaceDeprecated,

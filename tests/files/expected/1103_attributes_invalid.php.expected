@@ -13,7 +13,6 @@
 %s:30 PhanAttributeNonClass Saw attribute with fqsen \TraitAttribute which was a trait instead of a class
 %s:31 PhanEmptyClosure Empty closure Closure()
 %s:34 PhanAttributeNonClass Saw attribute with fqsen \InterfaceAttribute which was a interface instead of a class
-%s:35 PhanCompatibleArrowFunction Cannot use arrow functions before php 7.4 in (fn)
 %s:35 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: true)
 %s:36 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure() defined at %s:35
 %s:41 PhanUnreferencedClass Possibly zero references to class \AbstractAttribute

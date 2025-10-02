@@ -13,7 +13,7 @@ echo strlen($x->value);
 class DuplicatePromotedProperty {
     public int $value;
 
-    /** @suppress PhanCompatibleConstructorPropertyPromotion suppressions should work on the method */
+
     public function __construct(public int $value) {
     }
 }
