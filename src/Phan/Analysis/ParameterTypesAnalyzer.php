@@ -741,7 +741,7 @@ class ParameterTypesAnalyzer
                     //
                     // For parameters (contravariant): allow `foo(ParentClass $p)` to override `foo(ChildClass $p)`
                     // in php 8.1, allow `foo(): never` to override any base type
-                    $is_exception_to_rule = $parameter_union_type->isStrictSubtypeOf($code_base, $overridden_parameter_union_type) ||
+                    $is_exception_to_rule = $overridden_parameter_union_type->isStrictSubtypeOf($code_base, $parameter_union_type) ||
                         ($overridden_parameter_union_type->hasIterable($code_base) &&
                             ($parameter_union_type->hasType(IterableType::instance(true)) ||
                              $parameter_union_type->hasType(IterableType::instance(false)) && !$overridden_parameter_union_type->containsNullable()));
