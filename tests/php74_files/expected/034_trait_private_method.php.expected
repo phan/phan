@@ -1,0 +1,1 @@
+%s:2 PhanCompatibleAbstractPrivateMethodInTrait Trait \T34 declares abstract private function private which is only allowed in 8.0+

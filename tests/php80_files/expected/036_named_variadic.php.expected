@@ -1,0 +1,5 @@
+%s:5 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (arg: 123)
+%s:6 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (foo: 'test')
+%s:6 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \sprintf
+%s:6 PhanSuspiciousNamedArgumentVariadicInternal Passing named argument foo: 'test' to the variadic parameter of the internal function \sprintf(string $format, ...$values). Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
+%s:8 PhanCompatibleNamedArgument Cannot use named arguments before php 8.0 in argument (arg: 123)

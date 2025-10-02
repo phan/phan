@@ -1,0 +1,7 @@
+%s:23 PhanPluginUseReturnValueNoopVoid The function/method \Test974\Test::test() is declared to return (empty union type) and it has no side effects
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $type - it has union type \Test974\Bar(real=\Test974\Bar)
+%s:30 PhanUnusedVariable Unused definition of variable $type
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $type - it has union type \Test974\Bar&\Test974\Foo2(real=\Test974\Bar)
+%s:38 PhanUnusedVariable Unused definition of variable $type
+%s:42 PhanPluginUseReturnValueNoopVoid The function/method \Test974\Test::somethingWithBar() is declared to return (empty union type) and it has no side effects
+%s:42 PhanUnusedPublicNoOverrideMethodParameter Parameter $bar is never used

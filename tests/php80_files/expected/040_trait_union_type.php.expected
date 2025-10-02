@@ -1,0 +1,12 @@
+%s:5 PhanUnreferencedClass Possibly zero references to class \NS40\a
+%s:9 PhanUnreferencedClass Possibly zero references to class \NS40\b
+%s:13 PhanUnreferencedClass Possibly zero references to class \NS40\c
+%s:15 PhanCompatibleUnionType Cannot use union types (a|b) before php 8.0
+%s:15 PhanUnreferencedPublicMethod Possibly zero references to public method \NS40\c::aOrB()
+%s:19 PhanCompatibleUnionType Cannot use union types (a|null) before php 8.0
+%s:19 PhanUnreferencedPublicMethod Possibly zero references to public method \NS40\c::aOrNull()
+%s:24 PhanUnreferencedPublicMethod Possibly zero references to public method \NS40\c::questionA()
+%s:31 PhanCompatibleUnionType Cannot use union types (a|b) before php 8.0
+%s:36 PhanCompatibleUnionType Cannot use union types (a|null) before php 8.0
+%s:51 PhanTypeMismatchArgumentReal Argument 1 ($foo) is new \stdClass() of type \stdClass but \NS40\e::questionA() takes ?\NS40\a defined at %s:41
+%s:53 PhanTypeMismatchArgumentReal Argument 1 ($foo) is null of type null but \NS40\e::aOrB() takes \NS40\a|\NS40\b defined at %s:31

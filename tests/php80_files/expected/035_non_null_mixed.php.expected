@@ -1,0 +1,1 @@
+%s:2 PhanPluginUnknownFunctionReturnType Function \decode_or_default() has no declared or inferred return type (Types inferred after analysis: \stdClass|bool|float|int|list<mixed>|string)

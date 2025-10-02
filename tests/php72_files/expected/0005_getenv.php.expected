@@ -1,0 +1,1 @@
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is getenv() of type array<string,string> but \intdiv() takes int
