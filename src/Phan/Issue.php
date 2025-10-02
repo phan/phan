@@ -588,9 +588,6 @@ class Issue
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
     public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
-    public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
-    public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
-    public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
@@ -602,13 +599,11 @@ class Issue
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
     public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
     public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
-    public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
     public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
     public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
-    public const CompatibleAbstractPrivateMethodInTrait    = 'PhanCompatibleAbstractPrivateMethodInTrait';
     public const CompatibleTraitConstant                 = 'PhanCompatibleTraitConstant';
 
     // Issue::CATEGORY_GENERIC
@@ -5066,30 +5061,6 @@ class Issue
                 3001
             ),
             new Issue(
-                self::CompatibleShortArrayAssignPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0",
-                self::REMEDIATION_A,
-                3003
-            ),
-            new Issue(
-                self::CompatibleKeyedArrayAssignPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using array keys in an array destructuring assignment is not compatible with PHP 7.0",
-                self::REMEDIATION_B,
-                3004
-            ),
-            new Issue(
-                self::CompatibleMultiExceptionCatchPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Catching multiple exceptions is not supported before PHP 7.1",
-                self::REMEDIATION_B,
-                3011
-            ),
-            new Issue(
                 self::CompatibleAutoload,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5172,14 +5143,6 @@ class Issue
                 3032
             ),
             new Issue(
-                self::CompatibleNamedArgument,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use named arguments before php 8.0 in argument ({CODE})",
-                self::REMEDIATION_B,
-                3035
-            ),
-            new Issue(
                 self::CompatibleAssertDeclaration,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5226,14 +5189,6 @@ class Issue
                 "Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait",
                 self::REMEDIATION_B,
                 3048
-            ),
-            new Issue(
-                self::CompatibleAbstractPrivateMethodInTrait,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                'Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+',
-                self::REMEDIATION_B,
-                3049
             ),
             new Issue(
                 self::CompatibleTraitConstant,

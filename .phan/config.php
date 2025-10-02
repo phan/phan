@@ -585,7 +585,7 @@ return [
         // to use to analyze your files with PHP's native `--syntax-check`.
         //
         // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
-        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php83', 'php82']]`
         // if all of those programs can be found in $PATH
 
         // 'php_native_syntax_check_binaries' => [PHP_BINARY],

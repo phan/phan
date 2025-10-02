@@ -144,7 +144,7 @@ Configuration settings can be added to `.phan/config.php`:
         // to use to analyze your files with PHP's native `--syntax-check`.
         //
         // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
-        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php83', 'php82']]`
         // if all of those programs can be found in $PATH
 
         // 'php_native_syntax_check_binaries' => [PHP_BINARY],
@@ -158,7 +158,7 @@ Configuration settings can be added to `.phan/config.php`:
 ```
 
 If you wish to make sure that analyzed files would be accepted by those PHP versions
-(Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
+(Requires that php83 and php82 be locatable with the `$PATH` environment variable)
 
 As of Phan 2.7.2, it is also possible to locally configure the PHP binary (or binaries) to run syntax checks with.
 e.g. `phan --native-syntax-check php --native-syntax-check /usr/bin/php7.4` would run checks both with `php` (resolved with `$PATH`)

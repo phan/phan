@@ -435,14 +435,6 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
-## PhanCompatibleAbstractPrivateMethodInTrait
-
-```
-Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php74_files/expected/034_trait_private_method.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php74_files/src/034_trait_private_method.php#L2).
-
 ## PhanCompatibleAccessMethodOnTraitDefinition
 
 ```
@@ -529,14 +521,6 @@ In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Sh
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0511_implode.php#L7).
 
-## PhanCompatibleKeyedArrayAssignPHP70
-
-```
-Using array keys in an array destructuring assignment is not compatible with PHP 7.0
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/003_short_array.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/003_short_array.php#L21).
-
 ## PhanCompatibleMatchExpression
 
 ```
@@ -544,24 +528,6 @@ Cannot use match expressions before php 8.0 in {CODE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/019_match.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/019_match.php#L3).
-
-## PhanCompatibleMultiExceptionCatchPHP70
-
-```
-Catching multiple exceptions is not supported before PHP 7.1
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/008_catch_multiple_exceptions.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/008_catch_multiple_exceptions.php#L5).
-
-## PhanCompatibleNamedArgument
-
-```
-Cannot use named arguments before php 8.0 in argument ({CODE})
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/029_named_variadic.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/029_named_variadic.php#L5).
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/009_negative_string_offset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/009_negative_string_offset.php#L5).
 
 ## PhanCompatiblePHP7
 
@@ -594,24 +560,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0198
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0133_unserialize_types.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0133_unserialize_types.php#L3).
 
-## PhanCompatibleShortArrayAssignPHP70
-
-```
-Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/003_short_array.php#L8).
-
 ## PhanCompatibleSyntaxNotice
 
 This is used for notices that are emitted while Phan is parsing with the native parser.
-Currently, this only catches the notice about the `(real)` cast from the native parser in php 7.4.
+Currently unused.
 
 ```
 Saw a parse notice: {DETAILS}
 ```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php74_files/expected/012_real_cast.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php74_files/src/012_real_cast.php#L2).
 
 ## PhanCompatibleThrowExpression
 
@@ -635,7 +591,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0977
 Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php74_files/expected/013_ambiguous_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php74_files/src/013_ambiguous_ternary.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/067_ambiguous_ternary.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/067_ambiguous_ternary.php#L6).
 
 ## PhanCompatibleUnsetCast
 
@@ -715,7 +671,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0123
 Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php72_files/expected/0007_deprecated_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php72_files/src/0007_deprecated_class_constant.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/006_deprecated_attribute.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/006_deprecated_attribute.php#L50).
 
 ## PhanDeprecatedConstructorObjectParamInternal
 
@@ -723,7 +679,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php72_files/expecte
 Argument {INDEX} (${PARAMETER}) of type {TYPE} may be an object but passing objects to {FUNCTIONLIKE} has been deprecated in PHP 8.5
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/016_ArrayObject_with_object.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/016_ArrayObject_with_object.php#L12).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0686_yield_from_this.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0686_yield_from_this.php#L48).
 
 ## PhanDeprecatedEncapsVar
 
@@ -755,7 +711,7 @@ f1();
 Call to deprecated function {FUNCTIONLIKE}{DETAILS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php72_files/expected/0008_each_deprecated.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php72_files/src/0008_each_deprecated.php#L3).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/fixer_test/expected/008_deprecated_alias.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/fixer_test/src/008_deprecated_alias.php#L3).
 
 ## PhanDeprecatedImplicitNullableParam
 
@@ -1299,7 +1255,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expecte
 Possibly zero references to private property {PROPERTY}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/012_typed_properties_errors.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/012_typed_properties_errors.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/070_suggest_global_constant.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/070_suggest_global_constant.php#L22).
 
 ## PhanUnreferencedProtectedClassConstant
 
