@@ -6,7 +6,10 @@ namespace Phan\AST;
 
 use ast\Node;
 
+use function is_float;
+use function is_int;
 use function is_object;
+use function is_string;
 
 /**
  * This converts a PHP AST Node into a hash.
@@ -24,8 +27,22 @@ class ASTHasher
      */
     public static function hash(\ast\Node|float|int|null|string $node): string
     {
+        // Handle primitives with raw representation (not hashed)
         if (!is_object($node)) {
-            return \phan_ast_hash($node);
+            if (is_string($node)) {
+                return md5($node, true);
+            } elseif (is_int($node)) {
+                if (\PHP_INT_SIZE >= 8) {
+                    return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
+                } else {
+                    return "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $node);
+                }
+            } elseif (is_float($node)) {
+                return "\0\0\0\0\0\0\0\1" . \pack('e', $node);
+            } else {
+                // $node must be null
+                return "\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0";
+            }
         }
         // Cache the hash on the node object to avoid recomputing
         // @phan-suppress-next-line PhanUndeclaredProperty
