@@ -759,7 +759,7 @@ class Config
         // If this list is non-empty, only issues within the list
         // will be emitted by Phan.
         //
-        // See https://github.com/phan/phan/blob/v5/internal/Issue-Types-Caught-by-Phan.md
+        // See https://github.com/phan/phan/blob/v6/internal/Issue-Types-Caught-by-Phan.md
         // for the full list of issues that Phan detects.
         //
         // Phan is capable of detecting hundreds of types of issues.
@@ -1006,7 +1006,7 @@ class Config
         //
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. `'AlwaysReturnPlugin'`)
         //
-        // Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v5/.phan/plugins).
+        // Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v6/.phan/plugins).
         //
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. `'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'`)
         'plugins' => [
