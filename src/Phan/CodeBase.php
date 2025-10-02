@@ -1558,9 +1558,6 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
-                if ($name === 'each') {
-                    $function->setIsDeprecated(true);
-                }
                 if ($found) {
                     $reflection_function = new \ReflectionFunction($name);
                     if ($reflection_function->isDeprecated()) {
