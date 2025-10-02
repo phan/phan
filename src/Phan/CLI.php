@@ -895,7 +895,6 @@ class CLI
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    // In order to parse with AST version 85, 1.0.11+ is required
                     if (\version_compare($ast_version, Config::MINIMUM_AST_EXTENSION_VERSION) < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
@@ -3043,14 +3042,15 @@ EOB
     private static function exitIfAstVersionIsInvalid(): void
     {
         $ast_version = (string)\phpversion('ast');
-        if (\version_compare($ast_version, '1.0.0') <= 0) {
-            if ($ast_version === '') {
-                // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
-                CLI::printErrorToStderr("ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . \ini_get('opcache.file_cache') . "')" . PHP_EOL);
-            }
+        if ($ast_version === '') {
+            // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
+            CLI::printErrorToStderr("ERROR: extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . \ini_get('opcache.file_cache') . "')" . PHP_EOL);
+        }
+
+        if (\version_compare($ast_version, Config::MINIMUM_AST_EXTENSION_VERSION) < 0) {
             // NOTE: We haven't loaded the autoloader yet, so these issue messages can't be colorized.
             CLI::printErrorToStderr(sprintf(
-                "Phan 6.x requires php-ast %s+ because it depends on AST version 85. php-ast '%s' is installed." . PHP_EOL,
+                "Phan 6.x requires php-ast %s+ because it depends on AST version 120. php-ast '%s' is installed." . PHP_EOL,
                 Config::MINIMUM_AST_EXTENSION_VERSION,
                 $ast_version
             ));
@@ -3058,14 +3058,6 @@ EOB
             \phan_output_ast_installation_instructions();
             \fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
             exit(1);
-        }
-        if (\version_compare($ast_version, '1.0.11') < 0) {
-            CLI::printWarningToStderr(sprintf("php-ast %s is being used with Phan 6. php-ast 1.0.11 or newer is recommended for compatibility with plugins and support for AST version 85.\n", $ast_version));
-            // Reuse PHAN_SUPPRESS_AST_DEPRECATION for this purpose as well.
-            if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
-                \phan_output_ast_installation_instructions();
-                fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
-            }
         }
     }
 
