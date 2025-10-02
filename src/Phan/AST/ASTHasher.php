@@ -69,7 +69,7 @@ class ASTHasher
      */
     private static function computeHash(Node $node): string
     {
-        $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
+        $str = 'N' . $node->kind . ':' . ($node->flags & 0x3ffffff);
         foreach ($node->children as $key => $child) {
             // added in PhanAnnotationAdder
             if (\is_string($key) && \strncmp($key, 'phan', 4) === 0) {
