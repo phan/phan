@@ -186,7 +186,6 @@ final class ConversionTest extends BaseTest
             // @phan-suppress-next-line PhanTypeObjectUnsetDeclaredProperty this is deliberately added by the polyfill.
             unset($node->endLineno);
         }
-        unset($node->is_not_parenthesized);
         unset($node->polyfill_has_trailing_comma);
         unset($node->is_deprecated_encaps_var);
 
@@ -201,20 +200,8 @@ final class ConversionTest extends BaseTest
     public function testFallbackFromParser(string $file_name, int $ast_version): void
     {
         $test_folder_name = \basename(\dirname($file_name));
-        if (\PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
-            $this->markTestIncomplete('php-ast cannot parse php7.3 syntax when running in php7.2 or older');
-        }
-        if (\PHP_VERSION_ID < 70400 && $test_folder_name === 'php74_or_newer') {
-            $this->markTestIncomplete('php-ast cannot parse php7.4 syntax when running in php7.3 or older');
-        }
-        if (\PHP_VERSION_ID < 80100 && $test_folder_name === 'php81_or_newer') {
-            $this->markTestIncomplete('php-ast cannot parse php8.1 syntax when running in php8.0 or older');
-        }
         if (\PHP_VERSION_ID < 80200 && $test_folder_name === 'php82_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php8.2 syntax when running in php8.1 or older');
-        }
-        if (\basename($file_name) === 'use_simple.php') {
-            $this->markTestIncomplete('php-ast cannot parse php8.0 syntax when running in php7.4 or older');
         }
         if (\PHP_VERSION_ID >= 80400) {
             $tests_to_skip = [

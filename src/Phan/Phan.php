@@ -210,8 +210,7 @@ class Phan implements IgnoredFilesFilterInterface
             echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
             exit(EXIT_SUCCESS);
         }
-        if (CLI::isDaemonOrLanguageServer() &&
-            (\PHP_VERSION_ID >= 70300 || Config::getValue('language_server_use_pcntl_fallback'))) {
+        if (CLI::isDaemonOrLanguageServer()) {
             // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
             // so we need to garbage collect that.
             //

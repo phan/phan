@@ -464,7 +464,7 @@ class PhanPhpShellUtils
                 if (is_array($prev_token)) {
                     $prev_token_kind = $prev_token[0];
                     // TODO: T_NAME_RELATIVE for namespace\
-                    if ($prev_token_kind === T_STRING || PHP_VERSION_ID >= 80000 && in_array($prev_token_kind, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                    if ($prev_token_kind === T_STRING || in_array($prev_token_kind, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
                         $last_token_str = ltrim($prev_token[1], '\\') . $last_token_str;
                     }
                 }

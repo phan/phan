@@ -6,6 +6,7 @@ Breaking changes:
 - Requires PHP 8.1+ to run (dropped PHP 8.0 support)
 - Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
 - The `-i` CLI option is now an alias of `--incremental` instead of `--ignore-undeclared`
+- Dropped support for (minimum) target PHP version < 8.1.
 
 New features (Analysis):
 - Full support for PHP 8.5 features:

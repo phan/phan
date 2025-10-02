@@ -1901,9 +1901,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isNonNullStringType()
             || ($union_type->canCastToUnionType($string_union_type, $code_base) && !$union_type->hasMixedOrNonEmptyMixedType())
         ) {
-            if (Config::get_closest_minimum_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
-                $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
-            }
             $this->checkIsValidStringOffset($union_type, $node, $dim_type);
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type, $code_base)) {
@@ -4389,19 +4386,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         return null;
-    }
-
-    // Precondition: minimum_target_php_version_id < 70100
-    private function analyzeNegativeStringOffsetCompatibility(Node $node, UnionType $dim_type): void
-    {
-        $dim_value = $dim_type->asSingleScalarValueOrNull();
-        if (!\is_int($dim_value) || $dim_value >= 0) {
-            return;
-        }
-        $this->emitIssue(
-            Issue::CompatibleNegativeStringOffset,
-            $node->children['dim']->lineno ?? $node->lineno
-        );
     }
 
     /**

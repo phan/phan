@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
@@ -80,11 +79,6 @@ class ObjectType extends NativeType
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         return $other->isPossiblyObject();
-    }
-
-    public function canUseInRealSignature(): bool
-    {
-        return Config::get_closest_minimum_target_php_version_id() >= 70200;
     }
 
     /** For ObjectType/CallableObjectType  */

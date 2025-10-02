@@ -11,7 +11,6 @@ use Phan\AST\AnalysisVisitor;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
@@ -159,13 +158,9 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitUse(Node $node): Context
     {
         $context = $this->context;
-        $minimum_target_php_version = Config::get_closest_minimum_target_php_version_id();
 
         foreach (self::aliasTargetMapFromUseNode($node) as $alias => [$flags, $target, $lineno]) {
             $flags = $node->flags ?: $flags;
-            if ($flags === \ast\flags\USE_NORMAL && $minimum_target_php_version < 70200) {
-                self::analyzeUseElemCompatibility($alias, $target, $minimum_target_php_version, $lineno);
-            }
             if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
                 $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
             }
@@ -211,43 +206,6 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $lineno,
             $target
         );
-    }
-
-    private const USE_ERRORS = [
-        'iterable' => Issue::CompatibleUseIterablePHP71,
-        'object' => Issue::CompatibleUseObjectPHP71,
-        'mixed' => Issue::CompatibleUseMixed,
-    ];
-
-    private function analyzeUseElemCompatibility(
-        string $alias,
-        FQSEN $target,
-        int $minimum_target_php_version,
-        int $lineno
-    ): void {
-        $alias_lower = \strtolower($alias);
-        if ($minimum_target_php_version < 70100) {
-            if ($alias_lower === 'void') {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::CompatibleUseVoidPHP70,
-                    $lineno,
-                    $target
-                );
-                return;
-            }
-        }
-        $issue_name = self::USE_ERRORS[$alias_lower] ?? null;
-        if ($issue_name) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                $issue_name,
-                $lineno,
-                $target
-            );
-        }
     }
 
     /**

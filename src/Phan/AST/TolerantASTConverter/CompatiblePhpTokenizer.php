@@ -19,9 +19,9 @@ use const PHP_VERSION_ID;
 class CompatiblePhpTokenizer extends PhpTokenizer
 {
     /** @suppress PhanUndeclaredConstant */
-    protected const T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG = PHP_VERSION_ID >= 80100 ? \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG : -1;
+    protected const T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG = \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG;
     /** @suppress PhanUndeclaredConstant */
-    protected const T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG = PHP_VERSION_ID >= 80100 ? \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG : -1;
+    protected const T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG = \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG;
 
     /**
      * @return list<string|array{0:int,1:string,2:int}>
@@ -30,9 +30,6 @@ class CompatiblePhpTokenizer extends PhpTokenizer
     protected static function tokenGetAll(string $content, $parseContext): array
     {
         $tokens = parent::tokenGetAll($content, $parseContext);
-        if (PHP_VERSION_ID < 80100) {
-            return $tokens;
-        }
         foreach ($tokens as $i => $token) {
             if (\is_array($token)) {
                 switch ($token[0]) {

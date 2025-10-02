@@ -1,0 +1,5 @@
+src_copy/011_mixed.php:9 PhanPluginCanUseParamType Can use mixed as the type of parameter $a of testMixed
+src_copy/011_mixed.php:9 PhanPluginCanUseParamType Can use mixed as the type of parameter $b of testMixed
+src_copy/011_mixed.php:9 PhanPluginCanUseParamType Can use mixed as the type of parameter $c of testMixed
+src_copy/011_mixed.php:9 PhanPluginCanUseParamType Can use mixed as the type of parameter $d of testMixed
+src_copy/011_mixed.php:9 PhanPluginCanUseReturnType Can use mixed as a return type of testMixed

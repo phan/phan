@@ -490,7 +490,7 @@ EOB;
         } else {
             $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         }
-        if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
+        if ($optind < count($argv)) {
             $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
         }
 

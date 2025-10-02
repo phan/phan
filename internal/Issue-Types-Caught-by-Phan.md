@@ -521,14 +521,6 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 {CLASS} expression may not be PHP 7 compatible
 ```
 
-## PhanCompatibleFinalClassConstant
-
-```
-Final class constants were not supported prior to php 8.1
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951_private_final.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0951_private_final.php#L7).
-
 ## PhanCompatibleImplodeOrder
 
 ```
@@ -568,12 +560,6 @@ Cannot use named arguments before php 8.0 in argument ({CODE})
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php80_files/expected/029_named_variadic.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php80_files/src/029_named_variadic.php#L5).
-
-## PhanCompatibleNegativeStringOffset
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/009_negative_string_offset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/009_negative_string_offset.php#L5).
 
@@ -658,53 +644,6 @@ The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/061_cast_crash.php#L45).
-
-## PhanCompatibleUseIterablePHP71
-
-```
-Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/007_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/007_use.php#L4).
-
-## PhanCompatibleUseMixed
-
-```
-Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).
-```
-
-
-## PhanCompatibleUseObjectPHP71
-
-```
-Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/007_use.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/007_use.php#L5).
-
-## PhanCompatibleUseVoidPHP70
-
-```
-Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php70_files/expected/007_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php70_files/src/007_use.php#L3).
-
-## PhanThrowCommentInToString
-
-```
-{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/133_throw_in_to_string.php#L6).
-
-## PhanThrowStatementInToString
-
-```
-{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/133_throw_in_to_string.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/133_throw_in_to_string.php#L7).
 
 # Context
 

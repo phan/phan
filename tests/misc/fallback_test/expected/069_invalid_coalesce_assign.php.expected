@@ -1,1 +1,1 @@
-src/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected '=' (at column 5)
+src/069_invalid_coalesce_assign.php:2 PhanSyntaxError syntax error, unexpected token "??="

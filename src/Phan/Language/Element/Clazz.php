@@ -270,11 +270,9 @@ class Clazz extends AddressableElement
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
-        if (\PHP_VERSION_ID >= 80100) {
-            // @phan-suppress-next-line PhanUndeclaredMethod this was added in 8.1
-            if ($class->isEnum()) {
-                $flags |= \ast\flags\CLASS_ENUM;
-            }
+        // @phan-suppress-next-line PhanUndeclaredMethod this was added in 8.1
+        if ($class->isEnum()) {
+            $flags |= \ast\flags\CLASS_ENUM;
         }
 
         $context = new Context();
@@ -498,10 +496,8 @@ class Clazz extends AddressableElement
      */
     private static function getRealTypeForReflectionProperty(ReflectionProperty $property): UnionType
     {
-        if (\PHP_VERSION_ID >= 70400) {
-            if ($property->hasType()) {
-                return UnionType::fromReflectionType($property->getType());
-            }
+        if ($property->hasType()) {
+            return UnionType::fromReflectionType($property->getType());
         }
         return UnionType::empty();
     }

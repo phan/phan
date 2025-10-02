@@ -2,7 +2,7 @@
 /**
  * @return never
  */
-function testNever() {
+function testNever() : never {
     die;
 }
 testNever();

@@ -225,6 +225,7 @@ class TolerantASTConverter
 
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
+     * @suppress PhanWriteOnlyProtectedProperty May be used in future
      */
     protected static $php_version_id_parsing = PHP_VERSION_ID;
 
@@ -268,7 +269,7 @@ class TolerantASTConverter
     }
 
     /**
-     * Records the PHP major+minor version id (70100, 70200, etc.)
+     * Records the PHP major+minor version id (80200, 80300, etc.)
      * that this polyfill should emulate the behavior of php-ast for.
      */
     public function setPHPVersionId(int $value): void
@@ -1068,11 +1069,6 @@ class TolerantASTConverter
                     ],
                     $start_line
                 );
-                if (PHP_VERSION_ID < 70400 && !$is_parenthesized) {
-                    // This is a way to indicate that this AST is definitely unparenthesized in cases where the native parser would not provide this information.
-                    // @phan-suppress-next-line PhanUndeclaredProperty
-                    $result->is_not_parenthesized = true;
-                }
                 return $result;
             },
             /**
@@ -3150,9 +3146,6 @@ class TolerantASTConverter
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
             ], self::getStartLine($item));
         }
-        if (self::$php_version_id_parsing < 70100 && \count($ast_items) === 0) {
-            $ast_items[] = null;
-        }
         return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
     }
 
@@ -3187,16 +3180,14 @@ class TolerantASTConverter
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
             ], self::getStartLine($item));
         }
-        if (self::$php_version_id_parsing < 70100) {
-            $flags = 0;
+
+        $kind = $n->openParenOrBracket->kind;
+        if ($kind === TokenKind::OpenBracketToken) {
+            $flags = flags\ARRAY_SYNTAX_SHORT;
         } else {
-            $kind = $n->openParenOrBracket->kind;
-            if ($kind === TokenKind::OpenBracketToken) {
-                $flags = flags\ARRAY_SYNTAX_SHORT;
-            } else {
-                $flags = flags\ARRAY_SYNTAX_LONG;
-            }
+            $flags = flags\ARRAY_SYNTAX_LONG;
         }
+
         // Workaround for ast line choice
         return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, $ast_items[0]->lineno ?? $start_line);
     }

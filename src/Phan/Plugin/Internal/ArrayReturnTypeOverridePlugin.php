@@ -321,7 +321,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if (!$args) {
                 return NullType::instance(false)->asRealUnionType();
             }
-            // TODO: Clean up once target_php_version >= 80000
             $has_non_array = false;
             $types = null;
             foreach ($args as $arg) {

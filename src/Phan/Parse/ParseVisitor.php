@@ -1047,12 +1047,6 @@ class ParseVisitor extends ScopeVisitor
             $this->context,
             $node->children['attributes']
         );
-        if (($node->flags & ast\flags\MODIFIER_FINAL) && Config::get_closest_minimum_target_php_version_id() < 80100) {
-            $this->emitIssue(
-                Issue::CompatibleFinalClassConstant,
-                $node->lineno
-            );
-        }
         if ($node->flags & (ast\flags\MODIFIER_STATIC | ast\flags\MODIFIER_ABSTRACT)) {
             $this->emitIssue(
                 Issue::InvalidNode,
@@ -1102,10 +1096,6 @@ class ParseVisitor extends ScopeVisitor
 
             $line_number_start = $child_node->lineno;
             $flags = $node->flags;
-            // Prior to php 8.1, it was impossible to override constants declared in interfaces.
-            if ($class->isInterface() && Config::get_closest_minimum_target_php_version_id() < 80100) {
-                $flags |= ast\flags\MODIFIER_FINAL;
-            }
 
             $constant = new ClassConstant(
                 $this->context
@@ -2184,14 +2174,14 @@ class ParseVisitor extends ScopeVisitor
         if (!($n instanceof Node)) {
             return;
         }
-        if (!\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS)) {
-            if ($const_expr_context === self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE && \array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW)) {
-                if (Config::get_closest_minimum_target_php_version_id() < 80100) {
-                    throw new InvalidArgumentException(ASTReverter::toShortString($n) . " (new expression requires minimum_target_php_version >= '8.1')");
-                }
-            } else {
-                throw new InvalidArgumentException(ASTReverter::toShortString($n));
-            }
+        if (
+            !\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS) &&
+            !(
+                $const_expr_context === self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE &&
+                \array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW)
+            )
+        ) {
+            throw new InvalidArgumentException(ASTReverter::toShortString($n));
         }
         foreach ($n->children as $child_node) {
             self::checkIsAllowedInConstExpr($child_node, $const_expr_context);

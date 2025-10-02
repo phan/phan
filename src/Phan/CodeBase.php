@@ -1558,7 +1558,7 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
-                if ($name === 'each' && Config::get_closest_target_php_version_id() >= 70200) {
+                if ($name === 'each') {
                     $function->setIsDeprecated(true);
                 }
                 if ($found) {

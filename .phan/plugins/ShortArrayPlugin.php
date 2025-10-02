@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use ast\Node;
-use Phan\Config;
 use Phan\Issue;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -51,15 +50,13 @@ class ShortArrayVisitor extends PluginAwarePostAnalysisVisitor
                 );
                 return;
             case \ast\flags\ARRAY_SYNTAX_LIST:
-                if (Config::get_closest_minimum_target_php_version_id() >= 70100) {
-                    $this->emit(
-                        'PhanPluginShortArrayList',
-                        'Should use [] instead of list()',
-                        [],
-                        Issue::SEVERITY_LOW,
-                        Issue::REMEDIATION_A
-                    );
-                }
+                $this->emit(
+                    'PhanPluginShortArrayList',
+                    'Should use [] instead of list()',
+                    [],
+                    Issue::SEVERITY_LOW,
+                    Issue::REMEDIATION_A
+                );
         }
     }
 }

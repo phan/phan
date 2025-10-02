@@ -3511,12 +3511,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // The condition is unambiguously parenthesized.
             return;
         }
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        if (\PHP_VERSION_ID < 70400 && !isset($cond->is_not_parenthesized)) {
-            // This is from the native parser in php 7.3 or earlier.
-            // We don't know whether or not the AST is parenthesized.
-            return;
-        }
         if (isset($cond->children['true'])) {
             if (isset($node->children['true'])) {
                 $description = 'a ? b : c ? d : e';

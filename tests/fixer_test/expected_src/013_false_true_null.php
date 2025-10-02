@@ -17,7 +17,7 @@ echo testFalseTrueNullAlone(false, true, null) ? 'a' : 'b';
  * @param true|false $bool
  * @return false|true|null
  */
-function testFalseTrueNullUnion($a, $b, ?float $c, bool $bool) : ?bool {
+function testFalseTrueNullUnion(bool|string $a, bool|int $b, ?float $c, bool $bool) : ?bool {
     return $a !== false && $b !== true && $c !== null ? $bool : null;
 }
 echo testFalseTrueNullUnion(false, true, null, true) ? 'a' : 'b';

@@ -13,18 +13,6 @@ echo "PHP_VERSION_ID=$PHP_VERSION_ID";
 
 for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
     original_path="$path"
-    if [[ "$PHP_VERSION_ID" -ge 80000 ]]; then
-        alternate_path=${original_path/.expected/.expected80}
-        if [ -f "$alternate_path" ]; then
-            path="$alternate_path"
-        fi
-    fi
-    if [[ "$PHP_VERSION_ID" -ge 80100 ]]; then
-        alternate_path=${original_path/.expected/.expected81}
-        if [ -f "$alternate_path" ]; then
-            path="$alternate_path"
-        fi
-    fi
     if [[ "$PHP_VERSION_ID" -ge 80200 ]]; then
         alternate_path=${original_path/.expected/.expected82}
         if [ -f "$alternate_path" ]; then
@@ -91,18 +79,6 @@ for expected_src_file in expected_src/*.php; do
     fi
     original_path="$expected_src_file"
 	FOUND_EXPECTED=1
-	if [[ "$PHP_VERSION_ID" -ge 80000 ]]; then
-        alternate_expected_path=${original_path/.php/.php80.php}
-        if [ -f "$alternate_expected_path" ]; then
-            expected_src_file="$alternate_expected_path"
-        fi
-    fi
-    if [[ "$PHP_VERSION_ID" -ge 80100 ]]; then
-        alternate_expected_path=${original_path/.php/.php81.php}
-        if [ -f "$alternate_expected_path" ]; then
-            expected_src_file="$alternate_expected_path"
-        fi
-    fi
     if [[ "$PHP_VERSION_ID" -ge 80200 ]]; then
         alternate_expected_path=${original_path/.php/.php82.php}
         if [ -f "$alternate_expected_path" ]; then

@@ -95,10 +95,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         if (\PHP_VERSION_ID >= 80200) {
             $suffixes[] = '82';
         }
-        if (\PHP_VERSION_ID >= 80100) {
-            $suffixes[] = '81';
-        }
-        $suffixes[] = '80';
+        $suffixes[] = '81';
 
         return \array_combine(
             $files,

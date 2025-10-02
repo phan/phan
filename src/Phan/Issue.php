@@ -590,12 +590,7 @@ class Issue
     public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
     public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
     public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
-    public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
-    public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
-    public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
-    public const CompatibleUseMixed                 = 'PhanCompatibleUseMixed';
     public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
-    public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
@@ -611,7 +606,6 @@ class Issue
     public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
     public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
-    public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
     public const CompatibleAbstractPrivateMethodInTrait    = 'PhanCompatibleAbstractPrivateMethodInTrait';
@@ -652,8 +646,6 @@ class Issue
     public const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     public const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     public const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
-    public const ThrowStatementInToString         = 'PhanThrowStatementInToString';
-    public const ThrowCommentInToString           = 'PhanThrowCommentInToString';
     public const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
     public const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
     public const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
@@ -5090,52 +5082,12 @@ class Issue
                 3004
             ),
             new Issue(
-                self::CompatibleUseVoidPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).",
-                self::REMEDIATION_B,
-                3008
-            ),
-            new Issue(
-                self::CompatibleUseIterablePHP71,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).",
-                self::REMEDIATION_B,
-                3009
-            ),
-            new Issue(
-                self::CompatibleUseObjectPHP71,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
-                self::REMEDIATION_B,
-                3010
-            ),
-            new Issue(
-                self::CompatibleUseMixed,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).",
-                self::REMEDIATION_B,
-                3030
-            ),
-            new Issue(
                 self::CompatibleMultiExceptionCatchPHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
                 "Catching multiple exceptions is not supported before PHP 7.1",
                 self::REMEDIATION_B,
                 3011
-            ),
-            new Issue(
-                self::CompatibleNegativeStringOffset,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
-                self::REMEDIATION_B,
-                3012
             ),
             new Issue(
                 self::CompatibleAutoload,
@@ -5152,22 +5104,6 @@ class Issue
                 "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 3014
-            ),
-            new Issue(
-                self::ThrowStatementInToString,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4",
-                self::REMEDIATION_A,
-                3015
-            ),
-            new Issue(
-                self::ThrowCommentInToString,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4",
-                self::REMEDIATION_A,
-                3016
             ),
             new Issue(
                 self::CompatibleSyntaxNotice,
@@ -5274,14 +5210,6 @@ class Issue
                 "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
                 self::REMEDIATION_B,
                 3042
-            ),
-            new Issue(
-                self::CompatibleFinalClassConstant,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Final class constants were not supported prior to php 8.1",
-                self::REMEDIATION_B,
-                3044
             ),
             new Issue(
                 self::CompatibleAccessMethodOnTraitDefinition,

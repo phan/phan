@@ -735,14 +735,13 @@ class ParameterTypesAnalyzer
                 if (!$overridden_parameter_union_type->isEqualTo($parameter_union_type) &&
                     !($parameter_union_type->containsNullable() && $overridden_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
                 ) {
-                    // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
+                    // There is one exception to this: the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                     // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
                     // php 7.4 adds https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.type-variance
                     //
                     // For parameters (contravariant): allow `foo(ParentClass $p)` to override `foo(ChildClass $p)`
                     // in php 8.1, allow `foo(): never` to override any base type
-                    $is_exception_to_rule = (Config::get_closest_minimum_target_php_version_id() >= 70400 &&
-                                              $parameter_union_type->isStrictSubtypeOf($code_base, $overridden_parameter_union_type)) ||
+                    $is_exception_to_rule = $parameter_union_type->isStrictSubtypeOf($code_base, $overridden_parameter_union_type) ||
                         ($overridden_parameter_union_type->hasIterable($code_base) &&
                             ($parameter_union_type->hasType(IterableType::instance(true)) ||
                              $parameter_union_type->hasType(IterableType::instance(false)) && !$overridden_parameter_union_type->containsNullable()));
