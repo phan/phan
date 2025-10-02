@@ -8,14 +8,19 @@ namespace Phan\Library\IncrementalAnalysis;
  * Tracks dependencies between files and FQSENs.
  *
  * This class maintains an in-memory map of which files declare,
- * use, extend, or implement which FQSENs.
+ * extend, or implement which FQSENs.
+ *
+ * NOTE: This tracks only structural dependencies (class declarations and
+ * inheritance relationships), not usage dependencies (function calls,
+ * method calls, property accesses, etc.). For those, namespace-level
+ * invalidation is used as a conservative strategy.
  *
  * This class has ZERO dependencies on Phan core - it's a pure
  * data structure.
  */
 class DependencyTracker
 {
-    /** @var array<string,array{declares:list<string>,uses:list<string>,extends:list<string>,implements:list<string>}> */
+    /** @var array<string,array{declares:list<string>,extends:list<string>,implements:list<string>}> */
     private static $file_dependencies = [];
 
     /** @var ?string Current file being tracked */
@@ -31,7 +36,6 @@ class DependencyTracker
         self::$current_file = $file_path;
         self::$file_dependencies[$file_path] = [
             'declares' => [],
-            'uses' => [],
             'extends' => [],
             'implements' => [],
         ];
@@ -49,7 +53,7 @@ class DependencyTracker
      * Track a dependency from current file to an FQSEN
      *
      * @param string $fqsen The FQSEN being referenced
-     * @param string $type One of: 'declares', 'uses', 'extends', 'implements'
+     * @param string $type One of: 'declares', 'extends', 'implements'
      */
     public static function track(string $fqsen, string $type): void
     {
@@ -68,14 +72,13 @@ class DependencyTracker
     /**
      * Get dependencies for a file
      *
-     * @return array{declares:list<string>,uses:list<string>,extends:list<string>,implements:list<string>}
+     * @return array{declares:list<string>,extends:list<string>,implements:list<string>}
      */
     public static function getDependencies(string $file_path): array
     {
         if (!isset(self::$file_dependencies[$file_path])) {
             return [
                 'declares' => [],
-                'uses' => [],
                 'extends' => [],
                 'implements' => [],
             ];
@@ -85,7 +88,6 @@ class DependencyTracker
         $deps = self::$file_dependencies[$file_path];
         return [
             'declares' => \array_values(\array_unique($deps['declares'])),
-            'uses' => \array_values(\array_unique($deps['uses'])),
             'extends' => \array_values(\array_unique($deps['extends'])),
             'implements' => \array_values(\array_unique($deps['implements'])),
         ];

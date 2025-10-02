@@ -256,6 +256,9 @@ class Phan implements IgnoredFilesFilterInterface
         $incremental_manifest = null;
         $incremental_files_to_analyze = null; // null means analyze all files
         if (Library\IncrementalAnalysis\Config::isEnabled()) {
+            \fwrite(STDERR, "WARNING: Incremental analysis is experimental and may miss issues.\n");
+            \fwrite(STDERR, "WARNING: Only class/interface/trait dependencies are tracked. Function calls and other\n");
+            \fwrite(STDERR, "         dependencies may not trigger re-analysis. Re-run without -i for full analysis.\n");
             // Create manifest object for saving after analysis
             $incremental_manifest = new Library\IncrementalAnalysis\Manifest(
                 Library\IncrementalAnalysis\Config::getManifestPath(),

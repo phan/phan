@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Phan\Library\IncrementalAnalysis;
 
 use function file_exists;
-use function file_get_contents;
 use function file_put_contents;
 use function is_array;
 use function is_dir;
-use function json_decode;
-use function json_encode;
 use function mkdir;
 use function rename;
-
-use const JSON_PRETTY_PRINT;
-use const JSON_UNESCAPED_SLASHES;
 
 /**
  * Manages the incremental analysis manifest file.
@@ -84,14 +78,10 @@ class Manifest
             return false; // First run, need full analysis
         }
 
-        $contents = file_get_contents($this->manifest_path);
-        if ($contents === false) {
-            return false;
-        }
-
-        $data = json_decode($contents, true);
+        // Use include for fast, native PHP loading
+        $data = @include($this->manifest_path);
         if (!is_array($data)) {
-            return false; // Corrupted manifest
+            return false; // Corrupted manifest or load failure
         }
 
         // Check for invalidation conditions
@@ -121,23 +111,26 @@ class Manifest
             'reverse_dependencies' => $this->reverse_dependencies,
         ];
 
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if ($json === false) {
-            return; // Failed to encode
-        }
+        // Use var_export() for faster, more robust serialization
+        // No UTF-8 encoding issues, no JSON overhead, just native PHP
+        $php_code = "<?php\nreturn " . \var_export($data, true) . ";\n";
 
         // Ensure directory exists
         $dir = \dirname($this->manifest_path);
         if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            if (!mkdir($dir, 0755, true)) {
+                return;
+            }
         }
 
         // Atomic write
         $temp_path = $this->manifest_path . '.tmp';
-        if (file_put_contents($temp_path, $json) === false) {
+        if (file_put_contents($temp_path, $php_code) === false) {
             return; // Failed to write
         }
-        rename($temp_path, $this->manifest_path);
+        if (!rename($temp_path, $this->manifest_path)) {
+            return;
+        }
     }
 
     /**
@@ -211,7 +204,7 @@ class Manifest
      * @param string $hash
      * @param int $size
      * @param int $mtime
-     * @param array{declares:list<string>,uses:list<string>,extends:list<string>,implements:list<string>} $dependencies
+     * @param array{declares:list<string>,extends:list<string>,implements:list<string>} $dependencies
      */
     public function updateFile(
         string $file_path,
@@ -276,8 +269,9 @@ class Manifest
         foreach ($this->files as $file_path => $file_data) {
             $deps = $file_data['dependencies'] ?? [];
 
-            // Track which files depend on which FQSENs
-            foreach (['uses', 'extends', 'implements'] as $type) {
+            // Track which files depend on which FQSENs (via extends/implements)
+            // Note: We only track structural dependencies, not usage dependencies
+            foreach (['extends', 'implements'] as $type) {
                 foreach ($deps[$type] ?? [] as $fqsen) {
                     if (!isset($this->reverse_dependencies[$fqsen])) {
                         $this->reverse_dependencies[$fqsen] = [];
@@ -323,7 +317,7 @@ class Manifest
         foreach ($this->files as $file_data) {
             $total_size += $file_data['size'] ?? 0;
             $deps = $file_data['dependencies'] ?? [];
-            foreach (['declares', 'uses', 'extends', 'implements'] as $type) {
+            foreach (['declares', 'extends', 'implements'] as $type) {
                 $total_deps += \count($deps[$type] ?? []);
             }
         }
