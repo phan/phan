@@ -717,18 +717,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node @unused-param
-     * A node to parse
-     *
-     * @return Context
-     * An unchanged context resulting from parsing the node
-     */
-    public function visitAssign(Node $node): Context
-    {
-        return $this->context;
-    }
-
-    /**
      * No-op - all work is done in BlockAnalysisVisitor
      *
      * @param Node $node @unused-param
@@ -759,9 +747,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->context,
             $node->children['class']
         );
-        if (!isset($node->children['var'])) {
-            // PHP 8.1+ supports non-capturing catch statements
-        }
 
         try {
             $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));
@@ -783,7 +768,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         $var_node = $node->children['var'];
         if (!$var_node instanceof Node) {
-            // The catch variable is optional in newer php versions
+            // The catch variable is optional in PHP 8.1+
             return $this->context;
         }
         // Calculate the intersection type of the class statement

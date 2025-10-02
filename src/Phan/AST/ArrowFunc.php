@@ -15,7 +15,10 @@ use function is_string;
  */
 class ArrowFunc
 {
-    /** @var associative-array<int|string, Node> maps variable names to the first Node where the variable was used.*/
+    /**
+     * @var associative-array<int|string, Node> maps variable names to the first Node where the variable was used.
+     * @suppress PhanReadOnlyPrivateProperty TODO Figure out the bug
+     */
     private $uses = [];
 
     private function __construct()

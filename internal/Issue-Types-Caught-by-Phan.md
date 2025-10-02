@@ -459,18 +459,6 @@ Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it sho
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0955_trait_direct_deprecated.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0955_trait_direct_deprecated.php#L9).
 
-
-```
-Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait
-```
-
-
-```
-Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/043_short_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/043_short_use.php#L4).
-
 ## PhanCompatibleAssertDeclaration
 
 ```
@@ -484,12 +472,12 @@ e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expecte
 NOTE: This is done on a best effort basis - The native php-ast parser does not provide the actual end line numbers for attribute groups.
 
 ```
+Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/032_attributes_repeatable.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/032_attributes_repeatable.php#L11).
 
 ## PhanCompatibleAttributeGroupOnSameLine
-
 
 ```
 Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}
@@ -504,13 +492,6 @@ Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/000_plugins.php#L64).
-
-
-```
-Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+. Use spl_autoload_register() instead (supported since PHP 5.1).
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/032_variadic_promoted_property.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/032_variadic_promoted_property.php#L3).
 
 ## PhanCompatibleDefaultEqualsNull
 
@@ -556,18 +537,6 @@ In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Sh
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0511_implode.php#L7).
 
-
-```
-In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
-```
-
-
-```
-In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/006_iterable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/006_iterable.php#L3).
-
 ## PhanCompatibleKeyedArrayAssignPHP70
 
 ```
@@ -583,13 +552,6 @@ Cannot use match expressions before php 8.0 in {CODE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/019_match.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/019_match.php#L3).
-
-
-```
-Cannot use match expressions before php 8.0 in {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0289_check_incorrect_soft_types.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0289_check_incorrect_soft_types.php#L18).
 
 ## PhanCompatibleMultiExceptionCatchPHP70
 
@@ -615,41 +577,6 @@ Using negative string offsets is not supported before PHP 7.1 (emits an 'Uniniti
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/009_negative_string_offset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/009_negative_string_offset.php#L5).
 
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/plugin_test/expected/199_never_type_and_plugins.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/plugin_test/src/199_never_type_and_plugins.php#L13).
-
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/014_try_statement10.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/014_try_statement10.php#L5).
-
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/014_union_type_invalid.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/014_union_type_invalid.php#L3).
-
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/028_nullsafe_undef.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/028_nullsafe_undef.php#L5).
-
-
-```
-Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/007_use.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/007_use.php#L7).
-
 ## PhanCompatiblePHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
@@ -674,16 +601,6 @@ PHP4 constructors will be removed in php 8, and should not be used. __construct(
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0198_list_property.php#L7).
 
-
-```
-PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}
-```
-
-
-```
-PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}
-```
-
 ## PhanCompatibleSerializeInterfaceDeprecated
 
 ```
@@ -698,20 +615,6 @@ Square bracket syntax for an array destructuring assignment is not compatible wi
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/003_short_array.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/003_short_array.php#L8).
-
-
-```
-Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/013_union_type_errors.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/013_union_type_errors.php#L18).
-
-
-```
-Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/013_union_type_errors.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/013_union_type_errors.php#L13).
 
 ## PhanCompatibleSyntaxNotice
 
@@ -732,20 +635,6 @@ Cannot use throw as an expression before php 8.0 in {CODE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/018_match.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/018_match.php#L4).
 
-
-```
-Cannot use throw as an expression before php 8.0 in {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/073_trailing_commas.php#L4).
-
-
-```
-Cannot use throw as an expression before php 8.0 in {CODE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/073_trailing_commas.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/073_trailing_commas.php#L8).
-
 ## PhanCompatibleTraitConstant
 
 ```
@@ -753,27 +642,6 @@ Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/files/expected/0977_trait_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/files/src/0977_trait_constant.php#L3).
-
-
-```
-Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php82_files/expected/003_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php82_files/src/003_true.php#L2).
-
-
-```
-Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/expected/076_pipe.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/misc/fallback_test/src/076_pipe.php#L3).
-
-
-```
-Trait {TRAIT} declares constant {CONST} which is only allowed in 8.2+
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php80_files/expected/004_union_type_mismatch.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php80_files/src/004_union_type_mismatch.php#L2).
 
 ## PhanCompatibleUnparenthesizedTernary
 
@@ -821,13 +689,6 @@ Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absen
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/007_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/007_use.php#L3).
-
-
-```
-Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v5/tests/php70_files/expected/004_void.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v5/tests/php70_files/src/004_void.php#L4).
 
 ## PhanThrowCommentInToString
 

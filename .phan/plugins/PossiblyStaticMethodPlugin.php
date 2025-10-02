@@ -126,14 +126,6 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
     private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, \ast\Node|float|int|null|string $node): bool
     {
         if (!($node instanceof Node)) {
-            // @phan-suppress-next-line PhanImpossibleCondition AST children can be arrays
-            if (is_array($node)) {
-                foreach ($node as $child_node) {
-                    if (!self::nodeCanBeStatic($code_base, $method, $child_node)) {
-                        return false;
-                    }
-                }
-            }
             return true;
         }
         switch ($node->kind) {

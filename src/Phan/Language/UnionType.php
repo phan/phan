@@ -4761,17 +4761,6 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
-     * @param array<string,associative-array<int|string,string>> $php80_map
-     * @return array<string,associative-array<int|string,string>>
-     */
-    private static function computePHP81FunctionSignatureMap(array $php80_map): array
-    {
-        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php81_delta.php');
-        return self::applyDeltaToGetNewerSignatures($php80_map, $delta_raw);
-    }
-
-
-    /**
      * @param array<string,associative-array<int|string,string>> $older_map
      * @param array{added:array<string,associative-array<int|string,string>>,removed:array<string,associative-array<int|string,string>>,changed:array<string,array{old:associative-array<int|string,string>,new:associative-array<int|string,string>}>} $delta
      * @return array<string,associative-array<int|string,string>>
@@ -4800,6 +4789,7 @@ class UnionType implements Serializable, Stringable
      * @param array<string,associative-array<int|string,string>> $newer_map
      * @param array{added:array<string,associative-array<int|string,string>>,removed:array<string,associative-array<int|string,string>>,changed:array<string,array{old:associative-array<int|string,string>,new:associative-array<int|string,string>}>} $delta
      * @return array<string,associative-array<int|string,string>>
+     * @suppress PhanUnreferencedPrivateMethod May be used in future
      */
     private static function applyDeltaToGetOlderSignatures(array $newer_map, array $delta): array
     {

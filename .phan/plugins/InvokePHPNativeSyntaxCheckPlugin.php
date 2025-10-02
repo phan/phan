@@ -223,8 +223,8 @@ class InvokeExecutionPromise
             // > remove the last quote character on the command line, preserving
             // > any text after the last quote character.
             //
-            // e.g. `""C:\php 7.4.3\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php""`
-            // gets unescaped as `"C:\php 7.4.3\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php"`
+            // e.g. `""C:\my php source\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php""`
+            // gets unescaped as `"C:\my php source\php.exe" --syntax-check --no-php-ini < "C:\some project\test.php"`
             $process = proc_open("$cmd", $descriptorspec, $pipes);
             if (!is_resource($process)) {
                 $this->done = true;

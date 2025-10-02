@@ -50,7 +50,7 @@ return [
     // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
     // If that could not be determined, then Phan assumes `target_php_version`.
     //
-    // For analyzing Phan 6.x, this is determined to be `'8.1'` from `"version": "^8.1.0"`.
+    // For analyzing Phan 6.x, this is determined to be `'8.1'` from the composer requirement of `^8.1.0`.
     'minimum_target_php_version' => '8.1',
 
     // Default: true. If this is set to true,
@@ -375,10 +375,7 @@ return [
         'PhanTypePossiblyInvalidDimOffset',
         // TODO: Fix PhanParamNameIndicatingUnusedInClosure instances (low priority)
         'PhanParamNameIndicatingUnusedInClosure',
-        // Suppress dead code warnings that appear in CI but not locally
-        'PhanReadOnlyPrivateProperty',  // ArrowFunc->uses appears used but flagged in CI
         'PhanUnreferencedPublicMethod',  // Parameter::isUsingNullableSyntax() - legitimately unused
-        'PhanUnreferencedPrivateMethod', // UnionType methods - legitimately unused
     ],
 
     // If this list is empty, no filter against issues types will be applied.
