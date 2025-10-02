@@ -367,6 +367,11 @@ class UnionType implements Serializable, Stringable
      */
     public static function getUniqueTypes(array $type_list): array
     {
+        // Use C extension if available (2-3x faster)
+        if (\function_exists('phan_unique_types')) {
+            return \phan_unique_types($type_list);
+        }
+
         $new_type_list = [];
         if (\count($type_list) >= 8) {
             // This approach is faster, but only when there are 8 or more types (tested in php 7.3)

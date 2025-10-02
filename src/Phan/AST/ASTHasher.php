@@ -17,6 +17,8 @@ use function is_string;
  */
 class ASTHasher
 {
+    /** @var bool|null */
+    private static $has_phan_ast_hash = null;
     /**
      * @param string|int|null $node
      * @return string a 16-byte binary key for the array key
@@ -69,6 +71,16 @@ class ASTHasher
      */
     private static function computeHash(Node $node): string
     {
+        // Check for C extension once per request
+        if (self::$has_phan_ast_hash === null) {
+            self::$has_phan_ast_hash = \function_exists('phan_ast_hash');
+        }
+
+        // Use C extension for AST node hashing if available
+        if (self::$has_phan_ast_hash) {
+            return \phan_ast_hash($node);
+        }
+
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {
             // added in PhanAnnotationAdder
