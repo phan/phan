@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;

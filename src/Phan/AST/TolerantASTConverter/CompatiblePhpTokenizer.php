@@ -6,8 +6,6 @@ namespace Phan\AST\TolerantASTConverter;
 
 use Microsoft\PhpParser\PhpTokenizer;
 
-use const PHP_VERSION_ID;
-
 /**
  * Like PhpTokenizer but supports the following:
  *

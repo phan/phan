@@ -8,7 +8,6 @@ use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\InferValue;
-use Phan\Config;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
