@@ -50,7 +50,8 @@
         "phpunit/phpunit": "^9.0"
     },
     "autoload": {
-        "psr-4": {"Phan\\": "src/Phan"}
+        "psr-4": {"Phan\\": "src/Phan"},
+        "files": ["src/Phan/bootstrap/polyfills.php"]
     },
     "autoload-dev": {
         "psr-4": {"Phan\\Tests\\": "tests/Phan"}
