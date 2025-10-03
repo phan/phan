@@ -1,0 +1,17 @@
+src/011_nullsafe_property.php:4 PhanReadOnlyPublicProperty Possibly zero write references to public property \Address->street
+src/011_nullsafe_property.php:8 PhanReadOnlyPublicProperty Possibly zero write references to public property \Person->code
+src/011_nullsafe_property.php:9 PhanReadOnlyPublicProperty Possibly zero write references to public property \Person->address
+src/011_nullsafe_property.php:12 PhanUnreferencedClass Possibly zero references to class \Test
+src/011_nullsafe_property.php:13 PhanReadOnlyPublicProperty Possibly zero write references to public property \Test->person
+src/011_nullsafe_property.php:15 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testNullsafeOperator()
+src/011_nullsafe_property.php:17 PhanUnusedVariable Unused definition of variable $code
+src/011_nullsafe_property.php:20 PhanUnusedVariable Unused definition of variable $street
+src/011_nullsafe_property.php:23 PhanPossiblyUndeclaredProperty Reference to possibly undeclared property street of expression of type ?\Address (null does not declare that property)
+src/011_nullsafe_property.php:23 PhanUnusedVariable Unused definition of variable $mixed
+src/011_nullsafe_property.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testRegularAccess()
+src/011_nullsafe_property.php:28 PhanPossiblyUndeclaredProperty Reference to possibly undeclared property code of expression of type ?\Person (null does not declare that property)
+src/011_nullsafe_property.php:28 PhanUnusedVariable Unused definition of variable $code
+src/011_nullsafe_property.php:31 PhanPossiblyUndeclaredProperty Reference to possibly undeclared property address of expression of type ?\Person (null does not declare that property)
+src/011_nullsafe_property.php:31 PhanUnusedVariable Unused definition of variable $street
+src/011_nullsafe_property.php:34 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testNonNullable()
+src/011_nullsafe_property.php:37 PhanUnusedVariable Unused definition of variable $code

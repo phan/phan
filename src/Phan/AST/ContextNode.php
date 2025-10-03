@@ -1690,12 +1690,14 @@ class ContextNode
             }
         }
         if (!$is_static && Config::get_strict_object_checking() &&
-                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) &&
+                $node->kind !== ast\AST_NULLSAFE_PROP) {
             self::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $node, $property_name);
         }
         if ($properties) {
             if ($class_without_property && Config::get_strict_object_checking() &&
-                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) &&
+                    $node->kind !== ast\AST_NULLSAFE_PROP) {
                 $this->emitIssue(
                     Issue::PossiblyUndeclaredPropertyOfClass,
                     $node->lineno,
