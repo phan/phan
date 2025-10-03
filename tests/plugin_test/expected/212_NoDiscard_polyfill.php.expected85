@@ -1,0 +1,9 @@
+src/212_NoDiscard_polyfill.php:38 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withoutSideEffects() defined at src/212_NoDiscard_polyfill.php:4
+src/212_NoDiscard_polyfill.php:40 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::instanceMethod() defined at src/212_NoDiscard_polyfill.php:9
+src/212_NoDiscard_polyfill.php:41 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::staticMethod() defined at src/212_NoDiscard_polyfill.php:13
+src/212_NoDiscard_polyfill.php:43 PhanNoDiscardReturnValueIgnored Return value of \withSideEffects() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+src/212_NoDiscard_polyfill.php:43 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withSideEffects() defined at src/212_NoDiscard_polyfill.php:19
+src/212_NoDiscard_polyfill.php:45 PhanNoDiscardReturnValueIgnored Return value of \ClassWithSideEffects::instanceMethod() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+src/212_NoDiscard_polyfill.php:45 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::instanceMethod() defined at src/212_NoDiscard_polyfill.php:26
+src/212_NoDiscard_polyfill.php:46 PhanNoDiscardReturnValueIgnored Return value of \ClassWithSideEffects::staticMethod() with #[\NoDiscard] attribute is discarded - use (void) cast to suppress this warning
+src/212_NoDiscard_polyfill.php:46 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithSideEffects::staticMethod() defined at src/212_NoDiscard_polyfill.php:32
