@@ -99,7 +99,7 @@ final class Builder
         bool $did_add_template_types = false
     ) {
         $this->comment = $comment;
-        $this->lines = \explode("\n", $comment);
+        $this->lines = \explode("\n", self::reduceMultiline($comment));
         $this->comment_lines_count = \count($this->lines);
         $this->code_base = $code_base;
         $this->context = $context;
@@ -330,7 +330,7 @@ final class Builder
             // > A tag always starts on a new line with an at-sign (@) followed by the name of the tag.
             // > Between the start of the line and the tag’s name (including at-sign) there may be one or more spaces or tabs.
             $line = \trim($line);
-            $trimmed = \preg_replace('/^\/?[\*\s]+/', '', $line);
+            $trimmed = \preg_replace('/^\/?[*\s]+/', '', $line);
             if (($trimmed[0] ?? '') !== '@') {
                 continue;
             }
@@ -1600,5 +1600,54 @@ final class Builder
             );
         }
         $this->issues = [];
+    }
+
+    private static function reduceMultiline(string $comment): string
+    {
+        return \implode('@', \array_map(
+            static function (string $annotation): string {
+                if (\strpos($annotation, "\n") === false
+                    || !\preg_match('/^((?:param|var|return)\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                ) {
+                    return $annotation;
+                }
+
+                $buffer = $match[1];
+                $remaining = \substr($annotation, \strlen($match[0]));
+                $level = 1;
+
+                while ($remaining !== '') {
+                    if (!\preg_match('/^[^\[(<{\])>}]*([\[(<{\])>}])/', $remaining, $match)) {
+                        $buffer .= $remaining;
+                        break;
+                    }
+
+                    if (\in_array($match[1], ['{', '<', '[', '('], true)) {
+                        $level++;
+                        $buffer .= $level
+                            ? \ltrim(\preg_replace('/\n\s+\*\s+/', ' ', "\n" . $match[0]))
+                            : $match[0];
+                        $remaining = \substr($remaining, \strlen($match[0]));
+                        continue;
+                    }
+
+                    if ((--$level) < 0) {
+                        return $annotation;
+                    }
+
+                    $inner = \substr($match[0], 0, -1);
+                    $inner = \rtrim(\preg_replace('/\n\s+\*\s+/', ' ', "\n" . $inner), "\n ,");
+                    $buffer .= \ltrim($inner) . $match[1];
+                    $remaining = \substr($remaining, \strlen($match[0]));
+                }
+
+                if ($level !== 0) {
+                    return $annotation;
+                }
+
+                return $buffer;
+            },
+            \explode('@', \str_replace("\r", '', $comment))
+        ));
     }
 }
