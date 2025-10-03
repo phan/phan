@@ -1,0 +1,35 @@
+diff --git a/src/Parser.php b/src/Parser.php
+--- a/src/Parser.php
++++ b/src/Parser.php
+@@
+-    public function parseSourceFile(string $fileContents, string $uri = null) : SourceFileNode {
++    public function parseSourceFile(string $fileContents, ?string $uri = null) : SourceFileNode {
+         $this->lexer = $this->makeLexer($fileContents);
+ 
+         $this->reset();
+diff --git a/src/Token.php b/src/Token.php
+--- a/src/Token.php
++++ b/src/Token.php
+@@
+-    public function getText(string $document = null) {
++    public function getText(?string $document = null) {
+         if ($document === null) {
+             return null;
+         }
+         return substr($document, $this->start, $this->length - ($this->start - $this->fullStart));
+     }
+diff --git a/src/Node.php b/src/Node.php
+--- a/src/Node.php
++++ b/src/Node.php
+@@
+-    public function getDescendantNodesAndTokens(callable $shouldDescendIntoChildrenFn = null) {
++    public function getDescendantNodesAndTokens(?callable $shouldDescendIntoChildrenFn = null) {
+@@
+-    public function walkDescendantNodesAndTokens(callable $callback, callable $shouldDescendIntoChildrenFn = null) {
++    public function walkDescendantNodesAndTokens(callable $callback, ?callable $shouldDescendIntoChildrenFn = null) {
+@@
+-    public function getDescendantNodes(callable $shouldDescendIntoChildrenFn = null) {
++    public function getDescendantNodes(?callable $shouldDescendIntoChildrenFn = null) {
+@@
+-    public function getDescendantTokens(callable $shouldDescendIntoChildrenFn = null) {
++    public function getDescendantTokens(?callable $shouldDescendIntoChildrenFn = null) {

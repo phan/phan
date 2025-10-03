@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Plugin\Internal;
 
+use ast\flags;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ArgumentType;
@@ -268,6 +269,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                                     $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
                                 }
                             }
+                        }
+                        if (self::callbacksRemoveNull($filter_function_list)) {
+                            $generic_passed_array_type = $generic_passed_array_type->withMappedElementTypes(static function (UnionType $union_type): UnionType {
+                                return $union_type->nonNullableClone();
+                            });
                         }
                         // TODO: Handle 3 args?
                         //
@@ -706,6 +712,112 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'iterator_to_array'         => $iterator_to_array_callback,
             // TODO: iterator_to_array
         ];
+    }
+
+    /**
+     * @param array<int,\Phan\Language\Element\FunctionInterface> $filter_function_list
+     */
+    private static function callbacksRemoveNull(array $filter_function_list): bool
+    {
+        if (!$filter_function_list) {
+            return false;
+        }
+        foreach ($filter_function_list as $filter_function) {
+            $node = $filter_function->getNode();
+            if (!($node instanceof Node)) {
+                return false;
+            }
+            $param_name = self::extractFirstParameterName($node);
+            if (!\is_string($param_name)) {
+                return false;
+            }
+            $expr = self::extractReturnExpression($node);
+            if (!($expr instanceof Node)) {
+                return false;
+            }
+            if (!self::expressionChecksNotNull($expr, $param_name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static function extractFirstParameterName(Node $node): ?string
+    {
+        $params = $node->children['params'] ?? null;
+        if (!($params instanceof Node)) {
+            return null;
+        }
+        foreach ($params->children as $param_node) {
+            if ($param_node instanceof Node && $param_node->kind === \ast\AST_PARAM) {
+                $name = $param_node->children['name'] ?? null;
+                return \is_string($name) ? $name : null;
+            }
+        }
+        return null;
+    }
+
+    private static function extractReturnExpression(Node $node): ?Node
+    {
+        $stmts = $node->children['stmts'] ?? null;
+        if (!($stmts instanceof Node)) {
+            return null;
+        }
+        if ($node->kind === \ast\AST_ARROW_FUNC) {
+            $expr = $stmts->children['expr'] ?? null;
+            return $expr instanceof Node ? $expr : null;
+        }
+        if ($node->kind === \ast\AST_CLOSURE) {
+            foreach ($stmts->children as $child) {
+                if ($child instanceof Node && $child->kind === \ast\AST_RETURN) {
+                    $expr = $child->children['expr'] ?? null;
+                    return $expr instanceof Node ? $expr : null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static function expressionChecksNotNull(Node $expr, string $param_name): bool
+    {
+        if ($expr->kind !== \ast\AST_BINARY_OP) {
+            return false;
+        }
+        $flags = $expr->flags;
+        if ($flags !== flags\BINARY_IS_NOT_EQUAL && $flags !== flags\BINARY_IS_NOT_IDENTICAL) {
+            return false;
+        }
+        $left = $expr->children['left'] ?? null;
+        $right = $expr->children['right'] ?? null;
+        if ($left instanceof Node && $right instanceof Node) {
+            if (self::isParamVariableNode($left, $param_name) && self::isNullLiteralNode($right)) {
+                return true;
+            }
+            if (self::isParamVariableNode($right, $param_name) && self::isNullLiteralNode($left)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static function isParamVariableNode(Node $node, string $param_name): bool
+    {
+        if ($node->kind === \ast\AST_VAR) {
+            $name = $node->children['name'] ?? null;
+            return \is_string($name) && $name === $param_name;
+        }
+        return false;
+    }
+
+    private static function isNullLiteralNode(?Node $node): bool
+    {
+        if ($node instanceof Node && $node->kind === \ast\AST_CONST) {
+            $name_node = $node->children['name'] ?? null;
+            if ($name_node instanceof Node && $name_node->kind === \ast\AST_NAME) {
+                return \strcasecmp((string)($name_node->children['name'] ?? ''), 'null') === 0;
+            }
+        }
+        return false;
     }
 
     /**

@@ -61,6 +61,9 @@
         "patches": {
             "tysonandre/var_representation_polyfill": {
                 "Fix deprecated semicolon in switch case for PHP 8.5 compatibility": "patches/var_representation_polyfill_php85_compat.patch"
+            },
+            "microsoft/tolerant-php-parser": {
+                "Add explicit nullable parameter types for PHP 8.4": "patches/tolerant-parser-nullable-params.patch"
             }
         }
     }
