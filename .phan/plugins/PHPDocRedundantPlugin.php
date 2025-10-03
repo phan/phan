@@ -10,7 +10,6 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Language\UnionType;
 use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\Phan;
@@ -301,6 +300,9 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         );
     }
 
+    /**
+     * @suppress PhanAccessClassConstantInternal
+     */
     private static function commentHasSingleVarAnnotation(string $comment_str): bool
     {
         $found = false;
