@@ -53,7 +53,7 @@ class Config
     /**
      * The minimum AST extension version in the oldest php version supported by Phan.
      */
-    public const MINIMUM_AST_EXTENSION_VERSION = namespace\AST_VERSION === 85 ? '1.0.11' : '1.0.7';
+    public const MINIMUM_AST_EXTENSION_VERSION = '1.1.3';
 
     /**
      * The version of the Phan plugin system.
