@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
 use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -714,8 +715,24 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $method_name = $method;
         }
         // Look for the class and method
-        if ($class_name === 'self') {
-            $class_fqsen = $this->context->getClassFQSEN();
+        $class_fqsen = null;
+        $normalized_class_name = \is_string($class_name) ? \strtolower($class_name) : '';
+        if ($normalized_class_name === 'self' || $normalized_class_name === 'static') {
+            $class_fqsen = $this->context->getClassFQSENOrNull();
+            if ($class_fqsen === null) {
+                return self::STATUS_PROCEED;
+            }
+        } elseif ($normalized_class_name === 'parent') {
+            try {
+                $class = $this->context->getClassInScope($this->code_base);
+            } catch (CodeBaseException $e) {
+                // @phan-suppress-previous-line PhanUnusedVariableCaughtException
+                return self::STATUS_PROCEED;
+            }
+            if (!$class->hasParentType()) {
+                return self::STATUS_PROCEED;
+            }
+            $class_fqsen = $class->getParentClassFQSEN();
         } else {
             try {
                 $class_fqsen = FullyQualifiedClassName::fromStringInContext(
@@ -727,6 +744,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 // Cannot find, cannot infer
                 return self::STATUS_PROCEED;
             }
+        }
+        if ($class_fqsen === null) {
+            return self::STATUS_PROCEED;
         }
         $method_fqsen = FullyQualifiedMethodName::make(
             $class_fqsen,
