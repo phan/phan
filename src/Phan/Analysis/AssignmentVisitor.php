@@ -1109,7 +1109,7 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node): Context
     {
         $code_base = $this->code_base;
-        if ($property->isReadOnly()) {
+        if ($property->isReadOnly() && $this->dim_depth === 0) {
             $this->analyzeAssignmentToReadOnlyProperty($property, $node);
         }
         // TODO: Iterate over individual types, don't look at the whole type at once?
