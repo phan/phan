@@ -1109,8 +1109,10 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node): Context
     {
         $code_base = $this->code_base;
-        if ($property->isReadOnly() && $this->dim_depth === 0) {
-            $this->analyzeAssignmentToReadOnlyProperty($property, $node);
+        if ($property->isReadOnly()) {
+            if ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property)) {
+                $this->analyzeAssignmentToReadOnlyProperty($property, $node);
+            }
         }
         // TODO: Iterate over individual types, don't look at the whole type at once?
 
@@ -1227,6 +1229,23 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->addTypesToProperty($property, $node);
 
         return $this->context;
+    }
+
+    /**
+     * Skip readonly warnings for offset assignments when the property stays bound to an object.
+     */
+    private static function shouldSkipReadOnlyDimAssignmentCheck(Property $property): bool
+    {
+        if (!$property->isReadOnlyReal()) {
+            return false;
+        }
+        $property_type = $property->getUnionType()->nonNullableClone();
+        if ($property_type->isEmpty()) {
+            return false;
+        }
+        return $property_type->allTypesMatchCallback(static function (Type $type): bool {
+            return $type->isObject();
+        });
     }
 
     /**
