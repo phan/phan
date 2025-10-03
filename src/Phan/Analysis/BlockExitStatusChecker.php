@@ -741,7 +741,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_PROCEED;
             }
         }
-        if (!isset($class_fqsen) || $class_fqsen === null) {
+        if (!isset($class_fqsen)) {
             return self::STATUS_PROCEED;
         }
         $method_fqsen = FullyQualifiedMethodName::make(
