@@ -1,0 +1,20 @@
+<?php
+
+class BaseToString {
+    public function __toString(): string
+    {
+        return 'base';
+    }
+}
+
+class DerivedToString extends BaseToString
+{
+    public function __toString()
+    {
+        // Implicit string return; ensure analyzer accepts this override.
+        return 'derived';
+    }
+}
+
+echo new DerivedToString();
+
