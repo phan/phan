@@ -767,6 +767,10 @@ class ParameterTypesAnalyzer
         $overridden_return_union_type = $overridden_method->getRealReturnType();
 
         $return_union_type = $method->isFromPHPDoc() ? $method->getUnionType() : $method->getRealReturnType();
+        if (strcasecmp($method->getName(), '__tostring') === 0 && $return_union_type->isEmpty() && !$method->isFromPHPDoc()) {
+            // PHP allows omitting the return type on __toString(); treat it as string for compatibility checks
+            $return_union_type = UnionType::fromFullyQualifiedPHPDocString('string');
+        }
         // If the parent has a return type, then return types should be equal.
         // A non-nullable return type can override a nullable return type of the same type.
         // Be sure to handle `void`, which contains nullable types

@@ -998,6 +998,7 @@ class Issue
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
                 // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
+                // TODO: Can improve now that we require version 120?
                 "Syntax error: Expected enum case {CONST} to have a value of type {TYPE} but it has no value",
                 self::REMEDIATION_A,
                 17016
@@ -1007,6 +1008,7 @@ class Issue
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
                 // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
+                // TODO: Can improve now that we require version 120?
                 "Syntax error: Expected enum case {CONST} not to have a value",
                 self::REMEDIATION_A,
                 17020

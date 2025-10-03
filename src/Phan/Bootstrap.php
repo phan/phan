@@ -83,7 +83,6 @@ function phan_output_ast_installation_instructions(): void
         fwrite(STDERR, "php-ast 1.0.14 is the minimum php-ast version needed for PHP 8.1+." . PHP_EOL);
 
         fwrite(STDERR, "To install php-ast, add php_ast.dll from the zip to $extension_dir," . PHP_EOL);
-
         fwrite(STDERR, "Then, enable php-ast by adding the following lines to your php.ini file at '$ini_path'" . PHP_EOL . PHP_EOL);
         if (!is_dir((string)$configured_extension_dir) && is_dir($new_extension_dir)) {
             fwrite(STDERR, "extension_dir=$new_extension_dir" . PHP_EOL);
