@@ -61,7 +61,8 @@ Phan is able to perform the following kinds of analysis:
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
   This also supports indicating that fields of an array shape are optional
-  via `array{requiredKey:string,optionalKey?:string}` (useful for `@param`)
+  via `array{requiredKey:string,optionalKey?:string}` (useful for `@param`).
+  Multi-line forms of `@param`, `@var`, and `@return` annotations are normalized before being parsed, so docblocks can format nested arrays/generics over several lines.
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code).
 * Supports inheriting phpdoc type annotations.
 * Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures
