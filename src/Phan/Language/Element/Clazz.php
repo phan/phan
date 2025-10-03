@@ -1579,6 +1579,7 @@ class Clazz extends AddressableElement
                     Issue::SyntaxEnumCaseExpectedValue,
                     $enum_case->getContext()->getLineNumberStart(),
                     $name,
+                    $this->getRepresentationForIssue(),
                     $this->enum_type
                 );
             } else {
@@ -1587,7 +1588,8 @@ class Clazz extends AddressableElement
                     $enum_case->getContext(),
                     Issue::SyntaxEnumCaseUnexpectedValue,
                     $enum_case->getContext()->getLineNumberStart(),
-                    $name
+                    $name,
+                    $this->getRepresentationForIssue()
                 );
             }
         }

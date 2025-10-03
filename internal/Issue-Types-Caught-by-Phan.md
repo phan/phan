@@ -5117,7 +5117,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0799
 ## PhanSyntaxEnumCaseExpectedValue
 
 ```
-Syntax error: Expected enum case {CONST} to have a value of type {TYPE} but it has no value
+Syntax error: Case {CONST} of backed enum {CLASS} must have a value of type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1145_enum_wrong_case_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1145_enum_wrong_case_type.php#L5).
@@ -5125,7 +5125,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1145
 ## PhanSyntaxEnumCaseUnexpectedValue
 
 ```
-Syntax error: Expected enum case {CONST} not to have a value
+Syntax error: Case {CONST} of unit enum {CLASS} must not have a value
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1145_enum_wrong_case_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1145_enum_wrong_case_type.php#L9).

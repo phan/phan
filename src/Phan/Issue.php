@@ -997,9 +997,8 @@ class Issue
                 self::SyntaxEnumCaseExpectedValue,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
-                // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
-                // TODO: Can improve now that we require version 120?
-                "Syntax error: Expected enum case {CONST} to have a value of type {TYPE} but it has no value",
+                // AST version 120+ exposes the enum backing type, so include the enum name in the diagnostic.
+                "Syntax error: Case {CONST} of backed enum {CLASS} must have a value of type {TYPE}",
                 self::REMEDIATION_A,
                 17016
             ),
@@ -1007,9 +1006,7 @@ class Issue
                 self::SyntaxEnumCaseUnexpectedValue,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
-                // XXX can't improve on this until the minimum supported AST extension version is raised due to php-ast not providing the actual flags until AST version 85.
-                // TODO: Can improve now that we require version 120?
-                "Syntax error: Expected enum case {CONST} not to have a value",
+                "Syntax error: Case {CONST} of unit enum {CLASS} must not have a value",
                 self::REMEDIATION_A,
                 17020
             ),

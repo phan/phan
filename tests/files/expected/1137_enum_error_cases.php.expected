@@ -11,5 +11,5 @@
 %s:24 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicProperty declared at %s:24
 %s:26 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method instanceMethod() declared at %s:26
 %s:39 PhanInvalidNode Cannot declare an enum case statement in a non-enum
-%s:43 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Expected enum case HEARTS not to have a value
+%s:43 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Case HEARTS of unit enum \Suit must not have a value
 %s:45 PhanTypeInstantiateEnum Saw instantiation of enum \Suit
