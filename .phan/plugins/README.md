@@ -482,8 +482,8 @@ This doesn't suggest changes if classes have subclasses (but this check doesn't 
 This also supports `--automatic-fix` to add the types to the real type signatures.
 
 - **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
-- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
-- **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}`
+- **PhanPluginCanUseVoidReturnType**: `Can use {TYPE} as a return type of {METHOD}`
 
 This supports `--automatic-fix`.
 - `PHPDocRedundantPlugin` will be useful for cleaning up redundant phpdoc after real types were added.
