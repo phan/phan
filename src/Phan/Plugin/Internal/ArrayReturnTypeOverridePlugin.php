@@ -723,7 +723,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             return false;
         }
         foreach ($filter_function_list as $filter_function) {
-            \assert($filter_function instanceof \Phan\Language\Element\FunctionInterface);
             $node = $filter_function->getNode();
             if (!($node instanceof Node)) {
                 return false;
