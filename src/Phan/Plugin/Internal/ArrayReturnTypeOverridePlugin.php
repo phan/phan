@@ -16,7 +16,6 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
-use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -715,12 +714,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         ];
     }
 
+    /**
+     * @param array<int,\Phan\Language\Element\FunctionInterface> $filter_function_list
+     */
     private static function callbacksRemoveNull(array $filter_function_list): bool
     {
         if (!$filter_function_list) {
             return false;
         }
         foreach ($filter_function_list as $filter_function) {
+            \assert($filter_function instanceof \Phan\Language\Element\FunctionInterface);
             $node = $filter_function->getNode();
             if (!($node instanceof Node)) {
                 return false;
@@ -762,7 +765,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             return null;
         }
         if ($node->kind === \ast\AST_ARROW_FUNC) {
-            return $stmts->children['expr'] ?? null;
+            $expr = $stmts->children['expr'] ?? null;
+            return $expr instanceof Node ? $expr : null;
         }
         if ($node->kind === \ast\AST_CLOSURE) {
             foreach ($stmts->children as $child) {
@@ -806,7 +810,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         return false;
     }
 
-    private static function isNullLiteralNode($node): bool
+    private static function isNullLiteralNode(?Node $node): bool
     {
         if ($node instanceof Node && $node->kind === \ast\AST_CONST) {
             $name_node = $node->children['name'] ?? null;
