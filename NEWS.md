@@ -41,9 +41,9 @@ New features (Analysis):
     across several lines without being misinterpreted.
 
 New features (CLI):
-- Add an `-n` flag that can be used to skip reading the Phan configuration and analyze only the files specified as arguments.
-  Example: `phan -n test1.php test2.php`
-  This is useful for quick testing without setting up a full Phan configuration.
+- `-n`/`--no-config-file` implicitly limits analysis to just the files provided
+  on the command line (e.g. `phan -n test1.php test2.php`) avoiding analysis of
+  the rest of the project when you only want quick ad-hoc checks.
 - Added support for incremental analysis, where only changed files and their dependents
   will be analyzed on subsequent runs. Significantly speeds up re-analysis.
   - Add the `--incremental` / `-i` option that enables incremental analysis.
@@ -4732,4 +4732,3 @@ The 0.8.x versions will be tracking syntax from PHP versions 7.0.x and is runnab
 Please use version 0.8.x if you're using a version of PHP < 7.1.
 For best results, run version 0.8.x with PHP 7.0 if you are analyzing a codebase which normally runs on php <= 7.0
 (If php 7.1 is used, Phan will think that some new classes, methods, and functions exist or have different parameter lists because it gets this info from `Reflection`)
-

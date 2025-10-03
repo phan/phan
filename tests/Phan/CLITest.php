@@ -277,6 +277,46 @@ final class CLITest extends BaseTest
         );
     }
 
+    /**
+     * @suppress PhanAccessMethodInternal
+     * @throws ExitException
+     * @throws UsageException
+     */
+    public function testNoConfigPositionalArgs(): void
+    {
+        $extensions_to_disable = CLI::extensionsToDisable();
+        if (count($extensions_to_disable) > 0) {
+            $this->markTestIncomplete('PHP extension(s) has to be disabled in order for this test to run: ' . implode(', ', $extensions_to_disable));
+        }
+
+        $project_root = \dirname(__DIR__) . '/misc/config/';
+        $opts = ['n' => false, 'project-root-directory' => $project_root];
+        $argv = ['./phan', '-n', 'src/a.php', 'src/b.php'];
+        $cli = CLI::fromRawValues($opts, $argv);
+
+        $this->assertSame(['src/a.php', 'src/b.php'], $cli->getFileList());
+    }
+
+    /**
+     * @suppress PhanAccessMethodInternal
+     * @throws ExitException
+     * @throws UsageException
+     */
+    public function testNoConfigPositionalArgsDeduplicate(): void
+    {
+        $extensions_to_disable = CLI::extensionsToDisable();
+        if (count($extensions_to_disable) > 0) {
+            $this->markTestIncomplete('PHP extension(s) has to be disabled in order for this test to run: ' . implode(', ', $extensions_to_disable));
+        }
+
+        $project_root = \dirname(__DIR__) . '/misc/config/';
+        $opts = ['n' => false, 'project-root-directory' => $project_root];
+        $argv = ['./phan', '-n', 'src/a.php', 'src/a.php'];
+        $cli = CLI::fromRawValues($opts, $argv);
+
+        $this->assertSame(['src/a.php'], $cli->getFileList());
+    }
+
     public function testSameVersionAsNEWS(): void
     {
         $news = \file_get_contents(\dirname(__DIR__, 2) . '/NEWS.md');
