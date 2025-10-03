@@ -1,0 +1,2 @@
+%s:17 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \InvalidDocs09::NOT_VALID has a type \stdClass containing objects. This type is ignored during analysis.
+%s:20 PhanCommentObjectInClassConstantType Impossible phpdoc declaration that a class constant \InvalidDocs09::ALSO_NOT_VALID has a type \stdClass containing objects. This type is ignored during analysis.

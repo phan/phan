@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
@@ -55,9 +57,11 @@ class ClassConstantTypesAnalyzer
                 }
                 // Look at each type in the parameter's Union Type
                 foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
-                    $has_object = $outer_type->isObject();
+                    $has_object = $outer_type->isObject() && !self::isAllowedClassConstantObjectType($code_base, $outer_type);
                     foreach ($outer_type->getReferencedClasses() as $type) {
-                        $has_object = true;
+                        if (!self::isAllowedClassConstantObjectType($code_base, $type)) {
+                            $has_object = true;
+                        }
                         // If it's a reference to self, its OK
                         if ($type->isSelfType()) {
                             continue;
@@ -104,5 +108,20 @@ class ClassConstantTypesAnalyzer
                 }
             }
         }
+    }
+
+    private static function isAllowedClassConstantObjectType(CodeBase $code_base, Type $type): bool
+    {
+        if (Config::get_closest_minimum_target_php_version_id() < 80100) {
+            return false;
+        }
+        if (!$type->isObject()) {
+            return false;
+        }
+        $class_fqsen = FullyQualifiedClassName::fromType($type);
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        return $code_base->getClassByFQSEN($class_fqsen)->isEnum();
     }
 }
