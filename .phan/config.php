@@ -38,7 +38,6 @@ return [
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute Phan.
     //
-    // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
     // (See `backward_compatibility_checks` for additional options)
     'target_php_version' => null,
 
@@ -340,7 +339,7 @@ return [
     'consistent_hashing_file_order' => false,
 
     // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
-    // even if those return types aren't available in reflection (real types were taken from php 7.3 or 8.0-dev, depending on target_php_version).
+    // even if those return types aren't available in reflection (real types were taken from php 8.4).
     //
     // Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
     // As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
@@ -507,7 +506,7 @@ return [
     // You can put paths to internal stubs in this config option.
     // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
     // Use a different extension from php to avoid accidentally loading these.
-    // The 'tool/mkstubs' script can be used to generate your own stubs (compatible with php 7.2+ right now)
+    // The 'tool/mkstubs' script can be used to generate your own stubs
     //
     // Also see `include_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
     'autoload_internal_extension_signatures' => [

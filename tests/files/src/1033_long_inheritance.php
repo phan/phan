@@ -1,6 +1,6 @@
 <?php
 
-// Regression test for https://github.com/phan/phan/issues/5044 (needs PHP >= 7.2 due to parameter type contravariance in `doSomething`)
+// Regression test for https://github.com/phan/phan/issues/5044
 
 /* @phan-file-suppress PhanUnreferencedClass */
 

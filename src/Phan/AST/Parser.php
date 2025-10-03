@@ -136,7 +136,7 @@ class Parser
             if ($errno === \E_DEPRECATED && \preg_match('/Version.*is deprecated/i', $errstr)) {
                 return false;
             }
-            // Catch errors such as E_DEPRECATED in php 7.4 for the (real) cast.
+            // Catch errors such as E_DEPRECATED for the (real) cast.
             Issue::maybeEmit(
                 $code_base,
                 $context,

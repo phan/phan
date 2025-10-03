@@ -15,8 +15,6 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Stringable;
 
-use const PHP_MAJOR_VERSION;
-
 /**
  * Represents the information Phan has about a declaration's attribute
  * (e.g. of a class, function, class constant, property, parameter, etc.)
@@ -34,16 +32,16 @@ final class Attribute implements Stringable
      * Don't bother depending on a polyfill. It's possible symfony/polyfill-80 may add Attribute and make this redundant, though.
      * https://github.com/symfony/polyfill/issues/235
      *
-     * There's no guarantee the constants won't change in php 8.x or 9.x, so use the real values in php 8.0+.
+     * There's no guarantee the constants won't change in php 8.x or 9.x, so use the real values.
      */
-    const TARGET_CLASS          = PHP_MAJOR_VERSION < 8 ? 1  : \Attribute::TARGET_CLASS;
-    const TARGET_FUNCTION       = PHP_MAJOR_VERSION < 8 ? 2  : \Attribute::TARGET_FUNCTION;
-    const TARGET_METHOD         = PHP_MAJOR_VERSION < 8 ? 4  : \Attribute::TARGET_METHOD;
-    const TARGET_PROPERTY       = PHP_MAJOR_VERSION < 8 ? 8  : \Attribute::TARGET_PROPERTY;
-    const TARGET_CLASS_CONSTANT = PHP_MAJOR_VERSION < 8 ? 16 : \Attribute::TARGET_CLASS_CONSTANT;
-    const TARGET_PARAMETER      = PHP_MAJOR_VERSION < 8 ? 32 : \Attribute::TARGET_PARAMETER;
-    const TARGET_ALL            = PHP_MAJOR_VERSION < 8 ? 63 : \Attribute::TARGET_ALL;
-    const IS_REPEATABLE         = PHP_MAJOR_VERSION < 8 ? 64 : \Attribute::IS_REPEATABLE;
+    const TARGET_CLASS          = \Attribute::TARGET_CLASS;
+    const TARGET_FUNCTION       = \Attribute::TARGET_FUNCTION;
+    const TARGET_METHOD         = \Attribute::TARGET_METHOD;
+    const TARGET_PROPERTY       = \Attribute::TARGET_PROPERTY;
+    const TARGET_CLASS_CONSTANT = \Attribute::TARGET_CLASS_CONSTANT;
+    const TARGET_PARAMETER      = \Attribute::TARGET_PARAMETER;
+    const TARGET_ALL            = \Attribute::TARGET_ALL;
+    const IS_REPEATABLE         = \Attribute::IS_REPEATABLE;
 
     /** @var FullyQualifiedClassName  */
     private $fqsen;

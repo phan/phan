@@ -4,7 +4,7 @@ abstract class Base552 {
     /** @return Base552 */
     public abstract static function foo() : Base552;
 
-    /** @param int $x not using parameter type widening for real parameters - that was added in 7.2 */
+    /** @param int $x not using parameter type widening for real parameters */
     public function test($x) {
         var_export($x);
     }

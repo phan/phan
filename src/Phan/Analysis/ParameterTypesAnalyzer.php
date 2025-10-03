@@ -355,8 +355,6 @@ class ParameterTypesAnalyzer
         }
 
         if ($method->getName() === '__construct') {
-            // PHP 8.1+ doesn't throw ConstructAccessSignatureMismatch for visibility changes
-
             if (!$overridden_method->isAbstract()) {
                 return;
             }
@@ -776,7 +774,7 @@ class ParameterTypesAnalyzer
             if (!($overridden_return_union_type->isEqualTo($return_union_type) || (
                 ($overridden_return_union_type->containsNullable() && !$overridden_return_union_type->isNull()) && ($overridden_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
-                // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
+                // There is one exception to this: the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                 // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
                 //
                 // php 7.4 adds https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.type-variance

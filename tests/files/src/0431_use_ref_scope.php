@@ -10,4 +10,4 @@ function my_fn() : int {
     return $data;
 }
 
-my_fn();  // fn is a reserved keyword in php 7.4
+my_fn();

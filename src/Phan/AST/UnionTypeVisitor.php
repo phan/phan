@@ -1158,7 +1158,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 if ($child->kind === ast\AST_UNPACK) {
-                    // Analyze PHP 7.4's array spread operator, e.g. `[$a, ...$array, $b]`
+                    // Analyze array spread operator, e.g. `[$a, ...$array, $b]`
                     [$new_union_type, $new_union_type_has_string_keys] = $this->analyzeUnpack($child, true);
                     if ($new_union_type_has_string_keys) {
                         $has_key = true;
@@ -1376,7 +1376,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // TODO: Warn if non-array
             return null;
         }
-        // e.g. `[$x, ...$array]` in PHP 7.4
+        // e.g. `[$x, ...$array]`
         // TODO: Support array expressions when their value is constant
         $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr, $this->should_catch_issue_exception);
         // TODO: Warn if non-array

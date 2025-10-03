@@ -505,7 +505,7 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
                     $this->code_base,
                     (clone $this->context)->withLineNumberStart($catches[$i]->lineno),
                     'PhanPluginDuplicateCatchStatementBody',
-                    'The implementation of catch({CODE}) and catch({CODE}) are identical, and can be combined if the application only needs to supports php 7.1 and newer',
+                    'The implementation of catch({CODE}) and catch({CODE}) are identical and can be combined',
                     [
                         ASTReverter::toShortString($catches[$i - 1]->children['class']),
                         ASTReverter::toShortString($catches[$i]->children['class']),

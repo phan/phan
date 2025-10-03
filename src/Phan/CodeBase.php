@@ -2123,8 +2123,8 @@ class CodeBase
         $targets = [80100, 80200, 80300, 80400];
         $function_name_lower = strtolower($function_name);
         foreach ($targets as $i => $target) {
-            // If $target_php_version is 7.1 only check for functions added in 7.2 or newer that weren't in the previous version.
-            // Don't suggest functions added in 7.1
+            // If $target_php_version is 8.1 only check for functions added in 8.2 or newer that weren't in the previous version.
+            // Don't suggest functions added in 8.1
             $next_target = $targets[$i + 1] ?? 0;
             if (!$next_target || $next_target <= $target_php_version) {
                 continue;

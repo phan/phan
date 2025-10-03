@@ -507,8 +507,6 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                 continue;
             }
             if ($child->kind === \ast\AST_UNPACK) {
-                // PHP 7.4's array spread operator adds integer keys, e.g. `[...$array, 'other' => 'value']`
-                // In php 8.1, this will also add string keys.
                 $key_type_enum |= self::keyTypeFromUnionTypeKeys(UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,

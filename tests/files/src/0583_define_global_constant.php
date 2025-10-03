@@ -19,7 +19,7 @@ echo TEST5;
 echo namespace\TEST5;  // should warn
 
 /*
-// Note: Apparently, it does succeed if you actually do that (tested in PHP 7.0 and 7.3).
+// Note: Apparently, it does succeed if you actually do that (tested in PHP 8.4).
 // Still going to warn about it.
 php > define('foo\\\\\\TEST3', 'some value');
 php > var_export(constant('foo\\\\\\TEST3'));

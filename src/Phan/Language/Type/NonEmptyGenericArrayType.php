@@ -20,15 +20,12 @@ final class NonEmptyGenericArrayType extends GenericArrayType implements NonEmpt
 
     /**
      * @override
-     * @return NonEmptyGenericArrayType
-     * @phan-real-return NonEmptyGenericArrayType
-     * (can't change signature type until minimum supported version is php 7.4)
      */
     public static function fromElementType(
         Type $type,
         bool $is_nullable,
         int $key_type
-    ): GenericArrayType {
+    ): NonEmptyGenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_maps = null;

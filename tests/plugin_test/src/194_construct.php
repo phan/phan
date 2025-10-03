@@ -1,7 +1,6 @@
 <?php
 namespace N194;
 
-/** @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression error only in php 7.3 and older */
 class SubOption
 {
     public int $subSubOption;

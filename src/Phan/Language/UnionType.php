@@ -4290,7 +4290,6 @@ class UnionType implements Serializable, Stringable
      */
     public function asMappedListUnionType(Closure $closure): UnionType
     {
-        // In php 7.3, this could be replaced with https://www.php.net/array_push
         $new_type_set = [];
         foreach ($this->type_set as $type) {
             foreach ($closure($type) as $new_type) {

@@ -50,8 +50,8 @@ _arguments \
 	'(--debug-emitted-issues)--debug-emitted-issues=[print stack trace to stderr when Phan emits issues]:verbosity:(basic verbose)' \
 	'(--debug-signal-handler)--debug-signal-handler=[Enable a signal handler to debug slowness]' \
 	'(--quick -q)'{-q,--quick}'[quick mode]' \
-	'(--target-php-version)--target-php-version=[php version to check codebase for compatibility with]:version:(7.0 7.1 7.2 7.3 7.4 8.0 native)' \
-	'(--minimum-target-php-version)--minimum-target-php-version=[minimum php version to check that used syntax/features are compatible with]:version:(7.0 7.1 7.2 7.3 7.4 8.0 native)' \
+	'(--target-php-version)--target-php-version=[php version to check codebase for compatibility with]:version:(8.1 8.2 8.3 8.4 8.5 native)' \
+	'(--minimum-target-php-version)--minimum-target-php-version=[minimum php version to check that used syntax/features are compatible with]:version:(8.1 8.2 8.3 8.4 8.5 native)' \
 	'(--ignore-undeclared -i)'{--ignore-undeclared,-i}'[ignore undeclared functions and classes]' \
 	'(--minimum-severity -y)'{--minimum-severity=,-y+}'[minimum severity level to report (low=0,normal=5,critical=10)]:severity:(0 5 10 low normal critical)' \
 	'(--parent-constructor-required -c)'{--parent-constructor-required,-c}'[list of classes requiring parent::__construct to be called]' \

@@ -21,10 +21,6 @@ Tests of error-tolerant PHP AST parser (`--use-fallback-parser`)
 
 General tests.
 
-- Note: If 70/71/72 is appended to a file,
-  then the test case chooses that file instead for php 7.0/7.1/7.2
-  as a source file or expected file.
-
 ### misc
 
 Contains tests of

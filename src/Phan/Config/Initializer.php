@@ -364,7 +364,7 @@ EOT;
         foreach (\array_merge($require_directories, $require_dev_directories) as $requirement => $_) {
             $requirement = (string)$requirement;
             if (\substr_count($requirement, '/') !== 1) {
-                // e.g. ext-ast, php >= 7.0, etc.
+                // e.g. ext-ast, php >= 8.3, etc.
                 continue;
             }
             $path_to_require = "$vendor_path/$requirement";
@@ -453,20 +453,8 @@ EOT;
         } catch (\UnexpectedValueException) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
-        // Not going to suggest 5.6 - analyzing with 7.0 might detect some functions that were removed
-        if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
-            $version_guess = '7.0';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.2-dev'))) {
-            $version_guess = '7.1';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.3-dev'))) {
-            $version_guess = '7.2';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.4-dev'))) {
-            $version_guess = '7.3';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.0-dev'))) {
-            $version_guess = '7.4';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.1-dev'))) {
-            $version_guess = '8.0';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.2-dev'))) {
+
+        if ($version_constraint->matches(self::parseConstraintsForRange('<8.2-dev'))) {
             $version_guess = '8.1';
         } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.3-dev'))) {
             $version_guess = '8.2';

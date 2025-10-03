@@ -1,6 +1,6 @@
 <?php
 
-// When php 7.4+ is using the native parser, it should warn about deprecated ambiguous conditionals
+// When using the native parser, it should warn about deprecated ambiguous conditionals
 function example13($a, $b, $c, $x, $y) {
     return [
         1 ? 0 : 1 ? 3 : 0,

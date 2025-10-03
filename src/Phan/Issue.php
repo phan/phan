@@ -549,7 +549,6 @@ class Issue
     public const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
     public const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
     public const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
-    public const ConstructAccessSignatureMismatch = 'PhanConstructAccessSignatureMismatch';
     public const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
     public const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
     public const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
@@ -4799,14 +4798,6 @@ class Issue
                 1005
             ),
             new Issue(
-                self::ConstructAccessSignatureMismatch,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below",
-                self::REMEDIATION_B,
-                1032
-            ),
-            new Issue(
                 self::PropertyAccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
@@ -5093,7 +5084,7 @@ class Issue
                 self::CompatibleImplodeOrder,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
+                "Passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
                 self::REMEDIATION_B,
                 3019
             ),

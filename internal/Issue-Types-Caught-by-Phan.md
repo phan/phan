@@ -369,14 +369,6 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0492
 Access level to {CONST} must be compatible with internal {CONST}
 ```
 
-## PhanConstructAccessSignatureMismatch
-
-```
-Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0740_access_level_construct.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0740_access_level_construct.php#L8).
-
 ## PhanPropertyAccessSignatureMismatch
 
 ```
@@ -498,7 +490,7 @@ The config `backward_compatibility_checks` must be enabled for this to run such 
 ## PhanCompatibleImplodeOrder
 
 ```
-In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
+Passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0511_implode.php#L7).

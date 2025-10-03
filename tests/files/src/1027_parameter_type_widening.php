@@ -15,7 +15,7 @@ class B1 extends A1 {
     }
 }
 
-// PHP 7.2 allows overriding abstract methods as well, with compatible signatures (Weaker param types, stricter return types).
+// Overriding abstract methods is also allowed, with compatible signatures (Weaker param types, stricter return types).
 abstract class A2           {
     abstract function bar(stdClass $x);
 }

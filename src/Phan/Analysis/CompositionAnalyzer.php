@@ -13,7 +13,7 @@ use Phan\Language\UnionType;
 
 /**
  * This analyzer checks if the signatures of inherited properties match
- * and for type mismatches for php 7.4 typed properties.
+ * and for type mismatches for typed properties.
  */
 class CompositionAnalyzer
 {

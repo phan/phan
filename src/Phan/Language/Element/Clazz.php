@@ -407,7 +407,7 @@ class Clazz extends AddressableElement
             $clazz->addProperty($code_base, $property, None::instance());
         }
         foreach ($class->getProperties() as $reflection_property) {
-            // In PHP 7.4, it's possible for internal classes to have properties without defaults if they're uninitialized.
+            // It's possible for internal classes to have properties without defaults if they're uninitialized.
             $name = $reflection_property->name;
             if ($clazz->hasPropertyWithName($code_base, $name)) {
                 continue;
@@ -3969,7 +3969,7 @@ class Clazz extends AddressableElement
                     // Handle the most common case in php 8
                     return true;
                 }
-                if (\PHP_MAJOR_VERSION >= 8 && \class_exists($fqsen_string)) {
+                if (\class_exists($fqsen_string)) {
                     // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
@@ -4010,10 +4010,10 @@ class Clazz extends AddressableElement
                 // Check this after checking if it's an internal stub
                 $fqsen_string = $this->fqsen->__toString();
                 if ($fqsen_string === '\Attribute') {
-                    // Handle the most common case in php 8
+                    // Handle the most common case
                     return Attribute::TARGET_CLASS;
                 }
-                if (\PHP_MAJOR_VERSION >= 8 && \class_exists($fqsen_string)) {
+                if (\class_exists($fqsen_string)) {
                     // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2

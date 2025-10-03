@@ -2339,9 +2339,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param iterable<int, array{0: UnionType, 1: Node|string|int|float|null}> $types
      * @return \Generator<int, array{0: UnionType, 1: Node|string|int|float|null}>
-     * @suppress PhanPluginCanUseParamType should probably suppress, iterable is php 7.2
      */
-    private static function deduplicateUnionTypes($types): \Generator
+    private static function deduplicateUnionTypes(iterable $types): \Generator
     {
         $unique_types = [];
         foreach ($types as $lineno => $details) {

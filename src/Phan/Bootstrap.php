@@ -66,8 +66,7 @@ function phan_output_ast_installation_instructions(): void
     }
     if (DIRECTORY_SEPARATOR === '\\') {
         // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
-        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
-        // The older release https://pecl.php.net/package/ast/1.0.16/windows has releases for PHP 7.3 and 7.4
+        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.4-ts-vc15-x86.zip for php 8.4, 32-bit thread safe
         $version = LATEST_KNOWN_PHP_AST_VERSION;
         fprintf(
             STDERR,
@@ -445,19 +444,3 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');
-
-if (!class_exists(CompileError::class)) {
-    /**
-     * For self-analysis, add CompileError if it was not already declared.
-     *
-     * In PHP 7.3, a new CompileError class was introduced, and ParseError was turned into a subclass of CompileError.
-     *
-     * Phan handles both of those separately, so that Phan will work in 7.1+
-     *
-     * @suppress PhanRedefineClassInternal
-     */
-    // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
-    class CompileError extends Error
-    {
-    }
-}
