@@ -1,0 +1,4 @@
+%s:13 PhanAccessReadOnlyProperty Cannot modify read-only property \DemoPromotion->input defined at %s:8
+%s:26 PhanAccessReadOnlyProperty Cannot modify read-only property \DemoRegular->input defined at %s:19
+%s:40 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Child's property $data declared at %s:31 (immutability of properties is enforced at runtime)
+%s:44 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \Child's property $data declared at %s:31 (immutability of properties is enforced at runtime)

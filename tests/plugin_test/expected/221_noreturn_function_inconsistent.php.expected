@@ -1,0 +1,2 @@
+src/221_noreturn_function_inconsistent.php:3 PhanPluginNeverReturnFunction Function \inconsistentExit has a return type of never, but may try to return a value
+src/221_noreturn_function_inconsistent.php:3 PhanTypeMissingReturnReal Method \inconsistentExit is declared to return never in its real type signature but has no return value

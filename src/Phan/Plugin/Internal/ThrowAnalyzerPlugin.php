@@ -10,7 +10,6 @@ use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
-use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -18,18 +17,16 @@ use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
-use Phan\PluginV3\AnalyzeMethodCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * Analyzes throw statements and compares them against the phpdoc (at)throws annotations
  */
-class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AnalyzeMethodCapability
+class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability
 {
     /**
      * This is invalidated every time this plugin is loaded (e.g. for tests)
@@ -44,41 +41,6 @@ class ThrowAnalyzerPlugin extends PluginV3 implements PostAnalyzeNodeCapability,
             return ThrowRecursiveVisitor::class;
         }
         return ThrowVisitor::class;
-    }
-
-    /**
-     * Check for throw statements in __toString()
-     *
-     * @param CodeBase $code_base
-     * The code base in which the method exists
-     *
-     * @param Method $method
-     * A method being analyzed
-     *
-     * @override
-     */
-    public function analyzeMethod(
-        CodeBase $code_base,
-        Method $method
-    ): void {
-        if (Config::get_closest_target_php_version_id() >= 70400) {
-            return;
-        }
-        if (\strcasecmp($method->getName(), '__toString') !== 0) {
-            return;
-        }
-        $throws_union_type = $method->getOwnThrowsUnionType();
-        if ($throws_union_type->isEmpty()) {
-            return;
-        }
-        Issue::maybeEmit(
-            $code_base,
-            $method->getContext(),
-            Issue::ThrowCommentInToString,
-            $method->getContext()->getLineNumberStart(),
-            $method->getRepresentationForIssue(),
-            $throws_union_type
-        );
     }
 }
 
@@ -115,17 +77,6 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         if (!Config::getValue('warn_about_undocumented_throw_statements')) {
             $this->warnAboutPossiblyThrownTypeIgnoringFunctionThrowsComment($node, $union_type, $analyzed_function);
             return;
-        }
-
-        if (Config::get_closest_target_php_version_id() < 70400) {
-            if ($analyzed_function instanceof Method && \strcasecmp('__toString', $analyzed_function->getName()) === 0) {
-                $this->emitIssue(
-                    Issue::ThrowStatementInToString,
-                    $node->lineno,
-                    $analyzed_function->getRepresentationForIssue(),
-                    (string)$union_type
-                );
-            }
         }
 
         // TODO: This seems like it didn't work for A::c(A::d()) - See #1960 (InvalidArgumentException wasn't detected)

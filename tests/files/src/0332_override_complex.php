@@ -2,7 +2,7 @@
 
 abstract class A332 {
     /**
-     * In php 7.1, doc comments on class constants are recorded
+     * Doc comments on class constants are recorded
      */
     const STATIC_CONST = 'value';
 

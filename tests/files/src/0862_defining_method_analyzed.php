@@ -1,5 +1,5 @@
 <?php
-// @phan-file-suppress PhanUnusedPublicNoOverrideMethodParameter
+
 
 class A {
     /**

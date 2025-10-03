@@ -972,7 +972,6 @@ class Type implements Stringable
             }
             return $reflection_type_string;
         }
-        // Unreachable in php 7.1-7.4, but reachable and reverted deprecation in php 8.0+?
         return (string)$reflection_type;
     }
 

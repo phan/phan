@@ -425,7 +425,7 @@ Extended help:
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --native-syntax-check </path/to/php_binary>
-  If php_binary (e.g. `php72`, `/usr/bin/php`) can be found in `$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
+  If php_binary (e.g. `php84`, `/usr/bin/php`) can be found in `$PATH`, enables `InvokePHPNativeSyntaxCheckPlugin`
   and adds `php_binary` (resolved using `$PATH`) to the `php_native_syntax_check_binaries` array of `plugin_config`
   (treated here as initially being the empty array)
   Phan exits if any php binary could not be found.

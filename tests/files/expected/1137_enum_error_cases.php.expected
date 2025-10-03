@@ -1,0 +1,15 @@
+%s:17 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $traitProperty declared at %s:4
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __construct() declared at %s:6
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __destruct() declared at %s:7
+%s:17 PhanEnumForbiddenMagicMethod Enum \Mu is not allowed to have the magic method __set() declared at %s:8
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __construct() declared at %s:6
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __destruct() declared at %s:7
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __invoke() declared at %s:9
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method __set() declared at %s:8
+%s:17 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method traitInstanceMethod() declared at %s:10
+%s:23 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicStaticProperty declared at %s:23
+%s:24 PhanEnumCannotHaveProperties Enum \Mu is not allowed to declare instance or static properties but it contains property $publicProperty declared at %s:24
+%s:26 PhanInstanceMethodWithNoEnumCases Saw enum \Mu that declares no enum cases but contains instance method instanceMethod() declared at %s:26
+%s:39 PhanInvalidNode Cannot declare an enum case statement in a non-enum
+%s:43 PhanSyntaxEnumCaseUnexpectedValue Syntax error: Expected enum case HEARTS not to have a value
+%s:45 PhanTypeInstantiateEnum Saw instantiation of enum \Suit

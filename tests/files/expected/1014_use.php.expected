@@ -1,0 +1,6 @@
+%s:3 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace void (\A\void)
+%s:4 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace iterable (\NS\iterable)
+%s:5 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace object (\My\Framework\object)
+%s:6 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace NotAReservedKeyword (\stdClass)
+%s:11 PhanTypeMismatchArgumentReal Argument 1 ($o) is null of type null but \example007() takes object defined at %s:7
+%s:11 PhanTypeMismatchArgumentReal Argument 2 ($i) is null of type null but \example007() takes iterable defined at %s:7

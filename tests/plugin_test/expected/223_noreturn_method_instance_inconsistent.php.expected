@@ -1,0 +1,1 @@
+src/223_noreturn_method_instance_inconsistent.php:5 PhanPluginNeverReturnMethod Method \Test223NoreturnMethodInstanceInconsistent::inconsistentExit has a return type of never, but may try to return a value

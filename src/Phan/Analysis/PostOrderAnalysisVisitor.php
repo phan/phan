@@ -2339,9 +2339,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param iterable<int, array{0: UnionType, 1: Node|string|int|float|null}> $types
      * @return \Generator<int, array{0: UnionType, 1: Node|string|int|float|null}>
-     * @suppress PhanPluginCanUseParamType should probably suppress, iterable is php 7.2
      */
-    private static function deduplicateUnionTypes($types): \Generator
+    private static function deduplicateUnionTypes(iterable $types): \Generator
     {
         $unique_types = [];
         foreach ($types as $lineno => $details) {
@@ -3167,7 +3166,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->checkUnionTypeCompatibility($node->children['returnType']);
     }
 
-    private function checkUnionTypeCompatibility(?Node $type): void
+    private function checkUnionTypeCompatibility(?Node $type, bool $is_union = false): void
     {
         if (!$type) {
             return;
@@ -3181,7 +3180,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($type->kind === ast\AST_TYPE_UNION) {
             foreach ($type->children as $node) {
-                $this->checkUnionTypeCompatibility($node);
+                $this->checkUnionTypeCompatibility($node, true);
             }
             return;
         }
@@ -3207,6 +3206,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 "Unsupported union type syntax " . ASTReverter::toShortString($inner_type)
             );
             return;
+        }
+
+        $minimum_target_php_version_id = Config::get_closest_minimum_target_php_version_id();
+        if ($inner_type->flags === ast\flags\TYPE_TRUE && $minimum_target_php_version_id < 80200) {
+            $this->emitIssue(
+                Issue::CompatibleTrueType,
+                $inner_type->lineno,
+                'true'
+            );
+        } elseif (
+            !$is_union &&
+            $minimum_target_php_version_id < 80200 &&
+            \in_array($inner_type->flags, [ast\flags\TYPE_NULL, ast\flags\TYPE_FALSE], true)
+        ) {
+            $this->emitIssue(
+                Issue::CompatibleStandaloneType,
+                $inner_type->lineno,
+                ASTReverter::toShortTypeString( $type )
+            );
         }
     }
 
@@ -3509,12 +3527,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if ($cond->flags & flags\PARENTHESIZED_CONDITIONAL) {
             // The condition is unambiguously parenthesized.
-            return;
-        }
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        if (\PHP_VERSION_ID < 70400 && !isset($cond->is_not_parenthesized)) {
-            // This is from the native parser in php 7.3 or earlier.
-            // We don't know whether or not the AST is parenthesized.
             return;
         }
         if (isset($cond->children['true'])) {

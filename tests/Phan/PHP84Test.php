@@ -13,7 +13,6 @@ use Phan\Tests\AbstractPhanFileTest;
 final class PHP84Test extends AbstractPhanFileTest
 {
     private const OVERRIDES = [
-        'allow_method_param_type_widening' => true,
         'unused_variable_detection' => true,  // for use with tests of arrow functions
         'redundant_condition_detection' => true,  // for use with typed properties
         'dead_code_detection' => true,  // for use with constructor property promotion, etc.

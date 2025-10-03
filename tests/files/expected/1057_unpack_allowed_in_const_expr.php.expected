@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 'bar' which does not contain any subtypes of iterable (such as array or Traversable)
+%s:6 PhanTypeMismatchUnpackValue Attempting to unpack a value of type 0 which does not contain any subtypes of iterable (such as array or Traversable)

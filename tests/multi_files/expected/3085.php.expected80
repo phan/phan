@@ -1,2 +1,0 @@
-%s:12 PhanTypeVoidArgument Cannot use void return value test_void_real() as a function argument
-%s:13 PhanTypeVoidArgument Cannot use void return value test_void_real() as a function argument

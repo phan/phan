@@ -12,7 +12,6 @@ use Phan\Language\UnionType;
 /**
  * Represents APIs used when Phan is setting up/analyzing
  * the representation of a given global or class constant.
- * @method FQSEN getFQSEN() return type covariance isn't supported in php 7.0, I think
  */
 interface ConstantInterface
 {
@@ -41,4 +40,9 @@ interface ConstantInterface
      * Gets the union type of this constant.
      */
     public function getUnionType(): UnionType;
+
+    /**
+     * Gets the FQSEN of this constant.
+     */
+    public function getFQSEN(): FQSEN;
 }

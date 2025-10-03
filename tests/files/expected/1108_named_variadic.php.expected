@@ -1,0 +1,1 @@
+%s:6 PhanSuspiciousNamedArgumentVariadicInternal Passing named argument foo: 'test' to the variadic parameter of the internal function \sprintf(string $format, ...$values). Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.

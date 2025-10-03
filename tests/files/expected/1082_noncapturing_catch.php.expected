@@ -1,0 +1,2 @@
+%s:6 PhanUndeclaredClassCatch Catching undeclared class \UnknownException
+%s:14 PhanUndeclaredClassCatch Catching undeclared class \UnknownException

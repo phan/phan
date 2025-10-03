@@ -1,0 +1,4 @@
+%s:8 PhanParentlessClass Reference to parent of class \NS1019\Bar that does not extend anything
+%s:14 PhanUndeclaredTypeProperty Property \NS1019\Foo->std has undeclared type \NS1019\stdClass (Did you mean class \stdClass)
+%s:20 PhanTypeMismatchPropertyReal Assigning new \stdClass() of type \stdClass to property but \NS1019\Foo->std is \NS1019\stdClass
+%s:21 PhanTypeMismatchPropertyReal Assigning $f of type \NS1019\Foo to property but \NS1019\Foo->arrayObject is \ArrayObject

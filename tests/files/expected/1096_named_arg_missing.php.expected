@@ -1,0 +1,14 @@
+%s:7 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:7 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:7 PhanParamTooFew Call with 1 arg(s) to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) which requires 2 arg(s) defined at %s:3
+%s:8 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:9 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:10 PhanMissingNamedArgument Missing named argument for string $requiredString in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:11 PhanMissingNamedArgument Missing named argument for int $requiredInt in call to \C24::main(int $requiredInt, string $requiredString, bool $optionalFlag = false, $other = null) defined at %s:3
+%s:11 PhanTypeMismatchArgument Argument 2 ($requiredString) is 0 of type 0 but \C24::main() takes string defined at %s:3
+%s:12 PhanUndeclaredNamedArgumentInternal Saw a call with undeclared named argument (definitelyInvalidFlag: 'value') to \strlen(string $string)
+%s:14 PhanMissingNamedArgumentInternal Missing named argument for mixed $value in call to \json_encode($value, int $flags = 0, int $depth = 512)
+%s:15 PhanMissingNamedArgumentInternal Missing named argument for ?callable $callback in call to \array_map(?callable $callback, array $array, array ...$arrays)
+%s:15 PhanParamTooFewInternal Call with 1 arg(s) to \array_map(?callable $callback, array $array, array ...$arrays) which requires 2 arg(s)
+%s:15 PhanTypeConversionFromArray array to string conversion
+%s:15 PhanTypeMismatchArgumentInternalReal Argument 2 ($array) is 123 of type 123 but \array_map() takes array

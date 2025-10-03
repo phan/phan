@@ -108,11 +108,7 @@ final class NonEmptyAssociativeArrayType extends AssociativeArrayType implements
         return $this;
     }
 
-    /**
-     * @return GenericArrayType
-     * @phan-real-return GenericArrayType signature variance isn't supported until php 7.4
-     */
-    public function asPossiblyEmptyArrayType(): ArrayType
+    public function asPossiblyEmptyArrayType(): GenericArrayType
     {
         return AssociativeArrayType::fromElementType(
             $this->element_type,

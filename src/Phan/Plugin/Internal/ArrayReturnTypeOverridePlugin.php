@@ -17,7 +17,6 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\FalseType;
@@ -327,7 +326,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if (!$args) {
                 return NullType::instance(false)->asRealUnionType();
             }
-            // TODO: Clean up once target_php_version >= 80000
             $has_non_array = false;
             $types = null;
             foreach ($args as $arg) {
@@ -575,42 +573,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             return $result;
         };
         /**
-         * @param list<Node|int|string|float> $args
-         */
-        $each_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type, $int_or_string): UnionType {
-            if (\count($args) >= 1) {
-                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $element_types = $array_type->genericArrayElementTypes(true, $code_base);
-                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
-                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
-                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum)->withRealTypeSet($int_or_string->getRealTypeSet());
-                } else {
-                    $key_type = $int_or_string;
-                }
-                $array_shape_type = ArrayShapeType::fromFieldTypes([
-                    0       => $key_type,
-                    'key'   => $key_type,
-                    1       => $element_types,
-                    'value' => $element_types,
-                ], false);
-                $real_value_type = $mixed_type->asRealUnionType();
-                return new UnionType(
-                    [$array_shape_type, $false_type],
-                    true,
-                    [
-                        ArrayShapeType::fromFieldTypes([
-                            0       => $int_or_string,
-                            'key'   => $int_or_string,
-                            1       => $real_value_type,
-                            'value' => $real_value_type,
-                        ], false),
-                        $false_type,
-                    ]
-                );
-            }
-            return $false_type->asPHPDocUnionType();
-        };
-        /**
          * @param list<Node|int|float|string> $args
          */
         $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_assoc_array_falsey, $false_type): UnionType {
@@ -665,7 +627,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
             'reset'       => $get_element_type_of_first_arg_check_nonempty_false,
-            'each'        => $each_callback,
 
             'key'          => $key_callback,
             'array_key_first' => $get_key_type_of_first_arg_or_null,

@@ -1,6 +1,6 @@
 <?php
 
-/** @phan-file-suppress PhanPluginUseReturnValueNoopVoid, PhanUnreferencedFunction, PhanUnusedVariable */
+/** @phan-file-suppress PhanUnusedVariable */
 
 namespace NS1000;
 

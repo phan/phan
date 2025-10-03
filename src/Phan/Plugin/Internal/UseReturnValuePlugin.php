@@ -335,7 +335,6 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'domnodelist::item' => true,
     'domxpath::query' => true,
     'doubleval' => true,
-    'each' => true,
     'error::getcode' => true,
     'error::getfile' => true,
     'error::getline' => true,

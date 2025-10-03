@@ -1101,16 +1101,11 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * Implements compare-named-parameters to prepare docs and stub files for php 8.0 named parameters
+     * Implements compare-named-parameters to prepare docs and stub files for named parameters
      * @return never
      */
     public static function compareNamedParameters(): void
     {
-        if (PHP_MAJOR_VERSION < 8) {
-            fwrite(STDERR, "compare-named-parameters MUST BE RUN IN PHP 8.0+, BUT WAS RUN IN " . PHP_VERSION . "\n");
-            fwrite(STDERR, "exiting without generating stubs\n");
-            exit(1);
-        }
         global $argc, $argv;
         if ($argc !== 4) {
             fwrite(STDERR, "Invalid argument count, compare-named-parameters expects 2 arguments\n");

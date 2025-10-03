@@ -1,0 +1,4 @@
+%s:4 PhanUnusedVariable Unused definition of variable $b
+%s:7 PhanShadowedVariableInArrowFunc Short arrow function shadows variable $d from the outer scope
+%s:7 PhanUnusedVariable Unused definition of variable $d
+%s:9 PhanShadowedVariableInArrowFunc Short arrow function shadows variable $a from the outer scope

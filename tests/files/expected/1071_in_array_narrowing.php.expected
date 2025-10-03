@@ -1,0 +1,4 @@
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $type - it has union type \NS1071\Bar(real=\NS1071\Bar)
+%s:30 PhanUnusedVariable Unused definition of variable $type
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $type - it has union type \NS1071\Bar&\NS1071\Foo2(real=\NS1071\Bar)
+%s:38 PhanUnusedVariable Unused definition of variable $type

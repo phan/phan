@@ -1,0 +1,10 @@
+src/215_match.php:7 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 7.
+src/215_match.php:10 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(2) detected in match expression - the later entry will be ignored in favor of expression 2 at line 7.
+src/215_match.php:12 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression($other) detected in match expression - the later entry will be ignored in favor of expression $other at line 11.
+src/215_match.php:13 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(null) detected in match expression - the later entry will be ignored in favor of expression null at line 13.
+src/215_match.php:17 PhanPluginNeverReturnFunction Function \test_match_unreachable() never returns and has a return type of void, but phpdoc type never could be used instead
+src/215_match.php:18 PhanNoopMatchArms This match expression only has the default arm in match ($x) {}
+src/215_match.php:18 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) {}
+src/215_match.php:19 PhanPluginUnreachableCode Unreachable statement detected
+src/215_match.php:22 PhanNoopMatchArms This match expression only has the default arm in match ($x) { default => 2 }
+src/215_match.php:22 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($x) { default => 2 }

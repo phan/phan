@@ -1,0 +1,10 @@
+%s:4 PhanNonClassMethodCall Call to method method on non-class type null
+%s:5 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $undef1 with type null=
+%s:5 PhanTypeSuspiciousEcho Suspicious argument $undef1?->prop of type null for an echo/print statement
+%s:5 PhanUndeclaredVariable Variable $undef1 is undeclared
+%s:6 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $undef2 with type null=
+%s:6 PhanUndeclaredVariable Variable $undef2 is undeclared
+%s:7 PhanNonClassMethodCall Call to method method on non-class type null=
+%s:7 PhanUndeclaredVariable Variable $undef3 is undeclared
+%s:8 PhanNonClassMethodCall Call to method method on non-class type null=
+%s:8 PhanUndeclaredVariable Variable $undef4 is undeclared

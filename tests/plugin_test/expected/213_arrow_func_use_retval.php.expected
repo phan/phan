@@ -1,0 +1,6 @@
+src/213_arrow_func_use_retval.php:4 PhanUnusedVariable Unused definition of variable $initial
+src/213_arrow_func_use_retval.php:6 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method Closure(int $v) defined at src/213_arrow_func_use_retval.php:4
+src/213_arrow_func_use_retval.php:9 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of Closure(int &$v)
+src/213_arrow_func_use_retval.php:13 PhanTypeNonVarReturnByRef Only variables can be returned by reference in Closure&(int &$v)
+src/213_arrow_func_use_retval.php:16 PhanPluginDuplicateAdjacentStatement Statement var_export($modify2($arg)) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
+src/213_arrow_func_use_retval.php:17 PhanTypeNonVarReturnByRef Only variables can be returned by reference in Closure&(int &$v)

@@ -39,7 +39,7 @@ class Property extends ClassElement
     private $real_defining_fqsen;
 
     /**
-     * @var UnionType The real union type of this property (typed properties were added in PHP 7.4)
+     * @var UnionType The real union type of this property
      * This does not change.
      */
     private $real_union_type;
@@ -565,7 +565,7 @@ class Property extends ClassElement
     /**
      * Return the recorded union type of the default value (for declared properties).
      * This is null if there is no declared type.
-     * (TODO: Consider ways to represent an "undefined" state for php 7.4 typed properties)
+     * (TODO: Consider ways to represent an "undefined" state for typed properties)
      */
     public function getDefaultType(): ?UnionType
     {

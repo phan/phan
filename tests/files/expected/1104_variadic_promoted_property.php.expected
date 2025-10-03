@@ -1,0 +1,4 @@
+%s:3 PhanInvalidNode Cannot declare variadic promoted property
+%s:6 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public int $foo of non-constructor \VariadicPromotedProperty::other(int $foo)
+%s:9 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public int $x of non-constructor Closure(int $x)
+%s:10 PhanInvalidNode Cannot use constructor property promotion modifier on parameter public $var of non-constructor \fn32($var)

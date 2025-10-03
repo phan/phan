@@ -183,8 +183,6 @@ class Issue
     public const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
     public const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     public const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
-    public const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
-    public const TypeMismatchUnpackKeyArraySpread = 'PhanTypeMismatchUnpackKeyArraySpread';
     public const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     public const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     public const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
@@ -551,7 +549,6 @@ class Issue
     public const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
     public const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
     public const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
-    public const ConstructAccessSignatureMismatch = 'PhanConstructAccessSignatureMismatch';
     public const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
     public const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
     public const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
@@ -588,14 +585,8 @@ class Issue
     // Issue::CATEGORY_COMPATIBLE
     public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
     public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
-    public const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
-    public const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
-    public const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
-    public const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
-    public const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
-    public const CompatibleUseMixed                 = 'PhanCompatibleUseMixed';
-    public const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
-    public const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
+    public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
+    public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
     public const CompatibleAssertDeclaration        = 'PhanCompatibleAssertDeclaration';
     public const CompatibleUnsetCast                = 'PhanCompatibleUnsetCast';
@@ -605,16 +596,9 @@ class Issue
     public const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
     public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
     public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
-    public const CompatibleThrowExpression          = 'PhanCompatibleThrowExpression';
-    public const CompatibleMatchExpression          = 'PhanCompatibleMatchExpression';
-    public const CompatibleNamedArgument            = 'PhanCompatibleNamedArgument';
-    public const CompatibleAttributeGroupOnSameLine      = 'PhanCompatibleAttributeGroupOnSameLine';
-    public const CompatibleAttributeGroupOnMultipleLines = 'PhanCompatibleAttributeGroupOnMultipleLines';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
-    public const CompatibleFinalClassConstant  = 'PhanCompatibleFinalClassConstant';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
-    public const CompatibleAbstractPrivateMethodInTrait    = 'PhanCompatibleAbstractPrivateMethodInTrait';
     public const CompatibleTraitConstant                 = 'PhanCompatibleTraitConstant';
 
     // Issue::CATEGORY_GENERIC
@@ -652,8 +636,6 @@ class Issue
     public const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     public const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     public const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
-    public const ThrowStatementInToString         = 'PhanThrowStatementInToString';
-    public const ThrowCommentInToString           = 'PhanThrowCommentInToString';
     public const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
     public const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
     public const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
@@ -2284,22 +2266,6 @@ class Issue
                 'Expected an object instance when accessing an instance property, but saw an expression {CODE} with type {TYPE}',
                 self::REMEDIATION_B,
                 10040
-            ),
-            new Issue(
-                self::TypeMismatchUnpackKey,
-                self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
-                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
-                self::REMEDIATION_B,
-                10041
-            ),
-            new Issue(
-                self::TypeMismatchUnpackKeyArraySpread,
-                self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
-                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be integers before PHP 8.1',
-                self::REMEDIATION_B,
-                10109
             ),
             new Issue(
                 self::TypeMismatchUnpackValue,
@@ -4834,14 +4800,6 @@ class Issue
                 1005
             ),
             new Issue(
-                self::ConstructAccessSignatureMismatch,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE} in PHP versions 7.1 and below",
-                self::REMEDIATION_B,
-                1032
-            ),
-            new Issue(
                 self::PropertyAccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
@@ -5076,68 +5034,20 @@ class Issue
                 3001
             ),
             new Issue(
-                self::CompatibleShortArrayAssignPHP70,
+                self::CompatibleStandaloneType,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0",
-                self::REMEDIATION_A,
-                3003
+                "Cannot use {TYPE} as a standalone type before php 8.2.",
+                self::REMEDIATION_B,
+                3050
             ),
             new Issue(
-                self::CompatibleKeyedArrayAssignPHP70,
+                self::CompatibleTrueType,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Using array keys in an array destructuring assignment is not compatible with PHP 7.0",
+                "Cannot use {TYPE} as a type before php 8.2.",
                 self::REMEDIATION_B,
-                3004
-            ),
-            new Issue(
-                self::CompatibleUseVoidPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).",
-                self::REMEDIATION_B,
-                3008
-            ),
-            new Issue(
-                self::CompatibleUseIterablePHP71,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).",
-                self::REMEDIATION_B,
-                3009
-            ),
-            new Issue(
-                self::CompatibleUseObjectPHP71,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
-                self::REMEDIATION_B,
-                3010
-            ),
-            new Issue(
-                self::CompatibleUseMixed,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as mixed will be a syntax error in PHP 8.0 (mixed becomes a native type that accepts any value).",
-                self::REMEDIATION_B,
-                3030
-            ),
-            new Issue(
-                self::CompatibleMultiExceptionCatchPHP70,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Catching multiple exceptions is not supported before PHP 7.1",
-                self::REMEDIATION_B,
-                3011
-            ),
-            new Issue(
-                self::CompatibleNegativeStringOffset,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
-                self::REMEDIATION_B,
-                3012
+                3051
             ),
             new Issue(
                 self::CompatibleAutoload,
@@ -5154,22 +5064,6 @@ class Issue
                 "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
                 self::REMEDIATION_B,
                 3014
-            ),
-            new Issue(
-                self::ThrowStatementInToString,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "{FUNCTIONLIKE} throws {TYPE} here, but throwing in __toString() is a fatal error prior to PHP 7.4",
-                self::REMEDIATION_A,
-                3015
-            ),
-            new Issue(
-                self::ThrowCommentInToString,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "{FUNCTIONLIKE} documents that it throws {TYPE}, but throwing in __toString() is a fatal error prior to PHP 7.4",
-                self::REMEDIATION_A,
-                3016
             ),
             new Issue(
                 self::CompatibleSyntaxNotice,
@@ -5192,7 +5086,7 @@ class Issue
                 self::CompatibleImplodeOrder,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "In php 7.4, passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
+                "Passing glue string after the array is deprecated for {FUNCTION}. Should this swap the parameters of type {TYPE} and {TYPE}?",
                 self::REMEDIATION_B,
                 3019
             ),
@@ -5222,30 +5116,6 @@ class Issue
                 3023
             ),
             new Issue(
-                self::CompatibleThrowExpression,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use throw as an expression before php 8.0 in {CODE}",
-                self::REMEDIATION_B,
-                3028
-            ),
-            new Issue(
-                self::CompatibleMatchExpression,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use match expressions before php 8.0 in {CODE}",
-                self::REMEDIATION_B,
-                3032
-            ),
-            new Issue(
-                self::CompatibleNamedArgument,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Cannot use named arguments before php 8.0 in argument ({CODE})",
-                self::REMEDIATION_B,
-                3035
-            ),
-            new Issue(
                 self::CompatibleAssertDeclaration,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
@@ -5254,36 +5124,12 @@ class Issue
                 3041
             ),
             new Issue(
-                self::CompatibleAttributeGroupOnSameLine,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Declaring attributes on the same line as a declaration is treated like a line comment before php 8.0 for attribute group {CODE} of {CODE}",
-                self::REMEDIATION_B,
-                3039
-            ),
-            new Issue(
-                self::CompatibleAttributeGroupOnMultipleLines,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Declaring attributes across multiple lines may be treated like a mix of a line comment and php tokens before php 8.0 for attribute group {CODE} of {CODE} ending around line {LINE}. Note that php-ast does not provide the actual ending line numbers and this issue may be unreliable",
-                self::REMEDIATION_B,
-                3040
-            ),
-            new Issue(
                 self::CompatibleSerializeInterfaceDeprecated,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
                 "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
                 self::REMEDIATION_B,
                 3042
-            ),
-            new Issue(
-                self::CompatibleFinalClassConstant,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Final class constants were not supported prior to php 8.1",
-                self::REMEDIATION_B,
-                3044
             ),
             new Issue(
                 self::CompatibleAccessMethodOnTraitDefinition,
@@ -5300,14 +5146,6 @@ class Issue
                 "Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait",
                 self::REMEDIATION_B,
                 3048
-            ),
-            new Issue(
-                self::CompatibleAbstractPrivateMethodInTrait,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                'Trait {TRAIT} declares abstract private function {FUNCTION} which is only allowed in 8.0+',
-                self::REMEDIATION_B,
-                3049
             ),
             new Issue(
                 self::CompatibleTraitConstant,

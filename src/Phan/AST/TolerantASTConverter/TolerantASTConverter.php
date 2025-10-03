@@ -65,7 +65,7 @@ Shim::load();
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.0-8.1
+ * Compatibility: PHP 8.1-
  *
  * XXX: This aims to match the line numbers that php-ast would generate (for compatibility) where reasonable,
  * even when counterintuitive. See https://github.com/phan/phan/issues/4520
@@ -225,6 +225,7 @@ class TolerantASTConverter
 
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
+     * @suppress PhanWriteOnlyProtectedProperty May be used in future
      */
     protected static $php_version_id_parsing = PHP_VERSION_ID;
 
@@ -268,7 +269,7 @@ class TolerantASTConverter
     }
 
     /**
-     * Records the PHP major+minor version id (70100, 70200, etc.)
+     * Records the PHP major+minor version id (80200, 80300, etc.)
      * that this polyfill should emulate the behavior of php-ast for.
      */
     public function setPHPVersionId(int $value): void
@@ -345,8 +346,6 @@ class TolerantASTConverter
      */
     public static function phpParserParse(string $file_contents, array &$errors = []): PhpParser\Node\SourceFileNode
     {
-        // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
-        // This may stop being an issue when php 7.2 support is dropped.
         $parser = CompatibleParser::create();
         $result = $parser->parseSourceFile($file_contents);
         $errors = DiagnosticsProvider::getDiagnostics($result);
@@ -613,11 +612,6 @@ class TolerantASTConverter
 
     /**
      * This returns an array of values mapping class names to the closures which converts them to a scalar or ast\Node
-     *
-     * Why not a switch? Switches are slow until php 7.2, and there are dozens of class names to handle.
-     *
-     * - In php <= 7.1, the interpreter would loop through all possible cases, and compare against the value one by one.
-     * - There are a lot of local variables to look at.
      *
      * @return array<string,Closure(object,int):(\ast\Node|int|string|float|null)>
      *
@@ -1068,11 +1062,6 @@ class TolerantASTConverter
                     ],
                     $start_line
                 );
-                if (PHP_VERSION_ID < 70400 && !$is_parenthesized) {
-                    // This is a way to indicate that this AST is definitely unparenthesized in cases where the native parser would not provide this information.
-                    // @phan-suppress-next-line PhanUndeclaredProperty
-                    $result->is_not_parenthesized = true;
-                }
                 return $result;
             },
             /**
@@ -1197,7 +1186,7 @@ class TolerantASTConverter
             },
             /** @return int|float */
             'Microsoft\PhpParser\Node\NumericLiteral' => static function (PhpParser\Node\NumericLiteral $n, int $_): float|int {
-                // Support php 7.4 numeric literal separators. Ignore `_`.
+                // Support numeric literal separators. Ignore `_`.
                 $n = $n->children;
                 $text = \str_replace('_', '', static::tokenToString($n));
                 if (($n->kind ?? null) === TokenKind::IntegerLiteralToken) {
@@ -3150,9 +3139,6 @@ class TolerantASTConverter
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
             ], self::getStartLine($item));
         }
-        if (self::$php_version_id_parsing < 70100 && \count($ast_items) === 0) {
-            $ast_items[] = null;
-        }
         return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
     }
 
@@ -3187,16 +3173,14 @@ class TolerantASTConverter
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
             ], self::getStartLine($item));
         }
-        if (self::$php_version_id_parsing < 70100) {
-            $flags = 0;
+
+        $kind = $n->openParenOrBracket->kind;
+        if ($kind === TokenKind::OpenBracketToken) {
+            $flags = flags\ARRAY_SYNTAX_SHORT;
         } else {
-            $kind = $n->openParenOrBracket->kind;
-            if ($kind === TokenKind::OpenBracketToken) {
-                $flags = flags\ARRAY_SYNTAX_SHORT;
-            } else {
-                $flags = flags\ARRAY_SYNTAX_LONG;
-            }
+            $flags = flags\ARRAY_SYNTAX_LONG;
         }
+
         // Workaround for ast line choice
         return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, $ast_items[0]->lineno ?? $start_line);
     }

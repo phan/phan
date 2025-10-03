@@ -144,20 +144,17 @@ class Config
         // (Phan relies on Reflection for some types, param counts,
         // and checks for undefined classes/methods/functions)
         //
-        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-        // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
+        // Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
         // If this is set to `null`,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute Phan.
         //
-        // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
         // (See `backward_compatibility_checks` for additional options)
         'target_php_version' => null,
 
         // The PHP version that will be used for feature/syntax compatibility warnings.
         //
-        // Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `'7.4'`,
-        // `'8.0'`, `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
+        // Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
         // If this is set to `null`, Phan will first attempt to infer the value from
         // the project's composer.json's `{"require": {"php": "version range"}}` if possible.
         // If that could not be determined, then Phan assumes `target_php_version`.
@@ -446,7 +443,7 @@ class Config
         'strict_object_checking' => false,
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
-        // even if those return types aren't available in reflection (real types were taken from php 7.3 or 8.0-dev, depending on target_php_version).
+        // even if those return types aren't available in reflection (real types were taken from php 8.4).
         //
         // Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
         // As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
@@ -759,7 +756,7 @@ class Config
         // If this list is non-empty, only issues within the list
         // will be emitted by Phan.
         //
-        // See https://github.com/phan/phan/blob/v5/internal/Issue-Types-Caught-by-Phan.md
+        // See https://github.com/phan/phan/blob/v6/internal/Issue-Types-Caught-by-Phan.md
         // for the full list of issues that Phan detects.
         //
         // Phan is capable of detecting hundreds of types of issues.
@@ -858,7 +855,7 @@ class Config
         // but load the constants, classes, functions, and classes (and their Reflection types)
         // from these stub files (doubling as valid php files).
         // Use a different extension from php to avoid accidentally loading these.
-        // The `tools/make_stubs` script can be used to generate your own stubs (compatible with php 7.0+ right now)
+        // The `tools/make_stubs` script can be used to generate your own stubs
         //
         // (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
         'autoload_internal_extension_signatures' => [
@@ -1006,7 +1003,7 @@ class Config
         //
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. `'AlwaysReturnPlugin'`)
         //
-        // Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v5/.phan/plugins).
+        // Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/v6/.phan/plugins).
         //
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. `'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'`)
         'plugins' => [
@@ -1291,8 +1288,7 @@ class Config
                 self::$configuration['allow_method_param_type_widening_original'] = $value;
                 self::$configuration['original_allow_method_param_type_widening_original'] = $value;
                 if ($value === null) {
-                    // If this setting is set to null, infer it based on the closest php version id.
-                    self::$configuration[$name] = self::$closest_minimum_target_php_version_id >= 70200;
+                    self::$configuration[$name] = true;
                 }
                 break;
             case 'target_php_version':
@@ -1339,7 +1335,7 @@ class Config
         }
         self::$closest_minimum_target_php_version_id = (int) \min(self::$closest_target_php_version_id, $min_value_id);
         if (!isset(self::$configuration['original_allow_method_param_type_widening_original'])) {
-            self::$configuration['allow_method_param_type_widening'] = self::$closest_minimum_target_php_version_id >= 70200;
+            self::$configuration['allow_method_param_type_widening'] = true;
         }
     }
 

@@ -1,0 +1,3 @@
+%s:10 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $this->x of type null but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $c->x of type \stdClass but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $c->x of type array but \strlen() takes string

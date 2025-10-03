@@ -1,0 +1,6 @@
+%s:4 PhanTypeMismatchArgumentReal Argument 1 ($param) is null of type null but \test_param13() takes int|string defined at %s:2
+%s:7 PhanTypeMismatchReturnReal Returning null of type null but test_return13() is declared to return int|string
+%s:18 PhanCompatibleStandaloneType Cannot use false as a standalone type before php 8.2.
+%s:18 PhanCompatibleStandaloneType Cannot use null as a standalone type before php 8.2.
+%s:22 PhanUndeclaredMethod Call to undeclared method \X::missingMethod
+%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' of type 'invalid' to property but \X::$prop is ?int

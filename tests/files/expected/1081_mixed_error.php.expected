@@ -1,0 +1,5 @@
+%s:3 PhanTypeMissingReturnReal Method \Base9::test is declared to return mixed in its real type signature but has no return value
+%s:4 PhanSyntaxReturnExpectedValue Syntax error: Function test() with return type mixed must return a value (did you mean "return null" instead of "return"?)
+%s:25 PhanParamSignatureRealMismatchReturnType Declaration of function test() should be compatible with function test() : mixed (method where the return type in the real signature is '' cannot override method where the return type in the real signature is 'mixed') defined in %s:9
+%s:29 PhanParamSignatureMismatch Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) : ?mixed defined in %s:19 (Cannot use int $a with a real type to override parameter mixed $a without a real type)
+%s:29 PhanParamSignatureRealMismatchHasParamType Declaration of function mixedParam(int $a) should be compatible with function mixedParam(mixed $a) (parameter #1 has type 'int' in the real signature which cannot replace original parameter with no type in the real signature) defined in %s:19

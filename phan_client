@@ -2,7 +2,7 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
- * Compatible with php 5.6-8.1
+ * Compatible with php 8.1-
  * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
@@ -28,7 +28,7 @@
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
- * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUsePHP71Void, PhanPluginCanUseReturnType
+ * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUseVoidReturnType, PhanPluginCanUseReturnType
  * @phan-file-suppress PhanPluginRemoveDebugEcho
  */
 class PhanPHPLinter
@@ -472,25 +472,13 @@ EOB;
         'verbose',
     ];
 
-    /**
-     * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
-     * @suppress UnusedSuppression
-     */
     public function __construct()
     {
         global $argv;
 
         // Parse command line args
-        $optind = 0;
-        $getopt_reflection = new ReflectionFunction('getopt');
-        if ($getopt_reflection->getNumberOfParameters() >= 3) {
-            // optind support is only in php 7.1+.
-            // hhvm doesn't expect a third parameter, but reports a version of php 7.1, even in the latest version.
-            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS, $optind);
-        } else {
-            $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
-        }
-        if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
+        $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS, $optind);
+        if ($optind < count($argv)) {
             $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
         }
 

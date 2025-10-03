@@ -1,0 +1,1 @@
+src/214_arrow_func_call_use_retval.php:5 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \double18() defined at src/214_arrow_func_call_use_retval.php:2

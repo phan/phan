@@ -1,0 +1,11 @@
+%s:8 PhanUnusedVariable Unused definition of variable $value
+%s:9 PhanUnusedVariable Unused definition of variable $x
+%s:12 PhanUnusedVariable Unused definition of variable $value
+%s:16 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $value of type non-empty-array<mixed,mixed> but \spl_object_hash() takes object
+%s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $value of type ?array{} but \spl_object_hash() takes object
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type false(real=false)
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $condition - it has union type true(real=true)
+%s:24 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
+%s:26 PhanRedundantCondition Redundant attempt to cast $condition of type true to truthy
+%s:27 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
+%s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type 0 to 10 of type 10 with operator '<' in a loop (likely a false positive)

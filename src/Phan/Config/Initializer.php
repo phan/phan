@@ -209,7 +209,7 @@ use Phan\Issue;
  *
  * - Go through this file and verify that there are no missing/unnecessary files/directories.
  *   (E.g. this only includes direct composer dependencies - You may have to manually add indirect composer dependencies to 'directory_list')
- * - Look at 'plugins' and add or remove plugins if appropriate (see https://github.com/phan/phan/tree/v5/.phan/plugins#plugins)
+ * - Look at 'plugins' and add or remove plugins if appropriate (see https://github.com/phan/phan/tree/v6/.phan/plugins#plugins)
  * - Add global suppressions for pre-existing issues to suppress_issue_types (https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base)
  *   - Consider setting up a baseline if there are a large number of pre-existing issues (see `phan --extended-help`)
  *
@@ -218,7 +218,7 @@ use Phan\Issue;
  * after this file is read.
  *
  * @see https://github.com/phan/phan/wiki/Phan-Config-Settings for all configurable options
- * @see https://github.com/phan/phan/tree/v5/src/Phan/Config.php
+ * @see https://github.com/phan/phan/tree/v6/src/Phan/Config.php
  *
  * A Note About Paths
  * ==================
@@ -364,7 +364,7 @@ EOT;
         foreach (\array_merge($require_directories, $require_dev_directories) as $requirement => $_) {
             $requirement = (string)$requirement;
             if (\substr_count($requirement, '/') !== 1) {
-                // e.g. ext-ast, php >= 7.0, etc.
+                // e.g. ext-ast, php >= 8.3, etc.
                 continue;
             }
             $path_to_require = "$vendor_path/$requirement";
@@ -453,20 +453,8 @@ EOT;
         } catch (\UnexpectedValueException) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
-        // Not going to suggest 5.6 - analyzing with 7.0 might detect some functions that were removed
-        if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
-            $version_guess = '7.0';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.2-dev'))) {
-            $version_guess = '7.1';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.3-dev'))) {
-            $version_guess = '7.2';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.4-dev'))) {
-            $version_guess = '7.3';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.0-dev'))) {
-            $version_guess = '7.4';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.1-dev'))) {
-            $version_guess = '8.0';
-        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.2-dev'))) {
+
+        if ($version_constraint->matches(self::parseConstraintsForRange('<8.2-dev'))) {
             $version_guess = '8.1';
         } elseif ($version_constraint->matches(self::parseConstraintsForRange('<8.3-dev'))) {
             $version_guess = '8.2';

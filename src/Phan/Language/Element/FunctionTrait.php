@@ -462,7 +462,6 @@ trait FunctionTrait
     public function setHasYield(bool $has_yield): void
     {
         // TODO: In a future release of php-ast, this information will be part of the function node's flags.
-        // (PHP 7.1+ only, not supported in PHP 7.0)
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::HAS_YIELD,
@@ -478,7 +477,6 @@ trait FunctionTrait
     public function setHasStaticVariable(bool $has_static_variable): void
     {
         // TODO: In a future release of php-ast, this information will be part of the function node's flags.
-        // (PHP 7.1+ only, not supported in PHP 7.0)
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::HAS_STATIC_VARIABLE,
@@ -1286,10 +1284,8 @@ trait FunctionTrait
     /**
      * Creates a callback that can restore this element to the state it had before parsing.
      * @internal - Used by daemon mode
-     * @return Closure
-     * @suppress PhanTypeMismatchDeclaredReturnNullable overriding phpdoc type deliberately so that this works in php 7.1
      */
-    public function createRestoreCallback(): ?Closure
+    public function createRestoreCallback(): Closure
     {
         $clone_this = clone($this);
         foreach ($clone_this->parameter_list as $i => $parameter) {

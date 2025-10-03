@@ -269,7 +269,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         $key_set = [];
         foreach ($children as $entry) {
             if (!($entry instanceof Node)) {
-                continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
+                continue;  // Triggered by code such as `list(, $a) = $expr`
             }
             $key = $entry->children['key'] ?? null;
             // Skip array entries without literal keys. (Do it before resolving the key value)

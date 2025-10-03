@@ -318,11 +318,11 @@ final class UnionTypeTest extends BaseTest
     public function testExpandedTypes(): void
     {
         $this->assertSame(
-            \PHP_MAJOR_VERSION >= 8 ? '\Exception[]|\Stringable[]|\Throwable[]' : '\Exception[]|\Throwable[]',
+            '\Exception[]|\Stringable[]|\Throwable[]',
             UnionType::fromFullyQualifiedPHPDocString('\Exception[]')->asExpandedTypes(self::$code_base)->__toString()
         );
         $this->assertSame(
-            \PHP_MAJOR_VERSION >= 8 ? 'array<int,\Exception>|array<int,\Stringable>|array<int,\Throwable>' : 'array<int,\Exception>|array<int,\Throwable>',
+            'array<int,\Exception>|array<int,\Stringable>|array<int,\Throwable>',
             UnionType::fromFullyQualifiedPHPDocString('array<int,\Exception>')->asExpandedTypes(self::$code_base)->__toString()
         );
     }

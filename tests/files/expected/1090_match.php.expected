@@ -1,0 +1,6 @@
+%s:3 PhanTypeMismatchReturnReal Returning match ($x) { 1, 2 => (throw new Exception()), 3 => 'invalid' } of type 'invalid' but test15() is declared to return ?int
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 1 of type 1 with operator '==='
+%s:11 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 2 of type 2 with operator '==='
+%s:12 PhanSuspiciousValueComparison Suspicious attempt to compare 2 of type 2 to 3 of type 3 with operator '==='
+%s:17 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to 1 of type 1
+%s:18 PhanImpossibleTypeComparison Impossible attempt to check if $key of type string is identical to null of type null

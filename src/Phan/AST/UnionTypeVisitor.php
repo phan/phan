@@ -1158,7 +1158,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 if ($child->kind === ast\AST_UNPACK) {
-                    // Analyze PHP 7.4's array spread operator, e.g. `[$a, ...$array, $b]`
+                    // Analyze array spread operator, e.g. `[$a, ...$array, $b]`
                     [$new_union_type, $new_union_type_has_string_keys] = $this->analyzeUnpack($child, true);
                     if ($new_union_type_has_string_keys) {
                         $has_key = true;
@@ -1376,7 +1376,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // TODO: Warn if non-array
             return null;
         }
-        // e.g. `[$x, ...$array]` in PHP 7.4
+        // e.g. `[$x, ...$array]`
         // TODO: Support array expressions when their value is constant
         $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr, $this->should_catch_issue_exception);
         // TODO: Warn if non-array
@@ -1901,9 +1901,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isNonNullStringType()
             || ($union_type->canCastToUnionType($string_union_type, $code_base) && !$union_type->hasMixedOrNonEmptyMixedType())
         ) {
-            if (Config::get_closest_minimum_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
-                $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
-            }
             $this->checkIsValidStringOffset($union_type, $node, $dim_type);
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type, $code_base)) {
@@ -4389,19 +4386,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         return null;
-    }
-
-    // Precondition: minimum_target_php_version_id < 70100
-    private function analyzeNegativeStringOffsetCompatibility(Node $node, UnionType $dim_type): void
-    {
-        $dim_value = $dim_type->asSingleScalarValueOrNull();
-        if (!\is_int($dim_value) || $dim_value >= 0) {
-            return;
-        }
-        $this->emitIssue(
-            Issue::CompatibleNegativeStringOffset,
-            $node->children['dim']->lineno ?? $node->lineno
-        );
     }
 
     /**

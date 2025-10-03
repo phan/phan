@@ -66,8 +66,7 @@ function phan_output_ast_installation_instructions(): void
     }
     if (DIRECTORY_SEPARATOR === '\\') {
         // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
-        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-7.4-ts-vc15-x86.zip for php 7.4, 32-bit thread safe
-        // The older release https://pecl.php.net/package/ast/1.0.16/windows has releases for PHP 7.3 and 7.4
+        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.4-ts-vc15-x86.zip for php 8.4, 32-bit thread safe
         $version = LATEST_KNOWN_PHP_AST_VERSION;
         fprintf(
             STDERR,
@@ -81,6 +80,8 @@ function phan_output_ast_installation_instructions(): void
             PHP_INT_SIZE == 4 ? 'x86' : 'x64'
         );
         fwrite(STDERR, "(if that link doesn't work, check https://downloads.php.net/~windows/pecl/releases/ast/ )" . PHP_EOL);
+        fwrite(STDERR, "php-ast 1.0.14 is the minimum php-ast version needed for PHP 8.1+." . PHP_EOL);
+
         fwrite(STDERR, "To install php-ast, add php_ast.dll from the zip to $extension_dir," . PHP_EOL);
         fwrite(STDERR, "Then, enable php-ast by adding the following lines to your php.ini file at '$ini_path'" . PHP_EOL . PHP_EOL);
         if (!is_dir((string)$configured_extension_dir) && is_dir($new_extension_dir)) {
@@ -165,7 +166,7 @@ if (extension_loaded('ast')) {
         exit(1);
     }
     // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
-    if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID >= 80100 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
+    if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
         // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
         // But don't warn for upcoming versions without a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
@@ -442,19 +443,3 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
     exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');
-
-if (!class_exists(CompileError::class)) {
-    /**
-     * For self-analysis, add CompileError if it was not already declared.
-     *
-     * In PHP 7.3, a new CompileError class was introduced, and ParseError was turned into a subclass of CompileError.
-     *
-     * Phan handles both of those separately, so that Phan will work in 7.1+
-     *
-     * @suppress PhanRedefineClassInternal
-     */
-    // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
-    class CompileError extends Error
-    {
-    }
-}

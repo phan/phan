@@ -25,7 +25,7 @@ function test_cannot_pass_associative_to_list($a, $b) {
     call_user_func_array('var_dump', $a);
     // Should warn
     var_dump(...$a);
-    // For php 7.4, this should not warn, this renumbers the keys
+    // Should not warn, this renumbers the keys
     // return [...$a];
 }
 /**

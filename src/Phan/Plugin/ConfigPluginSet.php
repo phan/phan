@@ -938,7 +938,7 @@ final class ConfigPluginSet extends PluginV3 implements
                 return null;
             } catch (Throwable $e) {
                 // An unexpected error.
-                // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
+                // E.g. a plugin class threw a SyntaxError because it required PHP 8.3 or newer but 8.1 was used.
                 $message = \sprintf(
                     "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
                     $plugin_file_name,

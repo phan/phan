@@ -2,7 +2,14 @@ Phan NEWS
 
 TBD, Phan 6.0.0-dev
 -----------------------
-New features:
+Breaking changes:
+- Requires PHP 8.1+ to run (dropped PHP 8.0 support)
+- Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
+- The `-i` CLI option is now an alias of `--incremental` instead of `--ignore-undeclared`
+- Dropped support for (minimum) target PHP version < 8.1.
+- Renamed the `PhanPluginCanUsePHP71Void` issue to `PhanPluginCanUseVoidReturnType`
+
+New features (Analysis):
 - Full support for PHP 8.5 features:
   - #[NoDiscard] attribute support with detection of ignored return values (PhanNoDiscardReturnValueIgnored)
   - #[Override] attribute extended to properties (in addition to methods)
@@ -29,9 +36,15 @@ New features:
   - Type inference works correctly across method chains
   - Property and array access supported
 
-Breaking changes:
-- Requires PHP 8.1+ to run (dropped PHP 8.0 support)
-- Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
+New features (CLI):
+- Add an `-n` flag that can be used to skip reading the Phan configuration and analyze only the files specified as arguments.
+  Example: `phan -n test1.php test2.php`
+  This is useful for quick testing without setting up a full Phan configuration.
+- Added support for incremental analysis, where only changed files and their dependents
+  will be analyzed on subsequent runs. Significantly speeds up re-analysis.
+  - Add the `--incremental` / `-i` option that enables incremental analysis.
+  - Add the `--force-full-analysis` flag to force a full re-analysis of all files, ignoring the incremental analysis manifest.
+  - Add the `--no-incremental` / `-N` option that disables incremental analysis (useful if it was enabled in config.php).
 
 Bug fixes:
 - Fixed AST version 110/120 compatibility for PHP 8.4

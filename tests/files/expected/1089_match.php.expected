@@ -1,0 +1,5 @@
+%s:5 PhanTypeMismatchReturnReal Returning match ($x) { true => 'x', $x => 'y' } of type 'x'|'y' but test_match_value() is declared to return int
+%s:10 PhanNoopMatchArms This match expression only has the default arm in match ($x) {}
+%s:10 PhanTypeMismatchReturnReal Returning match ($x) {} of type void but test_match_value() is declared to return int
+%s:12 PhanNoopMatchArms This match expression only has the default arm in match ($x) { default => null }
+%s:12 PhanTypeMismatchReturnReal Returning match ($x) { default => null } of type null but test_match_value() is declared to return int

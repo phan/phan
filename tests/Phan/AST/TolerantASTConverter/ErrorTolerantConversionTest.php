@@ -482,11 +482,6 @@ EOT;
     private static function normalizePolyfillAST(ast\Node $ast): void
     {
         switch ($ast->kind) {
-            case ast\AST_DIM:
-                if (\PHP_VERSION_ID < 70400) {
-                    $ast->flags = 0;
-                }
-                break;
             case ast\AST_CLASS:
                 if (Config::AST_VERSION < 85) {
                     unset($ast->children['type']);

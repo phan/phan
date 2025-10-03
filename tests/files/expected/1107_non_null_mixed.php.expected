@@ -1,0 +1,1 @@
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type 'default'|\stdClass|bool|float|int|list<mixed>|string

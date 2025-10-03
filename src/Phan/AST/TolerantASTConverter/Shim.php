@@ -103,13 +103,13 @@ class Shim
             define('ast\flags\TYPE_TRUE', 3);
         }
         if (!defined('ast\flags\TYPE_STATIC')) {
-            define('ast\flags\TYPE_STATIC', \PHP_MAJOR_VERSION >= 80000 ? 15 : 20);
+            define('ast\flags\TYPE_STATIC', 15);
         }
         if (!defined('ast\flags\TYPE_MIXED')) {
-            define('ast\flags\TYPE_MIXED', \PHP_MAJOR_VERSION >= 80000 ? 16 : 21);
+            define('ast\flags\TYPE_MIXED', 16);
         }
         if (!defined('ast\flags\TYPE_NEVER')) {
-            define('ast\flags\TYPE_NEVER', \PHP_MAJOR_VERSION >= 80000 ? 17 : 22);
+            define('ast\flags\TYPE_NEVER', 17);
         }
         if (!defined('ast\flags\ENCAPS_VAR_DOLLAR_CURLY')) {
             define('ast\flags\ENCAPS_VAR_DOLLAR_CURLY', 1);

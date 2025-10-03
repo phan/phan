@@ -9,7 +9,6 @@ use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
@@ -170,16 +169,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             if ($result === true) {
                 return $json_decode_array_types;
             }
-            // Before PHP 7.2: $assoc was bool, true returned an array, false was meant to check the
-            //   JSON_OBJECT_AS_ARRAY flag. In practice though, the flag was always ignored:
-            //   https://www.php.net/manual/en/migration72.incompatible.php#migration72.incompatible.json_decode-changes
-            // Since PHP 7.2: $assoc is nullable, true returns array, false returns object, null checks the flag
+            // For $associative: true returns array, false returns object, null checks the JSON_OBJECT_AS_ARRAY flag
             if ($result === false) {
                 return $json_decode_object_types;
-            }
-            if (Config::get_closest_target_php_version_id() < 70200) {
-                // Null autocasts as false, anything else is unexpected. JSON_OBJECT_AS_ARRAY is ignored anyway.
-                return $result === null ? $json_decode_object_types : $json_decode_array_or_object_types;
             }
             if ($result !== null) {
                 // Unexpected value.
@@ -211,7 +203,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ): UnionType {
             // string|false json_encode ( mixed $value [, int $flags = 0 [, int $depth = 512 ]] )
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 2 || Config::get_closest_minimum_target_php_version_id() < 70300) {
+            if (count($args) < 2) {
                 return $string_or_false_real_type;
             }
             $resolved_flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
@@ -261,7 +253,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $unused_function,
             array $args
         ) use ($string_or_false_real_type): UnionType {
-            if (count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
+            if (count($args) === 0) {
                 return UnionType::fromFullyQualifiedPHPDocString('array<string,string>');
             }
             return $string_or_false_real_type;

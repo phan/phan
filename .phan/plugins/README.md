@@ -42,7 +42,7 @@ The following settings can be used in `.phan/config.php`:
 
 #### FFIAnalysisPlugin.php
 
-This is only necessary if you are using [PHP 7.4's FFI (Foreign Function Interface) support](https://wiki.php.net/rfc/ffi)
+This is only necessary if you are using [FFI (Foreign Function Interface) support](https://wiki.php.net/rfc/ffi)
 
 This makes Phan infer that assignments to variables that originally contained CData will continue to be CData.
 
@@ -144,7 +144,7 @@ Configuration settings can be added to `.phan/config.php`:
         // to use to analyze your files with PHP's native `--syntax-check`.
         //
         // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
-        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php83', 'php82']]`
         // if all of those programs can be found in $PATH
 
         // 'php_native_syntax_check_binaries' => [PHP_BINARY],
@@ -158,11 +158,11 @@ Configuration settings can be added to `.phan/config.php`:
 ```
 
 If you wish to make sure that analyzed files would be accepted by those PHP versions
-(Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
+(Requires that php83 and php82 be locatable with the `$PATH` environment variable)
 
 As of Phan 2.7.2, it is also possible to locally configure the PHP binary (or binaries) to run syntax checks with.
-e.g. `phan --native-syntax-check php --native-syntax-check /usr/bin/php7.4` would run checks both with `php` (resolved with `$PATH`)
-and the absolute path `/usr/bin/php7.4`. (see `phan --extended-help`)
+e.g. `phan --native-syntax-check php --native-syntax-check /usr/bin/php8.4` would run checks both with `php` (resolved with `$PATH`)
+and the absolute path `/usr/bin/php8.4`. (see `phan --extended-help`)
 
 #### UseReturnValuePlugin.php
 
@@ -421,7 +421,7 @@ This will significantly increase the memory used by Phan, but that's rarely an i
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
 - **PhanPluginBothLiteralsBinaryOp**: `Suspicious usage of a binary operator where both operands are literals. Expression: {CODE} {OPERATOR} {CODE} (result is {CODE})` (e.g. warns about `null == 'a literal` in `$x ?? null == 'a literal'`)
 - **PhanPluginDuplicateConditionalUnnecessary**: `"X ? Y : Y" results in the same expression Y no matter what X evaluates to. Y was {CODE}`
-- **PhanPluginDuplicateCatchStatementBody**: `The implementation of catch({CODE}) and catch({CODE}) are identical, and can be combined if the application only needs to supports php 7.1 and newer`
+- **PhanPluginDuplicateCatchStatementBody**: `The implementation of catch({CODE}) and catch({CODE}) are identical and can be combined`
 - **PhanPluginDuplicateAdjacentStatement**: `Statement {CODE} is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.`
 
   Note that equivalent catch statements may be deliberate or a coding style choice, and this plugin does not check for TODOs.
@@ -482,8 +482,8 @@ This doesn't suggest changes if classes have subclasses (but this check doesn't 
 This also supports `--automatic-fix` to add the types to the real type signatures.
 
 - **PhanPluginCanUseReturnType**: `Can use {TYPE} as a return type of {METHOD}`
-- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
-- **PhanPluginCanUsePHP71Void**: `Can use php 7.1's void as a return type of {METHOD}` (useful if there is a minimum php version of 7.1)
+- **PhanPluginCanUseNullableReturnType**: `Can use {TYPE} as a return type of {METHOD}`
+- **PhanPluginCanUseVoidReturnType**: `Can use {TYPE} as a return type of {METHOD}`
 
 This supports `--automatic-fix`.
 - `PHPDocRedundantPlugin` will be useful for cleaning up redundant phpdoc after real types were added.

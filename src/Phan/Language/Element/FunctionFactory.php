@@ -57,7 +57,7 @@ class FunctionFactory
 
         $real_return_type = self::getRealReturnTypeFromReflection($reflection_function);
         // @phan-suppress-next-line PhanUndeclaredMethod
-        if (\PHP_VERSION_ID >= 80100 && $reflection_function->hasTentativeReturnType()) {
+        if ($reflection_function->hasTentativeReturnType()) {
             $function->setHasTentativeReturnType();
         }
         if (Config::getValue('assume_real_types_for_internal_functions')) {
@@ -183,7 +183,7 @@ class FunctionFactory
         if ($class_name !== 'ServerResponse') {
             $method->setRealReturnType(self::getRealReturnTypeFromReflection($reflection_method));
             // @phan-suppress-next-line PhanUndeclaredMethod
-            if (\PHP_VERSION_ID >= 80100 && $reflection_method->hasTentativeReturnType()) {
+            if ($reflection_method->hasTentativeReturnType()) {
                 $method->setHasTentativeReturnType();
             }
             $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
@@ -198,7 +198,7 @@ class FunctionFactory
      */
     public static function getRealReturnTypeFromReflection(ReflectionFunctionAbstract $function): UnionType
     {
-        if (\PHP_VERSION_ID >= 80100 && $function->hasTentativeReturnType() && Config::getValue('use_tentative_return_type')) {
+        if ($function->hasTentativeReturnType() && Config::getValue('use_tentative_return_type')) {
             return UnionType::fromReflectionType($function->getTentativeReturnType());
         }
         return UnionType::fromReflectionType($function->getReturnType());

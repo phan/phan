@@ -1,0 +1,1 @@
+%s:13 PhanAttributeWrongTarget Saw use of attribute \MyParamAttrib declared at %s:4 which supports being declared on \Attribute::TARGET_PARAMETER but it was declared on public string $writtenViaPropertyPromotion which requires an attribute declared to support \Attribute::TARGET_PROPERTY

@@ -8,6 +8,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type;
+use Phan\Language\Type\VoidType;
 use Phan\Library\FileCacheEntry;
 use Phan\Phan;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
@@ -31,7 +32,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
     AutomaticFixCapability,
     BeforeAnalyzePhaseCapability
 {
-    private const CanUsePHP71Void = 'PhanPluginCanUsePHP71Void';
+    private const CanUseVoidReturnType = 'PhanPluginCanUseVoidReturnType';
     private const CanUseReturnType = 'PhanPluginCanUseReturnType';
     private const CanUseNullableReturnType = 'PhanPluginCanUseNullableReturnType';
     private const CanUseUnionReturnType = 'PhanPluginCanUseUnionReturnType';
@@ -52,7 +53,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
         $param_closure = Closure::fromCallable([Fixers::class, 'fixParamType']);
         $return_closure = Closure::fromCallable([Fixers::class, 'fixReturnType']);
         return [
-            self::CanUsePHP71Void => $return_closure,
+            self::CanUseVoidReturnType => $return_closure,
             self::CanUseReturnType => $return_closure,
             self::CanUseNullableReturnType => $return_closure,
             self::CanUseUnionReturnType => $return_closure,
@@ -140,18 +141,7 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
 
     private static function analyzeReturnTypeOfFunctionLike(CodeBase $code_base, FunctionInterface $method): void
     {
-        $union_type = $method->getUnionType();
-        if ($union_type->isVoidType()) {
-            self::emitIssue(
-                $code_base,
-                $method->getContext(),
-                self::CanUsePHP71Void,
-                'Can use php 7.1\'s {TYPE} as a return type of {METHOD}',
-                ['void', $method->getName()]
-            );
-            return;
-        }
-        $union_type = $union_type->asNormalizedTypes();
+        $union_type = $method->getUnionType()->asNormalizedTypes();
 
         if ($union_type->isEmpty()) {
             return;
@@ -166,7 +156,11 @@ class PHPDocToRealTypesPlugin extends PluginV3 implements
             $issue_type = self::CanUseUnionReturnType;
         } else {
             $type = $signature_type->getTypeSet()[0];
-            $issue_type = $type->isNullableLabeled() ? self::CanUseNullableReturnType : self::CanUseReturnType;
+            if ( $type instanceof VoidType ) {
+                $issue_type = self::CanUseVoidReturnType;
+            } else {
+                $issue_type = $type->isNullableLabeled() ? self::CanUseNullableReturnType : self::CanUseReturnType;
+            }
         }
         self::emitIssue(
             $code_base,

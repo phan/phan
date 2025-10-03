@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests;
 
 /**
- * Runs tests/files/src/0900+
+ * Runs tests/files/src/1100+
  *
  * The default type of test for Phan
  *
@@ -22,8 +22,8 @@ class PhanTestNew extends PhanTestCommon
              */
             static function (array $data): bool {
                 $expected_file = \basename($data[1]);
-                // Run everything except 0000-0899 (including tests starting with punctuation/letters if needed)
-                return !(\strcmp($expected_file, '0000') >= 0 && \strcmp($expected_file, '0900') < 0);
+                // Run everything except 0000-1099 (including tests starting with punctuation/letters if needed)
+                return !(\strcmp($expected_file, '0000') >= 0 && \strcmp($expected_file, '1100') < 0);
             }
         );
     }

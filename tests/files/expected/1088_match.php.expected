@@ -1,0 +1,1 @@
+%s:3 PhanNoopMatchExpression The result of this match expression is not used and the arms have no side effects (except for possibly throwing UnhandledMatchError) in match ($a) { true => 1, false => var_export($a, true) }

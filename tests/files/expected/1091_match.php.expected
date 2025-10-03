@@ -1,0 +1,3 @@
+%s:4 PhanUndeclaredVariable Variable $yes is undeclared
+%s:5 PhanInvalidNode Saw an invalid match arm with multiple default nodes
+%s:5 PhanUndeclaredVariable Variable $no is undeclared

@@ -177,8 +177,8 @@ EOT;
     private static function textForExample(array $example): string
     {
         [$record, $src_file_lineno, $expected_file_lineno] = $example;
-        $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v5/tests/', $record->src_filename);
-        $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v5/tests/', $record->expected_filename);
+        $src_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v6/tests/', $record->src_filename);
+        $expected_url = preg_replace('@.*/tests/@', 'https://github.com/phan/phan/tree/v6/tests/', $record->expected_filename);
 
         return <<<EOT
 e.g. [this issue]($expected_url#L$expected_file_lineno) is emitted when analyzing [this PHP file]($src_url#L$src_file_lineno).
@@ -204,7 +204,6 @@ EOT;
         $base = dirname(realpath(__DIR__), 3);
         $files = array_merge(
             glob($base . '/tests/files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/files/expected/*.php.expected80') ?: [],
             glob($base . '/tests/misc/ast/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/config_override_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/empty_methods_plugin_test/expected/*.php.expected') ?: [],
@@ -212,13 +211,10 @@ EOT;
             glob($base . '/tests/misc/intl_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/rewriting_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/misc/soap_test/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php70_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php72_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php73_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php74_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php80_files/expected/*.php.expected') ?: [],
-            glob($base . '/tests/php81_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/php82_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php83_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php84_files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/php85_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/plugin_test/expected/*.php.expected') ?: [],
             glob($base . '/tests/rasmus_files/expected/*.php.expected') ?: [],
             glob($base . '/tests/real_types_test/expected/*.php.expected') ?: []

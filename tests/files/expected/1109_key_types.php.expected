@@ -1,0 +1,4 @@
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array<string,int>(real=array)
+%s:11 PhanTypeMismatchArgument Argument 1 ($foo) is ['key'=>'value'] of type array{key:'value'} but \Test1109::__construct() takes array<string,int> defined at %s:9
+%s:16 PhanTypeMismatchDefault Default value for string $arg can't be 1
+%s:16 PhanTypeMismatchPropertyDefaultReal Default value for string $arg can't be 1 of type int

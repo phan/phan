@@ -1,0 +1,4 @@
+src/217_noreturn_control_flow_extra.php:10 PhanUnreferencedFunction Possibly zero references to function \test8()
+src/217_noreturn_control_flow_extra.php:15 PhanDebugAnnotation @phan-debug-var requested for variable $unknown - it has union type string(real=string)
+src/217_noreturn_control_flow_extra.php:15 PhanPluginNonBoolInLogicalArith Non bool value of type never in logical arithmetic
+src/217_noreturn_control_flow_extra.php:19 PhanPluginUnreachableCode Unreachable statement detected

@@ -60,10 +60,7 @@ class FuzzTest
     public static function main()
     {
         self::$basename = dirname(realpath(__DIR__));
-        $file_contents = array_merge(
-            self::readFileContents(self::$basename . '/tests/files/src'),
-            self::readFileContents(self::$basename . '/tests/php80_files/src')
-        );
+        $file_contents = self::readFileContents(self::$basename . '/tests/files/src');
         $tokens_for_files = array_map('token_get_all', $file_contents);
         for ($i = 0; true; $i++) {
             $new_tokens_for_files = [];

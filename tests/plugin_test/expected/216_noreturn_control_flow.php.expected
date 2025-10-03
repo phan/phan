@@ -1,0 +1,4 @@
+src/216_noreturn_control_flow.php:5 PhanThrowTypeAbsent \Example7::custom_throws() can throw new RuntimeException((__METHOD__ . ": {$message}")) of type \RuntimeException here, but has no '@throws' declarations for that class
+src/216_noreturn_control_flow.php:9 PhanThrowTypeAbsent \custom_throws() can throw new RuntimeException($message) of type \RuntimeException here, but has no '@throws' declarations for that class
+src/216_noreturn_control_flow.php:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($object) is $x of type array but \spl_object_hash() takes object
+src/216_noreturn_control_flow.php:18 PhanPluginUnreachableCode Unreachable statement detected

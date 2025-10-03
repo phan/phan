@@ -1,0 +1,2 @@
+%s:51 PhanTypeMismatchArgumentReal Argument 1 ($foo) is new \stdClass() of type \stdClass but \NS1112\e::questionA() takes ?\NS1112\a defined at %s:41
+%s:53 PhanTypeMismatchArgumentReal Argument 1 ($foo) is null of type null but \NS1112\e::aOrB() takes \NS1112\a|\NS1112\b defined at %s:31

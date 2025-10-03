@@ -1,0 +1,4 @@
+%s:7 PhanReadonlyPropertyMissingType Readonly property $readonlyMissingTypeDeclaration must have a declared type
+%s:10 PhanTypeMismatchPropertyReal Assigning $baz of type int to property but \NS1150\Foo->baz is string
+%s:13 PhanParamTooFew Call with 1 arg(s) to \NS1150\Foo::__construct(int $bar, int $baz) which requires 2 arg(s) defined at %s:8
+%s:14 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NS1150\Foo's property $bar declared at %s:5 (immutability of properties is enforced at runtime)

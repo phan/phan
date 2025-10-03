@@ -195,8 +195,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $string .= 'protected ';
         }
 
-        // For PHP 7.0 compatibility of stubs,
-        // show public class constants as 'const', not 'public const'.
+        // For simplicity, show public class constants as 'const', not 'public const'.
         // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ' . $this->name . ' = ';
         $fqsen = $this->fqsen->__toString();
