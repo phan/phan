@@ -715,13 +715,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $method_name = $method;
         }
         // Look for the class and method
-        $class_fqsen = null;
-        $normalized_class_name = \is_string($class_name) ? \strtolower($class_name) : '';
+        $normalized_class_name = \strtolower($class_name);
         if ($normalized_class_name === 'self' || $normalized_class_name === 'static') {
             $class_fqsen = $this->context->getClassFQSENOrNull();
-            if ($class_fqsen === null) {
-                return self::STATUS_PROCEED;
-            }
         } elseif ($normalized_class_name === 'parent') {
             try {
                 $class = $this->context->getClassInScope($this->code_base);
@@ -745,7 +741,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_PROCEED;
             }
         }
-        if ($class_fqsen === null) {
+        if (!isset($class_fqsen) || $class_fqsen === null) {
             return self::STATUS_PROCEED;
         }
         $method_fqsen = FullyQualifiedMethodName::make(
