@@ -1028,6 +1028,12 @@ class CLI
 
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
+
+        $no_config_mode = array_key_exists('n', $opts) || array_key_exists('no-config-file', $opts);
+        if ($no_config_mode) {
+            $this->file_list_only = true;
+        }
+
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
             $this->file_list_in_config = \array_merge(
@@ -1040,10 +1046,7 @@ class CLI
         }
 
         // Handle positional file arguments (especially useful with -n flag)
-        if (array_key_exists('n', $opts)) {
-            // Mark it so we only analyze the specified files
-            $this->file_list_only = true;
-
+        if ($no_config_mode) {
             // Extract positional arguments from $argv
             // PHP's getopt doesn't provide a way to get remaining args, so we parse manually
             $positional_args = [];
@@ -1421,7 +1424,7 @@ class CLI
      */
     public function recomputeFileList(): void
     {
-        $this->file_list = $this->file_list_in_config;
+        $this->file_list = self::uniqueFileList($this->file_list_in_config);
 
         if (!$this->file_list_only) {
             // Merge in any files given in the config
