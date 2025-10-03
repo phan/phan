@@ -35,6 +35,10 @@ New features (Analysis):
 - Full support for "new without parentheses" syntax (e.g., `new MyClass()->method()`)
   - Type inference works correctly across method chains
   - Property and array access supported
+- Multiline doc comments for `@param`, `@var`, and `@return`
+  - Doc comment parsing now normalizes multi-line `@param`, `@var`, and `@return`
+    annotations before analysis, allowing nested array/generic syntax to be laid out
+    across several lines without being misinterpreted.
 
 New features (CLI):
 - Add an `-n` flag that can be used to skip reading the Phan configuration and analyze only the files specified as arguments.
@@ -4729,4 +4733,3 @@ Please use version 0.8.x if you're using a version of PHP < 7.1.
 For best results, run version 0.8.x with PHP 7.0 if you are analyzing a codebase which normally runs on php <= 7.0
 (If php 7.1 is used, Phan will think that some new classes, methods, and functions exist or have different parameter lists because it gets this info from `Reflection`)
 
-???
