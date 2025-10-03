@@ -39,6 +39,8 @@ New features (Analysis):
   - Doc comment parsing now normalizes multi-line `@param`, `@var`, and `@return`
     annotations before analysis, allowing nested array/generic syntax to be laid out
     across several lines without being misinterpreted.
+  - `PHPDocRedundantPlugin` now flags redundant `@var` annotations on typed
+    properties, matching its existing coverage for functions and methods.
 
 New features (CLI):
 - `-n`/`--no-config-file` implicitly limits analysis to just the files provided
