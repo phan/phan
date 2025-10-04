@@ -1603,6 +1603,17 @@ class ContextNode
         $class_without_property = null;
         $property = null;
         $properties = [];
+        $expr_node = $node->children['expr'] ?? $node->children['class'] ?? null;
+        $expr_union_type = null;
+        if ($expr_node instanceof Node) {
+            $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node
+            );
+        }
+        $expr_is_this = !$is_static && $expr_node instanceof Node && $expr_node->kind === ast\AST_VAR && (($expr_node->children['name'] ?? null) === 'this');
+        $expr_has_static_type = $expr_union_type ? $expr_union_type->hasStaticType() : false;
         foreach ($class_list as $class) {
             $class_fqsen = $class->getFQSEN();
 
@@ -1632,7 +1643,9 @@ class ContextNode
                     );
                 }
 
-                $class_without_property = $class;
+                if (!($class->isInterface() && $expr_is_this && $expr_has_static_type)) {
+                    $class_without_property = $class;
+                }
                 continue;
             }
             if ($properties && $should_return_first_match) {
@@ -1695,20 +1708,31 @@ class ContextNode
             self::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $node, $property_name);
         }
         if ($properties) {
-            if ($class_without_property && Config::get_strict_object_checking() &&
+            if ($class_without_property instanceof Clazz && Config::get_strict_object_checking() &&
                     !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) &&
                     $node->kind !== ast\AST_NULLSAFE_PROP) {
-                $this->emitIssue(
-                    Issue::PossiblyUndeclaredPropertyOfClass,
-                    $node->lineno,
-                    $property_name,
-                    UnionTypeVisitor::unionTypeFromNode(
-                        $this->code_base,
-                        $this->context,
-                        $node->children['expr'] ?? $node->children['class']
-                    ),
-                    $class_without_property->getFQSEN()
-                );
+                $union_type_for_issue = $expr_union_type;
+                if ($union_type_for_issue === null) {
+                    $expr_or_class = $node->children['expr'] ?? $node->children['class'];
+                    if ($expr_or_class instanceof Node) {
+                        $union_type_for_issue = UnionTypeVisitor::unionTypeFromNode(
+                            $this->code_base,
+                            $this->context,
+                            $expr_or_class
+                        );
+                    } else {
+                        $union_type_for_issue = UnionType::empty();
+                    }
+                }
+                if (!($class_without_property->isInterface() && $expr_is_this && $expr_has_static_type)) {
+                    $this->emitIssue(
+                        Issue::PossiblyUndeclaredPropertyOfClass,
+                        $node->lineno,
+                        $property_name,
+                        $union_type_for_issue,
+                        $class_without_property->getFQSEN()
+                    );
+                }
             }
             return $properties;
         }

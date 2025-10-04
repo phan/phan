@@ -18,10 +18,15 @@ var_export($doubles_input(21));
 class C {
     public function __construct( int $a, string $b, ?bool $c ) {
         echo $c ? $a : $b;
+        $this->count = $a;
     }
     public static function f($value) : void {
         var_export($value);
     }
+
+    /** @var int */
+    public int $count = 0;
 }
 
 C::f('F');
+var_export((new C(1, 'b', true))->count);

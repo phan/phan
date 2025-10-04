@@ -75,7 +75,7 @@ gh pr create --base v6 --title "Your PR title" --body "PR description"
 ./phan -n test1.php test2.php
 
 # Analyze a single PHP file with AST dump
-./dump_ast.php <file.php>
+tools/dump_ast.php --json <file.php>
 
 # Interactive REPL for testing Phan internals
 php tool/phan_repl_helpers.php

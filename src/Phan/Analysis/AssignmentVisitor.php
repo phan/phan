@@ -85,6 +85,9 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private $assignment_node;
 
+    /** @var bool suppress property mismatch warnings when refining nested fields */
+    private $suppress_dim_property_mismatch;
+
     /**
      * @param CodeBase $code_base
      * The global code base we're operating within
@@ -114,7 +117,8 @@ class AssignmentVisitor extends AnalysisVisitor
         Node $assignment_node,
         UnionType $right_type,
         int $dim_depth = 0,
-        ?UnionType $dim_type = null
+        ?UnionType $dim_type = null,
+        bool $suppress_dim_property_mismatch = false
     ) {
         parent::__construct($code_base, $context);
 
@@ -122,6 +126,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
         $this->assignment_node = $assignment_node;
+        $this->suppress_dim_property_mismatch = $suppress_dim_property_mismatch;
     }
 
     /**
@@ -911,7 +916,8 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->assignment_node,
             $right_type,
             $this->dim_depth + 1,
-            $dim_type
+            $dim_type,
+            $this->suppress_dim_property_mismatch
         ))->__invoke($expr_node);
 
         return $context;
@@ -1003,6 +1009,16 @@ class AssignmentVisitor extends AnalysisVisitor
         $property = null;
         $class_with_property = null;
         $class_without_property = null;
+        $expr_union_type = null;
+        $expr_has_static_type = false;
+        if ($expr_node instanceof Node) {
+            $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node
+            );
+            $expr_has_static_type = $expr_union_type->hasStaticType();
+        }
         foreach ($class_list as $clazz) {
             if ($clazz->isPropertyImmutableFromContext($this->code_base, $this->context, $property_name)) {
                 $this->emitTypeModifyImmutableObjectPropertyIssue($clazz, $property_name, $node);
@@ -1012,7 +1028,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
                 if (!$clazz->hasMethodWithName($this->code_base, '__set', true)) {
-                    $class_without_property = $clazz;
+                    if (!($clazz->isInterface() && $expr_node instanceof Node && $expr_node->kind === \ast\AST_VAR && $expr_node->children['name'] === 'this' && $expr_has_static_type)) {
+                        $class_without_property = $clazz;
+                    }
                     continue;
                 }
             }
@@ -1039,17 +1057,19 @@ class AssignmentVisitor extends AnalysisVisitor
 
         if ($property && $class_with_property) {
             if ($class_without_property && Config::get_strict_object_checking()) {
-                $this->emitIssue(
-                    Issue::PossiblyUndeclaredPropertyOfClass,
-                    $node->lineno,
-                    $property_name,
-                    UnionTypeVisitor::unionTypeFromNode(
-                        $this->code_base,
-                        $this->context,
-                        $node->children['expr'] ?? $node->children['class']
-                    ),
-                    $class_without_property->getFQSEN()
-                );
+                if (!($class_without_property->isInterface() && $expr_node instanceof Node && $expr_node->kind === \ast\AST_VAR && $expr_node->children['name'] === 'this' && $expr_has_static_type)) {
+                    $this->emitIssue(
+                        Issue::PossiblyUndeclaredPropertyOfClass,
+                        $node->lineno,
+                        $property_name,
+                        $expr_union_type ?? UnionTypeVisitor::unionTypeFromNode(
+                            $this->code_base,
+                            $this->context,
+                            $node->children['expr'] ?? $node->children['class']
+                        ),
+                        $class_without_property->getFQSEN()
+                    );
+                }
             }
             try {
                 return $this->analyzePropAssignment($class_with_property, $property, $node);
@@ -1263,6 +1283,9 @@ class AssignmentVisitor extends AnalysisVisitor
             return;
         }
         if (self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type)) {
+            if ($this->suppress_dim_property_mismatch && $this->dim_depth > 0) {
+                return;
+            }
             $this->emitIssue(
                 Issue::TypeMismatchPropertyReal,
                 $node->lineno,
@@ -1290,6 +1313,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 $property_union_type,
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($property_union_type)
             );
+            return;
+        }
+        if ($this->suppress_dim_property_mismatch && $this->dim_depth > 0) {
             return;
         }
         $this->emitIssue(

@@ -721,7 +721,10 @@ trait ConditionVisitorUtil
                 // There is a difference between `if (is_string($x['field']))` and `$x['field'] = remove_string_types($x['field'])` for the way the `elseif` should be analyzed.
                 $context->withClonedScope(),
                 $node,
-                $new_field_type
+                $new_field_type,
+                0,
+                null,
+                true
             ))->__invoke($node);
         } catch (IssueException $exception) {
             if (!$suppress_issues) {
@@ -1554,7 +1557,10 @@ trait ConditionVisitorUtil
             // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
             $context->withClonedScope(),
             $node,
-            $new_field_type
+            $new_field_type,
+            0,
+            null,
+            true
         ))->__invoke($node);
     }
 
