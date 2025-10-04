@@ -31,8 +31,10 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyArrayInterface;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -1185,6 +1187,9 @@ final class ArgumentType
 
             // See if the argument can be cast to the parameter.
             if ($argument_type_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
+                if (self::hasIncompatibleEmptyAndNonEmptyArray($code_base, $argument_type_resolved, $alternate_parameter_type)) {
+                    continue;
+                }
                 if ($alternate_parameter_type->hasRealTypeSet() && $argument_type->hasRealTypeSet()) {
                     $real_parameter_type = $alternate_parameter_type->getRealUnionType();
                     $real_argument_type = $argument_type->getRealUnionType();
@@ -1302,6 +1307,55 @@ final class ArgumentType
     private static function hasTemplateTypeFromFunctionRecursive(UnionType $union_type, FunctionInterface $function): bool {
         foreach ($union_type->getTypesRecursively() as $type) {
             if ($type instanceof TemplateType && $function->declaresTemplateTypeInComment($type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static function hasIncompatibleEmptyAndNonEmptyArray(CodeBase $code_base, UnionType $argument_type, UnionType $parameter_type): bool
+    {
+        if ($parameter_type->typeCount() !== 1) {
+            return false;
+        }
+        $param_type = $parameter_type->getTypeSet()[0] ?? null;
+        if (!($param_type instanceof GenericArrayType)) {
+            return false;
+        }
+        $types = $argument_type->getTypeSet();
+        if (count($types) !== 2) {
+            return false;
+        }
+        $saw_empty_array = false;
+        $non_empty_array = null;
+        foreach ($types as $type) {
+            if ($type instanceof ArrayShapeType && !$type->getFieldTypes()) {
+                $saw_empty_array = true;
+                continue;
+            }
+            if ($type instanceof NonEmptyArrayInterface) {
+                if ($non_empty_array !== null) {
+                    return false;
+                }
+                $non_empty_array = $type;
+                continue;
+            }
+            return false;
+        }
+        if (!$saw_empty_array || !$non_empty_array) {
+            return false;
+        }
+        $possibly_empty = $non_empty_array->asPossiblyEmptyArrayType();
+        if (!($possibly_empty instanceof GenericArrayType)) {
+            return false;
+        }
+        if ($possibly_empty->getKeyType() !== $param_type->getKeyType()) {
+            return false;
+        }
+        $element_union = $possibly_empty->genericArrayElementUnionType();
+        $target_element_union = $param_type->genericArrayElementUnionType();
+        if (!$element_union->canCastToUnionType($target_element_union, $code_base)) {
+            if (!$target_element_union->canCastToUnionType($element_union, $code_base)) {
                 return true;
             }
         }

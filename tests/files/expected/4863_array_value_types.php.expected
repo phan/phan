@@ -1,0 +1,2 @@
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type array{}|non-empty-associative-array<int,\stdClass>(real=array{}|non-empty-associative-array<int,\stdClass>)
+%s:19 PhanTypeMismatchArgument Argument 1 ($bar) is $var of type array{}|non-empty-associative-array<int,\stdClass> but \myFunc() takes array<int,string> defined at %s:6
