@@ -1703,12 +1703,14 @@ class ContextNode
             }
         }
         if (!$is_static && Config::get_strict_object_checking() &&
-                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) &&
+                $node->kind !== ast\AST_NULLSAFE_PROP) {
             self::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $node, $property_name);
         }
         if ($properties) {
             if ($class_without_property instanceof Clazz && Config::get_strict_object_checking() &&
-                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                    !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) &&
+                    $node->kind !== ast\AST_NULLSAFE_PROP) {
                 $union_type_for_issue = $expr_union_type;
                 if ($union_type_for_issue === null) {
                     $expr_or_class = $node->children['expr'] ?? $node->children['class'];
