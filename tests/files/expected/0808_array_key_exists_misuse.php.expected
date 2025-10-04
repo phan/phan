@@ -1,3 +1,3 @@
 %s:15 PhanImpossibleTypeComparison Impossible attempt to check if null of type null is identical to keys of $others of type int|string
 %s:15 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($key) is null of type null but \array_key_exists() takes int|string
-%s:21 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to keys of DEFAULT_SETTINGS of type string
+%s:21 PhanImpossibleTypeComparison Impossible attempt to check if $i of type int is identical to keys of DEFAULT_SETTINGS of type 'blocking'|'timeout'

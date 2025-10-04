@@ -224,6 +224,18 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (\count($this->field_types) === 0) {
             return UnionType::empty();
         }
+        $union_type_builder = new UnionTypeBuilder();
+        foreach ($this->field_types as $key => $_) {
+            if (\is_string($key)) {
+                $union_type_builder->addType(LiteralStringType::instanceForValue($key, false));
+                continue;
+            }
+            $union_type_builder->addType(LiteralIntType::instanceForValue($key, false));
+        }
+        $literal_key_types = $union_type_builder->getTypeSet();
+        if ($literal_key_types) {
+            return UnionType::of($literal_key_types);
+        }
         return GenericArrayType::unionTypeForKeyType($this->getKeyType());
     }
 

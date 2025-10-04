@@ -65,6 +65,7 @@ use function count;
 use function implode;
 use function in_array;
 use function is_int;
+use function preg_match;
 use function substr;
 
 /**
@@ -4003,11 +4004,21 @@ class UnionType implements Serializable, Stringable
                     $key_union_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
                 } else {
                     foreach ($key_union_type->getTypeSet() as $key_type) {
-                        if ($key_type instanceof StringType && $key_type->isPossiblyNumeric()) {
-                            // Numeric literals such as `'0'` cast to 0 when inserted as array keys.
-                            $new_real_type_builder->addType(IntType::instance(false));
-                            break;
+                        if (!($key_type instanceof StringType)) {
+                            continue;
                         }
+                        if ($key_type instanceof LiteralStringType) {
+                            $value = $key_type->getValue();
+                            if (!preg_match('/^[-+]?[0-9]+$/D', $value)) {
+                                // Strings with decimals or other characters remain strings as array keys.
+                                continue;
+                            }
+                        } elseif (!$key_type->isPossiblyNumeric()) {
+                            continue;
+                        }
+                        // Numeric literals such as `'0'` cast to 0 when inserted as array keys.
+                        $new_real_type_builder->addType(IntType::instance(false));
+                        break;
                     }
                 }
             }

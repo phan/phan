@@ -1471,6 +1471,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0669
 Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4951_array_key_literal.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4951_array_key_literal.php#L34).
 
 ## PhanUseConstantNoEffect
 
