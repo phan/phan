@@ -10,6 +10,7 @@ use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\RedundantCondition;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -17,6 +18,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\FalseType;
@@ -24,11 +26,16 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
+use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV3\PreAnalyzeNodeCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 
 use function count;
+use function is_string;
+use function strcasecmp;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -40,8 +47,17 @@ use function count;
  * @phan-file-suppress PhanUnusedClosureParameter
  */
 final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
-    ReturnTypeOverrideCapability
+    ReturnTypeOverrideCapability,
+    PreAnalyzeNodeCapability
 {
+
+    /**
+     * @return class-string<PluginAwarePreAnalysisVisitor>
+     */
+    public static function getPreAnalyzeNodeVisitorClassName(): string
+    {
+        return ArrayReturnTypeOverridePreAnalysisVisitor::class;
+    }
 
     /**
      * @return array<string,\Closure>
@@ -362,6 +378,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return $real_nullable_array;
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
+            foreach ($function_like_list as $mapping_function) {
+                $mapping_node = $mapping_function->getNode();
+                if ($mapping_node instanceof Node) {
+                    /** @phan-suppress-next-line PhanUndeclaredProperty */
+                    if (isset($mapping_node->__phan_skip_param_too_few_unpack)) {
+                        /** @phan-suppress-next-line PhanUndeclaredProperty */
+                        unset($mapping_node->__phan_skip_param_too_few_unpack);
+                    }
+                }
+            }
             if (\count($function_like_list) === 0) {
                 return $array_map_function->getUnionType();
             }
@@ -393,7 +419,90 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     return $cache[$i];
                 }
                 // Convert T[] to T
-                $argument_type = $get_argument_type($argument, $i)->genericArrayElementTypes(true, $code_base);
+                $array_union_type = $get_argument_type($argument, $i);
+                $argument_type = $array_union_type->genericArrayElementTypes(true, $code_base);
+
+                // Fix for issue #4872: When element types are arrays themselves, check if the
+                // source arrays are definitely non-empty. If so, convert generic array element
+                // types to non-empty variants to allow proper unpacking validation.
+                if (!$argument_type->hasArrayLike($code_base)) {
+                    // Element type is not an array, no need to check for non-empty
+                    $cache[$i] = $argument_type;
+                    return $argument_type;
+                }
+                // Check if all source arrays in the union are definitely non-empty
+                $all_non_empty = true;
+                foreach ($array_union_type->getTypeSet() as $type) {
+                    if ($type instanceof ArrayType) {
+                        // Check if this array type is definitely non-empty
+                        // ArrayShapeType and GenericArrayType both have isDefinitelyNonEmptyArray()
+                        if ($type instanceof ArrayShapeType || $type instanceof GenericArrayType) {
+                            $is_non_empty = $type->isDefinitelyNonEmptyArray();
+                            if (!$is_non_empty) {
+                                // Array might be empty
+                                $all_non_empty = false;
+                                break;
+                            }
+                        } else {
+                            // Plain ArrayType without shape/size info - might be empty
+                            $all_non_empty = false;
+                            break;
+                        }
+                    } else {
+                        // Non-array type in union
+                        $all_non_empty = false;
+                        break;
+                    }
+                }
+
+                // If the source arrays are definitely non-empty, ensure array element types
+                // are also marked as non-empty (preserves info for unpacking validation)
+                if ($all_non_empty) {
+                    $new_types = [];
+                    foreach ($argument_type->getTypeSet() as $element_type) {
+                        if ($element_type instanceof ArrayShapeType) {
+                            if ($element_type->isDefinitelyNonEmptyArray()) {
+                                $new_types[] = $element_type->asPHPDocUnionType();
+                            } else {
+                                $element_union = $element_type->genericArrayElementUnionType();
+                                $new_types[] = $element_union->asMappedUnionType(static function (Type $type): Type {
+                                    return NonEmptyListType::fromElementType($type, false);
+                                });
+                            }
+                            continue;
+                        }
+                        if ($element_type instanceof GenericArrayType) {
+                            if ($element_type->isDefinitelyNonEmptyArray()) {
+                                $new_types[] = $element_type->asPHPDocUnionType();
+                            } else {
+                                $key_type = $element_type instanceof AssociativeArrayType
+                                    ? GenericArrayType::KEY_MIXED
+                                    : GenericArrayType::KEY_INT;
+                                $new_types[] = $element_type->genericArrayElementUnionType()->asNonEmptyGenericArrayTypes($key_type);
+                            }
+                            continue;
+                        }
+                        if ($element_type instanceof ArrayType) {
+                            // Plain ArrayType - treat as list<mixed> and convert to non-empty-list
+                            $new_types[] = MixedType::instance(false)
+                                ->asPHPDocUnionType()
+                                ->asMappedUnionType(static function (Type $type): Type {
+                                    return NonEmptyListType::fromElementType($type, false);
+                                });
+                            continue;
+                        }
+                    }
+                    if ($new_types) {
+                        $argument_type = UnionType::of(\array_merge(...\array_map(
+                            /** @return array<int, Type> */
+                            static function (UnionType $t): array {
+                                return $t->getTypeSet();
+                            },
+                            $new_types
+                        )));
+                    }
+                }
+
                 $cache[$i] = $argument_type;
                 return $argument_type;
             };
@@ -793,5 +902,41 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             $overrides = self::getReturnTypeOverridesStatic();
         }
         return $overrides;
+    }
+}
+
+/**
+ * Pre-analysis visitor that marks array_map callbacks so that unpack warnings can be deferred
+ * until the callback body has been re-analyzed with concrete element types.
+ */
+final class ArrayReturnTypeOverridePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
+{
+    public function visitCall(Node $node): void
+    {
+        $expr = $node->children['expr'] ?? null;
+        if (!$expr instanceof Node || $expr->kind !== \ast\AST_NAME) {
+            return;
+        }
+        $name = $expr->children['name'] ?? null;
+        if (!is_string($name) || strcasecmp($name, 'array_map') !== 0) {
+            return;
+        }
+        $args = $node->children['args'] ?? null;
+        if (!$args instanceof Node) {
+            return;
+        }
+        $first_arg = $args->children[0] ?? null;
+        if ($first_arg instanceof Node && ($first_arg->kind === \ast\AST_CLOSURE || $first_arg->kind === \ast\AST_ARROW_FUNC)) {
+            try {
+                $closure_func = (new ContextNode($this->code_base, $this->context, $first_arg))->getClosure();
+            } catch (\Throwable) {
+                return;
+            }
+            $closure_node = $closure_func->getNode();
+            if ($closure_node instanceof Node) {
+                /** @phan-suppress-next-line PhanUndeclaredProperty */
+                $closure_node->__phan_skip_param_too_few_unpack = true;
+            }
+        }
     }
 }

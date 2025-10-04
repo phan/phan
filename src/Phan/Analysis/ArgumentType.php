@@ -90,6 +90,7 @@ final class ArgumentType
         $arglist = $node->children['args'];
         $arglist_children = $arglist->children ?? [];
         $is_unpack = self::isUnpack($arglist_children);
+        $has_unpack = $is_unpack;
         $argcount = count($arglist_children);
         if ($is_unpack) {
             // If we don't know the exact argument count, treat this like an unpacking
@@ -107,7 +108,9 @@ final class ArgumentType
             }
 
             if (!$alternate_found) {
-                if ($method->isPHPInternal()) {
+                if ($has_unpack && self::shouldSuppressParamTooFewUnpack($code_base, $context)) {
+                    // Defer emitting ParamTooFewUnpack until the callable is re-analyzed with concrete argument types.
+                } elseif ($method->isPHPInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -366,6 +369,21 @@ final class ArgumentType
             }
         }
         return [$total, $has_unknown];
+    }
+
+    private static function shouldSuppressParamTooFewUnpack(CodeBase $code_base, Context $context): bool
+    {
+        if (!$context->isInFunctionLikeScope()) {
+            return false;
+        }
+        $function_like = $context->getFunctionLikeInScope($code_base);
+        $node = $function_like->getNode();
+        if (!$node instanceof Node) {
+            return false;
+        }
+        // Suppress because we intentionally set this dynamic analyzer flag in a plugin.
+        /** @phan-suppress-next-line PhanUndeclaredProperty */
+        return !empty($node->__phan_skip_param_too_few_unpack);
     }
 
     /**
