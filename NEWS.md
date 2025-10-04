@@ -1,5 +1,39 @@
 Phan NEWS
 
+October 4 2025, Phan 5.5.2
+-----------------------
+New features:
+- Add some PHP 8.5 compatibility support - full support will be in Phan 6.x
+
+Bug fixes:
+- Fix never-return type narrowing [#5078](https://github.com/phan/phan/pull/5078)
+- Fix issue #5063: Handle edge cases in type analysis
+- Fix issue #5074: Type inference improvements
+- Handle intersection types in `@throws` annotations [#5073](https://github.com/phan/phan/pull/5073)
+- Fix SelfType instantiation for class constants [#5057](https://github.com/phan/phan/issues/5057)
+- Map overridden method types before inheriting them [#5068](https://github.com/phan/phan/pull/5068)
+- Resolve `static` before emitting PhanTypeMismatchReturn [#5067](https://github.com/phan/phan/pull/5067)
+- Complain about ArrayObject/ArrayIterator with objects [#5064](https://github.com/phan/phan/pull/5064)
+- Allow `@extends`/`@inherits` in PHPDoc on traits again [#5061](https://github.com/phan/phan/pull/5061)
+- Normalize generic multi-type elements before expanding them [#5059](https://github.com/phan/phan/pull/5059)
+- Use `mixed` instead of empty union to substitute unspecified template types [#5058](https://github.com/phan/phan/pull/5058)
+- Flag 'catch' variables declared as unused in PHP 8 [#5050](https://github.com/phan/phan/pull/5050)
+- Fixed -l handling to support one or multiple files [#5056](https://github.com/phan/phan/pull/5056)
+- Add hash options argument to the 8.1 function signature delta map [#5048](https://github.com/phan/phan/pull/5048)
+- Increase max recursion depth in asExpandedTypes [#5046](https://github.com/phan/phan/pull/5046)
+- Infer more partial types for array union [#5047](https://github.com/phan/phan/pull/5047)
+- Restore compatibility with older php-ast [#5045](https://github.com/phan/phan/pull/5045)
+- Consider ClosureType as callable in CallableParamPlugin [#5041](https://github.com/phan/phan/pull/5041)
+- Move code for complex callables from ContextNode to UnionTypeVisitor [#5039](https://github.com/phan/phan/pull/5039)
+- Respect log_error for invalid maybe-callable FQSENs [#5038](https://github.com/phan/phan/pull/5038)
+- Emit issues for duplicate `@template` annotations [#5082](https://github.com/phan/phan/pull/5082)
+
+Plugins:
+- UseReturnValuePlugin: support `#[\NoDiscard]` attribute [#5051](https://github.com/phan/phan/pull/5051)
+
+Maintenance:
+- Update php-ast to 1.1.3 [#5042](https://github.com/phan/phan/pull/5042)
+
 August 6 2025, Phan 5.5.1
 -----------------------
 New features:
