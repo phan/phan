@@ -1,0 +1,1 @@
+%s:5 PhanTypeArraySuspicious Suspicious array access to $this->p of type int

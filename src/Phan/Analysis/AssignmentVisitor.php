@@ -85,6 +85,9 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private $assignment_node;
 
+    /** @var bool suppress property mismatch warnings when refining nested fields */
+    private $suppress_dim_property_mismatch;
+
     /**
      * @param CodeBase $code_base
      * The global code base we're operating within
@@ -114,7 +117,8 @@ class AssignmentVisitor extends AnalysisVisitor
         Node $assignment_node,
         UnionType $right_type,
         int $dim_depth = 0,
-        ?UnionType $dim_type = null
+        ?UnionType $dim_type = null,
+        bool $suppress_dim_property_mismatch = false
     ) {
         parent::__construct($code_base, $context);
 
@@ -122,6 +126,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
         $this->assignment_node = $assignment_node;
+        $this->suppress_dim_property_mismatch = $suppress_dim_property_mismatch;
     }
 
     /**
@@ -911,7 +916,8 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->assignment_node,
             $right_type,
             $this->dim_depth + 1,
-            $dim_type
+            $dim_type,
+            $this->suppress_dim_property_mismatch
         ))->__invoke($expr_node);
 
         return $context;
@@ -1263,6 +1269,9 @@ class AssignmentVisitor extends AnalysisVisitor
             return;
         }
         if (self::isRealMismatch($this->code_base, $property->getRealUnionType(), $resolved_right_type)) {
+            if ($this->suppress_dim_property_mismatch && $this->dim_depth > 0) {
+                return;
+            }
             $this->emitIssue(
                 Issue::TypeMismatchPropertyReal,
                 $node->lineno,
@@ -1290,6 +1299,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 $property_union_type,
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($property_union_type)
             );
+            return;
+        }
+        if ($this->suppress_dim_property_mismatch && $this->dim_depth > 0) {
             return;
         }
         $this->emitIssue(
