@@ -9,6 +9,7 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\Phan;
@@ -16,6 +17,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use PHPDocRedundantPlugin\Fixers;
 
@@ -36,6 +38,7 @@ use PHPDocRedundantPlugin\Fixers;
 class PHPDocRedundantPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzePropertyCapability,
     AutomaticFixCapability
 {
     private const RedundantFunctionComment = 'PhanPluginRedundantFunctionComment';
@@ -43,6 +46,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
     private const RedundantMethodComment = 'PhanPluginRedundantMethodComment';
     private const RedundantParameterListComment = 'PhanPluginRedundantParameterListComment';
     private const RedundantReturnComment = 'PhanPluginRedundantReturnComment';
+    private const RedundantPropertyComment = 'PhanPluginRedundantPropertyComment';
 
     public function analyzeFunction(CodeBase $code_base, Func $function): void
     {
@@ -58,6 +62,25 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             return;
         }
         self::analyzeFunctionLike($code_base, $method);
+    }
+
+    public function analyzeProperty(CodeBase $code_base, Property $property): void
+    {
+        if ($property->isPHPInternal()) {
+            return;
+        }
+        $comment_str = $property->getDocComment();
+        if (!StringUtil::isNonZeroLengthString($comment_str)) {
+            return;
+        }
+        $comment = Comment::fromStringInContext(
+            $comment_str,
+            $code_base,
+            $property->getContext(),
+            $property->getContext()->getLineNumberStart(),
+            Comment::ON_PROPERTY
+        );
+        self::checkPropertyComment($code_base, $property, $comment, $comment_str);
     }
 
     /**
@@ -239,6 +262,73 @@ class PHPDocRedundantPlugin extends PluginV3 implements
                 [$method->getName(), $encoded_comment]
             );
         }
+    }
+
+    private static function checkPropertyComment(CodeBase $code_base, Property $property, Comment $comment, string $comment_str): void
+    {
+        $var_comments = $comment->getVariableList();
+        if (count($var_comments) !== 1) {
+            return;
+        }
+        if (!self::commentHasSingleVarAnnotation($comment_str)) {
+            return;
+        }
+        /** @var CommentParameter $var_comment */
+        $var_comment = $var_comments[0];
+        $var_name = ltrim($var_comment->getName(), '$');
+        if ($var_name !== '' && $var_name !== $property->getName()) {
+            return;
+        }
+        $doc_type = $var_comment->getUnionType()->asNormalizedTypes();
+        if ($doc_type->isEmpty()) {
+            return;
+        }
+        $real_type = $property->getRealUnionType()->asNormalizedTypes();
+        if ($real_type->isEmpty()) {
+            return;
+        }
+        if (!$doc_type->isEqualTo($real_type)) {
+            return;
+        }
+        $encoded_comment = StringUtil::encodeValue($comment_str);
+        self::emitIssue(
+            $code_base,
+            $property->getContext(),
+            self::RedundantPropertyComment,
+            'Redundant doc comment on property {PROPERTY}. Either add a description or remove the @var annotation: {COMMENT}',
+            [$property->getRepresentationForIssue(), $encoded_comment]
+        );
+    }
+
+    /**
+     * @suppress PhanAccessClassConstantInternal
+     */
+    private static function commentHasSingleVarAnnotation(string $comment_str): bool
+    {
+        $found = false;
+        foreach (explode("\n", $comment_str) as $line) {
+            $trimmed = trim($line, " \t\r\n*/");
+            if ($trimmed === '') {
+                continue;
+            }
+            if ($trimmed[0] !== '@') {
+                return false;
+            }
+            if (!preg_match('/^@(phan-)?var\b/', $trimmed)) {
+                return false;
+            }
+            if (!preg_match(Builder::PARAM_COMMENT_REGEX, $trimmed, $matches)) {
+                return false;
+            }
+            if ($matches[0] !== $trimmed) {
+                return false;
+            }
+            if ($found) {
+                return false;
+            }
+            $found = true;
+        }
+        return $found;
     }
 
     /**
