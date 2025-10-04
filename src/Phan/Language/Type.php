@@ -2540,6 +2540,10 @@ class Type implements Stringable
                     $iterator_type->getTemplateParameterTypeMap($code_base)
                 );
             }
+            $template_key_type = $iterator_type->keyTypeOfTraversable();
+            if ($template_key_type instanceof UnionType && !$template_key_type->isEmpty()) {
+                return $template_key_type->asRealUnionType();
+            }
             return $result;
         }
         return StringType::instance(false)->asRealUnionType();
@@ -2635,6 +2639,10 @@ class Type implements Stringable
                 $result = $result->withTemplateParameterTypeMap(
                     $iterator_type->getTemplateParameterTypeMap($code_base)
                 );
+            }
+            $template_value_type = $iterator_type->valueTypeOfTraversable();
+            if ($template_value_type instanceof UnionType && !$template_value_type->isEmpty()) {
+                return $template_value_type->asRealUnionType();
             }
             return $result;
         }
