@@ -1,0 +1,2 @@
+src/225_infinite_loop_preg_replace.php:3 PhanPluginUseReturnValueNoopVoid The function/method \demo_loop() is declared to return void and it has no side effects
+src/225_infinite_loop_preg_replace.php:3 PhanUnreferencedFunction Possibly zero references to function \demo_loop()

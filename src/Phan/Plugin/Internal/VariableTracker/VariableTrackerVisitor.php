@@ -144,6 +144,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitCall(Node $node): VariableTrackingScope
     {
+        $args = $node->children['args'] ?? null;
+        if ($args instanceof Node) {
+            $this->markArgumentsModifiedByReference($args);
+        }
         if (isset($node->dynamic_var_uses)) {
             $this->handleDynamicVarUses($node, $node->dynamic_var_uses);
         }
@@ -700,6 +704,53 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     public static function markVariableAsModifiedByReference(Node $node): void
     {
         $node->modified_by_reference = true;
+    }
+
+    private function markArgumentsModifiedByReference(Node $args): void
+    {
+        foreach ($args->children as $argument) {
+            if (!($argument instanceof Node)) {
+                continue;
+            }
+            if ($argument->kind === ast\AST_NAMED_ARG) {
+                $argument = $argument->children['expr'];
+                if (!($argument instanceof Node)) {
+                    continue;
+                }
+            }
+            // @phan-suppress-next-line PhanUndeclaredProperty set by ArgumentType analyzer
+            if (!isset($argument->is_reference)) {
+                continue;
+            }
+            $this->markArgumentExpressionModifiedByReference($argument);
+        }
+    }
+
+    private function markArgumentExpressionModifiedByReference(Node $argument): void
+    {
+        switch ($argument->kind) {
+            case ast\AST_VAR:
+                self::markVariableAsModifiedByReference($argument);
+                return;
+            case ast\AST_DIM:
+            case ast\AST_PROP:
+                $expr = $argument->children['expr'] ?? null;
+                if ($expr instanceof Node) {
+                    $this->markArgumentExpressionModifiedByReference($expr);
+                }
+                return;
+            case ast\AST_STATIC_PROP:
+                // Static properties such as self::$prop don't correspond to local variables, nothing to mark.
+                return;
+            case ast\AST_REF:
+                $expr = $argument->children['var'] ?? null;
+                if ($expr instanceof Node) {
+                    $this->markArgumentExpressionModifiedByReference($expr);
+                }
+                return;
+            default:
+                return;
+        }
     }
 
     /**
