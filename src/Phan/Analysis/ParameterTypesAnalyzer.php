@@ -506,13 +506,7 @@ class ParameterTypesAnalyzer
                     continue;
                 }
 
-                // In php 7.2, it's ok to have a more relaxed type on an overriding method.
-                // In earlier versions it isn't.
-                // Because this check is analyzing phpdoc types, so it's fine for php < 7.2 as well. Use `PhanParamSignatureRealMismatch*` for detecting **real** mismatches.
-                //
-                // https://3v4l.org/XTm3P
-
-                // If we have types, make sure they line up
+                // If we have types, make sure they line up (allowing contravariance)
                 if (!self::canWeakCast($code_base, $overridden_parameter->getUnionType(), $parameter->getUnionType())) {
                     $signatures_match = false;
                     $mismatch_details = "Expected $parameter to have the same type as $overridden_parameter or a supertype";
@@ -746,7 +740,6 @@ class ParameterTypesAnalyzer
             if ($parameter_union_type->isEmptyOrMixed() != $overridden_parameter_union_type->isEmptyOrMixed()) {
                 if ($parameter_union_type->isEmptyOrMixed()) {
                     // Don't warn about mixed
-                    // allow_method_param_type_widening is implied by minimum_target_php_version >= php 7.2
                     if (Config::getValue('allow_method_param_type_widening') === false) {
                         $is_possibly_compatible = false;
                         self::emitSignatureRealMismatchIssue(

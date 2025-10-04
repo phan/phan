@@ -96,7 +96,7 @@ class Parser
      * @param string $file_contents file contents to pass to parser. This may deliberately differ from what is currently on disk (e.g. for the language server mode or daemon mode)
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @throws ParseError
-     * @throws CompileError (possible in php 7.3)
+     * @throws CompileError
      * @throws ParseException
      */
     public static function parseCode(
@@ -179,10 +179,10 @@ class Parser
      * @param Context $context
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
-     * @param ParseError|CompileError $native_parse_error (can be CompileError in 7.3+, will be ParseError in most cases)
+     * @param CompileError $native_parse_error
      * @param ?Request $request used to check if caching should be enabled to save time.
      * @throws ParseError most of the time
-     * @throws CompileError in PHP 7.3+
+     * @throws CompileError
      */
     public static function handleParseError(
         CodeBase $code_base,
@@ -236,7 +236,7 @@ class Parser
      * @param Context $context
      * @param string $file_path file path for error reporting
      * @param FileCacheEntry $file_cache_entry for file contents that were passed to the polyfill parser. May be overridden to ignore what is currently on disk.
-     * @param ParseError|CompileError $native_parse_error (can be CompileError in 7.3+, will be ParseError in most cases)
+     * @param CompileError $native_parse_error
      */
     public static function emitSyntaxErrorForNativeParseError(
         CodeBase $code_base,

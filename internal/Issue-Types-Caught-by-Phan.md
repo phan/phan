@@ -438,7 +438,7 @@ This category of issue is emitted when there are compatibility issues. They will
 ## PhanCompatibleAccessMethodOnTraitDefinition
 
 ```
-Calling static method {METHOD} on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in {CODE})
+Calling static method {METHOD} on a trait is deprecated, it should only be called on a class using the trait (in {CODE})
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0624_instantiate_abstract.php.expected#L16) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0624_instantiate_abstract.php#L50).
@@ -446,7 +446,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0624
 ## PhanCompatibleAccessPropertyOnTraitDefinition
 
 ```
-Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait
+Accessing static property {PROPERTY} on a trait is deprecated, it should only be accessed on a class using the trait
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0955_trait_direct_deprecated.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0955_trait_direct_deprecated.php#L9).
@@ -454,7 +454,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0955
 ## PhanCompatibleAssertDeclaration
 
 ```
-Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.
+Declaring a custom assert() function is a fatal error because the function has special semantics.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1110_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1110_assert.php#L3).
@@ -462,7 +462,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1110
 ## PhanCompatibleAutoload
 
 ```
-Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+. Use spl_autoload_register() instead (supported since PHP 5.1).
+Declaring an autoloader with function __autoload() is a fatal error. Use spl_autoload_register() instead.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/000_plugins.php#L64).
@@ -470,17 +470,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expecte
 ## PhanCompatibleDefaultEqualsNull
 
 ```
-In PHP 8.0, using a default ({CODE}) that resolves to null will no longer cause the parameter ({PARAMETER}) to be nullable
+Using a default ({CODE}) that resolves to null does not cause the parameter ({PARAMETER}) to be nullable
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0782_nullable_compat.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0782_nullable_compat.php#L4).
 
 ## PhanCompatibleDimAlternativeSyntax
 
-This is emitted deliberately when using the polyfill and/or using php 7.4+.
-
 ```
-Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}
+Array and string offset access syntax with curly braces is no longer supported. Use square brackets instead. Seen for {CODE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/062_test.php#L2).
@@ -522,7 +520,7 @@ $c->$m[0]();
 ## PhanCompatiblePHP8PHP4Constructor
 
 ```
-PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}
+PHP4 constructors are no longer supported. __construct() should be added/used instead to avoid accidentally calling {METHOD}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0198_list_property.php#L7).
@@ -578,7 +576,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/
 ## PhanCompatibleUnsetCast
 
 ```
-The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.
+The unset cast (in {CODE}) is a fatal error.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/061_cast_crash.php#L45).
@@ -634,7 +632,7 @@ This category of issue comes up when you're accessing deprecated elements (as ma
 ## PhanDeprecatedCaseInsensitiveDefine
 
 ```
-Creating case-insensitive constants with define() has been deprecated in PHP 7.3
+Creating case-insensitive constants with define() is deprecated
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0589_case_insensitive_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0589_case_insensitive_define.php#L2).
@@ -2130,7 +2128,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0365
 This issue is emitted when you're passing more than the number of required and optional parameters than are defined for an internal method or function.
 
 ```
-Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
+Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This would throw an ArgumentCountError.
 ```
 
 This will be emitted for the code
@@ -2390,7 +2388,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0867
 
 
 ```
-Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This is an Error in PHP 8.0+.
+Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This would throw an Error.
 ```
 
 
@@ -2402,7 +2400,7 @@ C19::f();
 ## PhanStaticClassAccessWithStaticVariable
 
 ```
-Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. The behavior of static variables will change to consistently use one set of static variables per method declaration in php 8.1 and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)
+Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. PHP consistently uses one set of static variables per method declaration and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/198_static_variable_suspicious.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/198_static_variable_suspicious.php#L6).
@@ -2534,7 +2532,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1137
 ## PhanEnumCannotImplement
 
 ```
-Classlike {CLASSLIKE} cannot implement {INTERFACE} in php 8.1+
+Classlike {CLASSLIKE} cannot implement {INTERFACE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1149_enum_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1149_enum_interface.php#L12).
@@ -3559,9 +3557,6 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/
 
 ## PhanTypeMismatchArgumentInternalReal
 
-Due to lack of reflection information, this will rarely ever be emitted when phan is run with php 7.3 or older.
-PHP 7.4 and 8.0 are expected to add more reflection type information for parameters of internal functions/methods.
-
 ```
 Argument {INDEX} (${PARAMETER}) is {CODE} of type {TYPE}{DETAILS} but {FUNCTIONLIKE} takes {TYPE}{DETAILS}
 ```
@@ -4393,7 +4388,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expecte
 This issue comes up when you reference a constant that doesn't exist.
 
 ```
-Reference to undeclared constant {CONST}. This will cause a thrown Error in php 8.0+.
+Reference to undeclared constant {CONST}. This would throw an Error.
 ```
 
 
@@ -5058,7 +5053,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0601
 
 ## PhanContinueTargetingSwitch
 
-This detects code causing a [warning in PHP 7.3](http://php.net/manual/en/migration73.incompatible.php#migration73.incompatible.core.continue-targeting-switch).
+This detects code causing a [PHP warning](http://php.net/manual/en/migration73.incompatible.php#migration73.incompatible.core.continue-targeting-switch).
 
 ```
 "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
@@ -5132,7 +5127,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951
 ## PhanPrivateFinalMethod
 
 ```
-PHP warns about private method {METHOD} being final starting in php 8.0
+PHP warns about private method {METHOD} being final
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951_private_final.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0951_private_final.php#L4).

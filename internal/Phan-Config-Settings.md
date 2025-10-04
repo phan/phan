@@ -724,10 +724,8 @@ The values you will want depend on what PHP versions you are checking for compat
 
 ## allow_method_param_type_widening
 
-Set this to true to allow contravariance in real parameter types of method overrides
-(Users may enable this if analyzing projects that support only php 7.2+)
+Set this to true to allow [contravariance](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening) in real parameter types of method overrides
 
-See [this note about PHP 7.2's new features](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening).
 This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
 
 If this is null, this will be inferred from `target_php_version`.

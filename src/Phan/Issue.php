@@ -1053,7 +1053,7 @@ class Issue
                 self::PrivateFinalMethod,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_NORMAL,
-                "PHP warns about private method {METHOD} being final starting in php 8.0",
+                "PHP warns about private method {METHOD} being final",
                 self::REMEDIATION_A,
                 17019
             ),
@@ -1183,7 +1183,7 @@ class Issue
                 self::UndeclaredConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Reference to undeclared constant {CONST}. This will cause a thrown Error in php 8.0+.",
+                "Reference to undeclared constant {CONST}. This would throw an Error.",
                 self::REMEDIATION_B,
                 11011
             ),
@@ -3062,7 +3062,7 @@ class Issue
                 self::EnumCannotImplement,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                'Classlike {CLASSLIKE} cannot implement {INTERFACE} in php 8.1+',
+                'Classlike {CLASSLIKE} cannot implement {INTERFACE}',
                 self::REMEDIATION_B,
                 10187
             ),
@@ -3106,7 +3106,7 @@ class Issue
                 self::StaticCallToNonStatic,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_CRITICAL,
-                "Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This is an Error in PHP 8.0+.",
+                "Static call to non-static method {METHOD} defined at {FILE}:{LINE}. This would throw an Error.",
                 self::REMEDIATION_B,
                 9000
             ),
@@ -3146,7 +3146,7 @@ class Issue
                 self::StaticClassAccessWithStaticVariable,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_LOW,
-                "Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. The behavior of static variables will change to consistently use one set of static variables per method declaration in php 8.1 and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)",
+                "Saw access to potentially inherited class element with {CODE} in a function that also uses static variables. PHP consistently uses one set of static variables per method declaration and the same method may end up write different values to static variables or do different things after reading static variables in different inherited classes. (This is a simple heuristic, suppress the issue if this is a false positive)",
                 self::REMEDIATION_B,
                 9005
             ),
@@ -3262,7 +3262,7 @@ class Issue
                 self::DeprecatedCaseInsensitiveDefine,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Creating case-insensitive constants with define() has been deprecated in PHP 7.3",
+                "Creating case-insensitive constants with define() is deprecated",
                 self::REMEDIATION_B,
                 5006
             ),
@@ -3328,7 +3328,7 @@ class Issue
                 self::ParamTooManyInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s). This would throw an ArgumentCountError.",
                 self::REMEDIATION_B,
                 7002
             ),
@@ -4636,7 +4636,6 @@ class Issue
                 self::REMEDIATION_B,
                 6096
             ),
-            // TODO: If this is the attributes syntax in php 8.0 stable then this should be become critical.
             new Issue(
                 self::NoopRepeatedSilenceOperator,
                 self::CATEGORY_NOOP,
@@ -5113,7 +5112,7 @@ class Issue
                 self::CompatibleAutoload,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+. Use spl_autoload_register() instead (supported since PHP 5.1).",
+                "Declaring an autoloader with function __autoload() is a fatal error. Use spl_autoload_register() instead.",
                 self::REMEDIATION_B,
                 3013
             ),
@@ -5121,7 +5120,7 @@ class Issue
                 self::CompatibleUnsetCast,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "The unset cast (in {CODE}) was deprecated in PHP 7.2 and is a fatal error in PHP 8.0+.",
+                "The unset cast (in {CODE}) is a fatal error.",
                 self::REMEDIATION_B,
                 3014
             ),
@@ -5133,12 +5132,11 @@ class Issue
                 self::REMEDIATION_B,
                 3017
             ),
-            // TODO: Update messages to reflect that these were removed in php 8.0
             new Issue(
                 self::CompatibleDimAlternativeSyntax,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Array and string offset access syntax with curly braces is deprecated in PHP 7.4. Use square brackets instead. Seen for {CODE}",
+                "Array and string offset access syntax with curly braces is no longer supported. Use square brackets instead. Seen for {CODE}",
                 self::REMEDIATION_B,
                 3018
             ),
@@ -5163,7 +5161,7 @@ class Issue
                 self::CompatiblePHP8PHP4Constructor,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "PHP4 constructors will be removed in php 8, and should not be used. __construct() should be added/used instead to avoid accidentally calling {METHOD}",
+                "PHP4 constructors are no longer supported. __construct() should be added/used instead to avoid accidentally calling {METHOD}",
                 self::REMEDIATION_B,
                 3022
             ),
@@ -5171,7 +5169,7 @@ class Issue
                 self::CompatibleDefaultEqualsNull,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "In PHP 8.0, using a default ({CODE}) that resolves to null will no longer cause the parameter ({PARAMETER}) to be nullable",
+                "Using a default ({CODE}) that resolves to null does not cause the parameter ({PARAMETER}) to be nullable",
                 self::REMEDIATION_B,
                 3023
             ),
@@ -5179,7 +5177,7 @@ class Issue
                 self::CompatibleAssertDeclaration,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Declaring a custom assert() function is a fatal error in PHP 8.0+ because the function has special semantics.",
+                "Declaring a custom assert() function is a fatal error because the function has special semantics.",
                 self::REMEDIATION_B,
                 3041
             ),
@@ -5187,7 +5185,7 @@ class Issue
                 self::CompatibleSerializeInterfaceDeprecated,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "The Serializable interface is deprecated in php 8.1. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
+                "The Serializable interface is deprecated. If you need to retain the Serializable interface for cross-version compatibility, you can suppress this warning for {CLASS} by implementing __serialize() and __unserialize() in addition, which will take precedence over Serializable in PHP versions that support them. If you cannot avoid using Serializable and don't need to support php 8.1 or can tolerate deprecation notices, this issue should be suppressed",
                 self::REMEDIATION_B,
                 3042
             ),
@@ -5195,7 +5193,7 @@ class Issue
                 self::CompatibleAccessMethodOnTraitDefinition,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "Calling static method {METHOD} on a trait is deprecated in php 8.1, it should only be called on a class using the trait (in {CODE})",
+                "Calling static method {METHOD} on a trait is deprecated, it should only be called on a class using the trait (in {CODE})",
                 self::REMEDIATION_B,
                 3047
             ),
@@ -5203,7 +5201,7 @@ class Issue
                 self::CompatibleAccessPropertyOnTraitDefinition,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "Accessing static property {PROPERTY} on a trait is deprecated in php 8.1, it should only be accessed on a class using the trait",
+                "Accessing static property {PROPERTY} on a trait is deprecated, it should only be accessed on a class using the trait",
                 self::REMEDIATION_B,
                 3048
             ),

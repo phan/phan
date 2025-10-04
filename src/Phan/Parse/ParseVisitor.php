@@ -1914,8 +1914,8 @@ class ParseVisitor extends ScopeVisitor
         $constant = new GlobalConstant(
             $context->withLineNumberStart($lineno),
             $name,
-            // NOTE: With php 8.1 enums, global constants can be assigned to enums,
-            // so this can be any valid type starting in php 8.1.
+            // NOTE: With enums, global constants can be assigned to enums,
+            // so this can be any valid type.
             UnionType::fromFullyQualifiedRealString('mixed'),
             $flags,
             $fqsen
