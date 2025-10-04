@@ -40,7 +40,7 @@ class Set extends \SplObjectStorage
     public function __construct($element_iterator = null)
     {
         foreach ($element_iterator ?? [] as $element) {
-            $this->attach($element);
+            $this->offsetSet($element, true);
         }
     }
 
@@ -65,8 +65,8 @@ class Set extends \SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $element) {
-            if ($other->contains($element)) {
-                $set->attach($element);
+            if ($other->offsetExists($element)) {
+                $set->offsetSet($element, true);
             }
         }
         return $set;
@@ -154,7 +154,7 @@ class Set extends \SplObjectStorage
     public function containsAny(array $element_list): bool
     {
         foreach ($element_list as $element) {
-            if ($this->contains($element)) {
+            if ($this->offsetExists($element)) {
                 return true;
             }
         }
@@ -178,7 +178,7 @@ class Set extends \SplObjectStorage
         $set = new Set();
         foreach ($this as $element) {
             if ($closure($element)) {
-                $set->attach($element);
+                $set->offsetSet($element, true);
             }
         }
         return $set;
@@ -197,7 +197,7 @@ class Set extends \SplObjectStorage
     {
         $set = new Set();
         foreach ($this as $element) {
-            $set->attach($closure($element));
+            $set->offsetSet($closure($element), true);
         }
         return $set;
     }

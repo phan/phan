@@ -237,7 +237,7 @@ class Method extends ClassElement implements FunctionInterface
             $is_overridden_by_another
         ));
         if ($is_overridden_by_another && $fqsen) {
-            $this->method_overrides->attach($fqsen);
+            $this->method_overrides->offsetSet($fqsen, true);
         }
     }
 

@@ -396,6 +396,19 @@ class Type implements Stringable
         throw new Error("Cannot unserialize Type '$this'");
     }
 
+    /**
+     * @param array<mixed,mixed> $data
+     * @throws Error this should not be called accidentally
+     * @suppress PhanPluginRemoveDebugCall deliberate output before uncatchable Error
+     * @suppress PhanUnusedPublicNoOverrideMethodParameter
+     * @return never
+     */
+    public function __unserialize(array $data): void
+    {
+        \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+        throw new Error("Cannot unserialize Type '$this'");
+    }
+
     /** @throws Error this should not be called accidentally */
     public function __clone()
     {

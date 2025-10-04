@@ -44,8 +44,8 @@ final class NonEmptyListType extends ListType implements NonEmptyArrayInterface
 
         $map = $canonical_object_maps[$map_index];
 
-        if (!$map->contains($type)) {
-            $map->attach(
+        if (!$map->offsetExists($type)) {
+            $map->offsetSet(
                 $type,
                 new NonEmptyListType($type, $is_nullable)
             );
