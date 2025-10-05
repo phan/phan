@@ -3648,7 +3648,7 @@ class Clazz extends AddressableElement
     private function analyzeTraitUse(CodeBase $code_base): void
     {
         // Check if this class uses any traits
-        $trait_fqsen_list = $this->getTraitFQSENList();
+        $trait_fqsen_list = $this->trait_fqsen_list;
         if (!$trait_fqsen_list) {
             return;
         }
