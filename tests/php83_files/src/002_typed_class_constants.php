@@ -1,6 +1,7 @@
 <?php
 
 // Test PHP 8.3+ typed class constants
+// @phan-file-suppress PhanUnreferencedClass, PhanUnreferencedPublicClassConstant, PhanPluginNoCommentOnClass
 
 // Test basic type validation
 class BasicTypedConstants {
