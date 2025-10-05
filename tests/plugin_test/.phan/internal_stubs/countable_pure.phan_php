@@ -1,0 +1,11 @@
+<?php
+
+// Custom interface for testing issue #3864:
+// Internal methods inheriting from pure interface methods should be treated as pure
+
+interface PureCountableTest {
+    /**
+     * @phan-pure
+     */
+    public function getValue(): int;
+}

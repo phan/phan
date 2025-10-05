@@ -115,6 +115,7 @@ return [
 
     'autoload_internal_extension_signatures' => [
         'fakephantest' => '.phan/internal_stubs/fakephantest.phan_php',
+        'countable_pure' => '.phan/internal_stubs/countable_pure.phan_php',
     ],
 
     'infer_default_properties_in_construct' => true,
