@@ -528,6 +528,7 @@ class Issue
     public const RedefineProperty          = 'PhanRedefineProperty';
     public const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     public const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
+    public const IncompatibleCompositionConstant = 'PhanIncompatibleCompositionConstant';
     public const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
     public const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
     public const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
@@ -4648,6 +4649,14 @@ class Issue
                 "Declaration of {METHOD} must be compatible with {METHOD} in {FILE} on line {LINE}",
                 self::REMEDIATION_B,
                 8005
+            ),
+            new Issue(
+                self::IncompatibleCompositionConstant,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} and {CLASS} define the same constant ({CONST}) in the composition of {CLASS}. However, the definition differs and is considered incompatible. Class was composed in {FILE} on line {LINE}",
+                self::REMEDIATION_B,
+                8014
             ),
             // FIXME: It's redundant to include the first FILE:LINE of the declaration in the full issue message
             new Issue(

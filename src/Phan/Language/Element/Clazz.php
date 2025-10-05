@@ -3644,6 +3644,7 @@ class Clazz extends AddressableElement
      * Validate trait usage in this class/interface.
      * - Interfaces cannot use traits (PHP fatal error)
      * - Readonly classes cannot use traits with non-readonly properties (PHP 8.2+ fatal error)
+     * - Trait constant redefinitions must be compatible (PHP 8.2+ fatal error)
      */
     private function analyzeTraitUse(CodeBase $code_base): void
     {
@@ -3690,6 +3691,207 @@ class Clazz extends AddressableElement
                 }
             }
         }
+
+        // Check for incompatible constant redefinitions in PHP 8.2+
+        $this->analyzeTraitConstantCompatibility($code_base);
+    }
+
+    /**
+     * Check for incompatible trait constant redefinitions (PHP 8.2+).
+     * This detects fatal errors caused by:
+     * - Multiple traits defining the same constant
+     * - Class redefining trait constant with different visibility or value
+     * - Parent class and trait having conflicting constants
+     */
+    private function analyzeTraitConstantCompatibility(CodeBase $code_base): void
+    {
+        $trait_fqsen_list = $this->trait_fqsen_list;
+        if (!$trait_fqsen_list) {
+            return;
+        }
+
+        // Build a map of constant name -> list of (source_fqsen, constant) pairs
+        $constant_sources = [];
+
+        // Collect constants from all traits
+        foreach ($trait_fqsen_list as $trait_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                continue;
+            }
+            $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
+            $trait->hydrate($code_base);
+
+            foreach ($trait->getConstantMap($code_base) as $constant) {
+                $name = $constant->getName();
+                // Skip magic ::class constant (it's not a real class constant in PHP)
+                if ($name === 'class') {
+                    continue;
+                }
+                // Only check constants directly defined in this trait (not inherited)
+                $defining_fqsen = $constant->getDefiningFQSEN();
+                if ($defining_fqsen->getFullyQualifiedClassName()->__toString() !== $trait_fqsen->__toString()) {
+                    continue;
+                }
+                if (!isset($constant_sources[$name])) {
+                    $constant_sources[$name] = [];
+                }
+                $constant_sources[$name][] = [$trait_fqsen, $constant];
+            }
+        }
+
+        // Check for conflicts between multiple traits
+        foreach ($constant_sources as $name => $sources) {
+            if (count($sources) > 1) {
+                // Multiple traits define the same constant - check if they're compatible
+                $first_source = $sources[0];
+                // @phan-suppress-next-line PhanSuspiciousTruthyCondition
+                if (!$first_source) {
+                    continue;
+                }
+                [$first_fqsen, $first_constant] = $first_source;
+                if (!$first_constant instanceof ClassConstant) {
+                    continue;
+                }
+                for ($i = 1; $i < count($sources); $i++) {
+                    $other_source = $sources[$i];
+                    // @phan-suppress-next-line PhanSuspiciousTruthyCondition
+                    if (!$other_source) {
+                        continue;
+                    }
+                    [$other_fqsen, $other_constant] = $other_source;
+                    if (!$other_constant instanceof ClassConstant) {
+                        continue;
+                    }
+                    if (!self::areConstantsCompatible($first_constant, $other_constant)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $this->getContext(),
+                            Issue::IncompatibleCompositionConstant,
+                            $this->getContext()->getLineNumberStart(),
+                            (string)$first_fqsen,
+                            (string)$other_fqsen,
+                            $name,
+                            $this->fqsen,
+                            $this->getContext()->getFile(),
+                            $this->getContext()->getLineNumberStart()
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Check for conflicts between class constants and trait constants
+        $class_constant_map = $this->getConstantMap($code_base);
+        foreach ($constant_sources as $name => $sources) {
+            if (isset($class_constant_map[$name])) {
+                $class_constant = $class_constant_map[$name];
+                // Check if this constant is defined in this class (not inherited from parent)
+                $defining_fqsen = $class_constant->getDefiningFQSEN();
+                if ($defining_fqsen->getFullyQualifiedClassName()->__toString() === $this->fqsen->__toString()) {
+                    // Class defines this constant - check compatibility with trait
+                    $source = $sources[0];
+                    // @phan-suppress-next-line PhanSuspiciousTruthyCondition
+                    if (!$source) {
+                        continue;
+                    }
+                    [$trait_fqsen, $trait_constant] = $source;
+                    if (!$trait_constant instanceof ClassConstant) {
+                        continue;
+                    }
+                    if (!self::areConstantsCompatible($class_constant, $trait_constant)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $this->getContext(),
+                            Issue::IncompatibleCompositionConstant,
+                            $this->getContext()->getLineNumberStart(),
+                            $this->fqsen,
+                            (string)$trait_fqsen,
+                            $name,
+                            $this->fqsen,
+                            $this->getContext()->getFile(),
+                            $this->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+            }
+        }
+
+        // Check for conflicts between parent class constants and trait constants
+        if ($this->parent_type) {
+            $parent_fqsen = $this->parent_type->asFQSEN();
+            if ($parent_fqsen instanceof \Phan\Language\FQSEN\FullyQualifiedClassName && $code_base->hasClassWithFQSEN($parent_fqsen)) {
+                $parent = $code_base->getClassByFQSENWithoutHydrating($parent_fqsen);
+                $parent->hydrate($code_base);
+                $parent_constants = $parent->getConstantMap($code_base);
+
+                foreach ($constant_sources as $name => $sources) {
+                    if (isset($parent_constants[$name])) {
+                        $source = $sources[0];
+                        // @phan-suppress-next-line PhanSuspiciousTruthyCondition
+                        if (!$source) {
+                            continue;
+                        }
+                        [$trait_fqsen, $trait_constant] = $source;
+                        if (!$trait_constant instanceof ClassConstant) {
+                            continue;
+                        }
+                        $parent_constant = $parent_constants[$name];
+                        if (!self::areConstantsCompatible($parent_constant, $trait_constant)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $this->getContext(),
+                                Issue::IncompatibleCompositionConstant,
+                                $this->getContext()->getLineNumberStart(),
+                                (string)$parent_fqsen,
+                                (string)$trait_fqsen,
+                                $name,
+                                $this->fqsen,
+                                $this->getContext()->getFile(),
+                                $this->getContext()->getLineNumberStart()
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if two constants are compatible (same visibility and equivalent value).
+     * In PHP 8.2+, constants with different visibility or values cannot coexist in composition.
+     *
+     * @param ClassConstant $const1 the first constant to compare
+     * @param ClassConstant $const2 the second constant to compare
+     * @return bool true if constants are compatible (same visibility and value)
+     */
+    private static function areConstantsCompatible(ClassConstant $const1, ClassConstant $const2): bool
+    {
+        // Check visibility compatibility
+        if ($const1->isPrivate() !== $const2->isPrivate() ||
+            $const1->isProtected() !== $const2->isProtected() ||
+            $const1->isPublic() !== $const2->isPublic()) {
+            return false;
+        }
+
+        // Check if values are equivalent by comparing AST nodes
+        $node1 = $const1->getNodeForValue();
+        $node2 = $const2->getNodeForValue();
+
+        // If both have no nodes or both nodes are identical, they're compatible
+        if ($node1 === $node2) {
+            return true;
+        }
+
+        // If one has a node and the other doesn't, they're incompatible
+        if ($node1 === null || $node2 === null) {
+            return false;
+        }
+
+        // Compare AST nodes for value equivalence
+        // For simplicity, we use string representation comparison
+        // This may have false positives for complex expressions, but catches most cases
+        return \var_export($node1, true) === \var_export($node2, true);
     }
 
     public function setDidFinishParsing(bool $did_finish_parsing): void
