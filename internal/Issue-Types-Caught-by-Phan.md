@@ -2491,6 +2491,14 @@ Using {CODE} ?? null seems unnecessary - the expression appears to always be def
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0878_not_undefined.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0878_not_undefined.php#L7).
 
+## PhanConstantTypeMismatchInheritance
+
+```
+Class constant {CONST} is declared with type {TYPE} which is not covariant with type {TYPE} inherited from {CLASSLIKE} (constant types must be invariant or covariant)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4796_class_const_narrowing.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4796_class_const_narrowing.php#L43).
+
 ## PhanDivisionByZero
 
 ```
@@ -3625,6 +3633,22 @@ Unexpected mix of int and string operands provided to operator '{OPERATOR}' betw
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0561_bitwise_operands.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0561_bitwise_operands.php#L11).
+
+## PhanTypeMismatchDeclaredConstant
+
+```
+Constant {CONST} is declared with type {TYPE} but has value {CODE} of type {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php83_files/expected/001_typed_class_constant.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php83_files/src/001_typed_class_constant.php#L6).
+
+## PhanTypeMismatchDeclaredConstantNever
+
+```
+Constant {CONST} is declared with type never which always results in a compile error
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php83_files/expected/001_typed_class_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php83_files/src/001_typed_class_constant.php#L7).
 
 ## PhanTypeMismatchDeclaredParam
 

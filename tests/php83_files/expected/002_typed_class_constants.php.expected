@@ -1,0 +1,9 @@
+%s:17 PhanTypeMismatchDeclaredConstant Constant \TypeMismatches::WRONG_INT is declared with type int but has value 'not an int' of type 'not an int'
+%s:18 PhanTypeMismatchDeclaredConstant Constant \TypeMismatches::WRONG_STRING is declared with type string but has value 123 of type 123
+%s:19 PhanTypeMismatchDeclaredConstant Constant \TypeMismatches::WRONG_BOOL is declared with type bool but has value 'yes' of type 'yes'
+%s:20 PhanTypeMismatchDeclaredConstant Constant \TypeMismatches::WRONG_FLOAT is declared with type float but has value 'pi' of type 'pi'
+%s:25 PhanTypeMismatchDeclaredConstantNever Constant \NeverTypeTest::NEVER_CONST is declared with type never which always results in a compile error
+%s:44 PhanConstantTypeMismatchInheritance Class constant \ChildConst2::VALUE is declared with type string which is not covariant with type int inherited from \ParentConst1 (constant types must be invariant or covariant)
+%s:60 PhanTypeMismatchDeclaredConstant Constant \ComplexExpressions::WRONG_CALC is declared with type int but has value ('prefix' . self::BASE) of type 'prefix10'
+%s:67 PhanTypeMismatchDeclaredConstant Constant \UnionTypes::WRONG is declared with type int|string but has value 3.14 of type 3.14
+%s:74 PhanTypeMismatchDeclaredConstant Constant \NullableTypes::WRONG_NULL is declared with type ?int but has value 'not null' of type 'not null'

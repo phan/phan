@@ -1055,6 +1055,22 @@ class ParseVisitor extends ScopeVisitor
             );
         }
 
+        // Extract declared type for typed class constants (PHP 8.3+)
+        $type_node = $node->children['type'] ?? null;
+        if ($type_node) {
+            try {
+                // Parse the declared type and normalize union types
+                $real_union_type = (new UnionTypeVisitor($this->code_base, $this->context))
+                    ->fromTypeInSignature($type_node)
+                    ->asNormalizedTypes();
+            } catch (IssueException $e) {
+                Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                $real_union_type = UnionType::empty();
+            }
+        } else {
+            $real_union_type = UnionType::empty();
+        }
+
         foreach ($node->children['const']->children ?? [] as $child_node) {
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected class const element to be a Node');
@@ -1113,18 +1129,29 @@ class ParseVisitor extends ScopeVisitor
             $this->handleClassConstantComment($constant, $comment);
 
             $value_node = $child_node->children['value'];
+
+            // Infer type from value for PHPDoc union type (backward compatibility)
             if ($value_node instanceof Node) {
                 if ($this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CLASS_CONSTANT)) {
                     // TODO: Avoid using this when it only contains literals (nothing depending on the CodeBase),
-                    $constant->setFutureUnionType(
-                        new FutureUnionType(
-                            $this->code_base,
-                            new ElementContext($constant),
-                            $value_node
-                        )
+                    $future_type = new FutureUnionType(
+                        $this->code_base,
+                        new ElementContext($constant),
+                        $value_node
                     );
+                    $constant->setFutureUnionType($future_type);
+                    // If there's a declared type, we'll set the real type after FutureUnionType resolves
+                    // For now, store the real_union_type in a way that can be used later
+                    if (!$real_union_type->isEmpty()) {
+                        // Set an initial union type with the real type set
+                        $constant->setUnionType(UnionType::empty()->withRealTypeSet($real_union_type->getTypeSet()));
+                    }
                 } else {
-                    $constant->setUnionType(MixedType::instance(false)->asPHPDocUnionType());
+                    if (!$real_union_type->isEmpty()) {
+                        $constant->setUnionType(MixedType::instance(false)->asPHPDocUnionType()->withRealTypeSet($real_union_type->getTypeSet()));
+                    } else {
+                        $constant->setUnionType(MixedType::instance(false)->asPHPDocUnionType());
+                    }
                 }
             } else {
                 // This is a literal scalar value.
@@ -1132,7 +1159,14 @@ class ParseVisitor extends ScopeVisitor
                 //
                 // TODO: What about internal stubs (isPHPInternal()) - if Phan would treat those like being from phpdoc,
                 // it should do the same for FutureUnionType
-                $constant->setUnionType(Type::fromObject($value_node)->asRealUnionType());
+                if ($real_union_type->isEmpty()) {
+                    // No declared type - infer from value as real type (preserves literal types for narrowing)
+                    $constant->setUnionType(Type::fromObject($value_node)->asRealUnionType());
+                } else {
+                    // Has declared type - use it as real type, value type as PHPDoc type
+                    $inferred_type = Type::fromObject($value_node)->asPHPDocUnionType();
+                    $constant->setUnionType($inferred_type->withRealTypeSet($real_union_type->getTypeSet()));
+                }
             }
             $constant->setNodeForValue($value_node);
 

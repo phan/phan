@@ -103,6 +103,12 @@ class ClassConstant extends ClassElement implements ConstantInterface
     {
         $union_type = $this->getFutureUnionType();
         if (!\is_null($union_type)) {
+            // If there's an existing real type set (PHP 8.3+ typed constants),
+            // preserve it when setting the resolved future type
+            $current_union_type = parent::getUnionType();
+            if ($current_union_type->hasRealTypeSet()) {
+                $union_type = $union_type->withRealTypeSet($current_union_type->getRealTypeSet());
+            }
             $this->setUnionType($union_type);
         }
 
@@ -149,7 +155,15 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $string .= 'final ';
         }
 
-        $string .= 'const ' . $this->name . ' = ';
+        $string .= 'const ';
+
+        // Add type declaration for typed constants (PHP 8.3+)
+        $union_type = $this->getUnionType();
+        if ($union_type->hasRealTypeSet()) {
+            $string .= $union_type->getRealUnionType()->__toString() . ' ';
+        }
+
+        $string .= $this->name . ' = ';
         $value_node = $this->getNodeForValue();
         $string .= ASTReverter::toShortString($value_node);
         return $string;
@@ -197,7 +211,15 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
         // For simplicity, show public class constants as 'const', not 'public const'.
         // Also, PHP modules probably won't have private/protected constants.
-        $string .= 'const ' . $this->name . ' = ';
+        $string .= 'const ';
+
+        // Add type declaration for typed constants (PHP 8.3+)
+        $union_type = $this->getUnionType();
+        if ($union_type->hasRealTypeSet()) {
+            $string .= $union_type->getRealUnionType()->__toString() . ' ';
+        }
+
+        $string .= $this->name . ' = ';
         $fqsen = $this->fqsen->__toString();
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
