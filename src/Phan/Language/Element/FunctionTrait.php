@@ -860,6 +860,7 @@ trait FunctionTrait
         }
         $real_type_set = $parameter->getNonVariadicUnionType()->getRealTypeSet();
         $parameter_name = $parameter->getName();
+        $is_mandatory_in_phpdoc = false;
         if ($comment->hasParameterWithNameOrOffset(
             $parameter_name,
             $parameter_offset
@@ -869,10 +870,28 @@ trait FunctionTrait
                 $parameter_offset
             );
             if ($comment_param->isMandatoryInPHPDoc()) {
-                $function->recordHasMandatoryPHPDocParamAtOffset($parameter_offset);
+                $is_mandatory_in_phpdoc = true;
             }
         } else {
             $comment_param = null;
+        }
+
+        // Check overridden methods (from parent classes/interfaces) for @phan-mandatory-param
+        if (!$is_mandatory_in_phpdoc && $function instanceof Method) {
+            foreach ($function->getOverriddenMethods($code_base) as $overridden_method) {
+                $overridden_comment = $overridden_method->getComment();
+                if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {
+                    $overridden_param = $overridden_comment->getParameterWithNameOrOffset($parameter_name, $parameter_offset);
+                    if ($overridden_param->isMandatoryInPHPDoc()) {
+                        $is_mandatory_in_phpdoc = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($is_mandatory_in_phpdoc) {
+            $function->recordHasMandatoryPHPDocParamAtOffset($parameter_offset);
         }
         if ($parameter->getNonVariadicUnionType()->isEmpty()) {
             // If there is no type specified in PHP, check

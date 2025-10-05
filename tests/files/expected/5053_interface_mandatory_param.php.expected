@@ -1,0 +1,4 @@
+%s:47 PhanParamTooFewInPHPDoc Call with 1 arg(s) to \Test::func(string $a, ?mixed $b = null) which has phpdoc indicating it requires 2 arg(s) ($b is mandatory) defined at %s:14
+%s:50 PhanParamTooFewInPHPDoc Call with 1 arg(s) to \Test2::func(string $a, ?mixed $b = null) which has phpdoc indicating it requires 2 arg(s) ($b is mandatory) defined at %s:23
+%s:53 PhanParamTooFewInPHPDoc Call with 1 arg(s) to \Test3::func(string $a, ?string $b = null) which has phpdoc indicating it requires 2 arg(s) ($b is mandatory) defined at %s:33
+%s:56 PhanParamTooFewInPHPDoc Call with 1 arg(s) to \Test4::func(string $a, ?string $b = null) which has phpdoc indicating it requires 2 arg(s) ($b is mandatory) defined at %s:42
