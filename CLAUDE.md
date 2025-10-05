@@ -87,6 +87,28 @@ php tool/make_stubs
 php phan --plugin InvokePHPNativeSyntaxCheckPlugin
 ```
 
+### Debugging Type Inference
+
+To see what type Phan has inferred for a variable, use the `@phan-debug-var` annotation as an inline string (not a comment, due to php-ast limitations):
+
+```php
+function example() {
+    $x = [1, 2, 3];
+    '@phan-debug-var $x';  // Will output: PhanDebugAnnotation - $x has union type int[]
+
+    $arr = ['key' => 'value'];
+    '@phan-debug-var $arr[\'key\']';  // Can debug array elements and properties
+
+    return $x;
+}
+```
+
+This is extremely useful when:
+- Investigating type inference issues
+- Understanding why Phan reports unexpected warnings
+- Verifying that type narrowing works correctly in conditional branches
+- Debugging complex union types
+
 ## High-Level Architecture
 
 ### Core Components
