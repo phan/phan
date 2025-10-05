@@ -797,8 +797,10 @@ class Method extends ClassElement implements FunctionInterface
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
-        // Get the list of ancestors of that class
-        $ancestor_class_list = $class->getAncestorClassList(
+        // Get the list of ancestors of that class (including all grandparents, etc.)
+        // Use recursive method to fix issue #4669 where trait methods weren't being
+        // tracked when there were intermediate parent classes
+        $ancestor_class_list = $class->getAncestorClassListRecursive(
             $code_base
         );
 

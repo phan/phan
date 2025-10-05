@@ -2544,6 +2544,41 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Get all ancestors recursively (including grandparents, great-grandparents, etc.)
+     * This includes the parent chain, traits, and interfaces from all ancestors.
+     *
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor details
+     *
+     * @return list<Clazz> all ancestors in order: immediate ancestors first, then their ancestors, etc.
+     */
+    public function getAncestorClassListRecursive(CodeBase $code_base): array
+    {
+        return $this->memoize(__METHOD__, /** @return list<Clazz> */ function () use ($code_base): array {
+            $result = [];
+            $seen = [];
+            $queue = [$this];
+
+            while ($queue) {
+                $current = \array_shift($queue);
+
+                // Get immediate ancestors of current class
+                foreach ($current->getAncestorClassList($code_base) as $ancestor) {
+                    $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
+                    if (isset($seen[$ancestor_fqsen])) {
+                        continue;
+                    }
+                    $seen[$ancestor_fqsen] = true;
+                    $result[] = $ancestor;
+                    $queue[] = $ancestor;
+                }
+            }
+
+            return $result;
+        });
+    }
+
+    /**
      * Add class constants from all ancestors (parents, traits, ...)
      * to this class
      *
