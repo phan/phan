@@ -117,6 +117,61 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Check if an expression has potential to narrow types when used in conditionals
+     * (e.g., instanceof, is_string(), etc.)
+     *
+     * @param Node $node The expression node to check
+     * @return bool True if the expression can narrow types
+     */
+    private static function exprHasTypeNarrowingPotential(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_INSTANCEOF:
+            case ast\AST_CALL:
+            case ast\AST_ISSET:
+            case ast\AST_EMPTY:
+                // These nodes can narrow types
+                return true;
+            case ast\AST_BINARY_OP:
+                // Binary operators like && and || may contain type-narrowing expressions
+                $left = $node->children['left'];
+                $right = $node->children['right'];
+                return ($left instanceof Node && self::exprHasTypeNarrowingPotential($left)) ||
+                       ($right instanceof Node && self::exprHasTypeNarrowingPotential($right));
+            case ast\AST_UNARY_OP:
+                // Unary ! operator may wrap a type-narrowing expression
+                $expr = $node->children['expr'];
+                return $expr instanceof Node && self::exprHasTypeNarrowingPotential($expr);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Check if an expression references a specific variable (for detecting self-referential assignments)
+     *
+     * @param Node $node The expression node to check
+     * @param string $var_name The variable name to look for
+     * @return bool True if the expression references the variable
+     */
+    private static function exprReferencesVariable(Node $node, string $var_name): bool
+    {
+        if ($node->kind === ast\AST_VAR) {
+            $name = $node->children['name'];
+            return \is_string($name) && $name === $var_name;
+        }
+
+        // Recursively check children
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::exprReferencesVariable($child, $var_name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *
@@ -185,6 +240,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getClosure();
 
             $method->addReference($this->context);
+        }
+
+        // Fix for issue #4854: Track conditional expressions assigned to boolean variables
+        // so that type narrowing can be re-applied when the variable is tested in conditionals
+        // Only store expressions that can actually narrow types (instanceof, is_string(), etc.)
+        // and avoid self-referential expressions like $x = $x || something (prevents infinite recursion)
+        if ($var_node->kind === ast\AST_VAR &&
+            $expr_node instanceof Node &&
+            self::exprHasTypeNarrowingPotential($expr_node) &&
+            $right_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                return $type->getName() === 'bool' || $type->getName() === 'true' || $type->getName() === 'false';
+            })) {
+            // Get the variable name
+            $var_name = $var_node->children['name'];
+            if (\is_string($var_name) && !self::exprReferencesVariable($expr_node, $var_name)) {
+                // Get the variable from the context and attach the conditional expression to it
+                $variable = $context->getScope()->getVariableByNameOrNull($var_name);
+                if ($variable) {
+                    // Store the RHS expression node so ConditionVisitor can re-apply type narrowing
+                    // when this variable is tested in an if/while condition
+                    // @phan-suppress-next-line PhanUndeclaredProperty - using AllowDynamicProperties
+                    $variable->phan_condition_expr = $expr_node;
+                }
+            }
         }
 
         return $context;

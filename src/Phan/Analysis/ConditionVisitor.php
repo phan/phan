@@ -50,6 +50,16 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public const CONSTANT_EXISTS_PREFIX = "__phan\x00constant_exists_";
 
     /**
+     * @var int Maximum recursion depth for re-applying stored conditional expressions (issue #4854)
+     */
+    private const MAX_CONDITIONAL_EXPR_DEPTH = 3;
+
+    /**
+     * @var int Current depth when recursively processing stored conditional expressions (issue #4854)
+     */
+    private static $conditional_expr_depth = 0;
+
+    /**
      * @var Context
      * The context in which the node we're going to be looking
      * at exists.
@@ -562,7 +572,39 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public function visitVar(Node $node): Context
     {
         $this->checkVariablesDefined($node);
-        return $this->removeFalseyFromVariable($node, $this->context, false);
+
+        // Fix for issue #4854: Check if this variable has a stored conditional expression
+        // BEFORE removeFalseyFromVariable, since that may clone the variable
+        $var_name = $node->children['name'];
+        $cond_expr = null;
+        if (\is_string($var_name) && self::$conditional_expr_depth < self::MAX_CONDITIONAL_EXPR_DEPTH) {
+            $variable = $this->context->getScope()->getVariableByNameOrNull($var_name);
+            if ($variable) {
+                // @phan-suppress-next-line PhanUndeclaredProperty - using AllowDynamicProperties
+                $cond_expr = $variable->phan_condition_expr ?? null;
+            }
+        }
+
+        $context = $this->removeFalseyFromVariable($node, $this->context, false);
+
+        // If this variable had a stored conditional expression (from an assignment like
+        // `$x = ($a instanceof Foo)`), re-apply that condition to properly narrow types
+        if ($cond_expr instanceof Node) {
+            // Recursively apply the stored conditional expression to narrow types
+            // This handles cases like: $hasCompare = ($a instanceof Foo); if ($hasCompare) { ... }
+            // Track depth to prevent infinite recursion
+            self::$conditional_expr_depth++;
+            try {
+                $context = (new ConditionVisitor(
+                    $this->code_base,
+                    $context
+                ))->__invoke($cond_expr);
+            } finally {
+                self::$conditional_expr_depth--;
+            }
+        }
+
+        return $context;
     }
 
     public function visitNullsafeProp(Node $node): Context
