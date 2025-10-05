@@ -2642,8 +2642,23 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // static::X should be treated like self::X in a final class.
                     return $union_type;
                 }
-                return $union_type->eraseRealTypeSet();
+                $union_type = $union_type->eraseRealTypeSet();
             }
+
+            // Check for narrowed constant types (e.g., after if (static::CONST !== null))
+            // This check must come after eraseRealTypeSet() so we start with the PHPDoc type
+            $class_name = $class_node->children['name'];
+            if (\is_string($class_name) && \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
+                $const_name = $node->children['const'];
+                if (\is_string($const_name)) {
+                    $override_union_type = $this->context->getClassConstantIfOverridden($const_name);
+                    if ($override_union_type) {
+                        // There was an earlier narrowing in scope such as `if (static::CONST !== null)`
+                        return $override_union_type;
+                    }
+                }
+            }
+
             return $union_type;
         } catch (NodeException) {
             // ignore, this should warn elsewhere

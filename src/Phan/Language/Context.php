@@ -949,6 +949,11 @@ class Context extends FileRef
     public const VAR_NAME_THIS_PROPERTIES = "phan\0\$this";
 
     /**
+     * This name is internally used by Phan to track narrowed types of class constants (e.g., after `if (static::CONST !== null)`)
+     */
+    public const VAR_NAME_CLASS_CONSTANTS = "phan\0class_const";
+
+    /**
      * Analyzes the side effects of setting the type of $this->property to $type
      * @suppress PhanUnreferencedPublicMethod this might be used in the future
      */
@@ -1035,6 +1040,69 @@ class Context extends FileRef
             return null;
         }
         $types = $this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType();
+        if ($types->isEmpty()) {
+            return null;
+        }
+
+        $result = null;
+        foreach ($types->getTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                return null;
+            }
+            $extra = $type->getFieldTypes()[$name] ?? null;
+            if (!$extra || ($extra->isPossiblyUndefined() && !$extra->isDefinitelyUndefined())) {
+                return null;
+            }
+            if ($result) {
+                '@phan-var UnionType $result';
+                $result = $result->withUnionType($extra);
+            } else {
+                $result = $extra;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Set the type of a class constant in this context after narrowing (e.g., in a conditional)
+     *
+     * @param string $constant_name the name of the constant (e.g., 'CONST_NAME' or 'self::CONST_NAME')
+     * @param UnionType $type the narrowed type
+     */
+    public function withClassConstantSetToType(string $constant_name, UnionType $type): Context
+    {
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_CLASS_CONSTANTS)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_CLASS_CONSTANTS));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$constant_name => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asPHPDocUnionType());
+        } else {
+            // There is nothing inferred about any constant type
+
+            $override_type = ArrayShapeType::fromFieldTypes([$constant_name => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_CLASS_CONSTANTS,
+                $override_type->asPHPDocUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * Get the overridden type of a class constant if it has been narrowed in this context
+     *
+     * @param string $name the name of the constant (e.g., 'CONST_NAME' or 'self::CONST_NAME')
+     */
+    public function getClassConstantIfOverridden(string $name): ?UnionType
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_CLASS_CONSTANTS)) {
+            return null;
+        }
+        $types = $this->scope->getVariableByName(self::VAR_NAME_CLASS_CONSTANTS)->getUnionType();
         if ($types->isEmpty()) {
             return null;
         }
