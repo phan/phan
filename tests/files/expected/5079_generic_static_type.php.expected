@@ -1,0 +1,6 @@
+%s:28 PhanTypeMismatchArgument Argument 1 ($box) is $b of type \Box|\Box<int> but \acceptBoxString() takes \Box<string> defined at %s:23
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \Box<int>
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \Box<int>
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \Box<int>
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \Box<int>
+%s:32 PhanTypeMismatchArgument Argument 1 ($box) is $d of type \Box|\Box<int> but \acceptBoxString() takes \Box<string> defined at %s:23

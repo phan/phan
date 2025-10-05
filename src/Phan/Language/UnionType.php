@@ -1157,6 +1157,18 @@ class UnionType implements Serializable, Stringable
     /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
+     * to the given type.
+     */
+    public function withStaticResolvedTo(Type $static_type): UnionType
+    {
+        return $this->asMappedUnionType(static function (Type $type) use ($static_type): Type {
+            return $type->withStaticResolvedTo($static_type);
+        });
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
      * in the given function or method's context.
      */
     public function withStaticResolvedInFunctionLike(

@@ -3136,21 +3136,60 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     $union_type = $this->getDependentReturnTypeOfCall($method, $node);
 
-                    // Map template types to concrete types
+                    // Map template types to concrete types and resolve static types
                     // TODO: When the template types are part of the method doc comment, don't look it up in the class union type
-                    if (isset($node->children['expr']) && $union_type->hasTemplateTypeRecursive()) {
-                        // Get the type of the object calling the method
-                        $expression_type = UnionTypeVisitor::unionTypeFromNode(
-                            $this->code_base,
-                            $this->context,
-                            $node->children['expr'],
-                            $this->should_catch_issue_exception
-                        );
+                    if (isset($node->children['expr'])) {
+                        $expression_type = null;
 
-                        // Map template types to concrete types
-                        $union_type = $union_type->withTemplateParameterTypeMap(
-                            $expression_type->getTemplateParameterTypeMap($this->code_base)
-                        );
+                        // Handle static return types by preserving intersection types and generics
+                        if (!$method->isStatic() && $union_type->hasTypeMatchingCallback(
+                            function (Type $type): bool {
+                                return $type->hasStaticOrSelfTypesRecursive($this->code_base);
+                            }
+                        )) {
+                            // Get the type of the object calling the method
+                            $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                                $this->code_base,
+                                $this->context,
+                                $node->children['expr'],
+                                $this->should_catch_issue_exception
+                            );
+
+                            // A method call like `$foo->returnThis()` returns the same type as
+                            // `$foo`, filtered to only the subtypes of the class we're analyzing.
+                            // This preserves intersection types and generic type parameters,
+                            // but avoids introducing impossible cases when `$foo` was a union.
+                            $class_fqsen = $class->getFQSEN();
+                            $static_type_for_this_call = $expression_type->findTypeMatchingCallback(
+                                function (Type $type) use ($class_fqsen): bool {
+                                    // Check if this type is the class itself or a subclass
+                                    if ($type->asFQSEN() === $class_fqsen) {
+                                        return true;
+                                    }
+                                    return $type->isSubclassOf($class_fqsen->asType(), $this->code_base);
+                                }
+                            );
+                            if ($static_type_for_this_call) {
+                                // Remove the base class type if present (Method::getUnionType() may add it)
+                                $union_type = $union_type->withoutType($class_fqsen->asType())
+                                    ->withStaticResolvedTo($static_type_for_this_call);
+                            }
+                        }
+
+                        if ($union_type->hasTemplateTypeRecursive()) {
+                            if (!$expression_type) {
+                                $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                                    $this->code_base,
+                                    $this->context,
+                                    $node->children['expr'],
+                                    $this->should_catch_issue_exception
+                                );
+                            }
+                            // Map template types to concrete types
+                            $union_type = $union_type->withTemplateParameterTypeMap(
+                                $expression_type->getTemplateParameterTypeMap($this->code_base)
+                            );
+                        }
                     }
 
                     // Resolve any references to `static` or `static[]`

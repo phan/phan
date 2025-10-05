@@ -132,6 +132,25 @@ final class StaticType extends StaticOrSelfType
     }
 
     /**
+     * @return Type
+     * 'static' resolved to the given type, preserving template parameters and nullability.
+     */
+    public function withStaticResolvedTo(
+        Type $type
+    ): Type {
+        if ($this->template_parameter_type_list) {
+            return $type->make(
+                $type->namespace,
+                $type->name,
+                $this->template_parameter_type_list,
+                $type->is_nullable,
+                Type::FROM_TYPE
+            );
+        }
+        return $type->withIsNullable($this->is_nullable);
+    }
+
+    /**
      * @return StaticType
      */
     public function withIsNullable(bool $is_nullable): Type
