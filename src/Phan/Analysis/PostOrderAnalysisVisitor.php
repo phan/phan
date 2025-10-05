@@ -256,6 +256,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $var_name = $var_node->children['name'];
             if (\is_string($var_name) && !self::exprReferencesVariable($expr_node, $var_name)) {
                 // Get the variable from the context and attach the conditional expression to it
+                '@phan-var Context $context';  // Help fallback parser with type inference
                 $variable = $context->getScope()->getVariableByNameOrNull($var_name);
                 if ($variable) {
                     // Store the RHS expression node so ConditionVisitor can re-apply type narrowing
