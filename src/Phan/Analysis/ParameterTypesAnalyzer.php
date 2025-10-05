@@ -405,8 +405,12 @@ class ParameterTypesAnalyzer
             return;
         }
         // Inherit (at)phan-pure annotations by default.
+        // EXCEPT for __call and __callStatic, which define completely new behavior when overridden.
         if ($overridden_method->isPure()) {
-            $method->setIsPure();
+            $method_name_lower = \strtolower($method->getName());
+            if ($method_name_lower !== '__call' && $method_name_lower !== '__callstatic') {
+                $method->setIsPure();
+            }
         }
 
         // Get the class that the overridden method lives on
