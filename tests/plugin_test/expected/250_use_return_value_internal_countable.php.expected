@@ -1,0 +1,3 @@
+src/250_use_return_value_internal_countable.php:14 PhanUnreferencedFunction Possibly zero references to function \test_internal_pure()
+src/250_use_return_value_internal_countable.php:16 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \InternalPureImpl::getValue() defined at src/250_use_return_value_internal_countable.php:9
+src/250_use_return_value_internal_countable.php:19 PhanUnreferencedFunction Possibly zero references to function \test_using_return_value()
