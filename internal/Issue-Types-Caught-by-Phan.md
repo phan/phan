@@ -2191,6 +2191,16 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1096
 
 This category of issue comes up when more than one thing of whatever type have the same name and namespace.
 
+## PhanIncompatibleCompositionConstant
+
+This issue is emitted when a class uses traits that define the same constant with incompatible visibility or values, or when a class redefines a trait constant incompatibly. PHP 8.2+ allows constants in traits, and the definitions must be compatible.
+
+```
+{CLASS} and {CLASS} define the same constant ({CONST}) in the composition of {CLASS}. However, the definition differs and is considered incompatible. Class was composed in {FILE} on line {LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php82_files/expected/4702_trait_constant_conflicts.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php82_files/src/4702_trait_constant_conflicts.php#L12).
+
 ## PhanIncompatibleCompositionMethod
 
 ```
