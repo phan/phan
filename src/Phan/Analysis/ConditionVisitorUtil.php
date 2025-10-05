@@ -747,6 +747,18 @@ trait ConditionVisitorUtil
     }
 
     /**
+     * Check if a node represents self, static, or parent class reference
+     */
+    public static function isSelfOrStaticClassNode(\ast\Node|float|int|string $node): bool
+    {
+        if (!$node instanceof Node || $node->kind !== ast\AST_NAME) {
+            return false;
+        }
+        $name = $node->children['name'] ?? null;
+        return \is_string($name) && \in_array(\strtolower($name), ['self', 'static', 'parent'], true);
+    }
+
+    /**
      * Analyze an expression such as `assert(!is_int($this->prop_name))`
      * and infer the effects on $this->prop_name in the local scope.
      *
@@ -788,6 +800,15 @@ trait ConditionVisitorUtil
     ): Context {
         if ($var_node->kind === ast\AST_PROP) {
             return $this->modifyPropertySimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion): UnionType {
+                if ($is_weak_type_assertion) {
+                    return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
+                } else {
+                    return $this->combineTypesAfterStrictEqualityCheck($old_type, $new_union_type);
+                }
+            }, $context);
+        }
+        if ($var_node->kind === ast\AST_CLASS_CONST) {
+            return $this->modifyClassConstantSimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion): UnionType {
                 if ($is_weak_type_assertion) {
                     return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
                 } else {
@@ -1176,6 +1197,12 @@ trait ConditionVisitorUtil
         }
         if ($kind === ast\AST_PROP) {
             if (self::isThisVarNode($var_node->children['expr']) && is_string($var_node->children['prop'])) {
+                return $condition->analyzeVar($this, $var_node, $expr_node);
+            }
+            return null;
+        }
+        if ($kind === ast\AST_CLASS_CONST) {
+            if (self::isSelfOrStaticClassNode($var_node->children['class']) && is_string($var_node->children['const'])) {
                 return $condition->analyzeVar($this, $var_node, $expr_node);
             }
             return null;
@@ -1615,6 +1642,32 @@ trait ConditionVisitorUtil
             return $context;
         }
         return $context->withThisPropertySetToTypeByName($property_name, $new_property_type);
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_CLASS_CONST (e.g. the argument of is_array(static::CONST_NAME))
+     *                   This is a no-op if the class is not self, static, or parent.
+     * @param Closure(UnionType):UnionType $type_mapping_callback
+     *        Given a union type, returns the resulting union type.
+     * @param Context $context
+     */
+    protected function modifyClassConstantSimple(Node $node, Closure $type_mapping_callback, Context $context): Context
+    {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $context;
+        }
+        $constant_name = $node->children['const'];
+        if (!is_string($constant_name)) {
+            return $context;
+        }
+        // Compute the old type and the new narrowed type
+        $old_constant_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        $new_constant_type = $type_mapping_callback($old_constant_type);
+        if ($new_constant_type->isIdenticalTo($old_constant_type)) {
+            // This didn't change anything
+            return $context;
+        }
+        return $context->withClassConstantSetToType($constant_name, $new_constant_type);
     }
 
     /**
