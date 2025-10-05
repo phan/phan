@@ -623,6 +623,23 @@ final class IntersectionType extends Type
     }
 
     /**
+     * @return Type
+     * Either this or 'static' resolved to the given type.
+     */
+    public function withStaticResolvedTo(
+        Type $static_type
+    ): Type {
+        $type_parts = $this->type_parts;
+        foreach ($type_parts as $i => $type) {
+            $type_parts[$i] = $type->withStaticResolvedTo($static_type);
+        }
+        if ($type_parts === $this->type_parts) {
+            return $this;
+        }
+        return new self($type_parts);
+    }
+
+    /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
      * @override
      */

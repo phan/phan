@@ -246,6 +246,16 @@ final class EmptyUnionType extends UnionType
     /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
+     * to the given type.
+     */
+    public function withStaticResolvedTo(Type $static_type): UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
      * in the given context.
      */
     public function withStaticResolvedInFunctionLike(

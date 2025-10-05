@@ -1048,6 +1048,23 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return self::fromFieldTypes($new_field_types, $this->is_nullable);
     }
 
+    public function withStaticResolvedTo(Type $static_type): Type
+    {
+        $did_change = false;
+        $new_field_types = $this->field_types;
+        foreach ($new_field_types as $i => $field_type) {
+            $new_field_type = $field_type->withStaticResolvedTo($static_type);
+            if ($new_field_type !== $field_type) {
+                $did_change = true;
+                $new_field_types[$i] = $new_field_type;
+            }
+        }
+        if (!$did_change) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+    }
+
     /**
      * Returns a type where all referenced union types (e.g. in generic arrays) have real type sets removed.
      */
