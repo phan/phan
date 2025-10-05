@@ -3598,6 +3598,8 @@ class Clazz extends AddressableElement
             $this
         );
 
+        $this->analyzeTraitUse($code_base);
+
         $this->analyzeInheritedMethods($code_base);
 
         $this->analyzeAndUpdateEnum($code_base);
@@ -3634,6 +3636,58 @@ class Clazz extends AddressableElement
                     $method->getContext()->getLineNumberStart(),
                     '@abstract'
                 );
+            }
+        }
+    }
+
+    /**
+     * Validate trait usage in this class/interface.
+     * - Interfaces cannot use traits (PHP fatal error)
+     * - Readonly classes cannot use traits with non-readonly properties (PHP 8.2+ fatal error)
+     */
+    private function analyzeTraitUse(CodeBase $code_base): void
+    {
+        // Check if this class uses any traits
+        $trait_fqsen_list = $this->trait_fqsen_list;
+        if (!$trait_fqsen_list) {
+            return;
+        }
+
+        // Interfaces cannot use traits at all
+        if ($this->isInterface()) {
+            Issue::maybeEmit(
+                $code_base,
+                $this->getContext(),
+                Issue::InvalidTraitUse,
+                $this->getContext()->getLineNumberStart(),
+                "Interfaces may not use traits"
+            );
+            return;
+        }
+
+        // Check readonly class restrictions
+        if ($this->isReadonly()) {
+            foreach ($trait_fqsen_list as $trait_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                    continue;
+                }
+                $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
+                $trait->hydrate($code_base);
+
+                // Check if trait has any non-readonly properties
+                foreach ($trait->getPropertyMap($code_base) as $property) {
+                    if (!$property->isReadOnlyReal()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $this->getContext(),
+                            Issue::InvalidTraitUse,
+                            $this->getContext()->getLineNumberStart(),
+                            "Readonly class {$this->fqsen} cannot use trait {$trait_fqsen} with non-readonly property {$property->getName()}"
+                        );
+                        // Only emit once per trait
+                        break;
+                    }
+                }
             }
         }
     }
