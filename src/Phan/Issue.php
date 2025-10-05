@@ -257,6 +257,9 @@ class Issue
     public const PropertyHookIncompatibleReturnType = 'PhanPropertyHookIncompatibleReturnType';
     public const PropertyHookIncompatibleParamType  = 'PhanPropertyHookIncompatibleParamType';
     public const PropertyHookFinalOverride          = 'PhanPropertyHookFinalOverride';
+    public const TypeMismatchDeclaredConstant       = 'PhanTypeMismatchDeclaredConstant';
+    public const TypeMismatchDeclaredConstantNever  = 'PhanTypeMismatchDeclaredConstantNever';
+    public const ConstantTypeMismatchInheritance    = 'PhanConstantTypeMismatchInheritance';
     public const ImpossibleCondition               = 'PhanImpossibleCondition';
     public const ImpossibleConditionInLoop         = 'PhanImpossibleConditionInLoop';
     public const ImpossibleConditionInGlobalScope  = 'PhanImpossibleConditionInGlobalScope';
@@ -2707,6 +2710,30 @@ class Issue
                 "Cannot override final property hook {PROPERTY}::{METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10202
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredConstant,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Constant {CONST} is declared with type {TYPE} but has value {CODE} of type {TYPE}",
+                self::REMEDIATION_B,
+                10203
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredConstantNever,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Constant {CONST} is declared with type never which always results in a compile error",
+                self::REMEDIATION_B,
+                10204
+            ),
+            new Issue(
+                self::ConstantTypeMismatchInheritance,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Class constant {CONST} is declared with type {TYPE} which is not covariant with type {TYPE} inherited from {CLASSLIKE} (constant types must be invariant or covariant)",
+                self::REMEDIATION_B,
+                10205
             ),
             new Issue(
                 self::ImpossibleCondition,

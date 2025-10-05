@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use ast\Node;
+use Phan\AST\ASTReverter;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
@@ -12,6 +15,9 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\FloatType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\NeverType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
@@ -105,6 +111,211 @@ class ClassConstantTypesAnalyzer
                             [$constant->getFQSEN(), (string)$outer_type]
                         );
                     }
+                }
+            }
+        }
+
+        // PHP 8.3+: Validate typed class constants
+        self::validateTypedConstants($code_base, $clazz);
+
+        // Check inheritance compatibility for typed constants
+        self::checkConstantInheritance($code_base, $clazz);
+    }
+
+    /**
+     * Validate that typed class constants (PHP 8.3+) have values matching their declared types
+     */
+    private static function validateTypedConstants(CodeBase $code_base, Clazz $clazz): void
+    {
+        foreach ($clazz->getConstantMap($code_base) as $constant) {
+            // Only check constants defined in this class
+            if (!($constant->hasDefiningFQSEN() && $constant->getDefiningFQSEN() === $constant->getFQSEN())) {
+                continue;
+            }
+
+            try {
+                $union_type = $constant->getUnionType();
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $code_base,
+                    $constant->getContext(),
+                    $exception->getIssueInstance()
+                );
+                continue;
+            }
+
+            // Check if constant has a real type (PHP 8.3+ typed constant)
+            if (!$union_type->hasRealTypeSet()) {
+                continue;
+            }
+
+            $constant_context = $constant->getContext();
+            $real_type = $union_type->getRealUnionType();
+
+            // Check for 'never' type - always an error for constants
+            if ($real_type->isType(NeverType::instance(false))) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $constant_context,
+                    Issue::TypeMismatchDeclaredConstantNever,
+                    $constant_context->getLineNumberStart(),
+                    $constant->getFQSEN()
+                );
+                continue;
+            }
+
+            $value_node = $constant->getNodeForValue();
+            if ($value_node === null) {
+                continue;
+            }
+
+            // Get the inferred type of the constant value
+            if ($value_node instanceof Node) {
+                // For complex expressions, we need to evaluate them
+                try {
+                    $value_type = UnionTypeVisitor::unionTypeFromNode(
+                        $code_base,
+                        $constant_context,
+                        $value_node
+                    );
+                } catch (IssueException) {
+                    // If we can't determine the type, skip validation
+                    continue;
+                }
+            } else {
+                // For literals, get the type from the PHPDoc type set
+                $value_type = $union_type->eraseRealTypeSet();
+            }
+
+            // Special case: float constants can accept integer values (per RFC)
+            if ($real_type->hasType(FloatType::instance(false)) &&
+                $value_type->isType(IntType::instance(false))) {
+                continue;
+            }
+
+            // Check if the value type can cast to the declared type
+            if (!$value_type->asExpandedTypes($code_base)->canCastToUnionType($real_type, $code_base)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $constant_context,
+                    Issue::TypeMismatchDeclaredConstant,
+                    $constant_context->getLineNumberStart(),
+                    $constant->getFQSEN(),
+                    $real_type,
+                    ASTReverter::toShortString($value_node),
+                    $value_type
+                );
+            }
+        }
+    }
+
+    /**
+     * Check inheritance for constant type compatibility (covariance)
+     */
+    private static function checkConstantInheritance(CodeBase $code_base, Clazz $clazz): void
+    {
+        // Get the list of all inherited classes
+        $inherited_class_list = $clazz->getAncestorClassList($code_base);
+
+        if (!$inherited_class_list) {
+            return;
+        }
+
+        $clazz->hydrate($code_base);
+
+        // Check each constant defined in this class
+        foreach ($clazz->getConstantMap($code_base) as $constant) {
+            // Skip the magic ::class constant - it's automatically different in child classes
+            if ($constant->getName() === 'class') {
+                continue;
+            }
+
+            // Only check constants defined in this class
+            if (!($constant->hasDefiningFQSEN() && $constant->getDefiningFQSEN() === $constant->getFQSEN())) {
+                continue;
+            }
+
+            $constant_union_type = $constant->getUnionType();
+            if (!$constant_union_type->hasRealTypeSet()) {
+                // Untyped constant - no covariance checking needed
+                continue;
+            }
+
+            // Check if this constant has an explicitly declared type (PHP 8.3+)
+            // vs just an inferred real type from its value
+            // For typed constants: PHPDoc type (from value) differs from real type (from declaration)
+            // For untyped constants: only real type exists, PHPDoc type is empty or same as real
+            $phpdoc_type = $constant_union_type->eraseRealTypeSet();
+            $real_type = $constant_union_type->getRealUnionType();
+            $has_declared_type = !$phpdoc_type->isEmpty() && !$phpdoc_type->isEqualTo($real_type);
+
+            if (!$has_declared_type) {
+                // This constant's real type is just inferred from its value (pre-8.3 style)
+                // No inheritance checking needed
+                continue;
+            }
+
+            $constant_real_type = $constant_union_type->getRealUnionType();
+
+            // Check against each inherited class
+            foreach ($inherited_class_list as $inherited_class) {
+                $inherited_class->hydrate($code_base);
+
+                if (!$inherited_class->hasConstantWithName($code_base, $constant->getName())) {
+                    continue;
+                }
+
+                // Get the constant map directly to avoid exceptions for trait constants
+                $inherited_constant_map = $inherited_class->getConstantMap($code_base);
+
+                if (!isset($inherited_constant_map[$constant->getName()])) {
+                    continue;
+                }
+
+                $inherited_constant = $inherited_constant_map[$constant->getName()];
+
+                // Skip if it's the same constant (from traits)
+                if ($inherited_constant->getDefiningFQSEN() === $constant->getDefiningFQSEN()) {
+                    continue;
+                }
+
+                $inherited_union_type = $inherited_constant->getUnionType();
+                if (!$inherited_union_type->hasRealTypeSet()) {
+                    // Parent has no declared type - child can add a type
+                    continue;
+                }
+
+                // Check if parent has an explicitly declared type (PHP 8.3+)
+                $inherited_phpdoc_type = $inherited_union_type->eraseRealTypeSet();
+                $inherited_real_type_temp = $inherited_union_type->getRealUnionType();
+                $inherited_has_declared_type = !$inherited_phpdoc_type->isEmpty() &&
+                                              !$inherited_phpdoc_type->isEqualTo($inherited_real_type_temp);
+
+                if (!$inherited_has_declared_type) {
+                    // Parent's real type is just inferred from value - child can add explicit type
+                    continue;
+                }
+
+                $inherited_real_type = $inherited_union_type->getRealUnionType();
+
+                // Private constants can change type freely
+                if ($inherited_constant->isPrivate()) {
+                    continue;
+                }
+
+                // Constants must be covariant: child type must be equal to parent type
+                // PHP enforces invariance for typed constants (types must match exactly)
+                if (!$constant_real_type->isEqualTo($inherited_real_type)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $constant->getContext(),
+                        Issue::ConstantTypeMismatchInheritance,
+                        $constant->getContext()->getLineNumberStart(),
+                        $constant->getFQSEN(),
+                        $constant_real_type,
+                        $inherited_real_type,
+                        $inherited_class->getFQSEN()
+                    );
                 }
             }
         }
