@@ -304,10 +304,18 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0630
 This issue is emitted when a class redeclares an inherited static method as an instance method.
 
 ```
-Cannot make static method {METHOD}() non static
+Cannot make static method {METHOD}() defined in {FILE}:{LINE} non static
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0625_static_to_non_static.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0625_static_to_non_static.php#L7).
+
+## PhanAccessStaticToNonStaticInternal
+
+This issue is emitted when a class redeclares an inherited static method from an internal PHP class as an instance method.
+
+```
+Cannot make static method {METHOD}() non static
+```
 
 ## PhanAccessStaticToNonStaticProperty
 
