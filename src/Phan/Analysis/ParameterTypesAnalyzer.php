@@ -495,13 +495,25 @@ class ParameterTypesAnalyzer
         // Static or non-static should match
         if ($method->isStatic() != $overridden_method->isStatic()) {
             if ($overridden_method->isStatic()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::AccessStaticToNonStatic,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $overridden_method->getFQSEN()
-                );
+                if ($overridden_method->isPHPInternal()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::AccessStaticToNonStaticInternal,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $overridden_method->getFQSEN()
+                    );
+                } else {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::AccessStaticToNonStatic,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $overridden_method->getFQSEN(),
+                        $overridden_method->getFileRef()->getFile(),
+                        $overridden_method->getFileRef()->getLineNumberStart()
+                    );
+                }
             } else {
                 Issue::maybeEmit(
                     $code_base,

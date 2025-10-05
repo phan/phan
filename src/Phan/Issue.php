@@ -555,6 +555,7 @@ class Issue
     public const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
     public const ConstantAccessSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
     public const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
+    public const AccessStaticToNonStaticInternal = 'PhanAccessStaticToNonStaticInternal';
     public const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
     public const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
     public const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
@@ -4857,9 +4858,17 @@ class Issue
                 self::AccessStaticToNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot make static method {METHOD}() non static",
+                "Cannot make static method {METHOD}() defined in {FILE}:{LINE} non static",
                 self::REMEDIATION_B,
                 1006
+            ),
+            new Issue(
+                self::AccessStaticToNonStaticInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make static method {METHOD}() non static",
+                self::REMEDIATION_B,
+                1032
             ),
             new Issue(
                 self::AccessNonStaticToStatic,
