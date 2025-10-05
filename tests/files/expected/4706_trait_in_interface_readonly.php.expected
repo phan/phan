@@ -1,3 +1,0 @@
-%s:8 PhanInvalidTraitUse Invalid trait use: Readonly class \ReadonlyClass cannot use trait \TraitWithProperty with non-readonly property x
-%s:43 PhanInvalidTraitUse Invalid trait use: Readonly class \ReadonlyClass4 cannot use trait \TraitB with non-readonly property b
-%s:52 PhanInvalidTraitUse Invalid trait use: Interfaces may not use traits
