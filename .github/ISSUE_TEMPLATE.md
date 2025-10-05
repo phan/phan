@@ -1,2 +1,20 @@
-<!-- Please include the Phan version in bug reports, and make sure the issue also applies to the latest release: https://github.com/phan/phan/releases/latest -->
-<!-- See https://github.com/phan/phan/wiki/Frequently-Asked-Questions for answers to common questions and bug reports. -->
+---
+name: Bug Report or Feature Request
+about: Create a report to help improve Phan
+title: ''
+labels: ''
+assignees: ''
+---
+
+<!-- Please check the FAQ first: https://github.com/phan/phan/wiki/Frequently-Asked-Questions -->
+
+**Phan version:** <!-- Run `./phan --version` -->
+
+**PHP version:** <!-- Run `php -v` -->
+
+**php-ast version:** <!-- Run `php -r "echo phpversion('ast');"` -->
+
+**Description:**
+
+
+**Demo link:** (Create a minimal reproducible example at <a href="https://phan.github.io/demo/" target="_blank">https://phan.github.io/demo/</a> and paste the share link here)
