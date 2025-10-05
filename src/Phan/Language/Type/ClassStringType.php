@@ -70,7 +70,7 @@ final class ClassStringType extends StringType
      * @param CodeBase $code_base may be used for resolving inheritance @phan-unused-param
      * @param TemplateType $template_type the template type that this union type is being searched for
      *
-     * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
+     * @return ?Closure(UnionType, \Phan\Language\Context):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type): ?Closure
@@ -82,7 +82,8 @@ final class ClassStringType extends StringType
         if (!$template_union_type->isType($template_type)) {
             return null;
         }
-        return static function (UnionType $type): UnionType {
+        // @phan-suppress-next-line PhanUnusedClosureParameter - Context parameter required for parent signature compatibility
+        return static function (UnionType $type, \Phan\Language\Context $_context): UnionType {
             $result = UnionType::empty();
             foreach ($type->asStringScalarValues() as $string) {
                 // Convert string arguments to the classes they represent
