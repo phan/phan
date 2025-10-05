@@ -286,6 +286,12 @@ class ParameterTypesAnalyzer
         }
 
         if (!$is_actually_override) {
+            // For internal methods, check if they implement interface methods that are marked as pure
+            // This is a heuristic for dead-code detection: if an interface method is pure,
+            // the internal implementation is likely pure as well (issue #3864)
+            if ($method->isPHPInternal() && !$method->isPure()) {
+                self::inheritPureFromInterfaceMethods($code_base, $method, $class);
+            }
             return;
         }
 
@@ -311,6 +317,39 @@ class ParameterTypesAnalyzer
         }
         foreach ($overridden_method_list as $overridden_method) {
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
+        }
+    }
+
+    /**
+     * For internal methods, inherit the pure flag from interface methods if available.
+     * This is a heuristic: if an interface method is marked as @phan-pure,
+     * the internal implementation is likely pure as well.
+     *
+     * @param CodeBase $code_base
+     * @param Method $method the internal method
+     * @param Clazz $class the class containing the method
+     */
+    private static function inheritPureFromInterfaceMethods(CodeBase $code_base, Method $method, Clazz $class): void
+    {
+        // Get all interfaces this class implements
+        foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
+                continue;
+            }
+            $interface = $code_base->getClassByFQSEN($interface_fqsen);
+
+            // Check if this interface has a method with the same name
+            if (!$interface->hasMethodWithName($code_base, $method->getName(), true)) {
+                continue;
+            }
+
+            $interface_method = $interface->getMethodByName($code_base, $method->getName());
+
+            // If the interface method is pure, inherit that property
+            if ($interface_method->isPure()) {
+                $method->setIsPure();
+                return; // Found a pure interface method, no need to check others
+            }
         }
     }
 
