@@ -4,4 +4,5 @@
 %s:14 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \Exception as if it were a Trait
 %s:15 PhanAccessWrongInheritanceCategory Attempting to inherit Interface \Interface316 defined at %s:5 as if it were a Trait
 %s:19 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \Exception as if it were a Interface
+%s:23 PhanInvalidTraitUse Invalid trait use: Interfaces may not use traits
 %s:24 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal abstract Interface \ArrayAccess as if it were a Trait
