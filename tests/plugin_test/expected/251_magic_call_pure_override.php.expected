@@ -1,0 +1,17 @@
+src/251_magic_call_pure_override.php:9 PhanUnusedPublicMethodParameter Parameter $args is never used
+src/251_magic_call_pure_override.php:9 PhanUnusedPublicMethodParameter Parameter $name is never used
+src/251_magic_call_pure_override.php:16 PhanUnusedPublicMethodParameter Parameter $args is never used
+src/251_magic_call_pure_override.php:26 PhanUnusedPublicMethodParameter Parameter $args is never used
+src/251_magic_call_pure_override.php:26 PhanUnusedPublicMethodParameter Parameter $name is never used
+src/251_magic_call_pure_override.php:31 PhanUnreferencedFunction Possibly zero references to function \testChildWithSideEffects()
+src/251_magic_call_pure_override.php:36 PhanUnreferencedFunction Possibly zero references to function \testChildKeepsPure()
+src/251_magic_call_pure_override.php:38 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ChildKeepsPure::__call() defined at src/251_magic_call_pure_override.php:26
+src/251_magic_call_pure_override.php:41 PhanUnreferencedFunction Possibly zero references to function \testParent()
+src/251_magic_call_pure_override.php:43 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ParentWithPureCall::__call() defined at src/251_magic_call_pure_override.php:9
+src/251_magic_call_pure_override.php:51 PhanUnusedPublicMethodParameter Parameter $args is never used
+src/251_magic_call_pure_override.php:51 PhanUnusedPublicMethodParameter Parameter $name is never used
+src/251_magic_call_pure_override.php:56 PhanUnreferencedClass Possibly zero references to class \ChildOverridesCallStaticWithSideEffects
+src/251_magic_call_pure_override.php:57 PhanUnusedPublicMethodParameter Parameter $args is never used
+src/251_magic_call_pure_override.php:63 PhanUnreferencedFunction Possibly zero references to function \testCallStaticChild()
+src/251_magic_call_pure_override.php:67 PhanUnreferencedFunction Possibly zero references to function \testCallStaticParent()
+src/251_magic_call_pure_override.php:68 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ParentWithPureCallStatic::__callStatic() defined at src/251_magic_call_pure_override.php:51
