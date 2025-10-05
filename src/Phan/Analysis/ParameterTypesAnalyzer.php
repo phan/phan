@@ -857,10 +857,11 @@ class ParameterTypesAnalyzer
         $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
+            $comment_parameter_map ??= self::extractCommentParameterMap($method);
+            $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
+
             // If there is already a phpdoc parameter type, then don't bother inheriting the parameter type from $overridden_method
             if (!$parameter_type->isEmpty()) {
-                $comment_parameter_map ??= self::extractCommentParameterMap($method);
-                $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
                 if ($comment_parameter) {
                     $comment_parameter_type = $comment_parameter->getUnionType();
                     if (!$comment_parameter_type->isEmpty()) {
@@ -868,7 +869,7 @@ class ParameterTypesAnalyzer
                     }
                 }
             }
-            // There is no phpdoc parameter for this type
+            // There is no phpdoc parameter for this type, or it was inferred from the signature/default value
 
             $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
             if ($parent_parameter) {
@@ -878,7 +879,9 @@ class ParameterTypesAnalyzer
                 }
                 // Allow @inheritDoc to be used to indicate that phpdoc parent parameter types
                 // should override inferred contravariant parameter types.
+                // Also inherit when there's no comment parameter (type may be from default value)
                 if ($parameter_type->isEmpty() ||
+                        !$comment_parameter ||
                         ($parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type) &&
                         ($parameter_type->isExclusivelyArray() || \stripos((string) $method->getDocComment(), '@inheritDoc') !== false))) {
                     $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($parameter_type->getRealTypeSet()));
