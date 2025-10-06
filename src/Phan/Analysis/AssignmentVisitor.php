@@ -874,8 +874,8 @@ class AssignmentVisitor extends AnalysisVisitor
             );
             $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
         } elseif (\is_scalar($dim_node)) {
-            $dim_value = $dim_node;
-            $dim_type = Type::fromObject($dim_node)->asRealUnionType();
+            $dim_value = self::normalizeScalarArrayKey($dim_node);
+            $dim_type = Type::fromObject($dim_value)->asRealUnionType();
         } else {
             // TODO: If the array shape has only one set of keys, then appending should add to that shape? Possibly not a common use case.
             $dim_type = null;
@@ -921,6 +921,27 @@ class AssignmentVisitor extends AnalysisVisitor
         ))->__invoke($expr_node);
 
         return $context;
+    }
+
+    /**
+     * Normalize a scalar array key to the value PHP actually uses at runtime.
+     * PHP converts floats and bools to ints when they are used as array offsets.
+     * Converting ahead of time avoids triggering PHP 8.1+ native warnings about
+     * implicit conversions inside Phan itself while still modeling the runtime behaviour.
+     *
+     * @param int|float|string|bool $key user-provided array index
+     */
+    private static function normalizeScalarArrayKey(int|float|string|bool $key): int|string
+    {
+        if (\is_int($key) || \is_string($key)) {
+            return $key;
+        }
+        if (\is_float($key)) {
+            // PHP truncates floats when used as array keys
+            return (int)$key;
+        }
+        // bools are normalized to ints when used as array keys
+        return $key ? 1 : 0;
     }
 
     /**
