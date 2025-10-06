@@ -1,0 +1,5 @@
+%s:28 PhanPossiblyUndeclaredVariable Variable $val is possibly undeclared
+%s:61 PhanPossiblyUndeclaredVariable Variable $val4 is possibly undeclared
+%s:74 PhanPossiblyUndeclaredVariable Variable $val5 is possibly undeclared
+%s:87 PhanPossiblyUndeclaredVariable Variable $val6 is possibly undeclared
+%s:97 PhanPossiblyUndeclaredVariable Variable $val7 is possibly undeclared

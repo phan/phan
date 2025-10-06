@@ -2222,8 +2222,8 @@ class CodeBase
         Context $context,
         bool $suggest_in_global_namespace
     ): array {
+        $suggestions = [];
         try {
-            $suggestions = [];
             $fqsen = $this->getClassIfConstructorAccessible($namespace, $name, $context);
             if ($fqsen && $this->hasClassWithFQSEN($fqsen)) {
                 $suggestions[] = $fqsen;

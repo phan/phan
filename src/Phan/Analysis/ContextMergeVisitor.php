@@ -114,16 +114,26 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // 2. As if try did not fail, using the latter to analyze statements after the finally{}.
             return true;
         }
+        $catch_nodes = $node->children['catches']->children ?? [];
+        if (!$catch_nodes) {
+            // If there are no catches, be conservative and assume the try might fail.
+            return true;
+        }
         // E.g. after analyzing the following code:
         //      try { $x = expr(); } catch (Exception $e) { echo "Caught"; return; } catch (OtherException $e) { continue; }
-        // Phan should infer that $x is guaranteed to be defined.
-        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+        // Phan should infer that $x is guaranteed to be defined only if every catch unconditionally exits.
+        foreach ($catch_nodes as $catch_node) {
+            if (!($catch_node instanceof Node)) {
+                continue;
+            }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
-                return false;
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+                // At least one catch may fall through, so analyze as if the try might fail.
+                return true;
             }
         }
-        return true;
+        // All catches unconditionally exit, so we can analyze remaining statements as if the try succeeded.
+        return false;
     }
 
     /**
@@ -176,7 +186,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Merge types from catch blocks into the merged try scope
         // We use $raw_try_scope to check which variables were in the try block,
         // but we modify $merged_try_scope to preserve possibly undefined flags
-        foreach ($raw_try_scope->getVariableMap() as $variable_name => $_) {
+        foreach ($raw_try_scope->getVariableMap() as $variable_name => $raw_variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
             $merged_variable = $merged_try_scope->getVariableByNameOrNull($variable_name);
             if (!$merged_variable) {
@@ -186,9 +196,30 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // Merge types if try and catch have a variable in common
             $catch_variable = $catch_scope->getVariableByNameOrNull($variable_name);
             if ($catch_variable) {
-                $merged_variable->setUnionType($merged_variable->getUnionType()->withUnionType(
-                    $catch_variable->getUnionType()
-                ));
+                $merged_union_type = $merged_variable->getUnionType();
+                $catch_union_type = $catch_variable->getUnionType();
+                $raw_union_type = $raw_variable->getUnionType();
+                $was_definitely_undefined = $merged_union_type->isDefinitelyUndefined();
+                $was_possibly_undefined = !$was_definitely_undefined && $merged_union_type->isPossiblyUndefined();
+                $catch_defines_variable = !$catch_union_type->isPossiblyUndefined() && !$catch_union_type->isDefinitelyUndefined();
+
+                if ($catch_defines_variable) {
+                    $new_union_type = $raw_union_type->withUnionType($catch_union_type);
+                    if (!$raw_union_type->containsNullableOrUndefined() && !$catch_union_type->containsNullableOrUndefined()) {
+                        $new_union_type = $new_union_type->nonNullableClone();
+                    }
+                } else {
+                    $new_union_type = $merged_union_type->withUnionType($catch_union_type);
+                    if ($was_definitely_undefined && ($catch_union_type->isDefinitelyUndefined() || $catch_union_type->isPossiblyUndefined())) {
+                        $new_union_type = $new_union_type->withIsDefinitelyUndefined();
+                    } elseif ($was_possibly_undefined && ($catch_union_type->isPossiblyUndefined() || $catch_union_type->isDefinitelyUndefined())) {
+                        $new_union_type = $new_union_type->withIsPossiblyUndefined(true);
+                    }
+                    if (($was_definitely_undefined || $was_possibly_undefined) && !$raw_union_type->containsNullableOrUndefined() && !$catch_union_type->containsNullableOrUndefined()) {
+                        $new_union_type = $new_union_type->nonNullableClone();
+                    }
+                }
+                $merged_variable->setUnionType($new_union_type);
             }
         }
 

@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * Test fixtures covering issue #4884.
+ *
+ * @phan-file-suppress PhanPluginNoCommentOnFunction
+ * @phan-file-suppress PhanPluginUnknownFunctionReturnType
+ * @phan-file-suppress PhanThrowTypeAbsent
+ * @phan-file-suppress PhanUnusedVariableCaughtException
+ * @phan-file-suppress PhanPluginRemoveDebugEcho
+ * @phan-file-suppress PhanPluginEmptyStatementTryFinally
+ */
+
 function mayThrow() {
     if (rand()) {
         throw new Exception;
