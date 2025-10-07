@@ -26,8 +26,10 @@ use function strlen;
 /**
  * Integration Tests of functionality of the Language Server.
  *
- * Note: This test file is not enabled in CI because they may hang indefinitely.
- * (integration test timeouts weren't implemented or tested yet).
+ * By default this test exercises a fast subset of the integration scenarios so that
+ * it can run reliably in CI without adding significant runtime.  Set
+ * `PHAN_RUN_INTEGRATION_TEST=1` to exercise the full matrix, or
+ * `PHAN_SKIP_LANGUAGE_SERVER_TESTS=1` to skip these tests entirely.
  * @phan-file-suppress PhanPluginPossiblyStaticPrivateMethod there are a lot of methods
  * @phan-file-suppress PhanPluginRemoveDebugAny
  */
@@ -36,6 +38,29 @@ final class LanguageServerIntegrationTest extends BaseTest
     // Uncomment to enable debug logging within this test.
     // There are separate config settings to make the language server emit debug messages.
     private const DEBUG_ENABLED = false;
+
+    private static function isFullMatrixRequested(): bool
+    {
+        return \getenv('PHAN_RUN_INTEGRATION_TEST') === '1';
+    }
+
+    private static function shouldRunLanguageServerSuite(): bool
+    {
+        return \getenv('PHAN_SKIP_LANGUAGE_SERVER_TESTS') !== '1';
+    }
+
+    /**
+     * @template T
+     * @param list<T> $cases
+     * @return list<T>
+     */
+    private static function limitDataProviderCases(array $cases, int $limit): array
+    {
+        if (self::isFullMatrixRequested() || $limit <= 0 || \count($cases) <= $limit) {
+            return $cases;
+        }
+        return \array_slice($cases, 0, $limit, true);
+    }
 
     /**
      * Returns the path of the folder used for these integration tests
@@ -69,8 +94,8 @@ final class LanguageServerIntegrationTest extends BaseTest
      */
     private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true, array $option_array = []): array
     {
-        if (\getenv('PHAN_RUN_INTEGRATION_TEST') !== '1') {
-            $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
+        if (!self::shouldRunLanguageServerSuite()) {
+            $this->markTestSkipped('Language server integration tests disabled (set PHAN_SKIP_LANGUAGE_SERVER_TESTS=1)');
         }
         if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open not available');
@@ -169,8 +194,7 @@ final class LanguageServerIntegrationTest extends BaseTest
         if (\DIRECTORY_SEPARATOR !== "\\") {
             $results[] = [true, false];
         }
-
-        return $results;
+        return self::limitDataProviderCases($results, 2);
     }
 
     /**
@@ -401,7 +425,7 @@ EOT;
      */
     private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents, bool $windows_newlines = false): void
     {
-        if (\function_exists('pcntl_fork')) {
+        if (self::isFullMatrixRequested() && \function_exists('pcntl_fork')) {
             $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true, $windows_newlines);
         }
         $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false, $windows_newlines);
@@ -618,7 +642,7 @@ EOT;
             $my_other_global_constant_item,
         ];
 
-        return [
+        $cases = [
             [new Position(7, 3), $switch_token_completions, $for_vscode],
             [new Position(9, 9), [$file_token_item], $for_vscode],
             [new Position(10, 17), $static_property_completions, $for_vscode],
@@ -630,16 +654,18 @@ EOT;
             [new Position(44, 26), $all_instance_completions, $for_vscode],
             [new Position(44, 26), $all_instance_completions, $for_vscode, true],
         ];
+        return self::limitDataProviderCases($cases, 6);
     }
     /**
      * @return list<array{0:Position,1:array,2:bool}>
      */
     public function completionBasicProvider(): array
     {
-        return \array_merge(
+        $cases = \array_merge(
             self::createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
             self::createCompletionBasicTestCases('$myVar', null, null, true)
         );
+        return self::limitDataProviderCases($cases, 4);
     }
 
     /**
@@ -832,12 +858,13 @@ EOT;
             $sessionSuperglobal,
         ];
 
-        return [
+        $cases = [
             [new Position(37, 16), $localVariableCompletions, $for_vscode],
             [new Position(38, 16), $superGlobalVariableCompletions, $for_vscode],
             [new Position(47, 15), $publicM9OtherCompletions, $for_vscode],
             [new Position(48, 11), $publicM9MyCompletions, $for_vscode],
         ];
+        return self::limitDataProviderCases($cases, 3);
     }
 
     /**
@@ -845,10 +872,11 @@ EOT;
      */
     public function completionVariableProvider(): array
     {
-        return \array_merge(
+        $cases = \array_merge(
             self::createCompletionVariableTestCases('', false),
             self::createCompletionVariableTestCases('$', true)
         );
+        return self::limitDataProviderCases($cases, 3);
     }
 
     /**
@@ -858,7 +886,7 @@ EOT;
      */
     public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, ?int $expected_definition_line, ?string $requested_uri = null): void
     {
-        if (\function_exists('pcntl_fork')) {
+        if (self::isFullMatrixRequested() && \function_exists('pcntl_fork')) {
             $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -871,7 +899,7 @@ EOT;
      */
     public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, ?int $expected_definition_line, ?string $requested_uri = null): void
     {
-        if (\function_exists('pcntl_fork')) {
+        if (self::isFullMatrixRequested() && \function_exists('pcntl_fork')) {
             $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -882,7 +910,7 @@ EOT;
      */
     public function testHoverInOtherFile(string $new_file_contents, Position $position, ?string $expected_hover_markup, ?string $requested_uri = null): void
     {
-        if (\function_exists('pcntl_fork')) {
+        if (self::isFullMatrixRequested() && \function_exists('pcntl_fork')) {
             $this->runTestHoverInOtherFileWithPcntlSetting(
                 $new_file_contents,
                 $position,
@@ -942,7 +970,7 @@ function test(ExampleClass $c) {  // line 25
     var_export($z->count());  // line 35
 }
 EOT;
-        return [
+        $cases = [
             // Failure tests
             [
                 $example_file_contents,
@@ -1198,6 +1226,7 @@ Documentation of anonymous class
 EOT
             ],
         ];
+        return self::limitDataProviderCases($cases, 6);
     }
 
     private static function shouldExpectDiagnosticNotificationForURI(?string $requested_uri): bool
@@ -1481,7 +1510,7 @@ function unused_example() {}
 echo 'something';
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
-        return [
+        $cases = [
             // Failure tests
             [
                 $example_file_contents,
@@ -1624,6 +1653,7 @@ EOT;
                 9,
             ],
         ];
+        return self::limitDataProviderCases($cases, 6);
     }
 
     /**
@@ -1643,7 +1673,7 @@ function example() {
 }
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
-        return [
+        $cases = [
             [
                 $example_file_contents,
                 new Position(3, 14),  // $my_closure
@@ -1669,6 +1699,7 @@ EOT;
                 null,
             ],
         ];
+        return self::limitDataProviderCases($cases, 3);
     }
 
     /**
@@ -1703,10 +1734,11 @@ EOT;
     /** @return list<list> */
     public function pcntlEnabledProvider(): array
     {
-        return [
+        $cases = [
             [false],
             [true],
         ];
+        return self::limitDataProviderCases($cases, 1);
     }
 
     /**
