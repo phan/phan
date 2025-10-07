@@ -336,8 +336,10 @@ class Issue
     public const DeprecatedTrait           = 'PhanDeprecatedTrait';
     public const DeprecatedFunction        = 'PhanDeprecatedFunction';
     public const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
+    public const DeprecatedFunctionArgument = 'PhanDeprecatedFunctionArgument';
     public const DeprecatedProperty        = 'PhanDeprecatedProperty';
     public const DeprecatedClassConstant   = 'PhanDeprecatedClassConstant';
+    public const DeprecatedGlobalConstant   = 'PhanDeprecatedGlobalConstant';
     public const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
     public const DeprecatedPartiallySupportedCallable = 'PhanDeprecatedPartiallySupportedCallable';
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
@@ -3201,6 +3203,14 @@ class Issue
                 5005
             ),
             new Issue(
+                self::DeprecatedFunctionArgument,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Deprecated argument usage for function {FUNCTIONLIKE}: {DETAILS}",
+                self::REMEDIATION_B,
+                5014
+            ),
+            new Issue(
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
@@ -3223,6 +3233,14 @@ class Issue
                 "Reference to deprecated class constant {CONST} defined at {FILE}:{LINE}{DETAILS}",
                 self::REMEDIATION_B,
                 5007
+            ),
+            new Issue(
+                self::DeprecatedGlobalConstant,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Reference to deprecated constant {CONST}{DETAILS}",
+                self::REMEDIATION_B,
+                5015
             ),
             new Issue(
                 self::DeprecatedInterface,
