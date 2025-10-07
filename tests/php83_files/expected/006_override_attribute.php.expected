@@ -1,0 +1,1 @@
+%s:15 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \OverrideInvalid83::bar, but could not find an overridden method and it is not a magic method
