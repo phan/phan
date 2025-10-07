@@ -1,0 +1,2 @@
+src/008_mixed_return.php:6 PhanPluginMoreSpecificActualReturnType Phan inferred that \returns_nullable_issue4853() documented to have return type mixed returns the more specific type null(real=null)
+src/008_mixed_return.php:10 PhanTypeSuspiciousEcho Suspicious argument returns_nullable_issue4853() of type null for an echo/print statement
