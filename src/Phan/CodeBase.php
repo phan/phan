@@ -1105,7 +1105,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method): void {
-                $inner->method_set->detach($method);
+                unset($inner->method_set[$method]);
             });
         }
     }

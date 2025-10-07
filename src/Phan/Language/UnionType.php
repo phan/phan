@@ -4701,6 +4701,7 @@ class UnionType implements Serializable, Stringable
         }
 
         // Base map is now PHP 8.1, so no delta application needed for the latest version
+        \ksort($map);
         return $map;
     }
 
@@ -4738,6 +4739,7 @@ class UnionType implements Serializable, Stringable
         foreach ($map_raw as $key => $value) {
             $map[\strtolower($key)] = $value;
         }
+        \ksort($map);
         return $map;
     }
 
@@ -4793,6 +4795,7 @@ class UnionType implements Serializable, Stringable
             // Would also unset alternates, but that step isn't necessary yet.
             $older_map[\strtolower($key)] = $signature;
         }
+        \ksort($older_map);
         return $older_map;
     }
 
@@ -4818,6 +4821,7 @@ class UnionType implements Serializable, Stringable
         }
 
         // Return the newer map after modifying it to become the older map.
+        \ksort($newer_map);
         return $newer_map;
     }
 

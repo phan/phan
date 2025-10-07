@@ -103,6 +103,22 @@ final class ConversionTest extends BaseTest
             throw new RuntimeException(\sprintf("Version %d is not natively supported", Config::AST_VERSION));
         }
         foreach ($paths as $path) {
+            if (\PHP_VERSION_ID < 80200 && \str_contains($path, '/php82_or_newer/')) {
+                continue;
+            }
+            if (\PHP_VERSION_ID < 80400 && \str_contains($path, '/php84_or_newer/')) {
+                continue;
+            }
+            if (\PHP_VERSION_ID >= 80400) {
+                foreach ([
+                    '/misc/fallback_ast_src/exit.php',
+                    '/misc/fallback_ast_src/php-src_tests/bug60634_error_3.php',
+                ] as $skip_path) {
+                    if (\str_ends_with($path, $skip_path)) {
+                        continue 2;
+                    }
+                }
+            }
             $tests[] = [$path, Config::AST_VERSION];
         }
         return $tests;

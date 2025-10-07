@@ -694,11 +694,17 @@ final class UnionTypeTest extends BaseTest
 
     public function testFunctionSignatureMapSorted(): void
     {
-        // TODO: Function signature maps need sorting fixes after PHP 8.1 migration
-        // The base map has functions like zstd_* at the end, but PHP 8.1 added functions
-        // like array_is_list that should come before them alphabetically.
-        // This is a known issue separate from the return type variance fixes.
-        $this->markTestSkipped('Function signature map sorting needs fixing after PHP 8.1 baseline migration');
+        foreach ([80100, 80200, 80300, 80400] as $version) {
+            $map = UnionType::internalFunctionSignatureMap($version);
+            $keys = \array_keys($map);
+            $sorted = $keys;
+            \sort($sorted);
+            $this->assertSame(
+                $sorted,
+                $keys,
+                "Expected function signature map for PHP version $version to be sorted alphabetically"
+            );
+        }
     }
 
     public function testFunctionSignatureMapConsistency(): void
