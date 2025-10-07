@@ -65,8 +65,7 @@ final class Php83DeprecationPlugin extends PluginV3 implements
      */
     public static function isTargetingPhp83OrNewer(): bool
     {
-        static $result;
-        return $result ??= Config::get_closest_target_php_version_id() >= 80300;
+        return Config::get_closest_target_php_version_id() >= 80300;
     }
 
     /**

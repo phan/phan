@@ -687,6 +687,14 @@ function f1() {}
 f1();
 ```
 
+## PhanDeprecatedFunctionArgument
+
+```
+Deprecated argument usage for function {FUNCTIONLIKE}: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php83_files/expected/007_deprecations.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php83_files/src/007_deprecations.php#L13).
+
 ## PhanDeprecatedFunctionInternal
 
 ```
@@ -694,6 +702,14 @@ Call to deprecated function {FUNCTIONLIKE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/fixer_test/expected/008_deprecated_alias.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/fixer_test/src/008_deprecated_alias.php#L3).
+
+## PhanDeprecatedGlobalConstant
+
+```
+Reference to deprecated constant {CONST}{DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php83_files/expected/007_deprecations.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php83_files/src/007_deprecations.php#L17).
 
 ## PhanDeprecatedImplicitNullableParam
 
