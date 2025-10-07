@@ -23,6 +23,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /** @var ?Comment the phpdoc comment associated with this declaration, if any exists. */
     private $comment;
 
+    /** @var bool true if this constant declared an explicit type in its signature */
+    private $has_declared_type = false;
+
     /**
      * @param Context $context
      * The context in which the structural element lives
@@ -65,6 +68,22 @@ class ClassConstant extends ClassElement implements ConstantInterface
     }
 
     /**
+     * Record whether this constant declared a type in its signature.
+     */
+    public function setHasDeclaredType(bool $has_declared_type): void
+    {
+        $this->has_declared_type = $has_declared_type;
+    }
+
+    /**
+     * True if this constant declared a type in its signature.
+     */
+    public function hasDeclaredType(): bool
+    {
+        return $this->has_declared_type;
+    }
+
+    /**
      * Create an alias from a trait use, which is treated as though it was defined in $clazz
      * E.g. if you import a trait's class constant as private/protected, it becomes private/protected **to the class which used the trait**
      *
@@ -92,6 +111,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if ($constant->isPublic()) {
             $constant->setDefiningFQSEN($defining_fqsen);
         }
+        $constant->setHasDeclaredType($this->has_declared_type);
         return $constant;
     }
 
@@ -157,10 +177,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
         $string .= 'const ';
 
-        // Add type declaration for typed constants (PHP 8.3+)
-        $union_type = $this->getUnionType();
-        if ($union_type->hasRealTypeSet()) {
-            $string .= $union_type->getRealUnionType()->__toString() . ' ';
+        // Add type declaration only for constants that explicitly declare one (PHP 8.3+)
+        if ($this->has_declared_type) {
+            $string .= $this->getUnionType()->getRealUnionType()->__toString() . ' ';
         }
 
         $string .= $this->name . ' = ';
@@ -213,10 +232,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ';
 
-        // Add type declaration for typed constants (PHP 8.3+)
-        $union_type = $this->getUnionType();
-        if ($union_type->hasRealTypeSet()) {
-            $string .= $union_type->getRealUnionType()->__toString() . ' ';
+        // Add type declaration only for constants that explicitly declare one (PHP 8.3+)
+        if ($this->has_declared_type) {
+            $string .= $this->getUnionType()->getRealUnionType()->__toString() . ' ';
         }
 
         $string .= $this->name . ' = ';
