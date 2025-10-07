@@ -35,7 +35,6 @@ trait ConstantTrait
      * Sets the node with the AST representing the value of this constant.
      *
      * @param Node|string|float|int|bool|resource $node Either a node or a constant to be used as the value of the constant.
-     * Can be resource for STDERR, etc.
      */
     public function setNodeForValue($node): void
     {

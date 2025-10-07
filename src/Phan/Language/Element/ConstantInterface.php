@@ -25,14 +25,14 @@ interface ConstantInterface
     /**
      * Sets the node with the AST representing the value of this constant.
      *
-     * @param Node|string|float|int $node
+     * @param Node|string|float|int|bool|resource $node Can be resource for STDERR, etc.
      */
     public function setNodeForValue($node): void;
 
     /**
      * Gets the node with the AST representing the value of this constant.
      *
-     * @return Node|string|float|int
+     * @return Node|string|float|int|bool|resource
      */
     public function getNodeForValue();
 
