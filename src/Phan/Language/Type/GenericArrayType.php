@@ -321,7 +321,11 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                     continue;
                 }
                 $target_elements = $target_type->genericArrayElementUnionType();
-                $element_union_types = $element_union_types !== null ? $element_union_types->withUnionType($target_elements) : $target_elements;
+                if ($element_union_types instanceof UnionType) {
+                    $element_union_types = $element_union_types->withUnionType($target_elements);
+                } else {
+                    $element_union_types = $target_elements;
+                }
                 continue;
             }
             if ($this->canCastToType($target_type, $code_base)) {
@@ -346,7 +350,11 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
                     continue;
                 }
                 $target_elements = $target_type->genericArrayElementUnionType();
-                $element_union_types = $element_union_types !== null ? $element_union_types->withUnionType($target_elements) : $target_elements;
+                if ($element_union_types instanceof UnionType) {
+                    $element_union_types = $element_union_types->withUnionType($target_elements);
+                } else {
+                    $element_union_types = $target_elements;
+                }
                 continue;
             }
             if ($this->canCastToTypeWithoutConfig($target_type, $code_base)) {
