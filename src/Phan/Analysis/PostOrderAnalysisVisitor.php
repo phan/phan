@@ -1662,6 +1662,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
+        $override_return_types = Config::getValue('override_return_types');
+        $allow_overriding_vague_return_types = Config::getValue('allow_overriding_vague_return_types');
+
         // Mark the method as returning something (even if void)
         $expr = $node->children['expr'];
         if (null !== $expr) {
@@ -1732,10 +1735,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // match the method's declared return value. One reason for this approach is because
             // phpdoc return values may be incorrect or out of date, and phan errors about the
             // incorrect phpdoc  return values may be suppressed.
-            if ($method->isReturnTypeModifiable() && (!$is_mismatch || Config::getValue('override_return_types'))) {
+            if ($method->isReturnTypeModifiable() && (!$is_mismatch || $override_return_types)) {
                 // Add the new type to the set of values returned by the
                 // method
-                $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
+                $union_type = $method->getUnionType();
+                if ($allow_overriding_vague_return_types && $union_type->hasMixedTypeStrict()) {
+                    $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
+                        return \get_class($type) !== MixedType::class;
+                    });
+                }
+                $method->setUnionType($union_type->withUnionType($expression_type));
             }
         }
 
