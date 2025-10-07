@@ -1095,9 +1095,20 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $try_scope = $this->analyze($try_scope, $try_node);
         '@phan-var VariableTrackingBranchScope $try_scope';
 
-        // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
-        // TODO: Optimize
-        $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
+        // Determine if the try block might fail (throw an exception before completing).
+        // If it might fail, variables defined in the try block should be treated as possibly undefined.
+        $try_might_fail = self::willTryBlockPossiblyFail($catches_node, $finally_node);
+
+        // Merge the try scope with the outer scope.
+        // If the try might fail, use mergeBranchScopeList with merge_parent_scope=true
+        // to treat variables defined in the try block as possibly undefined.
+        // Otherwise, use mergeWithSingleBranchScope to treat them as definitely defined.
+        if ($try_might_fail) {
+            $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, []);
+        } else {
+            $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
+        }
+
         $catches_will_throw_or_return = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catches_node);
 
         $catch_node_list = $catches_node->children;
@@ -1122,6 +1133,47 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             return $combined_scope;
         }
         return $main_scope;
+    }
+
+    /**
+     * Determines if the try block might fail (throw an exception before completing).
+     * This is used to determine if variables defined in the try block should be treated
+     * as possibly undefined after the try-catch block.
+     *
+     * Similar logic to ContextMergeVisitor::willRemainingStatementsBeAnalyzedAsIfTryMightFail()
+     *
+     * @param Node|null $catches_node the AST_CATCH_LIST node
+     * @param Node|null $finally_node the finally block node
+     */
+    private static function willTryBlockPossiblyFail(?Node $catches_node, $finally_node): bool
+    {
+        // If there's a finally block, we analyze it as if the try block might have failed
+        if ($finally_node !== null) {
+            return true;
+        }
+
+        // If there are no catch blocks, the try block could fail and propagate the exception
+        if (!$catches_node || \count($catches_node->children) === 0) {
+            return true;
+        }
+
+        // If ALL catch blocks unconditionally throw/return, then after the try-catch block,
+        // we know the try block succeeded (otherwise we'd have exited in a catch block).
+        // E.g.: try { $x = expr(); } catch (Exception $e) { return; }
+        // In this case, $x is guaranteed to be defined after the try-catch.
+        foreach ($catches_node->children as $catch_node) {
+            if (!($catch_node instanceof Node)) {
+                continue;
+            }
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+                // At least one catch block can fall through, so the try might have failed
+                return true;
+            }
+        }
+
+        // All catch blocks unconditionally exit, so the try block must have succeeded
+        return false;
     }
 
     /**

@@ -114,16 +114,26 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // 2. As if try did not fail, using the latter to analyze statements after the finally{}.
             return true;
         }
+        $catch_nodes = $node->children['catches']->children ?? [];
+        if (!$catch_nodes) {
+            // If there are no catches, be conservative and assume the try might fail.
+            return true;
+        }
         // E.g. after analyzing the following code:
         //      try { $x = expr(); } catch (Exception $e) { echo "Caught"; return; } catch (OtherException $e) { continue; }
-        // Phan should infer that $x is guaranteed to be defined.
-        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+        // Phan should infer that $x is guaranteed to be defined only if every catch unconditionally exits.
+        foreach ($catch_nodes as $catch_node) {
+            if (!($catch_node instanceof Node)) {
+                continue;
+            }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
-                return false;
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+                // At least one catch may fall through, so analyze as if the try might fail.
+                return true;
             }
         }
-        return true;
+        // All catches unconditionally exit, so we can analyze remaining statements as if the try succeeded.
+        return false;
     }
 
     /**
@@ -151,24 +161,20 @@ class ContextMergeVisitor extends KindVisitorImplementation
         }
         // TODO: Check if try node unconditionally returns.
 
-        // Merge in the types for any variables found in a catch.
-        // if ($node->children['finally'] !== null) {
-            // If we have to analyze a finally statement later,
-            // then be conservative and assume the try statement may or may not have failed.
-            // E.g. the below example must have a inferred type of string|false
-            //      $x = new stdClass(); try {...; $x = (string)fn(); } catch(Exception $e) { $x = false; }
-            // $try_scope = $this->context->getScope();
-        // } else {
-            // If we don't have to worry about analyzing the finally statement, then assume that the entire try statement succeeded or the a catch statement succeeded.
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $try_scope = \reset($this->child_context_list)->getScope();
-        // }
+        // Use the context scope that was already processed by mergeTryContext.
+        // This preserves the "possibly undefined" flags for variables defined only in the try block.
+        // $this->context was set by mergeTryContext and already has variables from the try block
+        // marked as possibly undefined (if applicable).
+        $merged_try_scope = clone($this->context->getScope());
+
+        // Get the raw try scope (without possibly undefined flags) for merging types
+        $raw_try_scope = \reset($this->child_context_list)->getScope();
 
         if (!$catch_scope_list) {
             // All of the catch statements will unconditionally rethrow or return.
             // So, after the try and catch blocks (finally is analyzed separately),
-            // the context is the same as if the try block finished successfully.
-            return $this->context->withScope($try_scope);
+            // the context is the same as the merged try context (which may have possibly undefined variables).
+            return $this->context;
         }
 
         if (\count($catch_scope_list) > 1) {
@@ -177,17 +183,43 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $catch_scope = \reset($catch_scope_list);
         }
 
-        // TODO: Use getVariableMapExcludingScope
-        foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
+        // Merge types from catch blocks into the merged try scope
+        // We use $raw_try_scope to check which variables were in the try block,
+        // but we modify $merged_try_scope to preserve possibly undefined flags
+        foreach ($raw_try_scope->getVariableMap() as $variable_name => $raw_variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
+            $merged_variable = $merged_try_scope->getVariableByNameOrNull($variable_name);
+            if (!$merged_variable) {
+                // Variable was in raw try but not in merged scope (shouldn't happen, but be defensive)
+                continue;
+            }
             // Merge types if try and catch have a variable in common
-            $catch_variable = $catch_scope->getVariableByNameOrNull(
-                $variable_name
-            );
+            $catch_variable = $catch_scope->getVariableByNameOrNull($variable_name);
             if ($catch_variable) {
-                $variable->setUnionType($variable->getUnionType()->withUnionType(
-                    $catch_variable->getUnionType()
-                ));
+                $merged_union_type = $merged_variable->getUnionType();
+                $catch_union_type = $catch_variable->getUnionType();
+                $raw_union_type = $raw_variable->getUnionType();
+                $was_definitely_undefined = $merged_union_type->isDefinitelyUndefined();
+                $was_possibly_undefined = !$was_definitely_undefined && $merged_union_type->isPossiblyUndefined();
+                $catch_defines_variable = !$catch_union_type->isPossiblyUndefined() && !$catch_union_type->isDefinitelyUndefined();
+
+                if ($catch_defines_variable) {
+                    $new_union_type = $raw_union_type->withUnionType($catch_union_type);
+                    if (!$raw_union_type->containsNullableOrUndefined() && !$catch_union_type->containsNullableOrUndefined()) {
+                        $new_union_type = $new_union_type->nonNullableClone();
+                    }
+                } else {
+                    $new_union_type = $merged_union_type->withUnionType($catch_union_type);
+                    if ($was_definitely_undefined && ($catch_union_type->isDefinitelyUndefined() || $catch_union_type->isPossiblyUndefined())) {
+                        $new_union_type = $new_union_type->withIsDefinitelyUndefined();
+                    } elseif ($was_possibly_undefined && ($catch_union_type->isPossiblyUndefined() || $catch_union_type->isDefinitelyUndefined())) {
+                        $new_union_type = $new_union_type->withIsPossiblyUndefined(true);
+                    }
+                    if (($was_definitely_undefined || $was_possibly_undefined) && !$raw_union_type->containsNullableOrUndefined() && !$catch_union_type->containsNullableOrUndefined()) {
+                        $new_union_type = $new_union_type->nonNullableClone();
+                    }
+                }
+                $merged_variable->setUnionType($new_union_type);
             }
         }
 
@@ -195,13 +227,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // (unless the try statement unconditionally throws, returns, exits, infinitely loops, etc.)
         if ($try_statement_will_throw_or_return) {
             foreach ($catch_scope->getVariableMap() as $variable) {
-                // Add it to the try scope
-                $try_scope->addVariable($variable);
+                // Add it to the merged try scope
+                $merged_try_scope->addVariable($variable);
             }
         } else {
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
                 $variable_name = (string)$variable_name;
-                if (!$try_scope->hasVariableWithName($variable_name)) {
+                if (!$raw_try_scope->hasVariableWithName($variable_name)) {
                     $type = $variable->getUnionType();
                     if (!$type->containsNullableLabeled()) {
                         $type = $type->withType(NullType::instance(false));
@@ -211,15 +243,15 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     // Combine all of the catch blocks into one context and merge with that instead?
                     $variable->setUnionType($type->withIsPossiblyUndefined(true));
 
-                    // Add it to the try scope
-                    $try_scope->addVariable($variable);
+                    // Add it to the merged try scope
+                    $merged_try_scope->addVariable($variable);
                 }
             }
         }
 
         // Set the new scope with only the variables and types
         // that are common to all branches
-        return $this->context->withScope($try_scope);
+        return $this->context->withScope($merged_try_scope);
     }
 
     /**
