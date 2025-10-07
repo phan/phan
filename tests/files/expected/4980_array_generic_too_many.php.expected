@@ -1,0 +1,1 @@
+%s:9 PhanCommentGenericArrayTooManyTypes PHPDoc type array<int, string, string> has 3 template parameters; array-like types support at most 2
