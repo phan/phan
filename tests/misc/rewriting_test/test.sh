@@ -5,7 +5,17 @@ if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/misc/rewriting_test folder" 1>&2
 	exit 1
 fi
-for path in $(echo expected/*.php.expected | LC_ALL=C sort); do cat $path; done > $EXPECTED_PATH
+PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID;")
+for path in $(echo expected/*.php.expected | LC_ALL=C sort); do
+    original_path="$path"
+    if [[ "$PHP_VERSION_ID" -ge 80300 ]]; then
+        alternate_path=${original_path/.expected/.expected83}
+        if [ -f "$alternate_path" ]; then
+            path="$alternate_path"
+        fi
+    fi
+    cat "$path"
+done > $EXPECTED_PATH
 if [[ $? != 0 ]]; then
 	echo "Failed to concatenate test cases" 1>&2
 	exit 1
