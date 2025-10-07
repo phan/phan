@@ -10,6 +10,7 @@ use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
+use Phan\Language\Type\BoolType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 
@@ -20,6 +21,14 @@ use Phan\Library\StringUtil;
 class GlobalConstant extends AddressableElement implements ConstantInterface
 {
     use ConstantTrait;
+
+    /** @var array<string,true> names of internal boolean constants whose values vary between builds */
+    private const VOLATILE_BOOLEAN_CONSTANTS = [
+        'PHP_ZTS' => true,
+        'PHP_DEBUG' => true,
+        'ZEND_THREAD_SAFE' => true,
+        'ZEND_DEBUG_BUILD' => true,
+    ];
 
     /**
      * Sets whether this is a global constant that should be treated as if the real type is unknown.
@@ -104,10 +113,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             '\\' . $name
         );
         $type = Type::fromObject($value);
+        $real_type = $type->asNonLiteralType();
+        if (isset(self::VOLATILE_BOOLEAN_CONSTANTS[$name]) && is_bool($value)) {
+            $type = $real_type = BoolType::instance(false);
+        }
         $result = new self(
             new Context(),
             $name,
-            UnionType::of([$type], [$type->asNonLiteralType()]),
+            UnionType::of([$type], [$real_type]),
             0,
             $constant_fqsen
         );

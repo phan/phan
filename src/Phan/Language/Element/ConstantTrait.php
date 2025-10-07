@@ -17,7 +17,7 @@ trait ConstantTrait
 {
     use ElementFutureUnionType;
 
-    /** @var Node|string|float|int|resource the node (or built-in value) which defined the value of this constant. */
+    /** @var Node|string|float|int|bool|resource the node (or built-in value) which defined the value of this constant. */
     protected $defining_node;
 
     /**
@@ -34,7 +34,7 @@ trait ConstantTrait
     /**
      * Sets the node with the AST representing the value of this constant.
      *
-     * @param Node|string|float|int|resource $node Either a node or a constant to be used as the value of the constant.
+     * @param Node|string|float|int|bool|resource $node Either a node or a constant to be used as the value of the constant.
      * Can be resource for STDERR, etc.
      */
     public function setNodeForValue($node): void
@@ -45,7 +45,7 @@ trait ConstantTrait
     /**
      * Gets the node with the AST representing the value of this constant.
      *
-     * @return Node|string|float|int|resource
+     * @return Node|string|float|int|bool|resource
      */
     public function getNodeForValue()
     {
