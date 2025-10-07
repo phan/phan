@@ -111,7 +111,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if ($constant->isPublic()) {
             $constant->setDefiningFQSEN($defining_fqsen);
         }
-        $constant->setHasDeclaredType($this->hasDeclaredType());
+        $constant->setHasDeclaredType($this->has_declared_type);
         return $constant;
     }
 
@@ -178,7 +178,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         $string .= 'const ';
 
         // Add type declaration only for constants that explicitly declare one (PHP 8.3+)
-        if ($this->hasDeclaredType()) {
+        if ($this->has_declared_type) {
             $string .= $this->getUnionType()->getRealUnionType()->__toString() . ' ';
         }
 
@@ -233,7 +233,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         $string .= 'const ';
 
         // Add type declaration only for constants that explicitly declare one (PHP 8.3+)
-        if ($this->hasDeclaredType()) {
+        if ($this->has_declared_type) {
             $string .= $this->getUnionType()->getRealUnionType()->__toString() . ' ';
         }
 
