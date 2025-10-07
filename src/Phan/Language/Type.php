@@ -1216,6 +1216,21 @@ class Type implements Stringable
         return ArrayType::instance($is_nullable);
     }
 
+    private static function getMaxTemplateParameterCountForDocType(string $lower_type_name): ?int
+    {
+        switch ($lower_type_name) {
+            case 'array':
+            case 'associative-array':
+            case 'non-empty-array':
+            case 'non-empty-associative-array':
+                return 2;
+            case 'list':
+            case 'non-empty-list':
+                return 1;
+        }
+        return null;
+    }
+
     /**
      * @param list<UnionType> $template_parameter_type_list
      * @param bool $is_nullable
@@ -1442,6 +1457,25 @@ class Type implements Stringable
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+
+        if ($source === self::FROM_PHPDOC && $code_base && $template_parameter_type_name_list) {
+            $max_template_parameters = self::getMaxTemplateParameterCountForDocType(strtolower($type_name));
+            if ($max_template_parameters !== null) {
+                $actual_template_parameter_count = count($template_parameter_type_name_list);
+                if ($actual_template_parameter_count > $max_template_parameters) {
+                    $rendered_doc_type = ($is_nullable ? '?' : '') . $type_name . '<' . implode(', ', $template_parameter_type_name_list) . '>';
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentGenericArrayTooManyTypes,
+                        $context->getLineNumberStart(),
+                        $rendered_doc_type,
+                        $actual_template_parameter_count,
+                        (string)$max_template_parameters
+                    );
+                }
+            }
+        }
 
 
         if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/D', $type_name)) {

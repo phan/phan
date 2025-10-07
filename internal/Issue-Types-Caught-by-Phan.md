@@ -4830,6 +4830,14 @@ Comment declares @param ${PARAMETER} multiple times
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0611_comment_duplicated_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0611_comment_duplicated_param.php#L7).
 
+## PhanCommentGenericArrayTooManyTypes
+
+```
+PHPDoc type {TYPE} has {COUNT} template parameters; array-like types support at most {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4980_array_generic_too_many.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4980_array_generic_too_many.php#L4).
+
 ## PhanCommentObjectInClassConstantType
 
 ```

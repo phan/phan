@@ -647,6 +647,7 @@ class Issue
     public const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
     public const CommentObjectInClassConstantType = 'PhanCommentObjectInClassConstantType';
     public const CommentUnsupportedUnionType      = 'PhanCommentUnsupportedUnionType';
+    public const CommentGenericArrayTooManyTypes  = 'PhanCommentGenericArrayTooManyTypes';
     public const CommentUnextractableTypeAlias    = 'PhanCommentUnextractableTypeAlias';
     public const TypeAliasUsedOutsideComment      = 'PhanTypeAliasUsedOutsideComment';
     public const TypeAliasInternalTypeConflict    = 'PhanTypeAliasInternalTypeConflict';
@@ -5515,6 +5516,14 @@ class Issue
                 'Comment declares @property* ${PROPERTY} multiple times',
                 self::REMEDIATION_A,
                 16017
+            ),
+            new Issue(
+                self::CommentGenericArrayTooManyTypes,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'PHPDoc type {TYPE} has {COUNT} template parameters; array-like types support at most {DETAILS}',
+                self::REMEDIATION_A,
+                16031
             ),
             // TODO: Support declaring both instance and static methods of the same name
             new Issue(
