@@ -309,6 +309,56 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $this->element_type->asRealUnionType();
     }
 
+    /**
+     * @param array<int,Type> $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
+    {
+        $element_union_types = null;
+        foreach ($target_type_set as $target_type) {
+            if ($target_type instanceof GenericArrayType) {
+                if ((($this->key_type ?: self::KEY_MIXED) & ($target_type->key_type ?: self::KEY_MIXED)) === 0) {
+                    continue;
+                }
+                $target_elements = $target_type->genericArrayElementUnionType();
+                $element_union_types = $element_union_types !== null ? $element_union_types->withUnionType($target_elements) : $target_elements;
+                continue;
+            }
+            if ($this->canCastToType($target_type, $code_base)) {
+                return true;
+            }
+        }
+        if ($element_union_types !== null) {
+            return $this->genericArrayElementUnionType()->canCastToUnionType($element_union_types, $code_base);
+        }
+        return false;
+    }
+
+    /**
+     * @param array<int,Type> $target_type_set
+     */
+    public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
+    {
+        $element_union_types = null;
+        foreach ($target_type_set as $target_type) {
+            if ($target_type instanceof GenericArrayType) {
+                if ((($this->key_type ?: self::KEY_MIXED) & ($target_type->key_type ?: self::KEY_MIXED)) === 0) {
+                    continue;
+                }
+                $target_elements = $target_type->genericArrayElementUnionType();
+                $element_union_types = $element_union_types !== null ? $element_union_types->withUnionType($target_elements) : $target_elements;
+                continue;
+            }
+            if ($this->canCastToTypeWithoutConfig($target_type, $code_base)) {
+                return true;
+            }
+        }
+        if ($element_union_types !== null) {
+            return $this->genericArrayElementUnionType()->canCastToUnionTypeWithoutConfig($element_union_types, $code_base);
+        }
+        return false;
+    }
+
     public function __toString(): string
     {
         $string = $this->element_type->__toString();

@@ -806,8 +806,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
-                // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-                $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+                $definitions = $response_data['definitions'] ?? [];
+                $most_recent_node_info_request->recordDefinitionLocationList($definitions);
                 if ($most_recent_node_info_request->isHoverRequest()) {
                     $normalized_hover = $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
                     // \fwrite(\STDERR, "Creating cached_hover_response\n");
