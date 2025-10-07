@@ -1,0 +1,10 @@
+src_copy/013_false_true_null.php:8 PhanPluginCanUseNullableParamType Can use null as the type of parameter $c of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:8 PhanPluginCanUseNullableReturnType Can use ?bool as a return type of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:8 PhanPluginCanUseParamType Can use false as the type of parameter $a of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:8 PhanPluginCanUseParamType Can use true as the type of parameter $b of testFalseTrueNullAlone
+src_copy/013_false_true_null.php:9 PhanDeprecatedFunctionInternal Call to deprecated function \rand() (Deprecated because: Deprecated in PHP 8.3. Use random_int() or Random\Randomizer::getInt().)
+src_copy/013_false_true_null.php:20 PhanPluginCanUseNullableParamType Can use ?float as the type of parameter $c of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseNullableReturnType Can use ?bool as a return type of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseParamType Can use bool as the type of parameter $bool of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseUnionParamType Can use false|string as the type of parameter $a of testFalseTrueNullUnion
+src_copy/013_false_true_null.php:20 PhanPluginCanUseUnionParamType Can use int|true as the type of parameter $b of testFalseTrueNullUnion

@@ -4,7 +4,7 @@
 %s:8 PhanDeprecatedFunctionInternal Call to deprecated function \srand() (Deprecated because: Deprecated in PHP 8.3. Use Random\Randomizer with a dedicated engine instead.)
 %s:9 PhanDeprecatedFunctionInternal Call to deprecated function \mt_getrandmax() (Deprecated because: Deprecated in PHP 8.3. Use Random\Randomizer or Random\Engine\Mt19937.)
 %s:10 PhanDeprecatedFunctionInternal Call to deprecated function \getrandmax() (Deprecated because: Deprecated in PHP 8.3. Use Random\Randomizer::getInt() as needed.)
-%s:11 PhanDeprecatedClassConstant Reference to deprecated class constant \NumberFormatter::TYPE_CURRENCY defined at internal:0 (Deprecated because: Deprecated in PHP 8.3. Use NumberFormatter::formatCurrency()/parseCurrency().)
+%s:11 PhanDeprecatedClassConstant Reference to deprecated class constant \NumberFormatter::TYPE_CURRENCY defined at internal:%r\d+%r (Deprecated because: Deprecated in PHP 8.3. Use NumberFormatter::formatCurrency()/parseCurrency().)
 %s:13 PhanDeprecatedFunctionArgument Deprecated argument usage for function \mb_strimwidth(): Passing a negative $width is deprecated as of PHP 8.3
 %s:15 PhanDeprecatedFunctionArgument Deprecated argument usage for function \ldap_connect(): Calling with host and port parameters is deprecated as of PHP 8.3; pass a URI instead
 %s:17 PhanDeprecatedGlobalConstant Reference to deprecated constant \CRYPT_SHA256 (Deprecated because: Deprecated in PHP 8.3. These crypt() capability constants are always available.)
