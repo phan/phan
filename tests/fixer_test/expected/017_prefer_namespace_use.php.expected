@@ -1,0 +1,2 @@
+src_copy/017_prefer_namespace_use.php:12 PhanPluginPreferNamespaceUseParamType Could write param type of $param of testMethodParam as TestObject instead of \TestPreferNamespaceUse1\TestObject
+src_copy/017_prefer_namespace_use.php:15 PhanPluginPreferNamespaceUseReturnType Could write return type of testMethodReturn as TestObject instead of \TestPreferNamespaceUse1\TestObject

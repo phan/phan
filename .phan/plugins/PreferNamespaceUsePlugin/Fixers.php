@@ -70,7 +70,7 @@ class Fixers
         string $shorter_return_type
     ): ?FileEditSet {
         // @phan-suppress-next-line PhanUndeclaredProperty
-        $return_type_node = $declaration->returnType;
+        $return_type_node = $declaration->returnTypeList;
         if (!$return_type_node instanceof PhpParser\Node) {
             return null;
         }
@@ -90,11 +90,6 @@ class Fixers
         string $param_name,
         string $shorter_param_type
     ): ?FileEditSet {
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        $return_type_node = $declaration->returnType;
-        if (!$return_type_node) {
-            return null;
-        }
         // @phan-suppress-next-line PhanUndeclaredProperty
         $parameter_node_list = $declaration->parameters->children ?? [];
         foreach ($parameter_node_list as $param) {

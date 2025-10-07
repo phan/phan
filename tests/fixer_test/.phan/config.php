@@ -134,5 +134,6 @@ return [
         'PHPDocToRealTypesPlugin',
         'PHPDocRedundantPlugin',
         'DeprecateAliasPlugin',
+        'PreferNamespaceUsePlugin',
     ],
 ];

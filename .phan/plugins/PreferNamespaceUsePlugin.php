@@ -18,14 +18,8 @@ use Phan\PluginV3\AutomaticFixCapability;
 use PreferNamespaceUsePlugin\Fixers;
 
 /**
- * This plugin checks for redundant doc comments on functions, closures, and methods.
- *
- * This treats a doc comment as redundant if
- *
- * 1. It is exclusively annotations (0 or more), e.g. (at)return void
- * 2. Every annotation repeats the real information in the signature.
- *
- * It does not check if the change is safe to make.
+ * This plugin checks for FQSEN usages that could be simplified by leveraging an `use` already present in the
+ * current file.
  */
 class PreferNamespaceUsePlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
