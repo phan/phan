@@ -1,8 +1,8 @@
 <?php
 # Core https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.core
-request_parse_body();
-request_parse_body(['option1' => 'value1', 'option2' => 'value2']);
-request_parse_body('value');
+try { request_parse_body(); } catch (RequestParseBodyException|ValueError|TypeError) {}
+try { request_parse_body(['option1' => 'value1', 'option2' => 'value2']); } catch (RequestParseBodyException|ValueError|TypeError) {}
+try { request_parse_body('value'); } catch (RequestParseBodyException|ValueError|TypeError) {}
 # BCMath https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.bcmath
 bcceil('1');
 bcceil(1);
