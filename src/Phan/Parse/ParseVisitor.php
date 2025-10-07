@@ -1122,6 +1122,7 @@ class ParseVisitor extends ScopeVisitor
                 $flags,
                 $fqsen
             );
+            $constant->setHasDeclaredType(!$real_union_type->isEmpty());
 
             $constant->setDocComment($doc_comment);
             $constant->setAttributeList($attributes);
@@ -1259,6 +1260,7 @@ class ParseVisitor extends ScopeVisitor
         }
         $constant->setUnionType($class->getFQSEN()->asType()->asRealUnionType());
         $constant->setNodeForValue($value_node);
+        $constant->setHasDeclaredType(true);
 
         $class->addEnumCase($this->code_base, $constant);
 

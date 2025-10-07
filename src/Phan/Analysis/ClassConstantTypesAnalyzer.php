@@ -144,8 +144,11 @@ class ClassConstantTypesAnalyzer
                 continue;
             }
 
-            // Check if constant has a real type (PHP 8.3+ typed constant)
             if (!$union_type->hasRealTypeSet()) {
+                continue;
+            }
+
+            if (!$constant->hasDeclaredType()) {
                 continue;
             }
 
@@ -235,23 +238,12 @@ class ClassConstantTypesAnalyzer
                 continue;
             }
 
-            $constant_union_type = $constant->getUnionType();
-            if (!$constant_union_type->hasRealTypeSet()) {
-                // Untyped constant - no covariance checking needed
+            if (!$constant->hasDeclaredType()) {
                 continue;
             }
 
-            // Check if this constant has an explicitly declared type (PHP 8.3+)
-            // vs just an inferred real type from its value
-            // For typed constants: PHPDoc type (from value) differs from real type (from declaration)
-            // For untyped constants: only real type exists, PHPDoc type is empty or same as real
-            $phpdoc_type = $constant_union_type->eraseRealTypeSet();
-            $real_type = $constant_union_type->getRealUnionType();
-            $has_declared_type = !$phpdoc_type->isEmpty() && !$phpdoc_type->isEqualTo($real_type);
-
-            if (!$has_declared_type) {
-                // This constant's real type is just inferred from its value (pre-8.3 style)
-                // No inheritance checking needed
+            $constant_union_type = $constant->getUnionType();
+            if (!$constant_union_type->hasRealTypeSet()) {
                 continue;
             }
 
@@ -279,20 +271,13 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                $inherited_union_type = $inherited_constant->getUnionType();
-                if (!$inherited_union_type->hasRealTypeSet()) {
-                    // Parent has no declared type - child can add a type
+                if (!$inherited_constant->hasDeclaredType()) {
                     continue;
                 }
 
-                // Check if parent has an explicitly declared type (PHP 8.3+)
-                $inherited_phpdoc_type = $inherited_union_type->eraseRealTypeSet();
-                $inherited_real_type_temp = $inherited_union_type->getRealUnionType();
-                $inherited_has_declared_type = !$inherited_phpdoc_type->isEmpty() &&
-                                              !$inherited_phpdoc_type->isEqualTo($inherited_real_type_temp);
-
-                if (!$inherited_has_declared_type) {
-                    // Parent's real type is just inferred from value - child can add explicit type
+                $inherited_union_type = $inherited_constant->getUnionType();
+                if (!$inherited_union_type->hasRealTypeSet()) {
+                    // Parent has no declared type - child can add a type
                     continue;
                 }
 

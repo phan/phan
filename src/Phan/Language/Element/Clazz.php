@@ -50,6 +50,7 @@ use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Suggestion;
 use ReflectionClass;
+use ReflectionClassConstant;
 use ReflectionProperty;
 use RuntimeException;
 
@@ -458,14 +459,29 @@ class Clazz extends AddressableElement
                 $name
             );
 
+            $value_type = Type::fromObject($value);
+
             $constant = new ClassConstant(
                 $context,
                 $name,
-                Type::fromObject($value)->asRealUnionType(),  // TODO: These can vary based on OS/build flags
+                $value_type->asRealUnionType(),  // TODO: These can vary based on OS/build flags
                 0,
                 $constant_fqsen
             );
             $constant->setNodeForValue($value);
+
+            $reflection_constant = method_exists($class, 'getReflectionConstant')
+                ? $class->getReflectionConstant($name)
+                : null;
+            if ($reflection_constant instanceof ReflectionClassConstant && method_exists($reflection_constant, 'hasType') && $reflection_constant->hasType()) {
+                $declared_type = UnionType::fromReflectionType($reflection_constant->getType())->asNormalizedTypes();
+                $constant->setUnionType(
+                    $value_type->asPHPDocUnionType()->withRealTypeSet($declared_type->getTypeSet())
+                );
+                $constant->setHasDeclaredType(true);
+            } else {
+                $constant->setHasDeclaredType(false);
+            }
 
             $clazz->addConstant($code_base, $constant);
         }
