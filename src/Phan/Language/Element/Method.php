@@ -38,6 +38,11 @@ class Method extends ClassElement implements FunctionInterface
     use ClosedScopeElement;
 
     /**
+     * @internal used to guard a PHP 8.5-dev workaround when setting real parameter lists.
+     */
+    private static bool $handling_real_parameter_list = false;
+
+    /**
      * @var ?FullyQualifiedMethodName If this was originally defined in a trait, this is the trait's defining fqsen.
      * This is tracked separately from getDefiningFQSEN() in order to not break access checks on protected/private methods.
      * Used for dead code detection.
@@ -591,7 +596,24 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         // Keep an copy of the original parameter list, to check for fatal errors later on.
-        $method->setRealParameterList($parameter_list);
+        try {
+            $method->setRealParameterList($parameter_list);
+        } catch (\ArgumentCountError $e) {
+            if (\strpos($e->getMessage(), __METHOD__) === false || self::$handling_real_parameter_list) {
+                throw $e;
+            }
+            self::$handling_real_parameter_list = true;
+            try {
+                $method->real_parameter_list = \array_map(static function (Parameter $param): Parameter {
+                    return clone($param);
+                }, $parameter_list);
+                $required_count = self::computeNumberOfRequiredParametersForList($parameter_list);
+                $method->number_of_required_real_parameters = $required_count;
+                $method->number_of_optional_real_parameters = \count($parameter_list) - $required_count;
+            } finally {
+                self::$handling_real_parameter_list = false;
+            }
+        }
 
         $required_parameter_count = self::computeNumberOfRequiredParametersForList($parameter_list);
         $method->setNumberOfRequiredParameters($required_parameter_count);

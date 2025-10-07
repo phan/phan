@@ -28,6 +28,13 @@ function pcntl_wifsignaled($status) {}
 function pcntl_wifstopped($status) {}
 function pcntl_wstopsig($status) {}
 function pcntl_wtermsig($status) {}
+function pcntl_setns(?int $process_id = null, int $nstype = 0) : bool {}
+function pcntl_getcpuaffinity(?int $process_id = null) : array|false {}
+function pcntl_setcpuaffinity(?int $process_id = null, array $cpu_ids = []) : bool {}
+function pcntl_getcpu() : int {}
+function pcntl_getqos_class() : \Pcntl\QosClass {}
+function pcntl_setqos_class(\Pcntl\QosClass $qos_class = \Pcntl\QosClass::Default) : void {}
+function pcntl_waitid(int $idtype = 0, ?int $id = null, array &$info = [], int $flags = 0) : bool {}
 const BUS_ADRALN = 1;
 const BUS_ADRERR = 2;
 const BUS_OBJERR = 3;
@@ -150,4 +157,15 @@ const TRAP_TRACE = 2;
 const WCONTINUED = 8;
 const WNOHANG = 1;
 const WUNTRACED = 2;
+}
+
+namespace Pcntl {
+    enum QosClass
+    {
+        case UserInteractive;
+        case UserInitiated;
+        case Default;
+        case Utility;
+        case Background;
+    }
 }

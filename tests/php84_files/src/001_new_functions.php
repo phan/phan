@@ -1,8 +1,8 @@
 <?php
 # Core https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.core
-request_parse_body();
-request_parse_body(['option1' => 'value1', 'option2' => 'value2']);
-request_parse_body('value');
+try { request_parse_body(); } catch (RequestParseBodyException|ValueError|TypeError) {}
+try { request_parse_body(['option1' => 'value1', 'option2' => 'value2']); } catch (RequestParseBodyException|ValueError|TypeError) {}
+try { request_parse_body('value'); } catch (RequestParseBodyException|ValueError|TypeError) {}
 # BCMath https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.bcmath
 bcceil('1');
 bcceil(1);
@@ -54,6 +54,7 @@ grapheme_str_split('value', 2);
 mb_trim(' trim me ');
 mb_trim(' trim me ', ' ');
 mb_trim(' trim me ', ' ', 'UTF-8');
+mb_trim(['array']);
 mb_ltrim(' trim me ');
 mb_ltrim(' trim me ', ' ');
 mb_ltrim(' trim me ', ' ', 'UTF-8');
@@ -69,10 +70,12 @@ mb_lcfirst('VALUE', 'UTF-8');
 opcache_jit_blacklist(function (): bool {
     return false;
 });
+opcache_jit_blacklist('not a closure');
 # PCNTL https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.pcntl
 pcntl_getcpu();
 pcntl_getcpuaffinity();
 pcntl_getcpuaffinity(1);
+pcntl_getcpuaffinity('invalid');
 pcntl_getqos_class();
 pcntl_waitid();
 pcntl_setns();
@@ -80,6 +83,8 @@ pcntl_setns(null, 1);
 pcntl_setns(1, 1);
 $info = ['test'];
 pcntl_waitid(1, 2, $info, 4);
+$_pcntl_info = 'not array';
+pcntl_waitid(1, 2, $_pcntl_info, 4);
 # PDO_PGSQL https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.pdo-pgsql
 new Pdo\Pgsql('')->setNoticeCallback(function (string $message): void {
     echo $message;
@@ -94,6 +99,7 @@ pg_put_copy_data($connection, 'cmd');
 pg_put_copy_end($connection);
 pg_put_copy_end($connection, null);
 pg_put_copy_end($connection, 'error');
+pg_put_copy_data($connection, 123);
 pg_result_memory_size(new PgSql\Result());
 pg_set_chunked_rows_size($connection, 10);
 pg_socket_poll('socket', 1, 2);
@@ -138,6 +144,7 @@ new SoapServer('test.wsdl')->__getLastResponse();
 # Standard https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.standard
 http_get_last_response_headers();
 http_clear_last_response_headers();
+http_get_last_response_headers('extra');
 fpow(2, 4);
 fpow(1.2, 5.5);
 $array = [
@@ -160,6 +167,14 @@ array_find($array, function (string $value): bool {
 array_find_key($array, function (string $value): bool {
     return strlen($value) > 4;
 });
+array_all('not array', function (): bool {
+    return true;
+});
+array_any($array, 'not callable');
+array_find('not array', function (string $value): bool {
+    return strlen($value) > 4;
+});
+array_find_key($array, 'not callable');
 # Tidy https://www.php.net/manual/en/migration84.new-functions.php#migration84.new-functions.tidy
 tidy_parse_string('')->body()->getNextSibling();
 tidy_parse_string('')->body()->getPreviousSibling();
