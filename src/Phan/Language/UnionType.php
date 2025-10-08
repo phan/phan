@@ -5676,7 +5676,6 @@ class UnionType implements Serializable, Stringable
     {
         return $this->applyNumericOperation(static function (float|int $value): ScalarType {
             $result = -$value;
-            // @phan-suppress-next-line PhanImpossibleCondition https://github.com/phan/phan/issues/5143
             if (\is_int($result)) {
                 return LiteralIntType::instanceForValue($result, false);
             }
@@ -5837,7 +5836,6 @@ class UnionType implements Serializable, Stringable
         /** @param int|float $value */
         return $this->applyNumericOperation(static function (float|int $value): ScalarType {
             $result = +$value;
-            // @phan-suppress-next-line PhanImpossibleCondition https://github.com/phan/phan/issues/5143
             if (\is_int($result)) {
                 return LiteralIntType::instanceForValue($result, false);
             }
