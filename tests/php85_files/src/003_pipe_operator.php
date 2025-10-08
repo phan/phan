@@ -54,6 +54,24 @@ expectString($result6);  // Should pass
 expectInt($result6);     // Should fail - PhanTypeMismatchArgument
 
 // Test helper functions
+/**
+ * @param list<string> $x
+ * @suppress PhanEmptyFunction
+ * @suppress PhanPluginUseReturnValueNoopVoid
+ * @suppress PhanUnusedGlobalFunctionParameter
+ */
 function expectArray(array $x): void {}
+
+/**
+ * @suppress PhanEmptyFunction
+ * @suppress PhanPluginUseReturnValueNoopVoid
+ * @suppress PhanUnusedGlobalFunctionParameter
+ */
 function expectString(string $x): void {}
+
+/**
+ * @suppress PhanEmptyFunction
+ * @suppress PhanPluginUseReturnValueNoopVoid
+ * @suppress PhanUnusedGlobalFunctionParameter
+ */
 function expectInt(int $x): void {}

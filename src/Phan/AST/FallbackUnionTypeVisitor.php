@@ -345,6 +345,12 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
                 return UnionType::fromFullyQualifiedRealString('-1|0|1');
             case flags\BINARY_COALESCE:
                 return $this->analyzeCoalesce($node);
+            case flags\BINARY_PIPE:
+                $call_node = PipeExpression::createSyntheticCall($node);
+                if ($call_node instanceof Node) {
+                    return UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $call_node);
+                }
+                return UnionType::fromFullyQualifiedRealString('mixed');
         }
         return UnionType::empty();
     }

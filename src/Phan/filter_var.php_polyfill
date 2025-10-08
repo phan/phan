@@ -42,6 +42,7 @@ $define_polyfill_const('FILTER_FORCE_ARRAY', 67108864);
 $define_polyfill_const('FILTER_NULL_ON_FAILURE', 134217728);
 $define_polyfill_const('FILTER_REQUIRE_ARRAY', 16777216);
 $define_polyfill_const('FILTER_REQUIRE_SCALAR', 33554432);
+$define_polyfill_const('FILTER_THROW_ON_FAILURE', 268435456);
 $define_polyfill_const('FILTER_SANITIZE_ADD_SLASHES', 523);
 $define_polyfill_const('FILTER_SANITIZE_EMAIL', 517);
 $define_polyfill_const('FILTER_SANITIZE_ENCODED', 514);

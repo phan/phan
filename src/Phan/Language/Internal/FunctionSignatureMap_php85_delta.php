@@ -8,7 +8,7 @@ return [
   'added' => [
       'array_first' => ['mixed', 'array'=>'array'],
       'array_last' => ['mixed', 'array'=>'array'],
-      'Closure::getCurrent' => ['Closure'],
+      'Closure::getCurrent' => ['?Closure'],
       'get_error_handler' => ['?callable'],
       'get_exception_handler' => ['?callable'],
       'locale_is_right_to_left' => ['bool', 'locale'=>'string'],
@@ -31,6 +31,38 @@ return [
       'Dom\Element::insertAdjacentHTML' => ['void', 'position'=>'string', 'text'=>'string'],
   ],
   'changed' => [
+      'closedir' => [
+          'old' => ['void', 'dir_handle='=>'resource'],
+          'new' => ['void', 'dir_handle='=>'resource|Directory'],
+      ],
+      'grapheme_stripos' => [
+          'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
+          'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
+      ],
+      'grapheme_stristr' => [
+          'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool'],
+          'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
+      ],
+      'grapheme_strripos' => [
+          'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
+          'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
+      ],
+      'grapheme_strrpos' => [
+          'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
+          'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
+      ],
+      'grapheme_strstr' => [
+          'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool'],
+          'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
+      ],
+      'readdir' => [
+          'old' => ['string|false', 'dir_handle='=>'resource'],
+          'new' => ['string|false', 'dir_handle='=>'resource|Directory'],
+      ],
+      'rewinddir' => [
+          'old' => ['void', 'dir_handle='=>'resource'],
+          'new' => ['void', 'dir_handle='=>'resource|Directory'],
+      ],
   ],
   'removed' => [
   ],

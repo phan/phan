@@ -1,4 +1,4 @@
-%s:15 PhanTypeMismatchArgument Argument 1 (x) is array but \expectString() takes string
-%s:32 PhanTypeMismatchArgument Argument 1 (x) is int but \expectString() takes string
-%s:42 PhanTypeMismatchArgument Argument 1 (x) is int but \expectString() takes string
-%s:52 PhanTypeMismatchArgument Argument 1 (x) is string but \expectInt() takes int
+%s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is $result3 of type list<string> (real type array) but \expectString() takes string defined at %s:70
+%s:34 PhanTypeMismatchArgument Argument 1 ($x) is $result4 of type int but \expectString() takes string defined at %s:70
+%s:46 PhanTypeMismatchArgument Argument 1 ($x) is $result5 of type int but \expectString() takes string defined at %s:70
+%s:54 PhanTypeMismatchArgument Argument 1 ($x) is $result6 of type string but \expectInt() takes int defined at %s:77

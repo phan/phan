@@ -155,6 +155,9 @@ class ParseVisitor extends ScopeVisitor
             $class_context,
             $node->children['attributes'] ?? null
         ));
+        if ($class->hasDeprecatedAttribute()) {
+            $class->setIsDeprecated(true);
+        }
         if ($node->flags & ast\flags\CLASS_ENUM) {
             $this->populateEnumClass($class, $class_context, $node);
         }
