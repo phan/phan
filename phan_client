@@ -332,7 +332,6 @@ class PhanPHPLinter
      *
      * @param resource $output A valid CLI output stream
      * @return bool
-     * @suppress PhanUndeclaredFunction
      */
     public static function supportsColor($output)
     {

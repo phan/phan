@@ -610,6 +610,39 @@ return [
         // Warn if newline is allowed before end of string for `$` (the default unless the `D` modifier (`PCRE_DOLLAR_ENDONLY`) is passed in).
         // This is specific to coding styles.
         'regex_warn_if_newline_allowed_at_end' => true,
+
+        'unused_suppression_ignore_list' => [
+            // Plugins used in __FakeSelfFallbackTest only.
+            'PhanPluginUnknownObjectMethodCall',
+            'PhanPluginRemoveDebugEcho',
+            // Dead code detection
+            'PhanUnreferencedClass',
+            'PhanUnreferencedFunction',
+            'PhanUnreferencedPublicMethod',
+            'PhanUnreferencedProtectedMethod',
+            'PhanUnreferencedPrivateMethod',
+            'PhanUnreferencedPublicProperty',
+            'PhanUnreferencedProtectedProperty',
+            'PhanUnreferencedPrivateProperty',
+            'PhanUnreferencedPHPDocProperty',
+            'PhanReadOnlyPublicProperty',
+            'PhanReadOnlyProtectedProperty',
+            'PhanReadOnlyPrivateProperty',
+            'PhanReadOnlyPHPDocProperty',
+            'PhanWriteOnlyPublicProperty',
+            'PhanWriteOnlyProtectedProperty',
+            'PhanWriteOnlyPrivateProperty',
+            'PhanWriteOnlyPHPDocProperty',
+            'PhanUnreferencedConstant',
+            'PhanUnreferencedPublicClassConstant',
+            'PhanUnreferencedProtectedClassConstant',
+            'PhanUnreferencedPrivateClassConstant',
+            'PhanUnreferencedEnumCase',
+            'PhanUnreferencedClosure',
+            'PhanUnreferencedUseNormal',
+            'PhanUnreferencedUseFunction',
+            'PhanUnreferencedUseConstant',
+        ],
     ],
 
     // A list of plugin files to execute
@@ -688,7 +721,7 @@ return [
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
-        // 'UnusedSuppressionPlugin',
+        'UnusedSuppressionPlugin',
         'AsymmetricVisibilityPlugin',
     ],
 ];

@@ -19,12 +19,9 @@ use Stringable;
  * Represents the information Phan has about a declaration's attribute
  * (e.g. of a class, function, class constant, property, parameter, etc.)
  *
- * NOTE: This namespaced class depends on a different class of the same name in the global namespace,
- * but only in php 8.0+.
+ * NOTE: This namespaced class depends on a different class of the same name in the global namespace.
  *
- * @phan-file-suppress PhanUndeclaredClassConstant Attribute exists only in php 8.0+ and is not polyfilled at the time of writing.
  * @phan-file-suppress PhanUnreferencedPublicClassConstant provided for API completeness
- * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
 final class Attribute implements Stringable
 {

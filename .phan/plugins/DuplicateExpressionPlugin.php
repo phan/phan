@@ -162,7 +162,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         try {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: handle
             $result_representation = ASTReverter::toShortString(InferValue::computeBinaryOpResult($left, $right, $flags));
         } catch (Error) {
             $result_representation = '(unknown)';

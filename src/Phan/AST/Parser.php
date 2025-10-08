@@ -424,7 +424,6 @@ class Parser
      */
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, ?Request $request, array &$errors = []): Node
     {
-        // @phan-suppress-next-line PhanRedundantCondition
         if (!\in_array(Config::AST_VERSION, TolerantASTConverter::SUPPORTED_AST_VERSIONS, true)) {
             throw new \Error(\sprintf("Unexpected polyfill version: want %s, got %d", \implode(', ', TolerantASTConverter::SUPPORTED_AST_VERSIONS), Config::AST_VERSION));
         }

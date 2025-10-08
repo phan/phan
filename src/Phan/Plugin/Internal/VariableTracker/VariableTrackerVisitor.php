@@ -1165,7 +1165,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             if (!($catch_node instanceof Node)) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 // At least one catch block can fall through, so the try might have failed
                 return true;

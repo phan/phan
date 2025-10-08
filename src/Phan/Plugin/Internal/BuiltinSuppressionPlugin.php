@@ -209,7 +209,6 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionComments(
         string $file_contents
     ): Generator {
-        // @phan-suppress-next-line PhanUndeclaredClassReference
         if (\class_exists(PhpToken::class) && \method_exists(PhpToken::class, 'tokenize')) {
             return self::yieldSuppressionCommentsPhpToken($file_contents);
         }
@@ -224,7 +223,6 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionCommentsPhpToken(
         string $file_contents
     ): Generator {
-        // @phan-suppress-next-line PhanUndeclaredClassMethod missing in php 8 before 8.0.0RC4
         foreach (PhpToken::tokenize($file_contents) as $token) {
             $kind = $token->id;
             if ($kind !== \T_COMMENT && $kind !== \T_DOC_COMMENT) {

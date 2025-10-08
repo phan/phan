@@ -17,7 +17,6 @@ use SplObjectStorage;
  * @template V
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignaturePHPDocMismatchParamType, PhanParamSignatureMismatchInternal
- * @phan-file-suppress PhanUndeclaredClassAttribute `ReturnTypeWillChange` is undeclared in php 8.0, tentative return types were added in 8.1
  * TODO: Add a way to indicate in Phan that T is subtype of object for keys K
  *
  * @method void attach(K $object,V $data = null)
@@ -36,7 +35,6 @@ class Map extends SplObjectStorage
      *
      * @return K
      * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
-     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - Deliberately overriding internal method signature.
      */
     #[ReturnTypeWillChange]
     public function key()
@@ -48,7 +46,6 @@ class Map extends SplObjectStorage
      * We redefine the current value to the current value rather
      * than the current key
      * @return V
-     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - Deliberately overriding internal method signature.
      */
     #[ReturnTypeWillChange]
     public function current()

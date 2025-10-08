@@ -1013,7 +1013,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                     return self::UNESCAPE_CHARACTER_LOOKUP[$x];
                 }
                 // convert 2 hex bytes to a single character
-                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal, PhanPartialTypeMismatchArgumentInternal
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                 return \chr(\hexdec(\substr($x, 2)));
             },
             $escaped_key

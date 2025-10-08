@@ -262,7 +262,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($variable) {
                     // Store the RHS expression node so ConditionVisitor can re-apply type narrowing
                     // when this variable is tested in an if/while condition
-                    // @phan-suppress-next-line PhanUndeclaredProperty - using AllowDynamicProperties
                     $variable->phan_condition_expr = $expr_node;
                 }
             }

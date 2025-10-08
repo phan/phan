@@ -80,7 +80,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * @return FullyQualifiedGlobalConstantName
      * The fully-qualified structural element name of this
      * structural element
-     * @suppress PhanTypeMismatchReturn TODO: different low severity issue type for base class to subclass cast
      */
     public function getFQSEN(): FullyQualifiedGlobalConstantName
     {

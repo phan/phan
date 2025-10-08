@@ -356,7 +356,6 @@ final class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             /**
              * @param PhpParser\Node|Token $n
              * @throws InvalidArgumentException for invalid token classes
-             * @suppress PhanThrowTypeMismatchForCall can throw if debugDumpNodeOrToken fails
              */
             $fallback_closure = static function (\Microsoft\PhpParser\Node|Token $n, int $unused_start_line): ast\Node {
                 return static::astStub($n);

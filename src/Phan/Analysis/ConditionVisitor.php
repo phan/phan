@@ -580,7 +580,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if (\is_string($var_name) && self::$conditional_expr_depth < self::MAX_CONDITIONAL_EXPR_DEPTH) {
             $variable = $this->context->getScope()->getVariableByNameOrNull($var_name);
             if ($variable) {
-                // @phan-suppress-next-line PhanUndeclaredProperty - using AllowDynamicProperties
                 $cond_expr = $variable->phan_condition_expr ?? null;
             }
         }

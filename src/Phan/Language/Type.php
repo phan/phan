@@ -97,7 +97,6 @@ use function trim;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanSuspiciousTruthyString
- * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return types.
@@ -921,7 +920,6 @@ class Type implements Stringable
         }
 
         if (\substr($type_name, 0, 1) === '?') {
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return self::fromInternalTypeName(\substr($type_name, 1), true, $source, $code_base, $context, $template_parameter_type_list);
         }
         throw new AssertionError("No internal type with name $type_name");
@@ -999,7 +997,6 @@ class Type implements Stringable
      * Callers should ensure that the type regex accepts $fully_qualified_string
      *
      * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
-     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
      *
      * @throws FQSENException
      */
@@ -1095,7 +1092,6 @@ class Type implements Stringable
             $escaped_literal = \substr($escaped_literal, 1);
         }
         if ($escaped_literal[0] === "'") {
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
         $value = \filter_var($escaped_literal, \FILTER_VALIDATE_INT);
@@ -1125,7 +1121,6 @@ class Type implements Stringable
      * @param list<string> $shape_components
      * @param bool $is_nullable
      * @throws AssertionError if creating a closure/callable from the arguments failed
-     * @suppress PhanPossiblyFalseTypeArgument
      */
     private static function fromFullyQualifiedFunctionLike(
         bool $is_closure_type,
@@ -1186,7 +1181,6 @@ class Type implements Stringable
         if ($template_count === 2) {
             if (count($types) === 1 && $template_parameter_type_list[0]->hasTemplateType()) {
                 return GenericArrayTemplateKeyType::fromTemplateAndElementType(
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     \reset($types),
                     $is_nullable,
                     $template_parameter_type_list[0]
@@ -1242,13 +1236,11 @@ class Type implements Stringable
         if (count($types) === 1) {
             if ($always_has_elements) {
                 return NonEmptyListType::fromElementType(
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     \reset($types),
                     $is_nullable
                 );
             }
             return ListType::fromElementType(
-                // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                 \reset($types),
                 $is_nullable
             );
@@ -1347,7 +1339,7 @@ class Type implements Stringable
      * @return Type
      * Parse a type from the given string
      *
-     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal, PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall
+     * @suppress PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall
      * @phan-side-effect-free
      */
     public static function fromStringInContext(
@@ -1691,7 +1683,6 @@ class Type implements Stringable
      * @param int $source
      * @param bool $is_nullable
      * @throws AssertionError if the components were somehow invalid
-     * @suppress PhanPossiblyFalseTypeArgument
      */
     private static function fromFunctionLikeInContext(
         bool $is_closure_type,
@@ -2843,11 +2834,9 @@ class Type implements Stringable
         }
 
         // Guard against recursion such as `class X extends Y{} class Y extends X{}`.
-        // @phan-suppress-next-line PhanAccessReadOnlyProperty
         $this->memoized_data['expanded_types_preserving_template'] = $this->asPHPDocUnionType();
         $this->memoized_data['expanded_types'] = $this->asPHPDocUnionType();
 
-        // @phan-suppress-next-line PhanAccessReadOnlyProperty
         $this->memoized_data['expanded_types_preserving_template'] =
             $this->computeExpandedTypesPreservingTemplate($code_base, $recursion_depth);
         $this->memoized_data['expanded_types'] = $this->memoized_data['expanded_types_preserving_template']
@@ -3622,7 +3611,6 @@ class Type implements Stringable
      * 2: The template parameters, if any
      * 3: Whether or not the type is nullable
      * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
-     * @suppress PhanPossiblyFalseTypeArgument
      */
     private static function typeStringComponentsInner(
         string $type_string
@@ -3676,10 +3664,8 @@ class Type implements Stringable
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $is_fully_qualified = (0 === \strpos($type_string, '\\'));
 
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $fq_class_name_elements = \array_filter(\explode('\\', $type_string));
 
         $class_name =
@@ -3710,7 +3696,6 @@ class Type implements Stringable
      */
     private static function closureTypeStringComponents(string $type_string, string $inner): Tuple5
     {
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $parts = self::closureParams(\trim(\substr($inner, 1, -1)));
         // TODO: parse params, same as @method
 
@@ -3719,7 +3704,6 @@ class Type implements Stringable
         $colon_index = \strpos($type_string, ':', $i);
 
         if ($colon_index !== false) {
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $return_type_string = \ltrim(\substr($type_string, $colon_index + 1));
         } else {
             $return_type_string = 'void';
@@ -3849,7 +3833,6 @@ class Type implements Stringable
         if ($N !== count($results)) {
             return \array_values($results);
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn this is already a list (ensured by above check).
         return $results;
     }
 

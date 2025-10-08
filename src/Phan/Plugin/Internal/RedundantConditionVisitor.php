@@ -146,7 +146,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             foreach ($arm_node->children['cond']->children ?? [] as $arm_expr) {
                 $arm_expr_type = UnionTypeVisitor::unionTypeFromNode($code_base, $this->context, $arm_expr);
                 $arm_expr_type = $arm_expr_type->getRealUnionType()->withStaticResolvedInContext($this->context);
-                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 if ($this->checkUselessScalarComparison($node, $cond_type, $arm_expr_type, $cond_node, $arm_expr, ast\flags\BINARY_IS_IDENTICAL)) {
                     continue;
                 }

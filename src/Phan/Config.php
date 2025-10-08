@@ -1059,7 +1059,6 @@ class Config
      * @return string
      * Get the working directory from which Phan was invoked.
      * Defaults to the project root directory if not explicitly set.
-     * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
      */
     public static function getWorkingDirectory(): string
     {

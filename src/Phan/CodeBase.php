@@ -1202,7 +1202,7 @@ class CodeBase
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
-            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
+            // @phan-suppress-next-line  PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
             $set->offsetSet($value);
         }
         return $set;

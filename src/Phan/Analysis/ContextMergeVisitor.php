@@ -126,7 +126,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             if (!($catch_node instanceof Node)) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 // At least one catch may fall through, so analyze as if the try might fail.
                 return true;

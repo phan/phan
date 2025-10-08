@@ -20,7 +20,6 @@ use function in_array;
  * and returns the new Node.
  * The original ast\Node objects are not modified.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPossiblyUndeclaredProperty
  */
 class ASTSimplifier

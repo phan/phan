@@ -82,7 +82,6 @@ foreach ($files as $filename) {
     $result = convert_flat_delta_map_to_verbose_delta_map($flat_delta_map);
 
     $new_filename = $filename;
-    // @phan-suppress-next-line PhanPluginRemoveDebugCall
     fprintf(STDERR, "Saving adjusted map to %s\n", $new_filename);
     IncompatibleSignatureDetectorBase::saveSignatureDeltaMap($new_filename, $filename, $result);
 }

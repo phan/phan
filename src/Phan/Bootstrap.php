@@ -31,7 +31,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 if (function_exists('uopz_allow_exit') && !ini_get('uopz.disable')) {
     // This is safe to do in the uopz PECL module, it toggles a global variable.
     try {
-        uopz_allow_exit(true); // @phan-suppress-current-line PhanUndeclaredFunction
+        uopz_allow_exit(true);
     } catch (Throwable $e) {
         fprintf(STDERR, "uopz_allow_exit failed: %s" . PHP_EOL, $e->getMessage());
     }
@@ -74,7 +74,6 @@ function phan_output_ast_installation_instructions(): void
             $version,
             $version,
             PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
-            // @phan-suppress-next-line PhanImpossibleCondition, PHP_ZTS is a boolean, but phan assumes it is always false
             PHP_ZTS ? 'ts' : 'nts',
             'vs16',
             PHP_INT_SIZE == 4 ? 'x86' : 'x64'
@@ -165,7 +164,6 @@ if (extension_loaded('ast')) {
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
     }
-    // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
     if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
         // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
         // But don't warn for upcoming versions without a stable release.

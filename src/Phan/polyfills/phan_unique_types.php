@@ -9,7 +9,6 @@ declare(strict_types=1);
  *
  * @param list<object> $type_list Array of Type objects to deduplicate
  * @return list<object> Deduplicated array of Type objects
- * @suppress PhanRedefineFunctionInternal
  */
 function phan_unique_types(array $type_list): array
 {

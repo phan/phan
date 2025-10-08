@@ -219,7 +219,6 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * @return array<string,array{0:int,1:FullyQualifiedGlobalStructuralElement,2:int}>
      * A map from alias to target
      *
-     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      * @suppress PhanThrowTypeAbsentForCall
      */
     public static function aliasTargetMapFromUseNode(

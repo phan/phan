@@ -863,7 +863,6 @@ final class ArgumentType
             if ($argument_type->isVoidType()) {
                 self::warnVoidTypeArgument($code_base, $context, $argument_expression, $node);
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno, $i, $argument_expression, $node);
             if ($parameter->isPassByReference()) {
                 if ($argument_expression instanceof Node) {

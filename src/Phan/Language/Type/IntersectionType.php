@@ -111,7 +111,6 @@ final class IntersectionType extends Type
                 }
             }
             if (count($new_types) === 1) {
-                // @phan-suppress-next-line PhanPossiblyFalseTypeReturn
                 return reset($new_types);
             }
             $new_types = \array_values($new_types);

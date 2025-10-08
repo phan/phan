@@ -120,7 +120,6 @@ class IssueFixer
         }
         if (\count($typeDeclarationList->children) === 1) {
             $position = $typeDeclarationList->children[0]->getStartPosition();
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             return new FileEdit($position, $position, '?');
         }
         // TODO optionally add automatic fix for "null|" for null|A|B for union types containing TokenKind::BarToken

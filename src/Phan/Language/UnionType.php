@@ -91,7 +91,6 @@ use function substr;
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document the public methods
  * @phan-pure types/union types are immutable, but technically not pure (some methods cause issues to be emitted with Issue::maybeEmit()).
  *            However, it's useful to treat them as if they were pure, to warn about not using return values.
- * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
 class UnionType implements Serializable, Stringable
 {
@@ -264,7 +263,6 @@ class UnionType implements Serializable, Stringable
 
             $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
             if (\count($unique_types) === 1) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 $union_type = \reset($unique_types)->asPHPDocUnionType();
             } else {
                 // TODO: Support template types within <> and test?
@@ -342,7 +340,6 @@ class UnionType implements Serializable, Stringable
 
             $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
             if (\count($unique_types) === 1) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 $union_type = \reset($unique_types)->asRealUnionType();
             } else {
                 // TODO: Support template types within <> and test?
@@ -462,13 +459,11 @@ class UnionType implements Serializable, Stringable
             }
             if (substr($type_name, -1) === ')') {
                 if (substr($type_name, 0, 1) === '(') {
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 1, -1)) as $inner_type_name) {
                         $parts[] = $inner_type_name;
                     }
                     continue;
                 } elseif (substr($type_name, 0, 2) === '?(') {
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 2, -1)) as $inner_type_name) {
                         if (substr($inner_type_name, 0, 1) === '?') {
                             $parts[] = $inner_type_name;
@@ -844,7 +839,6 @@ class UnionType implements Serializable, Stringable
     {
         if ($this->real_type_set) {
             if (\count($this->type_set) === 1) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return \reset($this->type_set)->asPHPDocUnionType();
             }
             return new UnionType($this->type_set, true, []);
@@ -2461,7 +2455,6 @@ class UnionType implements Serializable, Stringable
      * i.e. array -> iterable is allowed, but iterable -> array is not
      * i.e. MyClass -> mixed is allowed, but mixed -> MyClass is not
      *
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function hasSubtypeOf(UnionType $target, CodeBase $code_base): bool
     {
@@ -3293,7 +3286,6 @@ class UnionType implements Serializable, Stringable
     /**
      * A union type after asserting is_scalar($x)
      *
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function scalarTypesStrict(bool $allow_empty = false): UnionType
     {
@@ -3382,7 +3374,6 @@ class UnionType implements Serializable, Stringable
      *
      * @see nonGenericArrayTypes
      * @suppress PhanUnreferencedPublicMethod
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function countableTypesStrictCast(CodeBase $code_base, Context $context): UnionType
     {
@@ -4049,7 +4040,6 @@ class UnionType implements Serializable, Stringable
      * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function iterableValueUnionType(CodeBase $code_base): UnionType
     {
@@ -4109,7 +4099,6 @@ class UnionType implements Serializable, Stringable
      * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @param bool $add_real_types if true, this adds the real types that would be possible for `$x[$offset]`
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function genericArrayElementTypes(bool $add_real_types, CodeBase $code_base): UnionType
     {
@@ -4262,7 +4251,6 @@ class UnionType implements Serializable, Stringable
             return GenericArrayType::fromElementType($type, false, $key_type);
         }, $this->type_set);
         if (\count($parts) <= 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \count($parts) === 1 ? \reset($parts)->asPHPDocUnionType() : self::$empty_instance;
         }
         return new UnionType($parts, false, []);
@@ -4387,7 +4375,6 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'int[]|float[]'.
      *
      * If $this is an empty UnionType, this method will produce 'array'
-     * @suppress PhanStaticClassAccessWithStaticVariable array elements are initialized without depending on inherited class
      */
     public function asNonEmptyGenericArrayTypes(int $key_type): UnionType
     {
@@ -4414,7 +4401,6 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'associative-array<int>|associative-array<float>'.
      *
      * If $this is an empty UnionType, this method will produce 'associative-array<mixed>'
-     * @suppress PhanStaticClassAccessWithStaticVariable array elements are initialized without depending on inherited class
      */
     public function asNonEmptyAssociativeArrayTypes(int $key_type): UnionType
     {
@@ -4441,7 +4427,6 @@ class UnionType implements Serializable, Stringable
      * 'int|float' will produce 'list<int>|list<float>'.
      *
      * If $this is an empty UnionType, this method will produce 'list<mixed>'
-     * @suppress PhanStaticClassAccessWithStaticVariable static variables are safely initialized
      */
     public function asNonEmptyListTypes(): UnionType
     {
@@ -4482,7 +4467,6 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) === 0) {
             return self::$empty_instance;
         } elseif (\count($type_set) === 1) {
-            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($type_set)->asExpandedTypes(
                 $code_base,
                 $recursion_depth + 1,
@@ -4999,7 +4983,6 @@ class UnionType implements Serializable, Stringable
             $array_shape_types = self::getUniqueTypes($array_shape_types);
         }
         if ($array_shape_types) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument phan can't infer new_type_set/union_types are non-empty
             $new_type_set = self::normalizeArrayShapes($new_type_set, $array_shape_types, $union_types, false);
         }
         $new_real_type_set = [];
@@ -5033,7 +5016,6 @@ class UnionType implements Serializable, Stringable
             $array_shape_types = self::getUniqueTypes($array_shape_types);
         }
         if ($array_shape_types) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument Phan can't count.
             $new_real_type_set = self::normalizeArrayShapes($new_real_type_set, $array_shape_types, $union_types, true);
         }
         // \Phan\Debug::debugLog("Before: " . \implode(' or ', \array_map(function (UnionType $type) : string { return $type->getDebugRepresentation(); }, $union_types)) . " array_shape_types=" . \implode(' or ', $array_shape_types) . "\n");
@@ -5354,7 +5336,6 @@ class UnionType implements Serializable, Stringable
                 }
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn phan cannot infer that the assignments do not make the result associative-array.
         return $result;
     }
 
@@ -6019,11 +6000,9 @@ class UnionType implements Serializable, Stringable
             return $this;
         }
         $type = \reset($type_set);
-        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
         if ($type->isNullable()) {
             return ($type instanceof NullType || $type instanceof VoidType) ? null : $this;
         }
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
             case ArrayShapeType::class:
                 return $type->asArrayLiteralOrNull() ?? $this;

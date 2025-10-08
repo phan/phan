@@ -56,7 +56,6 @@ class FunctionFactory
         $function->setIsDeprecated($reflection_function->isDeprecated());
 
         $real_return_type = self::getRealReturnTypeFromReflection($reflection_function);
-        // @phan-suppress-next-line PhanUndeclaredMethod
         if ($reflection_function->hasTentativeReturnType()) {
             $function->setHasTentativeReturnType();
         }
@@ -182,7 +181,6 @@ class FunctionFactory
         // https://github.com/phan/phan/issues/888 - Reflection for that class's parameters causes php to throw/hang
         if ($class_name !== 'ServerResponse') {
             $method->setRealReturnType(self::getRealReturnTypeFromReflection($reflection_method));
-            // @phan-suppress-next-line PhanUndeclaredMethod
             if ($reflection_method->hasTentativeReturnType()) {
                 $method->setHasTentativeReturnType();
             }
@@ -194,7 +192,6 @@ class FunctionFactory
 
     /**
      * Get the return type from reflection (or the tentative return type)
-     * @suppress PhanUndeclaredMethod
      */
     public static function getRealReturnTypeFromReflection(ReflectionFunctionAbstract $function): UnionType
     {
@@ -232,7 +229,6 @@ class FunctionFactory
         $alternate_id = 0;
         /**
          * @param array<string,mixed> $map
-         * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
         return \array_map(static function (array $map) use (
             $function,

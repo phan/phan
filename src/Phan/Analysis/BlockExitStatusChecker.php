@@ -643,7 +643,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_NORETURN;
             }
         }
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }

@@ -271,7 +271,6 @@ class Clazz extends AddressableElement
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
-        // @phan-suppress-next-line PhanUndeclaredMethod this was added in 8.1
         if ($class->isEnum()) {
             $flags |= \ast\flags\CLASS_ENUM;
         }
@@ -473,9 +472,7 @@ class Clazz extends AddressableElement
             $reflection_constant = method_exists($class, 'getReflectionConstant')
                 ? $class->getReflectionConstant($name)
                 : null;
-            // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
             if ($reflection_constant instanceof ReflectionClassConstant && method_exists($reflection_constant, 'hasType') && $reflection_constant->hasType()) {
-                // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
                 $declared_type = UnionType::fromReflectionType($reflection_constant->getType())->asNormalizedTypes();
                 $constant->setUnionType(
                     $value_type->asPHPDocUnionType()->withRealTypeSet($declared_type->getTypeSet())
@@ -509,9 +506,6 @@ class Clazz extends AddressableElement
         return $clazz;
     }
 
-    /**
-     * @suppress PhanUndeclaredMethod properties only have types and reflection types in php 7.4+
-     */
     private static function getRealTypeForReflectionProperty(ReflectionProperty $property): UnionType
     {
         if ($property->hasType()) {
@@ -2490,7 +2484,6 @@ class Clazz extends AddressableElement
 
     /**
      * @return FullyQualifiedClassName
-     * @suppress PhanTypeMismatchReturn (FQSEN on declaration)
      */
     public function getFQSEN()
     {
@@ -4281,7 +4274,6 @@ class Clazz extends AddressableElement
                     return true;
                 }
                 if (\class_exists($fqsen_string)) {
-                    // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
                         if ($php_attribute->getName() === 'Attribute') {
@@ -4325,7 +4317,6 @@ class Clazz extends AddressableElement
                     return Attribute::TARGET_CLASS;
                 }
                 if (\class_exists($fqsen_string)) {
-                    // @phan-suppress-next-line PhanUndeclaredMethod this is added in php 8.0
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
                         // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
                         if ($php_attribute->getName() === 'Attribute') {

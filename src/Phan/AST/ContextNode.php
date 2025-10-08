@@ -172,7 +172,6 @@ class ContextNode
         $trait_fqsen_string = $this->getQualifiedName();
         if ($trait_fqsen_string === '') {
             if (\count($adaptations_map) === 1) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return \reset($adaptations_map)->getTraitFQSEN();
             } else {
                 return null;

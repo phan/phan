@@ -12,7 +12,6 @@ use ast\Node;
  *
  * @param Node|string|int|float|null $node
  * @return string 16-byte binary hash
- * @suppress PhanRedefineFunctionInternal
  */
 function phan_ast_hash(Node|string|int|float|null $node): string
 {

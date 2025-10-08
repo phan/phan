@@ -16,7 +16,6 @@ use Phan\Language\UnionType;
  * They were introduced in PHP 8.4.
  *
  * @see https://wiki.php.net/rfc/property-hooks
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class PropertyHook
 {
@@ -160,7 +159,6 @@ class PropertyHook
      * Get the union type returned by this hook (for 'get' hooks)
      * or accepted by this hook (for 'set' hooks).
      *
-     * @suppress PhanUnusedPublicNoOverrideMethodParameter
      */
     public function getUnionType(): UnionType
     {

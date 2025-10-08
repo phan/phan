@@ -309,7 +309,6 @@ class CLI
                         throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
-                        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
                         if (\strpos($short_options_string, "$key:") !== false) {
                             throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
                         }
@@ -1266,7 +1265,6 @@ class CLI
      * (This is internal, so it was duplicated in case their API changed)
      *
      * @param resource $output A valid CLI output stream
-     * @suppress PhanUndeclaredFunction
      */
     public static function supportsColor($output): bool
     {
@@ -1310,7 +1308,6 @@ class CLI
      * Returns true if the output stream is a TTY.
      *
      * @param resource $output A valid CLI output stream
-     * @suppress PhanUndeclaredFunction
      */
     private static function isTerminal($output): bool
     {
@@ -2090,7 +2087,6 @@ EOB
         if (CLI::shouldShowLongProgress() || CLI::shouldShowDebugOutput()) {
             return false;
         }
-        // @phan-suppress-next-line PhanUndeclaredFunction
         if (\function_exists('sapi_windows_vt100_support') && !\sapi_windows_vt100_support(STDERR)) {
             return false;
         }

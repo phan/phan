@@ -209,14 +209,12 @@ final class EmptyUnionTypeTest extends BaseTest
                 return [
                     /**
                      * @param mixed ...$unused_args
-                     * @suppress PhanPluginUnknownArrayClosureParamType
                      */
                     static function (mixed ...$unused_args): bool {
                         return false;
                     },
                     /**
                      * @param mixed ...$unused_args
-                     * @suppress PhanPluginUnknownArrayClosureParamType
                      */
                     static function (mixed ...$unused_args): bool {
                         return true;
