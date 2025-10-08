@@ -4685,7 +4685,15 @@ class UnionType implements Serializable, Stringable
         if (!$php84_map) {
             $php84_map = self::computePHP84FunctionSignatureMap($php83_map);
         }
-        return $php84_map;
+        if ($target_php_version < 80500) {
+            return $php84_map;
+        }
+
+        static $php85_map = [];
+        if (!$php85_map) {
+            $php85_map = self::computePHP85FunctionSignatureMap($php84_map);
+        }
+        return $php85_map;
     }
 
     /**
@@ -4712,6 +4720,10 @@ class UnionType implements Serializable, Stringable
     public static function getLatestRealFunctionSignatureMap(int $target_php_version): array
     {
         // PHP 8.1+ is the minimum supported version
+        if ($target_php_version >= 80500) {
+            static $map_85;
+            return $map_85 ?? ($map_85 = self::computeLatestRealFunctionSignatureMap(''));
+        }
         if ($target_php_version >= 80400) {
             static $map_84;
             return $map_84 ?? ($map_84 = self::computeLatestRealFunctionSignatureMap(''));
@@ -4741,6 +4753,16 @@ class UnionType implements Serializable, Stringable
         }
         \ksort($map);
         return $map;
+    }
+
+    /**
+     * @param array<string,associative-array<int|string,string>> $php84_map
+     * @return array<string,associative-array<int|string,string>>
+     */
+    private static function computePHP85FunctionSignatureMap(array $php84_map): array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php85_delta.php');
+        return self::applyDeltaToGetNewerSignatures($php84_map, $delta_raw);
     }
 
     /**

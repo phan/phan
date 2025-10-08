@@ -1,0 +1,2 @@
+%s:5 PhanPluginAsymmetricVisibilityNoType Property with asymmetric visibility \StaticVisibility::$value must have a declared type
+%s:5 PhanPluginUnknownPropertyType Property \StaticVisibility::$value has an initial type that cannot be inferred (Types inferred after analysis: int)

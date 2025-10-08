@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\AST\ASTReverter;
+use Phan\AST\PipeExpression;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
@@ -1099,25 +1100,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryPipe(Node $node): UnionType
     {
-        $right_node = $node->children['right'];
-
-        // The right side should be a call expression (AST_CALL, AST_METHOD_CALL, AST_STATIC_CALL)
-        // In pipe syntax: $x |> func(...), the AST represents this as a call with AST_CALLABLE_CONVERT args
-        // The call node already contains the piped value implicitly, so we just need to infer its return type
-        if (!($right_node instanceof Node)) {
-            // If right side is not a node, something is wrong - return mixed
-            return MixedType::instance(false)->asPHPDocUnionType();
+        $call_node = PipeExpression::createSyntheticCall($node);
+        if ($call_node === null) {
+            return UnionType::fromFullyQualifiedPHPDocString('mixed');
         }
 
-        // Get the return type of the call expression
-        // The UnionTypeVisitor will handle the call and infer its return type
-        // Note: We don't need to explicitly analyze the left node (piped value) here because
-        // the AST already represents the pipe as a complete call expression where the piped
-        // value is implicitly the first argument
         return UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $right_node,
+            $call_node,
             $this->should_catch_issue_exception
         );
     }

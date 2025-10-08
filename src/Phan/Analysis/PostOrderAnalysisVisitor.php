@@ -12,6 +12,7 @@ use Closure;
 use Exception;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTReverter;
+use Phan\AST\PipeExpression;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ScopeImpactCheckingVisitor;
@@ -971,6 +972,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case flags\BINARY_BITWISE_XOR:
                 $this->analyzeBinaryBitwiseOp($node);
                 break;
+            case flags\BINARY_PIPE:
+                $this->analyzeBinaryPipe($node);
+                break;
         }
         return $this->context;
     }
@@ -1129,6 +1133,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
+    private function analyzeBinaryPipe(Node $node): void
+    {
+        $call_node = PipeExpression::createSyntheticCall($node);
+        if ($call_node === null) {
+            return;
+        }
+        switch ($call_node->kind) {
+            case \ast\AST_CALL:
+                $this->visitCall($call_node);
+                return;
+            case \ast\AST_METHOD_CALL:
+                $this->visitMethodCall($call_node);
+                return;
+            case \ast\AST_STATIC_CALL:
+                $this->visitStaticCall($call_node);
+                return;
+            case \ast\AST_NULLSAFE_METHOD_CALL:
+                $this->visitNullsafeMethodCall($call_node);
+                return;
+        }
+    }
+
     public const NAME_FOR_UNARY_OP = [
         flags\UNARY_BOOL_NOT => '!',
         flags\UNARY_BITWISE_NOT => '~',
@@ -1196,7 +1222,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitCast(Node $node): Context
     {
-        if ($this->isInNoOpPosition($node)) {
+        if ($node->flags !== flags\TYPE_VOID && $this->isInNoOpPosition($node)) {
             $this->emitIssue(
                 Issue::NoopCast,
                 $node->lineno,
