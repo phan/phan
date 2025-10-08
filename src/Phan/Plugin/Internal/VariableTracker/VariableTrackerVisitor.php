@@ -1110,13 +1110,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
 
         $catches_will_throw_or_return = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catches_node);
+        $try_always_exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node);
 
         $catch_node_list = $catches_node->children;
         if (\count($catch_node_list) > 0) {
             $catches_scope = new VariableTrackingBranchScope($main_scope);
             $catches_scope = $this->analyze($catches_scope, $catches_node);
             if (!$catches_will_throw_or_return) {
-                if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node)) {
+                if ($try_always_exits && $finally_node === null) {
                     // @phan-suppress-next-line PhanTypeMismatchArgument
                     $main_scope = $main_scope->mergeBranchScopeList([$catches_scope], false, []);
                 } else {
