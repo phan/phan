@@ -41,6 +41,7 @@ New features (Analysis):
     across several lines without being misinterpreted.
   - `PHPDocRedundantPlugin` now flags redundant `@var` annotations on typed
     properties, matching its existing coverage for functions and methods.
+- `PreferNamespaceUsePlugin` now handles union types
 
 New features (CLI):
 - `-n`/`--no-config-file` implicitly limits analysis to just the files provided

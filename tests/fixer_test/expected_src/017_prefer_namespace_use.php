@@ -15,4 +15,12 @@ namespace TestPreferNamespaceUse2 {
     function testMethodReturn(): TestObject {
         return new \TestPreferNamespaceUse1\TestObject();
     }
+
+    function testNullable(): ?TestObject {
+        return new \TestPreferNamespaceUse1\TestObject();
+    }
+
+    function testUnionTypes ( TestObject|string $param ) : bool|TestObject {
+        return new \TestPreferNamespaceUse1\TestObject();
+    }
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\CodeBase;
 use Phan\IssueInstance;
 use Phan\Language\Context;
@@ -16,6 +17,7 @@ use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use PreferNamespaceUsePlugin\Fixers;
+use const ast\AST_TYPE;
 
 /**
  * This plugin checks for FQSEN usages that could be simplified by leveraging an `use` already present in the
@@ -66,24 +68,14 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
 
     private static function analyzeFunctionLikeReturn(CodeBase $code_base, FunctionInterface $method, Node $return_type): void
     {
-        $is_nullable = false;
-        if ($return_type->kind === ast\AST_NULLABLE_TYPE) {
-            $return_type = $return_type->children['type'];
-            if (!($return_type instanceof Node)) {
-                // should not happen
-                return;
-            }
-            $is_nullable = true;
-        }
         $shorter_return_type = self::determineShorterType($method->getContext(), $return_type);
         if (is_string($shorter_return_type)) {
-            $prefix = $is_nullable ? '?' : '';
             self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 self::PreferNamespaceUseReturnType,
                 'Could write return type of {FUNCTION} as {TYPE} instead of {TYPE}',
-                [$method->getName(), $prefix . $shorter_return_type, $prefix . '\\' . $return_type->children['name']]
+                [$method->getName(), $shorter_return_type, ASTReverter::toShortString($return_type)]
             );
         }
     }
@@ -94,15 +86,6 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         if (!$param_type instanceof Node) {
             return;
         }
-        $is_nullable = false;
-        if ($param_type->kind === ast\AST_NULLABLE_TYPE) {
-            $param_type = $param_type->children['type'];
-            if (!($param_type instanceof Node)) {
-                // should not happen
-                return;
-            }
-            $is_nullable = true;
-        }
         $shorter_param_type = self::determineShorterType($method->getContext(), $param_type);
         if (is_string($shorter_param_type)) {
             $param_name = $param_node->children['name'];
@@ -111,13 +94,12 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
                 return;
             }
 
-            $prefix = $is_nullable ? '?' : '';
             self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 self::PreferNamespaceUseParamType,
                 'Could write param type of ${PARAMETER} of {FUNCTION} as {TYPE} instead of {TYPE}',
-                [$param_name, $method->getName(), $prefix . $shorter_param_type, $prefix . '\\' . $param_type->children['name']]
+                [$param_name, $method->getName(), $shorter_param_type, ASTReverter::toShortString($param_type)]
             );
         }
     }
@@ -129,6 +111,31 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
      */
     private static function determineShorterType(Context $context, Node $type_node): ?string
     {
+        if ($type_node->kind === ast\AST_TYPE_UNION) {
+            $shorter_types = [];
+            $found_shorter = false;
+            foreach ($type_node->children as $child) {
+                if ($child->kind === AST_TYPE) {
+                    $shorter_types[] = ASTReverter::toShortTypeString($child);
+                } else {
+                    $shorter_type = self::determineShorterType($context, $child);
+                    if ($shorter_type !== null) {
+                        $found_shorter = true;
+                    } else {
+                        $shorter_type = ASTReverter::toShortString($child);
+                    }
+                    $shorter_types[] = $shorter_type;
+                }
+            }
+            return $found_shorter ? implode( '|', $shorter_types ) : null;
+        }
+        // TODO: Intersection types
+
+        if ($type_node->kind === ast\AST_NULLABLE_TYPE) {
+            $shorter_type = self::determineShorterType($context, $type_node->children['type']);
+            return $shorter_type !== null ? "?$shorter_type" : null;
+        }
+
         if ($type_node->kind !== ast\AST_NAME) {
             return null;
         }
