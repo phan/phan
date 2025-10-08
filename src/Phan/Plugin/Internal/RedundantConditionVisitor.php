@@ -23,6 +23,9 @@ use Phan\Language\UnionType;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 
 use function count;
+use function in_array;
+use function is_string;
+use function strtolower;
 
 /**
  * Checks builtin expressions such as empty() for redundant/impossible conditions.
@@ -35,6 +38,15 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
     public function visitEmpty(Node $node): void
     {
         $var_node = $node->children['expr'];
+        if ($var_node instanceof Node && $var_node->kind === ast\AST_STATIC_PROP) {
+            $class_node = $var_node->children['class'] ?? null;
+            if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+                $name = $class_node->children['name'] ?? null;
+                if (is_string($name) && in_array(strtolower($name), ['self', 'static', 'parent'], true)) {
+                    return;
+                }
+            }
+        }
         try {
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var_node, false);
         } catch (Exception) {
