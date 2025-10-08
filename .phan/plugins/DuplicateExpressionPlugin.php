@@ -259,7 +259,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * This could be more permissive about what constants are allowed (e.g. user-defined constants, real constants like PI, etc.),
      * but that may cause more false positives.
      */
-    private static function resolveLiteralValue(Node $node): \ast\Node|bool|null
+    private static function resolveLiteralValue(Node $node): Node|bool|null
     {
         if ($node->kind !== ast\AST_CONST) {
             return $node;
@@ -410,7 +410,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
         return $node->kind === ast\AST_CONST && strcasecmp((string)($node->children['name']->children['name'] ?? ''), 'null') === 0;
     }
 
-    private function warnDuplicateConditionalNullCoalescing(string $expr, \ast\Node|float|int|null|string $x_node): void
+    private function warnDuplicateConditionalNullCoalescing(string $expr, Node|float|int|null|string $x_node): void
     {
         $this->emitPluginIssue(
             $this->code_base,

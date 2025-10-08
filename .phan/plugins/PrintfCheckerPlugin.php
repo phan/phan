@@ -88,7 +88,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param bool|int|string|float|Node|array|null $ast_node
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, \ast\Node|array|bool|float|int|null|string $ast_node): ?PrimitiveValue
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, Node|array|bool|float|int|null|string $ast_node): ?PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {

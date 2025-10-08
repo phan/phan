@@ -93,7 +93,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
     public static function unionTypeFromNode(
         CodeBase $code_base,
         Context $context,
-        \ast\Node|float|int|string $node
+        Node|float|int|string $node
     ): UnionType {
         if ($node instanceof Node) {
             return (new self($code_base, $context))->__invoke($node);

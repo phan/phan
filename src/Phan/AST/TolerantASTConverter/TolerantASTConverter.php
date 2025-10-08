@@ -388,7 +388,7 @@ class TolerantASTConverter
      * @throws Exception if node is invalid
      * @internal
      */
-    public static function debugDumpNodeOrToken(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token|array|bool|int|null|string $n): string
+    public static function debugDumpNodeOrToken(\Microsoft\PhpParser\Node|Token|array|bool|int|null|string $n): string
     {
         if (\is_scalar($n)) {
             return var_representation($n);
@@ -414,7 +414,7 @@ class TolerantASTConverter
      * Throws RuntimeException|Exception if the statement list is invalid
      * @suppress PhanThrowTypeAbsentForCall|PhanThrowTypeMismatchForCall
      */
-    private static function phpParserStmtlistToAstNode(\Microsoft\PhpParser\Node\StatementNode|\Microsoft\PhpParser\Token|array $parser_nodes, ?int $lineno, bool $return_null_on_empty = false): ?\ast\Node
+    private static function phpParserStmtlistToAstNode(\Microsoft\PhpParser\Node\StatementNode|Token|array $parser_nodes, ?int $lineno, bool $return_null_on_empty = false): ?\ast\Node
     {
         if ($parser_nodes instanceof PhpParser\Node\Statement\CompoundStatementNode) {
             $parser_nodes = $parser_nodes->statements;
@@ -594,7 +594,7 @@ class TolerantASTConverter
      * @param PhpParser\Node|Token $n
      * @throws InvalidNodeException if this was called on an unexpected type
      */
-    final protected static function getStartLine(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $n): int
+    final protected static function getStartLine(\Microsoft\PhpParser\Node|Token $n): int
     {
         return self::$file_position_map->getStartLine($n);
     }
@@ -602,7 +602,7 @@ class TolerantASTConverter
     /**
      * @throws InvalidNodeException if this was called on an unexpected type
      */
-    final protected static function getEndLine(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token|null $n): int
+    final protected static function getEndLine(\Microsoft\PhpParser\Node|Token|null $n): int
     {
         if (\is_null($n)) {
             return 0;
@@ -2695,7 +2695,7 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node[]|PhpParser\Node|Token $stmts
      */
-    private static function getStartLineOfStatementOrStatements(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token|array $stmts): int
+    private static function getStartLineOfStatementOrStatements(\Microsoft\PhpParser\Node|Token|array $stmts): int
     {
         if (is_array($stmts)) {
             return isset($stmts[0]) ? self::getStartLine($stmts[0]) : 0;

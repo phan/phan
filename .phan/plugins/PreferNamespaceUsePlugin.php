@@ -115,6 +115,9 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
             $shorter_types = [];
             $found_shorter = false;
             foreach ($type_node->children as $child) {
+                if (!$child instanceof Node) {
+                    throw new AssertionError( 'Children should always be nodes' );
+                }
                 if ($child->kind === AST_TYPE) {
                     $shorter_types[] = ASTReverter::toShortTypeString($child);
                 } else {
@@ -132,7 +135,11 @@ class PreferNamespaceUsePlugin extends PluginV3 implements
         // TODO: Intersection types
 
         if ($type_node->kind === ast\AST_NULLABLE_TYPE) {
-            $shorter_type = self::determineShorterType($context, $type_node->children['type']);
+            $inner_type_node = $type_node->children['type'];
+            if (!$inner_type_node instanceof Node) {
+                throw new AssertionError( 'Inner nullable type should always be a Node' );
+            }
+            $shorter_type = self::determineShorterType($context, $inner_type_node);
             return $shorter_type !== null ? "?$shorter_type" : null;
         }
 

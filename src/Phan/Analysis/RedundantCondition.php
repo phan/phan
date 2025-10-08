@@ -46,7 +46,7 @@ class RedundantCondition
      * Choose a more specific issue name based on where the issue was emitted from.
      * In loops, Phan's checks have higher false positives.
      */
-    public static function chooseSpecificImpossibleOrRedundantIssueKind(\ast\Node|float|int|string $node, Context $context, string $issue_name): string
+    public static function chooseSpecificImpossibleOrRedundantIssueKind(Node|float|int|string $node, Context $context, string $issue_name): string
     {
         if (ParseVisitor::isNonVariableExpr($node)) {
             return $issue_name;
@@ -69,7 +69,7 @@ class RedundantCondition
      * @param Closure(UnionType):bool $is_still_issue
      */
     public static function emitInstance(
-        \ast\Node|float|int|string $node,
+        Node|float|int|string $node,
         CodeBase $code_base,
         Context $context,
         string $issue_name,
@@ -116,7 +116,7 @@ class RedundantCondition
      * @return ?Closure(Context):(?UnionType) A closure to fetch the type, or null if the inferred type isn't expected to vary.
      * @internal
      */
-    public static function getLoopNodeTypeFetcher(CodeBase $code_base, \ast\Node|float|int|null|string $node): ?Closure
+    public static function getLoopNodeTypeFetcher(CodeBase $code_base, Node|float|int|null|string $node): ?Closure
     {
         if (!($node instanceof Node)) {
             // This scalar won't change.
@@ -158,7 +158,7 @@ class RedundantCondition
      * @return associative-array<int|string, string> the set of variable names.
      * @internal
      */
-    public static function getVariableSet(\ast\Node|float|int|string $node): array
+    public static function getVariableSet(Node|float|int|string $node): array
     {
         if (!$node instanceof Node) {
             return [];
@@ -187,7 +187,7 @@ class RedundantCondition
      *
      * e.g. `isset($str[5])`
      */
-    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, \ast\Node|float|int|string $node): bool
+    public static function shouldNotWarnAboutIssetCheckForNonNullExpression(CodeBase $code_base, Context $context, Node|float|int|string $node): bool
     {
         if (!$node instanceof Node) {
             return false;

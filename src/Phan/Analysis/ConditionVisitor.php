@@ -233,7 +233,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * A new or an unchanged context resulting from
      * analyzing the short-circuiting logical and.
      */
-    private function analyzeShortCircuitingAnd(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    private function analyzeShortCircuitingAnd(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
@@ -259,7 +259,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * analyzing the short-circuiting logical or.
      * @suppress PhanSuspiciousTruthyString deliberate check
      */
-    private function analyzeShortCircuitingOr(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    private function analyzeShortCircuitingOr(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
@@ -524,7 +524,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      *
      * @param bool $non_nullable if an offset is created, will it be non-nullable?
      */
-    private function withSetArrayShapeTypes(UnionType $union_type, \ast\Node|bool|float|int|string $dim_node, Context $context, bool $non_nullable): UnionType
+    private function withSetArrayShapeTypes(UnionType $union_type, Node|bool|float|int|string $dim_node, Context $context, bool $non_nullable): UnionType
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null

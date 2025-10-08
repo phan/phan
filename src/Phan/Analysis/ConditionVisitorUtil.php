@@ -740,7 +740,7 @@ trait ConditionVisitorUtil
      * Returns true if `$node` is an `ast\Node` representing the PHP variable `$this`.
      *
      */
-    public static function isThisVarNode(\ast\Node|float|int|string $node): bool
+    public static function isThisVarNode(Node|float|int|string $node): bool
     {
         return $node instanceof Node && $node->kind === ast\AST_VAR &&
             $node->children['name'] === 'this';
@@ -749,7 +749,7 @@ trait ConditionVisitorUtil
     /**
      * Check if a node represents self, static, or parent class reference
      */
-    public static function isSelfOrStaticClassNode(\ast\Node|float|int|string $node): bool
+    public static function isSelfOrStaticClassNode(Node|float|int|string $node): bool
     {
         if (!$node instanceof Node || $node->kind !== ast\AST_NAME) {
             return false;
@@ -935,7 +935,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeIdentical(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
         $context ??= $this->context;
@@ -955,7 +955,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeEqual(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
         $context ??= $this->context;
@@ -978,7 +978,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeCompared(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         int $flags
     ): Context {
         $context = $this->context;
@@ -1051,7 +1051,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeNotIdentical(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
         $context ??= $this->context;
@@ -1088,7 +1088,7 @@ trait ConditionVisitorUtil
      */
     final public function updateVariableToBeNotEqual(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context {
         $context ??= $this->context;
@@ -1134,7 +1134,7 @@ trait ConditionVisitorUtil
     /**
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x !== false)`
      */
-    public function analyzeAndUpdateToBeIdentical(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    public function analyzeAndUpdateToBeIdentical(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1146,7 +1146,7 @@ trait ConditionVisitorUtil
     /**
      * @return Context - Context after inferring type from the negation of a condition such as `if ($x != false)`
      */
-    public function analyzeAndUpdateToBeEqual(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    public function analyzeAndUpdateToBeEqual(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1158,7 +1158,7 @@ trait ConditionVisitorUtil
     /**
      * @return Context - Context after inferring type from an expression such as `if ($x !== false)`
      */
-    public function analyzeAndUpdateToBeNotIdentical(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    public function analyzeAndUpdateToBeNotIdentical(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1167,7 +1167,7 @@ trait ConditionVisitorUtil
         );
     }
 
-    protected function analyzeBinaryConditionPattern(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right, BinaryCondition $condition): Context
+    protected function analyzeBinaryConditionPattern(Node|float|int|string $left, Node|float|int|string $right, BinaryCondition $condition): Context
     {
         if ($left instanceof Node) {
             $result = $this->analyzeBinaryConditionSide($left, $right, $condition);
@@ -1188,7 +1188,7 @@ trait ConditionVisitorUtil
      * @param BinaryCondition $condition
      * @suppress PhanPartialTypeMismatchArgument
      */
-    private function analyzeBinaryConditionSide(Node $var_node, \ast\Node|float|int|string $expr_node, BinaryCondition $condition): ?Context
+    private function analyzeBinaryConditionSide(Node $var_node, Node|float|int|string $expr_node, BinaryCondition $condition): ?Context
     {
         '@phan-var ConditionVisitorUtil|ConditionVisitorInterface $this';
         $kind = $var_node->kind;
@@ -1246,7 +1246,7 @@ trait ConditionVisitorUtil
     /**
      * Returns a context where the variable for $object_node has the class found in $expr_node
      */
-    public function analyzeClassAssertion(\ast\Node|float|int|string $object_node, \ast\Node|bool|float|int|string $expr_node): ?Context
+    public function analyzeClassAssertion(Node|float|int|string $object_node, Node|bool|float|int|string $expr_node): ?Context
     {
         if (!($object_node instanceof Node)) {
             return null;
@@ -1317,7 +1317,7 @@ trait ConditionVisitorUtil
     /**
      * @return Context - Context after inferring type from an expression such as `if ($x == 'literal')`
      */
-    public function analyzeAndUpdateToBeNotEqual(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right): Context
+    public function analyzeAndUpdateToBeNotEqual(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1329,7 +1329,7 @@ trait ConditionVisitorUtil
     /**
      * @return Context - Context after inferring type from a comparison expression such as `if ($x['field'] > 0)`
      */
-    protected function analyzeAndUpdateToBeCompared(\ast\Node|float|int|string $left, \ast\Node|float|int|string $right, int $flags): Context
+    protected function analyzeAndUpdateToBeCompared(Node|float|int|string $left, Node|float|int|string $right, int $flags): Context
     {
         return $this->analyzeBinaryConditionPattern(
             $left,
@@ -1495,7 +1495,7 @@ trait ConditionVisitorUtil
      * @param Context $context
      * @param list<mixed> $args
      */
-    protected function modifyComplexExpression(\ast\Node|float|int|string $node, Closure $type_modification_callback, Context $context, array $args): Context
+    protected function modifyComplexExpression(Node|float|int|string $node, Closure $type_modification_callback, Context $context, array $args): Context
     {
         for (;;) {
             if (!$node instanceof Node) {
@@ -1688,7 +1688,7 @@ trait ConditionVisitorUtil
     /**
      * @return ?string the name of the variable in a chain of field accesses such as $varName['field'][$i]
      */
-    private static function getVarNameOfDimNode(\ast\Node|float|int|string $node): ?string
+    private static function getVarNameOfDimNode(Node|float|int|string $node): ?string
     {
         // Loop to support getting the var name in is_array($x['field'][0])
         while (true) {

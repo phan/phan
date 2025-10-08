@@ -1843,7 +1843,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
      * @param Node|string|int|float|null $inner_node
      */
-    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, \ast\Node|float|int|null|string $inner_node): void
+    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, Node|float|int|null|string $inner_node): void
     {
         if ($this->shouldSuppressIssue(Issue::TypeMismatchReturnReal, $lineno)) {
             // Suppressing TypeMismatchReturnReal also suppresses less severe return type mismatches
@@ -2243,7 +2243,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         UnionType $expression_type,
         UnionType $method_return_type,
         int $lineno,
-        \ast\Node|float|int|null|string $inner_node
+        Node|float|int|null|string $inner_node
     ): bool {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
@@ -2304,7 +2304,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function returnExpressionToShortString(\ast\Node|float|int|null|string $node): string
+    private static function returnExpressionToShortString(Node|float|int|null|string $node): string
     {
         return $node !== null ? ASTReverter::toShortString($node) : 'void';
     }
@@ -2327,7 +2327,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param \ast\Node|float|int|null|string $node
      * @return \Generator<int, array{0: UnionType, 1:\ast\Node|string|int|float|null}>
      */
-    private function getReturnTypes(Context $context, \ast\Node|float|int|null|string $node, int $return_lineno): \Generator
+    private function getReturnTypes(Context $context, Node|float|int|null|string $node, int $return_lineno): \Generator
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
@@ -2777,7 +2777,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Node|int|string|float|null $node
      */
-    public static function isStaticNameNode(\ast\Node|float|int|null|string $node, bool $allow_self): bool
+    public static function isStaticNameNode(Node|float|int|null|string $node, bool $allow_self): bool
     {
         if (!$node instanceof Node) {
             return false;
