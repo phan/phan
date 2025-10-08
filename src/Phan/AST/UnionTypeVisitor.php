@@ -1552,9 +1552,25 @@ class UnionTypeVisitor extends AnalysisVisitor
             $stdclass = Type::fromFullyQualifiedString('\stdClass');
         }
         $has_array = $expr_type->hasArray();
+        $array_shape_real_types = [];
         if ($has_array) {
             if ($expr_type->isExclusivelyArray()) {
+                foreach ($expr_type->getTypeSet() as $type) {
+                    if ($type instanceof ArrayShapeType) {
+                        $array_shape_real_types[] = $type;
+                    }
+                }
+                if ($array_shape_real_types) {
+                    return $stdclass->asRealUnionType()->withRealTypeSet(
+                        UnionType::of($array_shape_real_types)->getTypeSet()
+                    );
+                }
                 return $stdclass->asRealUnionType();
+            }
+            foreach ($expr_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $array_shape_real_types[] = $type;
+                }
             }
         }
         $expr_type = $expr_type->objectTypes();
@@ -1564,11 +1580,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         $expr_type = $expr_type->nonNullableClone();
         if ($has_array) {
             $expr_type = $expr_type->withType($stdclass);
-            if ($expr_type->hasRealTypeSet()) {
-                return $expr_type->withRealTypeSet(\array_merge($expr_type->getRealTypeSet(), [$stdclass]));
-            } else {
-                return $expr_type->withRealType(ObjectType::instance(false));
+            $real_types = $expr_type->getRealTypeSet();
+            if (!$real_types) {
+                $real_types = [ObjectType::instance(false)];
             }
+            if ($array_shape_real_types) {
+                $real_types = UnionType::of(\array_merge($real_types, $array_shape_real_types))->getTypeSet();
+            }
+            return $expr_type->withRealTypeSet($real_types);
         }
         if (!$expr_type->hasRealTypeSet()) {
             return $expr_type->withRealType(ObjectType::instance(false));
@@ -2809,6 +2828,16 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node
             ))->getProperty($is_static);
 
+            $expression_type = null;
+            if ($expr_node instanceof Node) {
+                $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $expr_node,
+                    $this->should_catch_issue_exception
+                );
+            }
+
             if ($property->isWriteOnly()) {
                 $this->emitIssue(
                     $property->isFromPHPDoc() ? Issue::AccessWriteOnlyMagicProperty : Issue::AccessWriteOnlyProperty,
@@ -2835,14 +2864,17 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map template types to concrete types
             if ($union_type->hasTemplateTypeRecursive()) {
-                // Get the type of the object to which the property belongs
-                $expression_type = UnionTypeVisitor::unionTypeFromNode(
-                    $this->code_base,
-                    $this->context,
-                    $expr_node,
-                    $this->should_catch_issue_exception
-                );
-
+                if (!$expression_type && $expr_node instanceof Node) {
+                    $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $this->context,
+                        $expr_node,
+                        $this->should_catch_issue_exception
+                    );
+                }
+                if (!$expression_type) {
+                    return $union_type;
+                }
                 $union_type = $union_type->withTemplateParameterTypeMap(
                     $expression_type->getTemplateParameterTypeMap($this->code_base)
                 );
@@ -2858,6 +2890,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                         if ($declaring_union_type !== $union_type && !$declaring_union_type->hasTemplateTypeRecursive()) {
                             $union_type = $union_type->withUnionType($declaring_union_type);
                         }
+                    }
+                }
+            }
+
+            if ($expression_type) {
+                $shape_union_type = self::inferObjectShapePropertyUnionType($expression_type, $property->getName());
+                if (!$shape_union_type->isEmpty()) {
+                    if ($property->getClassFQSEN()->__toString() === '\\stdClass' && $property->getPHPDocUnionType()->isEmpty()) {
+                        $union_type = $shape_union_type;
+                    } else {
+                        $union_type = $union_type->withUnionType($shape_union_type);
                     }
                 }
             }
@@ -2917,6 +2960,22 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return UnionType::empty();
+    }
+
+    private static function inferObjectShapePropertyUnionType(UnionType $expression_type, string $property_name): UnionType
+    {
+        $result = UnionType::empty();
+        foreach ($expression_type->getRealTypeSet() as $real_type) {
+            if (!$real_type instanceof ArrayShapeType) {
+                continue;
+            }
+            $field_types = $real_type->getFieldTypes();
+            if (!\array_key_exists($property_name, $field_types)) {
+                continue;
+            }
+            $result = $result->withUnionType($field_types[$property_name]);
+        }
+        return $result;
     }
 
     private function warnIfPossiblyUndefinedProperty(Node $node, string $prop_name, UnionType $union_type): void
