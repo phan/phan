@@ -14229,7 +14229,7 @@ return [
 'imageopenpolygon' => ['bool', 'image'=>'GdImage', 'points'=>'array', 'num_points_or_color'=>'int', 'color='=>'int'],
 'imagepalettecopy' => ['void', 'dst'=>'GdImage', 'src'=>'GdImage'],
 'imagepalettetotruecolor' => ['bool', 'image'=>'GdImage'],
-'imagepng' => ['bool', 'image'=>'GdImage', 'file='=>'|null|resource|string', 'quality='=>'int', 'filters='=>'int'],
+'imagepng' => ['bool', 'image'=>'GdImage', 'file='=>'null|resource|string', 'quality='=>'int', 'filters='=>'int'],
 'imagepolygon' => ['bool', 'image'=>'GdImage', 'points'=>'array', 'num_points_or_color'=>'int', 'color='=>'int'],
 'imagerectangle' => ['bool', 'image'=>'GdImage', 'x1'=>'int', 'y1'=>'int', 'x2'=>'int', 'y2'=>'int', 'color'=>'int'],
 'imageresolution' => ['array<int,int>|bool', 'image'=>'GdImage', 'resolution_x='=>'int', 'resolution_y='=>'int'],
