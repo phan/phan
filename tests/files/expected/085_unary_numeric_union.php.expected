@@ -1,0 +1,6 @@
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type float|int(real=float|int)
+%s:7 PhanDebugAnnotation @phan-debug-var requested for variable $minus - it has union type float|int(real=float|int)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $plus - it has union type float|int(real=float|int)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type float|int(real=float|int)
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $minus - it has union type float|int(real=float|int)
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $plus - it has union type float|int(real=float|int)
