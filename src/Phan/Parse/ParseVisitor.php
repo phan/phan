@@ -49,7 +49,6 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\IncrementalAnalysis\DependencyTracker;
@@ -467,12 +466,11 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
         } elseif ('__tostring' === $method_name_lower) {
-            if (!$this->context->isStrictTypes()) {
-                $class->addAdditionalType(StringType::instance(false));
-            }
             // In PHP 8 and later having a __toString method automatically adds the Stringable interface, #4476
-            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen, built in type
-            $class->addAdditionalType(Type::fromFullyQualifiedString('\Stringable'));
+            if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen, built in type
+                $class->addAdditionalType(Type::fromFullyQualifiedString('\Stringable'));
+            }
         }
 
 
