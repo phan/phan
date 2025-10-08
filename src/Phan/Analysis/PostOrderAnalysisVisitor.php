@@ -3085,12 +3085,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function getStaticMethodOrEmitIssue(Node $node, string $method_name): ?Method
     {
         try {
-            // Get a reference to the method being called
-            $result = (new ContextNode(
+            $context_node = new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, true, true);
+            );
+
+            if (Config::get_track_references()) {
+                $method_list = $context_node->getMethodList($method_name, true, true);
+                if (!$method_list) {
+                    $result = $context_node->getMethod($method_name, true, true);
+                } else {
+                    $result = $method_list[0];
+                    $this->recordMethodReferences($method_list, $result);
+                }
+            } else {
+                $result = $context_node->getMethod($method_name, true, true);
+            }
 
             // This didn't throw NonClassMethodCall
             if (Config::get_strict_method_checking()) {
@@ -3381,11 +3392,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         try {
-            $method = (new ContextNode(
+            $context_node = new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, false, true);
+            );
+
+            if (Config::get_track_references()) {
+                $method_list = $context_node->getMethodList($method_name, false, true);
+                if (!$method_list) {
+                    // Fallback to throw the same exception logic as getMethod when list is empty
+                    $method = $context_node->getMethod($method_name, false, true);
+                } else {
+                    $method = $method_list[0];
+                    $this->recordMethodReferences($method_list, $method);
+                }
+            } else {
+                $method = $context_node->getMethod($method_name, false, true);
+            }
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -4185,6 +4209,35 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    /**
+     * @param list<Method> $method_list
+     */
+    private function recordMethodReferences(array $method_list, Method $primary_method): void
+    {
+        if (!Config::get_track_references() || !$method_list) {
+            return;
+        }
+
+        $seen_method_fqsens = [(string)$primary_method->getFQSEN() => true];
+        $seen_class_fqsens = [];
+
+        foreach ($method_list as $method) {
+            $class = $method->getClass($this->code_base);
+            $class_key = (string)$class->getFQSEN();
+            if (!isset($seen_class_fqsens[$class_key])) {
+                $class->addReference($this->context);
+                $seen_class_fqsens[$class_key] = true;
+            }
+
+            $method_key = (string)$method->getFQSEN();
+            if (isset($seen_method_fqsens[$method_key])) {
+                continue;
+            }
+            $method->addReference($this->context);
+            $seen_method_fqsens[$method_key] = true;
+        }
     }
 
     /**
