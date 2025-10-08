@@ -43,6 +43,16 @@ final class VariableGraph
     public $def_bitset = [];
 
     /**
+     * @var array<int,string> maps usage node ids to the variable name seen at that node
+     */
+    private $use_node_id_to_var_name = [];
+
+    /**
+     * @var array<string,associative-array<int,true>> maps variable names to node ids that modify them
+     */
+    private $modification_node_ids = [];
+
+    /**
      * @var array<string,int> maps variable names to whether
      *    they have ever occurred as a given self::IS_* category in the current scope
      */
@@ -97,11 +107,12 @@ final class VariableGraph
             // (it will be overridden later if there are flags to set)
             $this->variable_types[$name] = 0;
         }
+        $node_id = \spl_object_id($node);
+        $this->use_node_id_to_var_name[$node_id] = $name;
         // @phan-suppress-next-line PhanUndeclaredProperty added by ArgumentType analyzer
         if (isset($node->is_reference)) {
             $this->markAsReference($name);
         }
-        $node_id = \spl_object_id($node);
         $scope->recordUsageById($name, $node_id);
         $defs_for_variable = $scope->getDefinition($name);
         if (!$defs_for_variable) {
@@ -116,10 +127,15 @@ final class VariableGraph
 
     /**
      * Record that $name was modified in place
+     *
+     * @param Node|null $node the node responsible for the modification, if known
      */
-    public function recordVariableModification(string $name): void
+    public function recordVariableModification(string $name, ?Node $node = null): void
     {
         $this->const_expr_declarations[$name][-1] = 0;
+        if ($node instanceof Node) {
+            $this->modification_node_ids[$name][\spl_object_id($node)] = true;
+        }
     }
 
     /**
@@ -298,5 +314,21 @@ final class VariableGraph
             }
         }
         return $combined_use_def_map;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public function getUseNodeIdToVariableNameMap(): array
+    {
+        return $this->use_node_id_to_var_name;
+    }
+
+    /**
+     * @return array<string,associative-array<int,true>>
+     */
+    public function getModificationNodeIdsByVariable(): array
+    {
+        return $this->modification_node_ids;
     }
 }
