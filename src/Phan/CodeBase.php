@@ -247,7 +247,11 @@ class CodeBase
 
     private function ensureSidConstantExists(): void
     {
-        $sid_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString('\\SID');
+        try {
+            $sid_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString('\\SID');
+        } catch (FQSENException) {
+            return;
+        }
         if ($this->hasGlobalConstantWithFQSEN($sid_fqsen)) {
             return;
         }
