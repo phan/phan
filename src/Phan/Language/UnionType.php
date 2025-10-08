@@ -5884,8 +5884,9 @@ class UnionType implements Serializable, Stringable
      */
     private static function applyNumericOperationToList(array $type_set, Closure $operation): array
     {
-        $added_fallbacks = false;
         $result = [];
+        $needs_int_fallback = false;
+        $needs_float_fallback = false;
         foreach ($type_set as $type) {
             if ($type->isNullable()) {
                 $result[] = LiteralIntType::instanceForValue(0, false);
@@ -5902,20 +5903,23 @@ class UnionType implements Serializable, Stringable
                     }
                     continue;
                 }
-                if ($added_fallbacks) {
+                if ($type instanceof IntType) {
+                    $needs_int_fallback = true;
                     continue;
                 }
-                if (!($type instanceof IntType)) {
-                    $result[] = FloatType::instance(false);
-                    if (!($type instanceof FloatType)) {
-                        $result[] = IntType::instance(false);
-                    }
-                    $added_fallbacks = true;
-                } else {
-                    $result[] = IntType::instance(false);
-                    // Keep added_fallbacks false in case this needs to add FloatType
+                if ($type instanceof FloatType) {
+                    $needs_float_fallback = true;
+                    continue;
                 }
+                $needs_float_fallback = true;
+                $needs_int_fallback = true;
             }
+        }
+        if ($needs_float_fallback) {
+            $result[] = FloatType::instance(false);
+        }
+        if ($needs_int_fallback) {
+            $result[] = IntType::instance(false);
         }
         if (!$result) {
             // @phan-suppress-next-line PhanTypeMismatchReturn
