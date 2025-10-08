@@ -72,6 +72,7 @@ use function strtolower;
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginNoCommentOnPublicMethod TODO: Add comments
+ * @phan-file-suppress UnusedPluginSuppression,UnusedPluginFileSuppression For the PhanUndeclaredMethod suppression below needed in PHP < 8.3 only
  * @property FullyQualifiedClassName $fqsen
  */
 class Clazz extends AddressableElement
@@ -472,7 +473,9 @@ class Clazz extends AddressableElement
             $reflection_constant = method_exists($class, 'getReflectionConstant')
                 ? $class->getReflectionConstant($name)
                 : null;
+            // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
             if ($reflection_constant instanceof ReflectionClassConstant && method_exists($reflection_constant, 'hasType') && $reflection_constant->hasType()) {
+                // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
                 $declared_type = UnionType::fromReflectionType($reflection_constant->getType())->asNormalizedTypes();
                 $constant->setUnionType(
                     $value_type->asPHPDocUnionType()->withRealTypeSet($declared_type->getTypeSet())
