@@ -32,6 +32,7 @@ use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\NamespaceMapEntry;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Language\Type\StringType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 use Phan\Library\StringSuggester;
@@ -238,9 +239,27 @@ class CodeBase
         $this->addGlobalConstantsByNames($internal_constant_name_list);
         // These are keywords that Phan expects to always exist - make sure to add them even if they weren't provided.
         $this->addGlobalConstantsByNames(['true', 'false', 'null']);
+        $this->ensureSidConstantExists();
         // We initialize the FQSENs early on so that they show up
         // in the proper casing.
         $this->addInternalFunctionsByNames($internal_function_name_list);
+    }
+
+    private function ensureSidConstantExists(): void
+    {
+        $sid_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString('\\SID');
+        if ($this->hasGlobalConstantWithFQSEN($sid_fqsen)) {
+            return;
+        }
+        $sid_constant = new GlobalConstant(
+            new Context(),
+            'SID',
+            StringType::instance(false)->asPHPDocUnionType(),
+            0,
+            $sid_fqsen
+        );
+        $sid_constant->setIsDynamicConstant(true);
+        $this->addGlobalConstant($sid_constant);
     }
 
     /**
