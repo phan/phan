@@ -15,6 +15,7 @@ use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 
@@ -527,13 +528,38 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function quickWarn(FunctionInterface $method, string $fqsen, Node $node): bool
     {
-        if (($method instanceof Method || $method instanceof Func) && $method->hasNoDiscardAttribute()) {
-            return false;
-        }
         if (!$method->isPure()) {
             $fqsen_key = \strtolower(\ltrim($fqsen, "\\"));
             $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? null;
             if (!$result) {
+                // Polyfill support for #[\NoDiscard]
+                $attribs = $method->getAttributeList();
+                if ($attribs) {
+                    // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                    $noDiscardFQSEN = FullyQualifiedClassName::make('', 'NoDiscard');
+                    foreach ($attribs as $attrib) {
+                        if ($attrib->getFQSEN() !== $noDiscardFQSEN) {
+                            continue;
+                        }
+                        if ($method->isPHPInternal()) {
+                            $code = UseReturnValuePlugin::UseReturnValueInternalKnown;
+                            $msg = 'Expected to use the return value of the internal function/method {FUNCTION}';
+                            $params = [$fqsen];
+                        } else {
+                            $code = UseReturnValuePlugin::UseReturnValueKnown;
+                            $msg = 'Expected to use the return value of the user-defined function/method {FUNCTION} defined at {FILE}:{LINE}';
+                            $params = [$method->getRepresentationForIssue(), $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()];
+                        }
+                        $this->emitPluginIssue(
+                            $this->code_base,
+                            (clone $this->context)->withLineNumberStart($node->lineno),
+                           $code,
+                           $msg,
+                           $params
+                        );
+                        return true;
+                    }
+                }
                 return $result ?? true;
             }
             if ($result === UseReturnValuePlugin::SPECIAL_CASE) {
