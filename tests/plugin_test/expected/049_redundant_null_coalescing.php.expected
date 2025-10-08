@@ -3,3 +3,4 @@ src/049_redundant_null_coalescing.php:4 PhanPluginDuplicateConditionalNullCoales
 src/049_redundant_null_coalescing.php:5 PhanPluginDuplicateConditionalNullCoalescing "isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $x->prop
 src/049_redundant_null_coalescing.php:6 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator == are the same: $x->prop
 src/049_redundant_null_coalescing.php:9 PhanPluginDuplicateConditionalTernaryDuplication "X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was $x->prop
+src/049_redundant_null_coalescing.php:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is (object)(['prop'=>'value']) of type \stdClass (real type array{prop:'value'}) but \example49() takes ?\stdClass defined at src/049_redundant_null_coalescing.php:3
