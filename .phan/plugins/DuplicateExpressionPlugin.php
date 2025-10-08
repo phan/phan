@@ -402,7 +402,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|mixed $node
      */
-    private static function isNullConstantNode($node): bool
+    private static function isNullConstantNode(mixed $node): bool
     {
         if (!$node instanceof Node) {
             return false;

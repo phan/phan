@@ -4815,7 +4815,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
         Parameter $parameter,
-        $argument,
+        mixed $argument,
         array $argument_types,
         array &$parameter_list,
         int $parameter_offset
@@ -5073,7 +5073,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Node $node the function/method call node
      * @param Func|Method|mixed $function_like the function or method being called
      */
-    private function checkNoDiscardAttribute(Node $node, $function_like): void
+    private function checkNoDiscardAttribute(Node $node, mixed $function_like): void
     {
         // Only check for Func and Method instances (not closures or other types)
         if (!($function_like instanceof \Phan\Language\Element\Func || $function_like instanceof \Phan\Language\Element\Method)) {

@@ -1685,7 +1685,7 @@ trait FunctionTrait
                 /**
                  * @param mixed $node
                  */
-                static function ($node) use ($code_base, $context): UnionType {
+                static function (mixed $node) use ($code_base, $context): UnionType {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
                 },
                 $args

@@ -1370,7 +1370,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Node|mixed $expr
      * @return ?list<UnionType> the type of $x in ...$x, provided that it's a packed array (with keys 0, 1, ...)
      */
-    private function getPackedArrayFieldTypes($expr): ?array
+    private function getPackedArrayFieldTypes(mixed $expr): ?array
     {
         if (!$expr instanceof Node) {
             // TODO: Warn if non-array
@@ -3635,7 +3635,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public static function unionTypeFromClassNode(
         CodeBase $code_base,
         Context $context,
-        $node
+        mixed $node
     ): UnionType {
         // If this is a list, build a union type by
         // recursively visiting the child nodes

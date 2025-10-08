@@ -156,7 +156,7 @@ class PhanParameterInfo
  * @phan-param array{0:string}|array<string,string> $fields
  * @return list<PhanParameterInfo>
  */
-function get_parameters_from_phan($fields): array
+function get_parameters_from_phan(array $fields): array
 {
     unset($fields[0]);
     $result = [];

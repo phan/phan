@@ -36,9 +36,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
 
     /**
      * @param Node|int|string|float|null $arg_array_node
-     * @return ?list<Node|int|string|float>
+     * @return list<Node|int|string|float>|null
      */
-    private static function extractArrayArgs($arg_array_node)
+    private static function extractArrayArgs(Node|float|int|null|string $arg_array_node) : array|null
     {
         if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
             $arguments = [];
@@ -297,7 +297,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param Node|int|string|float|null $argument
          */
-        return static function ($argument, int $i) use ($code_base, $context, &$cache): UnionType {
+        return static function (Node|float|int|null|string $argument, int $i) use ($code_base, $context, &$cache): UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;
@@ -321,7 +321,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
      * @param Context $context
      * @param Node|int|string|float|null $arg_array_node
      */
-    private static function resetReferenceArgumentsTypes(CodeBase $code_base, Context $context, $arg_array_node): void
+    private static function resetReferenceArgumentsTypes(CodeBase $code_base, Context $context, Node|float|int|null|string $arg_array_node): void
     {
         if (!($arg_array_node instanceof Node) || $arg_array_node->kind !== \ast\AST_ARRAY) {
             return;

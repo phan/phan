@@ -1426,7 +1426,7 @@ class Clazz extends AddressableElement
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function getPropName($node): ?string
+    private static function getPropName(Node|float|int|null|string $node): ?string
     {
         if (!$node instanceof Node) {
             return null;

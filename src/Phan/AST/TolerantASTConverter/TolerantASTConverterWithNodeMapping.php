@@ -274,7 +274,7 @@ final class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node|Token $n @phan-unused-param the tolerant-php-parser node that generated the $ast_node
      * @param mixed $ast_node the node that was selected because it was under the cursor
      */
-    private static function markNodeAsSelected(\Microsoft\PhpParser\Node|Token $n, $ast_node): void
+    private static function markNodeAsSelected(\Microsoft\PhpParser\Node|Token $n, mixed $ast_node): void
     {
         // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . \Phan\Debug::nodeToString($ast_node) . "\n");
         // fflush(STDERR);

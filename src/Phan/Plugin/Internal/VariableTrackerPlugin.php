@@ -245,7 +245,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $node
      * @param associative-array<int, int> $id_set
      */
-    private static function extractNodeIdSetInner($node, array &$id_set): void
+    private static function extractNodeIdSetInner(Node|float|int|null|string $node, array &$id_set): void
     {
         if (!$node instanceof Node) {
             return;
@@ -539,10 +539,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    /**
-     * @param Node|string|int|float $value_node
-     */
-    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, $value_node): void
+    private function warnAboutCouldBeConstant(VariableGraph $graph, string $variable_name, int $definition_id, Node|float|int|string $value_node): void
     {
         $issue_type = Issue::VariableDefinitionCouldBeConstant;
         if ($value_node instanceof Node) {
@@ -568,7 +565,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             $issue_type = Issue::VariableDefinitionCouldBeConstantString;
         } elseif (\is_int($value_node)) {
             $issue_type = Issue::VariableDefinitionCouldBeConstantInt;
-        } elseif (\is_float($value_node)) {
+        } else {
+            // is_float
             $issue_type = Issue::VariableDefinitionCouldBeConstantFloat;
         }
         $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;

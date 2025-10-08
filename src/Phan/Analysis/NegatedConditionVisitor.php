@@ -170,7 +170,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      *
      * @suppress PhanSuspiciousTruthyString deliberate cast of literal to boolean
      */
-    private function analyzeShortCircuitingAnd($left, $right): Context
+    private function analyzeShortCircuitingAnd(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         // Analyze expressions such as if (!(is_string($x) || is_int($x)))
         // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
@@ -217,7 +217,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * A new or an unchanged context resulting from
      * analyzing the negation of the short-circuiting or.
      */
-    private function analyzeShortCircuitingOr($left, $right): Context
+    private function analyzeShortCircuitingOr(Node|float|int|string $left, Node|float|int|string $right): Context
     {
         // Analyze expressions such as if (!(is_string($x) || is_int($x)))
         // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
@@ -503,9 +503,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * Compute the type of $union_type after asserting `!(expr instanceof $class_node)`
-     * @param Node|string|int|float $class_node
      */
-    private function computeNegatedInstanceofType(UnionType $union_type, $class_node): ?UnionType
+    private function computeNegatedInstanceofType(UnionType $union_type, Node|float|int|string $class_node): ?UnionType
     {
         $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -824,7 +823,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
      */
-    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, $dim_node, Context $context, bool $remove_offset): UnionType
+    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, Node|bool|float|int|string $dim_node, Context $context, bool $remove_offset): UnionType
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
@@ -961,7 +960,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      *
      * @param bool $non_nullable if an offset is created, will it be non-nullable?
      */
-    private function withNonFalseyArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $non_nullable): Context
+    private function withNonFalseyArrayShapeTypes(Variable $variable, Node|bool|float|int|string $dim_node, Context $context, bool $non_nullable): Context
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null

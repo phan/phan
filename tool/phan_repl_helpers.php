@@ -61,7 +61,7 @@ if (!function_exists('help')) {
  *
  * @suppress PhanUnreferencedFunction this is meant to be used interactively and is currently untested
  */
-    function help($value = "\x00extended_help"): void
+    function help(mixed $value = "\x00extended_help"): void
     {
         phan_repl_help($value);
     }
@@ -70,7 +70,7 @@ if (!function_exists('help')) {
 /**
  * Actual implementation of help()
  */
-function phan_repl_help($value = "\x00extended_help"): void
+function phan_repl_help(mixed $value = "\x00extended_help"): void
 {
     if ($value === "\x00extended_help") {
         echo "Phan " . CLI::PHAN_VERSION . " CLI autocompletion utilities.\n";
@@ -241,7 +241,7 @@ class PhanPhpShellUtils
      * Convert a token to a string
      * @param array{0:int,1:string,2:int}|string|false $token
      */
-    public static function tokenToString($token): string
+    public static function tokenToString(array|bool|string $token): string
     {
         return is_array($token) ? $token[1] : (string)$token;
     }
@@ -422,10 +422,7 @@ class PhanPhpShellUtils
         return $result;
     }
 
-    /**
-     * @param string|bool|int $value
-     */
-    protected function setReadlineConfig(string $key, $value): void
+    protected function setReadlineConfig(string $key, bool|int|string $value): void
     {
         readline_info($key, $value);
     }

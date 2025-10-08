@@ -41,7 +41,7 @@ final class IssueFixingPluginTest extends CodeBaseAwareTest
         /**
          * @param int|string ...$args
          */
-        $make = static function (string $type, int $line, ...$args): IssueInstance {
+        $make = static function (string $type, int $line, int|string ...$args): IssueInstance {
             return new IssueInstance(Issue::fromType($type), self::FILE, $line, $args);
         };
         return [

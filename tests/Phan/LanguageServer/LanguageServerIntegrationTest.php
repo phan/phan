@@ -2079,7 +2079,7 @@ EOT;
      * @param string $method
      * @param array|stdClass $params
      */
-    private function writeMessage($proc_in, string $method, $params): void
+    private function writeMessage($proc_in, string $method, stdClass|array $params): void
     {
         $body = [
             'jsonrpc' => '2.0',
@@ -2095,9 +2095,9 @@ EOT;
     /**
      * @param resource $proc_in
      * @param string $method
-     * @param ?array|?\stdClass $params
+     * @param array|\stdClass|null $params
      */
-    private static function writeNotification($proc_in, string $method, $params): void
+    private static function writeNotification($proc_in, string $method, stdClass|array|null $params): void
     {
         $body = [
             'method' => $method,

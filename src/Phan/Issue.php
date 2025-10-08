@@ -5819,7 +5819,7 @@ class Issue
         string $type,
         string $file,
         int $line,
-        ...$template_parameters
+        Attribute|TypedElement|UnaddressableTypedElement|FQSEN|Type|UnionType|bool|float|int|string ...$template_parameters
     ): void {
         self::emitWithParameters(
             $type,
@@ -5935,7 +5935,7 @@ class Issue
         Context $context,
         string $issue_type,
         int $lineno,
-        ...$parameters
+        Stringable|bool|float|int|string ...$parameters
     ): void {
         self::maybeEmitWithParameters(
             $code_base,

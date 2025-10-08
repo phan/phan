@@ -679,12 +679,11 @@ class Type implements Stringable
     }
 
     /**
-     * @param mixed $object
      * @return Type
      * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
      * @phan-side-effect-free
      */
-    public static function nonLiteralFromObject($object): Type
+    public static function nonLiteralFromObject(mixed $object): Type
     {
         static $type_map = null;
         if ($type_map === null) {
@@ -709,7 +708,7 @@ class Type implements Stringable
      * @throws AssertionError if the type was unexpected
      * @phan-side-effect-free
      */
-    public static function fromObject($object): Type
+    public static function fromObject(mixed $object): Type
     {
         switch (\gettype($object)) {
             case 'integer':
@@ -741,7 +740,7 @@ class Type implements Stringable
      * @throws AssertionError if the type was unexpected
      * @phan-side-effect-free
      */
-    public static function fromObjectExtended($object): Type
+    public static function fromObjectExtended(mixed $object): Type
     {
         if (\is_array($object)) {
             return self::fromArray($object);
@@ -762,7 +761,7 @@ class Type implements Stringable
                 /**
                  * @param mixed $value
                  */
-                static function ($value): UnionType {
+                static function (mixed $value): UnionType {
                     // TODO: Look into how this is used and add real equivalent?
                     return self::fromObjectExtended($value)->asPHPDocUnionType();
                 },
@@ -3989,7 +3988,7 @@ class Type implements Stringable
      * @internal
      * @phan-side-effect-free
      */
-    public static function performComparison($a, $b, int $flags): bool
+    public static function performComparison(array|bool|float|int|null|string $a, bool|float|int|null|string $b, int $flags): bool
     {
         switch ($flags) {
             case flags\BINARY_IS_GREATER:

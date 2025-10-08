@@ -173,7 +173,7 @@ final class TemplateType extends Type
         /**
          * @param mixed $params
          */
-        return static function ($params, Context $context) use ($left, $right): UnionType {
+        return static function (mixed $params, Context $context) use ($left, $right): UnionType {
             return $left($params, $context)->withUnionType($right($params, $context));
         };
     }

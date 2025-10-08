@@ -70,7 +70,7 @@ class PhanAnnotationAdder
      * @param array<mixed,?(Node|string|float|int)> $children (should all be Nodes or null)
      * @param int $bit_set
      */
-    private static function markArrayElements($children, int $bit_set): void
+    private static function markArrayElements(array $children, int $bit_set): void
     {
         foreach ($children as $node) {
             if ($node instanceof Node) {

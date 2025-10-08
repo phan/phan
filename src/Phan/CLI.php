@@ -251,13 +251,13 @@ class CLI
      * @param string|string[] $value
      * @return list<string>
      */
-    public static function readCommaSeparatedListOrLists($value): array
+    public static function readCommaSeparatedListOrLists(array|string $value): array
     {
         if (is_array($value)) {
             $value = \implode(',', $value);
         }
         $value_set = [];
-        foreach (\explode(',', (string)$value) as $file) {
+        foreach (\explode(',', $value) as $file) {
             if ($file === '') {
                 continue;
             }
@@ -2285,7 +2285,7 @@ EOB
             }
 
             $exclude_file_regex = Config::getValue('exclude_file_regex');
-            $filter_folder_or_file = /** @param mixed $unused_key */ static function (SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex): bool {
+            $filter_folder_or_file = /** @param mixed $unused_key */ static function (SplFileInfo $file_info, mixed $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex): bool {
                 try {
                     if (\in_array($file_info->getBaseName(), ['.', '..'], true)) {
                         // Exclude '.' and '..'
@@ -2441,7 +2441,7 @@ EOB
      * @param float $p
      * The percentage to display
      *
-     * @param ?(string|FQSEN|AddressableElement) $details
+     * @param string|FQSEN|AddressableElement|null $details
      * Details about what is being analyzed within the phase for $msg
      *
      * @param ?int $offset
@@ -2454,7 +2454,7 @@ EOB
     public static function progress(
         string $msg,
         float $p,
-        $details = null,
+        AddressableElement|FQSEN|string|null $details = null,
         ?int $offset = null,
         ?int $count = null
     ): void {
@@ -2588,10 +2588,8 @@ EOB
         }
     }
 
-    /**
-     * @param ?(string|FQSEN|AddressableElement) $details
-     */
-    public static function debugProgress(string $msg, float $p, $details): void
+    /** Prints additional debug information on the current progress. */
+    public static function debugProgress(string $msg, float $p, AddressableElement|FQSEN|null|string $details): void
     {
         $pct = sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
 

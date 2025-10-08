@@ -641,7 +641,7 @@ return [
         'PossiblyStaticMethodPlugin',
 
         'HasPHPDocPlugin',
-        // 'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc. - Disabled after Phase 5 union type modernization
+        'PHPDocToRealTypesPlugin',
         'PHPDocRedundantPlugin',
         'PreferNamespaceUsePlugin',
         'EmptyStatementListPlugin',

@@ -165,7 +165,7 @@ class Element
      * @return mixed - The type depends on the subclass of KindVisitor being used.
      * @suppress PhanUnreferencedPublicMethod Phan's code inlines this, but may be useful for some plugins
      */
-    public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
+    public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor) : mixed
     {
         $fn_name = self::VISIT_LOOKUP_TABLE[$node->kind] ?? null;
         if (\is_string($fn_name)) {
@@ -211,7 +211,7 @@ class Element
      * of the AST node of kind ast\AST_BINARY_OP.
      * @return mixed - The type depends on the subclass of FlagVisitor
      */
-    public static function acceptBinaryFlagVisitor(Node $node, FlagVisitor $visitor)
+    public static function acceptBinaryFlagVisitor(Node $node, FlagVisitor $visitor) : mixed
     {
         $fn_name = self::VISIT_BINARY_LOOKUP_TABLE[$node->flags] ?? null;
         if (\is_string($fn_name)) {
@@ -229,7 +229,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptClassFlagVisitor(FlagVisitor $visitor)
+    public function acceptClassFlagVisitor(FlagVisitor $visitor) : mixed
     {
         $flags = $this->node->flags;
         if ($flags & flags\CLASS_ENUM) {
@@ -259,7 +259,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptNameFlagVisitor(FlagVisitor $visitor)
+    public function acceptNameFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\NAME_FQ:
@@ -280,7 +280,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptTypeFlagVisitor(FlagVisitor $visitor)
+    public function acceptTypeFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\TYPE_ARRAY:
@@ -315,7 +315,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptUnaryFlagVisitor(FlagVisitor $visitor)
+    public function acceptUnaryFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\UNARY_BITWISE_NOT:
@@ -336,7 +336,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptExecFlagVisitor(FlagVisitor $visitor)
+    public function acceptExecFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\EXEC_EVAL:
@@ -361,7 +361,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptMagicFlagVisitor(FlagVisitor $visitor)
+    public function acceptMagicFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\MAGIC_CLASS:
@@ -392,7 +392,7 @@ class Element
      * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function acceptUseFlagVisitor(FlagVisitor $visitor)
+    public function acceptUseFlagVisitor(FlagVisitor $visitor) : mixed
     {
         switch ($this->node->flags) {
             case flags\USE_CONST:

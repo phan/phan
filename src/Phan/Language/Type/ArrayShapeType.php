@@ -120,10 +120,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * Returns an immutable array shape type instance without $field_key.
-     *
-     * @param int|string|float|bool $field_key
      */
-    public function withoutField($field_key): ArrayShapeType
+    public function withoutField(bool|float|int|string $field_key): ArrayShapeType
     {
         $field_types = $this->field_types;
         // This check is written this way to avoid https://github.com/phan/phan/issues/1831
@@ -891,9 +889,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * Otherwise, return null
      *
-     * @return ?array<mixed,?string|?int|?float|?bool|?array>
+     * @return array<mixed,string|int|float|bool|array|null>|null
      */
-    public function asArrayLiteralOrNull()
+    public function asArrayLiteralOrNull() : array|null
     {
         $result = [];
         foreach ($this->field_types as $key => $field_type) {

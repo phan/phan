@@ -396,7 +396,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             /**
              * @param Node|int|string|float|null $argument
              */
-            $get_argument_type = static function ($argument, int $i) use ($code_base, $context, &$cache_outer): UnionType {
+            $get_argument_type = static function (Node|float|int|null|string $argument, int $i) use ($code_base, $context, &$cache_outer): UnionType {
                 if (isset($cache_outer[$i])) {
                     return $cache_outer[$i];
                 }
@@ -414,7 +414,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             /**
              * @param Node|int|string|float|null $argument
              */
-            $get_argument_type_for_array_map = static function ($argument, int $i) use ($get_argument_type, $code_base, &$cache): UnionType {
+            $get_argument_type_for_array_map = static function (Node|float|int|null|string $argument, int $i) use ($get_argument_type, $code_base, &$cache): UnionType {
                 if (isset($cache[$i])) {
                     return $cache[$i];
                 }

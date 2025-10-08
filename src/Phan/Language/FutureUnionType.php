@@ -85,9 +85,8 @@ class FutureUnionType
 
     /**
      * Gets the node which this is based on
-     * @return Node|string|int|bool|float
      */
-    public function getNode()
+    public function getNode() : Node|bool|float|int|string
     {
         return $this->node;
     }

@@ -1737,14 +1737,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeEqual($switch_case_node, $cond_node, $child_context);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeNotEqual($switch_case_node, $cond_node, $child_context);
                     },
@@ -1770,7 +1770,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             /**
                              * @param Node|string|int|float $cond_node
                              */
-                            function (Context $child_context, $cond_node) use ($switch_variable_node): Context {
+                            function (Context $child_context, Node|float|int|string $cond_node) use ($switch_variable_node): Context {
                                 $visitor = new ConditionVisitor($this->code_base, $child_context);
                                 return $visitor->analyzeClassAssertion(
                                     $switch_variable_node,
@@ -1790,7 +1790,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
                         while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
                             $cond_node = $cond_node->children['var'];
@@ -1801,7 +1801,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
                         while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
                             $cond_node = $cond_node->children['var'];
@@ -2331,14 +2331,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeIdentical($match_case_node, $cond_node, $child_context);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeNotIdentical($match_case_node, $cond_node, $child_context);
                     },
@@ -2364,7 +2364,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             /**
                              * @param Node|string|int|float $cond_node
                              */
-                            function (Context $child_context, $cond_node) use ($match_variable_node): Context {
+                            function (Context $child_context, Node|float|int|string $cond_node) use ($match_variable_node): Context {
                                 $visitor = new ConditionVisitor($this->code_base, $child_context);
                                 return $visitor->analyzeClassAssertion(
                                     $match_variable_node,
@@ -2383,14 +2383,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeIdentical($match_case_node, $cond_node);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeNotIdentical($match_case_node, $cond_node);
                     },
@@ -2905,10 +2905,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    /**
-     * @param Node|string|int|float $node
-     */
-    private static function canNodeKindBeNull($node): bool
+    private static function canNodeKindBeNull(Node|float|int|string $node): bool
     {
         if (!$node instanceof Node) {
             return false;

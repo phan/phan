@@ -277,10 +277,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (\function_exists('pcntl_signal')) {
             \pcntl_signal(
                 SIGCHLD,
-                /**
-                 * @param ?(int|array) $status
-                 */
-                static function (int $signo, $status = null, ?int $pid = null): void {
+                static function (int $signo, array|int|null $status = null, ?int $pid = null): void {
                     Request::childSignalHandler($signo, $status, $pid);
                 }
             );

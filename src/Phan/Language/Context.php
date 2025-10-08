@@ -648,7 +648,7 @@ class Context extends FileRef
      * A fully-qualified structural element name describing
      * the current function or method in scope.
      */
-    public function getFunctionLikeFQSEN()
+    public function getFunctionLikeFQSEN() : FullyQualifiedFunctionLikeName|FullyQualifiedFunctionName|FullyQualifiedMethodName
     {
         $scope = $this->scope;
         if (!$scope->isInFunctionLikeScope()) {

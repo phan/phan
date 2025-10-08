@@ -18,7 +18,6 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -653,15 +652,13 @@ class UnionType implements Serializable, Stringable
      * A list of types for parameters associated with the
      * given builtin function with the given name
      *
-     * @param FullyQualifiedMethodName|FullyQualifiedFunctionName $function_fqsen
-     *
      * @return list<array{return_type:?UnionType,parameter_name_type_map:array<string,UnionType>}>
      *
      * @see internal_varargs_check
      * Formerly `function internal_varargs_check`
      */
     public static function internalFunctionSignatureMapForFQSEN(
-        $function_fqsen
+        \Phan\Language\FQSEN\FullyQualifiedFunctionName|FullyQualifiedMethodName $function_fqsen
     ): array {
         $map = self::internalFunctionSignatureMap(Config::get_closest_target_php_version_id());
 
@@ -879,7 +876,7 @@ class UnionType implements Serializable, Stringable
     }
 
     /** @return UnionType|true */
-    private function computeEraseRealTypeSetRecursively()
+    private function computeEraseRealTypeSetRecursively() : UnionType|bool
     {
         $new_type_set = [];
         foreach ($this->type_set as $type) {
@@ -5696,9 +5693,9 @@ class UnionType implements Serializable, Stringable
      */
     public function applyUnaryMinusOperator(): UnionType
     {
-        /** @param int|float $value */
-        return $this->applyNumericOperation(static function ($value): ScalarType {
+        return $this->applyNumericOperation(static function (float|int $value): ScalarType {
             $result = -$value;
+            // @phan-suppress-next-line PhanImpossibleCondition https://github.com/phan/phan/issues/5143
             if (\is_int($result)) {
                 return LiteralIntType::instanceForValue($result, false);
             }
@@ -5857,8 +5854,9 @@ class UnionType implements Serializable, Stringable
     public function applyUnaryPlusOperator(): UnionType
     {
         /** @param int|float $value */
-        return $this->applyNumericOperation(static function ($value): ScalarType {
+        return $this->applyNumericOperation(static function (float|int $value): ScalarType {
             $result = +$value;
+            // @phan-suppress-next-line PhanImpossibleCondition https://github.com/phan/phan/issues/5143
             if (\is_int($result)) {
                 return LiteralIntType::instanceForValue($result, false);
             }

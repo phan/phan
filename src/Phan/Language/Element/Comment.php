@@ -310,10 +310,7 @@ class Comment
         $this->return_comment = new ReturnComment($return_type, $old_comment->getLineno());
     }
 
-    /**
-     * @param mixed $value
-     */
-    private function applyOverride(string $key, $value): void
+    private function applyOverride(string $key, mixed $value): void
     {
         switch ($key) {
             case 'param':

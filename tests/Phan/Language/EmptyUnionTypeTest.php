@@ -108,11 +108,7 @@ final class EmptyUnionTypeTest extends BaseTest
         return $failures;
     }
 
-    /**
-     * @param mixed $expected_result
-     * @param mixed $actual_result
-     */
-    private static function isSameResult($expected_result, $actual_result): bool
+    private static function isSameResult(mixed $expected_result, mixed $actual_result): bool
     {
         if ($expected_result === $actual_result) {
             return true;
@@ -215,14 +211,14 @@ final class EmptyUnionTypeTest extends BaseTest
                      * @param mixed ...$unused_args
                      * @suppress PhanPluginUnknownArrayClosureParamType
                      */
-                    static function (...$unused_args): bool {
+                    static function (mixed ...$unused_args): bool {
                         return false;
                     },
                     /**
                      * @param mixed ...$unused_args
                      * @suppress PhanPluginUnknownArrayClosureParamType
                      */
-                    static function (...$unused_args): bool {
+                    static function (mixed ...$unused_args): bool {
                         return true;
                     },
                 ];

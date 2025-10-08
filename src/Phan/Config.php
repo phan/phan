@@ -1477,7 +1477,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_scalar = static function ($value): ?string {
+        $is_scalar = static function (mixed $value): ?string {
             if (is_null($value) || \is_scalar($value)) {
                 return null;
             }
@@ -1486,7 +1486,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool = static function ($value): ?string {
+        $is_bool = static function (mixed $value): ?string {
             if (is_bool($value)) {
                 return null;
             }
@@ -1495,7 +1495,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool_or_null = static function ($value): ?string {
+        $is_bool_or_null = static function (mixed $value): ?string {
             if (is_bool($value) || is_null($value)) {
                 return null;
             }
@@ -1504,7 +1504,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_or_null = static function ($value): ?string {
+        $is_string_or_null = static function (mixed $value): ?string {
             if (is_null($value) || is_string($value)) {
                 return null;
             }
@@ -1513,7 +1513,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string = static function ($value): ?string {
+        $is_string = static function (mixed $value): ?string {
             if (is_string($value)) {
                 return null;
             }
@@ -1522,7 +1522,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_array = static function ($value): ?string {
+        $is_array = static function (mixed $value): ?string {
             if (is_array($value)) {
                 return null;
             }
@@ -1531,7 +1531,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_int_strict = static function ($value): ?string {
+        $is_int_strict = static function (mixed $value): ?string {
             if (is_int($value)) {
                 return null;
             }
@@ -1540,7 +1540,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_list = static function ($value): ?string {
+        $is_string_list = static function (mixed $value): ?string {
             if (!is_array($value)) {
                 return 'Expected a list of strings' . self::errSuffixGotType($value);
             }
@@ -1554,7 +1554,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_list_or_null = static function ($value): ?string {
+        $is_string_list_or_null = static function (mixed $value): ?string {
             if (is_null($value)) {
                 return null;
             }
@@ -1571,7 +1571,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_associative_string_array = static function ($value): ?string {
+        $is_associative_string_array = static function (mixed $value): ?string {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
             }

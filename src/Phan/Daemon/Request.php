@@ -467,9 +467,9 @@ class Request
     }
 
     /**
-     * @param ?(int|array) $status
+     * Handler for the SIGCHLD signal
      */
-    public static function childSignalHandler(int $signo, $status = null, ?int $pid = null): void
+    public static function childSignalHandler(int $signo, array|int|null $status = null, ?int $pid = null): void
     {
         // test
         if ($signo !== SIGCHLD) {

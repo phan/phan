@@ -2381,10 +2381,9 @@ class CodeBase
         \usort($suggested_class_names, 'strcmp');
 
         /**
-         * @return string|FullyQualifiedClassName
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) : FullyQualifiedClassName|string {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
                 // This is a builtin type
                 return $class_name_lower;
