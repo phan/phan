@@ -1,0 +1,5 @@
+%s:6 PhanTypeMismatchArgumentReal Argument 1 ($value) is new HasToString() of type \HasToString|\Stringable but \takesString() takes string defined at %s:9
+%s:7 PhanTypeMismatchArgumentReal Argument 1 ($value) is new HasToString() of type \HasToString|\Stringable but \takesString() takes string defined at %s:9
+%s:7 PhanTypeMismatchArgumentReal Argument 2 ($arg) is new HasToString() of type \HasToString|\Stringable but \takesString() takes int defined at %s:9
+%s:10 PhanNoopNew Unused result of new object creation expression in new \Exception(new HasToString()) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:10 PhanTypeMismatchArgumentInternalReal Argument 1 ($message) is new HasToString() of type \HasToString|\Stringable but \Exception::__construct() takes string
