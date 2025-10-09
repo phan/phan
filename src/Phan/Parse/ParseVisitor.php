@@ -2139,6 +2139,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
         ast\AST_UNPACK => true,
     ];
@@ -2157,6 +2159,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
         ast\AST_UNPACK => true,
 
@@ -2254,6 +2258,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
 
         // In addition to expressions where the real type can be statically inferred (assuming types of child nodes were correctly inferred)
