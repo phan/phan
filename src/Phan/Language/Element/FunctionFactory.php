@@ -296,7 +296,7 @@ class FunctionFactory
                 $parameter->enablePhanFlagBits($phan_flags);
                 if ($is_optional) {
                     if (!$parameter->hasDefaultValue()) {
-                        // Placeholder value. PHP 8.0+ is better at actually providing real parameter defaults.
+                        // Placeholder value.
                         $parameter->setDefaultValueType(NullType::instance(false)->asPHPDocUnionType());
                     }
                 }

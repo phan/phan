@@ -1713,7 +1713,7 @@ Note that this it may be appropriate to suppress this under the following circum
 3. The functionality is marked as `@internal`
 
 ```
-Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
+Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment, or suppressing unused parameter warnings, or renaming the parameter if backwards-compatibility for named parameters is not needed.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0780_suggest_trivial_setter_getter.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0780_suggest_trivial_setter_getter.php#L13).
@@ -1721,7 +1721,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0780
 ## PhanParamNameIndicatingUnusedInClosure
 
 ```
-Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.
+Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment, or suppressing unused parameter warnings, or renaming the parameter if backwards-compatibility for named parameters is not needed.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0872_noop_closure.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0872_noop_closure.php#L4).

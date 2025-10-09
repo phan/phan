@@ -325,14 +325,11 @@ class PhanPhpShellUtils
                 return $property_completions;
             }
         }
-        // TODO: PHP adds filtering by ReflectionClassConstant::IS_PUBLIC in 8.0
         // TODO: Make some of these case insensitive?
 
         $constant_candidates = ['class'];
-        foreach ($reflection_class->getReflectionConstants() as $reflection_constant) {
-            if (!$reflection_constant->isPublic()) {
-                continue;
-            }
+        // @phan-suppress-next-line PhanParamTooManyInternal TODO Why?
+        foreach ($reflection_class->getReflectionConstants(ReflectionClassConstant::IS_PUBLIC) as $reflection_constant) {
             $constant_candidates[] = $reflection_constant->getName();
         }
         $constant_completions = $this->generateCompletionsFromCandidates($constant_candidates, $instance_element_prefix, '');

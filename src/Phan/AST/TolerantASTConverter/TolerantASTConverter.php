@@ -1845,7 +1845,7 @@ class TolerantASTConverter
             0,
             [
                 'class' => $types,
-                // php 8.0 allows catch statements without variables
+                // Support non-capturing catch
                 'var' => is_string($var) ? new ast\Node(ast\AST_VAR, 0, ['name' => $var], $lineno) : null,
                 'stmts' => $stmts,
             ],
@@ -3504,7 +3504,7 @@ class TolerantASTConverter
     }
 
     /**
-     * For development PHP versions such as 8.0.0-dev, use the build date as part of the cache key to invalidate cached ASTs when this gets rebuilt.
+     * For development PHP versions such as 8.4.0-dev, use the build date as part of the cache key to invalidate cached ASTs when this gets rebuilt.
      * @suppress   PhanImpossibleCondition, PhanSuspiciousValueComparison Phan evaluates the strpos to a constant, so this is either impossible or redundant
      */
     private static function getDevelopmentBuildDate(): ?string

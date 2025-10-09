@@ -65,7 +65,7 @@ function phan_output_ast_installation_instructions(): void
         $extension_dir .= ' (extension directory does not exist and may need to be changed)';
     }
     if (DIRECTORY_SEPARATOR === '\\') {
-        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
+        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.3-nts-vs16-x64.zip for php 8.3, 64-bit non thread safe
         // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.4-ts-vc15-x86.zip for php 8.4, 32-bit thread safe
         $version = LATEST_KNOWN_PHP_AST_VERSION;
         fprintf(
@@ -165,7 +165,7 @@ if (extension_loaded('ast')) {
         exit(1);
     }
     if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
-        // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
+        // Warn for 8.3.0RC1, 8.4.0alpha1, 8.4.0-dev, etc.
         // But don't warn for upcoming versions without a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
@@ -347,9 +347,8 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         }
     }
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations.
-    // In PHP 8.0, "Unable" becomes uppercase.
     if ($errno === E_WARNING) {
-        if (preg_match('/^stream_select.*unable to select/i', $errstr)) {
+        if (preg_match('/^stream_select.*Unable to select/', $errstr)) {
             // Don't execute the PHP internal error handler
             return true;
         }

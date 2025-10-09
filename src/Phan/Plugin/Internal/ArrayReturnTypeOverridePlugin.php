@@ -73,8 +73,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $int_or_string_or_false = UnionType::fromFullyQualifiedRealString('int|string|false');
         $int_or_string_or_null = UnionType::fromFullyQualifiedRealString('int|string|null');
         $int_or_string = UnionType::fromFullyQualifiedRealString('int|string');
-        // TODO: This might be replaced by non-null array if php 8.0 would throw for these cases.
-        $real_nullable_array = UnionType::fromFullyQualifiedRealString('?array');
+        $real_array = UnionType::fromFullyQualifiedRealString('array');
         $probably_real_array = UnionType::fromFullyQualifiedPHPDocAndRealString('array', '?array');
         $probably_real_assoc_array = UnionType::fromFullyQualifiedPHPDocAndRealString('associative-array', '?associative-array');
         $probably_real_assoc_array_falsey = UnionType::fromFullyQualifiedPHPDocAndRealString('associative-array', '?associative-array|?false');
@@ -371,11 +370,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             array $args
         ) use (
             $nullable_array_type_set,
-            $real_nullable_array
+            $real_array
         ): UnionType {
             // TODO: Handle non-empty-array in these methods and convert to non-empty-array.
             if (\count($args) < 2) {
-                return $real_nullable_array;
+                // Will throw an ArgumentCountError
+                return $real_array;
             }
             $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
             foreach ($function_like_list as $mapping_function) {
@@ -559,8 +559,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             }
             if ($possible_return_types->isEmpty()) {
-                // This will always be a real array in php 8.0+
-                return $array_map_function->getUnionType();
+                return $real_array;
             }
             if (count($arguments) >= 2) {
                 // There were two or more arrays passed to the closure
@@ -641,9 +640,10 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         /**
          * @param list<Node|int|string|float> $args
          */
-        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_list_type_set, $real_nullable_array): UnionType {
+        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_list_type_set, $real_array): UnionType {
             if (\count($args) !== 1) {
-                return $real_nullable_array;
+                // Will throw an ArgumentCountError
+                return $real_array;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
             $element_type = $union_type->genericArrayElementTypes(true, $code_base);

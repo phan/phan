@@ -479,7 +479,7 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Add an instance property from php 8.0 constructor property promotion
+     * Add an instance property from constructor property promotion
      * (`__construct(public int $param)`)
      *
      * This heavily duplicates parts of visitPropGroup

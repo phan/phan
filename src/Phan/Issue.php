@@ -3733,7 +3733,7 @@ class Issue
                 self::ParamNameIndicatingUnused,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.',
+                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment, or suppressing unused parameter warnings, or renaming the parameter if backwards-compatibility for named parameters is not needed.',
                 self::REMEDIATION_B,
                 7050
             ),
@@ -3741,7 +3741,7 @@ class Issue
                 self::ParamNameIndicatingUnusedInClosure,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment or suppressing unused parameter warnings instead. PHP 8.0 introduces support for named parameters, so changing names to suppress unused parameter warnings is no longer recommended.',
+                'Saw a parameter named ${PARAMETER}. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment, or suppressing unused parameter warnings, or renaming the parameter if backwards-compatibility for named parameters is not needed.',
                 self::REMEDIATION_B,
                 7051
             ),

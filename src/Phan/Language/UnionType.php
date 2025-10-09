@@ -4682,7 +4682,7 @@ class UnionType implements Serializable, Stringable
      */
     private static function computeLatestFunctionSignatureMap(): array
     {
-        // Load the base PHP 8.1 map (updated from PHP 8.0 baseline in PHP 8.1+ migration)
+        // Load the base PHP 8.1 map
         $map = [];
         $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMap.php');
         foreach ($map_raw as $key => $value) {
@@ -4946,7 +4946,7 @@ class UnionType implements Serializable, Stringable
     /**
      * @param UnionType[] $union_types
      * @return UnionType union of these UnionTypes
-     * @suppress PhanPartialTypeMismatchArgument false positive seen when no real types are known. count() would throw in php 8.0+ for non-countables.
+     * @suppress PhanPartialTypeMismatchArgument false positive seen when no real types are known.
      */
     public static function merge(array $union_types, bool $normalize_array_shapes = true): UnionType
     {

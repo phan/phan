@@ -1212,7 +1212,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $var_node = $node->children['var'];
         $scope = $this->scope;
-        // handle php 8.0 non-capturing catches
+        // handle non-capturing catches
         if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             $name = $var_node->children['name'];
             if (is_string($name)) {

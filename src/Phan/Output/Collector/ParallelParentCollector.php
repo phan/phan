@@ -7,6 +7,7 @@ namespace Phan\Output\Collector;
 use AssertionError;
 use Phan\IssueInstance;
 use Phan\Output\IssueCollectorInterface;
+use SysvMessageQueue;
 
 /**
  * A ParallelParentCollector collects issues as normal proxying
@@ -26,11 +27,10 @@ class ParallelParentCollector implements IssueCollectorInterface
     private $base_collector;
 
     /**
-     * @var Resource
      * A message queue that will be listened to for incoming
      * messages
      */
-    private $message_queue_resource;
+    private SysvMessageQueue $message_queue_resource;
 
     /**
      * Create a ParallelParentCollector that will collect
@@ -64,11 +64,9 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __destruct()
     {
         // Shut down and remove the queue
-        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
         $success = \msg_remove_queue($this->message_queue_resource);
         if (!$success) {
-            // @phan-suppress-next-line PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
-            throw new AssertionError("Failed to remove queue with ID {$this->message_queue_resource}");
+            throw new AssertionError("Failed to remove queue with ID " . var_export( $this->message_queue_resource, true ) );
         }
     }
 
@@ -87,7 +85,6 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function readQueuedIssues(): void
     {
         // Get the status of the queue
-        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
         $status = \msg_stat_queue($this->message_queue_resource);
 
         // Read messages while there are still messages on
@@ -117,7 +114,6 @@ class ParallelParentCollector implements IssueCollectorInterface
                 break;
             }
 
-            // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0
             $status = \msg_stat_queue($this->message_queue_resource);
         }
     }

@@ -3182,7 +3182,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
 
-            // Abstract private methods in traits are allowed in PHP 8.0+ (our minimum is 8.1)
             $this->checkForPHP4StyleConstructor($class, $method);
         } catch (Exception) {
         }

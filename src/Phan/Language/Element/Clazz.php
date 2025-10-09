@@ -4278,7 +4278,7 @@ class Clazz extends AddressableElement
                 }
                 if (\class_exists($fqsen_string)) {
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
-                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
                         if ($php_attribute->getName() === 'Attribute') {
                             return true;
                         }
@@ -4321,9 +4321,9 @@ class Clazz extends AddressableElement
                 }
                 if (\class_exists($fqsen_string)) {
                     foreach ((new ReflectionClass($fqsen_string))->getAttributes() as $php_attribute) {
-                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                        // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
                         if ($php_attribute->getName() === 'Attribute') {
-                            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall unable to infer type as a result of target_php_version being 7.2
+                            // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
                             $arg = $php_attribute->getArguments()[0] ?? null;
                             if (is_int($arg)) {
                                 return $arg;

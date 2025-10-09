@@ -446,8 +446,8 @@ class CodeBase
         $map = [
             'core' => true,
             'date' => true,
-            // 'hash' => true,  // always enabled in 7.4.0, too new
-            // 'json' => true,  // always enabled in 8.0.0, too new
+            'hash' => true,
+            'json' => true,
             'pcre' => true,
             'reflection' => true,
             'spl' => true,

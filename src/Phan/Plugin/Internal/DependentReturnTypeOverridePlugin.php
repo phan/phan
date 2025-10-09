@@ -295,21 +295,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $constant->getUnionType();
         };
-        /**
-         * @param CodeBase $unused_code_base @phan-unused-param
-         * @param Context $unused_context @phan-unused-param
-         * @param Func $unused_function @phan-unused-param
-         * @param list<Node|int|float|string> $args @phan-unused-param
-         */
-        $substr_handler = static function (
-            CodeBase $unused_code_base,
-            Context $unused_context,
-            Func $unused_function,
-            array $args
-        ) use ($string_union_type_real): UnionType {
-            // PHP 8.0+ behavior - both target and minimum are 8.1+
-            return $string_union_type_real;
-        };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
          * @param list<Node|int|float|string> $args
@@ -415,21 +400,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 'non-empty-list<string>'
             );
         };
-        /**
-         * @param CodeBase $code_base @phan-unused-param
-         * @param Context $context @phan-unused-param
-         * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args @phan-unused-param
-         */
-        $one_or_two_string_handler = static function (
-            CodeBase $code_base,
-            Context $context,
-            Func $function,
-            array $args
-        ) use ($string_union_type_real): UnionType {
-            // PHP 8.0+ behavior - always return string
-            return $string_union_type_real;
-        };
 
         // TODO: Handle flags of preg_split.
         return [
@@ -450,14 +420,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
             'parse_url'                   => $parse_url_handler,
-            'substr'                      => $substr_handler,
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
             'bcdiv'                       => $bcdiv_callback,
             'explode'                     => $explode_handler,
-            'trim'                        => $one_or_two_string_handler,
-            'ltrim'                       => $one_or_two_string_handler,
-            'rtrim'                       => $one_or_two_string_handler,
             'constant'                    => $constant_handler,
         ];
     }
