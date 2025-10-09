@@ -46,8 +46,10 @@ sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 echo
 echo "Comparing the output:"
 
-# Normalize PHP_VERSION_ID and paths
+# Normalize PHP_VERSION_ID, paths, and version-dependent messages
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
+    -e 's/alphanumeric, backslash, or NUL$/alphanumeric or backslash/g' \
+    -e 's/('\''Not using'\'' . " args\\n")/"Not using args\\n"/g' \
     -e 's/src\\/src\//g' \
     $ACTUAL_PATH
 
