@@ -902,9 +902,19 @@ class AssignmentVisitor extends AnalysisVisitor
                     $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
                 }
             } else {
-                $right_type = $this->right_type->asNonEmptyListTypes()->nonFalseyClone();
+                $right_type = $this->right_type->asListTypes();
+                if ($right_type->isEmpty()) {
+                    $right_type = ListType::fromElementType(MixedType::instance(false), false)->asPHPDocUnionType();
+                }
+                if (!$this->context->isInLoop() && !$right_type->hasRealTypeSet()) {
+                    $real_type_set = $right_type->getTypeSet();
+                    if (!$real_type_set) {
+                        $real_type_set = ListType::fromElementType(MixedType::instance(false), false)->asRealUnionType()->getTypeSet();
+                    }
+                    $right_type = $right_type->withRealTypeSet($real_type_set);
+                }
             }
-            if (!$right_type->hasRealTypeSet()) {
+            if ($dim_node !== null && !$right_type->hasRealTypeSet()) {
                 $right_type = $right_type->withRealTypeSet(UnionType::typeSetFromString('non-empty-array'));
             }
         }
