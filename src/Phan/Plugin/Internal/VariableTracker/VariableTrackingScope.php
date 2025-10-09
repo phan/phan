@@ -315,6 +315,20 @@ class VariableTrackingScope
     }
 
     /**
+     * Merge variable definitions from the provided scope into this one.
+     */
+    public function initializeDefsFromScope(VariableTrackingScope $scope): void
+    {
+        foreach ($scope->defs as $variable_name => $defs) {
+            if (!isset($this->defs[$variable_name])) {
+                $this->defs[$variable_name] = $defs;
+            } else {
+                $this->defs[$variable_name] += $defs;
+            }
+        }
+    }
+
+    /**
      * Record a statement that was unreachable due to break/continue statements.
      *
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param

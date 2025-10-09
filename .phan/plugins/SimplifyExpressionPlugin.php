@@ -155,25 +155,33 @@ class SimplifyExpressionVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitBinaryOp(Node $node): void
     {
-        $is_negated_assertion = false;
-        switch ($node->flags) {
-            case flags\BINARY_IS_NOT_IDENTICAL:
-            case flags\BINARY_IS_NOT_EQUAL:
-            case flags\BINARY_BOOL_XOR:
-                $is_negated_assertion = true;
-            case flags\BINARY_IS_EQUAL:
-            case flags\BINARY_IS_IDENTICAL:
-                ['left' => $left_node, 'right' => $right_node] = $node->children;
-                $left_const = self::getBoolConst($left_node);
-                if (is_bool($left_const)) {
-                    // E.g. `$x === true` can be simplified to `$x`
-                    $this->suggestBoolSimplification($node, $right_node, $left_const === $is_negated_assertion);
-                    return;
-                }
-                $right_const = self::getBoolConst($right_node);
-                if (is_bool($right_const)) {
-                    $this->suggestBoolSimplification($node, $left_node, $right_const === $is_negated_assertion);
-                }
+        $equality_flags = [
+            flags\BINARY_IS_EQUAL,
+            flags\BINARY_IS_IDENTICAL,
+            flags\BINARY_IS_NOT_EQUAL,
+            flags\BINARY_IS_NOT_IDENTICAL,
+            flags\BINARY_BOOL_XOR,
+        ];
+        if (!\in_array($node->flags, $equality_flags, true)) {
+            return;
+        }
+
+        $is_negated_assertion = \in_array(
+            $node->flags,
+            [flags\BINARY_IS_NOT_EQUAL, flags\BINARY_IS_NOT_IDENTICAL, flags\BINARY_BOOL_XOR],
+            true
+        );
+
+        ['left' => $left_node, 'right' => $right_node] = $node->children;
+        $left_const = self::getBoolConst($left_node);
+        if (is_bool($left_const)) {
+            // E.g. `$x === true` can be simplified to `$x`
+            $this->suggestBoolSimplification($node, $right_node, $left_const === $is_negated_assertion);
+            return;
+        }
+        $right_const = self::getBoolConst($right_node);
+        if (is_bool($right_const)) {
+            $this->suggestBoolSimplification($node, $left_node, $right_const === $is_negated_assertion);
         }
     }
 }
