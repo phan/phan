@@ -2053,8 +2053,22 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $dim_node = $node->children['dim'];
         if ($dim_node instanceof Node) {
-            $dim_value = (new ContextNode($this->code_base, $this->context, $dim_node))
-                ->getEquivalentPHPScalarValue($this->should_catch_issue_exception);
+            $catch_issues = $this->should_catch_issue_exception;
+            if ($dim_node->kind === ast\AST_CONST) {
+                $catch_issues = false;
+            }
+            try {
+                $dim_value = (new ContextNode($this->code_base, $this->context, $dim_node))
+                    ->getEquivalentPHPScalarValue($catch_issues);
+            } catch (IssueException $exception) {
+                if ($dim_node->kind === ast\AST_CONST) {
+                    return null;
+                }
+                throw $exception;
+            }
+            if ($dim_node->kind === ast\AST_CONST && $dim_value instanceof Node) {
+                return null;
+            }
         } else {
             $dim_value = $dim_node;
         }
