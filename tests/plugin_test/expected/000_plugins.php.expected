@@ -19,6 +19,7 @@ src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin su
 src/000_plugins.php:61 PhanPluginUseReturnValueNoopVoid The function/method \testUnreferencedFunction() is declared to return void and it has no side effects
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction()
 src/000_plugins.php:64 PhanCompatibleAutoload Declaring an autoloader with function __autoload() is a fatal error. Use spl_autoload_register() instead.
+src/000_plugins.php:64 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Fatal error: __autoload() is no longer supported, use spl_autoload_register() instead"
 src/000_plugins.php:64 PhanPluginUseReturnValueNoopVoid The function/method \__autoload() is declared to return void and it has no side effects
 src/000_plugins.php:64 PhanUnusedGlobalFunctionParameter Parameter $className is never used
 src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
