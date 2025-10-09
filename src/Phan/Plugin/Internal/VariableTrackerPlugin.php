@@ -147,6 +147,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $combined_use_defs = $variable_graph->computeCombinedUseDefs();
+        $use_node_id_to_var_name = $variable_graph->getUseNodeIdToVariableNameMap();
+        $modification_nodes_by_variable = $variable_graph->getModificationNodeIdsByVariable();
         foreach ($loop_nodes as $loop_node) {
             // Check if any variables read by the loop condition were set within the statements.
             $cond = $loop_node->children['cond'];
@@ -173,10 +175,15 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     }
                     if ($id_set_of_stmts) {
                         foreach ($id_set_in_loop as $id => $_) {
-                            if (!isset($combined_use_defs[$id])) {
+                            $var_name = $use_node_id_to_var_name[$id] ?? null;
+                            if (isset($combined_use_defs[$id]) && \array_intersect_key($combined_use_defs[$id], $id_set_of_stmts)) {
+                                continue 2;
+                            }
+                            if ($var_name === null) {
                                 continue;
                             }
-                            if (\array_intersect_key($combined_use_defs[$id], $id_set_of_stmts)) {
+                            $modified_nodes = $modification_nodes_by_variable[$var_name] ?? null;
+                            if ($modified_nodes && \array_intersect_key($modified_nodes, $id_set_of_stmts)) {
                                 continue 2;
                             }
                         }

@@ -518,7 +518,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                     self::$variable_graph->markAsUnset($expr);
                 }
                 self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
-                self::$variable_graph->recordVariableModification($name);
+                self::$variable_graph->recordVariableModification($name, $expr);
             }
         }
         return $this->analyzeWhenValidNode($this->scope, $expr);  // lower false positives by not treating this as a definition
@@ -548,7 +548,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                         self::$variable_graph->markAsUnset($expr);
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
                     } else {
-                        self::$variable_graph->recordVariableModification($name);
+                        self::$variable_graph->recordVariableModification($name, $expr);
                     }
                 }
                 break;
