@@ -1677,19 +1677,23 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
             $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
             // equivalent to !willUnconditionallyThrowOrReturn()
-            $previous_child_context = null;
             if (($block_exit_status & ~BlockExitStatusChecker::STATUS_THROW_OR_RETURN_BITMASK)) {
-                // Skip over case statements that only ever throw or return
-                if (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
-                    // and skip over empty statement lists, unless they're the last in a long line of empty statement lists
-                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
-                    $child_context_list[] = $child_context;
-                }
-
                 if ($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED) {
                     // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
                     $previous_child_context = $child_context;
+                    if ($i === count($node->children) - 1) {
+                        // last case falls through to end of switch, include the accumulated context once
+                        // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
+                        $child_context_list[] = $child_context;
+                    }
+                } elseif (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
+                    // Skip over case statements that only ever throw or return or are empty in the middle of a fallthrough chain
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredVariable the finally block is not perfectly analyzed by Phan
+                    $child_context_list[] = $child_context;
+                    $previous_child_context = null;
                 }
+            } else {
+                $previous_child_context = null;
             }
         }
 
