@@ -1224,6 +1224,7 @@ class CLI
         return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 
+    /** @throws UsageException */
     private static function checkValidFileConfig(): void
     {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');
@@ -1244,12 +1245,11 @@ class CLI
                 }
             }
             if ($valid_files === 0) {
-                // TODO convert this to an error in Phan 5.
                 $error_message = sprintf(
                     "None of the files to analyze in %s exist - This will be an error in future Phan releases." . PHP_EOL,
                     Config::getProjectRootDirectory()
                 );
-                CLI::printWarningToStderr($error_message);
+                throw new UsageException( $error_message, 1 );
             }
         }
     }
