@@ -1,0 +1,30 @@
+<?php
+
+readonly class CompatReadonlyExample {}
+
+class CompatTypedConst
+{
+    public const string NAME = 'value';
+}
+
+class OverrideBase
+{
+    public function doWork(): void {}
+}
+
+class OverrideChild extends OverrideBase
+{
+    #[Override]
+    public function doWork(): void {}
+}
+
+class OverridePropertyBase
+{
+    public int $value;
+}
+
+class OverridePropertyChild extends OverridePropertyBase
+{
+    #[Override]
+    public int $value;
+}

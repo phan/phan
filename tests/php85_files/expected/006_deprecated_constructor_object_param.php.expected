@@ -1,0 +1,2 @@
+%s:13 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \MyClass may be an object but passing objects to \ArrayObject::__construct() has been deprecated in PHP 8.5
+%s:16 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \MyClass may be an object but passing objects to \ArrayIterator::__construct() has been deprecated in PHP 8.5

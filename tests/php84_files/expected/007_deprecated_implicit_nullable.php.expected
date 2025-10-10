@@ -1,0 +1,19 @@
+%s:5 PhanUnreferencedClass Possibly zero references to class \DeprecatedImplicitNullable
+%s:7 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $a = null) have been deprecated in PHP 8.4
+%s:7 PhanPluginUnknownMethodReturnType Method \DeprecatedImplicitNullable::implicitNullable() has no declared or inferred return type (Types inferred after analysis: int)
+%s:7 PhanUnreferencedPublicMethod Possibly zero references to public method \DeprecatedImplicitNullable::implicitNullable()
+%s:12 PhanPluginUnknownMethodReturnType Method \DeprecatedImplicitNullable::explicitNullable() has no declared or inferred return type (Types inferred after analysis: int)
+%s:12 PhanUnreferencedPublicMethod Possibly zero references to public method \DeprecatedImplicitNullable::explicitNullable()
+%s:17 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (string $s = null) have been deprecated in PHP 8.4
+%s:17 PhanPluginUnknownMethodReturnType Method \DeprecatedImplicitNullable::stringImplicit() has no declared or inferred return type (Types inferred after analysis: string)
+%s:17 PhanUnreferencedPublicMethod Possibly zero references to public method \DeprecatedImplicitNullable::stringImplicit()
+%s:22 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (array $arr = null) have been deprecated in PHP 8.4
+%s:22 PhanPluginUnknownArrayMethodParamType Method \DeprecatedImplicitNullable::arrayImplicit has a parameter type of array for $arr, but does not specify any key types or value types
+%s:22 PhanPluginUnknownMethodReturnType Method \DeprecatedImplicitNullable::arrayImplicit() has no declared or inferred return type (Types inferred after analysis: array)
+%s:22 PhanUnreferencedPublicMethod Possibly zero references to public method \DeprecatedImplicitNullable::arrayImplicit()
+%s:27 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (\stdClass $obj = null) have been deprecated in PHP 8.4
+%s:27 PhanPluginUnknownMethodReturnType Method \DeprecatedImplicitNullable::objectImplicit() has no declared or inferred return type (Types inferred after analysis: \stdClass)
+%s:27 PhanUnreferencedPublicMethod Possibly zero references to public method \DeprecatedImplicitNullable::objectImplicit()
+%s:32 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $x = null) have been deprecated in PHP 8.4
+%s:32 PhanPluginUnknownFunctionReturnType Function \deprecatedImplicitNullableGlobal() has no declared or inferred return type (Types inferred after analysis: ?int)
+%s:32 PhanUnreferencedFunction Possibly zero references to function \deprecatedImplicitNullableGlobal()

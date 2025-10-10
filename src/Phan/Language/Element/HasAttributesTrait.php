@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use Phan\Config;
+
 /**
  * This contains functionality common to declarations that have attributes
  */
@@ -49,6 +51,7 @@ trait HasAttributesTrait
 
     /**
      * Check if this element has a #[NoDiscard] attribute (PHP 8.5+)
+     * This also works with polyfills on earlier PHP versions.
      */
     public function hasNoDiscardAttribute(): bool
     {
@@ -67,6 +70,11 @@ trait HasAttributesTrait
      */
     public function hasOverrideAttribute(): bool
     {
+        $target_version = Config::get_closest_target_php_version_id();
+        $minimum_version = ($this instanceof Property) ? 80500 : 80300;
+        if ($target_version < $minimum_version) {
+            return false;
+        }
         foreach ($this->attribute_list as $attribute) {
             $fqsen = $attribute->getFQSEN();
             // Check for both \Override and Override (in root namespace)

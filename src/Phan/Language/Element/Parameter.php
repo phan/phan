@@ -252,7 +252,7 @@ class Parameter extends Variable
                 }
             }
             $real_type = $this->getNonVariadicUnionType()->getRealUnionType();
-            if (!$real_type->isEmpty() && !$real_type->containsNullable()) {
+            if (!$real_type->isEmpty() && !$real_type->containsNullable() && \Phan\Config::get_closest_target_php_version_id() >= 80400) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,

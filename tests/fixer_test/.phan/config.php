@@ -14,6 +14,9 @@ use \Phan\Issue;
  * in addition to testing backwards compatibility checks and dead code detection.
  */
 return [
+    // Target PHP version for analysis - use 8.1 to match main tests
+    'target_php_version' => '8.1',
+
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.

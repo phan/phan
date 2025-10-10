@@ -4102,6 +4102,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function emitDeprecatedPartiallySupportedCallable(string $class_name, Node|bool|float|int|null|string $method_name): void
     {
+        // Only emit this warning if targeting PHP 8.2+ (where this was deprecated)
+        if (Config::get_closest_target_php_version_id() < 80200) {
+            return;
+        }
         if (!is_string($method_name)) {
             $method_name = '(unknown)';
         }
@@ -4119,6 +4123,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function emitDeprecatedPartiallySupportedCallableAlternateScope(Node|bool|float|int|null|string $class_name, string $method_name): void
     {
+        // Only emit this warning if targeting PHP 8.2+ (where this was deprecated)
+        if (Config::get_closest_target_php_version_id() < 80200) {
+            return;
+        }
         $this->emitIssue(
             Issue::DeprecatedPartiallySupportedCallableAlternateScope,
             $this->context->getLineNumberStart(),

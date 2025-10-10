@@ -602,6 +602,9 @@ class Issue
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
     public const CompatibleTraitConstant                 = 'PhanCompatibleTraitConstant';
+    public const CompatibleReadonlyClass                 = 'PhanCompatibleReadonlyClass';
+    public const CompatibleTypedClassConstant            = 'PhanCompatibleTypedClassConstant';
+    public const CompatibleOverrideAttribute             = 'PhanCompatibleOverrideAttribute';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -5062,6 +5065,30 @@ class Issue
                 "Cannot use {TYPE} as a type before php 8.2.",
                 self::REMEDIATION_B,
                 3051
+            ),
+            new Issue(
+                self::CompatibleReadonlyClass,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Readonly class {CLASS} is only supported in PHP 8.2+.',
+                self::REMEDIATION_B,
+                3053
+            ),
+            new Issue(
+                self::CompatibleTypedClassConstant,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Typed class constant {CONST} is only supported in PHP 8.3+.',
+                self::REMEDIATION_B,
+                3054
+            ),
+            new Issue(
+                self::CompatibleOverrideAttribute,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                'Attribute #[Override] on {CLASS} is only supported in PHP {DETAILS}.',
+                self::REMEDIATION_B,
+                3055
             ),
             new Issue(
                 self::CompatibleAutoload,

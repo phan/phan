@@ -86,6 +86,9 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
 
         // NOTE: This is done to avoid ParseError in php-ast
         $suffixes = [];
+        if (\PHP_VERSION_ID >= 80500) {
+            $suffixes[] = '85';
+        }
         if (\PHP_VERSION_ID >= 80400) {
             $suffixes[] = '84';
         }

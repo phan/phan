@@ -1,2 +1,0 @@
-src_copy/016_redundant_crash_throws.php:4 PhanPluginRedundantReturnComment Redundant @return string on function testRedundantPHPDocCrashThrows(). Either add a description or remove the @return annotation: @return string
-src_copy/016_redundant_crash_throws.php:8 PhanDeprecatedFunctionInternal Call to deprecated function \rand() (Deprecated because: Deprecated in PHP 8.3. Use random_int() or Random\Randomizer::getInt().)

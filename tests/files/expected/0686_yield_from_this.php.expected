@@ -1,3 +1,2 @@
-%s:48 PhanDeprecatedConstructorObjectParamInternal Argument 1 ($array) of type \NS676\GoodB may be an object but passing objects to \ArrayObject::__construct() has been deprecated in PHP 8.5
 %s:57 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression $this of type static (expected Traversable/array)
 %s:58 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (clone($this)) of type static (expected Traversable/array)

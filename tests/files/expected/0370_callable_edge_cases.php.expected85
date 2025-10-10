@@ -10,7 +10,5 @@
 %s:49 PhanContextNotObjectInCallable Cannot access parent when not in object context, but code is using callable parent::foo
 %s:50 PhanTypeMismatchArgumentReal Argument 1 ($x) is new stdClass() of type \stdClass but \C370::foo() takes int defined at %s:41
 %s:51 PhanTypeMismatchArgumentReal Argument 1 ($x) is new stdClass() of type \stdClass but \C370::foo() takes int defined at %s:41
-%s:58 PhanUndeclaredClassAttribute Reference to undeclared class \Override in an attribute
 %s:59 PhanCompatibleOverrideAttribute Attribute #[Override] on \OverrideCompat::doWork() is only supported in PHP 8.3+.
-%s:67 PhanUndeclaredClassAttribute Reference to undeclared class \Override in an attribute
 %s:68 PhanCompatibleOverrideAttribute Attribute #[Override] on \OverridePropertyChild->value is only supported in PHP 8.5+.
