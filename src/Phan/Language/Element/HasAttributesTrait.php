@@ -51,12 +51,10 @@ trait HasAttributesTrait
 
     /**
      * Check if this element has a #[NoDiscard] attribute (PHP 8.5+)
+     * This also works with polyfills on earlier PHP versions.
      */
     public function hasNoDiscardAttribute(): bool
     {
-        if (Config::get_closest_target_php_version_id() < 80500) {
-            return false;
-        }
         foreach ($this->attribute_list as $attribute) {
             $fqsen = $attribute->getFQSEN();
             // Check for both \NoDiscard and NoDiscard (in root namespace)

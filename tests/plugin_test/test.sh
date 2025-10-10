@@ -49,6 +49,7 @@ echo "Comparing the output:"
 # Normalize PHP_VERSION_ID, paths, and version-dependent messages
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
     -e 's/alphanumeric, backslash, or NUL byte/alphanumeric or backslash/g' \
+    -e 's/alphanumeric, backslash, or NUL/alphanumeric or backslash/g' \
     -e "s/Unknown modifier 'e'/The \\/e modifier is no longer supported, use preg_replace_callback instead/g" \
     -e 's/('\''Not using'\'' . " args\\n")/"Not using args\\n"/g' \
     -e 's/src\\/src\//g' \
