@@ -1,1 +1,1 @@
-./tests/multi_files/src/551_a.php:5 PhanUndeclaredConstant Reference to undeclared constant \CONSTANT_NOT_IN_SCOPE. This would throw an Error.
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \CONSTANT_NOT_IN_SCOPE. This would throw an Error.
