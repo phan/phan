@@ -160,6 +160,13 @@ class ParseVisitor extends ScopeVisitor
         if ($node->flags & ast\flags\CLASS_ENUM) {
             $this->populateEnumClass($class, $class_context, $node);
         }
+        if (($node->flags & ast\flags\CLASS_READONLY) && Config::get_closest_target_php_version_id() < 80200) {
+            $this->emitIssue(
+                Issue::CompatibleReadonlyClass,
+                $node->lineno,
+                (string)$class_fqsen
+            );
+        }
 
         try {
             // Set the scope of the class's context to be the
@@ -454,6 +461,14 @@ class ParseVisitor extends ScopeVisitor
             $class->addMethod($code_base, $method, None::instance());
         }
 
+        $this->emitOverrideAttributeCompatibility(
+            $method->getAttributeList(),
+            $node->lineno,
+            $method->getRepresentationForIssue(),
+            80300,
+            '8.3+'
+        );
+
         $method_name_lower = \strtolower($method_name);
         if ('__construct' === $method_name_lower) {
             $class->setIsParentConstructorCalled(false);
@@ -650,6 +665,29 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Emit compatibility warning if #[Override] is used but the target PHP version does not support it.
+     *
+     * @param list<Attribute> $attributes
+     */
+    private function emitOverrideAttributeCompatibility(array $attributes, int $lineno, string $element_name, int $minimum_version_id, string $version_label): void
+    {
+        if (Config::get_closest_target_php_version_id() >= $minimum_version_id) {
+            return;
+        }
+        foreach ($attributes as $attribute) {
+            if ($attribute->getFQSEN()->__toString() === '\\Override') {
+                $this->emitIssue(
+                    Issue::CompatibleOverrideAttribute,
+                    $lineno,
+                    $element_name,
+                    $version_label
+                );
+                break;
+            }
+        }
     }
 
     /**
@@ -880,6 +918,13 @@ class ParseVisitor extends ScopeVisitor
             $real_union_type
         );
         $property->setAttributeList($attributes);
+        $this->emitOverrideAttributeCompatibility(
+            $attributes,
+            $lineno,
+            $property->getRepresentationForIssue(),
+            80500,
+            '8.5+'
+        );
         if ($variable) {
             $property->setPHPDocUnionType($variable->getUnionType());
         } else {
@@ -1085,6 +1130,13 @@ class ParseVisitor extends ScopeVisitor
                 $class->getFQSEN(),
                 $name
             );
+            if (!$real_union_type->isEmpty() && Config::get_closest_target_php_version_id() < 80300) {
+                $this->emitIssue(
+                    Issue::CompatibleTypedClassConstant,
+                    $child_node->lineno,
+                    (string)$fqsen
+                );
+            }
             if ($this->code_base->hasClassConstantWithFQSEN($fqsen)) {
                 $old_constant = $this->code_base->getClassConstantByFQSEN($fqsen);
                 if ($old_constant->getDefiningFQSEN() === $fqsen) {

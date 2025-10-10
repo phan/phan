@@ -1,0 +1,5 @@
+%s:3 PhanCompatibleReadonlyClass Readonly class \CompatReadonlyExample is only supported in PHP 8.2+.
+%s:7 PhanCompatibleTypedClassConstant Typed class constant \CompatTypedConst::NAME is only supported in PHP 8.3+.
+%s:18 PhanCompatibleOverrideAttribute Attribute #[Override] on \OverrideChild::doWork() is only supported in PHP 8.3+.
+%s:28 PhanAttributeWrongTarget Saw use of attribute \Override declared at internal:0 which supports being declared on \Attribute::TARGET_METHOD but it was declared on public int $value which requires an attribute declared to support \Attribute::TARGET_PROPERTY
+%s:29 PhanCompatibleOverrideAttribute Attribute #[Override] on \OverridePropertyChild->value is only supported in PHP 8.5+.

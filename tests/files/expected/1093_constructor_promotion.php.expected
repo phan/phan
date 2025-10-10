@@ -1,4 +1,3 @@
-%s:5 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (\MissingClass $other = null) have been deprecated in PHP 8.4
 %s:5 PhanUndeclaredTypeParameter Parameter $other has undeclared type ?\MissingClass
 %s:5 PhanUndeclaredTypeProperty Property \ConstructorPromotion21->other has undeclared type ?\MissingClass
 %s:7 PhanTypeArraySuspicious Suspicious array access to $value of type int

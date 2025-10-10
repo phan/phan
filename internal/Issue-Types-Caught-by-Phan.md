@@ -503,6 +503,16 @@ Passing glue string after the array is deprecated for {FUNCTION}. Should this sw
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0511_implode.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0511_implode.php#L7).
 
+## PhanCompatibleOverrideAttribute
+
+```
+Attribute #[Override] on {CLASS} is only supported in PHP {DETAILS}.
+```
+
+e.g. this issue is emitted when analyzing #[Override] while targeting versions that don’t support it.
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L18).
+
 ## PhanCompatiblePHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
@@ -526,6 +536,16 @@ PHP4 constructors will be removed in php 8, and should not be used. __construct(
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0198_list_property.php#L7).
+
+## PhanCompatibleReadonlyClass
+
+```
+Readonly class {CLASS} is only supported in PHP 8.2+.
+```
+
+e.g. this issue is emitted when analyzing a readonly class while targeting PHP 8.1.
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L3).
 
 ## PhanCompatibleSerializeInterfaceDeprecated
 
@@ -566,6 +586,16 @@ Cannot use {TYPE} as a type before php 8.2.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php82_files/expected/003_true.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php82_files/src/003_true.php#L2).
+
+## PhanCompatibleTypedClassConstant
+
+```
+Typed class constant {CONST} is only supported in PHP 8.3+.
+```
+
+e.g. this issue is emitted when analyzing a typed class constant while targeting PHP 8.2 or older.
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L7).
 
 ## PhanCompatibleUnparenthesizedTernary
 

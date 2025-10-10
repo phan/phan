@@ -49,3 +49,21 @@ echo call_user_func('static::foo', 2);
 echo call_user_func('parent::foo', 2);
 $x = call_user_func('C370::foo', new stdClass());
 call_user_func('C370::foo', new stdClass());
+
+class BaseOverrideCompat {
+    public function doWork(): void {}
+}
+
+class OverrideCompat extends BaseOverrideCompat {
+    #[Override]
+    public function doWork(): void {}
+}
+
+class OverridePropertyParent {
+    public int $value;
+}
+
+class OverridePropertyChild extends OverridePropertyParent {
+    #[Override]
+    public int $value;
+}

@@ -1215,17 +1215,20 @@ final class ArgumentType
                     self::maybeWarnProvidingUnusedParameter($code_base, $context, $lineno, $method, $alternate_parameter, $i);
                 }
                 if ($deprecatedParam && $i === 0) {
-                    if (!$argument_type_expanded_resolved->objectTypes()->isEmpty()) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::DeprecatedConstructorObjectParamInternal,
-                            $lineno,
-                            ($i + 1),
-                            $alternate_parameter->getName(),
-                            $argument_type_resolved,
-                            $method->getRepresentationForIssue()
-                        );
+                    // Only emit this warning if targeting PHP 8.5+ (where passing objects to internal constructors was deprecated)
+                    if (Config::get_closest_target_php_version_id() >= 80500) {
+                        if (!$argument_type_expanded_resolved->objectTypes()->isEmpty()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::DeprecatedConstructorObjectParamInternal,
+                                $lineno,
+                                ($i + 1),
+                                $alternate_parameter->getName(),
+                                $argument_type_resolved,
+                                $method->getRepresentationForIssue()
+                            );
+                        }
                     }
                 }
                 return;

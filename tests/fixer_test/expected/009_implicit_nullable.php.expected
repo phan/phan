@@ -1,5 +1,3 @@
-src_copy/009_implicit_nullable.php:6 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (array $y = null) have been deprecated in PHP 8.4
-src_copy/009_implicit_nullable.php:6 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $x = null) have been deprecated in PHP 8.4
 src_copy/009_implicit_nullable.php:6 PhanPluginCanUseNullableParamType Can use ?int as the type of parameter $z of testImplicitNullable
 src_copy/009_implicit_nullable.php:6 PhanPluginCanUseVoidReturnType Can use void as a return type of testImplicitNullable
 src_copy/009_implicit_nullable.php:6 PhanUnreferencedFunction Possibly zero references to function \testImplicitNullable()

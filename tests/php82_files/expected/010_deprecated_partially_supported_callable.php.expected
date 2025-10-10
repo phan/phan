@@ -1,0 +1,6 @@
+%s:9 PhanUnreferencedPublicMethod Possibly zero references to public method \CallableTest::instanceMethod()
+%s:14 PhanUnreferencedClass Possibly zero references to class \CallableChild
+%s:15 PhanUnreferencedPublicMethod Possibly zero references to public method \CallableChild::testCallables()
+%s:17 PhanDeprecatedPartiallySupportedCallable Saw deprecated partially supported callable self::staticMethod. This was deprecated in PHP 8.2 and behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [self::class, 'staticMethod'] can be used instead.
+%s:18 PhanDeprecatedPartiallySupportedCallable Saw deprecated partially supported callable static::staticMethod. This was deprecated in PHP 8.2 and behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [static::class, 'staticMethod'] can be used instead.
+%s:19 PhanDeprecatedPartiallySupportedCallable Saw deprecated partially supported callable parent::staticMethod. This was deprecated in PHP 8.2 and behaves inconsistently and can be called with call_user_func but not $callable() and the referenced class depends on context at call time. In some cases, [parent::class, 'staticMethod'] can be used instead.
