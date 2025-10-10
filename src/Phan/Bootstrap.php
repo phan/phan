@@ -204,11 +204,8 @@ if (PHP_VERSION_ID < 80300) {
     // These differ from the ini default and these calls will emit deprecation warnings in PHP 8.3
     // Explicitly set each option in case INI is set otherwise
     ini_set('assert.warning', '0');
-    // ASSERT_QUIET_EVAL has been removed and has no effect starting with PHP 8
-    ini_set('assert.quiet_eval', '0');
 }
 
-// php 8 seems to have segfault issues with disable_function
 if (!extension_loaded('filter') && !function_exists('filter_var')) {
     if (!($_ENV['PHAN_DISABLE_FILTER_VAR_POLYFILL'] ?? null)) {
         fwrite(STDERR, "WARNING: Using a limited polyfill for filter_var() instead of the real filter_var(). **ANALYSIS RESULTS MAY DIFFER AND PLUGINS MAY HAVE ISSUES.** Install and/or enable https://www.php.net/filter to fix this. PHAN_DISABLE_FILTER_VAR_POLYFILL=1 can be used to disable this polyfill.\n");

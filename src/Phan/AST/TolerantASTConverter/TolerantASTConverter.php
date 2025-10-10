@@ -318,7 +318,7 @@ class TolerantASTConverter
         try {
             return $this->phpParserToPhpast($parser_node, $version, $file_contents);
         } finally {
-            // Remove object reference cycles manually to free memory - automatic cyclic garbage collection is disabled for performance in older php 7 versions.
+            // Remove object reference cycles manually to free memory - automatic cyclic garbage collection is disabled for performance
             self::unlinkDescendantNodes($parser_node);
         }
     }
@@ -326,7 +326,7 @@ class TolerantASTConverter
     /**
      * Unlink the nodes manually to free memory (or to exclude them from var_export())
      *
-     * Automatic cyclic garbage collection is disabled for performance in older php 7 versions.
+     * Automatic cyclic garbage collection is disabled for performance
      */
     public static function unlinkDescendantNodes(SourceFileNode $root): void
     {
@@ -524,8 +524,7 @@ class TolerantASTConverter
             $children,
             self::getStartLine($group)
         );
-        // Not part of php-ast, but useful as an indicator that the attribute group syntax is probably incompatible with php 7 and older
-        // if it spans multiple lines.
+        // Not part of php-ast, but useful as an indicator that the attribute group syntax spans multiple lines.
         $result->endLineno = static::getEndLine($group);
         return $result;
     }

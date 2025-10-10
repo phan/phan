@@ -358,7 +358,7 @@ class Type implements Stringable
 
     /**
      * @var ?string the progress state of the app. Used to clear memoizations for Type instances not in canonical_object_map.
-     * TODO: Look into WeakMap and garbage collection in php 8, if it is supported?
+     * TODO: Look into WeakMap and garbage collection
      */
     protected static $current_progress_state = null;
 
