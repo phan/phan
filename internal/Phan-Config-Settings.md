@@ -263,11 +263,6 @@ you should also look into using
 and [php7mar](https://github.com/Alexia/php7mar),
 which have different backwards compatibility checks.
 
-If you are still using versions of php older than 5.6,
-`PHP53CompatibilityPlugin` may be worth looking into if you are not running
-syntax checks for php 5.3 through another method such as
-`InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
-
 (Default: `true`)
 
 ## cache_polyfill_asts
