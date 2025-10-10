@@ -112,6 +112,11 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $constant->setDefiningFQSEN($defining_fqsen);
         }
         $constant->setHasDeclaredType($this->has_declared_type);
+
+        // Copy the defining node so that compatibility checks can recognize
+        // that this constant came from the trait (same value/node)
+        $constant->setNodeForValue($this->getNodeForValue());
+
         return $constant;
     }
 
