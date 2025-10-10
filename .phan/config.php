@@ -37,8 +37,6 @@ return [
     // If this is set to `null`,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute Phan.
-    //
-    // (See `backward_compatibility_checks` for additional options)
     'target_php_version' => null,
 
     // The PHP version that will be used for feature/syntax compatibility warnings.
@@ -136,9 +134,6 @@ return [
     // This is useful for projects with complicated cross-file
     // globals that you have no hope of fixing.
     'ignore_undeclared_variables_in_global_scope' => false,
-
-    // Backwards Compatibility Checking (This is very slow)
-    'backward_compatibility_checks' => false,
 
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type

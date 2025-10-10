@@ -34,10 +34,6 @@ return [
     // hope of fixing.
     'ignore_undeclared_variables_in_global_scope' => false,
 
-    // Backwards Compatibility Checking
-    // Check for $$var[] and $foo->$bar['baz'] and Foo::$bar['baz']() and $this->$bar['baz']
-    'backward_compatibility_checks' => false,
-
     'quick_mode' => false,
 
     'simplify_ast' => false,

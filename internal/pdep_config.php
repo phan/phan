@@ -14,7 +14,6 @@ if (file_exists($local_config)) {
 return [
     'force_tracking_references' => true,
     'quick_mode' => true,
-    'backward_compatibility_checks' => false,
     'disable_plugins' => true,
     'simplify_ast' => false,  // override phan config overrides if they were set.
     'processes' => 1,

@@ -78,7 +78,6 @@ class Config
             'suppress_issue_types' => PhanConfig::getValue('suppress_issue_types'),
             'whitelist_issue_types' => PhanConfig::getValue('whitelist_issue_types'),
             'quick_mode' => PhanConfig::getValue('quick_mode'),
-            'backward_compatibility_checks' => PhanConfig::getValue('backward_compatibility_checks'),
             'dead_code_detection' => PhanConfig::getValue('dead_code_detection'),
             'unused_variable_detection' => PhanConfig::getValue('unused_variable_detection'),
             'redundant_condition_detection' => PhanConfig::getValue('redundant_condition_detection'),

@@ -587,8 +587,6 @@ class Issue
     public const AccessSetPropertyWrongContext          = 'PhanAccessSetPropertyWrongContext';
 
     // Issue::CATEGORY_COMPATIBLE
-    public const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
-    public const CompatiblePHP7                     = 'PhanCompatiblePHP7';
     public const CompatibleTrueType                 = 'PhanCompatibleTrueType';
     public const CompatibleStandaloneType           = 'PhanCompatibleStandaloneType';
     public const CompatibleAutoload                 = 'PhanCompatibleAutoload';
@@ -5049,22 +5047,6 @@ class Issue
             ),
 
             // Issue::CATEGORY_COMPATIBLE
-            new Issue(
-                self::CompatiblePHP7,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "Expression may not be PHP 7 compatible",
-                self::REMEDIATION_B,
-                3000
-            ),
-            new Issue(
-                self::CompatibleExpressionPHP7,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "{CLASS} expression may not be PHP 7 compatible",
-                self::REMEDIATION_B,
-                3001
-            ),
             new Issue(
                 self::CompatibleStandaloneType,
                 self::CATEGORY_COMPATIBLE,

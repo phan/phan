@@ -48,14 +48,12 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\Library\FileCache;
 use Phan\Library\None;
 
 use function implode;
 use function is_object;
 use function is_string;
 use function strcasecmp;
-use function strpos;
 use function strtolower;
 
 /**
@@ -2377,142 +2375,6 @@ class ContextNode
         }
 
         return $this->code_base->getFunctionByFQSEN($closure_fqsen);
-    }
-
-    /**
-     * Perform some backwards compatibility checks on a node.
-     * This ignores union types, and can be run in the parse phase.
-     * (It often should, because outside quick mode, it may be run multiple times per node)
-     *
-     * TODO: This is repetitive, move these checks into ParseVisitor?
-     * @suppress PhanPossiblyUndeclaredProperty
-     */
-    public function analyzeBackwardCompatibility(): void
-    {
-        if (!Config::get_backward_compatibility_checks()) {
-            return;
-        }
-
-        if (!($this->node instanceof Node) || !($this->node->children['expr'] ?? false)) {
-            return;
-        }
-
-        $kind = $this->node->kind;
-        if (\in_array($kind, [ast\AST_STATIC_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL], true)) {
-            return;
-        }
-
-        $llnode = $this->node;
-
-        if ($kind !== ast\AST_DIM) {
-            $expr = $this->node->children['expr'];
-            if (!($expr instanceof Node)) {
-                return;
-            }
-
-            if ($expr->kind !== ast\AST_DIM) {
-                (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $expr
-                ))->analyzeBackwardCompatibility();
-                return;
-            }
-
-            $temp = $expr->children['expr'];
-            $llnode = $expr;
-        } else {
-            $temp = $this->node->children['expr'];
-        }
-
-        // Strings can have DIMs, it turns out.
-        if (!($temp instanceof Node)) {
-            return;
-        }
-
-        if (!($temp->kind === ast\AST_PROP
-            || $temp->kind === ast\AST_STATIC_PROP
-        )) {
-            return;
-        }
-
-        $lnode = $temp;
-        while ($temp instanceof Node
-            && ($temp->kind === ast\AST_PROP
-            || $temp->kind === ast\AST_STATIC_PROP)
-        ) {
-            $llnode = $lnode;
-            $lnode = $temp;
-
-            // Lets just hope the 0th is the expression
-            // we want
-            $temp = \array_values($temp->children)[0];
-        }
-
-        if (!($temp instanceof Node)) {
-            return;
-        }
-
-        // Foo::$bar['baz'](); is a problem
-        // Foo::$bar['baz'] is not
-        if ($lnode->kind === ast\AST_STATIC_PROP
-            && $kind !== ast\AST_CALL
-        ) {
-            return;
-        }
-
-        // $this->$bar['baz']; is a problem
-        // $this->bar['baz'] is not
-        if ($lnode->kind === ast\AST_PROP
-            && !($lnode->children['prop'] instanceof Node)
-            && !($llnode->children['prop'] instanceof Node)
-        ) {
-            return;
-        }
-
-        if ((
-                (
-                    $lnode->children['prop'] instanceof Node
-                    && $lnode->children['prop']->kind === ast\AST_VAR
-                )
-                ||
-                (
-                    ($lnode->children['class'] ?? null) instanceof Node
-                    && (
-                        $lnode->children['class']->kind === ast\AST_VAR
-                        || $lnode->children['class']->kind === ast\AST_NAME
-                    )
-                )
-                ||
-                (
-                    ($lnode->children['expr'] ?? null) instanceof Node
-                    && (
-                        $lnode->children['expr']->kind === ast\AST_VAR
-                        || $lnode->children['expr']->kind === ast\AST_NAME
-                    )
-                )
-            )
-            &&
-            (
-                $temp->kind === ast\AST_VAR
-                || $temp->kind === ast\AST_NAME
-            )
-        ) {
-            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
-            $line = $cache_entry->getLine($this->node->lineno) ?? '';
-            unset($cache_entry);
-            if (strpos($line, '}[') === false
-                && strpos($line, ']}') === false
-                && strpos($line, '>{') === false
-            ) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::CompatiblePHP7,
-                    $this->node->lineno
-                );
-            }
-        }
     }
 
     /**
