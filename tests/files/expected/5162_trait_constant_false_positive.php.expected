@@ -1,0 +1,9 @@
+%s:5 PhanCompatibleTraitConstant Trait \T1 declares constant PRIV which is only allowed in 8.2+
+%s:6 PhanCompatibleTraitConstant Trait \T1 declares constant PROT which is only allowed in 8.2+
+%s:7 PhanCompatibleTraitConstant Trait \T1 declares constant PUB which is only allowed in 8.2+
+%s:18 PhanIncompatibleCompositionConstant \C2 and \T1 define the same constant (PRIV) in the composition of \C2. However, the definition differs and is considered incompatible. Class was composed in %s on line 18
+%s:33 PhanCompatibleTraitConstant Trait \T2 declares constant CONST_A which is only allowed in 8.2+
+%s:37 PhanCompatibleTraitConstant Trait \T3 declares constant CONST_B which is only allowed in 8.2+
+%s:47 PhanCompatibleTraitConstant Trait \T4 declares constant CONFLICT which is only allowed in 8.2+
+%s:51 PhanCompatibleTraitConstant Trait \T5 declares constant CONFLICT which is only allowed in 8.2+
+%s:54 PhanIncompatibleCompositionConstant \T4 and \T5 define the same constant (CONFLICT) in the composition of \C5. However, the definition differs and is considered incompatible. Class was composed in %s on line 54

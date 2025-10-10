@@ -3838,7 +3838,7 @@ class Clazz extends AddressableElement
                 // Check if this constant is defined in this class (not inherited from parent)
                 $defining_fqsen = $class_constant->getDefiningFQSEN();
                 if ($defining_fqsen->getFullyQualifiedClassName()->__toString() === $this->fqsen->__toString()) {
-                    // Class defines this constant - check compatibility with trait
+                    // Class has this constant - check if it was explicitly redefined or just inherited from trait
                     $source = $sources[0];
                     // @phan-suppress-next-line PhanSuspiciousTruthyCondition
                     if (!$source) {
@@ -3848,6 +3848,9 @@ class Clazz extends AddressableElement
                     if (!$trait_constant instanceof ClassConstant) {
                         continue;
                     }
+                    // If the class constant is compatible with the trait constant, it's likely just inherited
+                    // from the trait (not explicitly redefined). Only emit an error if they're incompatible,
+                    // which indicates the class tried to redefine it with a different visibility or value.
                     if (!self::areConstantsCompatible($class_constant, $trait_constant)) {
                         Issue::maybeEmit(
                             $code_base,
