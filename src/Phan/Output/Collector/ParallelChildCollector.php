@@ -7,6 +7,7 @@ namespace Phan\Output\Collector;
 use AssertionError;
 use Phan\IssueInstance;
 use Phan\Output\IssueCollectorInterface;
+use SysvMessageQueue;
 
 /**
  * A ParallelChildCollector will collect issues as normal,
@@ -17,9 +18,9 @@ use Phan\Output\IssueCollectorInterface;
 class ParallelChildCollector implements IssueCollectorInterface
 {
     /**
-     * @var resource a message queue used to receive messages from the child processes in the worker group.
+     * A message queue used to receive messages from the child processes in the worker group.
      */
-    private $message_queue_resource;
+    private SysvMessageQueue $message_queue_resource;
 
     /**
      * Create a ParallelChildCollector that will collect
@@ -35,12 +36,11 @@ class ParallelChildCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return resource the result of msg_get_queue()
+     * @suppress PhanPluginDescriptionlessCommentOnPublicMethod
      * @throws AssertionError if this could not create a resource with msg_get_queue.
      * @internal
-     * @suppress PhanTypeMismatchReturnProbablyReal, PhanTypeMismatchReturn different type in php 8.0+, the emitted issue depends on whether sysvmsg is installed
      */
-    public static function getQueueForProcessGroup()
+    public static function getQueueForProcessGroup(): SysvMessageQueue
     {
         // Create a message queue for this process group
         $message_queue_key = \posix_getpgid(\posix_getpid());
@@ -88,7 +88,6 @@ class ParallelChildCollector implements IssueCollectorInterface
         // that is hopefully being listened to by a
         // ParallelParentCollector.
         $success = \msg_send(
-            // @phan-suppress-next-line PhanTypeMismatchArgumentInternal different in php 8.0+
             $this->message_queue_resource,
             ParallelParentCollector::MESSAGE_TYPE_ISSUE,
             $issue,

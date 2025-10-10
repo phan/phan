@@ -193,7 +193,6 @@ final class GlobalScope extends Scope
 
     /**
      * @return null
-     * @suppress PhanTypeMismatchDeclaredReturnNullable
      */
     public function getClassFQSENOrNull(): ?FullyQualifiedClassName
     {

@@ -323,9 +323,6 @@ class Func extends AddressableElement implements FunctionInterface
         return $func;
     }
 
-    /**
-     * @suppress PhanTypeMismatchReturn FunctionInterface->Method
-     */
     public function getFQSEN(): FullyQualifiedFunctionName
     {
         return $this->fqsen;

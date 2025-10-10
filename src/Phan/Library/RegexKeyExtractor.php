@@ -41,7 +41,7 @@ class RegexKeyExtractor
      * @return array<string|int,true> the best guess at the keys that would be parsed into $matches by preg_match, based on the regex and flags passed to preg_match
      * @throws InvalidArgumentException if the regex could not be parsed by these heuristics
      */
-    public static function getKeys($regex): array
+    public static function getKeys(mixed $regex): array
     {
         if (!\is_string($regex)) {
             throw new InvalidArgumentException("regex is not a string");

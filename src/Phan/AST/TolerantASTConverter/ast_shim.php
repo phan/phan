@@ -250,7 +250,6 @@ if (!\class_exists('\ast\Node')) {
     /**
      * This class describes a single node in a PHP AST.
      * @suppress PhanRedefineClassInternal
-     * @phan-suppress-next-next-line PhanUndeclaredClassAttribute class suppression isn't working for duplicate of internal class.
      */
     #[\AllowDynamicProperties]
     class Node
@@ -273,7 +272,6 @@ if (!\class_exists('\ast\Node')) {
         /**
          * A constructor which validates data types but not the values themselves.
          * For backwards compatibility reasons, all values are optional and properties default to null
-         * @suppress PhanPossiblyNullTypeMismatchProperty
          */
         public function __construct(?int $kind = null, ?int $flags = null, ?array $children = null, ?int $lineno = null)
         {

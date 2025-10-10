@@ -46,7 +46,7 @@ class AnnotatedUnionType extends UnionType
      * @param bool|1 $is_possibly_undefined
      * @suppress PhanAccessReadOnlyProperty this is the only way to set is_possibly_undefined
      */
-    private function withIsPossiblyUndefinedRaw($is_possibly_undefined): UnionType
+    private function withIsPossiblyUndefinedRaw(bool|int $is_possibly_undefined): UnionType
     {
         if ($this->is_possibly_undefined === $is_possibly_undefined) {
             return $this;

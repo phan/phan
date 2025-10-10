@@ -186,7 +186,7 @@ class FallbackMethodTypesVisitor extends AnalysisVisitor
         }
     }
 
-    private function associateTypeWithExpression(bool|float|int|string $var_name, \ast\Node|float|int|string $expr): void
+    private function associateTypeWithExpression(bool|float|int|string $var_name, Node|float|int|string $expr): void
     {
         if (isset($this->unknowns[$var_name])) {
             // No point in checking.

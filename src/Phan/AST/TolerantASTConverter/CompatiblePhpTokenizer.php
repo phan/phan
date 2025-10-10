@@ -12,7 +12,6 @@ use Microsoft\PhpParser\PhpTokenizer;
  * 1. Converting older tokens to new token types
  * 2. Supporting new tokens in new php versions not yet released in microsoft/tolerant-php-parser
  *
- * @suppress PhanUndeclaredConstant TODO:
  */
 class CompatiblePhpTokenizer extends PhpTokenizer
 {

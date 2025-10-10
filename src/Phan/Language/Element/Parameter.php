@@ -117,7 +117,7 @@ class Parameter extends Variable
         string $name,
         UnionType $type,
         int $flags
-    ) {
+    ) : Parameter|static {
         if (Flags::bitVectorHasState($flags, ast\flags\PARAM_VARIADIC)) {
             return new VariadicParameter($context, $name, $type, $flags);
         }
@@ -224,7 +224,7 @@ class Parameter extends Variable
      * @param mixed $value
      * The value of the default for this parameter
      */
-    public function setDefaultValue($value): void
+    public function setDefaultValue(mixed $value): void
     {
         $this->default_value = $value;
     }
@@ -273,7 +273,7 @@ class Parameter extends Variable
      * The value of the default for this parameter if one
      * is defined, otherwise null.
      */
-    public function getDefaultValue()
+    public function getDefaultValue() : mixed
     {
         return $this->default_value;
     }
@@ -364,10 +364,9 @@ class Parameter extends Variable
     }
 
     /**
-     * @param Node|string|float|int $node
      * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
      */
-    private static function maybeGetKnownDefaultValueForNode($node): ?UnionType
+    private static function maybeGetKnownDefaultValueForNode(Node|float|int|string $node): ?UnionType
     {
         if (!($node instanceof Node)) {
             return Type::fromObject($node)->asRealUnionType();

@@ -251,13 +251,13 @@ class CLI
      * @param string|string[] $value
      * @return list<string>
      */
-    public static function readCommaSeparatedListOrLists($value): array
+    public static function readCommaSeparatedListOrLists(array|string $value): array
     {
         if (is_array($value)) {
             $value = \implode(',', $value);
         }
         $value_set = [];
-        foreach (\explode(',', (string)$value) as $file) {
+        foreach (\explode(',', $value) as $file) {
             if ($file === '') {
                 continue;
             }
@@ -309,7 +309,6 @@ class CLI
                         throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
-                        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
                         if (\strpos($short_options_string, "$key:") !== false) {
                             throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
                         }
@@ -1225,6 +1224,7 @@ class CLI
         return getenv('PHAN_DISABLE_COLOR_OUTPUT') || getenv('NO_COLOR');
     }
 
+    /** @throws UsageException */
     private static function checkValidFileConfig(): void
     {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');
@@ -1245,12 +1245,11 @@ class CLI
                 }
             }
             if ($valid_files === 0) {
-                // TODO convert this to an error in Phan 5.
                 $error_message = sprintf(
                     "None of the files to analyze in %s exist - This will be an error in future Phan releases." . PHP_EOL,
                     Config::getProjectRootDirectory()
                 );
-                CLI::printWarningToStderr($error_message);
+                throw new UsageException( $error_message, 1 );
             }
         }
     }
@@ -1266,7 +1265,6 @@ class CLI
      * (This is internal, so it was duplicated in case their API changed)
      *
      * @param resource $output A valid CLI output stream
-     * @suppress PhanUndeclaredFunction
      */
     public static function supportsColor($output): bool
     {
@@ -1310,7 +1308,6 @@ class CLI
      * Returns true if the output stream is a TTY.
      *
      * @param resource $output A valid CLI output stream
-     * @suppress PhanUndeclaredFunction
      */
     private static function isTerminal($output): bool
     {
@@ -2090,7 +2087,6 @@ EOB
         if (CLI::shouldShowLongProgress() || CLI::shouldShowDebugOutput()) {
             return false;
         }
-        // @phan-suppress-next-line PhanUndeclaredFunction
         if (\function_exists('sapi_windows_vt100_support') && !\sapi_windows_vt100_support(STDERR)) {
             return false;
         }
@@ -2285,7 +2281,7 @@ EOB
             }
 
             $exclude_file_regex = Config::getValue('exclude_file_regex');
-            $filter_folder_or_file = /** @param mixed $unused_key */ static function (SplFileInfo $file_info, $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex): bool {
+            $filter_folder_or_file = /** @param mixed $unused_key */ static function (SplFileInfo $file_info, mixed $unused_key, \RecursiveIterator $iterator) use ($file_extensions, $exclude_file_regex): bool {
                 try {
                     if (\in_array($file_info->getBaseName(), ['.', '..'], true)) {
                         // Exclude '.' and '..'
@@ -2441,7 +2437,7 @@ EOB
      * @param float $p
      * The percentage to display
      *
-     * @param ?(string|FQSEN|AddressableElement) $details
+     * @param string|FQSEN|AddressableElement|null $details
      * Details about what is being analyzed within the phase for $msg
      *
      * @param ?int $offset
@@ -2454,7 +2450,7 @@ EOB
     public static function progress(
         string $msg,
         float $p,
-        $details = null,
+        AddressableElement|FQSEN|string|null $details = null,
         ?int $offset = null,
         ?int $count = null
     ): void {
@@ -2588,10 +2584,8 @@ EOB
         }
     }
 
-    /**
-     * @param ?(string|FQSEN|AddressableElement) $details
-     */
-    public static function debugProgress(string $msg, float $p, $details): void
+    /** Prints additional debug information on the current progress. */
+    public static function debugProgress(string $msg, float $p, AddressableElement|FQSEN|null|string $details): void
     {
         $pct = sprintf("%d%%", (int)(100 * self::boundPercentage($p)));
 

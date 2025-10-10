@@ -446,8 +446,8 @@ class CodeBase
         $map = [
             'core' => true,
             'date' => true,
-            // 'hash' => true,  // always enabled in 7.4.0, too new
-            // 'json' => true,  // always enabled in 8.0.0, too new
+            'hash' => true,
+            'json' => true,
             'pcre' => true,
             'reflection' => true,
             'spl' => true,
@@ -1202,7 +1202,7 @@ class CodeBase
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
-            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
+            // @phan-suppress-next-line  PhanPartialTypeMismatchArgument deliberately adding different class instances to an existing set
             $set->offsetSet($value);
         }
         return $set;
@@ -2381,10 +2381,9 @@ class CodeBase
         \usort($suggested_class_names, 'strcmp');
 
         /**
-         * @return string|FullyQualifiedClassName
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) : FullyQualifiedClassName|string {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
                 // This is a builtin type
                 return $class_name_lower;

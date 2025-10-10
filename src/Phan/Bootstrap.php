@@ -31,7 +31,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 if (function_exists('uopz_allow_exit') && !ini_get('uopz.disable')) {
     // This is safe to do in the uopz PECL module, it toggles a global variable.
     try {
-        uopz_allow_exit(true); // @phan-suppress-current-line PhanUndeclaredFunction
+        uopz_allow_exit(true);
     } catch (Throwable $e) {
         fprintf(STDERR, "uopz_allow_exit failed: %s" . PHP_EOL, $e->getMessage());
     }
@@ -65,7 +65,7 @@ function phan_output_ast_installation_instructions(): void
         $extension_dir .= ' (extension directory does not exist and may need to be changed)';
     }
     if (DIRECTORY_SEPARATOR === '\\') {
-        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.0-nts-vs16-x64.zip for php 8.0, 64-bit non thread safe
+        // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.3-nts-vs16-x64.zip for php 8.3, 64-bit non thread safe
         // e.g. https://downloads.php.net/~windows/pecl/releases/ast/1.1.1/php_ast-1.1.1-8.4-ts-vc15-x86.zip for php 8.4, 32-bit thread safe
         $version = LATEST_KNOWN_PHP_AST_VERSION;
         fprintf(
@@ -74,7 +74,6 @@ function phan_output_ast_installation_instructions(): void
             $version,
             $version,
             PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
-            // @phan-suppress-next-line PhanImpossibleCondition, PHP_ZTS is a boolean, but phan assumes it is always false
             PHP_ZTS ? 'ts' : 'nts',
             'vs16',
             PHP_INT_SIZE == 4 ? 'x86' : 'x64'
@@ -165,9 +164,8 @@ if (extension_loaded('ast')) {
         fwrite(STDERR, "Exiting without analyzing files." . PHP_EOL);
         exit(1);
     }
-    // @phan-suppress-next-line PhanRedundantCondition, PhanImpossibleCondition, PhanSuspiciousValueComparison
     if (PHP_VERSION_ID < 80500 && PHP_VERSION_ID % 100 === 0 && PHP_EXTRA_VERSION !== '') {
-        // Warn for 8.3.0RC1, 8.0.0RC1, 7.4.0alpha1, 7.3.0-dev, etc.
+        // Warn for 8.3.0RC1, 8.4.0alpha1, 8.4.0-dev, etc.
         // But don't warn for upcoming versions without a stable release.
         fwrite(STDERR, "WARNING: Phan may not work properly in versions prior to the first stable release of a php minor version. The currently used PHP version is " . PHP_VERSION . PHP_EOL);
     }
@@ -349,9 +347,8 @@ function phan_error_handler(int $errno, string $errstr, string $errfile, int $er
         }
     }
     // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations.
-    // In PHP 8.0, "Unable" becomes uppercase.
     if ($errno === E_WARNING) {
-        if (preg_match('/^stream_select.*unable to select/i', $errstr)) {
+        if (preg_match('/^stream_select.*Unable to select/', $errstr)) {
             // Don't execute the PHP internal error handler
             return true;
         }

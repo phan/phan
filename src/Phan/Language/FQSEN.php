@@ -8,7 +8,6 @@ use Stringable;
 
 /**
  * A Fully-Qualified Structural Element Name
- * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
 interface FQSEN extends Stringable
 {

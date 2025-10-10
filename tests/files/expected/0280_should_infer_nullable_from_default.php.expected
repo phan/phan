@@ -1,4 +1,4 @@
-%s:9 PhanCompatibleDefaultEqualsNull In PHP 8.0, using a default (self::NULLCONST) that resolves to null will no longer cause the parameter (int $arg) to be nullable
+%s:9 PhanCompatibleDefaultEqualsNull Using a default (self::NULLCONST) that resolves to null does not cause the parameter (int $arg) to be nullable
 %s:10 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $arg = null) have been deprecated in PHP 8.4
 %s:15 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $arg = null) have been deprecated in PHP 8.4
 %s:21 PhanDeprecatedImplicitNullableParam Implicit nullable parameters (int $arg = null) have been deprecated in PHP 8.4

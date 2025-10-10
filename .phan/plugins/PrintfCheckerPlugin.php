@@ -88,7 +88,7 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param bool|int|string|float|Node|array|null $ast_node
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, \ast\Node|array|bool|float|int|null|string $ast_node): ?PrimitiveValue
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, Node|array|bool|float|int|null|string $ast_node): ?PrimitiveValue
     {
         // Base case: convert primitive tokens such as numbers and strings.
         if (!($ast_node instanceof Node)) {
@@ -246,8 +246,9 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                             return @\vsprintf($format_string, $sprintf_args);
                         }
                     );
+                    $result_type = Type::fromObject($result);
                 } catch (Throwable $e) {
-                    // PHP 8 throws ValueError for too few arguments to vsprintf
+                    // PHP throws ValueError for too few arguments to vsprintf
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -256,10 +257,9 @@ class PrintfCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
                         $function->getName(),
                         $e->getMessage()
                     );
-                    // TODO: When PHP 8.0 stable is out, replace this with string?
-                    $result = false;
+                    $result_type = StringType::instance(false);
                 }
-                $result_union_type = $result_union_type->withType(Type::fromObject($result));
+                $result_union_type = $result_union_type->withType($result_type);
             }
             return $result_union_type;
         };

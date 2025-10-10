@@ -710,7 +710,6 @@ final class UnionTypeTest extends BaseTest
     public function testFunctionSignatureMapConsistency(): void
     {
         $signatures_dir = \dirname(__DIR__, 3) . '/src/Phan/Language/Internal';
-        // Only test PHP 8.1+ since that's the minimum supported version
         $php84_map = UnionType::internalFunctionSignatureMap(80400);
         $php83_map = UnionType::internalFunctionSignatureMap(80300);
         $php82_map = UnionType::internalFunctionSignatureMap(80200);
@@ -723,9 +722,6 @@ final class UnionTypeTest extends BaseTest
         $this->assertDeltasApply($php84_map, $php83_map, $php84_delta, 'php84_delta');
         $this->assertDeltasApply($php83_map, $php82_map, $php83_delta, 'php83_delta');
         $this->assertDeltasApply($php82_map, $php81_map, $php82_delta, 'php82_delta');
-        // Note: php81_delta is applied to the base PHP 8.0 map to get PHP 8.1 map
-        // But since we no longer support PHP 8.0, we can't easily test this delta
-        // The delta application logic is still tested in the main code
     }
 
     /**

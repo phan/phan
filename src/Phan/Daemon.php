@@ -62,8 +62,7 @@ class Daemon
             if (\function_exists('pcntl_signal')) {
                 \pcntl_signal(
                     \SIGCHLD,
-                    /** @param ?(int|array) $status */
-                    static function (int $signo, $status = null, ?int $pid = null) use (&$got_signal): void {
+                    static function (int $signo, array|int|null $status = null, ?int $pid = null) use (&$got_signal): void {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
                     }
@@ -247,7 +246,7 @@ class Daemon
      * @no-named-arguments
      * @suppress PhanPluginPrintfVariableFormatString
      */
-    public static function debugf(string $format, ...$args): void
+    public static function debugf(string $format, mixed ...$args): void
     {
         if (\getenv('PHAN_DAEMON_ENABLE_DEBUG')) {
             if (\count($args) > 0) {

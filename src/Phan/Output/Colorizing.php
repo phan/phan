@@ -150,7 +150,7 @@ class Colorizing
      * @param int|string|float|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for Unix terminals.
      */
-    public static function colorizeField(string $template_type, $arg): string
+    public static function colorizeField(string $template_type, FQSEN|Type|UnionType|float|int|string $arg): string
     {
         $fmt_directive = Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$template_type] ?? null;
         if ($fmt_directive === null) {

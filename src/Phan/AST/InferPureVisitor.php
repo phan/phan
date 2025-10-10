@@ -237,7 +237,7 @@ class InferPureVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    final protected function maybeInvoke(\ast\Node|float|int|null|string $node): void
+    final protected function maybeInvoke(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->__invoke($node);

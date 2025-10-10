@@ -17,7 +17,6 @@ use const PHP_VERSION_ID;
  *
  * Class PhpTokenizer
  * @package Microsoft\PhpParser
- * @suppress PhanUndeclaredConstant TODO: Make it only necessary on the class constant declaration
  */
 class CompatibleParser extends Parser
 {

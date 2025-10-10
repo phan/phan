@@ -79,9 +79,9 @@ final class VariableGraph
 
     /**
      * Record the fact that $node is a definition of the variable with name $name in the scope $scope
-     * @param ?(Node|string|int|float) $const_expr is the definition's value a value that could be a constant?
+     * @param Node|string|int|float|null $const_expr is the definition's value a value that could be a constant?
      */
-    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope, $const_expr): void
+    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope, Node|float|int|null|string $const_expr): void
     {
         // TODO: Measure performance against SplObjectHash
         $id = \spl_object_id($node);
@@ -184,7 +184,7 @@ final class VariableGraph
      *
      * @param Node|string|int|float|null $node
      */
-    public function markAsLoopValueNode($node): void
+    public function markAsLoopValueNode(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_LOOP_DEF;
@@ -196,7 +196,7 @@ final class VariableGraph
      *
      * @param Node|string|int|float|null $node
      */
-    public function markAsUnset($node): void
+    public function markAsUnset(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_UNSET;
@@ -208,7 +208,7 @@ final class VariableGraph
      *
      * @param Node|string|int|float|null $node
      */
-    public function markAsDisabledWarnings($node): void
+    public function markAsDisabledWarnings(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_DISABLED_WARNINGS;
@@ -229,7 +229,7 @@ final class VariableGraph
      *
      * @param Node|int|string|float|null $node
      */
-    public function markAsCaughtException($node): void
+    public function markAsCaughtException(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $this->def_bitset[spl_object_id($node)] = self::IS_CAUGHT_EXCEPTION;

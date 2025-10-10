@@ -54,7 +54,7 @@ final class CompactPlugin extends PluginV3 implements
             array $args,
             ?Node $node
         ): void {
-            $check_variable_usage = static function (string $variable_name, $arg = null) use ($code_base, $context, $node): void {
+            $check_variable_usage = static function (string $variable_name, mixed $arg = null) use ($code_base, $context, $node): void {
                 VariableTrackerVisitor::recordDynamicVariableUse($variable_name, $node);
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(

@@ -67,7 +67,6 @@ class ConfigEntry
         'quick_mode' => self::CATEGORY_ANALYSIS,
         'analyze_signature_compatibility' => self::CATEGORY_ANALYSIS,
         'assume_no_external_class_overrides' => self::CATEGORY_ANALYSIS,
-        'allow_method_param_type_widening' => self::CATEGORY_ANALYSIS_VERSION,
         'guess_unknown_parameter_type_using_default' => self::CATEGORY_ANALYSIS,
         'use_tentative_return_type' => self::CATEGORY_ANALYSIS,
         'allow_overriding_vague_return_types' => self::CATEGORY_ANALYSIS,

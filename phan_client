@@ -26,9 +26,6 @@
  *
  * TODO: tutorial or repo.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
- * @phan-file-suppress PhanPluginCanUseParamType, PhanPluginCanUseVoidReturnType, PhanPluginCanUseReturnType
  * @phan-file-suppress PhanPluginRemoveDebugEcho
  */
 class PhanPHPLinter
@@ -39,20 +36,12 @@ class PhanPHPLinter
     /** @var bool - Whether or not this is verbose */
     public static $verbose = false;
 
-    /**
-     * @param string $msg
-     * @return void
-     */
-    private static function debugError($msg)
+    private static function debugError(string $msg): void
     {
         error_log($msg);
     }
 
-    /**
-     * @param string $msg
-     * @return void
-     */
-    private static function debugInfo($msg)
+    private static function debugInfo(string $msg): void
     {
         if (self::$verbose) {
             self::debugError($msg);
@@ -62,10 +51,8 @@ class PhanPHPLinter
     /**
      * The main function of the phan_client binary.
      * See the doc comment of this file.
-     *
-     * @return void
      */
-    public static function run()
+    public static function run(): void
     {
         error_reporting(E_ALL);
         // TODO: check for .phan/lock to see if daemon is running?
@@ -177,8 +164,7 @@ class PhanPHPLinter
                 true
             )) {
                 $real = substr($real, strlen($dirname) + 1);
-                // @phan-suppress-next-line PhanTypeArraySuspiciousNullable not able to analyze. Not using coalescing because this supports php 5.
-                $mapped_path = isset($opts->temporary_file_map[$path]) ? $opts->temporary_file_map[$path] : $path;
+                $mapped_path = $opts->temporary_file_map[$path] ?? $path;
                 // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
                 // (Tools which pass something a temporary path expect a temporary path in the output.)
                 $file_mapping[$real] = $mapped_path;
@@ -242,7 +228,7 @@ class PhanPHPLinter
             self::debugError(sprintf("Invalid response from phan for %s: expected JSON object: %s", $opts->url, $response_bytes));
             return;
         }
-        $status = isset($response['status']) ? $response['status'] : null;
+        $status = $response['status'] ?? null;
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping, $request);
         } else {
@@ -254,9 +240,8 @@ class PhanPHPLinter
      * @param array<string,mixed> $response
      * @param string[] $file_mapping
      * @param array<string,mixed> $request
-     * @return void
      */
-    private static function dumpJSONIssues(array $response, array $file_mapping, array $request)
+    private static function dumpJSONIssues(array $response, array $file_mapping, array $request): void
     {
         $did_debug = false;
         $lines = [];
@@ -331,10 +316,8 @@ class PhanPHPLinter
      * This duplicates CLI::supportsColor() so that phan_client can run as a standalone file
      *
      * @param resource $output A valid CLI output stream
-     * @return bool
-     * @suppress PhanUndeclaredFunction
      */
-    public static function supportsColor($output)
+    public static function supportsColor($output): bool
     {
         if ('Hyper' === getenv('TERM_PROGRAM')) {
             return true;
@@ -397,7 +380,7 @@ class PhanPHPLinterOpts
      * @param int $exit_code - process exit code.
      * @return never - exits with $exit_code
      */
-    public function usage($msg = '', $exit_code = 0)
+    public function usage(string $msg = '', int $exit_code = 0): never
     {
         if (strlen($msg) > 0 || $this->print_usage_on_error) {
             global $argv;
@@ -501,13 +484,14 @@ EOB;
                         $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
                     }
                     // Check if the socket is valid after parsing the file list.
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal,PhanPartialTypeMismatchArgumentInternal
                     $socket_dirname = dirname(realpath($value));
                     if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
                         $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value) ?: 'invalid', json_encode($socket_dirname) ?: 'invalid');
                         $this->usage($msg, 1);
                     } else {
+                        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                         $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
                     }
                     break;
@@ -533,6 +517,7 @@ EOB;
                     if (\is_array($this->temporary_file_map)) {
                         $this->usage('--temporary-file-map should be specified only once.', 1);
                     }
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     $mapping = json_decode($value, true);
                     if (!\is_array($mapping)) {
                         $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
@@ -543,6 +528,7 @@ EOB;
                 case 'p':
                 case 'daemonize-tcp-port':
                     $this->checkCanConnectToDaemon('tcp');
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     if (strcasecmp($value, 'default') === 0) {
                         $port = 4846;
                     } else {
@@ -614,6 +600,7 @@ EOB;
         }
         if (\is_array($this->temporary_file_map)) {
             foreach ($this->temporary_file_map as $original_path => $unused_temporary_path) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                 if (!in_array($original_path, $this->file_list, true)) {
                     $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);
                 }
@@ -629,10 +616,8 @@ EOB;
 
     /**
      * prints error message if php doesn't support connecting to a daemon with a given protocol.
-     * @param string $protocol
-     * @return void
      */
-    private function checkCanConnectToDaemon($protocol)
+    private function checkCanConnectToDaemon(string $protocol): void
     {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
         if (!in_array($protocol, stream_get_transports(), true)) {
@@ -648,10 +633,9 @@ EOB;
      *
      * @param array<string,mixed> $opts
      * @param list<string> $argv
-     * @return void
      * @throws InvalidArgumentException
      */
-    private static function checkAllArgsUsed(array $opts, array &$argv)
+    private static function checkAllArgsUsed(array $opts, array &$argv): void
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
@@ -676,7 +660,7 @@ EOB;
             if ($arg[0] === '-') {
                 $parts = \explode('=', $arg, 2);
                 $key = $parts[0];
-                $value = isset($parts[1]) ? $parts[1] : '';  // php getopt() treats --processes and --processes= the same way
+                $value = $parts[1] ?? '';  // php getopt() treats --processes and --processes= the same way
                 $key = \preg_replace('/^--?/', '', $key);
                 if ($value === '') {
                     if (in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
@@ -701,32 +685,22 @@ EOB;
      * which match with a distance of <= 5
      *
      * @param string $key Misspelled key to attempt to correct
-     * @return string
      * @internal
      */
     public static function getFlagSuggestionString(
-        $key
-    ) {
-        /**
-         * @param string $s
-         * @return string
-         */
-        $trim = static function ($s) {
+        string $key
+    ): string {
+        $trim = static function (string $s): string {
             return \rtrim($s, ':');
         };
-        /**
-         * @param string $suggestion
-         * @return string
-         */
-        $generate_suggestion = static function ($suggestion) {
+        $generate_suggestion = static function (string $suggestion): string {
             return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
         };
         /**
          * @param string $suggestion
          * @param string ...$other_suggestions
-         * @return string
          */
-        $generate_suggestion_text = static function ($suggestion, ...$other_suggestions) use ($generate_suggestion) {
+        $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion): string {
             $suggestions = \array_merge([$suggestion], $other_suggestions);
             return ' (did you mean ' . \implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
         };

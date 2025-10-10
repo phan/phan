@@ -195,7 +195,6 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
                 $start = $end = $length;
             }
             // quote a non re portion of the string
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $temp .= \preg_quote(\substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
             // add the re unquoted.
             if ($end > $start) {

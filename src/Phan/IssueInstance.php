@@ -90,7 +90,7 @@ class IssueInstance
          * @param string|float|int|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement $parameter
          * @return string|float|int
          */
-        $this->template_parameters = \array_map(static function ($parameter) {
+        $this->template_parameters = \array_map(static function (TypedElementInterface|UnaddressableTypedElement|FQSEN|Type|UnionType|float|int|string $parameter) : float|int|string {
             if (\is_object($parameter)) {
                 return (string)$parameter;
             }

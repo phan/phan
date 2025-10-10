@@ -46,14 +46,8 @@ sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 echo
 echo "Comparing the output:"
 
-# Normalize PHP_VERSION_ID
-# and remove/replace php 8.0 warnings
+# Normalize PHP_VERSION_ID, paths, and version-dependent messages
 sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
-    -e 's@src/157_polyfill_compilation_warning.php:3 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Parse error: Unterminated comment starting line 3"@src/157_polyfill_compilation_warning.php:3 PhanSyntaxCompileWarning Saw a warning while parsing: Unterminated comment starting line 3@g' \
-    -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
-    -e 's/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g' \
-    -e 's/\\\(Exception\|Error\)|\\Stringable|\\Throwable/\\\1|\\Throwable/g' \
-    -e 's/strlen(): Argument #1 (\$string) must be of type string/strlen() expects parameter 1 to be string/g' \
     -e 's/alphanumeric, backslash, or NUL$/alphanumeric or backslash/g' \
     -e 's/('\''Not using'\'' . " args\\n")/"Not using args\\n"/g' \
     -e 's/src\\/src\//g' \

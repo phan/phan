@@ -16,10 +16,7 @@ return [
     'target_php_version' => '8.1',
 
     // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
-    // even if those return types aren't available in reflection (real types were taken from php 8.0-dev).
-    //
-    // Note that in php 7 and earlier, php would return null or false if the argument types or counts were incorrect.
-    // As a result, enabling this setting may result in false positives for `--redundant-condition-detection`.
+    // even if those return types aren't available in reflection.
     'assume_real_types_for_internal_functions' => true,
 
     // Set to true in order to attempt to detect redundant and impossible conditions.

@@ -79,7 +79,7 @@ final class ForkPoolTest extends BaseTest
              * @param int $unused_i
              * @param mixed $unused_data
              */
-            static function (int $unused_i, $unused_data, int $unused_count): void {
+            static function (int $unused_i, mixed $unused_data, int $unused_count): void {
             },
             /**
              * @return array{0:bool}

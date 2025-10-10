@@ -36,9 +36,8 @@ final class ConfigTest extends BaseTest
 
     /**
      * @dataProvider warnsEnableCompletionProvider
-     * @param mixed $value
      */
-    public function testWarnsEnableCompletion($value, string ...$expected_errors): void
+    public function testWarnsEnableCompletion(mixed $value, string ...$expected_errors): void
     {
         $config = ['language_server_enable_completion' => $value];
         $this->assertSame($expected_errors, Config::getConfigErrors($config));

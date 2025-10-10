@@ -14,7 +14,6 @@ use const PHP_INT_SIZE;
 
 /**
  * Tests of ASTHasher generating 16-byte binary hashes of nodes
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class ASTHasherTest extends BaseTest
 {
@@ -25,7 +24,6 @@ final class ASTHasherTest extends BaseTest
 
     /**
      * @suppress PhanPossiblyFalseTypeArgument
-     * @suppress PhanTypeMismatchArgumentProbablyReal this is emitted on 32-bit platforms because $key becomes a float
      */
     public function testHash(): void
     {

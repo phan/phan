@@ -344,7 +344,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function analyzeArrayKeyType(\ast\Node|float|int|string $key_node, int $start_line): void
+    private function analyzeArrayKeyType(Node|float|int|string $key_node, int $start_line): void
     {
         if (is_object($key_node)) {
             $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
@@ -1120,7 +1120,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Returns true if this is probably a loop variable without side effects
      * (e.g. not a reference, not modifying properties, etc)
      */
-    private static function isLoopVariableWithoutSideEffects(\ast\Node|float|int|null|string $node): bool
+    private static function isLoopVariableWithoutSideEffects(Node|float|int|null|string $node): bool
     {
         if (!$node instanceof Node) {
             return true;
@@ -1723,7 +1723,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}
      */
-    private function createSwitchConditionAnalyzer(\ast\Node|float|int|string $switch_case_node): array
+    private function createSwitchConditionAnalyzer(Node|float|int|string $switch_case_node): array
     {
         $switch_kind = ($switch_case_node->kind ?? null);
         try {
@@ -1737,14 +1737,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeEqual($switch_case_node, $cond_node, $child_context);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeNotEqual($switch_case_node, $cond_node, $child_context);
                     },
@@ -1770,7 +1770,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             /**
                              * @param Node|string|int|float $cond_node
                              */
-                            function (Context $child_context, $cond_node) use ($switch_variable_node): Context {
+                            function (Context $child_context, Node|float|int|string $cond_node) use ($switch_variable_node): Context {
                                 $visitor = new ConditionVisitor($this->code_base, $child_context);
                                 return $visitor->analyzeClassAssertion(
                                     $switch_variable_node,
@@ -1790,7 +1790,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
                         while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
                             $cond_node = $cond_node->children['var'];
@@ -1801,7 +1801,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($switch_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($switch_case_node): Context {
                         // Handle match(cond) { $x = constexpr => ... }. The assignment was already analyzed.
                         while ($cond_node instanceof Node && \in_array($cond_node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true)) {
                             $cond_node = $cond_node->children['var'];
@@ -1999,7 +1999,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ?Closure $match_variable_condition,
         ?Closure $match_variable_negated_condition,
         Node $arm_node,
-        \ast\Node|float|int|string $match_cond_node,
+        Node|float|int|string $match_cond_node,
         ?UnionType $cond_type
     ): array {
         ConfigPluginSet::instance()->preAnalyzeNode(
@@ -2272,7 +2272,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     private function analyzeAndGetUpdatedContextAndAssertTruthy(
         Context $context,
         Node $parent_node,
-        \ast\Node|float|int|string $condition_node
+        Node|float|int|string $condition_node
     ): Context {
         if (!$condition_node instanceof Node) {
             return $context;
@@ -2317,7 +2317,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return array{0:?Node, 1:?Closure(Context, mixed): Context, 2:?Closure(Context, mixed): Context}
      * @see self::createSwitchConditionAnalyzer() - Based on that but uses strict equality instead
      */
-    private function createMatchConditionAnalyzer(\ast\Node|float|int|string $match_case_node): array
+    private function createMatchConditionAnalyzer(Node|float|int|string $match_case_node): array
     {
         $match_kind = ($match_case_node->kind ?? null);
         try {
@@ -2331,14 +2331,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeIdentical($match_case_node, $cond_node, $child_context);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->updateVariableToBeNotIdentical($match_case_node, $cond_node, $child_context);
                     },
@@ -2364,7 +2364,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             /**
                              * @param Node|string|int|float $cond_node
                              */
-                            function (Context $child_context, $cond_node) use ($match_variable_node): Context {
+                            function (Context $child_context, Node|float|int|string $cond_node) use ($match_variable_node): Context {
                                 $visitor = new ConditionVisitor($this->code_base, $child_context);
                                 return $visitor->analyzeClassAssertion(
                                     $match_variable_node,
@@ -2383,14 +2383,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeIdentical($match_case_node, $cond_node);
                     },
                     /**
                      * @param Node|string|int|float $cond_node
                      */
-                    function (Context $child_context, $cond_node) use ($match_case_node): Context {
+                    function (Context $child_context, Node|float|int|string $cond_node) use ($match_case_node): Context {
                         $visitor = new ConditionVisitor($this->code_base, $child_context);
                         return $visitor->analyzeAndUpdateToBeNotIdentical($match_case_node, $cond_node);
                     },
@@ -2905,10 +2905,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
     }
 
-    /**
-     * @param Node|string|int|float $node
-     */
-    private static function canNodeKindBeNull($node): bool
+    private static function canNodeKindBeNull(Node|float|int|string $node): bool
     {
         if (!$node instanceof Node) {
             return false;

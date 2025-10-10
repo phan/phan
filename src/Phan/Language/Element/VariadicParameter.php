@@ -146,7 +146,7 @@ class VariadicParameter extends Parameter
             if ($this->hasNoNamedArguments()) {
                 return parent::getUnionType()->asNonEmptyListTypes();
             }
-            // As of php 8.0 named arguments, variadic arguments can have string keys
+            // named arguments, variadic arguments can have string keys
             return parent::getUnionType()->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_MIXED);
         }
         return $this->type;

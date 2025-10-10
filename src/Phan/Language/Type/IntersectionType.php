@@ -111,7 +111,6 @@ final class IntersectionType extends Type
                 }
             }
             if (count($new_types) === 1) {
-                // @phan-suppress-next-line PhanPossiblyFalseTypeReturn
                 return reset($new_types);
             }
             $new_types = \array_values($new_types);
@@ -730,7 +729,7 @@ final class IntersectionType extends Type
      * @param mixed ...$args
      * @no-named-arguments
      */
-    private function anyTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
+    private function anyTypePartsMatchMethodWithArgs(string $method_name, mixed ...$args): bool
     {
         foreach ($this->type_parts as $part) {
             if ($part->{$method_name}(...$args)) {
@@ -744,7 +743,7 @@ final class IntersectionType extends Type
      * @param mixed ...$args
      * @no-named-arguments
      */
-    private function allTypePartsMatchMethodWithArgs(string $method_name, ...$args): bool
+    private function allTypePartsMatchMethodWithArgs(string $method_name, mixed ...$args): bool
     {
         foreach ($this->type_parts as $part) {
             if (!$part->{$method_name}(...$args)) {

@@ -69,7 +69,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
                 $values[] = $value;
             }
             try {
-                $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function_name, $values) {
+                $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function_name, $values) : mixed {
                     return @$function_name(...$values);
                 });
             } catch (Throwable $e) {

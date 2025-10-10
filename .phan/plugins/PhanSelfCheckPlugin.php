@@ -244,7 +244,7 @@ class PhanSelfCheckPlugin extends PluginV3 implements AnalyzeFunctionCallCapabil
     /**
      * @param Node|mixed $arg
      */
-    private static function computeArraySize(CodeBase $code_base, Context $context, $arg): ?int
+    private static function computeArraySize(CodeBase $code_base, Context $context, mixed $arg): ?int
     {
         if ($arg === null) {
             return 0;

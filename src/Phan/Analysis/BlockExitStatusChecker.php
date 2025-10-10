@@ -121,7 +121,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED;
     }
 
-    private static function isTruthyLiteral(\ast\Node|float|int|string $cond): bool
+    private static function isTruthyLiteral(Node|float|int|string $cond): bool
     {
         if ($cond instanceof Node) {
             // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
@@ -643,7 +643,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_NORETURN;
             }
         }
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return self::computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }
@@ -830,7 +829,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @param \ast\Node|float|int|null|string $constant_ast
      */
-    private static function computeTriggerErrorStatusCodeForConstant(\ast\Node|float|int|null|string $constant_ast): int
+    private static function computeTriggerErrorStatusCodeForConstant(Node|float|int|null|string $constant_ast): int
     {
         // return PROCEED if this can't be determined.
         // TODO: Could check for integer literals

@@ -35,7 +35,7 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeEqual(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
@@ -44,7 +44,7 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeIdentical(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
@@ -53,7 +53,7 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeNotIdentical(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
@@ -65,7 +65,7 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeCompared(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         int $flags
     ): Context;
 
@@ -74,14 +74,14 @@ interface ConditionVisitorInterface
      */
     public function updateVariableToBeNotEqual(
         Node $var_node,
-        \ast\Node|float|int|string $expr,
+        Node|float|int|string $expr,
         ?Context $context = null
     ): Context;
 
     /**
      * Returns a context where the variable for $object_node has the class found in $expr_node
      */
-    public function analyzeClassAssertion(\ast\Node|float|int|string $object_node, \ast\Node|bool|float|int|string $expr_node): ?Context;
+    public function analyzeClassAssertion(Node|float|int|string $object_node, Node|bool|float|int|string $expr_node): ?Context;
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.

@@ -22,12 +22,8 @@ rm -f $ACTUAL_PATH || exit 1
 echo
 echo "Comparing the output:"
 
-# Normalize PHP_VERSION_ID
-# and remove/replace php 8.0 warnings
+# Normalize paths
 sed -i \
-    -e 's/\(to cast array_key_exists.* of type \)bool /\1?bool /' \
-    -e 's/PhanTypeMismatchArgumentInternalReal/PhanTypeMismatchArgumentInternalProbablyReal/g' \
-    -e 's/strlen(): Argument #1 (\$string) must be of type string/strlen() expects parameter 1 to be string/g' \
     -e 's/src\\/src\//g' \
     $ACTUAL_PATH
 

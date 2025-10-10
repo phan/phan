@@ -146,7 +146,7 @@ class Initializer
      * @param string|int|float|bool|array|null $setting_value
      * @param list<string> $additional_comment_lines
      */
-    public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines): string
+    public static function generateEntrySnippetForSetting(string $setting_name, array|bool|float|int|null|string $setting_value, array $additional_comment_lines): string
     {
         $source = self::generateCommentForSetting($setting_name);
         foreach ($additional_comment_lines as $line) {

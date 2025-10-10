@@ -91,9 +91,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Choose a more specific issue name based on where the issue was emitted from.
-     * @param Node|int|string|float $node
      */
-    private function chooseIssue($node, string $issue_name): string
+    private function chooseIssue(Node|float|int|string $node, string $issue_name): string
     {
         return RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $this->context, $issue_name);
     }
@@ -105,7 +104,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $arm_node a kind of ast\AST_MATCH_ARM
      */
     public function checkImpossibleMatchArm(
-        $cond_node,
+        Node|float|int|string $cond_node,
         UnionType $cond_type,
         Node $arm_node
     ): void {
@@ -147,7 +146,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             foreach ($arm_node->children['cond']->children ?? [] as $arm_expr) {
                 $arm_expr_type = UnionTypeVisitor::unionTypeFromNode($code_base, $this->context, $arm_expr);
                 $arm_expr_type = $arm_expr_type->getRealUnionType()->withStaticResolvedInContext($this->context);
-                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 if ($this->checkUselessScalarComparison($node, $cond_type, $arm_expr_type, $cond_node, $arm_expr, ast\flags\BINARY_IS_IDENTICAL)) {
                     continue;
                 }
@@ -246,8 +244,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         Node $node,
         UnionType $left,
         UnionType $right,
-        $left_node,
-        $right_node,
+        Node|float|int|string $left_node,
+        Node|float|int|string $right_node,
         int $flags
     ): bool {
         // Give up if any of the sides aren't constant
@@ -349,7 +347,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node a node resolving to 1 or more known scalars
      * @param int|string|float|null|Node|array|bool $evaluated_value
      */
-    private function shouldCheckScalarAsIfInLoopScope(Node $node, $evaluated_value): bool
+    private function shouldCheckScalarAsIfInLoopScope(Node $node, Node|array|bool|float|int|null|string $evaluated_value): bool
     {
         if (!$this->context->isInLoop()) {
             // This isn't even in a loop.
@@ -387,8 +385,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         UnionType $right,
         string $issue_name,
         Closure $is_still_issue,
-        $left_node = null,
-        $right_node = null
+        Node|float|int|null|string $left_node = null,
+        Node|float|int|null|string $right_node = null
     ): void {
         $left_node ??= $node->children['left'];
         $right_node ??= $node->children['right'];

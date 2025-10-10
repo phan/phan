@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if [[ $# < 1 || $# > 2 ]]; then
     echo "Usage: $0 PHP_VERSION [i386]" 1>&2
-    echo "e.g. $0 8.0" 1>&2
+    echo "e.g. $0 8.4" 1>&2
     echo "The PHP_VERSION is the version of the php docker image to use" 1>&2
     exit 1
 fi

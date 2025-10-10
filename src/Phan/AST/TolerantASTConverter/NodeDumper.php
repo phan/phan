@@ -117,7 +117,7 @@ class NodeDumper
      * @param string $padding (to be echoed before the current node
      * @throws Exception for invalid $ast_node values
      */
-    public function dumpTreeAsString(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token|null $ast_node, string $key = '', string $padding = ''): string
+    public function dumpTreeAsString(Node|Token|null $ast_node, string $key = '', string $padding = ''): string
     {
         if ($ast_node instanceof Node) {
             $first_part = \sprintf(
@@ -161,7 +161,7 @@ class NodeDumper
      * @suppress PhanUnreferencedPublicMethod
      * @suppress PhanPluginRemoveDebugEcho
      */
-    public function dumpTree(\Microsoft\PhpParser\Node|\Microsoft\PhpParser\Token $ast_node, string $key = '', string $padding = ''): void
+    public function dumpTree(Node|Token $ast_node, string $key = '', string $padding = ''): void
     {
         echo $this->dumpTreeAsString($ast_node, $key, $padding);
     }

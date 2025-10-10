@@ -69,9 +69,8 @@ trait ElementProxyTrait
 
     /**
      * Get the argument passed in to this object.
-     * @return TypedElement|UnaddressableTypedElement
      */
-    public function getElement()
+    public function getElement() : TypedElement|UnaddressableTypedElement
     {
         return $this->element;
     }

@@ -433,10 +433,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node|string|int|float $expr
      * @return Node|string|int|float|null
      */
-    private static function getConstExprOrNull($expr)
+    private static function getConstExprOrNull(Node|float|int|string $expr) : Node|float|int|null|string
     {
         // Don't allow new expressions
         return ParseVisitor::isConstExpr($expr, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION) ? $expr : null;
@@ -446,7 +445,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|int|string|float|null $node
      * @param Node|int|string|float|null $const_expr
      */
-    private function analyzeAssignmentTarget($node, bool $is_ref, $const_expr): VariableTrackingScope
+    private function analyzeAssignmentTarget(Node|float|int|null|string $node, bool $is_ref, Node|float|int|null|string $const_expr): VariableTrackingScope
     {
         // TODO: Push onto the node list?
         if (!($node instanceof Node)) {
@@ -485,7 +484,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param Node|int|string|float|null $const_expr
      */
-    private function analyzeArrayAssignmentTarget(Node $node, $const_expr): VariableTrackingScope
+    private function analyzeArrayAssignmentTarget(Node $node, Node|float|int|null|string $const_expr): VariableTrackingScope
     {
         foreach ($node->children as $elem_node) {
             if (!($elem_node instanceof Node)) {
@@ -575,7 +574,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $child_node
      */
-    private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node): VariableTrackingScope
+    private function analyzeWhenValidNode(VariableTrackingScope $scope, Node|float|int|null|string $child_node): VariableTrackingScope
     {
         if ($child_node instanceof Node) {
             return $this->analyze($scope, $child_node);
@@ -914,7 +913,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @param Node|float|int|string|null $cond
      */
-    private function analyzeCondExprList(VariableTrackingScope $scope, $cond): VariableTrackingScope
+    private function analyzeCondExprList(VariableTrackingScope $scope, Node|float|int|null|string $cond): VariableTrackingScope
     {
         if (!$cond instanceof Node) {
             return $scope;
@@ -1146,7 +1145,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|null $catches_node the AST_CATCH_LIST node
      * @param Node|null $finally_node the finally block node
      */
-    private static function willTryBlockPossiblyFail(?Node $catches_node, $finally_node): bool
+    private static function willTryBlockPossiblyFail(?Node $catches_node, ?Node $finally_node): bool
     {
         // If there's a finally block, we analyze it as if the try block might have failed
         if ($finally_node !== null) {
@@ -1166,7 +1165,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             if (!($catch_node instanceof Node)) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty
+            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 // At least one catch block can fall through, so the try might have failed
                 return true;
@@ -1213,7 +1212,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $var_node = $node->children['var'];
         $scope = $this->scope;
-        // handle php 8.0 non-capturing catches
+        // handle non-capturing catches
         if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             $name = $var_node->children['name'];
             if (is_string($name)) {

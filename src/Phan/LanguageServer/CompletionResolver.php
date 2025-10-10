@@ -128,7 +128,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         bool $is_static,
-        $incomplete_prop_name
+        mixed $incomplete_prop_name
     ): void {
         if (!is_string($incomplete_prop_name)) {
             return;
@@ -173,7 +173,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         Node $node,
-        $constant_name
+        mixed $constant_name
     ): void {
         if (!is_string($constant_name)) {
             return;
@@ -225,7 +225,7 @@ class CompletionResolver
         Context $context,
         Node $node,
         bool $is_static,
-        $incomplete_method_name
+        mixed $incomplete_method_name
     ): void {
         if (!is_string($incomplete_method_name)) {
             return;

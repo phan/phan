@@ -70,7 +70,7 @@ class PhanAnnotationAdder
      * @param array<mixed,?(Node|string|float|int)> $children (should all be Nodes or null)
      * @param int $bit_set
      */
-    private static function markArrayElements($children, int $bit_set): void
+    private static function markArrayElements(array $children, int $bit_set): void
     {
         foreach ($children as $node) {
             if ($node instanceof Node) {
@@ -199,7 +199,7 @@ class PhanAnnotationAdder
     /**
      * @param Node|array|int|string|float|bool|null $node
      */
-    public static function applyFull(\ast\Node|array|bool|float|int|null|string $node): void
+    public static function applyFull(Node|array|bool|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $closure = self::$closures_for_kind[$node->kind] ?? null;
@@ -223,7 +223,7 @@ class PhanAnnotationAdder
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function applyToScopeInner(\ast\Node|float|int|null|string $node): void
+    private static function applyToScopeInner(Node|float|int|null|string $node): void
     {
         if ($node instanceof Node) {
             $kind = $node->kind;

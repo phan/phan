@@ -340,9 +340,6 @@ return [
 
     // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
     // even if those return types aren't available in reflection (real types were taken from php 8.4).
-    //
-    // Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
-    // As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
     'assume_real_types_for_internal_functions' => true,
 
     // Override to hardcode existence and types of (non-builtin) globals.
@@ -610,6 +607,39 @@ return [
         // Warn if newline is allowed before end of string for `$` (the default unless the `D` modifier (`PCRE_DOLLAR_ENDONLY`) is passed in).
         // This is specific to coding styles.
         'regex_warn_if_newline_allowed_at_end' => true,
+
+        'unused_suppression_ignore_list' => [
+            // Plugins used in __FakeSelfFallbackTest only.
+            'PhanPluginUnknownObjectMethodCall',
+            'PhanPluginRemoveDebugEcho',
+            // Dead code detection
+            'PhanUnreferencedClass',
+            'PhanUnreferencedFunction',
+            'PhanUnreferencedPublicMethod',
+            'PhanUnreferencedProtectedMethod',
+            'PhanUnreferencedPrivateMethod',
+            'PhanUnreferencedPublicProperty',
+            'PhanUnreferencedProtectedProperty',
+            'PhanUnreferencedPrivateProperty',
+            'PhanUnreferencedPHPDocProperty',
+            'PhanReadOnlyPublicProperty',
+            'PhanReadOnlyProtectedProperty',
+            'PhanReadOnlyPrivateProperty',
+            'PhanReadOnlyPHPDocProperty',
+            'PhanWriteOnlyPublicProperty',
+            'PhanWriteOnlyProtectedProperty',
+            'PhanWriteOnlyPrivateProperty',
+            'PhanWriteOnlyPHPDocProperty',
+            'PhanUnreferencedConstant',
+            'PhanUnreferencedPublicClassConstant',
+            'PhanUnreferencedProtectedClassConstant',
+            'PhanUnreferencedPrivateClassConstant',
+            'PhanUnreferencedEnumCase',
+            'PhanUnreferencedClosure',
+            'PhanUnreferencedUseNormal',
+            'PhanUnreferencedUseFunction',
+            'PhanUnreferencedUseConstant',
+        ],
     ],
 
     // A list of plugin files to execute
@@ -641,7 +671,7 @@ return [
         'PossiblyStaticMethodPlugin',
 
         'HasPHPDocPlugin',
-        // 'PHPDocToRealTypesPlugin',  // suggests replacing (at)return void with `: void` in the declaration, etc. - Disabled after Phase 5 union type modernization
+        'PHPDocToRealTypesPlugin',
         'PHPDocRedundantPlugin',
         'PreferNamespaceUsePlugin',
         'EmptyStatementListPlugin',
@@ -688,7 +718,7 @@ return [
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
-        // 'UnusedSuppressionPlugin',
+        'UnusedSuppressionPlugin',
         'AsymmetricVisibilityPlugin',
     ],
 ];

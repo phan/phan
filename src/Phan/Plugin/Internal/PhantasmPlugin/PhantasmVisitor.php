@@ -77,7 +77,7 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
      * Check if the value node of a constant can be safely substituted in other files
      * @param Node|string|float|int|null $value_node
      */
-    public function isSafeNodeToSubstitute(Context $context, $value_node): bool
+    public function isSafeNodeToSubstitute(Context $context, Node|float|int|null|string $value_node): bool
     {
         if (!$value_node instanceof Node) {
             // TODO: floats might lose precision when converted back to strings by phantasm. Use the original expression based on the parent node?
@@ -114,9 +114,8 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Check if the reference to a class name can be optimized.
-     * @param Node|string|int|float $node
      */
-    public static function isOptimizableClassNameReference($node): bool
+    public static function isOptimizableClassNameReference(Node|float|int|string $node): bool
     {
         if (!$node instanceof Node || $node->kind !== ast\AST_NAME) {
             return false;

@@ -27,7 +27,7 @@ use Phan\Memoize;
  * Phan's representation of a class's method.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @method FullyQualifiedMethodName getDefiningFQSEN() @phan-suppress-current-line PhanParamSignaturePHPDocMismatchReturnType
+ * @method FullyQualifiedMethodName getDefiningFQSEN()
  * @property FullyQualifiedMethodName $fqsen
  */
 class Method extends ClassElement implements FunctionInterface
@@ -779,7 +779,6 @@ class Method extends ClassElement implements FunctionInterface
         return parent::getUnionType();
     }
 
-    /** @suppress PhanTypeMismatchReturn */
     public function getFQSEN(): FullyQualifiedMethodName
     {
         return $this->fqsen;
@@ -1108,7 +1107,6 @@ class Method extends ClassElement implements FunctionInterface
         // (the final union type may not have been computed yet)
         if ($comment = $method->getComment()) {
             $comment = clone($comment);
-            // @phan-suppress-next-line PhanAccessMethodInternal
             foreach ($comment->getAndMutateParameters() as &$comment_param) {
                 if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
                     $comment_param = clone($comment_param);

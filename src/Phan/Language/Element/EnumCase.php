@@ -24,7 +24,7 @@ class EnumCase extends ClassConstant
      * If the enum case value exists and could be evaluated, this contains that value
      * @param int|string|null $value
      */
-    public function setEnumCaseValue($value): void
+    public function setEnumCaseValue(int|null|string $value): void
     {
         $this->enum_case_value = $value;
     }
@@ -35,7 +35,7 @@ class EnumCase extends ClassConstant
      * @return int|string|null
      * @suppress PhanUnreferencedPublicMethod made available for plugins. Can also be computed from getNodeForValue.
      */
-    public function getEnumCaseValue()
+    public function getEnumCaseValue() : int|null|string
     {
         return $this->enum_case_value;
     }

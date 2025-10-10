@@ -497,7 +497,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
-        \ast\Node|float|int|string $value_node
+        Node|float|int|string $value_node
     ): void {
         if (!$value_node instanceof Node) {
             return;
@@ -567,7 +567,7 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzeSetUnionType(
         TypedElementInterface $element,
         UnionType $element_type,
-        \ast\Node|float|int|null|string $node
+        Node|float|int|null|string $node
     ): void {
         // Let the caller warn about possibly undefined offsets, e.g. ['field' => $value] = ...
         // TODO: Convert real types to nullable?
@@ -591,7 +591,7 @@ class AssignmentVisitor extends AnalysisVisitor
         Context $context,
         TypedElementInterface $element,
         UnionType $element_type,
-        \ast\Node|float|int|string $node
+        Node|float|int|string $node
     ): void {
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
@@ -617,7 +617,7 @@ class AssignmentVisitor extends AnalysisVisitor
         Context $context,
         PassByReferenceVariable $reference_element,
         UnionType $new_type,
-        \ast\Node|float|int|string $node
+        Node|float|int|string $node
     ): void {
         $element = $reference_element->getElement();
         while ($element instanceof PassByReferenceVariable) {
