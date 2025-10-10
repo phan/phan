@@ -51,10 +51,6 @@ call_user_func(static function () : void {
         Config::setValue('quick_mode', (bool)$inner_config['quick']);
     }
 
-    if (isset($inner_config['backward-compatibility-checks'])) {
-        Config::setValue('backward_compatibility_checks', (bool)$inner_config['backward-compatibility-checks']);
-    }
-
     if (isset($inner_config['dead-code-detection'])) {
         Config::setValue('dead_code_detection', (bool)$inner_config['dead-code-detection']);
     }

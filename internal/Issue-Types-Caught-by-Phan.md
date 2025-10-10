@@ -433,7 +433,7 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 # CompatError
 
-This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
+This category of issue is emitted when there are compatibility issues.
 
 ## PhanCompatibleAccessMethodOnTraitDefinition
 
@@ -483,16 +483,6 @@ Array and string offset access syntax with curly braces is no longer supported. 
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/062_test.php#L2).
 
-## PhanCompatibleExpressionPHP7
-
-This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
-
-The config `backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/2.4.1/.phan/config.php).
-
-```
-{CLASS} expression may not be PHP 7 compatible
-```
-
 ## PhanCompatibleImplodeOrder
 
 ```
@@ -507,25 +497,9 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0511
 Attribute #[Override] on {CLASS} is only supported in PHP {DETAILS}.
 ```
 
-e.g. this issue is emitted when analyzing #[Override] while targeting versions that don’t support it.
+e.g. this issue is emitted when analyzing #[Override] while targeting versions that don't support it.
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L18).
-
-## PhanCompatiblePHP7
-
-This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
-
-The config `backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/2.4.1/.phan/config.php).
-
-```
-Expression may not be PHP 7 compatible
-```
-
-This will be emitted for the following code.
-
-```php
-$c->$m[0]();
-```
 
 ## PhanCompatiblePHP8PHP4Constructor
 

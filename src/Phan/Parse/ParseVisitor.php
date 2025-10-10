@@ -50,7 +50,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Library\FileCache;
 use Phan\Library\IncrementalAnalysis\DependencyTracker;
 use Phan\Library\None;
 
@@ -1558,16 +1557,6 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
         }
-        if (Config::get_backward_compatibility_checks()) {
-            $this->analyzeBackwardCompatibility($node);
-
-            // Handle first-class callables which have no args
-            foreach ($node->children['args']->children ?? [] as $arg_node) {
-                if ($arg_node instanceof Node) {
-                    $this->analyzeBackwardCompatibility($arg_node);
-                }
-            }
-        }
         return $this->context;
     }
 
@@ -1638,20 +1627,6 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Analyze a node for syntax backward compatibility, if that option is enabled
-     */
-    private function analyzeBackwardCompatibility(Node $node): void
-    {
-        if (Config::get_backward_compatibility_checks()) {
-            (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->analyzeBackwardCompatibility();
-        }
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_RETURN`
      *
      * @param Node $node
@@ -1665,8 +1640,6 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitReturn(Node $node): Context
     {
-        $this->analyzeBackwardCompatibility($node);
-
         // Make sure we're actually returning from a method.
         if (!$this->context->isInFunctionLikeScope()) {
             return $this->context;
@@ -1699,7 +1672,7 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitYield(Node $node): Context
     {
-        return $this->analyzeYield($node);
+        return $this->analyzeYield();
     }
 
     /**
@@ -1714,24 +1687,19 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitYieldFrom(Node $node): Context
     {
-        return $this->analyzeYield($node);
+        return $this->analyzeYield();
     }
 
 
     /**
      * Visit a node with kind `\ast\AST_YIELD_FROM` or kind `\ast_YIELD`
      *
-     * @param Node $node
-     * A node to parse
-     *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    private function analyzeYield(Node $node): Context
+    private function analyzeYield(): Context
     {
-        $this->analyzeBackwardCompatibility($node);
-
         // Make sure we're actually returning from a method.
         if (!$this->context->isInFunctionLikeScope()) {
             return $this->context;
@@ -1745,137 +1713,6 @@ class ParseVisitor extends ScopeVisitor
         // Mark the method as yielding something (and returning a generator)
         $method->setHasYield(true);
         $method->setHasReturn(true);
-
-        return $this->context;
-    }
-
-    /**
-     * Visit a node with kind `\ast\AST_PRINT`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitPrint(Node $node): Context
-    {
-        // Analyze backward compatibility for the arguments of this print statement.
-        $this->analyzeBackwardCompatibility($node);
-        return $this->context;
-    }
-    /**
-     * Visit a node with kind `\ast\AST_ECHO`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitEcho(Node $node): Context
-    {
-        // Analyze backward compatibility for the arguments of this echo statement.
-        $this->analyzeBackwardCompatibility($node);
-        return $this->context;
-    }
-
-    /**
-     * Visit a node with kind `\ast\AST_METHOD_CALL`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitMethodCall(Node $node): Context
-    {
-        // Analyze backward compatibility for the arguments of this method call
-        $this->analyzeBackwardCompatibility($node);
-        return $this->context;
-    }
-
-    public function visitAssign(Node $node): Context
-    {
-        if (!Config::get_backward_compatibility_checks()) {
-            return $this->context;
-        }
-        // Analyze the assignment for compatibility with some
-        // breaking changes between PHP5 and PHP7.
-        $var_node = $node->children['var'];
-        if ($var_node instanceof Node) {
-            $this->analyzeBackwardCompatibility($var_node);
-        }
-        $expr_node = $node->children['expr'];
-        if ($expr_node instanceof Node) {
-            $this->analyzeBackwardCompatibility($expr_node);
-        }
-        return $this->context;
-    }
-
-    public function visitDim(Node $node): Context
-    {
-        if (!Config::get_backward_compatibility_checks()) {
-            return $this->context;
-        }
-
-        $expr = $node->children['expr'];
-        if (!($expr instanceof Node)) {
-            return $this->context;
-        }
-
-        // check for $$var[]
-        if ($expr->kind === \ast\AST_VAR
-            && ($expr->children['name']->kind ?? null) === \ast\AST_VAR
-        ) {
-            $temp = $expr->children['name'];
-            $depth = 1;
-            while ($temp instanceof Node) {
-                if (!isset($temp->children['name'])) {
-                    throw new AssertionError("Expected to find a name in context, something else found.");
-                }
-                $temp = $temp->children['name'];
-                $depth++;
-            }
-            $dollars = \str_repeat('$', $depth);
-            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
-            $line = $cache_entry->getLine($node->lineno);
-            if (!\is_string($line)) {
-                return $this->context;
-            }
-            if (\strpos($line, '{') === false
-                || \strpos($line, '}') === false
-            ) {
-                $this->emitIssue(
-                    Issue::CompatibleExpressionPHP7,
-                    $node->lineno ?? 0,
-                    "{$dollars}{$temp}[]"
-                );
-            }
-
-        // $foo->$bar['baz'];
-        } elseif ($expr->kind === \ast\AST_PROP &&
-            ($expr->children['expr']->kind ?? null) === ast\AST_VAR &&
-            ($expr->children['prop']->kind ?? null) === ast\AST_VAR
-        ) {
-            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
-            $line = $cache_entry->getLines()[$node->lineno] ?? null;
-            if (!\is_string($line)) {
-                return $this->context;
-            }
-            if (\strpos($line, '{') === false
-                || \strpos($line, '}') === false
-            ) {
-                $this->emitIssue(
-                    Issue::CompatiblePHP7,
-                    $node->lineno ?? 0
-                );
-            }
-        }
 
         return $this->context;
     }
