@@ -736,26 +736,10 @@ class ParameterTypesAnalyzer
             // Either 0 or both of the params must have types for the signatures to be compatible.
             $overridden_parameter_union_type = $overridden_parameter->getUnionType();
             $parameter_union_type = $parameter->getUnionType();
-            // Mixed and empty parameter types are interchangeable in php 8
+            // Mixed and empty parameter types are interchangeable
             if ($parameter_union_type->isEmptyOrMixed() != $overridden_parameter_union_type->isEmptyOrMixed()) {
-                if ($parameter_union_type->isEmptyOrMixed()) {
-                    // Don't warn about mixed
-                    if (Config::getValue('allow_method_param_type_widening') === false) {
-                        $is_possibly_compatible = false;
-                        self::emitSignatureRealMismatchIssue(
-                            $code_base,
-                            $method,
-                            $overridden_method,
-                            Issue::ParamSignatureRealMismatchHasNoParamType,
-                            Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
-                            Issue::ParamSignaturePHPDocMismatchHasNoParamType,
-                            self::guessCommentParamLineNumber($method, $parameter),
-                            $offset,
-                            (string)$overridden_parameter_union_type
-                        );
-                    }
-                    continue;
-                } else {
+                // Don't warn about mixed
+                if (!$parameter_union_type->isEmptyOrMixed()) {
                     $is_possibly_compatible = false;
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
@@ -768,8 +752,8 @@ class ParameterTypesAnalyzer
                         $offset,
                         (string)$parameter_union_type
                     );
-                    continue;
                 }
+                continue;
             }
 
             // If both have types, make sure they are identical.

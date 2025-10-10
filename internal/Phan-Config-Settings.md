@@ -722,16 +722,6 @@ are not documented in the PHPDoc of functions, methods, and closures.
 These settings affect the way that Phan analyzes your project.
 The values you will want depend on what PHP versions you are checking for compatibility with.
 
-## allow_method_param_type_widening
-
-Set this to true to allow [contravariance](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening) in real parameter types of method overrides
-
-This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
-
-If this is null, this will be inferred from `target_php_version`.
-
-(Default: `null`)
-
 ## minimum_target_php_version
 
 The PHP version that will be used for feature/syntax compatibility warnings.

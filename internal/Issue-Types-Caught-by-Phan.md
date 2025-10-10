@@ -1771,14 +1771,6 @@ Declaration of {METHOD} should be compatible with internal {METHOD}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0308_inheritdoc_incompatible.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0308_inheritdoc_incompatible.php#L7).
 
-## PhanParamSignaturePHPDocMismatchHasNoParamType
-
-```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0627_signature_mismatch.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0627_signature_mismatch.php#L20).
-
 ## PhanParamSignaturePHPDocMismatchHasParamType
 
 ```
@@ -1848,22 +1840,6 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0315_magic_method_compat.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0315_magic_method_compat.php#L13).
-
-## PhanParamSignatureRealMismatchHasNoParamType
-
-```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature) defined in {FILE}:{LINE}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0126_override_signature.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0126_override_signature.php#L12).
-
-## PhanParamSignatureRealMismatchHasNoParamTypeInternal
-
-```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0133_unserialize_types.php.expected80#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/expected/0133_unserialize_types.php.expected80#L8).
 
 ## PhanParamSignatureRealMismatchHasParamType
 

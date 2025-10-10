@@ -9,6 +9,7 @@ Breaking changes:
 - Dropped support for (minimum) target PHP version < 8.1.
 - Renamed the `PhanPluginCanUsePHP71Void` issue to `PhanPluginCanUseVoidReturnType`
 - Phan will throw an error and exit when none of the files in `include_analysis_file_list` exist
+- Dropped the `allow_method_param_type_widening` config option (contravariance is now always allowed)
 
 New features (Analysis):
 - Full support for PHP 8.5 features:

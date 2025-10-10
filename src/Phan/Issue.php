@@ -383,9 +383,6 @@ class Issue
     public const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
     public const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
     public const ParamSignaturePHPDocMismatchHasParamType                    = 'PhanParamSignaturePHPDocMismatchHasParamType';
-    public const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
-    public const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
-    public const ParamSignaturePHPDocMismatchHasNoParamType                  = 'PhanParamSignaturePHPDocMismatchHasNoParamType';
     public const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
     public const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
     public const ParamSignaturePHPDocMismatchParamIsReference                = 'PhanParamSignaturePHPDocMismatchParamIsReference';
@@ -3528,30 +3525,6 @@ class Issue
                 "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7035
-            ),
-            new Issue(
-                self::ParamSignatureRealMismatchHasNoParamType,
-                self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,  // NOTE: See allow_method_param_type_widening
-                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature) defined in {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                7019
-            ),
-            new Issue(
-                self::ParamSignatureRealMismatchHasNoParamTypeInternal,
-                self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type in the real signature cannot replace original parameter with type '{TYPE}' in the real signature)",
-                self::REMEDIATION_B,
-                7020
-            ),
-            new Issue(
-                self::ParamSignaturePHPDocMismatchHasNoParamType,
-                self::CATEGORY_PARAMETER,
-                self::SEVERITY_LOW,
-                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                7036
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamVariadic,

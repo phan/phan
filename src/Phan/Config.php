@@ -337,13 +337,6 @@ class Config
         // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
 
-        // Set this to true to allow [contravariance](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening) in real parameter types of method overrides
-        //
-        // This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
-        //
-        // If this is null, this will be inferred from `target_php_version`.
-        'allow_method_param_type_widening' => null,
-
         // Set this to true to make Phan guess that undocumented parameter types
         // (for optional parameters) have the same type as default values
         // (Instead of combining that type with `mixed`).
@@ -1278,13 +1271,6 @@ class Config
             case 'quick_mode':
                 self::$quick_mode = $value;
                 break;
-            case 'allow_method_param_type_widening':
-                self::$configuration['allow_method_param_type_widening_original'] = $value;
-                self::$configuration['original_allow_method_param_type_widening_original'] = $value;
-                if ($value === null) {
-                    self::$configuration[$name] = true;
-                }
-                break;
             case 'target_php_version':
             case 'minimum_target_php_version':
                 self::$configuration[$name] = $value;
@@ -1328,9 +1314,6 @@ class Config
             $min_value_id = self::computeClosestTargetPHPVersionId(PHP_VERSION);
         }
         self::$closest_minimum_target_php_version_id = (int) \min(self::$closest_target_php_version_id, $min_value_id);
-        if (!isset(self::$configuration['original_allow_method_param_type_widening_original'])) {
-            self::$configuration['allow_method_param_type_widening'] = true;
-        }
     }
 
     /**
@@ -1580,7 +1563,6 @@ class Config
         };
         $config_checks = [
             'absolute_path_issue_messages' => $is_bool,
-            'allow_method_param_type_widening' => $is_bool_or_null,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
             'analyze_signature_compatibility' => $is_bool,
