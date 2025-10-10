@@ -34,7 +34,7 @@ class InferValue
     public static function computeBinaryOpResult(mixed $left, mixed $right, int $flags): mixed
     {
         // Don't make errors in the analyzed code crash Phan (e.g. converting arrays to strings).
-        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($left, $right, $flags): \ast\Node|array|bool|float|int|null|string {
+        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($left, $right, $flags): Node|array|bool|float|int|null|string {
             switch ($flags) {
                 case flags\BINARY_CONCAT:
                     return $left . $right;
@@ -49,10 +49,8 @@ class InferValue
                 case flags\BINARY_DIV:
                     return $left / $right;
                 case flags\BINARY_BOOL_AND:
-                    // @phan-suppress-next-line PhanSuspiciousTruthyString this is deliberate
                     return $left && $right;
                 case flags\BINARY_BOOL_OR:
-                    // @phan-suppress-next-line PhanSuspiciousTruthyString this is deliberate
                     return $left || $right;
                 case flags\BINARY_BOOL_XOR:
                     return $left xor $right;
@@ -90,10 +88,10 @@ class InferValue
      *   Node is returned to indicate that the result could not be computed
      * @throws Error that should be handled by caller, e.g. for `+[]`.
      */
-    public static function computeUnaryOpResult(array|bool|float|int|null|string $operand, int $flags): \ast\Node|array|bool|float|int|null|string
+    public static function computeUnaryOpResult(array|bool|float|int|null|string $operand, int $flags): Node|array|bool|float|int|null|string
     {
         // Don't make errors in the analyzed code crash Phan (e.g. converting arrays to strings).
-        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($operand, $flags): \ast\Node|array|bool|float|int|null|string {
+        return self::evalSuppressingErrors(/** @return Node|array|int|string|float|bool|null */ static function () use ($operand, $flags): Node|array|bool|float|int|null|string {
             switch ($flags) {
                 case flags\UNARY_BOOL_NOT:
                     return !$operand;

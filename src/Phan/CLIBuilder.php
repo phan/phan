@@ -28,7 +28,7 @@ class CLIBuilder
      *
      * @param string|list<string>|false $value
      */
-    public function setOption(string $opt, $value = false): self
+    public function setOption(string $opt, array|bool|string $value = false): self
     {
         $this->opts[$opt] = $value;
         if (!\is_array($value)) {

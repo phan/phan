@@ -330,12 +330,12 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     /**
      * @param Location|array<string,mixed>|list<Location|array> $locations
      */
-    public function recordDefinitionLocationList($locations): void
+    public function recordDefinitionLocationList(Location|array $locations): void
     {
         if ($locations instanceof Location || isset($locations['uri'])) {
             $locations = [$locations];
         }
-        foreach ($locations ?? [] as $location) {
+        foreach ($locations as $location) {
             if (is_array($location)) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $location = Location::fromArray($location);
@@ -359,10 +359,8 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     /**
      * Sets the only response for this hover request (with markdown to render)
-     *
-     * @param ?Hover|?array $hover
      */
-    public function setHoverResponse($hover): ?Hover
+    public function setHoverResponse(Hover|array|null $hover): ?Hover
     {
         if (is_array($hover)) {
             $hover = Hover::fromArray($hover);

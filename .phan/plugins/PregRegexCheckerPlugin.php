@@ -165,7 +165,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
     private static function extractStringsFromStringOrArray(
         CodeBase $code_base,
         Context $context,
-        \ast\Node|float|int|string $pattern
+        Node|float|int|string $pattern
     ): array {
         if (\is_string($pattern)) {
             return [$pattern => $pattern];
@@ -230,7 +230,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
      * @param string[] $patterns 1 or more regex patterns
      * @param Node|string|int|float $replacement_node
      */
-    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, \ast\Node|float|int|string $replacement_node): void
+    private static function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, Node|float|int|string $replacement_node): void
     {
         $replacement_templates = self::extractStringsFromStringOrArray($code_base, $context, $replacement_node);
         $pattern_keys = null;

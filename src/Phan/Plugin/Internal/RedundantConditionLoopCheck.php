@@ -27,7 +27,7 @@ class RedundantConditionLoopCheck
      * True if this is asserting a value is less than something, false if it's asserting the value is greater than something
      * @internal
      */
-    public static function extractComparisonDirections($cond_node, bool $negate = false): array
+    public static function extractComparisonDirections(Node|float|int|null|string $cond_node, bool $negate = false): array
     {
         if (!$cond_node instanceof Node) {
             return [];
@@ -106,7 +106,7 @@ class RedundantConditionLoopCheck
      * @param Node|int|string|float|null $cond_node
      * @return associative-array<int|string,bool>
      */
-    public static function extractIncrementDirections(CodeBase $code_base, Context $context, $cond_node): array
+    public static function extractIncrementDirections(CodeBase $code_base, Context $context, Node|float|int|null|string $cond_node): array
     {
         if (!$cond_node instanceof Node) {
             return [];
@@ -191,7 +191,7 @@ class RedundantConditionLoopCheck
      * @param Node|string|int|float|null $expr
      * @return associative-array<int|string,bool>
      */
-    private static function extractIncrementDirectionForAssignOp(CodeBase $code_base, Context $context, string $var_name, $expr, bool $is_subtraction): array
+    private static function extractIncrementDirectionForAssignOp(CodeBase $code_base, Context $context, string $var_name, Node|float|int|null|string $expr, bool $is_subtraction): array
     {
         // TODO: Extract constants
         if ($expr instanceof Node) {
@@ -211,7 +211,7 @@ class RedundantConditionLoopCheck
     /**
      * @param Node|mixed $node
      */
-    private static function getVarName($node): ?string
+    private static function getVarName(mixed $node): ?string
     {
         if ($node instanceof Node && $node->kind === ast\AST_VAR) {
             $name = $node->children['name'];

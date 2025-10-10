@@ -3,8 +3,8 @@
 /**
  * Test that empty() on mixed type doesn't incorrectly narrow to null
  * @see https://github.com/phan/phan/issues/5074
- * @requires PHP >= 8.0
  */
+
 
 function test_empty_mixed(mixed $x) : bool {
     if (empty($x)) {

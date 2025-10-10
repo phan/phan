@@ -25,7 +25,7 @@ Automatically fixes any fixable violations of the code style rules.
 # [`sanitycheck.php`](./sanitycheck.php)
 
 This compares reflection signatures with Phan's own internal function signature map.
-This assumes the reflection signatures are the latest(PHP 7.2) right now.
+This assumes the reflection signatures are the latest right now.
 
 # [`update_wiki_issue_types.php`](./update_wiki_issue_types.php)
 

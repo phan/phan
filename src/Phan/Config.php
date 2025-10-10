@@ -269,11 +269,6 @@ class Config
         // [php7cc (no longer maintained)](https://github.com/sstalle/php7cc)
         // and [php7mar](https://github.com/Alexia/php7mar),
         // which have different backwards compatibility checks.
-        //
-        // If you are still using versions of php older than 5.6,
-        // `PHP53CompatibilityPlugin` may be worth looking into if you are not running
-        // syntax checks for php 5.3 through another method such as
-        // `InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
         'backward_compatibility_checks' => true,
 
         // Enable incremental analysis to only re-analyze changed files and their dependents.
@@ -336,15 +331,6 @@ class Config
         //
         // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
-
-        // Set this to true to allow contravariance in real parameter types of method overrides
-        // (Users may enable this if analyzing projects that support only php 7.2+)
-        //
-        // See [this note about PHP 7.2's new features](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening).
-        // This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
-        //
-        // If this is null, this will be inferred from `target_php_version`.
-        'allow_method_param_type_widening' => null,
 
         // Set this to true to make Phan guess that undocumented parameter types
         // (for optional parameters) have the same type as default values
@@ -444,9 +430,6 @@ class Config
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
         // even if those return types aren't available in reflection (real types were taken from php 8.4).
-        //
-        // Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
-        // As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
         'assume_real_types_for_internal_functions' => false,
 
         // If enabled, Phan will use the php 8.1+ tentative return types available for PHP and extensions.
@@ -1061,7 +1044,6 @@ class Config
      * @return string
      * Get the working directory from which Phan was invoked.
      * Defaults to the project root directory if not explicitly set.
-     * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
      */
     public static function getWorkingDirectory(): string
     {
@@ -1284,13 +1266,6 @@ class Config
             case 'quick_mode':
                 self::$quick_mode = $value;
                 break;
-            case 'allow_method_param_type_widening':
-                self::$configuration['allow_method_param_type_widening_original'] = $value;
-                self::$configuration['original_allow_method_param_type_widening_original'] = $value;
-                if ($value === null) {
-                    self::$configuration[$name] = true;
-                }
-                break;
             case 'target_php_version':
             case 'minimum_target_php_version':
                 self::$configuration[$name] = $value;
@@ -1334,9 +1309,6 @@ class Config
             $min_value_id = self::computeClosestTargetPHPVersionId(PHP_VERSION);
         }
         self::$closest_minimum_target_php_version_id = (int) \min(self::$closest_target_php_version_id, $min_value_id);
-        if (!isset(self::$configuration['original_allow_method_param_type_widening_original'])) {
-            self::$configuration['allow_method_param_type_widening'] = true;
-        }
     }
 
     /**
@@ -1479,7 +1451,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_scalar = static function ($value): ?string {
+        $is_scalar = static function (mixed $value): ?string {
             if (is_null($value) || \is_scalar($value)) {
                 return null;
             }
@@ -1488,7 +1460,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool = static function ($value): ?string {
+        $is_bool = static function (mixed $value): ?string {
             if (is_bool($value)) {
                 return null;
             }
@@ -1497,7 +1469,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_bool_or_null = static function ($value): ?string {
+        $is_bool_or_null = static function (mixed $value): ?string {
             if (is_bool($value) || is_null($value)) {
                 return null;
             }
@@ -1506,7 +1478,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_or_null = static function ($value): ?string {
+        $is_string_or_null = static function (mixed $value): ?string {
             if (is_null($value) || is_string($value)) {
                 return null;
             }
@@ -1515,7 +1487,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string = static function ($value): ?string {
+        $is_string = static function (mixed $value): ?string {
             if (is_string($value)) {
                 return null;
             }
@@ -1524,7 +1496,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_array = static function ($value): ?string {
+        $is_array = static function (mixed $value): ?string {
             if (is_array($value)) {
                 return null;
             }
@@ -1533,7 +1505,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_int_strict = static function ($value): ?string {
+        $is_int_strict = static function (mixed $value): ?string {
             if (is_int($value)) {
                 return null;
             }
@@ -1542,7 +1514,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_list = static function ($value): ?string {
+        $is_string_list = static function (mixed $value): ?string {
             if (!is_array($value)) {
                 return 'Expected a list of strings' . self::errSuffixGotType($value);
             }
@@ -1556,7 +1528,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_string_list_or_null = static function ($value): ?string {
+        $is_string_list_or_null = static function (mixed $value): ?string {
             if (is_null($value)) {
                 return null;
             }
@@ -1573,7 +1545,7 @@ class Config
         /**
          * @param mixed $value
          */
-        $is_associative_string_array = static function ($value): ?string {
+        $is_associative_string_array = static function (mixed $value): ?string {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
             }
@@ -1586,7 +1558,6 @@ class Config
         };
         $config_checks = [
             'absolute_path_issue_messages' => $is_bool,
-            'allow_method_param_type_widening' => $is_bool_or_null,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
             'analyze_signature_compatibility' => $is_bool,

@@ -263,11 +263,6 @@ you should also look into using
 and [php7mar](https://github.com/Alexia/php7mar),
 which have different backwards compatibility checks.
 
-If you are still using versions of php older than 5.6,
-`PHP53CompatibilityPlugin` may be worth looking into if you are not running
-syntax checks for php 5.3 through another method such as
-`InvokePHPNativeSyntaxCheckPlugin` (see .phan/plugins/README.md).
-
 (Default: `true`)
 
 ## cache_polyfill_asts
@@ -722,18 +717,6 @@ are not documented in the PHPDoc of functions, methods, and closures.
 These settings affect the way that Phan analyzes your project.
 The values you will want depend on what PHP versions you are checking for compatibility with.
 
-## allow_method_param_type_widening
-
-Set this to true to allow contravariance in real parameter types of method overrides
-(Users may enable this if analyzing projects that support only php 7.2+)
-
-See [this note about PHP 7.2's new features](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening).
-This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
-
-If this is null, this will be inferred from `target_php_version`.
-
-(Default: `null`)
-
 ## minimum_target_php_version
 
 The PHP version that will be used for feature/syntax compatibility warnings.
@@ -888,9 +871,6 @@ These settings affect how Phan will track what elements are referenced to warn a
 
 If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
 even if those return types aren't available in reflection (real types were taken from php 8.4).
-
-Note that with php 7 and earlier, php would return null or false for many internal functions if the argument types or counts were incorrect.
-As a result, enabling this setting with target_php_version 8.0 may result in false positives for `--redundant-condition-detection` when codebases also support php 7.x.
 
 (Default: `false`)
 

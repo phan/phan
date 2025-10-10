@@ -664,7 +664,7 @@ final class MiscParamPlugin extends PluginV3 implements
         $get_variable = static function (
             CodeBase $code_base,
             Context $context,
-            $node
+            Node|float|int|null|string $node
         ): ?Variable {
             if (!$node instanceof Node) {
                 return null;
@@ -1230,7 +1230,7 @@ final class MiscParamPlugin extends PluginV3 implements
      * @param Closure(UnionType):IssueInstance $issue_instance
      */
     private static function analyzeNodeUnionTypeCast(
-        $node,
+        Node|float|int|null|string $node,
         Context $context,
         CodeBase $code_base,
         UnionType $cast_type,
@@ -1265,7 +1265,7 @@ final class MiscParamPlugin extends PluginV3 implements
      * @param Closure(UnionType):IssueInstance $issue_instance
      */
     private static function analyzeNodeUnionTypeCastStringArrayLike(
-        $node,
+        Node|float|int|null|string $node,
         Context $context,
         CodeBase $code_base,
         Closure $issue_instance

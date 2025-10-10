@@ -46,7 +46,7 @@ class Debug
      * An AST node
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function printNode($node): void
+    public static function printNode(Node|float|int|null|string $node): void
     {
         print self::nodeToString($node);
     }
@@ -58,7 +58,7 @@ class Debug
      * @param Node|string|null $node
      * @param int $indent
      */
-    public static function printNodeName($node, int $indent = 0): void
+    public static function printNodeName(Node|null|string $node, int $indent = 0): void
     {
         print \str_repeat("\t", $indent);
         print self::nodeName($node);
@@ -81,7 +81,7 @@ class Debug
      * @param Node|string|null $node
      * @return string The name of the node
      */
-    public static function nodeName($node): string
+    public static function nodeName(Node|null|string $node): string
     {
         if (\is_string($node)) {
             return "string";
@@ -121,8 +121,8 @@ class Debug
      * @phan-side-effect-free
      */
     public static function nodeToString(
-        $node,
-        $name = null,
+        Node|float|int|null|string $node,
+        float|int|null|string $name = null,
         int $indent = 0
     ): string {
         $string = \str_repeat("\t", $indent);
@@ -140,7 +140,7 @@ class Debug
         }
 
         if (!\is_object($node)) {
-            return $string . (\is_array($node) ? \json_encode($node) : $node) . "\n";
+            return $string . $node . "\n";
         }
         $kind = $node->kind;
 
@@ -265,7 +265,7 @@ class Debug
      * @param Node|string|int|float|null $ast
      * @param int $options (self::AST_DUMP_*)
      */
-    public static function astDump($ast, int $options = 0): string
+    public static function astDump(Node|float|int|null|string $ast, int $options = 0): string
     {
         if ($ast instanceof Node) {
             $result = Parser::getKindName($ast->kind);

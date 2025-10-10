@@ -494,7 +494,7 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Add an instance property from php 8.0 constructor property promotion
+     * Add an instance property from constructor property promotion
      * (`__construct(public int $param)`)
      *
      * This heavily duplicates parts of visitPropGroup
@@ -695,9 +695,9 @@ class ParseVisitor extends ScopeVisitor
      *
      * @param Property $property The property to attach hooks to
      * @param Node $hooks_node The AST_STMT_LIST containing property hooks
-     * @param ?(Node|string|float|int) $default_node The default value node if present
+     * @param Node|string|float|int|null $default_node The default value node if present
      */
-    private function parsePropertyHooks(Property $property, Node $hooks_node, $default_node): void
+    private function parsePropertyHooks(Property $property, Node $hooks_node, Node|float|int|null|string $default_node): void
     {
         if ($hooks_node->kind !== \ast\AST_STMT_LIST) {
             return;
@@ -804,10 +804,10 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * @param ?(ast\Node|string|float|int) $default_node
+     * @param Node|string|float|int|null $default_node
      * @param list<Attribute> $attributes
      */
-    private function addProperty(Clazz $class, string $property_name, $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes, bool $from_parameter): ?Property
+    private function addProperty(Clazz $class, string $property_name, Node|float|int|null|string $default_node, UnionType $real_union_type, ?Comment\Parameter $variable, int $lineno, int $flags, ?string $doc_comment, Comment $property_comment, array $attributes, bool $from_parameter): ?Property
     {
         if ($class->getFlags() & ast\flags\CLASS_READONLY) {
             $flags |= ast\flags\MODIFIER_READONLY;
@@ -1917,7 +1917,7 @@ class ParseVisitor extends ScopeVisitor
         Context $context,
         int $lineno,
         string $name,
-        $value,
+        mixed $value,
         int $flags,
         string $comment_string,
         bool $use_future_union_type,
@@ -1966,8 +1966,8 @@ class ParseVisitor extends ScopeVisitor
         $constant = new GlobalConstant(
             $context->withLineNumberStart($lineno),
             $name,
-            // NOTE: With php 8.1 enums, global constants can be assigned to enums,
-            // so this can be any valid type starting in php 8.1.
+            // NOTE: With enums, global constants can be assigned to enums,
+            // so this can be any valid type.
             UnionType::fromFullyQualifiedRealString('mixed'),
             $flags,
             $fqsen
@@ -2191,6 +2191,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
         ast\AST_UNPACK => true,
     ];
@@ -2209,6 +2211,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
         ast\AST_UNPACK => true,
 
@@ -2258,7 +2262,7 @@ class ParseVisitor extends ScopeVisitor
      *
      * @internal
      */
-    public static function checkIsAllowedInConstExpr($n, int $const_expr_context): void
+    public static function checkIsAllowedInConstExpr(Node|bool|float|int|null|string $n, int $const_expr_context): void
     {
         if (!($n instanceof Node)) {
             return;
@@ -2283,7 +2287,7 @@ class ParseVisitor extends ScopeVisitor
      * @param string &$error_message $error_message @phan-output-reference
      * @return bool - If true, then $n is a valid constant AST.
      */
-    public static function isConstExpr($n, int $const_expr_context, string &$error_message = ''): bool
+    public static function isConstExpr(Node|bool|float|int|null|string $n, int $const_expr_context, string &$error_message = ''): bool
     {
         try {
             self::checkIsAllowedInConstExpr($n, $const_expr_context);
@@ -2306,6 +2310,8 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_DIM => true,
         ast\AST_MAGIC_CONST => true,
         ast\AST_NAME => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
 
         // In addition to expressions where the real type can be statically inferred (assuming types of child nodes were correctly inferred)
@@ -2338,7 +2344,7 @@ class ParseVisitor extends ScopeVisitor
      *
      * @internal
      */
-    private static function checkIsNonVariableExpression($n): void
+    private static function checkIsNonVariableExpression(Node|bool|float|int|null|string $n): void
     {
         if (!($n instanceof Node)) {
             return;
@@ -2360,7 +2366,7 @@ class ParseVisitor extends ScopeVisitor
      * @param Node|string|float|int|bool|null $n
      * @return bool - If true, then the inferred type for $n does not depend on the current scope, but isn't necessarily constant (e.g. static method invocation in loop, global)
      */
-    public static function isNonVariableExpr($n): bool
+    public static function isNonVariableExpr(Node|bool|float|int|null|string $n): bool
     {
         try {
             self::checkIsNonVariableExpression($n);

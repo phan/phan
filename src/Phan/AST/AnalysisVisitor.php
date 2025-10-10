@@ -66,7 +66,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
     protected function emitIssue(
         string $issue_type,
         int $lineno,
-        \Phan\Language\FQSEN|\Phan\Language\Type|\Phan\Language\UnionType|int|string ...$parameters
+        FQSEN|Type|UnionType|int|string ...$parameters
     ): void {
         Issue::maybeEmitWithParameters(
             $this->code_base,

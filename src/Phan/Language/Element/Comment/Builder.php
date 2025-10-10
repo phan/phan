@@ -1546,7 +1546,7 @@ final class Builder
     protected function emitIssue(
         string $issue_type,
         int $issue_lineno,
-        ...$parameters
+        FQSEN|Type|UnionType|int|string ...$parameters
     ): void {
         $this->issues[] = [
             $issue_type,

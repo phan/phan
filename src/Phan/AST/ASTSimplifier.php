@@ -20,7 +20,6 @@ use function in_array;
  * and returns the new Node.
  * The original ast\Node objects are not modified.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPossiblyUndeclaredProperty
  */
 class ASTSimplifier
@@ -185,7 +184,7 @@ class ASTSimplifier
      * @internal the way this behaves may change
      * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
-    public static function isExpressionWithoutSideEffects(\ast\Node|float|int|string $node): bool
+    public static function isExpressionWithoutSideEffects(Node|float|int|string $node): bool
     {
         if (!($node instanceof Node)) {
             return true;
@@ -533,7 +532,7 @@ class ASTSimplifier
     /**
      * Creates a Node for `if (!COND) { break; }`
      */
-    private static function makeBreakWithNegatedConditional(\ast\Node|float|int|string $cond_node, int $lineno): Node
+    private static function makeBreakWithNegatedConditional(Node|float|int|string $cond_node, int $lineno): Node
     {
         $break_if_elem = new Node(
             ast\AST_IF_ELEM,

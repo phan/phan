@@ -14,7 +14,6 @@ use Stringable;
  * Any PHP structural element that also has a type and is
  * does not store a reference to its context (such as a variable).
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
- * @suppress PhanRedefinedInheritedInterface this uses a polyfill for Stringable
  */
 #[\AllowDynamicProperties]
 abstract class UnaddressableTypedElement implements Stringable

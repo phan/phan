@@ -52,7 +52,6 @@ class NamespaceMapEntry implements \Serializable
 
     /**
      * @param string $representation
-     * TODO add implementation of __serialize/__unserialize to ensure compatibility with php 7.4
      */
     public function unserialize($representation): void
     {

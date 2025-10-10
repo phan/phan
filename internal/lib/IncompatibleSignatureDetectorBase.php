@@ -618,8 +618,7 @@ EOT;
         return $parts;
     }
 
-    /** @param int|string|float $scalar */
-    protected static function encodeScalar($scalar): string
+    protected static function encodeScalar(float|int|string $scalar): string
     {
         if (is_string($scalar)) {
             return "'" . addcslashes($scalar, "'") . "'";

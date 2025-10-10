@@ -1,1 +1,1 @@
-%s:30 PhanUndeclaredConstant Reference to undeclared constant \MISSING_CONSTANT. This will cause a thrown Error in php 8.0+.
+%s:30 PhanUndeclaredConstant Reference to undeclared constant \MISSING_CONSTANT. This would throw an Error.

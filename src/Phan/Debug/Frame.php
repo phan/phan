@@ -31,9 +31,8 @@ class Frame
 {
     /**
      * Utilities to encode values might be seen in Phan or its plugins in a crash.
-     * @param mixed $value
      */
-    public static function encodeValue($value, int $max_depth = 2): string
+    public static function encodeValue(mixed $value, int $max_depth = 2): string
     {
         if (is_object($value)) {
             if ($value instanceof IssueInstance) {

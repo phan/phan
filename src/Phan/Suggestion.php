@@ -53,7 +53,7 @@ final class Suggestion
      * @param mixed $data
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setInternalData($data): void
+    public function setInternalData(mixed $data): void
     {
         $this->internal_data = $data;
     }
@@ -61,10 +61,9 @@ final class Suggestion
     /**
      * Gets additional data.
      * This can be used by plugins implementing --automatic-fix, for example.
-     * @return mixed
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getInternalData()
+    public function getInternalData() : mixed
     {
         return $this->internal_data;
     }

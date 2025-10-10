@@ -156,7 +156,7 @@ class PhanParameterInfo
  * @phan-param array{0:string}|array<string,string> $fields
  * @return list<PhanParameterInfo>
  */
-function get_parameters_from_phan($fields): array
+function get_parameters_from_phan(array $fields): array
 {
     unset($fields[0]);
     $result = [];
@@ -189,7 +189,7 @@ function getUnionTypeStringForReflectionType(?ReflectionType $reflection_type = 
  * Note that certain bugs in the reflection info may be backwards incompatible changes
  * (e.g. making an optional method parameter required, changing real param/return types in certain ways, etc.
  * may be backwards incompatible for classes that subclass a class,
- * and would have to wait for the next PHP major version (8.0))
+ * and would have to wait for the next PHP major version)
  *
  * @param array<int|string,string> $fields the signature from Phan being checked for contradictions
  * @param array<string,array<int|string,string>> $signatures the set of all signatures (to check for existence of alternates)

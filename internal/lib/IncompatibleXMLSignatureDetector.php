@@ -541,9 +541,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /** @return string|false */
-    private function fileGetContents(string $file_path)
+    private function fileGetContents(string $file_path) : bool|string
     {
-        return $this->memoize(__METHOD__ . ':' . $file_path, /** @return string|false */ static function () use ($file_path) {
+        return $this->memoize(__METHOD__ . ':' . $file_path, /** @return string|false */ static function () use ($file_path) : bool|string {
             return file_get_contents($file_path);
         });
     }
@@ -668,8 +668,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $result;
     }
 
-    /** @param string|int|float $type */
-    private static function toTypeString($type): string
+    private static function toTypeString(float|int|string $type): string
     {
         // TODO: Validate that Phan can parse these?
         $type = (string)$type;

@@ -23,14 +23,14 @@
 %s:60 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 0, but callable arrays must be of size 2
 %s:64 PhanParamTooFew Call with 0 arg(s) to \f6($i) which requires 1 arg(s) defined at %s:63
 %s:71 PhanParamTooMany Call with 2 arg(s) to \f7($i) which only takes 1 arg(s) defined at %s:70
-%s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s). This is an ArgumentCountError for internal functions in PHP 8.0+.
+%s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen(string $string) which only takes 1 arg(s). This would throw an ArgumentCountError.
 %s:79 PhanRedefineClass Class \C15 defined at %s:79 was previously defined as Class \C15 at %s:80
 %s:80 PhanRedefineClass Class \C15 defined at %s:80 was previously defined as Class \C15 at %s:79
 %s:83 PhanRedefineClassInternal Class \DateTime defined at %s:83 was previously defined as Class \DateTime internally
 %s:86 PhanRedefineFunction Function f9 defined at %s:86 was previously defined at %s:87
 %s:87 PhanRedefineFunction Function f9 defined at %s:87 was previously defined at %s:86
 %s:90 PhanRedefineFunctionInternal Function strlen defined at %s:90 was previously defined internally
-%s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93. This is an Error in PHP 8.0+.
+%s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93. This would throw an Error.
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
 %s:104 PhanTypeArraySuspicious Suspicious array access to $v4 of type false
 %s:107 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare [1,2] of type array{0:1,1:2} to 'string' of type 'string'

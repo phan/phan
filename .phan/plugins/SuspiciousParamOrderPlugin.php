@@ -71,7 +71,7 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @param Node|string|int|float|null $arg_node
      */
-    private static function extractName(\ast\Node|float|int|null|string $arg_node): ?string
+    private static function extractName(Node|float|int|null|string $arg_node): ?string
     {
         if (!$arg_node instanceof Node) {
             return null;

@@ -158,7 +158,7 @@ class LoopVariableReuseVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float|null $node
      * @return array<int|string,Node> a list of all variable nodes in this foreach
      */
-    public function extractVariables($node): array
+    public function extractVariables(Node|float|int|null|string $node): array
     {
         if (!$node instanceof Node) {
             return [];

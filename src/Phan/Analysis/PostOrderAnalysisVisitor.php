@@ -262,7 +262,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($variable) {
                     // Store the RHS expression node so ConditionVisitor can re-apply type narrowing
                     // when this variable is tested in an if/while condition
-                    // @phan-suppress-next-line PhanUndeclaredProperty - using AllowDynamicProperties
                     $variable->phan_condition_expr = $expr_node;
                 }
             }
@@ -1846,7 +1845,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
      * @param Node|string|int|float|null $inner_node
      */
-    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, \ast\Node|float|int|null|string $inner_node): void
+    private function emitTypeMismatchReturnIssue(UnionType $expression_type, FunctionInterface $method, UnionType $method_return_type, int $lineno, Node|float|int|null|string $inner_node): void
     {
         if ($this->shouldSuppressIssue(Issue::TypeMismatchReturnReal, $lineno)) {
             // Suppressing TypeMismatchReturnReal also suppresses less severe return type mismatches
@@ -2246,7 +2245,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         UnionType $expression_type,
         UnionType $method_return_type,
         int $lineno,
-        \ast\Node|float|int|null|string $inner_node
+        Node|float|int|null|string $inner_node
     ): bool {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
@@ -2307,7 +2306,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node|string|int|float|null $node
      */
-    private static function returnExpressionToShortString(\ast\Node|float|int|null|string $node): string
+    private static function returnExpressionToShortString(Node|float|int|null|string $node): string
     {
         return $node !== null ? ASTReverter::toShortString($node) : 'void';
     }
@@ -2330,7 +2329,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param \ast\Node|float|int|null|string $node
      * @return \Generator<int, array{0: UnionType, 1:\ast\Node|string|int|float|null}>
      */
-    private function getReturnTypes(Context $context, \ast\Node|float|int|null|string $node, int $return_lineno): \Generator
+    private function getReturnTypes(Context $context, Node|float|int|null|string $node, int $return_lineno): \Generator
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
@@ -2780,7 +2779,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Node|int|string|float|null $node
      */
-    public static function isStaticNameNode(\ast\Node|float|int|null|string $node, bool $allow_self): bool
+    public static function isStaticNameNode(Node|float|int|null|string $node, bool $allow_self): bool
     {
         if (!$node instanceof Node) {
             return false;
@@ -3186,7 +3185,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
 
-            // Abstract private methods in traits are allowed in PHP 8.0+ (our minimum is 8.1)
             $this->checkForPHP4StyleConstructor($class, $method);
         } catch (Exception) {
         }
@@ -4818,7 +4816,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
         Parameter $parameter,
-        $argument,
+        mixed $argument,
         array $argument_types,
         array &$parameter_list,
         int $parameter_offset
@@ -5076,7 +5074,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Node $node the function/method call node
      * @param Func|Method|mixed $function_like the function or method being called
      */
-    private function checkNoDiscardAttribute(Node $node, $function_like): void
+    private function checkNoDiscardAttribute(Node $node, mixed $function_like): void
     {
         // Only check for Func and Method instances (not closures or other types)
         if (!($function_like instanceof \Phan\Language\Element\Func || $function_like instanceof \Phan\Language\Element\Method)) {

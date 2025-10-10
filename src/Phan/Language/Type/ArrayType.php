@@ -257,7 +257,7 @@ class ArrayType extends IterableType
      * @param UnionType $field_type
      * @return UnionType with ArrayType subclass(es)
      */
-    public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type): UnionType
+    public static function combineArrayShapeTypesWithField(UnionType $left, bool|float|int|string $field_dim_value, UnionType $field_type): UnionType
     {
         $type_set = [];
         $left_array_shape_types = [];
@@ -284,7 +284,7 @@ class ArrayType extends IterableType
      * @param UnionType $field_type
      * @return list<ArrayType>
      */
-    private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, $field_dim_value, UnionType $field_type): array
+    private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, bool|float|int|string $field_dim_value, UnionType $field_type): array
     {
         $has_non_array_shape = false;
         foreach ($left->getRealTypeSet() as $type) {

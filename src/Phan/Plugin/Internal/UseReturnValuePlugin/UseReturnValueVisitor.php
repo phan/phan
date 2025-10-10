@@ -501,10 +501,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    /**
-     * @param ?(Node|string|int|float) $node_name
-     */
-    private function shouldNotWarnForDynamicCall($node_name): bool
+    private function shouldNotWarnForDynamicCall(Node|float|int|null|string $node_name): bool
     {
         if ($node_name instanceof Node) {
             foreach ((new ContextNode(

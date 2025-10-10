@@ -115,4 +115,4 @@ test_script:
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
 - cmd: php -d phar.readonly=0 internal/package.php
-- cmd: php build/phan.phar --quick
+- cmd: php build/phan.phar --quick --always-exit-successfully-after-analysis

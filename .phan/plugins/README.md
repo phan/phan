@@ -331,10 +331,10 @@ The warning types for methods are below:
 #### PHPDocInWrongCommentPlugin
 
 This plugin warns about using phpdoc annotations such as `@param` in block comments(`/*`) instead of phpdoc comments(`/**`).
-This also warns about using `#` instead of `//` for line comments, because `#[` is used for php 8.0 attributes and will cause confusion.
+This also warns about using `#` instead of `//` for line comments, because `#[` is used for attributes and can cause confusion.
 
 - **PhanPluginPHPDocInWrongComment**: `Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**", not "/*"`
-- **PhanPluginPHPDocHashComment**: `Saw comment starting with # in {COMMENT} - consider using // instead to avoid confusion with php 8.0 #[ attributes`
+- **PhanPluginPHPDocHashComment**: `Saw comment starting with # in {COMMENT} - consider using // instead to avoid confusion with #[ attributes`
 
 #### InvalidVariableIssetPlugin.php
 
@@ -541,21 +541,6 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
 
 Makes Phan analyze aliases of global functions (e.g. `join()`, `sizeof()`) as if they were deprecated.
 Supports `--automatic-fix`.
-
-#### PHP53CompatibilityPlugin.php
-
-Catches common incompatibilities from PHP 5.3 to 5.6.
-**This plugin does not aim to be comprehensive - read the guides on https://www.php.net/manual/en/appendices.php if you need to migrate from php versions older than 5.6**
-
-`InvokePHPNativeSyntaxCheckPlugin` with `'php_native_syntax_check_binaries' => [PHP_BINARY, '/path/to/php53']` in the `'plugin_config'` is a better but slower way to check that syntax used does not cause errors in PHP 5.3.
-
-`backward_compatibility_checks` should also be enabled if migrating a project from php 5 to php 7.
-
-Emitted issue types:
-
-- **PhanPluginCompatibilityShortArray**: `Short arrays ({CODE}) require support for php 5.4+`
-- **PhanPluginCompatibilityArgumentUnpacking**: `Argument unpacking ({CODE}) requires support for php 5.6+`
-- **PhanPluginCompatibilityVariadicParam**: `Variadic functions ({CODE}) require support for php 5.6+`
 
 #### DuplicateConstantPlugin.php
 

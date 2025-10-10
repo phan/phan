@@ -1,0 +1,5 @@
+src_copy/017_prefer_namespace_use.php:12 PhanPluginPreferNamespaceUseParamType Could write param type of $param of testMethodParam as TestObject instead of \TestPreferNamespaceUse1\TestObject
+src_copy/017_prefer_namespace_use.php:15 PhanPluginPreferNamespaceUseReturnType Could write return type of testMethodReturn as TestObject instead of \TestPreferNamespaceUse1\TestObject
+src_copy/017_prefer_namespace_use.php:19 PhanPluginPreferNamespaceUseReturnType Could write return type of testNullable as ?TestObject instead of ?\TestPreferNamespaceUse1\TestObject
+src_copy/017_prefer_namespace_use.php:23 PhanPluginPreferNamespaceUseParamType Could write param type of $param of testUnionTypes as TestObject|string instead of \TestPreferNamespaceUse1\TestObject|string
+src_copy/017_prefer_namespace_use.php:23 PhanPluginPreferNamespaceUseReturnType Could write return type of testUnionTypes as bool|TestObject instead of bool|\TestPreferNamespaceUse1\TestObject

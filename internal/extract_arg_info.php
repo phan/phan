@@ -26,8 +26,6 @@ use Phan\Language\UnionType;
 /**
  * This extracts the real signature types for commonly used functions from opcache.
  *
- * Note that php 8.0 has TypeError and ArgumentCountError for internal functions,
- * so the return types are much more specific.
  * @phan-file-suppress PhanPluginRemoveDebugAny
  */
 class OpcacheFuncInfoParser

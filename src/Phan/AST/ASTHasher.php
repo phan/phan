@@ -25,7 +25,7 @@ class ASTHasher
      * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key for the Node which is unlikely to overlap for ordinary code
      */
-    public static function hash(\ast\Node|float|int|null|string $node): string
+    public static function hash(Node|float|int|null|string $node): string
     {
         // Handle primitives with raw representation (not hashed)
         if (!is_object($node)) {

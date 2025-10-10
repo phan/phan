@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\CallableArrayType;
@@ -25,6 +26,8 @@ use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 
+use Phan\Exception\FQSENException;
+use InvalidArgumentException;
 use function count;
 use function is_int;
 use function is_string;
@@ -51,6 +54,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         $string_union_type_real = StringType::instance(false)->asRealUnionType();
         $string_union_type_with_null_in_real = UnionType::fromFullyQualifiedPHPDocAndRealString('string', '?string');
+        $mixed_union_type = UnionType::fromFullyQualifiedPHPDocString('mixed');
         $true_union_type = TrueType::instance(false)->asPHPDocUnionType();
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
         $string_or_false_real_type = UnionType::fromFullyQualifiedRealString('string|false');
@@ -258,20 +262,38 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $string_or_false_real_type;
         };
+
         /**
-         * @param CodeBase $unused_code_base @phan-unused-param
-         * @param Context $unused_context @phan-unused-param
-         * @param Func $unused_function @phan-unused-param
-         * @param list<Node|int|float|string> $args @phan-unused-param
+         * @param list<Node|int|float|string> $args
          */
-        $substr_handler = static function (
-            CodeBase $unused_code_base,
-            Context $unused_context,
+        $constant_handler = static function (
+            CodeBase $code_base,
+            Context $context,
             Func $unused_function,
             array $args
-        ) use ($string_union_type_real): UnionType {
-            // PHP 8.0+ behavior - both target and minimum are 8.1+
-            return $string_union_type_real;
+        ) use ($mixed_union_type): UnionType {
+            if (count($args) === 0) {
+                return $mixed_union_type;
+            }
+            $constant_name = (new ContextNode($code_base, $context, $args[0]))->getEquivalentPHPScalarValue();
+            if (!is_string($constant_name) || $constant_name === '') {
+                return $mixed_union_type;
+            }
+            try {
+                $fqsen = $constant_name[0] === '\\'
+                    ? FullyQualifiedGlobalConstantName::fromFullyQualifiedString($constant_name)
+                    : FullyQualifiedGlobalConstantName::fromStringInContext($constant_name, $context);
+            } catch (InvalidArgumentException | FQSENException) {
+                return $mixed_union_type;
+            }
+            if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                return $mixed_union_type;
+            }
+            $constant = $code_base->getGlobalConstantByFQSEN($fqsen);
+            if ($constant->isDynamicConstant()) {
+                return $mixed_union_type;
+            }
+            return $constant->getUnionType();
         };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
@@ -378,21 +400,6 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 'non-empty-list<string>'
             );
         };
-        /**
-         * @param CodeBase $code_base @phan-unused-param
-         * @param Context $context @phan-unused-param
-         * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args @phan-unused-param
-         */
-        $one_or_two_string_handler = static function (
-            CodeBase $code_base,
-            Context $context,
-            Func $function,
-            array $args
-        ) use ($string_union_type_real): UnionType {
-            // PHP 8.0+ behavior - always return string
-            return $string_union_type_real;
-        };
 
         // TODO: Handle flags of preg_split.
         return [
@@ -413,14 +420,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
             'parse_url'                   => $parse_url_handler,
-            'substr'                      => $substr_handler,
             'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
             'bcdiv'                       => $bcdiv_callback,
             'explode'                     => $explode_handler,
-            'trim'                        => $one_or_two_string_handler,
-            'ltrim'                       => $one_or_two_string_handler,
-            'rtrim'                       => $one_or_two_string_handler,
+            'constant'                    => $constant_handler,
         ];
     }
 

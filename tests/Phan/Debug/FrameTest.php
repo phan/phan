@@ -19,10 +19,7 @@ use stdClass;
 final class FrameTest extends BaseTest
 {
 
-    /**
-     * @param mixed $value
-     */
-    private function assertHasEncodedValue(string $expected, $value): void
+    private function assertHasEncodedValue(string $expected, mixed $value): void
     {
         $this->assertSame($expected, Frame::encodeValue($value), 'unexpected result of encodeValue');
     }

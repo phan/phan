@@ -47,7 +47,7 @@ class ClientHandler
      *
      * @suppress PhanUnreferencedPublicMethod may be used as LSP support improves?
      */
-    public function request(string $method, $params): Promise
+    public function request(string $method, array|object $params): Promise
     {
         $id = $this->idGenerator->generate();
         return $this->protocolWriter->write(
@@ -86,7 +86,7 @@ class ClientHandler
      * @param array|object $params The method parameters
      * @return Promise <null> Will be resolved as soon as the notification has been sent
      */
-    public function notify(string $method, $params): Promise
+    public function notify(string $method, array|object $params): Promise
     {
         return $this->protocolWriter->write(
             new Protocol\Message(

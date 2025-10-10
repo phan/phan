@@ -23,7 +23,6 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 use function dirname;
 use function file_put_contents;
-use function gettype;
 use function is_dir;
 use function is_object;
 use function is_string;
@@ -64,7 +63,7 @@ final class PhantasmPlugin extends PluginV3 implements
      * @param PhpParser\Node|Token|string $token
      * @suppress PhanUndeclaredProperty deliberately using dynamic properties
      */
-    public static function convertToString($token, string $file_contents): string
+    public static function convertToString(\Microsoft\PhpParser\Node|Token|string $token, string $file_contents): string
     {
         if (is_object($token)) {
             if (isset($token->string_replacement)) {
@@ -76,15 +75,16 @@ final class PhantasmPlugin extends PluginV3 implements
                     $result .= self::convertToString($child_node, $file_contents);
                 }
                 return $result;
-            } elseif ($token instanceof Token) {
+            } else {
+                // $token instanceof Token
                 $token_text = $token->getFullText($file_contents);
                 // echo "token_text='''$token_text'''\n";
                 return $token_text;
             }
-        } elseif (is_string($token)) {
+        } else {
+            // String
             return $token;
         }
-        throw new AssertionError("Unexpected node type " . gettype($token));
     }
 
     /**

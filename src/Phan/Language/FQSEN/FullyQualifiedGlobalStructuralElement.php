@@ -96,7 +96,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $namespace,
         string $name,
         int $alternate_id = 0
-    ) {
+    ) : FullyQualifiedGlobalStructuralElement|static {
         // Transfer any relative namespace stuff from the
         // name to the namespace.
         $name_parts = \explode('\\', $name);
@@ -220,7 +220,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @throws FQSENException on failure.
      */
-    public static function makeIfLoaded(string $namespace, string $name)
+    public static function makeIfLoaded(string $namespace, string $name) : ?static
     {
         $name_parts = \explode('\\', $name);
         $name = (string)\array_pop($name_parts);
@@ -375,7 +375,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     public function withNamespace(
         string $namespace
-    ) {
+    ) : FullyQualifiedGlobalStructuralElement|static {
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall the class name was already validated
         return static::make(
             self::cleanNamespace($namespace),

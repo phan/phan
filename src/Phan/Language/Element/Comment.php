@@ -290,7 +290,6 @@ class Comment
                 $this->magic_method_map[$name] = $method;
             }
         }
-        // @phan-suppress-next-line PhanSideEffectFreeForeachBody applyOverride is annotated as @phan-pure due to the catch-all annotation, so phan treats this like it has no side effects.
         foreach ($phan_overrides as $key => $override_value) {
             $this->applyOverride($key, $override_value);
         }
@@ -310,10 +309,7 @@ class Comment
         $this->return_comment = new ReturnComment($return_type, $old_comment->getLineno());
     }
 
-    /**
-     * @param mixed $value
-     */
-    private function applyOverride(string $key, $value): void
+    private function applyOverride(string $key, mixed $value): void
     {
         switch ($key) {
             case 'param':

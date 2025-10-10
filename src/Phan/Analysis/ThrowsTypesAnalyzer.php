@@ -97,7 +97,7 @@ class ThrowsTypesAnalyzer
         }
         if ($type instanceof ObjectType) {
             // (at)throws object is valid and should be treated like Throwable
-            // NOTE: catch (object $o) does nothing in php 7.2.
+            // NOTE: catch (object $o) does nothing.
             return true;
         }
         static $throwable;

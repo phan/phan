@@ -34,7 +34,7 @@ class ScopeImpactCheckingVisitor extends InferPureVisitor
     public static function hasPossibleImpact(
         CodeBase $code_base,
         Context $context,
-        \ast\Node|float|int|null|string $node
+        Node|float|int|null|string $node
     ): bool {
         if (!($node instanceof Node)) {
             return false;

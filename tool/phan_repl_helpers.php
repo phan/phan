@@ -61,7 +61,7 @@ if (!function_exists('help')) {
  *
  * @suppress PhanUnreferencedFunction this is meant to be used interactively and is currently untested
  */
-    function help($value = "\x00extended_help"): void
+    function help(mixed $value = "\x00extended_help"): void
     {
         phan_repl_help($value);
     }
@@ -70,7 +70,7 @@ if (!function_exists('help')) {
 /**
  * Actual implementation of help()
  */
-function phan_repl_help($value = "\x00extended_help"): void
+function phan_repl_help(mixed $value = "\x00extended_help"): void
 {
     if ($value === "\x00extended_help") {
         echo "Phan " . CLI::PHAN_VERSION . " CLI autocompletion utilities.\n";
@@ -241,7 +241,7 @@ class PhanPhpShellUtils
      * Convert a token to a string
      * @param array{0:int,1:string,2:int}|string|false $token
      */
-    public static function tokenToString($token): string
+    public static function tokenToString(array|bool|string $token): string
     {
         return is_array($token) ? $token[1] : (string)$token;
     }
@@ -325,14 +325,11 @@ class PhanPhpShellUtils
                 return $property_completions;
             }
         }
-        // TODO: PHP adds filtering by ReflectionClassConstant::IS_PUBLIC in 8.0
         // TODO: Make some of these case insensitive?
 
         $constant_candidates = ['class'];
-        foreach ($reflection_class->getReflectionConstants() as $reflection_constant) {
-            if (!$reflection_constant->isPublic()) {
-                continue;
-            }
+        // @phan-suppress-next-line PhanParamTooManyInternal TODO Why?
+        foreach ($reflection_class->getReflectionConstants(ReflectionClassConstant::IS_PUBLIC) as $reflection_constant) {
             $constant_candidates[] = $reflection_constant->getName();
         }
         $constant_completions = $this->generateCompletionsFromCandidates($constant_candidates, $instance_element_prefix, '');
@@ -400,7 +397,6 @@ class PhanPhpShellUtils
     {
         $function_candidates = array_values(array_merge([], ...array_values(get_defined_functions(true))));
         $function_completions = $this->generateCompletionsFromCandidates($function_candidates, $prefix, '');
-        // @phan-suppress-next-line PhanRedundantArrayValuesCall
         $other_candidates = array_values(array_merge(
             get_declared_classes(),
             get_declared_traits(),
@@ -422,10 +418,7 @@ class PhanPhpShellUtils
         return $result;
     }
 
-    /**
-     * @param string|bool|int $value
-     */
-    protected function setReadlineConfig(string $key, $value): void
+    protected function setReadlineConfig(string $key, bool|int|string $value): void
     {
         readline_info($key, $value);
     }

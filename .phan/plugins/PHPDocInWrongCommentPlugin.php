@@ -57,7 +57,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
                         $code_base,
                         (clone $context)->withLineNumberStart($token[2]),
                         'PhanPluginPHPDocHashComment',
-                        'Saw comment starting with {COMMENT} in {COMMENT} - consider using {COMMENT} instead to avoid confusion with php 8.0 {COMMENT} attributes',
+                        'Saw comment starting with {COMMENT} in {COMMENT} - consider using {COMMENT} instead to avoid confusion with {COMMENT} attributes',
                         ['#', StringUtil::jsonEncode(self::truncate(trim($comment_string))), '//', '#[']
                     );
                 }

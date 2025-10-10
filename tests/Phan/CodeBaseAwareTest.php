@@ -47,7 +47,7 @@ abstract class CodeBaseAwareTest extends BaseTest
             }
 
             $code_base = new CodeBase(
-                $internal_class_name_list,  // @phan-suppress-current-line PhanTypeMismatchArgument
+                $internal_class_name_list,
                 $internal_interface_name_list,
                 $internal_trait_name_list,
                 CodeBase::getPHPInternalConstantNameList(),  // Get everything except user-defined constants

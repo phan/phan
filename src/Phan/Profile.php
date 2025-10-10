@@ -27,11 +27,9 @@ trait Profile
      * @param \Closure $closure
      * Any closure to measure how long it takes to run
      *
-     * @return mixed
-     *
      * @suppress PhanUnreferencedProtectedMethod (unused, may use something similar in the future)
      */
-    protected static function time(string $label, \Closure $closure)
+    protected static function time(string $label, \Closure $closure) : mixed
     {
 
         if (!Config::getValue('profiler_enabled')) {

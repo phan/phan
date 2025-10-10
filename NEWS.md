@@ -8,6 +8,8 @@ Breaking changes:
 - The `-i` CLI option is now an alias of `--incremental` instead of `--ignore-undeclared`
 - Dropped support for (minimum) target PHP version < 8.1.
 - Renamed the `PhanPluginCanUsePHP71Void` issue to `PhanPluginCanUseVoidReturnType`
+- Phan will throw an error and exit when none of the files in `include_analysis_file_list` exist
+- Dropped the `allow_method_param_type_widening` config option (contravariance is now always allowed)
 
 New features (Analysis):
 - Full support for PHP 8.5 features:
@@ -41,6 +43,7 @@ New features (Analysis):
     across several lines without being misinterpreted.
   - `PHPDocRedundantPlugin` now flags redundant `@var` annotations on typed
     properties, matching its existing coverage for functions and methods.
+- `PreferNamespaceUsePlugin` now handles union types
 
 New features (CLI):
 - `-n`/`--no-config-file` implicitly limits analysis to just the files provided

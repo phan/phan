@@ -29,7 +29,7 @@ final class StringFunctionPlugin extends PluginV3 implements
      * @param Node|string|float|int|null $arg
      * @return bool true if the expression is simple to look up.
      */
-    private static function isSimpleExpression($arg): bool
+    private static function isSimpleExpression(Node|float|int|null|string $arg): bool
     {
         if (\is_scalar($arg)) {
             return true;

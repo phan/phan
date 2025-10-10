@@ -58,10 +58,10 @@ final class CompletionRequest extends NodeInfoRequest
     }
 
     /**
-     * @param ?CompletionItem|?list<CompletionItem>|array<string,mixed> $completions
+     * @param CompletionItem|list<CompletionItem>|array<string,mixed>|null $completions
      * @suppress PhanPartialTypeMismatchArgument this accepts multiple types of arrays
      */
-    public function recordCompletionList($completions): void
+    public function recordCompletionList(CompletionItem|array|null $completions): void
     {
         if ($completions instanceof CompletionItem || isset($completions['label'])) {
             $completions = [$completions];
@@ -196,7 +196,7 @@ final class CompletionRequest extends NodeInfoRequest
                  * @param int|string $a usually strings
                  * @param int|string $b
                  */
-                static function ($a, $b): int {
+                static function (int|string $a, int|string $b): int {
                     $a = \ltrim((string)$a, '$');
                     $b = \ltrim((string)$b, '$');
                     return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);

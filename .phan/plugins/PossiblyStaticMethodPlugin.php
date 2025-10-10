@@ -123,7 +123,7 @@ final class PossiblyStaticMethodPlugin extends PluginV3 implements
      * @param Node|int|string|float|null $node
      * @return bool - returns true if the node allows its method to be static
      */
-    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, \ast\Node|float|int|null|string $node): bool
+    private static function nodeCanBeStatic(CodeBase $code_base, FunctionInterface $method, Node|float|int|null|string $node): bool
     {
         if (!($node instanceof Node)) {
             return true;

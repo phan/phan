@@ -93,7 +93,6 @@ final class StringUtil
             return str_replace(
                 ['\\\\', '\\\''],
                 ['\\', '\''],
-                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
                 substr($str, $binary_length + 1, -1)
             );
         } else {
@@ -161,7 +160,7 @@ final class StringUtil
                 if (isset(self::REPLACEMENTS[$str])) {
                     return self::REPLACEMENTS[$str];
                 } elseif ('x' === $str[0] || 'X' === $str[0]) {
-                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal, PhanPossiblyFalseTypeArgumentInternal
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     return chr(hexdec(substr($str, 1)));
                 } elseif ('u' === $str[0]) {
                     // @phan-suppress-next-line PhanPartialTypeMismatchArgument
