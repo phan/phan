@@ -113,9 +113,6 @@ class Config
     /** @var bool replicates Config::getValue('track_references') */
     private static $track_references = false;
 
-    /** @var bool replicates Config::getValue('backward_compatibility_checks') */
-    private static $backward_compatibility_checks = false;
-
     /** @var bool replicates Config::getValue('quick_mode') */
     private static $quick_mode = false;
     // End of the most commonly accessed configs.
@@ -148,8 +145,6 @@ class Config
         // If this is set to `null`,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute Phan.
-        //
-        // (See `backward_compatibility_checks` for additional options)
         'target_php_version' => null,
 
         // The PHP version that will be used for feature/syntax compatibility warnings.
@@ -257,19 +252,6 @@ class Config
         // to be parsed and analyzed, and `exclude_*` to exclude files
         // and folders from analysis.
         'include_analysis_file_list' => [],
-
-        // Backwards Compatibility Checking. This is slow
-        // and expensive, but you should consider running
-        // it before upgrading your version of PHP to a
-        // new version that has backward compatibility
-        // breaks.
-        //
-        // If you are migrating from PHP 5 to PHP 7,
-        // you should also look into using
-        // [php7cc (no longer maintained)](https://github.com/sstalle/php7cc)
-        // and [php7mar](https://github.com/Alexia/php7mar),
-        // which have different backwards compatibility checks.
-        'backward_compatibility_checks' => true,
 
         // Enable incremental analysis to only re-analyze changed files and their dependents.
         // null = auto-detect (enabled for CLI mode, disabled for daemon/language server mode)
@@ -1171,12 +1153,6 @@ class Config
         return self::$track_references;
     }
 
-    /** If true, then Phan enables backwards compatibility checking. */
-    public static function get_backward_compatibility_checks(): bool
-    {
-        return self::$backward_compatibility_checks;
-    }
-
     /**
      * If true, then Phan runs a quick version of checks that takes less
      * time at the cost of not running as thorough
@@ -1259,9 +1235,6 @@ class Config
             case 'dead_code_detection':
             case 'force_tracking_references':
                 self::$track_references = self::getValue('dead_code_detection') || self::getValue('force_tracking_references');
-                break;
-            case 'backward_compatibility_checks':
-                self::$backward_compatibility_checks = $value;
                 break;
             case 'quick_mode':
                 self::$quick_mode = $value;
@@ -1564,7 +1537,6 @@ class Config
             'array_casts_as_null' => $is_bool,
             'autoload_internal_extension_signatures' => $is_associative_string_array,
             'included_extension_subset' => $is_string_list_or_null,
-            'backward_compatibility_checks' => $is_bool,
             'incremental_analysis' => static function (mixed $value): bool {
                 return $value === null || \is_bool($value);
             },

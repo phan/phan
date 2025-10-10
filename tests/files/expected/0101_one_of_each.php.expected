@@ -1,8 +1,5 @@
 %s:5 PhanAccessPropertyPrivate Cannot access private property \C1::$p defined at %s:4
 %s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p defined at %s:8
-%s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
-%s:14 PhanUndeclaredGlobalVariable Global variable $v1 is undeclared
-%s:14 PhanUndeclaredGlobalVariable Global variable $v2 is undeclared
 %s:17 PhanContextNotObject Cannot access parent when not in object context
 %s:17 PhanNoopNew Unused result of new object creation expression in new parent() (this may be called for the side effects of the non-empty constructor or destructor)
 %s:22 PhanDeprecatedFunction Call to deprecated function \f1() defined at %s:21

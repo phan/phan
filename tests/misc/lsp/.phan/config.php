@@ -53,10 +53,6 @@ return [
     // hope of fixing.
     'ignore_undeclared_variables_in_global_scope' => false,
 
-    // Backwards Compatibility Checking
-    // Check for $$var[] and $foo->$bar['baz'] and Foo::$bar['baz']() and $this->$bar['baz']
-    'backward_compatibility_checks' => false,
-
     // If enabled, check all methods that override a
     // parent method to make sure its signature is
     // compatible with the parent's. This check

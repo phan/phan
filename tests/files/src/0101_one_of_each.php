@@ -8,10 +8,10 @@ print C1::$p;
 class C2 { protected static $p = 42; }
 print C2::$p;
 
-// Issue::PhanCompatibleExpressionPHP7
 
-// Issue::PhanCompatiblePHP7
-$v1->$v2[0]();
+
+
+
 
 // Issue::PhanContextNotObject
 new parent;

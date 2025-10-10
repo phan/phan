@@ -329,7 +329,6 @@ EOT;
             'strict_return_checking'   => $is_strongest_level,
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
             'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
-            'backward_compatibility_checks' => false,  // this is only useful for migrating from php5
             'check_docblock_signature_return_type_match' => !$is_average_level,
             'phpdoc_type_mapping' => [],
             'dead_code_detection' => false,  // this is slow

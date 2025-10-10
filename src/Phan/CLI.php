@@ -576,10 +576,6 @@ class CLI
                 case 'quick':
                     Config::setValue('quick_mode', true);
                     break;
-                case 'b':
-                case 'backward-compatibility-checks':
-                    Config::setValue('backward_compatibility_checks', true);
-                    break;
                 case 'p':
                 case 'progress-bar':
                     $progress_bar = true;
