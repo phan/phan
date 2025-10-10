@@ -1,6 +1,0 @@
-src_copy/006_redundant_comment.php:8 PhanPluginRedundantFunctionComment Redundant doc comment on function returns_int(). Either add a description or remove the comment: '/** @return int */'
-src_copy/006_redundant_comment.php:9 PhanDeprecatedFunctionInternal Call to deprecated function \rand() (Deprecated because: Deprecated in PHP 8.3. Use random_int() or Random\Randomizer::getInt().)
-src_copy/006_redundant_comment.php:18 PhanPluginRedundantClosureComment Redundant doc comment on closure Closure(int $input) : int. Either add a description or remove the comment: "/**\n * @param int \$input\n * @return int\n */"
-src_copy/006_redundant_comment.php:29 PhanPluginRedundantMethodComment Redundant doc comment on method __construct(). Either add a description or remove the comment: "/**\n     * @param int \$a\n     * @param string \$b\n     * @param bool|null \$c\n     */"
-src_copy/006_redundant_comment.php:36 PhanPluginRedundantMethodComment Redundant doc comment on method f(). Either add a description or remove the comment: "/**\n     *\n     */"
-src_copy/006_redundant_comment.php:41 PhanPluginRedundantPropertyComment Redundant doc comment on property \ns6\C->count. Either add a description or remove the @var annotation: '/** @var int */'
