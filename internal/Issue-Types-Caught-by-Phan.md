@@ -277,6 +277,14 @@ Cannot modify read-only property {PROPERTY} defined at {FILE}:{LINE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0763_immutable_class.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0763_immutable_class.php#L20).
 
+## PhanAccessReadOnlyPropertyMultipleTimes
+
+```
+Cannot modify readonly property {PROPERTY} after initialization
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4703_readonly_phpdoc_vs_native.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4703_readonly_phpdoc_vs_native.php#L48).
+
 ## PhanAccessSetPropertyWrongContext
 
 ```

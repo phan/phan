@@ -1422,27 +1422,119 @@ class AssignmentVisitor extends AnalysisVisitor
         $context = $property->getContext();
 
         $is_from_phpdoc = $property->isFromPHPDoc();
-        if (!$is_from_phpdoc && $this->context->isInFunctionLikeScope()) {
+
+        // Magic properties (@property-read) should always warn, even in __construct
+        // They are handled by __get/__set methods, not direct assignment
+        if ($is_from_phpdoc) {
+            $this->emitIssue(
+                Issue::AccessReadOnlyMagicProperty,
+                $node->lineno,
+                $property->asPropertyFQSENString(),
+                $context->getFile(),
+                $context->getLineNumberStart()
+            );
+            return;
+        }
+
+        // Distinguish between native readonly and @phan-read-only
+        $is_native_readonly = $property->isReadOnlyReal();
+
+        if ($this->context->isInFunctionLikeScope() && $this->context->isInClassScope()) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
-            $allowed_methods = Config::get_closest_minimum_target_php_version_id() >= 80300 ? [ '__construct', '__clone' ] : [ '__construct' ];
-            if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true)) {
-                $method_class_fqsen = $this->context->getClassFQSEN();
-                $property_class_type = $class_fqsen->asType();
-                if ($method_class_fqsen->asType()->isSubtypeOf($property_class_type, $this->code_base) || $method_class_fqsen === $class_fqsen) {
-                    // This is a constructor setting its own properties or a base class's properties,
-                    // or a deep-cloned property in PHP 8.3+.
-                    // TODO: Could support private methods
-                    return;
+            $method_class_fqsen = $this->context->getClassFQSEN();
+
+            $property_class_type = $class_fqsen->asType();
+            $method_class_type = $method_class_fqsen->asType();
+            $is_same_or_subclass = $method_class_type->isSubtypeOf($property_class_type, $this->code_base) || $method_class_fqsen === $class_fqsen;
+
+            // Both native readonly and @phan-read-only only allow setting in __construct
+            // (and __clone for PHP 8.3+ native readonly)
+            $allowed_methods = $is_native_readonly && Config::get_closest_minimum_target_php_version_id() >= 80300
+                ? [ '__construct', '__clone' ]
+                : [ '__construct' ];
+
+            if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true) && $is_same_or_subclass) {
+                // For native readonly, also check for multiple assignments in the same method
+                if ($is_native_readonly) {
+                    $this->checkMultipleReadOnlyPropertyAssignments($property, $node, $method);
                 }
+                return;
             }
         }
+
+        // If we reach here, it's a real property (not magic) that's readonly
         $this->emitIssue(
-            $is_from_phpdoc ? Issue::AccessReadOnlyMagicProperty : Issue::AccessReadOnlyProperty,
+            Issue::AccessReadOnlyProperty,
             $node->lineno,
             $property->asPropertyFQSENString(),
             $context->getFile(),
             $context->getLineNumberStart()
         );
+    }
+
+    /**
+     * Check for multiple assignments to a native readonly property within the same method.
+     * This is a simplified check that detects obvious cases in the same method body.
+     */
+    private function checkMultipleReadOnlyPropertyAssignments(Property $property, Node $node, FunctionInterface $method): void
+    {
+        // For now, we'll use a simple heuristic: track property assignments in the method's AST
+        // A more comprehensive solution would require data flow analysis across all code paths
+
+        // Check if we can detect multiple assignments in the method
+        $property_name = $property->getName();
+        $method_node = $method->getNode();
+
+        if (!$method_node instanceof Node) {
+            return;
+        }
+
+        // Find all assignment line numbers for this property in the method
+        $assignment_lines = $this->findPropertyAssignmentLines($method_node, $property_name);
+
+        // Only warn if there are multiple assignments AND this is not the first one
+        if (count($assignment_lines) > 1 && $node->lineno !== min($assignment_lines)) {
+            $this->emitIssue(
+                Issue::AccessReadOnlyPropertyMultipleTimes,
+                $node->lineno,
+                $property->asPropertyFQSENString()
+            );
+        }
+    }
+
+    /**
+     * Find all line numbers where a property is assigned in an AST node tree
+     * @return list<int>
+     */
+    private function findPropertyAssignmentLines(Node $node, string $property_name): array
+    {
+        $lines = [];
+
+        // Check if this node is an assignment to the property
+        if ($node->kind === \ast\AST_ASSIGN) {
+            $var_node = $node->children['var'];
+            if ($var_node instanceof Node && $var_node->kind === \ast\AST_PROP) {
+                $prop_name_node = $var_node->children['prop'];
+                $expr_node = $var_node->children['expr'];
+
+                // Check if it's $this->propertyName
+                if ($prop_name_node === $property_name &&
+                    $expr_node instanceof Node &&
+                    $expr_node->kind === \ast\AST_VAR &&
+                    $expr_node->children['name'] === 'this') {
+                    $lines[] = $node->lineno;
+                }
+            }
+        }
+
+        // Recursively check child nodes
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                $lines = \array_merge($lines, $this->findPropertyAssignmentLines($child, $property_name));
+            }
+        }
+
+        return $lines;
     }
 
     private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node): void
