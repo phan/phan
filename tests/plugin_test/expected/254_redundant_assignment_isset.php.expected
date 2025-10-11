@@ -1,0 +1,10 @@
+src/254_redundant_assignment_isset.php:3 PhanUnreferencedClass Possibly zero references to class \PossiblyUnsetConsideredNull
+src/254_redundant_assignment_isset.php:7 PhanUnreferencedPublicMethod Possibly zero references to public method \PossiblyUnsetConsideredNull::testUnset()
+src/254_redundant_assignment_isset.php:18 PhanUnreferencedPublicMethod Possibly zero references to public method \PossiblyUnsetConsideredNull::testUnsetNoNullSetter()
+src/254_redundant_assignment_isset.php:23 PhanPossiblyUndeclaredVariable Variable $var is possibly undeclared
+src/254_redundant_assignment_isset.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \PossiblyUnsetConsideredNull::testActuallyRedundant()
+src/254_redundant_assignment_isset.php:26 PhanUnusedPublicNoOverrideMethodParameter Parameter $key is never used
+src/254_redundant_assignment_isset.php:29 PhanPluginConstantVariableNull Variable $var is probably constant with a value of null
+src/254_redundant_assignment_isset.php:30 PhanPluginRedundantAssignment Assigning null to variable $var which already has that value
+src/254_redundant_assignment_isset.php:35 PhanUnreferencedPublicMethod Possibly zero references to public method \PossiblyUnsetConsideredNull::testIssetAfterAssignment()
+src/254_redundant_assignment_isset.php:46 PhanUnreferencedPublicMethod Possibly zero references to public method \PossiblyUnsetConsideredNull::testMultipleConditions()
