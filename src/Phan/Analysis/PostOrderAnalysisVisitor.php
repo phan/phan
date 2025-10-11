@@ -3167,11 +3167,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
         if (($node->flags & (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) === (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) {
-            $this->emitIssue(
-                Issue::PrivateFinalMethod,
-                $node->lineno,
-                $method->getRepresentationForIssue()
-            );
+            // PHP 8.0+ only warns about private final methods when the method is NOT a constructor.
+            // See https://www.php.net/manual/en/migration80.incompatible.php
+            // See https://github.com/phan/phan/issues/4753
+            if (!($method instanceof Method) || !$method->isNewConstructor()) {
+                $this->emitIssue(
+                    Issue::PrivateFinalMethod,
+                    $node->lineno,
+                    $method->getRepresentationForIssue()
+                );
+            }
         }
 
         $return_type = $method->getUnionType();
