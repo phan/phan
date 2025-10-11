@@ -22,7 +22,7 @@ enum Color: string {
 }
 
 // Test 1: Missing enum cases - should warn
-function test1(Suit $suit): string
+function testMatchEnum1(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades => 'The swords of a soldier',
@@ -31,7 +31,7 @@ function test1(Suit $suit): string
 }
 
 // Test 2: All cases covered - should NOT warn
-function test2(Suit $suit): string
+function testMatchEnum2(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades => 'The swords of a soldier',
@@ -42,7 +42,7 @@ function test2(Suit $suit): string
 }
 
 // Test 3: Has default - should NOT warn
-function test3(Suit $suit): string
+function testMatchEnum3(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades => 'The swords of a soldier',
@@ -52,7 +52,7 @@ function test3(Suit $suit): string
 }
 
 // Test 4: Union type with multiple enums, missing cases - should warn
-function test4(Suit|Game $var): string
+function testMatchEnum4(Suit|Game $var): string
 {
     return match ($var) {
         Suit::Spades => 'The swords of a soldier',
@@ -63,7 +63,7 @@ function test4(Suit|Game $var): string
 }
 
 // Test 5: Union type with multiple enums, all covered - should NOT warn
-function test5(Suit|Game $var): string
+function testMatchEnum5(Suit|Game $var): string
 {
     return match ($var) {
         Suit::Spades => 'The swords of a soldier',
@@ -78,7 +78,7 @@ function test5(Suit|Game $var): string
 
 // Test 6: Union with non-enum types - should NOT warn
 // (because not all arms are enum cases)
-function test6(Suit|string|int|array $suit): string
+function testMatchEnum6(Suit|string|int|array $suit): string
 {
     return match ($suit) {
         Suit::Spades => 'The swords of a soldier',
@@ -88,7 +88,7 @@ function test6(Suit|string|int|array $suit): string
 }
 
 // Test 7: Mixed enum cases and other conditions - should NOT warn
-function test7(Suit $suit): string
+function testMatchEnum7(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades => 'The swords of a soldier',
@@ -98,7 +98,7 @@ function test7(Suit $suit): string
 }
 
 // Test 8: Backed enum missing cases - should warn
-function test8(Color $color): string
+function testMatchEnum8(Color $color): string
 {
     return match ($color) {
         Color::Red => 'Stop',
@@ -107,7 +107,7 @@ function test8(Color $color): string
 }
 
 // Test 9: All backed enum cases covered - should NOT warn
-function test9(Color $color): string
+function testMatchEnum9(Color $color): string
 {
     return match ($color) {
         Color::Red => 'Stop',
@@ -117,7 +117,7 @@ function test9(Color $color): string
 }
 
 // Test 10: Multiple conditions in single arm, missing cases - should warn
-function test10(Suit $suit): string
+function testMatchEnum10(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades, Suit::Clubs => 'Black',
@@ -126,7 +126,7 @@ function test10(Suit $suit): string
 }
 
 // Test 11: Multiple conditions in single arm, all covered - should NOT warn
-function test11(Suit $suit): string
+function testMatchEnum11(Suit $suit): string
 {
     return match ($suit) {
         Suit::Spades, Suit::Clubs => 'Black',
@@ -135,14 +135,14 @@ function test11(Suit $suit): string
 }
 
 // Test 12: Empty match (edge case) - should NOT warn
-function test12(Suit $suit): never
+function testMatchEnum12(Suit $suit): never
 {
     match ($suit) {
     };
 }
 
 // Test 13: Match with only default - should NOT warn
-function test13(Suit $suit): string
+function testMatchEnum13(Suit $suit): string
 {
     return match ($suit) {
         default => 'Any suit',
@@ -150,7 +150,7 @@ function test13(Suit $suit): string
 }
 
 // Test 14: Non-enum match - should NOT warn
-function test14(int $x): string
+function testMatchEnum14(int $x): string
 {
     return match ($x) {
         1 => 'one',
@@ -159,7 +159,7 @@ function test14(int $x): string
 }
 
 // Test 15: Mixed types but some arms are not enum cases - should NOT warn
-function test15(Suit|int $var): string
+function testMatchEnum15(Suit|int $var): string
 {
     return match ($var) {
         Suit::Hearts => 'heart',
