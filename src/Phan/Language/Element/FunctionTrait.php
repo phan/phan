@@ -1095,7 +1095,7 @@ trait FunctionTrait
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list): Context
     {
-        $hash = $this->computeParameterListHash($parameter_list);
+        $hash = self::computeParameterListHash($parameter_list);
         $has_pass_by_reference_variable = null;
         // Nothing to do, except if PassByReferenceVariable was used
         if ($hash === $this->parameter_list_hash) {

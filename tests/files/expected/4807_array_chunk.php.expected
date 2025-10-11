@@ -1,0 +1,21 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<1>>|list<list<2>>|list<list<3>>|list<list<4>>|list<list<5>>(real=list<list<?1>>|list<list<?2>>|list<list<?3>>|list<list<?4>>|list<list<?5>>)
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<string,1>>|list<array<string,2>>|list<array<string,3>>(real=list<array<string,?1>>|list<array<string,?2>>|list<array<string,?3>>)
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<1>>|list<list<2>>|list<list<3>>(real=list<list<?1>>|list<list<?2>>|list<list<?3>>)
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<string,1>>|list<array<string,2>>|list<array<string,3>>|list<list<1>>|list<list<2>>|list<list<3>>(real=list<array<string,?1>>|list<array<string,?2>>|list<array<string,?3>>|list<list<?1>>|list<list<?2>>|list<list<?3>>)
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<'bar'>>|list<list<'baz'>>|list<list<'foo'>>(real=list<list<?'bar'>>|list<list<?'baz'>>|list<list<?'foo'>>)
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<'foo'>>|list<list<1>>|list<list<true>>(real=list<list<?'foo'>>|list<list<?1>>|list<list<?true>>)
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<\stdClass>>(real=list<list<?\stdClass>>)
+%s:70 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<string,10>>|list<array<string,20>>(real=list<array<string,?10>>|list<array<string,?20>>)
+%s:80 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<1>>|list<list<2>>|list<list<3>>|list<list<4>>(real=list<list<?1>>|list<list<?2>>|list<list<?3>>|list<list<?4>>)
+%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<array{name:'Alice'|'Bob',age:25|30}>>(real=list<list<?array{name:'Alice'|'Bob',age:25|30}>>)
+%s:104 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<string,array{name:'Alice'|'Bob',age:25|30}>>(real=list<array<string,?array{name:'Alice'|'Bob',age:25|30}>>)
+%s:114 PhanTypeMismatchReturn Returning array_chunk($input, 2) of type list<list<1>>|list<list<2>>|list<list<3>> but test_wrong_return_type() is declared to return list<int>
+%s:120 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<int,'a'>>|list<array<int,'b'>>|list<array<int,'c'>>(real=list<array<int,?'a'>>|list<array<int,?'b'>>|list<array<int,?'c'>>)
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $first_chunk - it has union type list<1>|list<2>|list<3>|list<4>|list<5>(real=?list<?1>|?list<?2>|?list<?3>|?list<?4>|?list<?5>)
+%s:133 PhanDebugAnnotation @phan-debug-var requested for variable $first_element - it has union type 1|2|3|4|5(real=?1|?2|?3|?4|?5)
+%s:144 PhanDebugAnnotation @phan-debug-var requested for variable $chunk - it has union type array<string,1>|array<string,2>|array<string,3>(real=array<string,?1>|array<string,?2>|array<string,?3>)
+%s:148 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type string(real=int|string)
+%s:148 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type 1|2|3(real=?1|?2|?3)
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<'a'>>|list<list<'b'>>|list<list<1>>|list<list<2>>(real=list<list<?'a'>>|list<list<?'b'>>|list<list<?1>>|list<list<?2>>)
+%s:170 PhanTypeMismatchReturn Returning array_chunk($input, 2) of type list<list<1>>|list<list<2>> but test_expect_preserved_but_default() is declared to return list<array<string,int>>
+%s:177 PhanTypeMismatchReturn Returning array_chunk($input, 2, true) of type list<array<string,1>>|list<array<string,2>> but test_expect_list_but_preserved() is declared to return list<list<int>>
