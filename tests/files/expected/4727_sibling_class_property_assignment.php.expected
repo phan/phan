@@ -1,0 +1,3 @@
+%s:17 PhanTypeMismatchPropertyReal Assigning new A2() of type \A2 to property but \C->prop1 is \A1
+%s:18 PhanTypeMismatchPropertyProbablyReal Assigning new A2() of type \A2 to property but \C->prop2 is \A1 (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:48 PhanTypeMismatchProperty Assigning $obj of type \anonymous_class_%s to property but \D->interfaceProp is \IA1

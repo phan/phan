@@ -9,7 +9,7 @@ class C5 implements Countable {
 }
 $v = new X5();
 $v2 = new X5();
-$v->value = new C5(); // TODO: This should warn
+$v->value = new C5(); // Should warn: C5 only implements Countable, not ArrayAccess
 $v2->value = new ArrayObject();
 $v->value = null;
 $v->value = $v2->value;
