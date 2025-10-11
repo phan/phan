@@ -1,0 +1,2 @@
+%s:8 PhanDeprecatedFunctionInternal Call to deprecated function \dns_check_record() (Deprecated because: DeprecateAliasPlugin marked this as an alias of checkdnsrr())
+%s:9 PhanDeprecatedFunctionInternal Call to deprecated function \dns_get_mx() (Deprecated because: DeprecateAliasPlugin marked this as an alias of getmxrr())
