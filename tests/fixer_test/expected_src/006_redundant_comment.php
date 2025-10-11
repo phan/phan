@@ -24,7 +24,6 @@ class C {
         var_export($value);
     }
 
-    /** @var int */
     public int $count = 0;
 }
 
