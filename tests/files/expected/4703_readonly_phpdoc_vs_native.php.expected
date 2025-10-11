@@ -1,0 +1,2 @@
+%s:39 PhanAccessReadOnlyProperty Cannot modify read-only property \invalidPhpDoc->x defined at %s:32
+%s:48 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \invalidRealPhp->x after initialization
