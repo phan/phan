@@ -1,0 +1,2 @@
+src/253_deprecate_dns_aliases.php:8 PhanDeprecatedFunctionInternal Call to deprecated function \dns_check_record() (Deprecated because: DeprecateAliasPlugin marked this as an alias of checkdnsrr())
+src/253_deprecate_dns_aliases.php:9 PhanDeprecatedFunctionInternal Call to deprecated function \dns_get_mx() (Deprecated because: DeprecateAliasPlugin marked this as an alias of getmxrr())
