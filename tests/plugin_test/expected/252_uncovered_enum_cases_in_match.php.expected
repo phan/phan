@@ -1,0 +1,5 @@
+%s:27 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit condition does not cover all cases - missing: Diamonds, Clubs. Either add the missing cases or add a default arm to handle them.
+%s:57 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit|\Game condition does not cover all cases - missing: Poker, Solitaire, Blackjack. Either add the missing cases or add a default arm to handle them.
+%s:83 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit condition does not cover all cases - missing: Clubs. Either add the missing cases or add a default arm to handle them.
+%s:103 PhanPluginUncoveredEnumCasesInMatch Match expression with \Color condition does not cover all cases - missing: Green. Either add the missing cases or add a default arm to handle them.
+%s:122 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit condition does not cover all cases - missing: Diamonds. Either add the missing cases or add a default arm to handle them.

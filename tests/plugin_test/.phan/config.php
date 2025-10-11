@@ -154,5 +154,6 @@ return [
         'PHPDocInWrongCommentPlugin',
         'StaticVariableMisusePlugin',
         'AddNeverReturnTypePlugin',
+        'UncoveredEnumCasesInMatchPlugin',
     ],
 ];
