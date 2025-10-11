@@ -483,6 +483,14 @@ Array and string offset access syntax with curly braces is no longer supported. 
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/062_test.php#L2).
 
+## PhanCompatibleEnumPropertyInConstExpression
+
+```
+Fetching properties of enums in constant expressions (e.g. {CODE}) is only supported in PHP 8.2+.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4707_enum_property_const_expr.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4707_enum_property_const_expr.php#L11).
+
 ## PhanCompatibleImplodeOrder
 
 ```
@@ -584,6 +592,12 @@ The unset cast (in {CODE}) is a fatal error.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/061_cast_crash.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/061_cast_crash.php#L45).
+
+## PhanNonEnumPropertyInConstExpression
+
+```
+Only properties of enums can be fetched in constant expressions, {TYPE} given
+```
 
 # Context
 

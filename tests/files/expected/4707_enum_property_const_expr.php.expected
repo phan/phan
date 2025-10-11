@@ -1,0 +1,6 @@
+%s:11 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. Status::Pending->name) is only supported in PHP 8.2+.
+%s:15 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. Status::Active->value) is only supported in PHP 8.2+.
+%s:15 PhanUnusedVariableStatic Unreferenced definition of variable $v as a static variable
+%s:23 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. Status::Active->name) is only supported in PHP 8.2+.
+%s:28 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. Status::Pending->name) is only supported in PHP 8.2+.
+%s:32 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. Status::Pending?->name) is only supported in PHP 8.2+.

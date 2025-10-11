@@ -2076,6 +2076,8 @@ class ParseVisitor extends ScopeVisitor
     {
         try {
             self::checkIsAllowedInConstExpr($node, $const_expr_context);
+            // After validating the basic structure, check for enum property access (PHP 8.2+)
+            $this->checkEnumPropertyAccessInConstExpr($node);
             return true;
         } catch (InvalidArgumentException $e) {
             $this->emitIssue(
@@ -2084,6 +2086,94 @@ class ParseVisitor extends ScopeVisitor
                 $e->getMessage()
             );
             return false;
+        }
+    }
+
+    /**
+     * Check for enum property access in constant expressions (PHP 8.2+ feature).
+     * Emits compatibility warning if targeting PHP < 8.2.
+     * Emits error if the left-hand side is not an enum.
+     *
+     * @param Node|string|float|int|bool|null $node
+     */
+    private function checkEnumPropertyAccessInConstExpr(Node|bool|float|int|null|string $node): void
+    {
+        if (!($node instanceof Node)) {
+            return;
+        }
+
+        // Check if this is an enum property access node
+        if ($node->kind === ast\AST_PROP || $node->kind === ast\AST_NULLSAFE_PROP) {
+            // Emit compatibility warning for PHP < 8.2
+            if (Config::get_closest_target_php_version_id() < 80200) {
+                $this->emitIssue(
+                    Issue::CompatibleEnumPropertyInConstExpression,
+                    $node->lineno,
+                    ASTReverter::toShortString($node)
+                );
+            }
+
+            // Check if the left-hand side is an enum
+            $expr_node = $node->children['expr'];
+            if ($expr_node instanceof Node) {
+                try {
+                    $expr_type = UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $this->context,
+                        $expr_node,
+                        false
+                    );
+
+                    // For nullsafe property access, null is allowed
+                    if ($node->kind === ast\AST_NULLSAFE_PROP) {
+                        $expr_type = $expr_type->nonNullableClone();
+                    }
+
+                    // Check if all types are enums
+                    $has_non_enum = false;
+                    foreach ($expr_type->getTypeSet() as $type) {
+                        // Skip checking for null in nullsafe access
+                        if ($type instanceof NullType) {
+                            continue;
+                        }
+
+                        // Check if this type corresponds to an enum class
+                        if ($type->isObjectWithKnownFQSEN()) {
+                            $fqsen = FullyQualifiedClassName::fromType($type);
+                            if ($this->code_base->hasClassWithFQSEN($fqsen)) {
+                                $class = $this->code_base->getClassByFQSEN($fqsen);
+                                if (!$class->isEnum()) {
+                                    $has_non_enum = true;
+                                    break;
+                                }
+                            } else {
+                                // Unknown class - might be enum, don't warn
+                                continue;
+                            }
+                        } else {
+                            // Not a class type (e.g., mixed, object, etc.)
+                            $has_non_enum = true;
+                            break;
+                        }
+                    }
+
+                    if ($has_non_enum) {
+                        $this->emitIssue(
+                            Issue::NonEnumPropertyInConstExpression,
+                            $node->lineno,
+                            $expr_type
+                        );
+                    }
+                } catch (IssueException) {
+                    // If we can't determine the type, don't emit a warning
+                    // The issue will be caught during analysis phase
+                }
+            }
+        }
+
+        // Recursively check child nodes
+        foreach ($node->children as $child_node) {
+            $this->checkEnumPropertyAccessInConstExpr($child_node);
         }
     }
 
