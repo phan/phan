@@ -62,10 +62,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
         CodeBase $code_base,
         Method $method
     ): void {
-        if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
-            return;
-        }
-
         $this->performChecks(
             $method,
             'PhanPluginUnknownMethodReturnType',
@@ -107,7 +103,16 @@ class UnknownElementTypePlugin extends PluginV3 implements
         if (!$warning_closures) {
             return;
         }
-        $this->deferred_checks[$method->getFQSEN()->__toString()] = static function (CodeBase $_) use ($warning_closures): void {
+        $this->deferred_checks[$method->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($method, $warning_closures): void {
+            // Skip inherited methods - by finalization time, getRealDefiningFQSEN() will be properly set
+            if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
+                return;
+            }
+            // Also skip if this method overrides a parent method/interface method
+            // Type hints should be added to the parent declaration instead
+            if ($method->getOverriddenMethods($code_base)) {
+                return;
+            }
             foreach ($warning_closures as $cb) {
                 $cb();
             }
@@ -177,6 +182,10 @@ class UnknownElementTypePlugin extends PluginV3 implements
             return;
         }
         $this->deferred_checks[$issue_type . ':' . $element->getFQSEN()->__toString()] = static function (CodeBase $code_base) use ($element, $issue_type, $message, $issue_type_for_unknown_array): void {
+            // Skip inherited methods/properties - by finalization time, getRealDefiningFQSEN() will be properly set
+            if (($element instanceof Method || $element instanceof Property) && $element->getFQSEN() !== $element->getRealDefiningFQSEN()) {
+                return;
+            }
             $new_union_type = $element->getUnionType();
             $suggestion = null;
             if (!$new_union_type->isEmpty()) {
@@ -370,9 +379,6 @@ class UnknownElementTypePlugin extends PluginV3 implements
         CodeBase $code_base,
         Property $property
     ): void {
-        if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
-            return;
-        }
         $this->performChecks(
             $property,
             'PhanPluginUnknownPropertyType',
