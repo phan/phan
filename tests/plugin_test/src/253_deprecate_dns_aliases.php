@@ -1,7 +1,7 @@
 <?php
 
 // Should NOT warn - these are the canonical functions
-checkdnsrr('example.com');
+$result = checkdnsrr('example.com');
 getmxrr('example.com', $mx);
 
 // Should warn - these are aliases
