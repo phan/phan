@@ -1,0 +1,2 @@
+%s:9 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. self::DECIMAL->value) is only supported in PHP 8.2+.
+%s:13 PhanCompatibleEnumPropertyInConstExpression Fetching properties of enums in constant expressions (e.g. self::DECIMAL->name) is only supported in PHP 8.2+.

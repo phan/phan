@@ -605,6 +605,8 @@ class Issue
     public const CompatibleReadonlyClass                 = 'PhanCompatibleReadonlyClass';
     public const CompatibleTypedClassConstant            = 'PhanCompatibleTypedClassConstant';
     public const CompatibleOverrideAttribute             = 'PhanCompatibleOverrideAttribute';
+    public const CompatibleEnumPropertyInConstExpression = 'PhanCompatibleEnumPropertyInConstExpression';
+    public const NonEnumPropertyInConstExpression        = 'PhanNonEnumPropertyInConstExpression';
 
     // Issue::CATEGORY_GENERIC
     public const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -5089,6 +5091,22 @@ class Issue
                 'Attribute #[Override] on {CLASS} is only supported in PHP {DETAILS}.',
                 self::REMEDIATION_B,
                 3055
+            ),
+            new Issue(
+                self::CompatibleEnumPropertyInConstExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                'Fetching properties of enums in constant expressions (e.g. {CODE}) is only supported in PHP 8.2+.',
+                self::REMEDIATION_B,
+                3056
+            ),
+            new Issue(
+                self::NonEnumPropertyInConstExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Only properties of enums can be fetched in constant expressions, {TYPE} given',
+                self::REMEDIATION_B,
+                3057
             ),
             new Issue(
                 self::CompatibleAutoload,
