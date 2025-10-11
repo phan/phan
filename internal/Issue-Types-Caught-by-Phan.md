@@ -4657,6 +4657,30 @@ Class {CLASS} must substitute all {COUNT} template parameters when inheriting {C
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0987_generic_missing_extends.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0987_generic_missing_extends.php#L10).
 
+## PhanRedundantBoolAndFalseInUnion
+
+```
+Duplicate type false is redundant in union type {TYPE} (bool already includes false)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4705_redundant_bool_types.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4705_redundant_bool_types.php#L11).
+
+## PhanRedundantBoolAndTrueInUnion
+
+```
+Duplicate type true is redundant in union type {TYPE} (bool already includes true)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4705_redundant_bool_types.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4705_redundant_bool_types.php#L6).
+
+## PhanRedundantTrueAndFalseInUnion
+
+```
+Type {TYPE} contains both true and false - bool should be used instead
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4705_redundant_bool_types.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4705_redundant_bool_types.php#L16).
+
 ## PhanTemplateTypeConstant
 
 This is emitted when a class constant's PHPDoc contains a type declared in a class's phpdoc template annotations.
