@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Frequently Asked Questions
+    url: https://github.com/phan/phan/wiki/Frequently-Asked-Questions
+    about: Check the FAQ for common questions and answers
+  - name: Phan Wiki
+    url: https://github.com/phan/phan/wiki
+    about: Read the documentation and guides
+  - name: Phan in Browser
+    url: https://phan.github.io/demo/
+    about: Test Phan online
