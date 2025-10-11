@@ -1,0 +1,2 @@
+%s:16 PhanPrivateFinalMethod PHP warns about private method \Bar::notConstructor() being final
+%s:30 PhanPrivateFinalConstant Private constant is not allowed to be final
