@@ -1,0 +1,4 @@
+%s:13 PhanPossiblyUndeclaredVariable Variable $success is possibly undeclared
+%s:20 PhanUndeclaredVariable Variable $undefined_var is undeclared
+%s:41 PhanPossiblyUndeclaredVariable Variable $b is possibly undeclared
+%s:55 PhanPossiblyUndeclaredVariable Variable $nested is possibly undeclared

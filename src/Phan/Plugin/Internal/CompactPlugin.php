@@ -65,6 +65,20 @@ final class CompactPlugin extends PluginV3 implements
                         [$variable_name],
                         IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)
                     );
+                } else {
+                    // Variable exists in scope, check if it's possibly undefined.
+                    // Since PHP 7.3, compact() emits a notice for undefined variables.
+                    // See https://github.com/phan/phan/issues/4795
+                    $variable = $context->getScope()->getVariableByName($variable_name);
+                    if ($variable->getUnionType()->isPossiblyUndefined()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::PossiblyUndeclaredVariable,
+                            $arg->lineno ?? $context->getLineNumberStart(),
+                            $variable_name
+                        );
+                    }
                 }
             };
             foreach ($args as $arg) {
