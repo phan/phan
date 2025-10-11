@@ -344,6 +344,7 @@ class PHPDocRedundantPlugin extends PluginV3 implements
             self::RedundantClosureComment => $function_like_fixer,
             self::RedundantParameterListComment => Closure::fromCallable([Fixers::class, 'fixRedundantParameterListComment']),
             self::RedundantReturnComment => Closure::fromCallable([Fixers::class, 'fixRedundantReturnComment']),
+            self::RedundantPropertyComment => Closure::fromCallable([Fixers::class, 'fixRedundantPropertyComment']),
         ];
     }
 }

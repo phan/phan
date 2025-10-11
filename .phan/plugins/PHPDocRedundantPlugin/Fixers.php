@@ -9,6 +9,7 @@ use Microsoft\PhpParser;
 use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
 use Microsoft\PhpParser\Node\MethodDeclaration;
+use Microsoft\PhpParser\Node\PropertyDeclaration;
 use Microsoft\PhpParser\Node\Statement\FunctionDeclaration;
 use Microsoft\PhpParser\ParseContext;
 use Microsoft\PhpParser\PhpTokenizer;
@@ -137,6 +138,26 @@ class Fixers
     }
 
     /**
+     * Remove a redundant phpdoc @var annotation from a property
+     * @param CodeBase $code_base @unused-param
+     */
+    public static function fixRedundantPropertyComment(
+        CodeBase $code_base,
+        FileCacheEntry $contents,
+        IssueInstance $instance
+    ): ?FileEditSet {
+        $params = $instance->getTemplateParameters();
+        $property_name = $params[0];
+        $encoded_comment = $params[1];
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        $declaration = self::findPropertyDeclaration($contents, $instance->getLine(), $property_name);
+        if (!$declaration) {
+            return null;
+        }
+        return self::computeEditsToRemovePropertyComment($contents, $declaration, (string)$encoded_comment);
+    }
+
+    /**
      * Computes an edit set to delete comment lines in the specified range, plus any surrounding blank comment lines.
      * @param associative-array<int,string> $file_lines
      */
@@ -228,6 +249,75 @@ class Fixers
             } elseif ($node instanceof AnonymousFunctionCreationExpression) {
                 if (\preg_match('/^Closure\(/', $name)) {
                     $candidates[] = $node;
+                }
+            }
+        }
+        if (\count($candidates) === 1) {
+            return $candidates[0];
+        }
+        return null;
+    }
+
+    private static function computeEditsToRemovePropertyComment(FileCacheEntry $contents, PropertyDeclaration $declaration, string $encoded_comment): ?FileEditSet
+    {
+        $comment_token = self::getDocCommentToken($declaration);
+        if (!$comment_token) {
+            return null;
+        }
+        $file_contents = $contents->getContents();
+        $comment = $comment_token->getText($file_contents);
+        $actual_encoded_comment = StringUtil::encodeValue($comment);
+        if ($actual_encoded_comment !== $encoded_comment) {
+            return null;
+        }
+        return self::computeEditSetToDeleteComment($file_contents, $comment_token);
+    }
+
+    private static function findPropertyDeclaration(
+        FileCacheEntry $contents,
+        int $line,
+        string $property_name
+    ): ?PropertyDeclaration {
+        $candidates = [];
+        // Extract just the property name without the class prefix
+        // Property name format is like "\ClassName::$propertyName" or "ClassName->propertyName"
+        if (\preg_match('/(?:::|\->)\$?(\w+)$/D', $property_name, $matches)) {
+            $short_name = $matches[1];
+        } else {
+            $short_name = \ltrim($property_name, '$');
+        }
+
+        foreach ($contents->getNodesAtLine($line) as $node) {
+            if ($node instanceof PropertyDeclaration) {
+                // PropertyDeclaration has a propertyElements member which is a list
+                $property_elements = $node->propertyElements;
+                if ($property_elements === null) {
+                    continue;
+                }
+                foreach ($property_elements->getElements() as $element) {
+                    $name_token = null;
+                    // Properties can be either Variable nodes or AssignmentExpression nodes (with default values)
+                    if ($element instanceof PhpParser\Node\Expression\AssignmentExpression) {
+                        // Property with default value: public int $count = 0;
+                        $left = $element->leftOperand;
+                        if ($left instanceof PhpParser\Node\Expression\Variable) {
+                            $name_token = $left->name ?? null;
+                        }
+                    } elseif ($element instanceof PhpParser\Node\Expression\Variable) {
+                        // Property without default value: public int $count;
+                        $name_token = $element->name ?? null;
+                    }
+
+                    if (!$name_token instanceof Token) {
+                        continue;
+                    }
+                    $declaration_name = (new NodeUtils($contents->getContents()))->tokenToString($name_token);
+                    // Remove the leading $ from the variable name
+                    $declaration_name = \ltrim($declaration_name, '$');
+                    if ($declaration_name === $short_name) {
+                        $candidates[] = $node;
+                        break; // Found matching property in this declaration
+                    }
                 }
             }
         }
