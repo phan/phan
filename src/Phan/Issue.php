@@ -528,6 +528,7 @@ class Issue
     public const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
     public const RedefineClassConstant     = 'PhanRedefineClassConstant';
     public const RedefineProperty          = 'PhanRedefineProperty';
+    public const DuplicateStaticVariable   = 'PhanDuplicateStaticVariable';
     public const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     public const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
     public const IncompatibleCompositionConstant = 'PhanIncompatibleCompositionConstant';
@@ -4739,6 +4740,14 @@ class Issue
                 'Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}',
                 self::REMEDIATION_B,
                 8011
+            ),
+            new Issue(
+                self::DuplicateStaticVariable,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                'Duplicate declaration of static variable ${VARIABLE} in {FUNCTIONLIKE} - previously declared at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                8015
             ),
             new Issue(
                 self::ReusedEnumCaseValue,

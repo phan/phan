@@ -753,6 +753,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             false
         );
 
+        // Check for duplicate static variable declarations (PHP 8.3+ fatal error)
+        if ($this->context->isInFunctionLikeScope()) {
+            $var_name = $variable->getName();
+            $scope = $this->context->getScope();
+
+            // Check if this static variable was already declared in this function
+            if ($scope->hasVariableWithName($var_name)) {
+                $existing_var = $scope->getVariableByName($var_name);
+
+                // Only warn if the existing variable is also a static variable
+                // (the IS_CONSTANT_DEFINITION flag is set on static variables)
+                if ($existing_var->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION)) {
+                    $method = $this->context->getFunctionLikeInScope($this->code_base);
+                    $this->emitIssue(
+                        Issue::DuplicateStaticVariable,
+                        $node->lineno,
+                        $var_name,
+                        $method->getRepresentationForIssue(),
+                        $existing_var->getFileRef()->getFile(),
+                        $existing_var->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
+        }
+
         // If the element has a default, set its type
         // on the variable
         if (isset($node->children['default'])) {

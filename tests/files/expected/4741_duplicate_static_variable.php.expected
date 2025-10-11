@@ -1,0 +1,4 @@
+%s:8 PhanDuplicateStaticVariable Duplicate declaration of static variable $x in \testDuplicateSimple() - previously declared at %s:7
+%s:13 PhanDuplicateStaticVariable Duplicate declaration of static variable $a in \testDuplicateMultiple() - previously declared at %s:12
+%s:21 PhanDuplicateStaticVariable Duplicate declaration of static variable $y in \testDuplicateNested() - previously declared at %s:18
+%s:40 PhanDuplicateStaticVariable Duplicate declaration of static variable $prop in \TestClass::testMethod() - previously declared at %s:39
