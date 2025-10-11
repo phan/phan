@@ -12,7 +12,7 @@ namespace Phan\Language\Internal;
  *
  * Sources of function/method summary info:
  *
- * 1. docs.php.net's SVN repo or website, and examples (See internal/internalsignatures.php)
+ * 1. docs.php.net's git repo or website, and examples (See internal/internalsignatures.php)
  *
  *    See https://secure.php.net/manual/en/copyright.php
  *
@@ -32,7 +32,7 @@ namespace Phan\Language\Internal;
  *
  * - If the descriptions cause Phan to crash, bug reports are welcome
  * - If Phan improperly extracted text from a summary (and this affects multiple signatures), patches fixing the extraction will be accepted.
- * - Otherwise, fixes for typos/grammar/inaccuracies in the summary will only be accepted once they are contributed upstream and can be regenerated (e.g. to the svn repo for docs.php.net).
+ * - Otherwise, fixes for typos/grammar/inaccuracies in the summary will only be accepted once they are contributed upstream and can be regenerated (e.g. to the git repo for docs.php.net).
  *
  *   Note that the summaries are used in a wide variety of contexts (e.g. PHP's online documentation),
  *   and what makes sense for Phan may not make sense for those projects, and vice versa.
