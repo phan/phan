@@ -386,6 +386,147 @@ When writing tests that create Type instances, be aware of PHPUnit's global stat
 - Use `./tests/run_test TestName` for integration tests
 - Use `./vendor/bin/phpunit` for unit tests
 
+### Common Type System Pitfalls and Bug Patterns
+
+**CRITICAL: Type Expansion with asExpandedTypesPreservingTemplate()**
+
+One of the most subtle bugs involves using `asExpandedTypesPreservingTemplate()` when checking type compatibility for property assignments. This method expands types to include parent classes, which incorrectly allows sibling types to be considered compatible.
+
+**Problem Example:**
+```php
+class Base {}
+class A1 extends Base {}
+class A2 extends Base {}  // Sibling of A1
+
+class C {
+    public A1 $prop;
+}
+
+$c = new C();
+$c->prop = new A2();  // Should fail - A2 is NOT compatible with A1
+```
+
+**The Bug:**
+```php
+// WRONG - In AssignmentVisitor.php
+if ($resolved_right_type->canCastToUnionType(
+    $property_union_type->asExpandedTypesPreservingTemplate($code_base),  // Expands A1 to include Base
+    $code_base
+)) {
+    // This incorrectly allows A2 because A2 extends Base
+}
+```
+
+**The Fix:**
+```php
+// CORRECT - Don't expand property type
+if ($resolved_right_type->canCastToUnionType(
+    $property_union_type,  // Use exact type without expansion
+    $code_base
+)) {
+    // Now correctly rejects A2 when property is typed as A1
+}
+```
+
+**Where This Occurs:**
+- `src/Phan/Analysis/AssignmentVisitor.php` - Property assignment checking
+- Lines 1196-1201, 1216-1221, 1245-1256 (multiple locations for different assignment types)
+- Fixed in issue #4727
+
+**Rule of Thumb:** Only use `asExpandedTypesPreservingTemplate()` when you want to allow assignments to parent types. For property type checking, use the exact property type to enforce strict compatibility.
+
+---
+
+**Possibly Undefined Variables**
+
+When analyzing functions like `compact()` that operate on variable names, you must check not just if a variable exists in scope, but also if it's possibly undefined in some code paths.
+
+**Problem Example:**
+```php
+if ($condition) {
+    $var = 'value';
+}
+// $var is possibly undefined here
+compact('var');  // Should warn: PhanPossiblyUndeclaredVariable
+```
+
+**The Solution:**
+```php
+// In CompactPlugin.php or similar variable-tracking code
+$variable = $context->getScope()->getVariableByName($variable_name);
+if ($variable->getUnionType()->isPossiblyUndefined()) {
+    Issue::maybeEmit(
+        $code_base,
+        $context,
+        Issue::PossiblyUndeclaredVariable,
+        $node->lineno,
+        $variable_name
+    );
+}
+```
+
+**Key Methods:**
+- `Variable::getUnionType()` returns an `AnnotatedUnionType` which tracks undefined state
+- `AnnotatedUnionType::isPossiblyUndefined()` returns true if variable may not be defined in all paths
+- Fixed in issue #4795
+
+---
+
+**Constructor Exemptions from Private Final Warning**
+
+PHP 8.0+ changed behavior for private final methods: constructors are specifically exempt from the warning that private final methods generate.
+
+**PHP Behavior:**
+```php
+// From PHP 8.0 migration docs:
+// "Applying the final modifier on a private method will now produce a warning
+//  UNLESS that method is the constructor."
+
+class Foo {
+    final private function __construct() {}  // OK in PHP 8.0+
+    final private function other() {}        // Warning in PHP 8.0+
+}
+```
+
+**The Fix:**
+```php
+// In PostOrderAnalysisVisitor.php visitMethod()
+if (($node->flags & (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE))
+    === (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE)) {
+    // PHP 8.0+ only warns about private final methods when the method is NOT a constructor.
+    if (!($method instanceof Method) || !$method->isNewConstructor()) {
+        $this->emitIssue(Issue::PrivateFinalMethod, ...);
+    }
+}
+```
+
+**Key Method:**
+- `Method::isNewConstructor()` returns true for `__construct` methods (not PHP4 constructors)
+- Fixed in issue #4753
+
+---
+
+**Anonymous Class Name Variations in Tests**
+
+When testing code that emits warnings about anonymous classes, the class name includes a hash that varies between runs.
+
+**Problem:**
+```php
+// Expected output
+%s:10 PhanTypeMismatch ... type \anonymous_class_b3dd1fe3 ...
+
+// Actual output (different hash each time)
+%s:10 PhanTypeMismatch ... type \anonymous_class_df8eb3c0 ...
+```
+
+**The Fix:**
+Use `%s` wildcard pattern for anonymous class names in `.expected` files:
+```
+%s:10 PhanTypeMismatch ... type \anonymous_class_%s ...
+```
+
+This allows the test to match any hash suffix on anonymous classes.
+
 ## PHP Version-Specific Behavior and Testing
 
 ### AST Version 110/120 Support (PHP 8.4+)
