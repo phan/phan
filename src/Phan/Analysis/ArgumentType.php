@@ -1135,6 +1135,21 @@ final class ArgumentType
      */
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, Node|float|int|string|null $argument_node, ?Node $node): void
     {
+        // Special handling for ternary expressions: check each branch individually
+        // to catch type mismatches that would be hidden by union type merging.
+        // See https://github.com/phan/phan/issues/4775
+        if ($argument_node instanceof Node && $argument_node->kind === ast\AST_CONDITIONAL) {
+            // Only analyze branches individually if the condition is not a known constant.
+            // For constant conditions, let normal type inference handle it.
+            $cond_node = $argument_node->children['cond'];
+            $cond_truthiness = UnionTypeVisitor::checkCondUnconditionalTruthiness($cond_node);
+            if ($cond_truthiness === null) {
+                // Condition is not constant, analyze branches individually
+                self::analyzeConditionalArgumentBranches($code_base, $context, $method, $argument_node, $lineno, $i, $node);
+                return;  // Skip normal analysis to avoid duplicate warnings
+            }
+        }
+
         // Expand it to include all parent types up the chain
         try {
             $argument_type_resolved = $argument_type->withStaticResolvedInContext($context);
@@ -1303,6 +1318,63 @@ final class ArgumentType
         // Check suppressions and emit the issue
         if ($argument_node !== null) {
             self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        }
+    }
+
+    /**
+     * Analyze each branch of a ternary expression used as an argument.
+     * This catches type mismatches that would be hidden when branches are merged into a union type.
+     *
+     * @param Node $conditional_node A node of kind AST_CONDITIONAL
+     * @param int $i Parameter index
+     * @param ?Node $call_node The call node
+     */
+    private static function analyzeConditionalArgumentBranches(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Node $conditional_node,
+        int $lineno,
+        int $i,
+        ?Node $call_node
+    ): void {
+        $cond_node = $conditional_node->children['cond'];
+        $true_node = $conditional_node->children['true'] ?? $cond_node;  // Handle shorthand ?: syntax
+        $false_node = $conditional_node->children['false'];
+
+        // Use condition visitors to get the proper context for each branch,
+        // accounting for type narrowing from the condition
+        if ($cond_node instanceof Node) {
+            $true_context = (new \Phan\Analysis\ConditionVisitor($code_base, $context))->__invoke($cond_node);
+            $false_context = (new \Phan\Analysis\NegatedConditionVisitor($code_base, $context))->__invoke($cond_node);
+        } else {
+            $true_context = $context;
+            $false_context = $context;
+        }
+
+        // Analyze the true branch with the narrowed context
+        if ($true_node !== null) {
+            $true_type = UnionTypeVisitor::unionTypeFromNode($code_base, $true_context, $true_node, false);
+
+            // For shorthand ternary ($a ?: $b), the true branch value must be non-falsey
+            // Remove falsey types (null, false, 0, '', etc.) from the union
+            if (!isset($conditional_node->children['true'])) {
+                $true_type = $true_type->nonFalseyClone();
+            }
+
+            if (!$true_type->isEmpty()) {
+                // Recursively analyze this branch as if it were the argument
+                self::analyzeParameter($code_base, $true_context, $method, $true_type, $true_node->lineno ?? $lineno, $i, $true_node, $call_node);
+            }
+        }
+
+        // Analyze the false branch with the narrowed context
+        if ($false_node !== null) {
+            $false_type = UnionTypeVisitor::unionTypeFromNode($code_base, $false_context, $false_node, false);
+            if (!$false_type->isEmpty()) {
+                // Recursively analyze this branch as if it were the argument
+                self::analyzeParameter($code_base, $false_context, $method, $false_type, $false_node->lineno ?? $lineno, $i, $false_node, $call_node);
+            }
         }
     }
 

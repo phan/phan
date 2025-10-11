@@ -23,4 +23,8 @@
 %s:23 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is (4.2 ?: $x) of type 4.2 but \intdiv() takes int
 %s:24 PhanImpossibleCondition Impossible attempt to cast 0.0 of type 0.0 to truthy
 %s:25 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG of type true to truthy
+%s:25 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type 'value' but \intdiv() takes int
 %s:26 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG of type true to truthy
+%s:26 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type 'value' but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type 'value' but \intdiv() takes int
+%s:28 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type 'value' but \intdiv() takes int
