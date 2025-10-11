@@ -406,15 +406,16 @@ class TolerantASTConverter
     }
 
     /**
-     * @param Token|PhpParser\Node[]|PhpParser\Node\StatementNode $parser_nodes
+     * @param Token|PhpParser\Node[]|PhpParser\Node\StatementNode|PhpParser\Node\Expression $parser_nodes
      *        This is represented as a single node for `if` with a colon (macro style)
+     *        Can also be an Expression node (e.g. UnsetStatement) in brace-less control structures
      * @param ?int $lineno
      * @param bool $return_null_on_empty (return null if non-array (E.g. semicolon is seen))
      * @return ?ast\Node
      * Throws RuntimeException|Exception if the statement list is invalid
      * @suppress PhanThrowTypeAbsentForCall|PhanThrowTypeMismatchForCall
      */
-    private static function phpParserStmtlistToAstNode(\Microsoft\PhpParser\Node\StatementNode|Token|array $parser_nodes, ?int $lineno, bool $return_null_on_empty = false): ?\ast\Node
+    private static function phpParserStmtlistToAstNode(\Microsoft\PhpParser\Node\StatementNode|PhpParser\Node\Expression|Token|array $parser_nodes, ?int $lineno, bool $return_null_on_empty = false): ?\ast\Node
     {
         if ($parser_nodes instanceof PhpParser\Node\Statement\CompoundStatementNode) {
             $parser_nodes = $parser_nodes->statements;
@@ -424,6 +425,11 @@ class TolerantASTConverter
             } else {
                 $parser_nodes = [$parser_nodes];
             }
+        } elseif ($parser_nodes instanceof PhpParser\Node\Expression) {
+            // Handle Expression nodes that can appear as statements in brace-less control structures.
+            // For example: if ($cond) unset($x); where unset is UnsetStatement extending Expression.
+            // See https://github.com/phan/phan/issues/4750
+            $parser_nodes = [$parser_nodes];
         } elseif ($parser_nodes instanceof Token) {
             if ($parser_nodes->kind === TokenKind::SemicolonToken) {
                 if ($return_null_on_empty) {
