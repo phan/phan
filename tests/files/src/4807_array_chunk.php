@@ -140,9 +140,11 @@ function test_chunk_element_access() {
 function test_iterate_chunks() {
     $input = ['a' => 1, 'b' => 2, 'c' => 3];
     $chunks = array_chunk($input, 2, true);
+    // @phan-suppress-next-line PhanSideEffectFreeForeachBody
     foreach ($chunks as $chunk) {
         '@phan-debug-var $chunk';
         // Should be array<string,int>
+        // @phan-suppress-next-line PhanSideEffectFreeForeachBody, PhanUnusedVariableValueOfForeachWithKey, PhanUnusedVariable
         foreach ($chunk as $key => $value) {
             '@phan-debug-var $key';
             '@phan-debug-var $value';
@@ -154,7 +156,7 @@ function test_iterate_chunks() {
 // Test with union type input
 function test_union_input() {
     /** @var array<int>|array<string> $input */
-    $input = rand() ? [1, 2] : ['a', 'b'];
+    $input = random_int(0, 1) ? [1, 2] : ['a', 'b'];
     $result = array_chunk($input, 2);
     '@phan-debug-var $result';
     // Should be list<list<int|string>>

@@ -13,10 +13,9 @@
 %s:120 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<array<int,'a'>>|list<array<int,'b'>>|list<array<int,'c'>>(real=list<array<int,?'a'>>|list<array<int,?'b'>>|list<array<int,?'c'>>)
 %s:130 PhanDebugAnnotation @phan-debug-var requested for variable $first_chunk - it has union type list<1>|list<2>|list<3>|list<4>|list<5>(real=?list<?1>|?list<?2>|?list<?3>|?list<?4>|?list<?5>)
 %s:133 PhanDebugAnnotation @phan-debug-var requested for variable $first_element - it has union type 1|2|3|4|5(real=?1|?2|?3|?4|?5)
-%s:143 PhanDebugAnnotation @phan-debug-var requested for variable $chunk - it has union type array<string,1>|array<string,2>|array<string,3>(real=array<string,?1>|array<string,?2>|array<string,?3>)
-%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type string(real=int|string)
-%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type 1|2|3(real=?1|?2|?3)
-%s:157 PhanDeprecatedFunctionInternal Call to deprecated function \rand() (Deprecated because: Deprecated in PHP 8.3. Use random_int() or Random\Randomizer::getInt().)
-%s:158 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<'a'>>|list<list<'b'>>|list<list<1>>|list<list<2>>(real=list<list<?'a'>>|list<list<?'b'>>|list<list<?1>>|list<list<?2>>)
-%s:168 PhanTypeMismatchReturn Returning array_chunk($input, 2) of type list<list<1>>|list<list<2>> but test_expect_preserved_but_default() is declared to return list<array<string,int>>
-%s:175 PhanTypeMismatchReturn Returning array_chunk($input, 2, true) of type list<array<string,1>>|list<array<string,2>> but test_expect_list_but_preserved() is declared to return list<list<int>>
+%s:144 PhanDebugAnnotation @phan-debug-var requested for variable $chunk - it has union type array<string,1>|array<string,2>|array<string,3>(real=array<string,?1>|array<string,?2>|array<string,?3>)
+%s:148 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type string(real=int|string)
+%s:148 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type 1|2|3(real=?1|?2|?3)
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type list<list<'a'>>|list<list<'b'>>|list<list<1>>|list<list<2>>(real=list<list<?'a'>>|list<list<?'b'>>|list<list<?1>>|list<list<?2>>)
+%s:170 PhanTypeMismatchReturn Returning array_chunk($input, 2) of type list<list<1>>|list<list<2>> but test_expect_preserved_but_default() is declared to return list<array<string,int>>
+%s:177 PhanTypeMismatchReturn Returning array_chunk($input, 2, true) of type list<array<string,1>>|list<array<string,2>> but test_expect_list_but_preserved() is declared to return list<list<int>>
