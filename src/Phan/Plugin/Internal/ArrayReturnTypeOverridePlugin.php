@@ -726,6 +726,64 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             }
             return $value_type->asListTypes();
         };
+        /**
+         * @param list<Node|int|float|string> $args
+         * Infer return type of array_chunk based on input array and $preserve_keys parameter
+         */
+        $array_chunk_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_list_type_set): UnionType {
+            if (\count($args) < 1) {
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('list<array>', '?list<array>');
+            }
+
+            // Get the element type from the input array
+            $input_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $element_type = $input_array_type->genericArrayElementTypes(true, $code_base);
+
+            if ($element_type->isEmpty()) {
+                return UnionType::fromFullyQualifiedPHPDocAndRealString('list<array>', '?list<array>');
+            }
+
+            // Determine if $preserve_keys is true, false, or unknown
+            $preserve_keys = null;  // null means unknown
+            if (\count($args) >= 3) {
+                $preserve_keys_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
+                // Try to determine the boolean value statically
+                if ($preserve_keys_type->isExclusivelyBoolTypes()) {
+                    if ($preserve_keys_type->containsTruthy() && !$preserve_keys_type->containsFalsey()) {
+                        $preserve_keys = true;
+                    } elseif ($preserve_keys_type->containsFalsey() && !$preserve_keys_type->containsTruthy()) {
+                        $preserve_keys = false;
+                    }
+                }
+            } else {
+                // Default is false when omitted
+                $preserve_keys = false;
+            }
+
+            // Build the chunk type based on $preserve_keys
+            if ($preserve_keys === false) {
+                // list<list<V>>
+                $chunk_type = $element_type->asListTypes();
+            } elseif ($preserve_keys === true) {
+                // list<array<K,V>>
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($input_array_type);
+                $chunk_type = $element_type->asGenericArrayTypes($key_type_enum);
+            } else {
+                // Unknown: list<list<V>|array<K,V>>
+                $list_chunk = $element_type->asListTypes();
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($input_array_type);
+                $array_chunk = $element_type->asGenericArrayTypes($key_type_enum);
+                $chunk_type = $list_chunk->withUnionType($array_chunk);
+            }
+
+            // Wrap in a list and add real type
+            $result = $chunk_type->asListTypes();
+            if (!$result->hasRealTypeSet()) {
+                $result = $result->withRealTypeSet($nullable_list_type_set);
+            }
+
+            return $result;
+        };
         return [
             // Gets the element types of the first
             'array_pop'   => $get_element_type_of_first_arg_check_nonempty_null,
@@ -779,8 +837,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'array_uintersect_uassoc'   => $get_first_array_arg_assoc,
             'array_unique'              => $get_first_array_arg_assoc_same_size,
             'array_values'              => $array_values_callback,
+            'array_chunk'               => $array_chunk_callback,
             'iterator_to_array'         => $iterator_to_array_callback,
-            // TODO: iterator_to_array
         ];
     }
 
