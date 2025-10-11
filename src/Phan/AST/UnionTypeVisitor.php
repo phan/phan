@@ -793,7 +793,63 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result[] = $type;
             }
         }
+
+        // Check for redundant boolean type combinations (issue #4705)
+        $this->checkRedundantBoolCombinations($result, $node->lineno);
+
         return UnionType::of($result, $result);
+    }
+
+    /**
+     * Check for redundant boolean type combinations in union types
+     * @param list<Type> $types
+     * @param int $lineno
+     */
+    private function checkRedundantBoolCombinations(array $types, int $lineno): void
+    {
+        $has_bool = false;
+        $has_true = false;
+        $has_false = false;
+
+        foreach ($types as $type) {
+            if ($type instanceof BoolType && !($type instanceof TrueType) && !($type instanceof FalseType)) {
+                $has_bool = true;
+            } elseif ($type instanceof TrueType) {
+                $has_true = true;
+            } elseif ($type instanceof FalseType) {
+                $has_false = true;
+            }
+        }
+
+        // Create a string representation of the union type for error messages
+        $type_string = UnionType::of($types, $types)->__toString();
+
+        // Check for bool|true
+        if ($has_bool && $has_true) {
+            $this->emitIssue(
+                Issue::RedundantBoolAndTrueInUnion,
+                $lineno,
+                $type_string
+            );
+        }
+
+        // Check for bool|false
+        if ($has_bool && $has_false) {
+            $this->emitIssue(
+                Issue::RedundantBoolAndFalseInUnion,
+                $lineno,
+                $type_string
+            );
+        }
+
+        // Check for true|false (when bool is not present)
+        if (!$has_bool && $has_true && $has_false) {
+            $this->emitIssue(
+                Issue::RedundantTrueAndFalseInUnion,
+                $lineno,
+                $type_string
+            );
+        }
     }
 
     /**

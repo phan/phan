@@ -613,6 +613,9 @@ class Issue
     public const TemplateTypeStaticMethod   = 'PhanTemplateTypeStaticMethod';
     public const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
     public const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
+    public const RedundantBoolAndTrueInUnion             = 'PhanRedundantBoolAndTrueInUnion';
+    public const RedundantBoolAndFalseInUnion            = 'PhanRedundantBoolAndFalseInUnion';
+    public const RedundantTrueAndFalseInUnion            = 'PhanRedundantTrueAndFalseInUnion';
     public const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
     public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
     public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
@@ -5295,6 +5298,30 @@ class Issue
                 "Template type {TYPE} is already declared in the containing class",
                 self::REMEDIATION_B,
                 14009
+            ),
+            new Issue(
+                self::RedundantBoolAndTrueInUnion,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                'Duplicate type true is redundant in union type {TYPE} (bool already includes true)',
+                self::REMEDIATION_B,
+                14010
+            ),
+            new Issue(
+                self::RedundantBoolAndFalseInUnion,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                'Duplicate type false is redundant in union type {TYPE} (bool already includes false)',
+                self::REMEDIATION_B,
+                14011
+            ),
+            new Issue(
+                self::RedundantTrueAndFalseInUnion,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                'Type {TYPE} contains both true and false - bool should be used instead',
+                self::REMEDIATION_B,
+                14012
             ),
 
             // Issue::CATEGORY_INTERNAL
