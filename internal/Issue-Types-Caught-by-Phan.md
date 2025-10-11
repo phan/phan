@@ -2215,6 +2215,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1096
 
 This category of issue comes up when more than one thing of whatever type have the same name and namespace.
 
+## PhanDuplicateStaticVariable
+
+```
+Duplicate declaration of static variable ${VARIABLE} in {FUNCTIONLIKE} - previously declared at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4741_duplicate_static_variable.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4741_duplicate_static_variable.php#L8).
+
 ## PhanIncompatibleCompositionConstant
 
 This issue is emitted when a class uses traits that define the same constant with incompatible visibility or values, or when a class redefines a trait constant incompatibly. PHP 8.2+ allows constants in traits, and the definitions must be compatible.
