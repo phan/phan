@@ -757,8 +757,29 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if (($var_node->kind ?? null) !== ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
-        // if (!isset($x)) means that $x is definitely null
-        return $this->updateVariableWithNewType($var_node, $this->context, NullType::instance(false)->asRealUnionType(), true, false);
+        // if (!isset($x)) means that $x is either null or undefined.
+        // However, if $x is definitely defined (e.g., function parameter), it can only be null.
+        // See https://github.com/phan/phan/issues/4713
+        $var_name = $var_node->children['name'];
+        $null_type = NullType::instance(false)->asRealUnionType();
+
+        if (\is_string($var_name)) {
+            $variable = $this->context->getScope()->getVariableByNameOrNull($var_name);
+            // Mark as possibly undefined if:
+            // 1. Variable doesn't exist in scope yet, OR
+            // 2. Variable exists but is already possibly undefined
+            if (!$variable || $variable->getUnionType()->isPossiblyUndefined()) {
+                $null_type = $null_type->withIsPossiblyUndefined(true);
+            }
+        }
+
+        return $this->updateVariableWithNewType(
+            $var_node,
+            $this->context,
+            $null_type,
+            true,
+            false
+        );
     }
 
     /**
