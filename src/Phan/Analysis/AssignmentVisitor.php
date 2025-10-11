@@ -1193,8 +1193,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
+            // Check compatibility without expanding property type to include parent classes.
+            // Expanding would incorrectly allow sibling types to be considered compatible.
+            // See https://github.com/phan/phan/issues/4727
             if ($resolved_right_type->canCastToUnionType(
-                $property_union_type->asExpandedTypesPreservingTemplate($code_base),
+                $property_union_type,
                 $code_base
             )) {
                 $this->addTypesToProperty($property, $node);
@@ -1214,7 +1217,7 @@ class AssignmentVisitor extends AnalysisVisitor
                                   ->withStaticResolvedInContext($this->context);
 
                 if (!$new_types->canCastToUnionType(
-                    $property_union_type->asExpandedTypesPreservingTemplate($code_base),
+                    $property_union_type,
                     $code_base
                 )) {
                     // echo "Emitting warning for $new_types\n";
@@ -1243,14 +1246,14 @@ class AssignmentVisitor extends AnalysisVisitor
         } else {
             // This is a regular assignment, not an assignment to an offset
             if (!$resolved_right_type->canCastToUnionType(
-                $property_union_type->asExpandedTypesPreservingTemplate($code_base),
+                $property_union_type,
                 $code_base
             )
                 && !($resolved_right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                 && !$clazz->hasDynamicProperties($code_base)
                 && !$property->isDynamicProperty()
             ) {
-                if ($resolved_right_type->nonNullableClone()->canCastToUnionType($property_union_type->asExpandedTypesPreservingTemplate($code_base), $code_base) &&
+                if ($resolved_right_type->nonNullableClone()->canCastToUnionType($property_union_type, $code_base) &&
                         !$resolved_right_type->isType(NullType::instance(false))) {
                     if ($this->shouldSuppressIssue(Issue::TypeMismatchProperty, $node->lineno)) {
                         return $this->context;
