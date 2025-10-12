@@ -283,28 +283,34 @@ final class TemplateType extends Type
     }
 
     /**
-     * Template types should be considered compatible with any declared real type
-     * since they are placeholders that will be resolved at call time.
+     * Template types are placeholders that will be resolved at call time.
+     * They should be considered compatible with the declared signature type because:
      *
-     * For example, `@template T of object` with `@return T` is compatible with `: object`
-     * because T will always be a subtype of object when instantiated.
+     * 1. The signature itself provides a runtime constraint on what the template can be
+     * 2. Template constraints (e.g. "template SomeType of SomeClass") are semantic documentation
+     *    rather than strict type bounds that Phan can verify at declaration time
+     * 3. Actual type safety is enforced when the template is instantiated
+     *
+     * This prevents false positives for valid patterns like when a template type constrained
+     * to object is used with an object signature.
      *
      * @param UnionType $union_type the real signature type to check against
      * @param Context $context
      * @param CodeBase $code_base
-     * @return bool true since template types are placeholders resolved at call time
+     * @return bool true since template types are compatible with signature constraints
      *
      * @unused-param $union_type
      * @unused-param $context
      * @unused-param $code_base
+     * @override
      */
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
         Context $context,
         CodeBase $code_base
     ): bool {
-        // Template types are always considered compatible with the declared signature type.
-        // The actual compatibility will be verified when the template is instantiated.
+        // Template types are placeholders resolved at call time.
+        // The signature provides the constraint, so always allow it.
         return true;
     }
 }
