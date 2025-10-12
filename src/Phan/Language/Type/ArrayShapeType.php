@@ -701,25 +701,48 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (\count($array_shape_types) === 1) {
             return $array_shape_types[0];
         }
-        $field_types = $array_shape_types[0]->field_types;
-        unset($array_shape_types[0]);
 
+        // Collect all possible field keys across all shapes
+        $all_keys = [];
         foreach ($array_shape_types as $type) {
-            foreach ($type->field_types as $key => $union_type) {
-                $old_union_type = $field_types[$key] ?? null;
-                if ($old_union_type === null) {
-                    // The new type is possibly undefined iff the current type is.
-                    $new_union_type = $union_type;
-                } else {
-                    $new_union_type = $old_union_type->withUnionType($union_type);
-                    if ($old_union_type->isPossiblyUndefined() && $union_type->isPossiblyUndefined()) {
-                        $new_union_type = $new_union_type->withIsPossiblyUndefined(true);
-                    }
-                    // Else we're good because the type returned by `withUnionType` is never possibly undefined.
-                }
-                $field_types[$key] = $new_union_type;
+            foreach ($type->field_types as $key => $_) {
+                $all_keys[$key] = true;
             }
         }
+
+        $field_types = [];
+        foreach ($all_keys as $key => $_) {
+            $field_union_types = [];
+            $all_possibly_undefined = true;
+
+            // Collect the union type for this field from each shape that has it
+            foreach ($array_shape_types as $type) {
+                if (isset($type->field_types[$key])) {
+                    $field_type = $type->field_types[$key];
+                    $field_union_types[] = $field_type;
+                    // If at least one shape has this field as required, it's not "all possibly undefined"
+                    if (!$field_type->isPossiblyUndefined()) {
+                        $all_possibly_undefined = false;
+                    }
+                }
+            }
+
+            // Merge all union types for this field
+            $merged = $field_union_types[0];
+            for ($i = 1; $i < \count($field_union_types); $i++) {
+                $merged = $merged->withUnionType($field_union_types[$i]);
+            }
+
+            // Per doc comment: "Elements are considered to be possibly undefined iff
+            // they are possibly undefined in all of the types."
+            // A field is optional in result only if it's marked as optional in ALL shapes where it appears
+            if ($all_possibly_undefined) {
+                $merged = $merged->withIsPossiblyUndefined(true);
+            }
+
+            $field_types[$key] = $merged;
+        }
+
         return self::fromFieldTypes($field_types, false);
     }
 

@@ -261,17 +261,41 @@ class ArrayType extends IterableType
     {
         $type_set = [];
         $left_array_shape_types = [];
+
+        // Check if ANY variant has this field
+        $any_variant_has_field = false;
         foreach ($left->getTypeSet() as $type) {
             if ($type instanceof ArrayShapeType) {
-                $left_array_shape_types[] = $type;
+                $field_types = $type->getFieldTypes();
+                if (isset($field_types[$field_dim_value])) {
+                    $any_variant_has_field = true;
+                    break;
+                }
+            }
+        }
+
+        foreach ($left->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $field_types = $type->getFieldTypes();
+                // Only filter out variants if at least one variant has the field.
+                // If no variants have the field, keep all variants (it's just adding a new field).
+                if (!$any_variant_has_field || isset($field_types[$field_dim_value]) || \count($field_types) === 0) {
+                    $left_array_shape_types[] = $type;
+                }
+                // else: Some variants have the field but this one doesn't - eliminate it
             } else {
                 $type_set[] = $type;
             }
         }
-        $type_set[] = ArrayShapeType::combineWithPrecedence(
-            ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
-            ArrayShapeType::union($left_array_shape_types)
-        );
+        if (\count($left_array_shape_types) > 0) {
+            $type_set[] = ArrayShapeType::combineWithPrecedence(
+                ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
+                ArrayShapeType::union($left_array_shape_types)
+            );
+        } else {
+            // All array shape variants were filtered out - just create a shape with this field
+            $type_set[] = ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false);
+        }
         $real_type_set = $left->hasRealTypeSet() ? self::computeRealTypeSetForArrayShapeTypeWithField($left, $field_dim_value, $field_type) : [];
         // TODO: Determine if the real type is an array
         return UnionType::of($type_set, $real_type_set);
@@ -287,24 +311,49 @@ class ArrayType extends IterableType
     private static function computeRealTypeSetForArrayShapeTypeWithField(UnionType $left, bool|float|int|string $field_dim_value, UnionType $field_type): array
     {
         $has_non_array_shape = false;
+        $filtered_array_shape_types = [];
+
+        // Check if ANY variant has this field
+        $any_variant_has_field = false;
+        foreach ($left->getRealTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $field_types = $type->getFieldTypes();
+                if (isset($field_types[$field_dim_value])) {
+                    $any_variant_has_field = true;
+                    break;
+                }
+            }
+        }
+
         foreach ($left->getRealTypeSet() as $type) {
             if (!$type instanceof ArrayType || $type->isNullable()) {
                 return [];
             }
             if (!$type instanceof ArrayShapeType) {
                 $has_non_array_shape = true;
+            } else {
+                // Only filter out variants if at least one variant has the field.
+                // If no variants have the field, keep all variants (it's just adding a new field).
+                $field_types = $type->getFieldTypes();
+                if (!$any_variant_has_field || isset($field_types[$field_dim_value]) || \count($field_types) === 0) {
+                    $filtered_array_shape_types[] = $type;
+                }
             }
         }
         if ($has_non_array_shape) {
             return [ArrayType::instance(false)];
         }
-        return [
-            ArrayShapeType::combineWithPrecedence(
-                ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type->asRealUnionType()], false),
-                // @phan-suppress-next-line PhanTypeMismatchArgument this was asserted to be list<ArrayShapeType>
-                ArrayShapeType::union($left->getRealTypeSet())
-            )
-        ];
+        if (\count($filtered_array_shape_types) > 0) {
+            return [
+                ArrayShapeType::combineWithPrecedence(
+                    ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type->asRealUnionType()], false),
+                    ArrayShapeType::union($filtered_array_shape_types)
+                )
+            ];
+        } else {
+            // All array shape variants were filtered out - just create a shape with this field
+            return [ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type->asRealUnionType()], false)];
+        }
     }
 
     protected function canCastToNonNullableType(Type $type, CodeBase $code_base): bool
