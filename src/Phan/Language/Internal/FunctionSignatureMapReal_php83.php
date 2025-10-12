@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 /**
  * This lists all of the possible real return types of various global functions.
- * This is useful because php won't provide many of these until php 8,
- * and even then won't be able to represent types such as string|false.
+ * This is used when types are not available in Reflection.
  *
  * This is conservative to avoid false positives, and includes types returned for all possible failure modes
  * (invalid arguments/argument counts, spurious errors, etc.)
