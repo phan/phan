@@ -1717,11 +1717,12 @@ trait FunctionTrait
                         }
                         if (!TemplateType::unionTypeSatisfiesBound($code_base, $resolved, $constraint)) {
                             $usage = 'call to ' . $function->getRepresentationForIssue();
+                            $lineno = $call_node?->lineno ?? $context->getLineNumberStart();
                             Issue::maybeEmit(
                                 $code_base,
                                 $context,
                                 Issue::TemplateTypeConstraintViolation,
-                                $call_node->lineno ?? $context->getLineNumberStart(),
+                                $lineno,
                                 $name,
                                 $function->getRepresentationForIssue(),
                                 (string)$constraint,
