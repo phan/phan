@@ -89,6 +89,12 @@ class AssignmentVisitor extends AnalysisVisitor
     private $suppress_dim_property_mismatch;
 
     /**
+     * @var bool true if this is a conditional check (isset/array_key_exists) rather than an actual assignment
+     * When true, skip read-only property checks since we're only inferring that a field exists, not modifying it.
+     */
+    private $is_conditional_check;
+
+    /**
      * @param CodeBase $code_base
      * The global code base we're operating within
      *
@@ -110,6 +116,10 @@ class AssignmentVisitor extends AnalysisVisitor
      *
      * @param ?UnionType $dim_type
      * The type of the dimension.
+     *
+     * @param bool $is_conditional_check
+     * True if this is being used for conditional type inference (isset/array_key_exists)
+     * rather than an actual assignment. Skips read-only property checks.
      */
     public function __construct(
         CodeBase $code_base,
@@ -118,7 +128,8 @@ class AssignmentVisitor extends AnalysisVisitor
         UnionType $right_type,
         int $dim_depth = 0,
         ?UnionType $dim_type = null,
-        bool $suppress_dim_property_mismatch = false
+        bool $suppress_dim_property_mismatch = false,
+        bool $is_conditional_check = false
     ) {
         parent::__construct($code_base, $context);
 
@@ -127,6 +138,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
         $this->assignment_node = $assignment_node;
         $this->suppress_dim_property_mismatch = $suppress_dim_property_mismatch;
+        $this->is_conditional_check = $is_conditional_check;
     }
 
     /**
@@ -927,7 +939,8 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type,
             $this->dim_depth + 1,
             $dim_type,
-            $this->suppress_dim_property_mismatch
+            $this->suppress_dim_property_mismatch,
+            $this->is_conditional_check  // Propagate the flag for nested dimensions
         ))->__invoke($expr_node);
 
         return $context;
@@ -1161,7 +1174,9 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         $code_base = $this->code_base;
         if ($property->isReadOnly()) {
-            if ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property)) {
+            // Skip read-only checks if this is a conditional check (isset/array_key_exists)
+            // We're only inferring that the field exists, not actually modifying it
+            if (!$this->is_conditional_check && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
                 $this->analyzeAssignmentToReadOnlyProperty($property, $node);
             }
         }

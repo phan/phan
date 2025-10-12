@@ -404,7 +404,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     // There is a difference between `if (is_string($x['field']))` and `$x['field'] = (some string)` for the way the `elseif` should be analyzed.
                     $context->withClonedScope(),
                     $ancestor_node,
-                    $old_type->nonNullableClone()
+                    $old_type->nonNullableClone(),
+                    0,
+                    null,
+                    false,
+                    true  // is_conditional_check: This is isset, not an assignment
                 ))->__invoke($ancestor_node);
             }
             return $context->withScopeVariable($variable);

@@ -724,7 +724,8 @@ trait ConditionVisitorUtil
                 $new_field_type,
                 0,
                 null,
-                true
+                true,
+                true  // is_conditional_check: This is a type check, not an assignment
             ))->__invoke($node);
         } catch (IssueException $exception) {
             if (!$suppress_issues) {
@@ -1586,7 +1587,8 @@ trait ConditionVisitorUtil
             $new_field_type,
             0,
             null,
-            true
+            true,
+            true  // is_conditional_check: This is a type check (is_array, etc.), not an assignment
         ))->__invoke($node);
     }
 
