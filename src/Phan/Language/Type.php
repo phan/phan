@@ -43,9 +43,11 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayTemplateKeyType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
+use Phan\Language\Type\KeyOfType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IntRangeType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
@@ -60,7 +62,9 @@ use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NonNullMixedType;
+use Phan\Language\Type\NegativeIntType;
 use Phan\Language\Type\NonZeroIntType;
+use Phan\Language\Type\PositiveIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -70,6 +74,7 @@ use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\ValueOfType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
@@ -113,17 +118,17 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|lowercase-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|lowercase-string|numeric-string|phan-intersection-type|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -245,9 +250,11 @@ class Type implements Stringable
         'false'           => true,
         'float'           => true,
         'int'             => true,
+        'int-range'       => true,
         'iterable'        => true,
         'list'            => true,
         'lowercase-string' => true,
+        'key-of'         => true,
         'mixed'           => true,
         'non-empty-array' => true,
         'non-empty-associative-array' => true,
@@ -257,6 +264,8 @@ class Type implements Stringable
         'non-empty-string' => true,
         'non-empty-lowercase-string' => true,
         'non-zero-int'    => true,
+        'positive-int'    => true,
+        'negative-int'    => true,
         'null'            => true,
         'numeric-string' => true,
         'object'          => true,
@@ -271,6 +280,7 @@ class Type implements Stringable
         'no-return'       => true,
         'never-return'    => true,
         'never-returns'   => true,
+        'value-of'        => true,
     ];
 
     /**
@@ -551,6 +561,22 @@ class Type implements Stringable
                             $is_nullable
                         );
                         break;
+                    case 'key-of':
+                        $value = new KeyOfType(
+                            '\\',
+                            'key-of',
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
+                    case 'int-range':
+                        $value = new IntRangeType(
+                            '\\',
+                            'int-range',
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
                     case 'list':
                         $value = self::parseListTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, false);
                         break;
@@ -573,8 +599,22 @@ class Type implements Stringable
                     case 'non-zero-int':
                         $value = new NonZeroIntType($is_nullable);
                         break;
+                    case 'positive-int':
+                        $value = new PositiveIntType($is_nullable);
+                        break;
+                    case 'negative-int':
+                        $value = new NegativeIntType($is_nullable);
+                        break;
                     case 'self':
                         $value = new SelfType($is_nullable);
+                        break;
+                    case 'value-of':
+                        $value = new ValueOfType(
+                            '\\',
+                            'value-of',
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
                         break;
                 }
             }
@@ -838,6 +878,11 @@ class Type implements Stringable
                 case 'phan-intersection-type':
                     // phan-intersection-type<A, B, C> is an alias for A&B&C for parsing simplicity
                     return self::parseIntersectionTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable, $code_base, $context);
+                case 'key-of':
+                case 'value-of':
+                    return self::make('\\', $type_name, $template_parameter_type_list, $is_nullable, $source);
+                case 'int-range':
+                    return IntRangeType::fromTemplateParameterTypeList($template_parameter_type_list, $is_nullable, $source);
             }
         }
 
@@ -871,6 +916,8 @@ class Type implements Stringable
                 return FloatType::instance($is_nullable);
             case 'int':
                 return IntType::instance($is_nullable);
+            case 'int-range':
+                return IntType::instance($is_nullable);
             case 'list':
                 return ListType::fromElementType(MixedType::instance(false), $is_nullable);
             case 'phan-intersection-type': // There are no template arguments.
@@ -889,8 +936,12 @@ class Type implements Stringable
             case 'non-empty-lowercase-string':
             case 'non-empty-string':
                 return NonEmptyStringType::instance($is_nullable);
-            case 'non-zero-int':
-                return NonZeroIntType::instance($is_nullable);
+                case 'non-zero-int':
+                    return NonZeroIntType::instance($is_nullable);
+                case 'positive-int':
+                    return PositiveIntType::instance($is_nullable);
+                case 'negative-int':
+                    return NegativeIntType::instance($is_nullable);
             case 'null':
                 return NullType::instance($is_nullable);
             case 'object':

@@ -1,0 +1,4 @@
+%s:17 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type 0 but \takesRange() takes int-range defined at %s:14
+%s:18 PhanTypeMismatchArgument Argument 1 ($value) is 12 of type 12 but \takesRange() takes int-range defined at %s:14
+%s:33 PhanTypeMismatchReturn Returning 0 of type 0 but returnsTooLow() is declared to return int-range
+%s:41 PhanTypeMismatchReturn Returning 11 of type 11 but returnsTooHigh() is declared to return int-range

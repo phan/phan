@@ -4707,6 +4707,14 @@ constant {CONST} may not have a template type
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/189_class_constant_badtype.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/189_class_constant_badtype.php#L9).
 
+## PhanTemplateTypeConstraintViolation
+
+```
+Template type {TYPE} of {CLASS} must be compatible with {TYPE}, but {TYPE} was provided in {CLASS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1103_template_constraint_enforcement.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1103_template_constraint_enforcement.php#L44).
+
 ## PhanTemplateTypeDuplicate
 
 ```
@@ -4758,6 +4766,15 @@ static property {PROPERTY} may not have a template type
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0203_generic_errors.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0203_generic_errors.php#L11).
+
+## PhanTemplateTypeVarianceViolation
+
+```
+Template type {TYPE} declared {VARIANCE} cannot be used in {POSITION} of {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1104_template_variance_parsing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1104_template_variance_parsing.php#L20).
+Another example covering property variance (including contravariant properties, which are now disallowed even when write-only) appears in [this issue file](https://github.com/phan/phan/tree/v6/tests/files/expected/1102_template_parameter_mismatch.php.expected#L11), triggered by [this source snippet](https://github.com/phan/phan/tree/v6/tests/files/src/1102_template_parameter_mismatch.php#L135).
 
 # Internal
 

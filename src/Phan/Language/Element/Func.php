@@ -320,6 +320,8 @@ class Func extends AddressableElement implements FunctionInterface
 
         $func->setOriginalReturnType();
 
+        $func->enforceTemplateVarianceForSignature($code_base, null);
+
         return $func;
     }
 

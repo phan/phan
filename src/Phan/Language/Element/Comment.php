@@ -118,6 +118,22 @@ class Comment
     protected $inherited_type;
 
     /**
+     * @var list<Type>
+     * Types that a class implements with template parameters.
+     * Classes may specify template parameters for implemented interfaces
+     * via `(at)implements Interface<Type>`.
+     */
+    protected $implemented_types = [];
+
+    /**
+     * @var list<Type>
+     * Types that a class uses (traits) with template parameters.
+     * Classes may specify template parameters for used traits
+     * via `(at)use Trait<Type>`.
+     */
+    protected $used_trait_types = [];
+
+    /**
      * @var ReturnComment|null
      * the representation of an (at)return directive
      */
@@ -186,6 +202,12 @@ class Comment
      * @param Option<Type> $inherited_type
      * An override on the type of the extended class
      *
+     * @param list<Type> $implemented_types
+     * A list of implemented interface types with template parameters
+     *
+     * @param list<Type> $used_trait_types
+     * A list of used trait types with template parameters
+     *
      * @param ?ReturnComment $return_comment
      *
      * @param array<string,int> $suppress_issue_set
@@ -213,6 +235,8 @@ class Comment
         array $parameter_list,
         array $template_type_list,
         Option $inherited_type,
+        array $implemented_types,
+        array $used_trait_types,
         $return_comment,
         array $suppress_issue_set,
         array $magic_property_list,
@@ -229,6 +253,8 @@ class Comment
         $this->parameter_list = $parameter_list;
         $this->template_type_list = $template_type_list;
         $this->inherited_type = $inherited_type;
+        $this->implemented_types = $implemented_types;
+        $this->used_trait_types = $used_trait_types;
         $this->return_comment = $return_comment;
         $this->suppress_issue_set = $suppress_issue_set;
         $this->closure_scope = $closure_scope;
@@ -359,6 +385,12 @@ class Comment
             case 'inherits':
             case 'extends':
                 $this->inherited_type = $value;
+                return;
+            case 'implements':
+                $this->implemented_types = $value;
+                return;
+            case 'use':
+                $this->used_trait_types = $value;
                 return;
             case 'mixin':
                 $this->mixin_types = $value;
@@ -650,6 +682,24 @@ class Comment
     public function getInheritedTypeOption(): Option
     {
         return $this->inherited_type;
+    }
+
+    /**
+     * @return list<Type>
+     * A list of interface types with template parameters that a class implements.
+     */
+    public function getImplementedTypes(): array
+    {
+        return $this->implemented_types;
+    }
+
+    /**
+     * @return list<Type>
+     * A list of trait types with template parameters that a class uses.
+     */
+    public function getUsedTraitTypes(): array
+    {
+        return $this->used_trait_types;
     }
 
     /**

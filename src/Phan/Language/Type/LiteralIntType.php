@@ -140,6 +140,12 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                         return $type->value === $this->value;
                     }
                     return true;
+                case 'int-range':
+                    return $type instanceof IntRangeType ? $type->containsValue($this->value) : true;
+                case 'positive-int':
+                    return $this->value > 0;
+                case 'negative-int':
+                    return $this->value < 0;
                 case 'non-zero-int':
                     return (bool)$this->value;
                 case 'string':
@@ -192,6 +198,12 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                         return $type->value === $this->value;
                     }
                     return true;
+                case 'int-range':
+                    return $type instanceof IntRangeType ? $type->containsValue($this->value) : true;
+                case 'positive-int':
+                    return $this->value > 0;
+                case 'negative-int':
+                    return $this->value < 0;
                 case 'float':
                     if ($type instanceof LiteralFloatType) {
                         return $type->getValue() == $this->value;

@@ -1,0 +1,4 @@
+%s:44 PhanTemplateTypeConstraintViolation Template type T of \Repository must be compatible with \Base, but \NotBase was provided in \BadRepository
+%s:71 PhanTemplateTypeConstraintViolation Template type T of \GenericCollection must be compatible with \Base, but \NotBase was provided in \BadCollection
+%s:97 PhanTemplateTypeConstraintViolation Template type T of \HolderTrait must be compatible with \Base, but \NotBase was provided in \BadHolder
+%s:107 PhanTemplateTypeConstraintViolation Template type T of \takeBase() must be compatible with \Base, but \NotBase was provided in call to \takeBase()

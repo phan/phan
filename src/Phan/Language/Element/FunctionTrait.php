@@ -23,6 +23,7 @@ use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Template\TemplateVarianceUtil;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -1642,8 +1643,17 @@ trait FunctionTrait
             return;
         }
         $parameter_extractor_map = [];
-        $has_all_templates = true;
+        $template_type_lookup = [];
+        $bounded_template_map = [];
         foreach ($template_type_list as $template_type) {
+            $name = $template_type->getName();
+            $template_type_lookup[$name] = $template_type;
+            if ($template_type->hasBound()) {
+                $bounded_template_map[$name] = $template_type;
+            }
+        }
+        $has_all_templates = true;
+        foreach ($template_type_lookup as $template_type) {
             if (!$this->isTemplateTypeUsed($template_type)) {
                 Issue::maybeEmit(
                     $code_base,
@@ -1676,20 +1686,61 @@ trait FunctionTrait
         if (!$has_all_templates) {
             return;
         }
+
+        $bounded_extractors = [];
+        if ($bounded_template_map) {
+            foreach ($bounded_template_map as $name => $template_type) {
+                $extractor = $parameter_extractor_map[$name] ?? null;
+                if ($extractor) {
+                    $bounded_extractors[$name] = [$template_type, $extractor];
+                }
+            }
+        }
+
+        if ($bounded_extractors) {
+            $this->addFunctionCallAnalyzer(
+                /**
+                 * @param list<Node|int|string|float|UnionType> $args
+                 */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node) use ($bounded_extractors): void {
+                    $args_types = self::computeArgumentUnionTypes($code_base, $context, $args);
+                    foreach ($bounded_extractors as $name => [$template_type, $extractor]) {
+                        // Debug placeholder (will be removed)
+                        // fwrite(STDERR, "checking template $name\n");
+                        $constraint = $template_type->getBoundUnionType();
+                        if (!$constraint || $constraint->isEmpty()) {
+                            continue;
+                        }
+                        $resolved = $extractor($args_types, $context);
+                        if ($resolved->isEmpty()) {
+                            continue;
+                        }
+                        if (!TemplateType::unionTypeSatisfiesBound($code_base, $resolved, $constraint)) {
+                            $usage = 'call to ' . $function->getRepresentationForIssue();
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::TemplateTypeConstraintViolation,
+                                $call_node->lineno ?? $context->getLineNumberStart(),
+                                $name,
+                                $function->getRepresentationForIssue(),
+                                (string)$constraint,
+                                (string)$resolved,
+                                $usage
+                            );
+                        }
+                    }
+                },
+                null
+            );
+        }
+
         /**
          * Resolve the template types based on the parameters passed to the function
          * @param list<Node|mixed> $args
          */
         $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extractor_map): UnionType {
-            $args_types = \array_map(
-                /**
-                 * @param mixed $node
-                 */
-                static function (mixed $node) use ($code_base, $context): UnionType {
-                    return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
-                },
-                $args
-            );
+            $args_types = self::computeArgumentUnionTypes($code_base, $context, $args);
             $template_type_map = [];
             foreach ($parameter_extractor_map as $name => $closure) {
                 $template_type_map[$name] = $closure($args_types, $context);
@@ -1697,6 +1748,176 @@ trait FunctionTrait
             return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
         };
         $this->setDependentReturnTypeClosure($analyzer);
+    }
+
+    protected function enforceTemplateVarianceForSignature(CodeBase $code_base, ?Clazz $class = null): void
+    {
+        $template_map = [];
+        if ($class) {
+            foreach ($class->getTemplateTypeMap() as $template_type) {
+                if ($template_type instanceof TemplateType) {
+                    $template_map[$template_type->getName()] = $template_type;
+                }
+            }
+        }
+        if ($this->comment) {
+            foreach ($this->comment->getTemplateTypeList() as $template_type) {
+                $template_map[$template_type->getName()] = $template_type;
+            }
+        }
+        if (!$template_map) {
+            return;
+        }
+
+        $this->enforceVarianceOnReturnType($code_base, $template_map);
+        $this->enforceVarianceOnParameters($code_base, $template_map);
+    }
+
+    /**
+     * @param array<string,TemplateType> $template_map
+     */
+    private function enforceVarianceOnReturnType(CodeBase $code_base, array $template_map): void
+    {
+        $union_type = $this->getUnionType();
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        $usages = self::collectTemplateTypeUsagesFromUnion($union_type, $template_map);
+        if (!$usages) {
+            return;
+        }
+        $context = $this->getContext();
+        $line = $context->getLineNumberStart();
+        foreach ($usages as $usage) {
+            $template_type = $usage['template'];
+            $position = $usage['context'] ? $usage['context'] . ' of return type' : 'return type';
+            if ($usage['is_invariant'] && ($template_type->isContravariant() || $template_type->isCovariant())) {
+                $this->emitTemplateVarianceIssue(
+                    $code_base,
+                    $context,
+                    $line,
+                    $template_type,
+                    $position,
+                    $template_type->isContravariant() ? 'contravariant' : 'covariant'
+                );
+                continue;
+            }
+            if ($template_type->isContravariant()) {
+                $this->emitTemplateVarianceIssue(
+                    $code_base,
+                    $context,
+                    $line,
+                    $template_type,
+                    $position,
+                    'contravariant'
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string,TemplateType> $template_map
+     */
+    private function enforceVarianceOnParameters(CodeBase $code_base, array $template_map): void
+    {
+        $function_context = $this->getContext();
+        $comment_parameter_map = $this->comment ? $this->comment->getParameterMap() : [];
+        foreach ($this->parameter_list as $parameter) {
+            $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
+            $union_type = $parameter->getUnionType();
+            if ($comment_parameter) {
+                $comment_union_type = $comment_parameter->getUnionType();
+                if (!$comment_union_type->isEmpty()) {
+                    $union_type = $union_type->withUnionType($comment_union_type);
+                }
+            }
+            if ($union_type->isEmpty()) {
+                continue;
+            }
+            $usages = self::collectTemplateTypeUsagesFromUnion($union_type, $template_map);
+            if (!$usages) {
+                continue;
+            }
+            $line = $parameter->getFileRef()->getLineNumberStart();
+            if ($comment_parameter && $comment_parameter->getLineno() > 0) {
+                $line = $comment_parameter->getLineno();
+            }
+            $position = 'parameter $' . $parameter->getName();
+            foreach ($usages as $usage) {
+                $template_type = $usage['template'];
+                $position_string = $usage['context'] ? $usage['context'] . ' of ' . $position : $position;
+                if ($usage['is_invariant'] && ($template_type->isCovariant() || $template_type->isContravariant())) {
+                    $this->emitTemplateVarianceIssue(
+                        $code_base,
+                        $function_context,
+                        $line,
+                        $template_type,
+                        $position_string,
+                        $template_type->isCovariant() ? 'covariant' : 'contravariant'
+                    );
+                    continue;
+                }
+                if ($template_type->isCovariant()) {
+                    $this->emitTemplateVarianceIssue(
+                        $code_base,
+                        $function_context,
+                        $line,
+                        $template_type,
+                        $position_string,
+                        'covariant'
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<string,TemplateType> $template_map
+     * @return array<string,array{template:TemplateType,is_invariant:bool,context:?string}>
+     */
+    private static function collectTemplateTypeUsagesFromUnion(UnionType $union_type, array $template_map): array
+    {
+        return TemplateVarianceUtil::collectTemplateUsagesForVariance($union_type, $template_map);
+    }
+
+    private function emitTemplateVarianceIssue(
+        CodeBase $code_base,
+        Context $context,
+        int $lineno,
+        TemplateType $template_type,
+        string $position,
+        string $variance_label
+    ): void {
+        Issue::maybeEmit(
+            $code_base,
+            $context->withLineNumberStart($lineno),
+            Issue::TemplateTypeVarianceViolation,
+            $lineno,
+            $template_type->getName(),
+            $variance_label,
+            $position,
+            $this->getRepresentationForIssue()
+        );
+    }
+
+    /**
+     * @param list<Node|int|string|float|UnionType> $args
+     * @return list<UnionType>
+     */
+    private static function computeArgumentUnionTypes(CodeBase $code_base, Context $context, array $args): array
+    {
+        return \array_map(
+            /**
+             * @param mixed $node
+             */
+            static function (mixed $node) use ($code_base, $context): UnionType {
+                if ($node instanceof UnionType) {
+                    return $node;
+                }
+                return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
+            },
+            $args
+        );
     }
 
     /**

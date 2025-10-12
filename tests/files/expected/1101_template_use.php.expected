@@ -1,0 +1,8 @@
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $entity - it has union type \User
+%s:43 PhanUnusedVariable Unused definition of variable $entity
+%s:85 PhanDebugAnnotation @phan-debug-var requested for variable $entity - it has union type \Article
+%s:85 PhanUnusedVariable Unused definition of variable $entity
+%s:88 PhanDebugAnnotation @phan-debug-var requested for variable $timestamp - it has union type \DateTimeImmutable
+%s:88 PhanUnusedVariable Unused definition of variable $timestamp
+%s:103 PhanDebugAnnotation @phan-debug-var requested for variable $entity - it has union type array<string,\User>
+%s:103 PhanUnusedVariable Unused definition of variable $entity

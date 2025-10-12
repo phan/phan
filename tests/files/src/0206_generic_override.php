@@ -1,10 +1,19 @@
 <?php
+/**
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnClass
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnProtectedProperty
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @phan-file-suppress PhanUnusedPublicMethodParameter
+ */
 
 /**
- * @template-covariant T (NOTE: Phan is currently treating (at)template-covariant as an alias of (at)template)
+ * @template T
  */
 class CA {
-    /** @var T */
+    /**
+     * @var T
+     * @phan-read-only
+     */
     protected $p;
 
     /** @param T $p */

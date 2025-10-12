@@ -17,8 +17,18 @@ use Phan\Language\UnionType;
  */
 final class TemplateType extends Type
 {
+    public const VARIANCE_INVARIANT = 0;
+    public const VARIANCE_COVARIANT = 1;
+    public const VARIANCE_CONTRAVARIANT = 2;
+
     /** @var string an identifier for the template type. */
     private $template_type_identifier;
+
+    /** @var ?UnionType constraint/upper bound for this template type. */
+    private $bound_union_type;
+
+    /** @var int one of the VARIANCE_* constants */
+    private $variance;
 
     /**
      * @param string $template_type_identifier
@@ -26,23 +36,37 @@ final class TemplateType extends Type
      */
     protected function __construct(
         string $template_type_identifier,
-        bool $is_nullable
+        bool $is_nullable,
+        ?UnionType $bound_union_type,
+        int $variance
     ) {
         $this->template_type_identifier = $template_type_identifier;
         $this->is_nullable = $is_nullable;
+        $this->bound_union_type = $bound_union_type;
+        $this->variance = $variance;
     }
 
     /**
      * Create an instance for this ID
      */
-    public static function instanceForId(string $id, bool $is_nullable): TemplateType
+    public static function instanceForId(string $id, bool $is_nullable, ?UnionType $bound_union_type = null, int $variance = self::VARIANCE_INVARIANT): TemplateType
     {
-        if ($is_nullable) {
-            static $nullable_cache = [];
-            return $nullable_cache[$id] ?? ($nullable_cache[$id] = new self($id, true));
+        if ($bound_union_type === null || $bound_union_type->isEmpty()) {
+            if ($is_nullable) {
+                static $nullable_cache = [];
+                return $nullable_cache[$variance][$id] ?? ($nullable_cache[$variance][$id] = new self($id, true, null, $variance));
+            }
+            static $cache = [];
+            return $cache[$variance][$id] ?? ($cache[$variance][$id] = new self($id, false, null, $variance));
         }
-        static $cache = [];
-        return $cache[$id] ?? ($cache[$id] = new self($id, false));
+
+        $bound_key = $bound_union_type->generateUniqueId();
+        if ($is_nullable) {
+            static $nullable_bounded_cache = [];
+            return $nullable_bounded_cache[$variance][$id][$bound_key] ?? ($nullable_bounded_cache[$variance][$id][$bound_key] = new self($id, true, $bound_union_type, $variance));
+        }
+        static $bounded_cache = [];
+        return $bounded_cache[$variance][$id][$bound_key] ?? ($bounded_cache[$variance][$id][$bound_key] = new self($id, false, $bound_union_type, $variance));
     }
 
     /**
@@ -62,7 +86,9 @@ final class TemplateType extends Type
 
         return self::instanceForId(
             $this->template_type_identifier,
-            $is_nullable
+            $is_nullable,
+            $this->bound_union_type,
+            $this->variance
         );
     }
 
@@ -92,6 +118,46 @@ final class TemplateType extends Type
     public function getNamespace(): string
     {
         return '';
+    }
+
+    /**
+     * Returns the declared constraint for this template type, if any.
+     */
+    public function getBoundUnionType(): ?UnionType
+    {
+        return $this->bound_union_type;
+    }
+
+    /**
+     * Whether this template type declares a constraint.
+     */
+    public function hasBound(): bool
+    {
+        return $this->bound_union_type !== null && !$this->bound_union_type->isEmpty();
+    }
+
+    /**
+     * Returns the variance mode (one of the VARIANCE_* constants).
+     */
+    public function getVariance(): int
+    {
+        return $this->variance;
+    }
+
+    /**
+     * Returns true if this template type is declared covariant.
+     */
+    public function isCovariant(): bool
+    {
+        return $this->variance === self::VARIANCE_COVARIANT;
+    }
+
+    /**
+     * Returns true if this template type is declared contravariant.
+     */
+    public function isContravariant(): bool
+    {
+        return $this->variance === self::VARIANCE_CONTRAVARIANT;
     }
 
     public function isObject(): bool
@@ -179,6 +245,51 @@ final class TemplateType extends Type
     }
 
     /**
+     * Checks whether an instantiated template argument union satisfies a declared bound.
+     *
+     * @param array<string,bool> $seen_template_names used to prevent infinite recursion when templates reference each other
+     */
+    public static function unionTypeSatisfiesBound(
+        CodeBase $code_base,
+        UnionType $actual,
+        UnionType $bound,
+        array $seen_template_names = []
+    ): bool {
+        if ($bound->isEmpty()) {
+            return true;
+        }
+        if ($actual->isEmpty() || $actual->hasMixedOrNonEmptyMixedType()) {
+            return false;
+        }
+
+        foreach ($actual->getTypeSet() as $type) {
+            if ($type instanceof self) {
+                $name = $type->getName();
+                if (isset($seen_template_names[$name])) {
+                    // Avoid infinite recursion; assume satisfied if already checked.
+                    continue;
+                }
+                $template_bound = $type->getBoundUnionType();
+                if ($template_bound === null || $template_bound->isEmpty()) {
+                    return false;
+                }
+                $seen_template_names[$name] = true;
+                if (!self::unionTypeSatisfiesBound($code_base, $template_bound, $bound, $seen_template_names)) {
+                    return false;
+                }
+                unset($seen_template_names[$name]);
+                continue;
+            }
+
+            if (!$type->asPHPDocUnionType()->canCastToUnionType($bound, $code_base)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @unused-param $code_base
      * @param TemplateType $template_type the template type that this union type is being searched for.
      *
@@ -217,18 +328,28 @@ final class TemplateType extends Type
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
-        // Always possible until we support inferring `@template T as ConcreteType`
-        return true;
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true;
+        }
+
+        return $this->bound_union_type->canCastToUnionType($other->asPHPDocUnionType(), $code_base);
     }
 
     /**
      * @param list<Type> $target_type_set
-     * @suppress PhanUnusedPublicFinalMethodParameter
      */
     public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
     {
-        // Always possible until we support inferring `@template T as ConcreteType`
-        return true;
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true;
+        }
+
+        foreach ($target_type_set as $type) {
+            if ($this->bound_union_type->canCastToUnionType($type->asPHPDocUnionType(), $code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function isPossiblyFalsey(): bool

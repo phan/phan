@@ -41,6 +41,7 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Template\TemplateVarianceUtil;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
@@ -107,6 +108,20 @@ class Clazz extends AddressableElement
      * Line numbers for indices of interface_fqsen_list.
      */
     private $interface_fqsen_lineno = [];
+
+    /**
+     * @var array<string,Type>
+     * Map from interface FQSEN string to Type with template parameters.
+     * Populated from @implements annotations.
+     */
+    private $interface_type_map = [];
+
+    /**
+     * @var array<string,Type>
+     * Map from trait FQSEN string to Type with template parameters.
+     * Populated from @use annotations.
+     */
+    private $trait_type_map = [];
 
     /**
      * @var list<FullyQualifiedClassName>
@@ -742,6 +757,54 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Set the type with template parameters for an interface.
+     * Called when processing @implements Interface<T> annotations.
+     *
+     * @param FullyQualifiedClassName $fqsen The interface FQSEN
+     * @param Type $type The type with template parameters
+     */
+    public function setInterfaceType(FullyQualifiedClassName $fqsen, Type $type): void
+    {
+        $this->interface_type_map[(string)$fqsen] = $type;
+    }
+
+    /**
+     * Get the type with template parameters for an interface, if specified.
+     *
+     * @param FullyQualifiedClassName $fqsen The interface FQSEN
+     * @return Option<Type> The type option
+     */
+    public function getInterfaceType(FullyQualifiedClassName $fqsen): Option
+    {
+        $type = $this->interface_type_map[(string)$fqsen] ?? null;
+        return $type !== null ? new Some($type) : None::instance();
+    }
+
+    /**
+     * Set the type with template parameters for a trait.
+     * Called when processing @use Trait<T> annotations.
+     *
+     * @param FullyQualifiedClassName $fqsen The trait FQSEN
+     * @param Type $type The type with template parameters
+     */
+    public function setTraitType(FullyQualifiedClassName $fqsen, Type $type): void
+    {
+        $this->trait_type_map[(string)$fqsen] = $type;
+    }
+
+    /**
+     * Get the type with template parameters for a trait, if specified.
+     *
+     * @param FullyQualifiedClassName $fqsen The trait FQSEN
+     * @return Option<Type> The type option
+     */
+    public function getTraitType(FullyQualifiedClassName $fqsen): Option
+    {
+        $type = $this->trait_type_map[(string)$fqsen] ?? null;
+        return $type !== null ? new Some($type) : None::instance();
+    }
+
+    /**
      * Get the list of interfaces implemented by this class
      * @return list<FullyQualifiedClassName>
      */
@@ -817,6 +880,8 @@ class Clazz extends AddressableElement
         }
 
         $code_base->addProperty($property);
+
+        $this->enforceTemplateVarianceForProperty($code_base, $property);
     }
 
     private static function checkPropertyCompatibility(
@@ -2660,10 +2725,41 @@ class Clazz extends AddressableElement
                 $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Interface', $this->interface_fqsen_lineno[$i] ?? 0);
             }
 
+            // Get the type with template parameters if specified via @implements
+            $interface_type = $this->getInterfaceType($fqsen);
+
+            // Validate template parameter count for generic interfaces
+            if ($ancestor->isGeneric()) {
+                $expected_count = count($ancestor->getTemplateTypeMap());
+                if ($expected_count > 0) {
+                    $actual_count = 0;
+                    if ($interface_type->isDefined()) {
+                        $actual_count = count($interface_type->get()->getTemplateParameterTypeList());
+                    }
+                    if ($actual_count !== $expected_count) {
+                        $lineno = $this->interface_fqsen_lineno[$i] ?? $this->getContext()->getLineNumberStart();
+                        $this->emitGenericMissingParametersWarning(
+                            $code_base,
+                            $ancestor,
+                            $expected_count,
+                            $actual_count,
+                            $lineno
+                        );
+                    } elseif ($interface_type->isDefined()) {
+                        $this->enforceTemplateConstraintForAncestor(
+                            $code_base,
+                            $ancestor,
+                            $interface_type->get(),
+                            $this->interface_fqsen_lineno[$i] ?? $this->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+            }
+
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                None::instance()
+                $interface_type
             );
         }
 
@@ -2677,10 +2773,41 @@ class Clazz extends AddressableElement
                 $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Trait', $this->trait_fqsen_lineno[$i] ?? 0);
             }
 
+            // Get the type with template parameters if specified via @use
+            $trait_type = $this->getTraitType($fqsen);
+
+            // Validate template parameter count for generic traits
+            if ($ancestor->isGeneric()) {
+                $expected_count = count($ancestor->getTemplateTypeMap());
+                if ($expected_count > 0) {
+                    $actual_count = 0;
+                    if ($trait_type->isDefined()) {
+                        $actual_count = count($trait_type->get()->getTemplateParameterTypeList());
+                    }
+                    if ($actual_count !== $expected_count) {
+                        $lineno = $this->trait_fqsen_lineno[$i] ?? $this->getContext()->getLineNumberStart();
+                        $this->emitGenericMissingParametersWarning(
+                            $code_base,
+                            $ancestor,
+                            $expected_count,
+                            $actual_count,
+                            $lineno
+                        );
+                    } elseif ($trait_type->isDefined()) {
+                        $this->enforceTemplateConstraintForAncestor(
+                            $code_base,
+                            $ancestor,
+                            $trait_type->get(),
+                            $this->trait_fqsen_lineno[$i] ?? $this->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+            }
+
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                None::instance()
+                $trait_type
             );
         }
 
@@ -2832,16 +2959,30 @@ class Clazz extends AddressableElement
         if ($parent->isGeneric() ) {
             // Should have @extends/@inherits substituting all type parameters, otherwise they will
             // be substituted with the empty union type, which is almost never what you want.
-            $parent_type = $this->getParentTypeOption();
-            if (
-                !$parent_type->isDefined() ||
-                count($parent_type->get()->getTemplateParameterTypeList()) < count($parent->getTemplateTypeMap())
-            ) {
-                $this->emitGenericMissingParametersWarning(
-                    $code_base, $parent,
-                    count($parent->getTemplateTypeMap()),
-                    count($parent_type->get()->getTemplateParameterTypeList())
-                );
+            $expected_count = count($parent->getTemplateTypeMap());
+            if ($expected_count > 0) {
+                $parent_type = $this->getParentTypeOption();
+                $actual_count = 0;
+                if ($parent_type->isDefined()) {
+                    $actual_count = count($parent_type->get()->getTemplateParameterTypeList());
+                }
+                if ($actual_count !== $expected_count) {
+                    $lineno = $this->parent_type_lineno ?: $this->getContext()->getLineNumberStart();
+                    $this->emitGenericMissingParametersWarning(
+                        $code_base,
+                        $parent,
+                        $expected_count,
+                        $actual_count,
+                        $lineno
+                    );
+                } elseif ($parent_type->isDefined()) {
+                    $this->enforceTemplateConstraintForAncestor(
+                        $code_base,
+                        $parent,
+                        $parent_type->get(),
+                        $this->parent_type_lineno ?: $this->getContext()->getLineNumberStart()
+                    );
+                }
             }
         }
 
@@ -2923,7 +3064,8 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         Clazz $ancestor,
         int $expected_count,
-        int $actual_count
+        int $actual_count,
+        int $lineno
     ): void {
         $context = $this->getContext();
         if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::GenericMissingParameters)) {
@@ -2931,7 +3073,7 @@ class Clazz extends AddressableElement
                 $code_base,
                 $context,
                 Issue::GenericMissingParameters,
-                $this->parent_type_lineno ?: $context->getLineNumberStart(),
+                $lineno ?: $context->getLineNumberStart(),
                 (string)$this->fqsen,
                 $expected_count,
                 (string)$ancestor->getFQSEN(),
@@ -2939,6 +3081,147 @@ class Clazz extends AddressableElement
                 $ancestor->getFileRef()->getFile(),
                 $ancestor->getFileRef()->getLineNumberStart()
             );
+        }
+    }
+
+    private function enforceTemplateVarianceForProperty(CodeBase $code_base, Property $property): void
+    {
+        $template_types = $this->getTemplateTypeMap();
+        if (!$template_types) {
+            return;
+        }
+        $template_lookup = [];
+        foreach ($template_types as $template_type) {
+            if ($template_type instanceof TemplateType) {
+                $template_lookup[$template_type->getName()] = $template_type;
+            }
+        }
+        if (!$template_lookup) {
+            return;
+        }
+
+        $union_type = $property->getUnionType();
+        if ($union_type->isEmpty()) {
+            $union_type = $property->getPHPDocUnionType();
+        }
+        if ($union_type->isEmpty()) {
+            return;
+        }
+
+        $usages = self::collectTemplateTypeUsagesForVariance($union_type, $template_lookup);
+        if (!$usages) {
+            return;
+        }
+
+        $context = $property->getContext();
+        $line = $property->getFileRef()->getLineNumberStart();
+        $position = 'property ' . $property->asPropertyFQSENString();
+
+        $is_effectively_read_only = $property->isReadOnlyReal() || $property->isReadOnly();
+        foreach ($usages as $usage) {
+            $template_type = $usage['template'];
+            $position_label = $usage['context'] ? $usage['context'] . ' of ' . $position : $position;
+            if (!$template_type->isCovariant() && !$template_type->isContravariant()) {
+                continue;
+            }
+            if ($usage['is_invariant']) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeVarianceViolation,
+                    $line,
+                    $template_type->getName(),
+                    $template_type->isCovariant() ? 'covariant' : 'contravariant',
+                    $position_label,
+                    (string)$this->fqsen
+                );
+                continue;
+            }
+            if ($template_type->isCovariant()) {
+                if ($is_effectively_read_only) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeVarianceViolation,
+                    $line,
+                    $template_type->getName(),
+                    'covariant',
+                    $position_label,
+                    (string)$this->fqsen
+                );
+                continue;
+            }
+            if ($template_type->isContravariant()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeVarianceViolation,
+                    $line,
+                    $template_type->getName(),
+                    'contravariant',
+                    $position_label,
+                    (string)$this->fqsen
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string,TemplateType> $template_map
+     * @return array<string,array{template:TemplateType,is_invariant:bool,context:?string}>
+     */
+    private static function collectTemplateTypeUsagesForVariance(UnionType $union_type, array $template_map): array
+    {
+        return TemplateVarianceUtil::collectTemplateUsagesForVariance($union_type, $template_map);
+    }
+
+    private function enforceTemplateConstraintForAncestor(
+        CodeBase $code_base,
+        Clazz $ancestor,
+        Type $instantiated_type,
+        int $lineno
+    ): void {
+        $template_types = \array_values($ancestor->getTemplateTypeMap());
+        if (!$template_types) {
+            return;
+        }
+        $actual_type_list = $instantiated_type->getTemplateParameterTypeList();
+        $max = \min(count($template_types), count($actual_type_list));
+        if ($max === 0) {
+            return;
+        }
+        for ($i = 0; $i < $max; $i++) {
+            $template_type = $template_types[$i];
+            if (!($template_type instanceof TemplateType) || !$template_type->hasBound()) {
+                continue;
+            }
+            $constraint = $template_type->getBoundUnionType();
+            if (!$constraint) {
+                continue;
+            }
+            $actual = $actual_type_list[$i] ?? null;
+            if ($actual === null) {
+                continue;
+            }
+            if (!TemplateType::unionTypeSatisfiesBound($code_base, $actual, $constraint)) {
+                $context = $this->getContext();
+                if ($this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeConstraintViolation)) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeConstraintViolation,
+                    $lineno ?: $context->getLineNumberStart(),
+                    $template_type->getName(),
+                    (string)$ancestor->getFQSEN(),
+                    (string)$constraint,
+                    (string)$actual,
+                    (string)$this->fqsen
+                );
+            }
         }
     }
 
@@ -3090,12 +3373,20 @@ class Clazz extends AddressableElement
             // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
             // (But preserving the defining FQSEN is fine for this)
             if ($is_trait) {
+                // Apply template resolution BEFORE adapting the method from the trait
+                // This is necessary because adaptInheritedMethodFromTrait changes the FQSEN,
+                // which would prevent template resolution in addMethod
+                if ($type_option->isDefined()) {
+                    $method = $method->cloneWithTemplateParameterTypeMap(
+                        $type_option->get()->getTemplateParameterTypeMap($code_base)
+                    );
+                }
                 $method = $this->adaptInheritedMethodFromTrait($method);
             }
             $this->addMethod(
                 $code_base,
                 $method,
-                $type_option
+                $is_trait ? None::instance() : $type_option
             );
         }
 

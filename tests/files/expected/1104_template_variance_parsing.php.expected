@@ -1,0 +1,5 @@
+%s:20 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $value of \VarianceContract::invalidCovariantParameter()
+%s:27 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in return type of \VarianceContract::invalidContravariantReturn()
+%s:30 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of parameter $values of \VarianceContract::invalidCovariantArrayParameter()
+%s:37 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in array element of return type of \VarianceContract::invalidContravariantArrayReturn()
+%s:40 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array shape field of parameter $payload of \VarianceContract::invalidCovariantArrayShapeParameter()
