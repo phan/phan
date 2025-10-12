@@ -39,6 +39,11 @@ namespace Phan\Language\Internal;
  */
 return [
 '__PhanMissingTestClass' => 'Missing class name used by Phan for unit tests',
+'__PHP_Incomplete_Class' => 'Created by `unserialize` when trying to unserialize an undefined class or a class that is not listed in the `allowed_classes` of `unserialize`\'s options array.
+
+Prior to PHP 7.2.0, using `is_object` on the `__PHP_Incomplete_Class` class would return `false`. As of PHP 7.2.0, `true` will be returned.',
+'AddressInfo' => 'A fully opaque class which replaces `AddressInfo` resources as of PHP 8.0.0.',
+'AllowDynamicProperties' => 'This attribute is used to mark classes that allow dynamic properties.',
 'AMQPBasicProperties' => 'stub class representing AMQPBasicProperties from pecl-amqp',
 'AMQPChannel' => 'stub class representing AMQPChannel from pecl-amqp',
 'AMQPChannelException' => 'stub class representing AMQPChannelException from pecl-amqp',
@@ -58,15 +63,18 @@ return [
 'APCIterator' => 'The `APCIterator` class makes it easier to iterate over large APC caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'APCUIterator' => 'The `APCUIterator` class makes it easier to iterate over large APCu caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'AppendIterator' => 'An Iterator that iterates over several iterators one after the other.',
-'ArgumentCountError' => '`ArgumentCountError` is thrown when too few arguments are passed to a user-defined function or method.',
-'ArithmeticError' => '`ArithmeticError` is thrown when an error occurs while performing mathematical operations. In PHP 7.0, these errors include attempting to perform a bitshift by a negative amount, and any call to `intdiv` that would result in a value outside the possible bounds of an `integer`.',
-'ArrayIterator' => 'This iterator allows to unset and modify values and keys while iterating over Arrays and Objects.
+'ArgumentCountError' => '`ArgumentCountError` is thrown when too few arguments are passed to a user-defined function or method.
 
-When you want to iterate over the same array multiple times you need to instantiate ArrayObject and let it create ArrayIterator instances that refer to it either by using `foreach` or by calling its getIterator() method manually.',
+This error is also thrown when too many arguments are passed to a non-variadic built-in function.',
+'ArithmeticError' => '`ArithmeticError` is thrown when an error occurs while performing mathematical operations. These errors include attempting to perform a bitshift by a negative amount, and any call to `intdiv` that would result in a value outside the possible bounds of an `int`.',
+'ArrayIterator' => 'Allows the removal of elements, and the modification of keys or values while iterating over `array`s or `object`s.
+
+To iterate the same array more than once, it is recommended to instantiate `ArrayObject` and use the `ArrayIterator` instance either implicitly created when using `foreach` to iterate over the array stored internally, or create one by calling the `ArrayObject::getIterator` method manually.',
 'ArrayObject' => 'This class allows objects to work as arrays.',
 'AssertionError' => '`AssertionError` is thrown when an assertion made via `assert` fails.',
 'ast\Metadata' => 'Metadata entry for a single AST kind, as returned by ast\get_metadata().',
 'ast\Node' => 'This class describes a single node in a PHP AST.',
+'Attribute' => 'Attributes offer the ability to add structured, machine-readable metadata information on declarations in code: Classes, methods, functions, parameters, properties and class constants can be the target of an attribute. The metadata defined by attributes can then be inspected at runtime using the Reflection APIs. Attributes could therefore be thought of as a configuration language embedded directly into code.',
 'BadFunctionCallException' => 'Exception thrown if a callback refers to an undefined function or if some arguments are missing.',
 'BadMethodCallException' => 'Exception thrown if a callback refers to an undefined method or if some arguments are missing.',
 'CachingIterator' => 'This object supports cached iteration over another iterator.',
@@ -314,12 +322,19 @@ composite type of one or more types accessed by name.',
 'chdb' => 'Represents a loaded chdb file.',
 'classObj' => 'Class Objects can be returned by the `layerObj`_ class, or can be
 created using:',
+'ClosedGeneratorException' => 'A `ClosedGeneratorException` is thrown when trying to retrieve a value from a closed `Generator`.',
+'Closure' => 'Class used to represent anonymous functions.
+
+Anonymous functions yield objects of this type. This class has methods that allow further control of the anonymous function after it has been created.
+
+Besides the methods listed here, this class also has an `__invoke` method. This is for consistency with other classes that implement calling magic, as this method is not used for calling the function.',
 'clusterObj' => 'Instance of clusterObj is always embedded inside the `layerObj`_.',
 'Collator' => 'Provides string comparison capability with support for appropriate locale-sensitive sort orderings.',
 'Collectable' => 'Represents a garbage-collectable object.',
 'colorObj' => 'Instances of colorObj are always embedded inside other classes.',
 'COM' => 'The COM class allows you to instantiate an OLE compatible COM object and call its methods and access its properties.',
 'com_exception' => 'This extension will throw instances of the class com_exception whenever there is a potentially fatal error reported by COM. All COM exceptions have a well-defined code property that corresponds to the HRESULT return value from the various COM operations. You may use this code to make programmatic decisions on how to handle the exception.',
+'com_safearray_proxy' => '`com_safearray_proxy` is an internal class used for resolving multi-dimensional array accesses on SafeArray types.',
 'CommonMark\CQL' => 'CommonMark Query Language is a DSL for describing how to travel through a CommonMark Node tree implemented as a parser and compiler for a small set of instructions, and a virtual machine for executing those instructions.',
 'CommonMark\Node' => 'Represents an Abstract Node, this final abstract is not for direct use by the programmer.',
 'CommonMark\Parser' => 'Provides an incremental parser as an alternative to the simple Parsing API function',
@@ -431,17 +446,53 @@ inclusiveness of each bound can be configured.',
 'Crypto\PBKDF2Exception' => 'Exception class for PBKDF2 errors',
 'Crypto\Rand' => 'Class for generating random numbers',
 'Crypto\RandException' => 'Exception class for rand errors',
-'CURLFile' => '`CURLFile` should be used to upload a file with `CURLOPT_POSTFIELDS`.',
+'CURLFile' => 'This class or `CURLStringFile` should be used to upload a file with `CURLOPT_POSTFIELDS`.
+
+Unserialization of `CURLFile` instances is not allowed. As of PHP 7.4.0, serialization is forbidden in the first place.',
+'CurlHandle' => 'A fully opaque class which replaces `curl` resources as of PHP 8.0.0.',
+'CurlMultiHandle' => 'A fully opaque class which replaces `curl_multi` resources as of PHP 8.0.0.',
+'CurlShareHandle' => 'A fully opaque class which replaces `curl_share` resources as of PHP 8.0.0.',
+'CURLStringFile' => '`CURLStringFile` makes it possible to upload a file directly from a variable. This is similar to `CURLFile`, but works with the contents of the file, not filename. This class or `CURLFile` should be used to upload the contents of the file with `CURLOPT_POSTFIELDS`.',
+'DateError' => 'Thrown when the timezone database is not found, or contains invalid data.
+
+This error should never occur, and is not dependent on code. There are two child-exceptions (DateObjectError and DateRangeError) which are thrown depending on programmer error or range related issues.',
+'DateException' => 'Parent class of Date/Time exceptions, for issues that come to light due to user input, or free form text arguments that need to be parsed.
+
+The following child exceptions are thrown by the extension: DateInvalidOperationException DateInvalidTimezoneException DateMalformedIntervalStringException DateMalformedPeriodStringException DateMalformedStringException',
 'DateInterval' => 'Represents a date interval.
 
-A date interval stores either a fixed amount of time (in years, months, days, hours etc) or a relative time string in the format that `DateTime`\'s constructor supports.',
+A date interval stores either a fixed amount of time (in years, months, days, hours etc) or a relative time string in the format that `DateTimeImmutable`\'s and `DateTime`\'s constructors support.
+
+More specifically, the information in an object of the `DateInterval` class is an instruction to get from one date/time to another date/time. This process is not always reversible.
+
+A common way to create a `DateInterval` object is by calculating the difference between two date/time objects through `DateTimeInterface::diff`.
+
+Since there is no well defined way to compare date intervals, `DateInterval` instances are incomparable.',
+'DateInvalidOperationException' => 'Thrown by `DateTimeImmutable::sub` and `DateTime::sub` when an unsupported operation is attempted.
+
+An example of such an unsupported operation is using a `DateInterval` object representing relative time specifications such as `next weekday`, as no logical reversed statement can be constructed.',
+'DateInvalidTimeZoneException' => 'Thrown when an incorrect value is passed to `DateTimeZone::__construct`.',
+'DateMalformedIntervalStringException' => 'Thrown when an invalid duration argument is passed to `DateInterval::__construct`.',
+'DateMalformedPeriodStringException' => 'Thrown when an invalid isostr argument is passed to `DatePeriod::__construct`.',
+'DateMalformedStringException' => 'Thrown when an invalid Date/Time string is detected.
+
+This can be as value to `DateTimeImmutable::__construct`, `DateTimeImmutable::modify`, `DateTime::__construct`, or `DateTime::modify`.',
+'DateObjectError' => 'Thrown when one of the Date/Time classes has not been correctly initialised.
+
+Because Date/Time classes are not final, these classes can be inherit. When the parent constructor is not called, this error is thrown. This is always a programming error.',
 'DatePeriod' => 'Represents a date period.
 
 A date period allows iteration over a set of dates and times, recurring at regular intervals, over a given period.',
-'DateTime' => 'Representation of date and time.',
-'DateTimeImmutable' => 'This class behaves the same as `DateTime` except it never modifies itself but returns a new object instead.',
+'DateRangeError' => 'Thrown by `DateTime::getTimestamp`, `DateTimeImmutable::getTimestamp`, and `date_timestamp_get`, on 32-bit platforms if the date object represents a date outside of the 32-bit signed range.',
+'DateTime' => 'Representation of date and time.
+
+This class behaves the same as `DateTimeImmutable`, except objects are modified itself when modification methods such as `DateTime::modify` are called.',
+'DateTimeImmutable' => 'Representation of date and time.
+
+This class behaves the same as `DateTime` except new objects are returned when modification methods such as `DateTime::modify` are called.',
 'DateTimeInterface' => 'DateTimeInterface is meant so that both DateTime and DateTimeImmutable can be type hinted for. It is not possible to implement this interface with userland classes.',
 'DateTimeZone' => 'Representation of time zone.',
+'DeflateContext' => 'A fully opaque class which replaces `zlib.deflate` resources as of PHP 8.0.0.',
 'Directory' => 'Instances of `Directory` are created by calling the `dir` function, not by the new operator.',
 'DirectoryIterator' => 'The DirectoryIterator class provides a simple interface for viewing the contents of filesystem directories.',
 'DivisionByZeroError' => '`DivisionByZeroError` is thrown when an attempt is made to divide a number by zero.',
@@ -453,9 +504,7 @@ A date period allows iteration over a set of dates and times, recurring at regul
 'DOMDocument' => 'Represents an entire HTML or XML document; serves as the root of the document tree.',
 'DOMDocumentType' => 'Each `DOMDocument` has a `doctype` attribute whose value is either `null` or a `DOMDocumentType` object.',
 'DOMEntity' => 'This interface represents a known entity, either parsed or unparsed, in an XML document.',
-'DOMException' => 'DOM operations raise exceptions under particular circumstances, i.e., when an operation is impossible to perform for logical reasons.
-
-See also the PHP manual\'s section on language.exceptions.',
+'DOMException' => 'See also the PHP manual\'s section on language.exceptions.',
 'DOMImplementation' => 'The `DOMImplementation` interface provides a number of methods for performing operations that are independent of any particular instance of the document object model.',
 'DOMText' => 'The `DOMText` class inherits from `DOMCharacterData` and represents the textual content of a `DOMElement` or `DOMAttr`.',
 'DOMXPath' => 'Supports XPath 1.0',
@@ -486,14 +535,18 @@ Use cases: Wherever you would use an array as a list (not concerned with keys). 
 Uses a `Ds\Vector` internally.',
 'Ds\Vector' => 'A Vector is a sequence of values in a contiguous buffer that grows and shrinks automatically. It’s the most efficient sequential structure because a value’s index is a direct mapping to its index in the buffer, and the growth factor isn\'t bound to a specific multiple or exponent.',
 'EmptyIterator' => 'The EmptyIterator class for an empty iterator.',
+'EnchantBroker' => 'A fully opaque class which replaces `enchant_broker` resources as of PHP 8.0.0.',
+'EnchantDictionary' => 'A fully opaque class which replaces `enchant_dict` resources as of PHP 8.0.0.',
+'Error' => '`Error` is the base class for all internal PHP errors.',
+'ErrorException' => 'An Error Exception.',
 'Ev' => 'Ev is a static class providing access to the default loop and to some common operations.',
 'EvCheck' => '`EvPrepare` and `EvCheck` watchers are usually used in pairs. `EvPrepare` watchers get invoked before the process blocks, `EvCheck` afterwards.
 
-It is not allowed to call `EvLoop::run` or similar methods or functions that enter the current event loop from either `EvPrepare` or `EvCheck` watchers. Other loops than the current one are fine, however. The rationale behind this is that one don\'t need to check for recursion in those watchers, i.e. the sequence will always be: `EvPrepare` -&gt; blocking -&gt; `EvCheck` , so having a watcher of each kind they will always be called in pairs bracketing the blocking call.
+It is not allowed to call `EvLoop::run` or similar methods or functions that enter the current event loop from either `EvPrepare` or `EvCheck` watchers. Other loops than the current one are fine, however. The rationale behind this is that one don\'t need to check for recursion in those watchers, i.e. the sequence will always be: `EvPrepare` -&gt; blocking -&gt; `EvCheck`, so having a watcher of each kind they will always be called in pairs bracketing the blocking call.
 
 The main purpose is to integrate other event mechanisms into *libev* and their use is somewhat advanced. They could be used, for example, to track variable changes, implement custom watchers, integrate net-snmp or a coroutine library and lots more. They are also occasionally useful to cache some data and want to flush it before blocking.
 
-It is recommended to give `EvCheck` watchers highest( `Ev::MAXPRI` ) priority, to ensure that they are being run before any other watchers after the poll (this doesn’t matter for `EvPrepare` watchers).
+It is recommended to give `EvCheck` watchers highest( `Ev::MAXPRI`) priority, to ensure that they are being run before any other watchers after the poll (this doesn’t matter for `EvPrepare` watchers).
 
 Also, `EvCheck` watchers should not activate/feed events. While *libev* fully supports this, they might get executed before other `EvCheck` watchers did their job.',
 'EvChild' => '`EvChild` watchers trigger when the process receives a `SIGCHLD` in response to some child status changes (most typically when a child dies or exits). It is permissible to install an `EvChild` watcher after the child has been forked(which implies it might have already exited), as long as the event loop isn\'t entered(or is continued from a watcher), i.e. forking and then immediately registering a watcher for the child is fine, but forking and registering a watcher a few event loop iterations later or in the next callback invocation is not.
@@ -502,10 +555,10 @@ It is allowed to register `EvChild` watchers in the *default loop* only.',
 'EvEmbed' => 'Used to embed one event loop into another.',
 'Event' => '`Event` class represents and event firing on a file descriptor being ready to read from or write to; a file descriptor becoming ready to read from or write to(edge-triggered I/O only); a timeout expiring; a signal occurring; a user-triggered event.
 
-Every event is associated with `EventBase` . However, event will never fire until it is *added* (via `Event::add` ). An added event remains in *pending* state until the registered event occurs, thus turning it to *active* state. To handle events user may register a callback which is called when event becomes active. If event is configured *persistent* , it remains pending. If it is not persistent, it stops being pending when it\'s callback runs. `Event::del` method *deletes* event, thus making it non-pending. By means of `Event::add` method it could be added again.',
+Every event is associated with `EventBase`. However, event will never fire until it is *added* (via `Event::add` ). An added event remains in *pending* state until the registered event occurs, thus turning it to *active* state. To handle events user may register a callback which is called when event becomes active. If event is configured *persistent*, it remains pending. If it is not persistent, it stops being pending when it\'s callback runs. `Event::del` method *deletes* event, thus making it non-pending. By means of `Event::add` method it could be added again.',
 'EventBase' => '`EventBase` class represents libevent\'s event base structure. It holds a set of events and can poll to determine which events are active.
 
-Each event base has a *method* , or a *backend* that it uses to determine which events are ready. The recognized methods are: `select` , `poll` , `epoll` , `kqueue` , `devpoll` , `evport` and `win32` .
+Each event base has a *method*, or a *backend* that it uses to determine which events are ready. The recognized methods are: `select`, `poll`, `epoll`, `kqueue`, `devpoll`, `evport` and `win32`.
 
 To configure event base to use, or avoid specific backend `EventConfig` class can be used.',
 'EventBuffer' => '`EventBuffer` represents Libevent\'s "evbuffer", an utility functionality for buffered I/O.
@@ -516,8 +569,9 @@ Event buffers are meant to be generally useful for doing the "buffer" part of bu
 Usually an application wants to perform some amount of data buffering in addition to just responding to events. When we want to write data, for example, the usual pattern looks like:
 
 This buffered I/O pattern is common enough that Libevent provides a generic mechanism for it. A "buffer event" consists of an underlying transport (like a socket), a read buffer, and a write buffer. Instead of regular events, which give callbacks when the underlying transport is ready to be read or written, a buffer event invokes its user-supplied callbacks when it has read or written enough data.',
-'EventConfig' => 'Represents configuration structure which could be used in construction of the `EventBase` .',
-'EventDnsBase' => 'Represents Libevent\'s DNS base structure. Used to resolve DNS asynchronously, parse configuration files like resolv.conf etc.',
+'EventConfig' => 'Represents configuration structure which could be used in construction of the `EventBase`.',
+'EventDnsBase' => 'Represents Libevent\'s DNS base structure. Used to resolve DNS asyncronously, parse configuration files like resolv.conf etc.',
+'EventException' => 'A `EventException` is thrown when the Event extension methods encounter invalid user input or identify an unrecoverable error. This exception serves as a signal for developers to handle exceptional situations gracefully.',
 'EventHttp' => 'Represents HTTP server.',
 'EventHttpConnection' => 'Represents an HTTP connection.',
 'EventHttpRequest' => 'Represents an HTTP request.',
@@ -525,11 +579,11 @@ This buffered I/O pattern is common enough that Libevent provides a generic mech
 'EventSslContext' => 'Represents `SSL_CTX` structure. Provides methods and properties to configure the SSL context.',
 'EventUtil' => '`EventUtil` is a singleton with supplimentary methods and constants.',
 'EvFork' => 'Fork watchers are called when a `fork()` was detected (usually because whoever signalled *libev* about it by calling `EvLoop::fork` ). The invocation is done before the event loop blocks next and before `EvCheck` watchers are being called, and only in the child after the fork. Note, that if whoever calling `EvLoop::fork` calls it in the wrong process, the fork handlers will be invoked, too.',
-'EvIdle' => '`EvIdle` watchers trigger events when no other events of the same or higher priority are pending ( `EvPrepare` , `EvCheck` and other `EvIdle` watchers do not count as receiving *events* ).
+'EvIdle' => '`EvIdle` watchers trigger events when no other events of the same or higher priority are pending ( `EvPrepare`, `EvCheck` and other `EvIdle` watchers do not count as receiving *events* ).
 
 Thus, as long as the process is busy handling sockets or timeouts(or even signals) of the same or higher priority it will not be triggered. But when the process is in idle(or only lower-priority watchers are pending), the `EvIdle` watchers are being called once per event loop iteration - until stopped, that is, or the process receives more events and becomes busy again with higher priority stuff.
 
-Apart from keeping the process non-blocking(which is a useful on its own sometimes), `EvIdle` watchers are a good place to do *"pseudo-background processing"* , or delay processing stuff to after the event loop has handled all outstanding events.
+Apart from keeping the process non-blocking(which is a useful on its own sometimes), `EvIdle` watchers are a good place to do *"pseudo-background processing"*, or delay processing stuff to after the event loop has handled all outstanding events.
 
 The most noticeable effect is that as long as any *idle* watchers are active, the process will *not* block when waiting for new events.',
 'EvIo' => '`EvIo` watchers check whether a file descriptor(or socket, or a stream castable to numeric file descriptor) is readable or writable in each iteration of the event loop, or, more precisely, when reading would not block the process and writing would at least be able to write some data. This behaviour is called *level-triggering* because events are kept receiving as long as the condition persists. To stop receiving events just stop the watcher.
@@ -541,16 +595,16 @@ Another thing to watch out for is that it is quite easy to receive false readine
 If for some reason it is impossible to run the fd in non-blocking mode, then separately re-test whether a file descriptor is really ready. Some people additionally use `SIGALRM` and an interval timer, just to be sure thry won\'t block infinitely.
 
 Always consider using non-blocking mode.',
-'EvLoop' => 'Represents an event loop that is always distinct from the *default loop* . Unlike the *default loop* , it cannot handle `EvChild` watchers.
+'EvLoop' => 'Represents an event loop that is always distinct from the *default loop*. Unlike the *default loop*, it cannot handle `EvChild` watchers.
 
 Having threads we have to create a loop per thread, and use the *default loop* in the parent thread.
 
-The *default event loop* is initialized automatically by *Ev* . It is accessible via methods of the `Ev` class, or via `EvLoop::defaultLoop` method.',
+The *default event loop* is initialized automatically by *Ev*. It is accessible via methods of the `Ev` class, or via `EvLoop::defaultLoop` method.',
 'EvPeriodic' => 'Periodic watchers are also timers of a kind, but they are very versatile.
 
-Unlike `EvTimer` , `EvPeriodic` watchers are not based on real time(or relative time, the physical time that passes) but on wall clock time(absolute time, calendar or clock). The difference is that wall clock time can run faster or slower than real time, and time jumps are not uncommon(e.g. when adjusting it).
+Unlike `EvTimer`, `EvPeriodic` watchers are not based on real time(or relative time, the physical time that passes) but on wall clock time(absolute time, calendar or clock). The difference is that wall clock time can run faster or slower than real time, and time jumps are not uncommon(e.g. when adjusting it).
 
-`EvPeriodic` watcher can be configured to trigger after some specific point in time. For example, if an `EvPeriodic` watcher is configured to trigger *"in 10 seconds"* (e.g. `EvLoop::now` + `10.0` , i.e. an absolute time, not a delay), and the system clock is reset to *January of the previous year* , then it will take a year or more to trigger the event (unlike an `EvTimer` , which would still trigger roughly `10` seconds after starting it as it uses a relative timeout).
+`EvPeriodic` watcher can be configured to trigger after some specific point in time. For example, if an `EvPeriodic` watcher is configured to trigger *"in 10 seconds"* (e.g. `EvLoop::now` + `10.0`, i.e. an absolute time, not a delay), and the system clock is reset to *January of the previous year*, then it will take a year or more to trigger the event (unlike an `EvTimer`, which would still trigger roughly `10` seconds after starting it as it uses a relative timeout).
 
 As with timers, the callback is guaranteed to be invoked only when the point in time where it is supposed to trigger has passed. If multiple timers become ready during the same loop iteration then the ones with earlier time-out values are invoked before ones with later time-out values (but this is no longer true when a callback calls `EvLoop::run` recursively).',
 'EvPrepare' => 'Class EvPrepare
@@ -577,39 +631,48 @@ before other EvCheck watchers did their job.',
 There is no limit for the number of watchers for the same signal, but only within the same loop, i.e. one can watch for `SIGINT` in the default loop and for `SIGIO` in another loop, but it is not allowed to watch for `SIGINT` in both the default loop and another loop at the same time. At the moment, `SIGCHLD` is permanently tied to the default loop.
 
 If possible and supported, *libev* will install its handlers with `SA_RESTART` (or equivalent) behaviour enabled, so system calls should not be unduly interrupted. In case of a problem with system calls getting interrupted by signals, all the signals can be blocked in an `EvCheck` watcher and unblocked in a `EvPrepare` watcher.',
-'EvStat' => '`EvStat` monitors a file system path for attribute changes. It calls *stat()* on that path in regular intervals(or when the OS signals it changed) and sees if it changed compared to the last time, invoking the callback if it did.
+'EvStat' => '`EvStat` monitors a file system path for attribute changes. It calls *stat()* on that path in regular intervals (or when the OS signals it changed) and sees if it changed compared to the last time, invoking the callback if it did.
 
 The path does not need to exist: changing from "path exists" to "path does not exist" is a status change like any other. The condition "path does not exist" is signified by the `\'nlink\'` item being 0(returned by `EvStat::attr` method).
 
-The path must not end in a slash or contain special components such as `\'.\'` or `..` . The path should be absolute: if it is relative and the working directory changes, then the behaviour is undefined.
+The path must not end in a slash or contain special components such as `\'.\'` or `..`. The path should be absolute: if it is relative and the working directory changes, then the behaviour is undefined.
 
-Since there is no portable change notification interface available, the portable implementation simply calls *stat()* regularly on the path to see if it changed somehow. For this case a recommended polling interval can be specified. If one specifies a polling interval of `0.0 ` (highly recommended) then a suitable, unspecified default value will be used(which could be expected to be around 5 seconds, although this might change dynamically). *libev* will also impose a minimum interval which is currently around `0.1` , but that’s usually overkill.
+Since there is no portable change notification interface available, the portable implementation simply calls *stat()* regularly on the path to see if it changed somehow. For this case a recommended polling interval can be specified. If one specifies a polling interval of `0.0` (highly recommended) then a suitable, unspecified default value will be used(which could be expected to be around 5 seconds, although this might change dynamically). *libev* will also impose a minimum interval which is currently around `0.1`, but that’s usually overkill.
 
 This watcher type is not meant for massive numbers of `EvStat` watchers, as even with OS-supported change notifications, this can be resource-intensive.',
 'EvTimer' => '`EvTimer` watchers are simple relative timers that generate an event after a given time, and optionally repeating in regular intervals after that.
 
-The timers are based on real time, that is, if one registers an event that times out after an hour and resets the system clock to *January last year* , it will still time out after(roughly) one hour. "Roughly" because detecting time jumps is hard, and some inaccuracies are unavoidable.
+The timers are based on real time, that is, if one registers an event that times out after an hour and resets the system clock to *January last year*, it will still time out after(roughly) one hour. "Roughly" because detecting time jumps is hard, and some inaccuracies are unavoidable.
 
 The callback is guaranteed to be invoked only after its timeout has passed (not at, so on systems with very low-resolution clocks this might introduce a small delay). If multiple timers become ready during the same loop iteration then the ones with earlier time-out values are invoked before ones of the same priority with later time-out values (but this is no longer true when a callback calls `EvLoop::run` recursively).
 
 The timer itself will do a best-effort at avoiding drift, that is, if a timer is configured to trigger every `10` seconds, then it will normally trigger at exactly `10` second intervals. If, however, the script cannot keep up with the timer because it takes longer than those `10` seconds to do) the timer will not fire more than once per event loop iteration.',
-'EvWatcher' => '`EvWatcher` is a base class for all watchers( `EvCheck` , `EvChild` etc.). Since `EvWatcher` \'s constructor is abstract , one can\'t(and don\'t need to) create EvWatcher objects directly.',
+'EvWatcher' => '`EvWatcher` is a base class for all watchers( `EvCheck`, `EvChild` etc.). Since `EvWatcher` \'s constructor is abstract, one can\'t(and don\'t need to) create EvWatcher objects directly.',
+'Exception' => '`Exception` is the base class for all user exceptions.',
 'FANNConnection' => '`FANNConnection` is used for the neural network connection. The objects of this class are used in `fann_get_connection_array` and `fann_set_weight_array`.',
-'FFI' => 'FFI class provides access to a simple way to call native functions,
-access native variables and create/access data structures defined
-in C language.',
-'FFI\CData' => 'Proxy object that provides access to compiled structures.',
+'FFI' => 'Objects of this class are created by the factory methods `FFI::cdef`, `FFI::load` or `FFI::scope`. Defined C variables are made available as properties of the FFI instance, and defined C functions are made available as methods of the FFI instance. Declared C types can be used to create new C data structures using `FFI::new` and `FFI::type`.
+
+FFI definition parsing and shared library loading may take significant time. It is not useful to do it on each HTTP request in a Web environment. However, it is possible to preload FFI definitions and libraries at PHP startup, and to instantiate FFI objects when necessary. Header files may be extended with special `FFI_SCOPE` defines (e.g. `#define FFI_SCOPE "foo"`; the default scope is "C") and then loaded by `FFI::load` during preloading. This leads to the creation of a persistent binding, that will be available to all the following requests through `FFI::scope`. Refer to the complete PHP/FFI/preloading example for details.
+
+It is possible to preload more than one C header file into the same scope.',
+'FFI\CData' => '`FFI\CData` objects can be used in a number of ways as a regular PHP data: C data of scalar types can be read and assigned via the `$cdata` property, e.g. `$x = FFI::new(\'int\'); $x-&gt;cdata = 42;` C struct and union fields can be accessed as regular PHP object property, e.g. `$cdata-&gt;field` C array elements can be accessed as regular PHP array elements, e.g. `$cdata[$offset]` C arrays can be iterated using `foreach` statements. C arrays can be used as arguments of `count`. C pointers can be dereferenced as arrays, e.g. `$cdata[0]` C pointers can be compared using regular comparison operators (`&lt;`, `&lt;=`, `==`, `!=`, `&gt;=`, `&gt;`). C pointers can be incremented and decremented using regular `+`/`-`/ `++`/`--` operations, e.g. `$cdata += 5` C pointers can be subtracted from another using regular `-` operations. C pointers to functions can be called as a regular PHP closure, e.g. `$cdata()` Any C data can be duplicated using the clone operator, e.g. `$cdata2 = clone $cdata;` Any C data can be visualized using `var_dump`, `print_r`, etc. `FFI\CData` can now be assigned to structs and fields as of PHP 8.3.0. Notable limitations are that `FFI\CData` instances do not support `isset`, `empty` and `unset`, and that wrapped C structs and unions do not implement `Traversable`.',
 'FFI\CType' => 'Class containing C type information.',
 'FFI\Exception' => 'Class Exception',
 'FFI\ParserException' => 'Class ParserException',
+'Fiber' => 'Fibers represent full-stack, interruptible functions. Fibers may be suspended from anywhere in the call-stack, pausing execution within the fiber until the fiber is resumed at a later time.',
+'FiberError' => '`FiberError` is thrown when an invalid operation is performed on a `Fiber`.',
 'FilesystemIterator' => 'The Filesystem iterator',
 'FilterIterator' => 'This abstract iterator filters out unwanted values. This class should be extended to implement custom iterator filters. The `FilterIterator::accept` must be implemented in the subclass.',
-'finfo' => 'This class provides an object oriented interface into the fileinfo functions.',
+'finfo' => 'This class provides an object-oriented interface into the fileinfo functions.',
+'FTP\Connection' => 'A fully opaque class which replaces a `ftp` resource as of PHP 8.1.0.',
+'GdFont' => 'A fully opaque class which replaces `gd font` resources as of PHP 8.1.0.',
+'GdImage' => 'A fully opaque class which replaces `gd` resources as of PHP 8.0.0.',
 'GearmanClient' => 'Represents a class for connecting to a Gearman job server and making requests to perform some function on provided data. The function performed must be one registered by a Gearman worker and the data passed is opaque to the job server.',
 'GearmanException' => 'Class: GearmanException',
 'GearmanJob' => 'Class: GearmanJob',
 'GearmanTask' => 'Class: GearmanTask',
 'GearmanWorker' => 'Class: GearmanWorker',
+'Generator' => '`Generator` objects are returned from generators.',
 'GEOSGeometry' => 'Class GEOSGeometry',
 'GEOSWKBReader' => 'Class GEOSWKBReader',
 'GEOSWKBWriter' => 'Class GEOSWKBWriter',
@@ -700,10 +763,13 @@ See http\Client\Request and http\Client\Response, as well as http\Env\Request an
 'http\QueryString' => 'The http\QueryString class provides versatile facilities to retrieve, use and manipulate query strings and form data.',
 'http\Url' => 'The http\Url class provides versatile means to parse, construct and manipulate URLs.',
 'imageObj' => 'Instances of imageObj are always created by the `mapObj`_ class methods.',
+'IMAP\Connection' => 'A fully opaque class which replaces a `imap` resource as of PHP 8.1.0.',
 'InfiniteIterator' => 'The `InfiniteIterator` allows one to infinitely iterate over an iterator without having to manually rewind the iterator upon reaching its end.',
+'InflateContext' => 'A fully opaque class which replaces `zlib.inflate` resources as of PHP 8.0.0.',
+'InternalIterator' => 'Class to ease implementing `IteratorAggregate` for *internal* classes.',
 'IntlBreakIterator' => 'A “break iterator” is an ICU object that exposes methods for locating boundaries in text (e.g. word or sentence boundaries). The PHP `IntlBreakIterator` serves as the base class for all types of ICU break iterators. Where extra functionality is available, the intl extension may expose the ICU break iterator with suitable subclasses, such as `IntlRuleBasedBreakIterator` or `IntlCodePointBreakIterator`.
 
-This class implements `Traversable`. Traversing an `IntlBreakIterator` yields non-negative integer values representing the successive locations of the text boundaries, expressed as UTF-8 code units (byte) counts, taken from the beginning of the text (which has the location `0`). The keys yielded by the iterator simply form the sequence of natural numbers `{0, 1, 2, …}`.',
+This class implements `IteratorAggregate`. Traversing an `IntlBreakIterator` yields non-negative integer values representing the successive locations of the text boundaries, expressed as UTF-8 code units (byte) counts, taken from the beginning of the text (which has the location `0`). The keys yielded by the iterator simply form the sequence of natural numbers `{0, 1, 2, …}`.',
 'IntlChar' => '`IntlChar` provides access to a number of utility methods that can be used to access information about Unicode characters.
 
 The methods and constants adhere closely to the names and behavior used by the underlying ICU library.',
@@ -720,7 +786,7 @@ The keys may represent the offset of the left boundary, right boundary, or they 
 These rules are described in the ICU Boundary Analysis User Guide.',
 'InvalidArgumentException' => 'Exception thrown if an argument is not of the expected type.',
 'IteratorIterator' => 'This iterator wrapper allows the conversion of anything that is Traversable into an Iterator. It is important to understand that most classes that do not implement Iterators have reasons as most likely they do not allow the full Iterator feature set. If so, techniques should be provided to prevent misuse, otherwise expect exceptions or fatal errors.',
-'JsonException' => 'Exception thrown if `JSON_THROW_ON_ERROR` option is set for `json_encode` or `json_decode`.',
+'JsonException' => 'Exception thrown if `JSON_THROW_ON_ERROR` option is set for `json_encode` or `json_decode`. code contains the error type, for possible values see `json_last_error`.',
 'JsonSerializable' => 'Objects implementing `JsonSerializable` can customize their JSON representation when encoded with `json_encode`.',
 'Judy' => 'The Judy class implements the ArrayAccess interface and the Iterator interface. This class, once instantiated, can be accessed like a PHP array.
 
@@ -744,9 +810,13 @@ A second optional argument can be given to ms_newLayerObj() to create
 the new layer as a copy of an existing layer. If a layer is given as
 argument then all members of a this layer will be copied in the new
 layer created.',
+'LDAP\Connection' => 'A fully opaque class which replaces a `ldap` resource as of PHP 8.1.0.',
+'LDAP\Result' => 'A fully opaque class which replaces a `ldap result` resource as of PHP 8.1.0.',
+'LDAP\ResultEntry' => 'A fully opaque class which replaces a `ldap result entry` resource as of PHP 8.1.0.',
 'legendObj' => 'Instances of legendObj are always are always embedded inside the `mapObj`_.',
 'LengthException' => 'Exception thrown if a length is invalid.',
 'libXMLError' => 'Contains various information about errors thrown by libxml. The error codes are described within the official xmlError API documentation.',
+'LibXMLError' => 'Contains various information about errors thrown by libxml. The error codes are described within the official xmlError API documentation.',
 'LimitIterator' => 'The `LimitIterator` class allows iteration over a limited subset of items in an `Iterator`.',
 'Locale' => 'Examples of identifiers include: en-US (English, United States) zh-Hant-TW (Chinese, Traditional Script, Taiwan) fr-CA, fr-FR (French for Canada and France respectively)',
 'LogicException' => 'Exception that represents error in the program logic. This kind of exception should lead directly to a fix in your code.',
@@ -830,56 +900,68 @@ A few unusual, but valid, database names: "null", "[x,y]", "3", "\"", "/".
 
 Unlike collection names, database names may contain "$".',
 'MongoDB\BSON\Binary' => 'BSON type for binary data (i.e. array of bytes). Binary values also have a subtype, which is used to indicate what kind of data is in the byte array. Subtypes from zero to 127 are predefined or reserved. Subtypes from 128-255 are user-defined.',
-'MongoDB\BSON\BinaryInterface' => 'This interface is implemented by `MongoDB\BSON\Binary` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\BinaryInterface' => 'This interface is implemented by `MongoDB\BSON\Binary` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\DBPointer' => 'BSON type for the "DBPointer" type. This BSON type is deprecated, and this class can not be instantiated. It will be created from a BSON DBPointer type while converting BSON to PHP, and can also be converted back into BSON while storing documents in the database.',
 'MongoDB\BSON\Decimal128' => 'BSON type for the Decimal128 floating-point format, which supports numbers with up to 34 decimal digits (i.e. significant digits) and an exponent range of −6143 to +6144.
 
 Unlike the double BSON type (i.e. `float` in PHP), which only stores an approximation of the decimal values, the decimal data type stores the exact value. For example, `MongoDB\BSON\Decimal128(\'9.99\')` has a precise value of 9.99 where as a double 9.99 would have an approximate value of 9.9900000000000002131628….',
-'MongoDB\BSON\Decimal128Interface' => 'This interface is implemented by `MongoDB\BSON\Decimal128` but may also be used for type-hinting and userland classes.',
-'MongoDB\BSON\Int64' => 'BSON type for a 64-bit integer. This class cannot be instantiated and is only created during BSON decoding when a 64-bit integer cannot be represented as a PHP integer on a 32-bit platform. Versions of the driver before 1.5.0 would throw an exception when attempting to decode a 64-bit integer on a 32-bit platform.
+'MongoDB\BSON\Decimal128Interface' => 'This interface is implemented by `MongoDB\BSON\Decimal128` to be used as a parameter, return, or property type in userland classes.',
+'MongoDB\BSON\Document' => 'Represents a BSON document. This class is used when reading data as raw BSON and cannot be modified.',
+'MongoDB\BSON\Int64' => 'BSON type for a 64-bit integer. When decoding BSON to PHP data, this class is used when a 64-bit integer cannot be represented as a PHP integer on 32-bit platforms. These objects support overloaded arithmetic, bitwise, and comparison operators.
 
-During BSON encoding, objects of this class will convert back to a 64-bit integer type. This allows 64-bit integers to be roundtripped through a 32-bit PHP environment without any loss of precision. The __toString() method allows the 64-bit integer value to be accessed as a string.',
+When working with raw BSON data through the `MongoDB\BSON\Document`, `MongoDB\BSON\PackedArray`, and `MongoDB\BSON\Iterator` classes, any 64-bit integer will be returned as an instance of this class, regardless of platform and whether the value can be represented as a PHP integer. This ensures that values can be roundtripped without changing the type.
+
+During BSON encoding, objects of this class will convert back to a 64-bit integer type, even when the value would fit in a 32-bit integer. This allows explicitly storing values as 64-bit integers in BSON.',
+'MongoDB\BSON\Iterator' => 'Iterator used to iterate a BSON document or array.',
 'MongoDB\BSON\Javascript' => 'BSON type for Javascript code. An optional scope document may be specified that maps identifiers to values and defines the scope in which the code should be evaluated by the server.',
-'MongoDB\BSON\JavascriptInterface' => 'This interface is implemented by `MongoDB\BSON\Javascript` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\JavascriptInterface' => 'This interface is implemented by `MongoDB\BSON\Javascript` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\MaxKey' => 'Special BSON type which compares higher than all other possible BSON element values.',
-'MongoDB\BSON\MaxKeyInterface' => 'This interface is implemented by `MongoDB\BSON\MaxKey` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\MaxKeyInterface' => 'This interface is implemented by `MongoDB\BSON\MaxKey` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\MinKey' => 'Special BSON type which compares lower than all other possible BSON element values.',
-'MongoDB\BSON\MinKeyInterface' => 'This interface is implemented by `MongoDB\BSON\MinKey` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\MinKeyInterface' => 'This interface is implemented by `MongoDB\BSON\MinKey` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\ObjectId' => 'BSON type for an ObjectId. The value consists of 12 bytes, where the first four bytes are a timestamp that reflect the ObjectId\'s creation. Specifically, the value consists of:
 
-In MongoDB, each document stored in a collection requires a unique `_id` field that acts as a primary key. If an inserted document omits the `_id` field, the driver automatically generates an ObjectId for the `_id` field.
+In MongoDB, each document stored in a collection requires a unique `_id` field that acts as a primary key. If an inserted document omits the `_id` field, the extension automatically generates an ObjectId for the `_id` field.
 
 Using ObjectIds for the `_id` field provides the following additional benefits:',
-'MongoDB\BSON\ObjectIdInterface' => 'This interface is implemented by `MongoDB\BSON\ObjectId` but may also be used for type-hinting and userland classes.',
-'MongoDB\BSON\Persistable' => 'Classes may implement this interface to take advantage of automatic ODM (object document mapping) behavior in the driver. During serialization, the driver will inject a `__pclass` property containing the PHP class name into the data returned by `MongoDB\BSON\Serializable::bsonSerialize`. During unserialization, the same `__pclass` property will then be used to infer the PHP class (independent of any type map configuration) to be constructed before `MongoDB\BSON\Unserializable::bsonUnserialize` is invoked. See the PHP manual\'s section on mongodb.persistence for additional information.',
+'MongoDB\BSON\ObjectIdInterface' => 'This interface is implemented by `MongoDB\BSON\ObjectId` to be used as a parameter, return, or property type in userland classes.',
+'MongoDB\BSON\PackedArray' => 'Represents a BSON array. This class is used when reading data as raw BSON and cannot be modified.',
+'MongoDB\BSON\Persistable' => 'Classes may implement this interface to take advantage of automatic ODM (object document mapping) behavior in the extension. During serialization, the extension will inject a `__pclass` property containing the PHP class name into the data returned by `MongoDB\BSON\Serializable::bsonSerialize`. During unserialization, the same `__pclass` property will then be used to infer the PHP class (independent of any type map configuration) to be constructed before `MongoDB\BSON\Unserializable::bsonUnserialize` is invoked. See the PHP manual\'s section on mongodb.persistence for additional information.',
 'MongoDB\BSON\Regex' => 'BSON type for a regular expression pattern and optional flags.',
-'MongoDB\BSON\RegexInterface' => 'This interface is implemented by `MongoDB\BSON\Regex` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\RegexInterface' => 'This interface is implemented by `MongoDB\BSON\Regex` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\Serializable' => 'Classes that implement this interface may return data to be serialized as a BSON array or document in lieu of the object\'s public properties.',
 'MongoDB\BSON\Symbol' => 'BSON type for the "Symbol" type. This BSON type is deprecated, and this class can not be instantiated. It will be created from a BSON symbol type while converting BSON to PHP, and can also be converted back into BSON while storing documents in the database.',
 'MongoDB\BSON\Timestamp' => 'Represents a BSON timestamp, The value consists of a 4-byte timestamp (i.e. seconds since the epoch) and a 4-byte increment.',
-'MongoDB\BSON\TimestampInterface' => 'This interface is implemented by `MongoDB\BSON\Timestamp` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\TimestampInterface' => 'This interface is implemented by `MongoDB\BSON\Timestamp` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\BSON\Type' => 'Abstract base interface that should not be implemented directly.',
 'MongoDB\BSON\Undefined' => 'BSON type for the "Undefined" type. This BSON type is deprecated, and this class can not be instantiated. It will be created from a BSON undefined type while converting BSON to PHP, and can also be converted back into BSON while storing documents in the database.',
 'MongoDB\BSON\Unserializable' => 'Classes that implement this interface may be specified in a type map for unserializing BSON arrays and documents (both root and embedded).',
 'MongoDB\BSON\UTCDateTime' => 'Represents a BSON date. The value is a 64-bit integer that represents the number of milliseconds since the Unix epoch (Jan 1, 1970). Negative values represent dates before 1970.',
-'MongoDB\BSON\UTCDateTimeInterface' => 'This interface is implemented by `MongoDB\BSON\UTCDateTime` but may also be used for type-hinting and userland classes.',
+'MongoDB\BSON\UTCDateTimeInterface' => 'This interface is implemented by `MongoDB\BSON\UTCDateTime` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\Driver\BulkWrite' => 'The `MongoDB\Driver\BulkWrite` collects one or more write operations that should be sent to the server. After adding any number of insert, update, and delete operations, the collection may be executed via `MongoDB\Driver\Manager::executeBulkWrite`.
 
 Write operations may either be ordered (default) or unordered. Ordered write operations are sent to the server, in the order provided, for serial execution. If a write fails, any remaining operations will be aborted. Unordered operations are sent to the server in an arbitrary order where they may be executed in parallel. Any errors that occur are reported after all operations have been attempted.',
+'MongoDB\Driver\BulkWriteCommand' => '`MongoDB\Driver\BulkWriteCommand` collects one or more write operations that should be sent to the server using the bulkWrite command introduced in MongoDB 8.0. After adding any number of insert, update, and delete operations, the command may be executed via `MongoDB\Driver\Manager::executeBulkWriteCommand`.
+
+Unlike `MongoDB\Driver\BulkWrite`, where all write operations must target the same collection, each write operation within `MongoDB\Driver\BulkWriteCommand` may target a different collection.
+
+Write operations may either be ordered (default) or unordered. Ordered write operations are sent to the server, in the order provided, for serial execution. If a write fails, any remaining operations will be aborted. Unordered operations are sent to the server in an arbitrary order where they may be executed in parallel. Any errors that occur are reported after all operations have been attempted.',
+'MongoDB\Driver\BulkWriteCommandResult' => 'The `MongoDB\Driver\BulkWriteCommandResult` class encapsulates information about an executed `MongoDB\Driver\BulkWriteCommand` and is returned by `MongoDB\Driver\Manager::executeBulkWriteCommand`.',
 'MongoDB\Driver\ClientEncryption' => 'The `MongoDB\Driver\ClientEncryption` class handles creation of data keys for client-side encryption, as well as manually encrypting and decrypting values.',
 'MongoDB\Driver\Command' => 'The `MongoDB\Driver\Command` class is a value object that represents a database command.
 
 To provide Command Helpers the `MongoDB\Driver\Command` object should be composed.',
 'MongoDB\Driver\Cursor' => 'The `MongoDB\Driver\Cursor` class encapsulates the results of a MongoDB command or query and may be returned by `MongoDB\Driver\Manager::executeCommand` or `MongoDB\Driver\Manager::executeQuery`, respectively.',
 'MongoDB\Driver\CursorId' => 'The `MongoDB\Driver\CursorID` class is a value object that represents a cursor ID. Instances of this class are returned by `MongoDB\Driver\Cursor::getId`.',
-'MongoDB\Driver\CursorInterface' => 'This interface is implemented by `MongoDB\Driver\Cursor` but may also be used for type-hinting and userland classes.',
+'MongoDB\Driver\CursorInterface' => 'This interface is implemented by `MongoDB\Driver\Cursor` to be used as a parameter, return, or property type in userland classes.',
 'MongoDB\Driver\Exception\AuthenticationException' => 'Thrown when the driver fails to authenticate with the server.',
+'MongoDB\Driver\Exception\BulkWriteCommandException' => 'Exception thrown due to failed execution of a `MongoDB\Driver\BulkWriteCommand`. The methods of this class provide more details of the error that occurred, including the error reply and partial results from the bulk write.',
 'MongoDB\Driver\Exception\BulkWriteException' => 'Thrown when a bulk write operation fails.',
 'MongoDB\Driver\Exception\CommandException' => 'Thrown when a command fails.',
 'MongoDB\Driver\Exception\ConnectionException' => 'Base class for exceptions thrown when the driver fails to establish a database connection.',
 'MongoDB\Driver\Exception\ConnectionTimeoutException' => 'Thrown when the driver fails to establish a database connection within a specified time limit (connectTimeoutMS) or server selection fails (serverSelectionTimeoutMS).',
 'MongoDB\Driver\Exception\EncryptionException' => 'Base class for exceptions thrown during client-side encryption.',
-'MongoDB\Driver\Exception\Exception' => 'Common interface for all driver exceptions. This may be used to catch only exceptions originating from the driver itself.',
+'MongoDB\Driver\Exception\Exception' => 'Common interface for all extension exceptions. This interface is also used by the library, and may be used to identify any exceptions originating from the MongoDB PHP driver (i.e. extension and library).',
 'MongoDB\Driver\Exception\ExecutionTimeoutException' => 'Thrown when a query or command fails to complete within a specified time limit (e.g. maxTimeMS).',
 'MongoDB\Driver\Exception\InvalidArgumentException' => 'Thrown when a driver method is given invalid arguments (e.g. invalid option types).',
 'MongoDB\Driver\Exception\LogicException' => 'Thrown when the driver is incorrectly used (e.g. rewinding a cursor).',
@@ -897,11 +979,26 @@ Any write or query can throw connection exceptions as connections are created la
 'MongoDB\Driver\Monitoring\CommandStartedEvent' => 'The `MongoDB\Driver\Monitoring\CommandStartedEvent` class encapsulates information about a started command.',
 'MongoDB\Driver\Monitoring\CommandSubscriber' => 'Classes may implement this interface to register an event subscriber that is notified for each started, successful, and failed command event. See the PHP manual\'s section on mongodb.tutorial.apm for additional information.',
 'MongoDB\Driver\Monitoring\CommandSucceededEvent' => 'The `MongoDB\Driver\Monitoring\CommandSucceededEvent` class encapsulates information about a successful command.',
-'MongoDB\Driver\Monitoring\Subscriber' => 'Base interface for event subscribers. This is used for type-hinting `MongoDB\Driver\Monitoring\addSubscriber` and `MongoDB\Driver\Monitoring\removeSubscriber` and should not be implemented directly.',
+'MongoDB\Driver\Monitoring\LogSubscriber' => 'Classes implementing this interface may be registered as a subscriber and receive log messages from the extension. This is similar to stream-based debug logging (i.e. mongodb.debug) except that trace-level log messages are *not* received.
+
+As with stream-based logging, it is only possible to register a logger globally using `MongoDB\Driver\Monitoring\addSubscriber`. The extension is not able to distinguish log messages for individual `MongoDB\Driver\Manager` objects.',
+'MongoDB\Driver\Monitoring\SDAMSubscriber' => 'Classes may implement this interface to register an event subscriber that is notified for various SDAM events. See the Server Discovery and Monitoring and SDAM Monitoring specifications for additional information.',
+'MongoDB\Driver\Monitoring\ServerChangedEvent' => 'The `MongoDB\Driver\Monitoring\ServerChangedEvent` class encapsulates information about a changed server description. For example, a server\'s type changing from secondary to primary would cause its server description to change.',
+'MongoDB\Driver\Monitoring\ServerClosedEvent' => 'The `MongoDB\Driver\Monitoring\ServerClosedEvent` class encapsulates information about a closed server. This corresponds to an existing server being removed from the topology.',
+'MongoDB\Driver\Monitoring\ServerHeartbeatFailedEvent' => 'The `MongoDB\Driver\Monitoring\ServerHeartbeatFailedEvent` class encapsulates information about a failed server heartbeat (i.e. hello command issued through server monitoring).',
+'MongoDB\Driver\Monitoring\ServerHeartbeatStartedEvent' => 'The `MongoDB\Driver\Monitoring\ServerHeartbeatStartedEvent` class encapsulates information about a started server heartbeat (i.e. hello command issued through server monitoring).',
+'MongoDB\Driver\Monitoring\ServerHeartbeatSucceededEvent' => 'The `MongoDB\Driver\Monitoring\ServerHeartbeatSucceededEvent` class encapsulates information about a successful server heartbeat (i.e. hello command issued through server monitoring).',
+'MongoDB\Driver\Monitoring\ServerOpeningEvent' => 'The `MongoDB\Driver\Monitoring\ServerOpeningEvent` class encapsulates information about an opened server. This corresponds to a new server being added to the topology.',
+'MongoDB\Driver\Monitoring\Subscriber' => 'Base interface for event subscribers. This is used as a parameter type in the functions `MongoDB\Driver\Monitoring\addSubscriber` and `MongoDB\Driver\Monitoring\removeSubscriber` and should not be implemented directly.',
+'MongoDB\Driver\Monitoring\TopologyChangedEvent' => 'The `MongoDB\Driver\Monitoring\TopologyChangedEvent` class encapsulates information about a changed topology description. For example, a topology discovering a new replica set primary would cause its topology description to change.',
+'MongoDB\Driver\Monitoring\TopologyClosedEvent' => 'The `MongoDB\Driver\Monitoring\TopologyClosedEvent` class encapsulates information about a closed topology.',
+'MongoDB\Driver\Monitoring\TopologyOpeningEvent' => 'The `MongoDB\Driver\Monitoring\TopologyOpeningEvent` class encapsulates information about an opened topology.',
 'MongoDB\Driver\Query' => 'The `MongoDB\Driver\Query` class is a value object that represents a database query.',
 'MongoDB\Driver\ReadConcern' => '`MongoDB\Driver\ReadConcern` controls the level of isolation for read operations for replica sets and replica set shards. This option requires MongoDB 3.2 or later.',
 'MongoDB\Driver\ReadPreference' => 'Class ReadPreference',
+'MongoDB\Driver\ServerDescription' => 'The `MongoDB\Driver\ServerDescription` class is a value object that represents a server to which the driver is connected. Instances of this class are returned by `MongoDB\Driver\Server::getServerDescription` and `MongoDB\Driver\Monitoring\ServerChangedEvent` methods.',
 'MongoDB\Driver\Session' => 'The `MongoDB\Driver\Session` class represents a client session and is returned by `MongoDB\Driver\Manager::startSession`. Commands, queries, and write operations may then be associated the session.',
+'MongoDB\Driver\TopologyDescription' => 'The `MongoDB\Driver\TopologyDescription` class is a value object that represents a topology to which the driver is connected. Instances of this class are returned by `MongoDB\Driver\Monitoring\TopologyChangedEvent` methods.',
 'MongoDB\Driver\WriteConcern' => '`MongoDB\Driver\WriteConcern` describes the level of acknowledgement requested from MongoDB for write operations to a standalone `mongod` or to replica sets or to sharded clusters. In sharded clusters, `mongos` instances will pass the write concern on to the shards.',
 'MongoDB\Driver\WriteConcernError' => 'The `MongoDB\Driver\WriteConcernError` class encapsulates information about a write concern error and may be returned by `MongoDB\Driver\WriteResult::getWriteConcernError`.',
 'MongoDB\Driver\WriteError' => 'The `MongoDB\Driver\WriteError` class encapsulates information about a write error and may be returned as an array element from `MongoDB\Driver\WriteResult::getWriteErrors`.',
@@ -986,10 +1083,8 @@ Prior to MongoDB 2.6.0, the getLastError command would determine whether a write
 'mysql_xdevapi\TableSelect' => 'A statement for record retrieval operations on a Table.',
 'mysql_xdevapi\TableUpdate' => 'A statement for record update operations on a Table.',
 'mysqli' => 'Represents a connection between PHP and a MySQL database.',
-'mysqli_driver' => 'MySQLi Driver.',
-'mysqli_result' => 'Represents the result set obtained from a query against the database.
-
-`Changelog`*',
+'mysqli_driver' => 'The `mysqli_driver` class is an instance of the monostate pattern, i.e. there is only one driver which can be accessed though an arbitrary amount of `mysqli_driver` instances.',
+'mysqli_result' => 'Represents the result set obtained from a query against the database.',
 'mysqli_sql_exception' => 'The mysqli exception handling class.',
 'mysqli_stmt' => 'Represents a prepared statement.',
 'mysqli_warning' => 'Represents a MySQL warning.',
@@ -1005,6 +1100,9 @@ See also an external in-depth tutorial titled Writing an OAuth Provider Service,
 'OCI-Lob' => 'OCI8 LOB functionality for large binary (BLOB) and character (CLOB) objects.',
 'OCICollection' => 'OCI8 Collection functionality.',
 'OCILob' => 'OCI8 LOB functionality for large binary (BLOB) and character (CLOB) objects.',
+'OpenSSLAsymmetricKey' => 'A fully opaque class which replaces `OpenSSL key` resources as of PHP 8.0.0.',
+'OpenSSLCertificate' => 'A fully opaque class which replaces `OpenSSL X.509` resources as of PHP 8.0.0.',
+'OpenSSLCertificateSigningRequest' => 'A fully opaque class which replaces `OpenSSL X.509 CSR` resources as of PHP 8.0.0.',
 'OuterIterator' => 'Classes implementing `OuterIterator` can be used to iterate over iterators.',
 'OutOfBoundsException' => 'Exception thrown if a value is not a valid key. This represents errors that cannot be detected at compile time.',
 'OutOfRangeException' => 'Exception thrown when an illegal index was requested. This represents errors that should be detected at compile time.',
@@ -1031,12 +1129,20 @@ Synchronization for most applications is much better implemented using channels,
 'Parle\Parser' => 'Parser class. Rules can be defined on the fly. Once finalized, a `Parle\Lexer` instance is required to deliver the token stream.',
 'Parle\RLexer' => 'Multistate lexer class. Lexemes can be defined on the fly. If the particular lexer instance is meant to be used with `Parle\RParser`, the token IDs need to be taken from there. Otherwise, arbitrary token IDs can be supplied. Note, that `Parle\Parser` is not compatible with this lexer.',
 'Parle\RParser' => 'Parser class. Rules can be defined on the fly. Once finalized, a `Parle\RLexer` instance is required to deliver the token stream.',
-'Parle\Stack' => '`Parle\Stack` is a LIFO stack. The elements are inserted and and removed only from one end.',
+'Parle\Stack' => '`Parle\Stack` is a LIFO stack. The elements are inserted and removed only from one end.',
 'Parle\Token' => 'This class represents a token. Lexer returns instances of this class.',
 'ParseError' => '`ParseError` is thrown when an error occurs while parsing PHP code, such as when `eval` is called.',
 'PDO' => 'Represents a connection between PHP and a database server.',
 'PDOException' => 'Represents an error raised by PDO. You should not throw a `PDOException` from your own code. See Exceptions for more information about Exceptions in PHP.',
+'PDORow' => 'Represents a row from a result set returned by `PDOStatement::fetch` called with `PDO_FETCH_LAZY` fetch mode.
+
+Objects of this class cannot be instantiated and are not serializable.
+
+The `PDORow` object allows access to the returned data as if both `PDO::FETCH_OBJ` and `PDO::FETCH_BOTH` mode was used. This means that the returned data can be accessed as object properties, and as an array both indexed by the column name and a column offset number.',
 'PDOStatement' => 'Represents a prepared statement and, after the statement is executed, an associated result set.',
+'PgSql\Connection' => 'A fully opaque class which replaces a `pgsql link` resource as of PHP 8.1.0.',
+'PgSql\Lob' => 'A fully opaque class which replaces a `pgsql large object` resource as of PHP 8.1.0.',
+'PgSql\Result' => 'A fully opaque class which replaces a `pgsql result` resource as of PHP 8.1.0.',
 'Phan\Tests\Language\Internal\ConstantDocumentationMapTest' => 'This is a sanity check that Phan\'s property signature map has the correct structure
 and can be parsed into a property signature.',
 'Phan\Tests\Language\Internal\FunctionSignatureMapTest' => 'This is a sanity check that Phan\'s function signature map has the correct structure
@@ -1047,7 +1153,8 @@ and can be parsed into a property signature.',
 'PharData' => 'The PharData class provides a high-level interface to accessing and creating non-executable tar and zip archives. Because these archives do not contain a stub and cannot be executed by the phar extension, it is possible to create and manipulate regular zip and tar files using the PharData class even if `phar.readonly` php.ini setting is `1`.',
 'PharException' => 'The PharException class provides a phar-specific exception class for try/catch blocks.',
 'PharFileInfo' => 'The PharFileInfo class provides a high-level interface to the contents and attributes of a single file within a phar archive.',
-'php_user_filter' => 'Children of this class are passed to `stream_filter_register`.',
+'php_user_filter' => 'Children of this class are passed to `stream_filter_register`. Note that the __construct method is not called; instead, `php_user_filter::onCreate` should be used for initialization.',
+'PhpToken' => 'This class provides an alternative to `token_get_all`. While the function returns tokens either as a single-character string, or an array with a token ID, token text and line number, `PhpToken::tokenize` normalizes all tokens into PhpToken objects, which makes code operating on tokens more memory efficient and readable.',
 'pht\AtomicInteger' => 'The `pht\AtomicInteger` class is currently the only supported atomic value. It allows for an integer to be safely passed around between, and manipulated, by multiple threads. The methods exposed by this class do not need mutex locking, since they will acquire the internal mutex lock implicitly. `pht\AtomicInteger::lock` and `pht\AtomicInteger::unlock` are still exposed, however, for when multiple operations involving the same `pht\AtomicInteger` object need to be grouped together.
 
 The mutex locks of the atomic values are reentrant safe.',
@@ -1064,20 +1171,34 @@ The `pht\Vector` class enables for array access upon its objects (along with the
 'Pool' => 'A Pool is a container for, and controller of, an adjustable number of Workers.
 
 Pooling provides a higher level abstraction of the Worker functionality, including the management of references in the way required by pthreads.',
+'PSpell\Config' => 'A fully opaque class which replaces a `pspell config` resource as of PHP 8.1.0.',
+'PSpell\Dictionary' => 'A fully opaque class which replaces a `pspell` resource as of PHP 8.1.0.',
 'querymapObj' => 'Instances of querymapObj are always are always embedded inside the
 `mapObj`_.',
-'QuickHashIntHash' => 'This class wraps around a hash containing integer numbers, where the values are also integer numbers. Hashes are also available as implementation of the ArrayAccess interface.
+'QuickHashIntHash' => 'This class wraps around a hash containing integer numbers, where the values are also integer numbers. Hashes are also available as implementation of the `ArrayAccess` interface.
 
-Hashes can also be iterated over with foreach as the Iterator interface is implemented as well. The order of which elements are returned in is not guaranteed.',
+Hashes can also be iterated over with `foreach` as the `Iterator` interface is implemented as well. The order of which elements are returned in is not guaranteed.',
 'QuickHashIntSet' => 'This class wraps around a set containing integer numbers.
 
-Sets can also be iterated over with foreach as the Iterator interface is implemented as well. The order of which elements are returned in is not guaranteed.',
-'QuickHashIntStringHash' => 'This class wraps around a hash containing integer numbers, where the values are strings. Hashes are also available as implementation of the ArrayAccess interface.
+Sets can also be iterated over with `foreach` as the `Iterator` interface is implemented as well. The order of which elements are returned in is not guaranteed.',
+'QuickHashIntStringHash' => 'This class wraps around a hash containing integer numbers, where the values are strings. Hashes are also available as implementation of the `ArrayAccess` interface.
 
-Hashes can also be iterated over with foreach as the Iterator interface is implemented as well. The order of which elements are returned in is not guaranteed.',
-'QuickHashStringIntHash' => 'This class wraps around a hash containing strings, where the values are integer numbers. Hashes are also available as implementation of the ArrayAccess interface.
+Hashes can also be iterated over with `foreach` as the `Iterator` interface is implemented as well. The order of which elements are returned in is not guaranteed.',
+'QuickHashStringIntHash' => 'This class wraps around a hash containing strings, where the values are integer numbers. Hashes are also available as implementation of the `ArrayAccess` interface.
 
-Hashes can also be iterated over with foreach as the Iterator interface is implemented as well. The order of which elements are returned in is not guaranteed.',
+Hashes can also be iterated over with `foreach` as the `Iterator` interface is implemented as well. The order of which elements are returned in is not guaranteed.',
+'Random\BrokenRandomEngineError' => 'Indicates that the used `Random\Engine` is broken, e.g. because it is severely biased.',
+'Random\Engine\Mt19937' => 'Implements the Mt19937 (“Mersenne Twister”) algorithm.',
+'Random\Engine\PcgOneseq128XslRr64' => 'Implements a Permuted congruential generator (PCG) with 128 bits of state, XSL and RR output transformations, and 64 bits of output.',
+'Random\Engine\Secure' => 'Generates cryptographically secure randomness using the operating system’s CSPRNG.
+
+The randomness generated by this `Random\Engine` is suitable for all applications, including the generation of long-term secrets, such as encryption keys.
+
+The `Random\Engine\Secure` engine is the recommended safe default choice, unless the application requires either reproducible sequences or very high performance.',
+'Random\Engine\Xoshiro256StarStar' => 'Implements the xoshiro256** algorithm.',
+'Random\RandomError' => 'The base class for `Error`s that occur during generation or use of randomness.',
+'Random\RandomException' => 'The base class for `Exception`s that occur during generation or use of randomness.',
+'Random\Randomizer' => 'Provides a high-level API to the randomness provided by an `Random\Engine`.',
 'RangeException' => 'Exception thrown to indicate range errors during program execution. Normally this means there was an arithmetic error other than under/overflow. This is the runtime version of `DomainException`.',
 'RarArchive' => 'This class represents a RAR archive, which may be formed by several volumes (parts) and which contains a number of RAR entries (i.e., files, directories and other special objects such as symbolic links).
 
@@ -1100,6 +1221,7 @@ also be created with:',
 'RecursiveTreeIterator' => 'Allows iterating over a `RecursiveIterator` to generate an ASCII graphic tree.',
 'referenceMapObj' => 'Instances of referenceMapObj are always embedded inside the `mapObj`_.',
 'Reflection' => 'The reflection class.',
+'ReflectionAttribute' => 'The `ReflectionAttribute` class provides information about an Attribute.',
 'ReflectionClass' => 'The `ReflectionClass` class reports information about a class.',
 'ReflectionClassConstant' => 'The `ReflectionClassConstant` class reports information about a class constant.',
 'ReflectionException' => 'The ReflectionException class.',
@@ -1112,16 +1234,22 @@ also be created with:',
 'ReflectionParameter' => 'The `ReflectionParameter` class retrieves information about function\'s or method\'s parameters.
 
 To introspect function parameters, first create an instance of the `ReflectionFunction` or `ReflectionMethod` classes and then use their `ReflectionFunctionAbstract::getParameters` method to retrieve an array of parameters.',
-'ReflectionProperty' => 'The `ReflectionProperty` class reports information about classes properties.',
-'ReflectionType' => 'The `ReflectionType` class reports information about a function\'s return type.',
+'ReflectionProperty' => 'The `ReflectionProperty` class reports information about class properties.',
+'ReflectionReference' => 'The `ReflectionReference` class provides information about a reference.',
+'ReflectionType' => 'The `ReflectionType` class reports information about a function\'s parameter/return type or a class\'s property type. The Reflection extension declares the following subtypes: `ReflectionNamedType` (as of PHP 7.1.0) `ReflectionUnionType` (as of PHP 8.0.0) `ReflectionIntersectionType` (as of PHP 8.1.0)',
 'Reflector' => '`Reflector` is an interface implemented by all exportable Reflection classes.',
 'RegexIterator' => 'This iterator can be used to filter another iterator based on a regular expression.',
+'ReturnTypeWillChange' => 'Most non-final internal methods now require overriding methods to declare a compatible return type, otherwise a deprecated notice is emitted during inheritance validation. In case the return type cannot be declared for an overriding method due to PHP cross-version compatibility concerns, a `#[\ReturnTypeWillChange]` attribute can be added to silence the deprecation notice.',
 'RRDCreator' => 'Class for creation of RRD database file.',
 'RRDGraph' => 'Class for exporting data from RRD database to image file.',
 'RRDUpdater' => 'Class for updating RDD database file.',
 'RuntimeException' => 'Exception thrown if an error which can only be found on runtime occurs.',
 'scalebarObj' => 'Instances of scalebarObj are always embedded inside the `mapObj`_.',
 'SeekableIterator' => 'The Seekable iterator.',
+'SensitiveParameter' => 'This attribute is used to mark a parameter that is sensitive and should have its value redacted if present in a stack trace.',
+'SensitiveParameterValue' => 'The `SensitiveParameterValue` class allows wrapping sensitive values to protect them against accidental exposure.
+
+Values of parameters having the `SensitiveParameter` attribute will automatically be wrapped inside of a `SensitiveParameterValue` object within stack traces.',
 'SessionHandler' => '`SessionHandler` is a special class that can be used to expose the current internal PHP session save handler by inheritance. There are seven methods which wrap the seven internal session save handler callbacks (open, close, read, write, destroy, gc and create_sid). By default, this class will wrap whatever internal save handler is set as defined by the session.save_handler configuration directive which is usually files by default. Other internal session save handlers are provided by PHP extensions such as SQLite (as sqlite), Memcache (as memcache), and Memcached (as memcached).
 
 When a plain instance of `SessionHandler` is set as the save handler using `session_set_save_handler` it will wrap the current save handlers. A class extending from `SessionHandler` allows you to override the methods or intercept or filter them by calls the parent class methods which ultimately wrap the internal PHP session handlers.
@@ -1132,10 +1260,13 @@ Because the `SessionHandler` wraps the current internal save handler methods, th
 
 To use this class, first set the save handler you wish to expose using session.save_handler and then pass an instance of `SessionHandler` or one extending it to `session_set_save_handler`.
 
-Please note the callback methods of this class are designed to be called internally by PHP and are not meant to be called from user-space code. The return values are equally processed internally by PHP. For more information on the session workflow, please refer `session_set_save_handler`.',
+Please note that the callback methods of this class are designed to be called internally by PHP and are not meant to be called from user-space code. The return values are equally processed internally by PHP. For more information on the session workflow, please refer to `session_set_save_handler`.',
 'SessionHandlerInterface' => '`SessionHandlerInterface` is an interface which defines a prototype for creating a custom session handler. In order to pass a custom session handler to `session_set_save_handler` using its `OOP` invocation, the class must implement this interface.
 
 Please note the callback methods of this class are designed to be called internally by PHP and are not meant to be called from user-space code.',
+'Shmop' => 'A fully opaque class which replaces `shmop` resources as of PHP 8.0.0.',
+'SimdJsonException' => 'Exception thrown if `simdjson_decode`, `simdjson_key_count`, `simdjson_key_exists`, or `simdjson_key_value`. For possible values see the simdjson error codes constants.',
+'SimdJsonValueError' => 'A `SimdJsonValueError` is thrown when the type of an argument to a function from simdjson is correct but the value of it is incorrect. E.g. when the JSON decoding $depth is not positive or the $depth is too large.',
 'SimpleXMLElement' => 'Represents an element in an XML document.',
 'SimpleXMLIterator' => 'The SimpleXMLIterator provides recursive iteration over all nodes of a `SimpleXMLElement` object.',
 'SNMP' => 'Represents SNMP session.',
@@ -1146,6 +1277,8 @@ Please note the callback methods of this class are designed to be called interna
 'SoapParam' => 'Represents parameter to a SOAP call.',
 'SoapServer' => 'The SoapServer class provides a server for the SOAP 1.1 and SOAP 1.2 protocols. It can be used with or without a WSDL service description.',
 'SoapVar' => 'A class representing a variable or object for use with SOAP services.',
+'Socket' => 'A fully opaque class which replaces `Socket` resources as of PHP 8.0.0.',
+'SodiumException' => 'Exceptions thrown by the sodium functions.',
 'SolrClient' => 'Used to send requests to a Solr server. Currently, cloning and serialization of SolrClient instances is not supported.',
 'SolrClientException' => 'An exception thrown when there is an error while making a request to the server from the client.',
 'SolrCollapseFunction' => 'Class SolrCollapseFunction',
@@ -1176,9 +1309,9 @@ Also contains method for escaping query strings and parsing XML responses.',
 'SplBool' => 'The SplBool class is used to enforce strong typing of the bool type.',
 'SplDoublyLinkedList' => 'The SplDoublyLinkedList class provides the main functionalities of a doubly linked list.',
 'SplEnum' => 'SplEnum gives the ability to emulate and create enumeration objects natively in PHP.',
-'SplFileInfo' => 'The SplFileInfo class offers a high-level object oriented interface to information for an individual file.',
+'SplFileInfo' => 'The SplFileInfo class offers a high-level object-oriented interface to information for an individual file.',
 'SplFileObject' => 'The SplFileObject class offers an object oriented interface for a file.',
-'SplFixedArray' => 'The SplFixedArray class provides the main functionalities of array. The main differences between a SplFixedArray and a normal PHP array is that the SplFixedArray is of fixed length and allows only integers within the range as indexes. The advantage is that it allows a faster array implementation.',
+'SplFixedArray' => 'The SplFixedArray class provides the main functionalities of array. The main difference between a SplFixedArray and a normal PHP array is that the SplFixedArray must be resized manually and allows only integers within the range as indexes. The advantage is that it uses less memory than a standard `array`.',
 'SplFloat' => 'The SplFloat class is used to enforce strong typing of the float type.',
 'SplHeap' => 'The SplHeap class provides the main functionalities of a Heap.',
 'SplInt' => 'The SplInt class is used to enforce strong typing of the integer type.',
@@ -1197,11 +1330,19 @@ Also contains method for escaping query strings and parsing XML responses.',
 
 Provided methods allow to check whether an individual string is likely an attempt at confusing the reader (`spoof detection`), such as "pаypаl" spelled with Cyrillic \'а\' characters.',
 'SQLite3' => 'A class that interfaces SQLite 3 databases.',
+'SQLite3Exception' => 'Represents a SQLite3 specific exception.',
 'SQLite3Result' => 'A class that handles result sets for the SQLite 3 extension.',
 'SQLite3Stmt' => 'A class that handles prepared statements for the SQLite 3 extension.',
 'SQLiteUnbuffered' => 'Represents an unbuffered SQLite result set. Unbuffered results sets are sequential, forward-seeking only.',
 'Stackable' => 'Stackable is an alias of Threaded. This class name was used in pthreads until
 version 2.0.0',
+'stdClass' => 'A generic empty class with dynamic properties.
+
+Objects of this class can be instantiated with new operator or created by typecasting to object. Several PHP functions also create instances of this class, e.g. `json_decode`, `mysqli_fetch_object` or `PDOStatement::fetchObject`.
+
+Despite not implementing __get()/__set() magic methods, this class allows dynamic properties and does not require the `#[\AllowDynamicProperties]` attribute.
+
+This is not a base class as PHP does not have a concept of a universal base class. However, it is possible to create a custom class that extends from `stdClass` and as a result inherits the functionality of dynamic properties.',
 'Stomp' => 'Represents a connection between PHP and a Stomp compliant Message Broker.',
 'StompException' => 'Represents an error raised by the stomp extension. See Exceptions for more information about Exceptions in PHP.',
 'StompFrame' => 'Represents a message which was sent or received from a Stomp compliant Message Broker.',
@@ -1232,6 +1373,14 @@ An instance of this class is initialized as soon as a stream function tries to a
 'SWFText' => 'SWFText.',
 'SWFTextField' => 'SWFTextField.',
 'SWFVideoStream' => 'SWFVideoStream.',
+'Swoole\Coroutine\Lock' => 'Swoole 6.0.1 introduced a coroutine lock that supports inter-process and inter-thread sharing. This lock is designed with non-blocking behavior and enables efficient coroutine synchronization in multi-process and multi-thread environments.
+
+When compiled with the `--enable-iouring` option and the Linux kernel supports the `io_uring futex` feature, Swoole\'s coroutine lock implements synchronization using `io_uring futex`. In this case, coroutines wait for lock wakeups using an efficient queuing mechanism, significantly improving performance.
+
+Without `io_uring futex`, the coroutine lock falls back to an exponential backoff sleep mechanism, where the wait time increases by 2^n milliseconds (n being the number of failures) after each failed attempt to acquire the lock. While this approach avoids busy waiting, it introduces additional CPU scheduling overhead and latency.
+
+The coroutine lock is reentrant, allowing the currently holding coroutine to safely perform multiple lock operations.',
+'Swoole\Runtime' => 'Swoole\Runtime provides coroutine support for various PHP functions through hook mechanism, allowing synchronous code to work asynchronously in coroutine environment.',
 'SyncEvent' => 'A cross-platform, native implementation of named and unnamed event objects. Both automatic and manual event objects are supported.
 
 An event object waits, without polling, for the object to be fired/set. One instance waits on the event object while another instance fires/sets the event. Event objects are useful wherever a long-running process would otherwise poll a resource (e.g. checking to see if uploaded data needs to be processed).',
@@ -1249,6 +1398,9 @@ A semaphore restricts access to a limited resource to a limited number of instan
 Shared memory lets two separate processes communicate without the need for complex pipes or sockets. There are several integer-based shared memory implementations for PHP. Named shared memory is an alternative.
 
 Synchronization objects (e.g. SyncMutex) are still required to protect most uses of shared memory.',
+'SysvMessageQueue' => 'A fully opaque class which replaces a `sysvmsg queue` resource as of PHP 8.0.0.',
+'SysvSemaphore' => 'A fully opaque class which replaces a `sysvsem` resource as of PHP 8.0.0.',
+'SysvSharedMemory' => 'A fully opaque class which replaces a `sysvshm` resource as of PHP 8.0.0.',
 'Thread' => 'When the start method of a Thread is invoked, the run method code will be executed in separate Thread, in parallel.
 
 After the run method is executed the Thread will exit immediately, it will be joined with the creating Thread at the appropriate time.',
@@ -1265,7 +1417,7 @@ Threaded objects, most importantly, provide implicit safety for the programmer; 
 'Traversable' => 'Interface to detect if a class is traversable using `foreach`.
 
 Abstract base interface that cannot be implemented alone. Instead it must be implemented by either `IteratorAggregate` or `Iterator`.',
-'TypeError' => 'There are three scenarios where a `TypeError` may be thrown. The first is where the argument type being passed to a function does not match its corresponding declared parameter type. The second is where a value being returned from a function does not match the declared function return type. The third is where an invalid number of arguments are passed to a built-in PHP function (strict mode only).',
+'TypeError' => 'A `TypeError` may be thrown when: The value being set for a class property does not match the property\'s corresponding declared type. The argument type being passed to a function does not match its corresponding declared parameter type. A value being returned from a function does not match the declared function return type.',
 'UI\Area' => 'An Area represents a canvas which can be used to draw, and respond to mouse and key events.',
 'UI\Control' => 'This is the closed base class for all UI Controls.',
 'UI\Controls\Box' => 'A Box allows the arrangement of other controls',
@@ -1304,18 +1456,26 @@ Abstract base interface that cannot be implemented alone. Instead it must be imp
 'UI\Window' => 'Represents a UI Window',
 'UnderflowException' => 'Exception thrown when performing an invalid operation on an empty container, such as removing an element.',
 'UnexpectedValueException' => 'Exception thrown if a value does not match with a set of values. Typically this happens when a function calls another function and expects the return value to be of a certain type or value not including arithmetic or buffer related errors.',
+'UnhandledMatchError' => 'An `UnhandledMatchError` is thrown when the subject passed to a `match` expression is not handled by any arm of the `match` expression.',
 'V8Js' => 'This is the core class for V8Js extension. Each instance created from this class has own context in which all JavaScript is compiled and executed.
 
 See `V8Js::__construct` for more information.',
+'ValueError' => 'A `ValueError` is thrown when the type of an argument is correct but the value of it is incorrect. For example, passing a negative integer when the function expects a positive one, or passing an empty string/array when the function expects it to not be empty.',
 'VARIANT' => 'The VARIANT is COM\'s equivalent of the PHP zval; it is a structure that can contain a value with a range of different possible types. The VARIANT class provided by the COM extension allows you to have more control over the way that PHP passes values to and from COM.',
+'variant' => 'The VARIANT is COM\'s equivalent of the PHP zval; it is a structure that can contain a value with a range of different possible types. The variant class provided by the COM extension allows you to have more control over the way that PHP passes values to and from COM.',
 'Volatile' => 'The `Volatile` class is new to pthreads v3. Its introduction is a consequence of the new immutability semantics of `Threaded` members of `Threaded` classes. The `Volatile` class enables for mutability of its `Threaded` members, and is also used to store PHP arrays in `Threaded` contexts.',
 'Vtiful\Kernel\Excel' => 'Create xlsx files and set cells and output xlsx files',
 'Vtiful\Kernel\Format' => 'Create a cell format object',
+'WeakMap' => 'A `WeakMap` is map (or dictionary) that accepts objects as keys. However, unlike the otherwise similar `SplObjectStorage`, an object in a key of `WeakMap` does not contribute toward the object\'s reference count. That is, if at any point the only remaining reference to an object is the key of a `WeakMap`, the object will be garbage collected and removed from the `WeakMap`. Its primary use case is for building caches of data derived from an object that do not need to live longer than the object.
+
+`WeakMap` implements `ArrayAccess`, `Traversable` (via `IteratorAggregate`), and `Countable`, so in most cases it can be used in the same fashion as an associative array.',
 'WeakRef' => 'The WeakRef class provides a gateway to objects without preventing the garbage collector from freeing those objects. It also provides a way to turn a weak reference into a strong one.',
-'WeakReference' => 'Weak references allow the programmer to retain a reference to an
-object which does not prevent the object from being destroyed.
-They are useful for implementing cache like structures.',
+'WeakReference' => 'Weak references allow the programmer to retain a reference to an object which does not prevent the object from being destroyed. They are useful for implementing cache like structures. If the original object has been destroyed, `null` will be returned when calling the `WeakReference::get` method. The original object will be destroyed when the refcount for it drops to zero; creating weak references does not increase the `refcount` of the object being referenced.
+
+`WeakReference`s cannot be serialized.',
 'webObj' => 'Instances of webObj are always are always embedded inside the `mapObj`_.',
+'Win32Service\RightInfo' => 'The `Win32Service\RightInfo` internal class encapsulates the result of `win32_read_right_access_service`.',
+'Win32ServiceException' => 'The exception replaces the old mechanism where the error value needed to be compared to constants to detect which error was emitted. The Exception code is equal to the value of the error value and the exception message is based on the corresponding constant name.',
 'wkhtmltox\Image\Converter' => 'Converts an HTML input into various image formats',
 'wkhtmltox\PDF\Converter' => 'Converts an HTML input, or set of HTML inputs, into PDF output',
 'wkhtmltox\PDF\Object' => 'Represents an HTML document, input to PDF converter',
@@ -1324,7 +1484,8 @@ They are useful for implementing cache like structures.',
 When a Worker is started, the run method will be executed, but the Thread will not leave until one of the following conditions are met:
 
 This means the programmer can reuse the context throughout execution; placing objects on the stack of the Worker will cause the Worker to execute the stacked objects run method.',
-'XMLDiff\Base' => 'Base abstract class for all the comparison classes in the extension.',
+'XMLDiff\Base' => 'Base abstract class for all the comparsion classes in the extension.',
+'XMLParser' => 'A fully opaque class which replaces `xml` resources as of PHP 8.0.0.',
 'XMLReader' => 'The XMLReader extension is an XML Pull parser. The reader acts as a cursor going forward on the document stream and stopping at each node on the way.',
 'Yaconf' => 'Yaconf is a configurations container, it parses INIT files, stores the result in PHP when PHP is started, the result lives with the whole PHP lifecycle.',
 'Yaf\Action_Abstract' => '<p>A action can be defined in a separate file in Yaf(see \Yaf\Controller_Abstract). that is a action method can also be a <b>\Yaf\Action_Abstract</b> class.</P>
@@ -1405,7 +1566,7 @@ You may use &#64;backupGlobals annotation of PHPUnit to control the backup and r
 'Yaf\View_Interface' => 'Yaf provides a ability for developers to use custom view engine instead of built-in engine which is \Yaf\View\Simple. There is a example to explain how to do this, please see \Yaf\Dispatcher::setView()',
 'Yaf_Action_Abstract' => 'A action can be defined in a separate file in Yaf(see `Yaf_Controller_Abstract`). that is a action method can also be a `Yaf_Action_Abstract` class.
 
-Since there should be a entry point which can be called by Yaf (as of PHP 5.3, there is a new magic method __invoke, but Yaf is not only works with PHP 5.3+, Yaf choose another magic method execute), you must implement the abstract method `Yaf_Action_Abstract::execute` in your custom action class.',
+Since there should be a entry point which can be called by Yaf, you must implement the abstract method `Yaf_Action_Abstract::execute` in your custom action class.',
 'Yaf_Application' => '`Yaf_Application` provides a bootstrapping facility for applications which provides reusable resources, common- and module-based bootstrap classes and dependency checking.
 
 `Yaf_Application` implements the singleton pattern, and `Yaf_Application` can not be serialized or unserialized which will cause problem when you try to use PHPUnit to write some test case for Yaf. You may use @backupGlobals annotation of PHPUnit to control the backup and restore operations for global variables. thus can solve this problem.',
@@ -1437,7 +1598,7 @@ By default, `Yaf_Loader` assume all library (class defined script) store in the 
 
 If you want `Yaf_Loader` search some classes(libraries) in the local class directory(which is defined in application.ini, and by default, it is application.directory . "/library"), you should register the class prefix using the `Yaf_Loader::registerLocalNameSpace`
 
-Let\'s see some examples(assuming APPLICATION_PATH is application.directory): Config example Assuming the following local name space registered: Register localnamespace registerLocalNameSpace(array("Foo", "Bar")); } ?> ]]> Then the autoload examples: Load class example // APPLICATION_PATH/library/Foo/Bar/Test.php class GLO_Name => // /global_dir/Glo/Name.php class BarNon_Test // /global_dir/Barnon/Test.php ]]> As of PHP 5.3, you can use namespace: Load namespace class example // APPLICATION_PATH/library/Foo/Bar/Dummy.php class \FooBar\Bar\Dummy => // /global_dir/FooBar/Bar/Dummy.php ]]>
+Let\'s see some examples(assuming APPLICATION_PATH is application.directory): Config example Assuming the following local name space is registered: Register localnamespace registerLocalNameSpace(array("Foo", "Bar")); } } ?> ]]> Then the autoload examples: Load class example // APPLICATION_PATH/library/Foo/Bar/Test.php class GLO_Name => // /global_dir/Glo/Name.php class BarNon_Test // /global_dir/Barnon/Test.php ]]> Load namespace class example // APPLICATION_PATH/library/Foo/Bar/Dummy.php class \FooBar\Bar\Dummy => // /global_dir/FooBar/Bar/Dummy.php ]]>
 
 You may noticed that all the folder with the first letter capitalized, you can make them lowercase by set yaf.lowcase_path = On in php.ini
 
@@ -1467,7 +1628,7 @@ And `Yaf_Route_Static` is designed to handle the 80% requirement.
 
 please *NOTE* that it is unnecessary to instance a `Yaf_Route_Static`, also unecesary to add it into `Yaf_Router`\'s routes stack, since there is always be one in `Yaf_Router`\'s routes stack, and always be called at the last time.',
 'Yaf_Router' => '`Yaf_Router` is the standard framework router. Routing is the process of taking a URI endpoint (that part of the URI which comes after the base URI: see `Yaf_Request_Abstract::setBaseUri`) and decomposing it into parameters to determine which module, controller, and action of that controller should receive the request. This values of the module, controller, action and other parameters are packaged into a `Yaf_Request_Abstract` object which is then processed by `Yaf_Dispatcher`. Routing occurs only once: when the request is initially received and before the first controller is dispatched. `Yaf_Router` is designed to allow for mod_rewrite-like functionality using pure PHP structures. It is very loosely based on Ruby on Rails routing and does not require any prior knowledge of webserver URL rewriting. It is designed to work with a single Apache mod_rewrite rule (one of): Rewrite rule for Apache or (preferred): Rewrite rule for Apache If using Lighttpd, the following rewrite rule is valid: Rewrite rule for Lighttpd "/index.php?$1", ".*\.(js|ico|gif|jpg|png|css|html)$" => "$0", "" => "/index.php" ) ]]> If using Nginx, use the following rewrite rule: Rewrite rule for Nginx',
-'Yaf_View_Interface' => 'Yaf provides a ability for developers to use coustom view engine instead of built-in engine which is `Yaf_View_Simple`. There is a example to explain how to do this, please see `Yaf_Dispatcher::setView`.',
+'Yaf_View_Interface' => 'Yaf provides a ability for developers to use custom view engine instead of built-in engine which is `Yaf_View_Simple`. There is a example to explain how to do this, please see `Yaf_Dispatcher::setView`.',
 'Yaf_View_Simple' => '`Yaf_View_Simple` is the built-in template engine in Yaf, it is a simple but fast template engine, and only support PHP script template.',
 'Yar_Client_Exception' => 'Class Yar_Client_Exception
 Date 2018/6/9 下午3:05',

@@ -402,13 +402,13 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     private function selfTest(): void
     {
         $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
-        $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
-        $this->expectFunctionLikeSignaturesMatch('disk_free_space', ['float', 'directory' => 'string']);
+        $this->expectFunctionLikeSignaturesMatch('ob_clean', ['bool']);
+        $this->expectFunctionLikeSignaturesMatch('disk_free_space', ['float|false', 'directory' => 'string']);
         $this->expectFunctionLikeSignaturesMatch('EvWatcher::feed', ['void', 'revents' => 'int']);
-        $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'dividend' => 'int', 'divisor' => 'int']);
-        $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
-        $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string', 'cp' => 'int', 'encoding=' => 'string']);
-        $this->expectFunctionLikeSignaturesMatch('curl_multi_exec', ['int', 'mh' => 'resource', '&still_running' => 'int']);
+        $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'num1' => 'int', 'num2' => 'int']);
+        $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'offset' => 'int']);
+        $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string|false', 'codepoint' => 'int', 'encoding=' => 'string|null']);
+        $this->expectFunctionLikeSignaturesMatch('curl_multi_exec', ['int', 'multi_handle' => 'CurlMultiHandle', '&still_running' => 'int']);
     }
 
     /**
@@ -671,18 +671,12 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $result;
     }
 
-    private static function toTypeString(float|int|string $type): string
+    private static function toTypeString(SimpleXMLElement $type): string
     {
-        // TODO: Validate that Phan can parse these?
-        $type = (string)$type;
-        $type = ltrim($type, '\\');
-        if (strcasecmp($type, 'scalar') === 0) {
-            return 'int|string|float|bool';
+        if ((string)($type->attributes()['class'] ?? '') === 'union') {
+            return implode('|', (array)$type->type);
         }
-        if (strcasecmp($type, 'iterator') === 0) {
-            return 'iterator';
-        }
-        return $type;
+        return (string)$type;
     }
 
 
@@ -743,7 +737,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             if (isset($entities[strtolower($entity_name)])) {
                 return "BEGINENTITY{$entity_name}ENDENTITY";
             }
-            if (preg_match('/^reference\./', $entity_name)) {
+            if (preg_match('/[.:]/', $entity_name)) {
+                // TODO: improve the list of known entities rather than doing this
                 return "BEGINENTITY{$entity_name}ENDENTITY";
             }
             // echo "Could not find entity $entity_name in $matches[0]\n";
@@ -838,7 +833,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $property_entries = $xml->xpath('//a:section/a:variablelist/a:varlistentry');
                 foreach ($property_entries as $entry) {
                     $property_name = $entry->term->varname;
-                    if (count($property_name) !== 1) {
+                    if ($property_name === null || count($property_name) !== 1) {
                         continue;
                     }
                     $property_name = (string)$property_name[0];
@@ -938,12 +933,21 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->memoize(__METHOD__, /** @return array<string,string> */ function (): array {
             $class_name_map = [];
             foreach ($this->getClassXMLFiles() as $xml) {
-                $class_name = $xml->xpath('//a:classsynopsis/a:ooclass/a:classname');
-                if (!is_array($class_name) || count($class_name) !== 1) {
-                    continue;
+                $exception_name = $xml->xpath('//a:classsynopsis/a:ooexception/a:exceptionname');
+                if (is_array($exception_name)) {
+                    if (count($exception_name) === 1) {
+                        $class_name = (string)$exception_name[0];
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $class_name = $xml->xpath('//a:classsynopsis/a:ooclass/a:classname');
+                    if (!is_array($class_name) || count($class_name) !== 1) {
+                        continue;
+                    }
+                    $class_name = (string)$class_name[0];
                 }
-                $class_name = (string)$class_name[0];
-                // $class_name = (string)$xml->titleabbrev;
+
                 if (!$class_name) {
                     continue;
                 }
