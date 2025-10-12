@@ -894,6 +894,8 @@ class Type implements Stringable
                 return ArrayType::instance($is_nullable);
             case 'array-key':
                 return ArrayKeyType::instance($is_nullable);
+            case 'key-of':
+                return ArrayKeyType::instance($is_nullable);
             case 'associative-array':
                 return AssociativeArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED);
             case 'bool':
@@ -936,12 +938,12 @@ class Type implements Stringable
             case 'non-empty-lowercase-string':
             case 'non-empty-string':
                 return NonEmptyStringType::instance($is_nullable);
-                case 'non-zero-int':
-                    return NonZeroIntType::instance($is_nullable);
-                case 'positive-int':
-                    return PositiveIntType::instance($is_nullable);
-                case 'negative-int':
-                    return NegativeIntType::instance($is_nullable);
+            case 'non-zero-int':
+                return NonZeroIntType::instance($is_nullable);
+            case 'positive-int':
+                return PositiveIntType::instance($is_nullable);
+            case 'negative-int':
+                return NegativeIntType::instance($is_nullable);
             case 'null':
                 return NullType::instance($is_nullable);
             case 'object':
@@ -950,6 +952,8 @@ class Type implements Stringable
                 return ResourceType::instance($is_nullable);
             case 'scalar':
                 return ScalarRawType::instance($is_nullable);
+            case 'value-of':
+                return MixedType::instance($is_nullable);
             case 'string':
             case 'lowercase-string':
             case 'numeric-string':

@@ -545,11 +545,12 @@ function setOpacity(int $percentage): void { }
 - ✅ Utility types `key-of`/`value-of` - Test 1106 (shape + generic coverage)
 - ✅ Union bounds & callable variance - Test 1107 (union constraints, callable returns, nullable templates)
 - ✅ Callable parameter variance - Test 1108 (callable parameter returns enforce variance)
-- ✅ Utility type `int-range` - Test 1109 (literal-bound enforcement)
+- ✅ Utility type `int-range` - Test 1109 (literal-bound, negative ranges, reversed bounds)
 - ✅ Utility types `positive-int`/`negative-int` - Test 1110 (strict literal enforcement)
 - ✅ Nested template bound enforcement - Test 1111 (array/callable argument constraints)
 - ✅ Intersection template bounds - Test 1112 (multiple-interface requirements)
 - ✅ Generic-bound containers - Test 1113 (templates bounded by parameterized types)
+- ✅ Utility fallback for `key-of` without generics - Test 1114 (lenient parsing)
 
 ### Performance Testing
 - Benchmark against Phan's own codebase (before/after)
