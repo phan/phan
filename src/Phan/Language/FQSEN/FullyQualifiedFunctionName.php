@@ -52,7 +52,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
     ): FullyQualifiedFunctionName {
 
         // Check to see if we're fully qualified
-        if (0 === \strpos($fqsen_string, '\\')) {
+        if (str_starts_with($fqsen_string, '\\')) {
             return static::fromFullyQualifiedString($fqsen_string);
         }
 

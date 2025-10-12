@@ -1202,7 +1202,7 @@ class ContextNode
                 if ($code_base->hasFunctionWithFQSEN($function_fqsen)) {
                     return $code_base->getFunctionByFQSEN($function_fqsen);
                 }
-                if ($namespace === '' || \strpos($function_name, '\\') !== false) {
+                if ($namespace === '' || str_contains($function_name, '\\')) {
                     return $this->returnStubOrThrowUndeclaredFunctionIssueException($function_fqsen, false, null, $return_placeholder_for_undefined);
                 }
                 // If it doesn't exist in the local namespace, try it
@@ -2004,7 +2004,7 @@ class ContextNode
                     );
 
                     if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-                        if (\strpos($constant_name, '\\') !== false) {
+                        if (str_contains($constant_name, '\\')) {
                             $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
                         }
                         // @phan-suppress-next-line PhanAccessClassConstantInternal

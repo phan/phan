@@ -599,7 +599,7 @@ class Method extends ClassElement implements FunctionInterface
         try {
             $method->setRealParameterList($parameter_list);
         } catch (\ArgumentCountError $e) {
-            if (\strpos($e->getMessage(), __METHOD__) === false || self::$handling_real_parameter_list) {
+            if (!str_contains($e->getMessage(), __METHOD__) || self::$handling_real_parameter_list) {
                 throw $e;
             }
             self::$handling_real_parameter_list = true;

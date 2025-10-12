@@ -631,7 +631,7 @@ EOT;
             }
             $full_path = $directory_path . \DIRECTORY_SEPARATOR . $file;
             // Check for .php files (both files and directories that might contain PHP files)
-            if (\is_file($full_path) && \substr($file, -4) === '.php') {
+            if (\is_file($full_path) && str_ends_with($file, '.php')) {
                 return true;
             }
         }

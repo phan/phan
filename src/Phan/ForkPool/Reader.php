@@ -78,7 +78,7 @@ class Reader
                         $this->content_length = (int)$this->headers['Content-Length'];
                         $this->notification_type = $this->headers['Notification-Type'] ?? 'unknown';
                         $this->buffer = '';
-                    } elseif (\substr($this->buffer, -2) === "\r\n") {
+                    } elseif (str_ends_with($this->buffer, "\r\n")) {
                         $parts = \explode(':', $this->buffer);
                         $this->headers[$parts[0]] = \trim($parts[1]);
                         $this->buffer = '';

@@ -43,7 +43,7 @@ class Utils
         $parts = \explode('/', $filepath);
         // Don't %-encode the colon after a Windows drive letter
         $first = (string)\array_shift($parts);
-        if (\substr($first, -1) !== ':') {
+        if (!str_ends_with($first, ':')) {
             $first = \rawurlencode($first);
         }
         $parts = \array_map('rawurlencode', $parts);

@@ -94,7 +94,7 @@ final class PhantasmPlugin extends PluginV3 implements
     public function afterAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node): void
     {
         $path = $context->getFile();
-        if (Paths::isAbsolutePath($path) ||  \strpos($path, '../') !== false) {
+        if (Paths::isAbsolutePath($path) || str_contains($path, '../')) {
             CLI::printToStderr("phantasm: Skipping '$path': Only modifying files within the project directory\n");
             return;
         }

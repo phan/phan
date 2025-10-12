@@ -515,7 +515,7 @@ class Parser
      */
     public static function removeShebang(string $file_contents): string
     {
-        if (\substr($file_contents, 0, 2) !== "#!") {
+        if (!str_starts_with($file_contents, "#!")) {
             return $file_contents;
         }
         for ($i = 2; $i < \strlen($file_contents); $i++) {

@@ -3791,7 +3791,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } elseif ($node->flags & \ast\flags\NAME_RELATIVE) {
             // Relative to current namespace
-            if (0 !== strpos($class_name, '\\')) {
+            if (!str_starts_with($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
@@ -3800,7 +3800,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } else {
             // Fully qualified
-            if (0 !== strpos($class_name, '\\')) {
+            if (!str_starts_with($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
@@ -4240,7 +4240,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return [];
             }
         }
-        if ($from_array && strpos($method_name, '::') !== false) {
+        if ($from_array && str_contains($method_name, '::')) {
             $this->emitDeprecatedPartiallySupportedCallableAlternateScope($class_or_expr, $method_name);
         }
         try {
@@ -4407,7 +4407,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ->getEquivalentPHPValue(ContextNode::RESOLVE_DEFAULT, $this->should_catch_issue_exception);
         }
         if (is_string($node)) {
-            if (strpos($node, '::') !== false) {
+            if (str_contains($node, '::')) {
                 [$class_name, $method_name] = \explode('::', $node, 2);
                 return $this->methodFQSENListFromParts($class_name, $method_name, false, $log_error);
             }

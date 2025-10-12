@@ -199,7 +199,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
                         $type = "unknown ($t)";
                         break;
                 }
-                if (\strstr((string)$kk, '.')) {
+                if (str_contains((string)$kk, '.')) {
                     echo ":$lineno $type\n";
                 } else {
                     if (!\array_key_exists($kk, $this->class_to_file)) {
@@ -334,7 +334,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
                     continue;
                 }
                 if ($mode === 'class') {
-                    if (\strstr($v, '.')) {
+                    if (str_contains($v, '.')) {
                         if (!\array_key_exists($v, $this->file_to_class)) {
                             // Probably no lineno specified, do a linear search
                             foreach ($this->file_to_class as $fi => $cl) {
@@ -364,7 +364,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
                     cfound:
                     $graph = $this->walkcGraph($graph, $v);
                 } elseif ($mode === 'file') {
-                    if (!\strstr($v, '.')) {
+                    if (!str_contains($v, '.')) {
                         try {
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($v);
                         } catch (FQSENException $e) {

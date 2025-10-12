@@ -457,15 +457,15 @@ class UnionType implements Serializable, Stringable
                 $parts[] = $type_name;
                 continue;
             }
-            if (substr($type_name, -1) === ')') {
-                if (substr($type_name, 0, 1) === '(') {
+            if (str_ends_with($type_name, ')')) {
+                if (str_starts_with($type_name, '(')) {
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 1, -1)) as $inner_type_name) {
                         $parts[] = $inner_type_name;
                     }
                     continue;
-                } elseif (substr($type_name, 0, 2) === '?(') {
+                } elseif (str_starts_with($type_name, '?(')) {
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 2, -1)) as $inner_type_name) {
-                        if (substr($inner_type_name, 0, 1) === '?') {
+                        if (str_starts_with($inner_type_name, '?')) {
                             $parts[] = $inner_type_name;
                         } else {
                             $parts[] = '?' . $inner_type_name;

@@ -112,7 +112,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!StringUtil::isNonZeroLengthString($description)) {
-            if (strpos($doc_comment, '@deprecated') !== false) {
+            if (str_contains($doc_comment, '@deprecated')) {
                 return;
             }
             self::emitIssue(

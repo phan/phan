@@ -308,7 +308,7 @@ class CLI
                         throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
-                        if (\strpos($short_options_string, "$key:") !== false) {
+                        if (str_contains($short_options_string, "$key:")) {
                             throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
                         }
                     }
@@ -1398,7 +1398,7 @@ class CLI
         $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
         $candidates = [];
         foreach (\scandir($plugin_dirname) as $basename) {
-            if (\substr($basename, -4) !== '.php') {
+            if (!str_ends_with($basename, '.php')) {
                 continue;
             }
             $plugin_name = \substr($basename, 0, -4);

@@ -129,7 +129,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $result = [];
         foreach (static::scandir($dir) as $basename) {
-            if (substr($basename, -4) !== '.xml') {
+            if (!str_ends_with($basename, '.xml')) {
                 continue;
             }
             $full_path = "$dir/$basename";
@@ -494,7 +494,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 static::info("Failed to parse method name for '$class_name::$method_name_lc' in '$method_xml_path'\n");
                 continue;
             }
-            if (strpos($case_sensitive_method_name, '::') === false) {
+            if (!str_contains($case_sensitive_method_name, '::')) {
                 static::info("Unexpected format of method name '$case_sensitive_method_name', expected something like '$class_name::$method_name_lc'\n");
                 continue;
             }
@@ -585,7 +585,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $valid_names = [];
         foreach ($name as $potential_name) {
             $potential_name = (string)$potential_name;
-            if (strpos($potential_name, '$') === false) {
+            if (!str_contains($potential_name, '$')) {
                 $valid_names[] = $potential_name;
             }
         }
@@ -605,7 +605,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $valid_names = [];
         foreach ($name as $potential_name) {
             $potential_name = (string)$potential_name;
-            if (strpos($potential_name, '::') !== false && strpos($potential_name, '$') === false) {
+            if (str_contains($potential_name, '::') && !str_contains($potential_name, '$')) {
                 $valid_names[] = $potential_name;
             }
         }
@@ -972,7 +972,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     private static function convertXMLElementToMarkdown(SimpleXMLElement $element): ?string
     {
         $xml = (string)$element->asXML();
-        if (strpos($xml, '<xref') !== false) {
+        if (str_contains($xml, '<xref')) {
             $xml = preg_replace('@<xref linkend="([^"]+)"\s*/>@', 'the PHP manual\'s section on \1', $xml);
         }
         // TODO: Change this to use tidy if adding the extra dependency won't cause issues.

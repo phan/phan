@@ -19,7 +19,7 @@ namespace Phan\Debug;
 \readline_completion_function(static function (string $input): array {
     $matches = [];
     foreach (\get_declared_classes() as $class_name) {
-        if (\strpos($class_name, $input) === 0) {
+        if (str_starts_with($class_name, $input)) {
             $matches[] = $class_name;
         }
     }

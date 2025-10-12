@@ -177,7 +177,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-            if (\substr($selected_fragment, 0, 1) !== '\\') {
+            if (!str_starts_with($selected_fragment, '\\')) {
                 try {
                     $fqsen = FullyQualifiedFunctionName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception) {
@@ -206,7 +206,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            if (\substr($selected_fragment, 0, 1) !== '\\') {
+            if (!str_starts_with($selected_fragment, '\\')) {
                 try {
                     $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception) {

@@ -52,7 +52,7 @@ return [
         $byte_offset = 0;
         $edits = [];
         foreach (explode("\n", $raw_contents) as $line_contents) {
-            if (strpos($line_contents, "\t") !== false) {
+            if (str_contains($line_contents, "\t")) {
                 foreach ($compute_edits(rtrim($line_contents), $byte_offset) as $edit) {
                     $edits[] = $edit;
                 }
@@ -102,7 +102,7 @@ return [
         $byte_offset = 0;
         $edits = [];
         foreach (explode("\n", $raw_contents) as $line_contents) {
-            if (substr($line_contents, -1) === "\r") {
+            if (str_ends_with($line_contents, "\r")) {
                 $offset = $byte_offset + strlen($line_contents) - 1;
                 // Remove the byte with the carriage return
                 $edits[] = new FileEdit($offset, $offset + 1);

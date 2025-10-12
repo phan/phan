@@ -384,7 +384,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         if (\is_string($child_node)) {
             $consumed = false;
-            if (\strpos($child_node, '@phan-') !== false) {
+            if (str_contains($child_node, '@phan-')) {
                 // Add @phan-var and @phan-suppress annotations in string literals to the local scope
                 $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
                 $consumed = true;

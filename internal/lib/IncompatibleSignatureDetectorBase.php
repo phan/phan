@@ -206,7 +206,7 @@ EOT;
         $phan_signatures = static::readSignatureMap();
         $new_signatures = [];
         foreach ($phan_signatures as $method_name => $arguments) {
-            if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
+            if (str_contains($method_name, "'") || isset($phan_signatures["$method_name'1"])) {
                 // Don't update functions/methods with alternate
                 $new_signatures[$method_name] = $arguments;
                 continue;
@@ -353,7 +353,7 @@ EOT;
         if (isset($this->aliases[$method_name])) {
             $method_name = $this->aliases[$method_name];
         }
-        if (strpos($method_name, '::') !== false) {
+        if (str_contains($method_name, '::')) {
             $parts = \explode('::', $method_name);
             if (\count($parts) !== 2) {
                 throw new InvalidArgumentException("Wrong number of parts in $method_name");

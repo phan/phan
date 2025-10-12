@@ -626,7 +626,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
             if ($param_from_external_stub !== '') {
                 $external_stub_type = UnionType::fromStringInContext($param_from_external_stub, $global_context, Type::FROM_TYPE);
                 $phan_type = UnionType::fromStringInContext($param_type_from_phan, $global_context, Type::FROM_PHPDOC);
-                if (is_string($original_param_name) && strpos($original_param_name, '...') !== false) {
+                if (is_string($original_param_name) && str_contains($original_param_name, '...')) {
                     $phan_type = $phan_type->asListTypes();
                 }
                 foreach ($phan_type->getTypeSet() as $phan_type_elem) {
@@ -645,7 +645,7 @@ class IncompatibleRealStubsSignatureDetector extends IncompatibleSignatureDetect
         }
         if (count($arguments_from_external_stub) > count($arguments_from_phan)) {
             $repr = self::encodeSignatureArguments($arguments_from_external_stub);
-            if (strpos($repr, '...') === false) {
+            if (!str_contains($repr, '...')) {
                 echo "There are more arguments for $function_like_name: $repr\n";
             }
         }

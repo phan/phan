@@ -668,7 +668,7 @@ EOB;
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
                         // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
-                        if (\strpos(self::GETOPT_SHORT_OPTIONS, "$key:") !== false) {
+                        if (str_contains(self::GETOPT_SHORT_OPTIONS, "$key:")) {
                             throw new InvalidArgumentException("Missing required value for '-$key'");
                         }
                     }

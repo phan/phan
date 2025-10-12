@@ -377,7 +377,7 @@ class DeprecateAliasPlugin extends PluginV3 implements
             $function->setIsDeprecated(true);
             if (!$function->getDocComment()) {
                 $function->setDocComment('/** @deprecated DeprecateAliasPlugin marked this as an alias of ' .
-                    $original_name . (strpos($original_name, ' ') === false ? '()' : '') .  '*/');
+                    $original_name . ( !str_contains($original_name, ' ') ? '()' : '') .  '*/');
             }
         }
     }

@@ -1970,7 +1970,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitStmtList(Node $node): Context
     {
         foreach ($node->children as $c) {
-            if (\is_string($c) && \strpos($c, '@phan-type') !== false) {
+            if (\is_string($c) && str_contains($c, '@phan-type')) {
                 $this->analyzePhanTypeAliasStatement($c);
             }
         }

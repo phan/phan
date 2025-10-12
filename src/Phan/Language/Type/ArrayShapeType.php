@@ -588,7 +588,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 $key = self::escapeKey($key);
             }
             $value_repr = $value->__toString();
-            if (\substr($value_repr, -1) === '=') {
+            if (str_ends_with($value_repr, '=')) {
                 // convert {key:type=} to {key?:type} in representation.
                 $parts[] = $key . '?:' . \substr($value_repr, 0, -1);
             } else {

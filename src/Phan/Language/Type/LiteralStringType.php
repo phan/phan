@@ -144,7 +144,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     public static function fromEscapedString(string $escaped_string, bool $is_nullable): StringType
     {
-        if (\strlen($escaped_string) < 2 || $escaped_string[0] !== "'" || \substr($escaped_string, -1) !== "'") {
+        if (\strlen($escaped_string) < 2 || $escaped_string[0] !== "'" || !str_ends_with($escaped_string, "'")) {
             throw new InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
         }
         $escaped_string = \substr($escaped_string, 1, -1);

@@ -3053,7 +3053,7 @@ class TolerantASTConverter
     private static function astNodeCall(\ast\Node|string|int|float|null $expr, \ast\Node $args, int $start_line): ast\Node
     {
         if (\is_string($expr)) {
-            if (substr($expr, 0, 1) === '\\') {
+            if (str_starts_with($expr, '\\')) {
                 $expr = substr($expr, 1);
             }
             $expr = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => $expr], $start_line);
@@ -3078,7 +3078,7 @@ class TolerantASTConverter
     {
         // TODO: is this applicable?
         if (\is_string($class)) {
-            if (substr($class, 0, 1) === '\\') {
+            if (str_starts_with($class, '\\')) {
                 $class = substr($class, 1);
             }
             $class = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => $class], $start_line);
@@ -3479,7 +3479,7 @@ class TolerantASTConverter
         if (\is_string($s)) {
             $s = substr($s, 0, -1);
             // On Windows, the "\r" must also be removed from the last line of the heredoc
-            if (substr($s, -1) === "\r") {
+            if (str_ends_with($s, "\r")) {
                 $s = substr($s, 0, -1);
             }
             $inner_node_parts[$i] = $s;
@@ -3515,7 +3515,7 @@ class TolerantASTConverter
      */
     private static function getDevelopmentBuildDate(): ?string
     {
-        if (\strpos(\PHP_VERSION, '-dev') === false) {
+        if (!str_contains(\PHP_VERSION, '-dev')) {
             return null;
         }
 
