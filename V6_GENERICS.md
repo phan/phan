@@ -1,7 +1,7 @@
 # Phan Generics Improvement Roadmap (v6)
 
 ## Overview
-This document tracks the implementation of enhanced generics support in Phan v6 to bring it closer to Psalm/PHPStan feature parity while maintaining Phan's core goals:
+This document tracks the implementation of enhanced generics support in Phan v6 while maintaining Phan's core goals:
 - **Minimize false positives**
 - **Maintain analysis speed**
 
@@ -17,12 +17,8 @@ This document tracks the implementation of enhanced generics support in Phan v6 
 - Multiple template parameters
 - Template type inference
 
-### ❌ Missing Features (from Psalm/PHPStan)
-- `@template-covariant` - Recognized with metadata (enforcement pending)
-- `@template-contravariant` - Parsing supported (enforcement pending)
-- ✅ `@template-implements` - IMPLEMENTED (Phase 1 complete)
-- ✅ `@template-use` - IMPLEMENTED (Phase 1 complete)
-- Utility types: `key-of<T>`, `value-of<T>`, `int-range<min,max>`
+### ❌ Remaining Gaps
+- `@template-covariant` / `@template-contravariant` enforcement for array shapes and other compound types (design pending)
 - Conditional return types
 
 ## Implementation Phases
