@@ -550,6 +550,7 @@ function setOpacity(int $percentage): void { }
 - ✅ Callable parameter variance - Test 1108 (callable parameter returns enforce variance)
 - ✅ Utility type `int-range` - Test 1109 (literal-bound enforcement)
 - ✅ Utility types `positive-int`/`negative-int` - Test 1110 (strict literal enforcement)
+- ✅ Nested template bound enforcement - Test 1111 (array/callable argument constraints)
 
 ### Performance Testing
 - Benchmark against Phan's own codebase (before/after)

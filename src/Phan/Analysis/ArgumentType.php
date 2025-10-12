@@ -1346,6 +1346,7 @@ final class ArgumentType
             return;
         }
         $location_context = $call_node instanceof Node ? $context->withLineNumberStart($call_node->lineno ?? $lineno) : $context;
+        $argument_fragment_cache = [];
         $seen = [];
         foreach ($parameter_union_type->getTypesRecursively() as $type) {
             if (!($type instanceof TemplateType)) {
@@ -1360,7 +1361,18 @@ final class ArgumentType
             if (!$constraint || $constraint->isEmpty()) {
                 continue;
             }
-            if (!TemplateType::unionTypeSatisfiesBound($code_base, $argument_union_type, $constraint)) {
+            $argument_fragment = $argument_fragment_cache[$name] ?? null;
+            if ($argument_fragment === null) {
+                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type);
+                if ($extractor) {
+                    $fragment = $extractor($argument_union_type, $context);
+                    $argument_fragment = $fragment->isEmpty() ? $argument_union_type : $fragment;
+                } else {
+                    $argument_fragment = $argument_union_type;
+                }
+                $argument_fragment_cache[$name] = $argument_fragment;
+            }
+            if (!TemplateType::unionTypeSatisfiesBound($code_base, $argument_fragment, $constraint)) {
                 $usage = 'call to ' . $function->getRepresentationForIssue();
                 Issue::maybeEmit(
                     $code_base,
@@ -1370,7 +1382,7 @@ final class ArgumentType
                     $name,
                     $function->getRepresentationForIssue(),
                     (string)$constraint,
-                    (string)$argument_union_type,
+                    (string)$argument_fragment,
                     $usage
                 );
             }
