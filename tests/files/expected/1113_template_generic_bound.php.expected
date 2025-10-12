@@ -1,0 +1,1 @@
+%s:37 PhanTemplateTypeConstraintViolation Template type T of \processStringCollection() must be compatible with \Collection<string>, but \Collection<123> was provided in call to \processStringCollection()

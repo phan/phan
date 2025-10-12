@@ -551,6 +551,8 @@ function setOpacity(int $percentage): void { }
 - ✅ Utility type `int-range` - Test 1109 (literal-bound enforcement)
 - ✅ Utility types `positive-int`/`negative-int` - Test 1110 (strict literal enforcement)
 - ✅ Nested template bound enforcement - Test 1111 (array/callable argument constraints)
+- ✅ Intersection template bounds - Test 1112 (multiple-interface requirements)
+- ✅ Generic-bound containers - Test 1113 (templates bounded by parameterized types)
 
 ### Performance Testing
 - Benchmark against Phan's own codebase (before/after)
@@ -610,6 +612,30 @@ function setOpacity(int $percentage): void { }
    - Option A: Always emit variance issues (current behaviour)
    - Option B: Provide a config toggle for projects easing into variance
    - **Decision**: TBD
+
+## Known Limitations & Design Decisions
+
+### Template Bound Inheritance
+**Status:** Not implemented (by design)
+
+Child class templates do **not** automatically inherit bounds declared on parent templates:
+
+```php
+/** @template T of Foo */
+class Base {}
+
+/** @template T */  // T is unconstrained
+class Child extends Base {}
+```
+
+Workaround: redeclare the bound explicitly
+
+```php
+/** @template T of Foo */
+class Child extends Base {}
+```
+
+*Rationale:* keeping constraints explicit avoids hidden coupling to parent changes and keeps template contracts self-documenting.
 
 ## Performance Benchmarks
 

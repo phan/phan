@@ -16,6 +16,23 @@ function takesRange($value): void {}
 takesRange(5);
 takesRange(0);
 takesRange(12);
+takesRange(101);
+
+/**
+ * @param int-range<-10, -1> $value
+ */
+function takesNegativeRange($value): void {}
+
+takesNegativeRange(-5);
+takesNegativeRange(0);
+
+/**
+ * @param int-range<10, 5> $value
+ */
+function takesReversedRange($value): void {}
+
+takesReversedRange(8);
+takesReversedRange(4);
 
 /**
  * @return int-range<1, 10>
