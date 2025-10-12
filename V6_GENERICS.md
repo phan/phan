@@ -17,9 +17,9 @@ This document tracks the implementation of enhanced generics support in Phan v6 
 - Multiple template parameters
 - Template type inference
 
-### ❌ Remaining Gaps
-- `@template-covariant` / `@template-contravariant` enforcement for array shapes and other compound types (design pending)
-- Conditional return types
+### Remaining Gaps
+- `@template-covariant` / `@template-contravariant` enforcement for array shapes and other compound types (difficult)
+- Conditional return types (difficult to implement efficiently)
 
 ## Implementation Phases
 
@@ -57,7 +57,7 @@ This document tracks the implementation of enhanced generics support in Phan v6 
 - ✅ Integrated support into the `parseCommentLine()` switch
 - ✅ Updated regex to recognize 'implements'
 - ✅ Added 'phan-implements' case in `maybeParsePhanCustomAnnotation()`
-- ✅ Added '@phan-implements' to sup44ported annotations
+- ✅ Added '@phan-implements' to supported annotations
 
 **Phase 2 - Template Resolution (Complete)**:
 - ✅ Added `$interface_type_map` field to Clazz.php
@@ -123,7 +123,6 @@ Additional negative coverage: `tests/files/src/1102_template_parameter_mismatch.
 - ✅ Cached parsed implements types (similar to extends)
 - ✅ Lazy evaluation of template parameter validation
 - ✅ No additional passes required
-- ⏳ Performance measurement pending (target <5%)
 
 **Technical Implementation Details**:
 
@@ -256,7 +255,6 @@ class GenericService {
 - ✅ Cached parsed trait types (similar to implements)
 - ✅ Lazy evaluation of template parameter validation
 - ✅ No additional passes required
-- ⏳ Performance measurement pending (target <5%)
 
 **Technical Implementation Details**:
 
@@ -327,7 +325,6 @@ The implementation follows the exact same pattern as `@template-implements`:
 **Performance Considerations**:
 - ✅ Checks reuse existing parameter extraction closures to avoid extra passes.
 - ✅ Constraint comparisons rely on cached union IDs to minimize recomputation.
-- ⏳ Continue monitoring regression benchmark (`time ./phan --no-progress-bar`) — current Phase 1 runtime: 12.79s vs baseline 12.93s (within +5% target).
 
 ### Phase 2: Template Constraint Enforcement ✅ COMPLETE
 
@@ -337,7 +334,7 @@ The implementation follows the exact same pattern as `@template-implements`:
 
 **Performance Impact**: Moderate - requires validation at instantiation points
 
-#### Task 2.1: Store Constraint Information
+#### Task 2.1: Store Constraint Information ✅ COMPLETE
 **Status**: Complete
 **Notes**:
 - `TemplateType` now caches bounds and variance metadata, keyed by identifier + constraint.
@@ -363,7 +360,7 @@ TemplateType::instanceForId($template_type_identifier, false, $constraint_union_
 - TemplateType instances are cached - ensure constraint is part of cache key
 - Lazy constraint validation (only when template is instantiated)
 
-#### Task 2.2: Validate Constraints at Instantiation
+#### Task 2.2: Validate Constraints at Instantiation ✅ COMPLETE
 **Status**: Complete
 **Notes**:
 - `Clazz::enforceTemplateConstraintForAncestor()` checks docblock instantiations for `@extends`, `@implements`, and `@use`, emitting `PhanTemplateTypeConstraintViolation` on mismatches.
@@ -400,7 +397,7 @@ class Processor2 extends DateProcessor {}
 - Skip validation for nested template types (defer to their instantiation)
 - Cache validation results
 
-### Phase 3: Variance Enforcement ✅ IN PROGRESS
+### Phase 3: Variance Enforcement ✅ COMPLeTE
 
 **Goal**: Enforce `@template-covariant` and `@template-contravariant` semantics
 
@@ -408,7 +405,7 @@ class Processor2 extends DateProcessor {}
 
 **Performance Impact**: Moderate - requires tracking read/write positions
 
-#### Task 3.1: Implement `@template-contravariant` Parsing
+#### Task 3.1: Implement `@template-contravariant` ✅ COMPLETE
 **Status**: Complete
 **Notes**:
 - `Comment/Builder` and `TemplateType::instanceForId()` now understand the `-(?:co|contra)variant` suffix and cache variance alongside bounds.
@@ -423,7 +420,7 @@ enum TemplateVariance {
 }
 ```
 
-#### Task 3.2: Track Template Usage Positions
+#### Task 3.2: Track Template Usage Positions ✅ COMPLETE
 **Status**: Complete
 **Notes**:
 - Method/function signatures now emit `PhanTemplateTypeVarianceViolation` when covariant templates appear in parameter types or contravariant templates appear in return types.
@@ -477,8 +474,8 @@ class Sink {
 - Cache variance validation results per class
 - Skip variance checking if no covariant/contravariant templates present
 
-#### Task 3.3: Update Comment in Builder.php
-**Status**: Planned
+#### Task 3.3: Update Comment in Builder.php ✅ COMPLETE
+**Status**: Complete
 **Estimated Effort**: 5 minutes
 
 Remove the "XXX" comment acknowledging lack of support:
@@ -490,7 +487,7 @@ case 'template-covariant': // XXX Phan does not actually support @template-covar
 case 'template-covariant': // Enforces covariant template variance
 ```
 
-### Phase 4: Advanced Utility Types 📋 PLANNED
+### Phase 4: Advanced Utility Types ✅ COMPLETE
 
 **Goal**: Add Psalm/PHPStan utility types
 
@@ -525,7 +522,7 @@ function setOpacity(int $percentage): void { }
 ```
 
 #### Task 4.3: `positive-int`, `negative-int`
-**Status**: Planned
+**Status**: Complete
 **Files to Modify**:
 - New types: `PositiveIntType`, `NegativeIntType`
 
@@ -578,23 +575,6 @@ function setOpacity(int $percentage): void { }
 - Add examples to `README.md`
 - Document performance characteristics
 - Note any limitations or edge cases
-
-## Progress Tracking
-
-### Completed Features
-- [x] Bug #4650: Template return type compatibility ✅
-- [x] Task 1.1: `@template-implements` ✅ (Complete with full resolution)
-- [x] Task 1.2: `@template-use` ✅ (Complete with full resolution)
-- [x] Phase 1: Template Inheritance Gaps ✅ (All tasks complete)
-- [x] Phase 2: Template Constraint Enforcement ✅ (Class + function coverage)
-- [x] Task 3.1: `@template-contravariant` parsing (variance metadata stored)
-- [x] Task 3.2: Variance enforcement for parameters/returns/properties ✅ (Signature checks + property gating: covariant read-only only, contravariant disallowed)
-
-### In Progress
-- None currently
-
-### Next Up
-- [ ] Extend variance enforcement to array shapes and other compound types (pending design)
 
 ## Open Questions / Decisions Needed
 
