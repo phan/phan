@@ -281,4 +281,30 @@ final class TemplateType extends Type
     {
         return true;
     }
+
+    /**
+     * Template types should be considered compatible with any declared real type
+     * since they are placeholders that will be resolved at call time.
+     *
+     * For example, `@template T of object` with `@return T` is compatible with `: object`
+     * because T will always be a subtype of object when instantiated.
+     *
+     * @param UnionType $union_type the real signature type to check against
+     * @param Context $context
+     * @param CodeBase $code_base
+     * @return bool true since template types are placeholders resolved at call time
+     *
+     * @unused-param $union_type
+     * @unused-param $context
+     * @unused-param $code_base
+     */
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
+    ): bool {
+        // Template types are always considered compatible with the declared signature type.
+        // The actual compatibility will be verified when the template is instantiated.
+        return true;
+    }
 }
