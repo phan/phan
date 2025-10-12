@@ -75,7 +75,6 @@ use TypeError;
 
 use function is_scalar;
 use function is_string;
-use function strpos;
 
 /**
  * Determines the UnionType associated with a given node.

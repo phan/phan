@@ -310,7 +310,7 @@ EOT
 const STDERR = resource(stream)
 ```
 
-An already opened stream to *stderr* (standard error).
+An already opened stream to `stderr`. Available only under the CLI SAPI.
 EOT;
         $this->assertSame($expected, MarkupDescription::buildForElement($const, new CodeBase([], [], [], [], [])));
     }
