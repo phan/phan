@@ -537,9 +537,8 @@ class Analysis
         ?Request $request,
         ?string $override_contents = null
     ): Context {
-        // Snapshot global variables before analyzing this file
-        // This allows us to restore globals if the file is later modified
-        GlobalScope::snapshotBeforeAnalyzingFile($file_path);
+        // Track which file is being analyzed for global variable contribution tracking
+        GlobalScope::startAnalyzingFile($file_path);
 
         // Set the file on the context
         $context = (new Context())->withFile($file_path);
@@ -570,11 +569,13 @@ class Analysis
                     $file_path
                 );
 
+                GlobalScope::finishAnalyzingFile();
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
         } catch (ParseException | ParseError | CompileError) {
             // Issue::SyntaxError was already emitted.
+            GlobalScope::finishAnalyzingFile();
             return $context;
         }
 
@@ -596,6 +597,10 @@ class Analysis
         $context->warnAboutUnusedUseElements($code_base);
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
+
+        // Mark the end of this file's analysis for global variable tracking
+        GlobalScope::finishAnalyzingFile();
+
         return $context;
     }
 

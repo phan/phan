@@ -38,12 +38,20 @@ final class GlobalScope extends Scope
     private static $code_base = null;
 
     /**
-     * @var array<string,array<string,Variable>>
-     * Snapshots of global variables before each file's analysis phase.
-     * Maps file path -> snapshot of $global_variable_map before that file was analyzed.
-     * Used for incremental analysis to restore globals when a file changes.
+     * @var array<string,array<string,array{action:string,old?:Variable}>>
+     * Tracks per-file contributions to global variables.
+     * Maps file path -> variable name -> contribution record.
+     * Each record contains 'action' (added|modified) and optionally 'old' (previous Variable).
+     * Used for incremental analysis to undo only a specific file's changes.
      */
-    private static $file_snapshots = [];
+    private static $file_contributions = [];
+
+    /**
+     * @var ?string
+     * The file currently being analyzed (set during analysis phase).
+     * Used to track which file contributes which global variables.
+     */
+    private static $current_analyzing_file = null;
 
     /**
      * @return bool
@@ -142,6 +150,24 @@ final class GlobalScope extends Scope
             // with superglobals.
             // TODO: Add a warning for incompatible assignments in callers.
             return;
+        }
+
+        // Track this file's contribution for incremental analysis
+        $current_file = self::$current_analyzing_file;
+        if ($current_file !== null) {
+            if (!isset(self::$global_variable_map[$variable_name])) {
+                // This file is adding a new global variable
+                self::$file_contributions[$current_file][$variable_name] = ['action' => 'added'];
+            } elseif (self::$global_variable_map[$variable_name] !== $variable) {
+                // This file is modifying an existing global variable
+                // Only record the first modification by this file
+                if (!isset(self::$file_contributions[$current_file][$variable_name])) {
+                    self::$file_contributions[$current_file][$variable_name] = [
+                        'action' => 'modified',
+                        'old' => self::$global_variable_map[$variable_name]
+                    ];
+                }
+            }
         }
 
         self::$global_variable_map[$variable->getName()] = $variable;
@@ -257,36 +283,58 @@ final class GlobalScope extends Scope
     {
         self::$global_variable_map = [];
         self::$code_base = null;
-        self::$file_snapshots = [];
+        self::$file_contributions = [];
+        self::$current_analyzing_file = null;
     }
 
     /**
-     * Snapshot the current global variables state before analyzing a file.
-     * This is called before the analysis phase for each file.
-     * The snapshot will be restored if the file is later modified or removed.
+     * Mark the start of analyzing a file.
+     * This tracks which file is responsible for adding/modifying global variables.
      *
      * @param string $file_path The file about to be analyzed
      */
-    public static function snapshotBeforeAnalyzingFile(string $file_path): void
+    public static function startAnalyzingFile(string $file_path): void
     {
-        // Store a snapshot of the current global variable map
-        // We store references, not clones, for performance
-        self::$file_snapshots[$file_path] = self::$global_variable_map;
+        self::$current_analyzing_file = $file_path;
+        // Initialize contribution tracking for this file
+        if (!isset(self::$file_contributions[$file_path])) {
+            self::$file_contributions[$file_path] = [];
+        }
     }
 
     /**
-     * Restore global variables to the state before a file was analyzed.
-     * This is called by the undo mechanism when a file is modified or removed.
+     * Mark the end of analyzing a file.
+     */
+    public static function finishAnalyzingFile(): void
+    {
+        self::$current_analyzing_file = null;
+    }
+
+    /**
+     * Undo the global variable changes made by a specific file.
+     * This removes variables added by the file and restores variables modified by the file.
+     * Variables from other files are left untouched.
      *
      * @param string $file_path The file being undone
      */
     public static function undoAnalysisForFile(string $file_path): void
     {
-        if (isset(self::$file_snapshots[$file_path])) {
-            // Restore the snapshot from before this file was analyzed
-            self::$global_variable_map = self::$file_snapshots[$file_path];
-            unset(self::$file_snapshots[$file_path]);
+        if (!isset(self::$file_contributions[$file_path])) {
+            return;
         }
+
+        // Undo this file's contributions in reverse order
+        foreach (self::$file_contributions[$file_path] as $variable_name => $contribution) {
+            if ($contribution['action'] === 'added') {
+                // This file added this variable - remove it
+                unset(self::$global_variable_map[$variable_name]);
+            } elseif ($contribution['action'] === 'modified' && isset($contribution['old'])) {
+                // This file modified this variable - restore the old value
+                self::$global_variable_map[$variable_name] = $contribution['old'];
+            }
+        }
+
+        unset(self::$file_contributions[$file_path]);
     }
 
     /**
