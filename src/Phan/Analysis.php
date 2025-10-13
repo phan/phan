@@ -29,6 +29,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
@@ -74,6 +75,12 @@ class Analysis
     {
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
+
+        // Register undo operation for global variables (will be restored when file changes)
+        // This is registered during parse phase when undo tracking is enabled
+        if (!$is_php_internal_stub) {
+            GlobalScope::registerUndoForFile($file_path);
+        }
         if ($is_php_internal_stub) {
             /** @see \Phan\Language\FileRef::isPHPInternal() */
             $file_path = 'internal';
@@ -530,6 +537,10 @@ class Analysis
         ?Request $request,
         ?string $override_contents = null
     ): Context {
+        // Snapshot global variables before analyzing this file
+        // This allows us to restore globals if the file is later modified
+        GlobalScope::snapshotBeforeAnalyzingFile($file_path);
+
         // Set the file on the context
         $context = (new Context())->withFile($file_path);
         // @phan-suppress-next-line PhanAccessMethodInternal

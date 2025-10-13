@@ -38,6 +38,14 @@ final class GlobalScope extends Scope
     private static $code_base = null;
 
     /**
+     * @var array<string,array<string,Variable>>
+     * Snapshots of global variables before each file's analysis phase.
+     * Maps file path -> snapshot of $global_variable_map before that file was analyzed.
+     * Used for incremental analysis to restore globals when a file changes.
+     */
+    private static $file_snapshots = [];
+
+    /**
      * @return bool
      * True if we're in a class scope
      */
@@ -134,22 +142,6 @@ final class GlobalScope extends Scope
             // with superglobals.
             // TODO: Add a warning for incompatible assignments in callers.
             return;
-        }
-
-        // Record undo operation for incremental analysis
-        $code_base = self::$code_base;
-        if ($code_base !== null) {
-            $undo_tracker = $code_base->getUndoTracker();
-            if ($undo_tracker) {
-                $old_variable = self::$global_variable_map[$variable_name] ?? null;
-                $undo_tracker->recordUndo(static function (CodeBase $_) use ($variable_name, $old_variable): void {
-                    if ($old_variable === null) {
-                        unset(self::$global_variable_map[$variable_name]);
-                    } else {
-                        self::$global_variable_map[$variable_name] = $old_variable;
-                    }
-                });
-            }
         }
 
         self::$global_variable_map[$variable->getName()] = $variable;
@@ -265,5 +257,55 @@ final class GlobalScope extends Scope
     {
         self::$global_variable_map = [];
         self::$code_base = null;
+        self::$file_snapshots = [];
+    }
+
+    /**
+     * Snapshot the current global variables state before analyzing a file.
+     * This is called before the analysis phase for each file.
+     * The snapshot will be restored if the file is later modified or removed.
+     *
+     * @param string $file_path The file about to be analyzed
+     */
+    public static function snapshotBeforeAnalyzingFile(string $file_path): void
+    {
+        // Store a snapshot of the current global variable map
+        // We store references, not clones, for performance
+        self::$file_snapshots[$file_path] = self::$global_variable_map;
+    }
+
+    /**
+     * Restore global variables to the state before a file was analyzed.
+     * This is called by the undo mechanism when a file is modified or removed.
+     *
+     * @param string $file_path The file being undone
+     */
+    public static function undoAnalysisForFile(string $file_path): void
+    {
+        if (isset(self::$file_snapshots[$file_path])) {
+            // Restore the snapshot from before this file was analyzed
+            self::$global_variable_map = self::$file_snapshots[$file_path];
+            unset(self::$file_snapshots[$file_path]);
+        }
+    }
+
+    /**
+     * Register undo operation for a file during parse phase.
+     * This is called during the parse phase when undo tracking is enabled.
+     * The registered closure will restore globals when the file changes.
+     *
+     * @param string $file_path The file being parsed
+     */
+    public static function registerUndoForFile(string $file_path): void
+    {
+        $code_base = self::$code_base;
+        if ($code_base !== null) {
+            $undo_tracker = $code_base->getUndoTracker();
+            if ($undo_tracker) {
+                $undo_tracker->recordUndo(static function (CodeBase $_) use ($file_path): void {
+                    self::undoAnalysisForFile($file_path);
+                });
+            }
+        }
     }
 }
