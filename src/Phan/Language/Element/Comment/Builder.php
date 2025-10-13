@@ -57,6 +57,10 @@ final class Builder
     public $template_type_list = [];
     /** @var Option<Type> the (at)inherits annotation */
     public $inherited_type;
+    /** @var list<Type> the list of (at)implements annotations with template parameters */
+    public $implemented_types = [];
+    /** @var list<Type> the list of (at)use annotations with template parameters for traits */
+    public $used_trait_types = [];
     // TODO: Warn about multiple (at)returns
     /** @var ?ReturnComment the (at)return annotation details */
     public $return_comment;
@@ -352,6 +356,8 @@ final class Builder
             !$this->variable_list &&
             !$this->template_type_list &&
             $this->inherited_type instanceof None &&
+            !$this->implemented_types &&
+            !$this->used_trait_types &&
             !$this->suppress_issue_set &&
             !$this->magic_property_list &&
             !$this->magic_method_list &&
@@ -370,6 +376,8 @@ final class Builder
             $this->parameter_list,
             \array_values($this->template_type_list),
             $this->inherited_type,
+            $this->implemented_types,
+            $this->used_trait_types,
             $this->return_comment,
             $this->suppress_issue_set,
             $this->magic_property_list,
@@ -406,7 +414,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-covariant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -421,12 +429,19 @@ final class Builder
                     $this->maybeParseVarLine($i, $line);
                     break;
                 case 'template':
-                case 'template-covariant': // XXX Phan does not actually support @template-covariant semantics, it is just better than treating `T` as a classlike name.
+                case 'template-covariant': // Enforces covariant template variance semantics.
+                case 'template-contravariant':
                     $this->maybeParseTemplateType($i, $line, $type);
                     break;
                 case 'inherits':
                 case 'extends':
                     $this->maybeParseInherits($i, $line, $type);
+                    break;
+                case 'implements':
+                    $this->maybeParseImplements($i, $line);
+                    break;
+                case 'use':
+                    $this->maybeParseUse($i, $line);
                     break;
                 case 'return':
                     $this->maybeParseReturn($i, $line);
@@ -662,8 +677,19 @@ final class Builder
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             if ($this->checkCompatible("@$tag_name", Comment::HAS_TEMPLATE_ANNOTATION, $i)) {
-                $template_type = $this->templateTypeFromCommentLine($line);
-                if ($template_type) {
+                $template_info = self::templateTypeFromCommentLine($line);
+                if ($template_info) {
+                    [$template_identifier, $variance, $constraint_string] = $template_info;
+                    $constraint_union_type = null;
+                    if ($constraint_string !== null && $constraint_string !== '') {
+                        $constraint_union_type = UnionType::fromStringInContext(
+                            $constraint_string,
+                            $this->context,
+                            Type::FROM_PHPDOC,
+                            $this->code_base
+                        );
+                    }
+                    $template_type = TemplateType::instanceForId($template_identifier, false, $constraint_union_type, $variance);
                     if (isset($this->template_type_list[$template_type->getName()])) {
                         $this->emitIssue(
                             Issue::TemplateTypeDuplicate,
@@ -696,6 +722,62 @@ final class Builder
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->phan_overrides['inherits'] = $this->inheritsFromCommentLine($line);
+        }
+    }
+
+    private function maybeParseImplements(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@implements', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $type = $this->implementsFromCommentLine($line);
+            if ($type !== null) {
+                $this->implemented_types[] = $type;
+            }
+        }
+    }
+
+    private function maybeParsePhanImplements(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@phan-implements', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $type = $this->implementsFromCommentLine($line);
+            if ($type !== null) {
+                $this->phan_overrides['implements'][] = $type;
+            }
+        }
+    }
+
+    private function maybeParseUse(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@use', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $type = $this->useFromCommentLine($line);
+            if ($type !== null) {
+                $this->used_trait_types[] = $type;
+            }
+        }
+    }
+
+    private function maybeParsePhanUse(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@phan-use', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $type = $this->useFromCommentLine($line);
+            if ($type !== null) {
+                $this->phan_overrides['use'][] = $type;
+            }
         }
     }
 
@@ -942,6 +1024,12 @@ final class Builder
             case 'phan-extends':
                 $this->maybeParsePhanInherits($i, $line, \substr($type, 5));
                 return;
+            case 'phan-implements':
+                $this->maybeParsePhanImplements($i, $line);
+                return;
+            case 'phan-use':
+                $this->maybeParsePhanUse($i, $line);
+                return;
             case 'phan-read-only':
                 $this->setPhanAccessFlag($i, false, 'phan-read-only');
                 return;
@@ -1004,6 +1092,7 @@ final class Builder
         '@phan-forbid-undeclared-magic-methods' => '',
         '@phan-forbid-undeclared-magic-properties' => '',
         '@phan-hardcode-return-type' => '',
+        '@phan-implements' => '',
         '@phan-inherits' => '',
         '@phan-method' => '',
         '@phan-mixin' => '',
@@ -1023,6 +1112,7 @@ final class Builder
         '@phan-suppress-previous-line' => '',
         '@phan-template' => '',
         '@phan-type' => '',
+        '@phan-use' => '',
         '@phan-var' => '',
         '@phan-write-only' => '',
     ];
@@ -1160,13 +1250,24 @@ final class Builder
      * A generic type identifier or null if a valid type identifier
      * wasn't found.
      */
+    /**
+     * @return ?array{0:string,1:int,2:?string}
+     */
     private static function templateTypeFromCommentLine(
         string $line
-    ): ?TemplateType {
+    ): ?array {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
-        if (\preg_match('/@(?:phan-)?template(?:-covariant)?\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
-            $template_type_identifier = $match[1];
-            return TemplateType::instanceForId($template_type_identifier, false);
+        if (\preg_match('/@(?:phan-)?template(?:-(?P<variance>co|contra)variant)?\s+(?P<identifier>' . self::WORD_REGEX . ')(?:\s+of\s+(?P<constraint>' . UnionType::union_type_regex . '))?/i', $line, $match)) {
+            $constraint = $match['constraint'] ?? null;
+            $variance = TemplateType::VARIANCE_INVARIANT;
+            $variance_keyword = strtolower($match['variance'] ?? '');
+            if ($variance_keyword === 'co') {
+                $variance = TemplateType::VARIANCE_COVARIANT;
+            } elseif ($variance_keyword === 'contra') {
+                $variance = TemplateType::VARIANCE_CONTRAVARIANT;
+            }
+            $identifier = $match['identifier'] ?? $match[1] ?? '';
+            return [$identifier, $variance, $constraint];
         }
 
         return null;
@@ -1197,6 +1298,56 @@ final class Builder
         }
 
         return None::instance();
+    }
+
+    /**
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return ?Type
+     * A type for an implemented interface with template parameters, or null if not found
+     */
+    private function implementsFromCommentLine(
+        string $line
+    ): ?Type {
+        $match = [];
+        if (\preg_match('/@(?:phan-)?implements\s+(' . Type::type_regex . ')/', $line, $match)) {
+            $type_string = $match[1];
+
+            return Type::fromStringInContext(
+                $type_string,
+                $this->context,
+                Type::FROM_PHPDOC,
+                $this->code_base
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return ?Type
+     * A type for a used trait with template parameters, or null if not found
+     */
+    private function useFromCommentLine(
+        string $line
+    ): ?Type {
+        $match = [];
+        if (\preg_match('/@(?:phan-)?use\s+(' . Type::type_regex . ')/', $line, $match)) {
+            $type_string = $match[1];
+
+            return Type::fromStringInContext(
+                $type_string,
+                $this->context,
+                Type::FROM_PHPDOC,
+                $this->code_base
+            );
+        }
+
+        return null;
     }
 
     /**

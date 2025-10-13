@@ -279,6 +279,20 @@ class ParseVisitor extends ScopeVisitor
                 // Track interface dependency for incremental analysis
                 DependencyTracker::track($interface_fqsen->__toString(), 'implements');
             }
+
+            // Process @implements annotations to provide template parameters for interfaces
+            foreach ($comment->getImplementedTypes() as $implemented_type) {
+                // Extract the FQSEN from the type (e.g., Iterator<int, T> -> Iterator)
+                $interface_fqsen = FullyQualifiedClassName::fromType($implemented_type);
+                $class->setInterfaceType($interface_fqsen, $implemented_type);
+            }
+
+            // Process @use annotations to provide template parameters for traits
+            foreach ($comment->getUsedTraitTypes() as $used_trait_type) {
+                // Extract the FQSEN from the type (e.g., Repository<User> -> Repository)
+                $trait_fqsen = FullyQualifiedClassName::fromType($used_trait_type);
+                $class->setTraitType($trait_fqsen, $used_trait_type);
+            }
         } finally {
             $class->setDidFinishParsing(true);
         }

@@ -1,0 +1,1 @@
+%s:27 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in property \WriteOnlySink->target of \WriteOnlySink

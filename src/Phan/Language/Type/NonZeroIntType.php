@@ -13,7 +13,7 @@ use Phan\Language\Type;
  * Phan's representation of a non-zero-int.
  * @phan-pure
  */
-final class NonZeroIntType extends IntType
+class NonZeroIntType extends IntType
 {
     use NativeTypeTrait;
 

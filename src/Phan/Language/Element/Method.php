@@ -682,6 +682,8 @@ class Method extends ClassElement implements FunctionInterface
         // Populate the original return type.
         $method->setOriginalReturnType();
 
+        $method->enforceTemplateVarianceForSignature($code_base, $class);
+
         $method->checkForTemplateTypes();
 
         return $method;

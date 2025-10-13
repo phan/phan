@@ -1,0 +1,11 @@
+%s:21 PhanGenericMissingParameters Class \MissingBox must substitute all 1 template parameters when inheriting \Box (found 0) defined at %s:8 (use @extends or @inherit)
+%s:33 PhanGenericMissingParameters Class \TooManyBox must substitute all 1 template parameters when inheriting \Box (found 2) defined at %s:8 (use @extends or @inherit)
+%s:58 PhanGenericMissingParameters Class \MissingHolder must substitute all 1 template parameters when inheriting \Holder (found 0) defined at %s:46 (use @extends or @inherit)
+%s:67 PhanGenericMissingParameters Class \ExtraHolder must substitute all 1 template parameters when inheriting \Holder (found 2) defined at %s:46 (use @extends or @inherit)
+%s:84 PhanGenericMissingParameters Class \MissingContainer must substitute all 1 template parameters when inheriting \Container (found 0) defined at %s:75 (use @extends or @inherit)
+%s:92 PhanGenericMissingParameters Class \ExtraContainer must substitute all 1 template parameters when inheriting \Container (found 2) defined at %s:75 (use @extends or @inherit)
+%s:118 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \CovariantWriter->lastValue of \CovariantWriter
+%s:123 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $value of \CovariantWriter::set()
+%s:139 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in property \ContravariantReader->consumed of \ContravariantReader
+%s:153 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of property \CovariantReadonlyArrayProperty->items of \CovariantReadonlyArrayProperty
+%s:167 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in array element of property \ContravariantWriteOnlyArrayProperty->items of \ContravariantWriteOnlyArrayProperty

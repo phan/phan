@@ -1,0 +1,1 @@
+%s:19 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in callable return type of parameter $producer of \Sink::invalidProducer()

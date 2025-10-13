@@ -622,6 +622,8 @@ class Issue
     public const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
     public const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
     public const GenericMissingParameters = 'PhanGenericMissingParameters';
+    public const TemplateTypeConstraintViolation = 'PhanTemplateTypeConstraintViolation';
+    public const TemplateTypeVarianceViolation = 'PhanTemplateTypeVarianceViolation';
     public const TemplateTypeDuplicate = 'PhanTemplateTypeDuplicate';
     public const TemplateTypeShadowsClass = 'PhanTemplateTypeShadowsClass';
 
@@ -763,11 +765,13 @@ class Issue
         'OPERATOR'      => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
+        'POSITION'      => '%s',
         'SCALAR'        => '%s',  // A scalar from the code
         'STRING_LITERAL' => '%s',  // A string literal from the code
         'SUGGESTION'    => '%s',
         'TYPE'          => '%s',
         'TRAIT'         => '%s',
+        'VARIANCE'      => '%s',
         'VARIABLE'      => '%s',
     ];
 
@@ -5300,6 +5304,22 @@ class Issue
                 "Class {CLASS} must substitute all {COUNT} template parameters when inheriting {CLASS} (found {COUNT}) defined at {FILE}:{LINE} (use @extends or @inherit)",
                 self::REMEDIATION_B,
                 14007
+            ),
+            new Issue(
+                self::TemplateTypeConstraintViolation,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} of {CLASS} must be compatible with {TYPE}, but {TYPE} was provided in {CLASS}",
+                self::REMEDIATION_B,
+                14013
+            ),
+            new Issue(
+                self::TemplateTypeVarianceViolation,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} declared {VARIANCE} cannot be used in {POSITION} of {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                14014
             ),
             new Issue(
                 self::TemplateTypeDuplicate,

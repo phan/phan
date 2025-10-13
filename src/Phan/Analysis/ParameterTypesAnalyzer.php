@@ -418,7 +418,14 @@ class ParameterTypesAnalyzer
 
         // If we have a parent type defined, map the method's parameter and return value types
         // to the context of the current class, so that we can compare them directly later.
+        // First check if this is from a parent class
         $type_option = $class->getParentTypeOption();
+
+        // If not from parent, check if this is from an interface with @implements annotation
+        if (!$type_option->isDefined() && $o_class->isInterface()) {
+            $type_option = $class->getInterfaceType($o_class->getFQSEN());
+        }
+
         if ($type_option->isDefined()) {
             $overridden_method_mapped = $overridden_method->cloneWithTemplateParameterTypeMap(
                 $type_option->get()->getTemplateParameterTypeMap($code_base)

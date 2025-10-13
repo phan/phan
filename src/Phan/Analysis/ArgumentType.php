@@ -1199,6 +1199,18 @@ final class ArgumentType
             $alternate_parameter = $candidate_alternate_parameter;
             $alternate_parameter_type = $alternate_parameter->getNonVariadicUnionType()->withStaticResolvedInFunctionLike($alternate_method);
 
+            if ($alternate_parameter_type->hasTemplateTypeRecursive()) {
+                self::enforceTemplateArgumentConstraints(
+                    $code_base,
+                    $context,
+                    $method,
+                    $alternate_parameter_type,
+                    $argument_type_resolved,
+                    $lineno,
+                    $node
+                );
+            }
+
             // See if the argument can be cast to the parameter.
             if ($argument_type_resolved->canCastToUnionType($alternate_parameter_type, $code_base)) {
                 if (self::hasIncompatibleEmptyAndNonEmptyArray($code_base, $argument_type_resolved, $alternate_parameter_type)) {
@@ -1318,6 +1330,62 @@ final class ArgumentType
         // Check suppressions and emit the issue
         if ($argument_node !== null) {
             self::warnInvalidArgumentType($code_base, $context, $method, $alternate_parameter, $alternate_parameter_type, $argument_node, $argument_type, $argument_type->asExpandedTypes($code_base), $argument_type_expanded_resolved, $lineno, $i);
+        }
+    }
+
+    private static function enforceTemplateArgumentConstraints(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $function,
+        UnionType $parameter_union_type,
+        UnionType $argument_union_type,
+        int $lineno,
+        ?Node $call_node
+    ): void {
+        if (!$parameter_union_type->hasTemplateTypeRecursive()) {
+            return;
+        }
+        $location_context = $call_node instanceof Node ? $context->withLineNumberStart($call_node->lineno ?? $lineno) : $context;
+        $argument_fragment_cache = [];
+        $seen = [];
+        foreach ($parameter_union_type->getTypesRecursively() as $type) {
+            if (!($type instanceof TemplateType)) {
+                continue;
+            }
+            $name = $type->getName();
+            if (isset($seen[$name])) {
+                continue;
+            }
+            $seen[$name] = true;
+            $constraint = $type->getBoundUnionType();
+            if (!$constraint || $constraint->isEmpty()) {
+                continue;
+            }
+            $argument_fragment = $argument_fragment_cache[$name] ?? null;
+            if ($argument_fragment === null) {
+                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type);
+                if ($extractor) {
+                    $fragment = $extractor($argument_union_type, $context);
+                    $argument_fragment = $fragment->isEmpty() ? $argument_union_type : $fragment;
+                } else {
+                    $argument_fragment = $argument_union_type;
+                }
+                $argument_fragment_cache[$name] = $argument_fragment;
+            }
+            if (!TemplateType::unionTypeSatisfiesBound($code_base, $argument_fragment, $constraint)) {
+                $usage = 'call to ' . $function->getRepresentationForIssue();
+                Issue::maybeEmit(
+                    $code_base,
+                    $location_context,
+                    Issue::TemplateTypeConstraintViolation,
+                    $lineno,
+                    $name,
+                    $function->getRepresentationForIssue(),
+                    (string)$constraint,
+                    (string)$argument_fragment,
+                    $usage
+                );
+            }
         }
     }
 

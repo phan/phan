@@ -1,0 +1,2 @@
+%s:17 PhanTemplateTypeConstraintViolation Template type T of \consumeIterableArray() must be compatible with \Iterator, but \stdClass was provided in call to \consumeIterableArray()
+%s:26 PhanTemplateTypeConstraintViolation Template type T of \consumeConfig() must be compatible with callable, but \stdClass was provided in call to \consumeConfig()

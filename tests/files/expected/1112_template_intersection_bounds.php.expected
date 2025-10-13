@@ -1,0 +1,1 @@
+%s:26 PhanTemplateTypeConstraintViolation Template type T of \requireBoth() must be compatible with \Countable&\Traversable, but \CountableOnly was provided in call to \requireBoth()
