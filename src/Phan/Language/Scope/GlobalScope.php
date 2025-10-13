@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Scope;
 
 use AssertionError;
+use Phan\CodeBase;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
@@ -28,6 +29,13 @@ final class GlobalScope extends Scope
      * variables registered under $GLOBALS.
      */
     private static $global_variable_map = [];
+
+    /**
+     * @var ?CodeBase
+     * Reference to the CodeBase for recording undo operations.
+     * This is set during initialization to enable incremental analysis.
+     */
+    private static $code_base = null;
 
     /**
      * @return bool
@@ -127,6 +135,23 @@ final class GlobalScope extends Scope
             // TODO: Add a warning for incompatible assignments in callers.
             return;
         }
+
+        // Record undo operation for incremental analysis
+        $code_base = self::$code_base;
+        if ($code_base !== null) {
+            $undo_tracker = $code_base->getUndoTracker();
+            if ($undo_tracker) {
+                $old_variable = self::$global_variable_map[$variable_name] ?? null;
+                $undo_tracker->recordUndo(static function (CodeBase $_) use ($variable_name, $old_variable): void {
+                    if ($old_variable === null) {
+                        unset(self::$global_variable_map[$variable_name]);
+                    } else {
+                        self::$global_variable_map[$variable_name] = $old_variable;
+                    }
+                });
+            }
+        }
+
         self::$global_variable_map[$variable->getName()] = $variable;
     }
 
@@ -214,5 +239,31 @@ final class GlobalScope extends Scope
         string $template_type_identifier
     ): bool {
         return false;
+    }
+
+    /**
+     * Set the CodeBase reference for recording undo operations during incremental analysis.
+     * This should be called during Phan initialization.
+     */
+    public static function setCodeBase(CodeBase $code_base): void
+    {
+        self::$code_base = $code_base;
+    }
+
+    /**
+     * Clear the CodeBase reference. Used for cleanup and testing.
+     */
+    public static function clearCodeBase(): void
+    {
+        self::$code_base = null;
+    }
+
+    /**
+     * Reset all global variables. Used for testing and daemon mode cleanup.
+     */
+    public static function reset(): void
+    {
+        self::$global_variable_map = [];
+        self::$code_base = null;
     }
 }

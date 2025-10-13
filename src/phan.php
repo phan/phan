@@ -9,6 +9,7 @@ require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;
 use Phan\Config;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
@@ -19,6 +20,9 @@ $cli = CLI::fromArgv();
 //
 // Phan filters out user-defined functions/classes/constants.
 $code_base = require(__DIR__ . '/codebase.php');
+
+// Initialize GlobalScope with CodeBase reference for incremental analysis undo tracking
+GlobalScope::setCodeBase($code_base);
 
 // Analyze the file list provided via the CLI
 $is_issue_found =

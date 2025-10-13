@@ -124,6 +124,14 @@ class MultiFileTest extends AbstractPhanFileTest
                 ],
                 MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '4827.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
             ],
+            // #6001 - Global variable type pollution in incremental analysis
+            [
+                [
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '6001_a.php',
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '6001_b.php',
+                ],
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '6001.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+            ],
             // Manually add additional file sets and expected
             // output here.
 

@@ -302,6 +302,15 @@ class CodeBase
     }
 
     /**
+     * Get the UndoTracker instance if undo tracking is enabled, null otherwise.
+     * Used by GlobalScope and other components that need to record undo operations.
+     */
+    public function getUndoTracker(): ?UndoTracker
+    {
+        return $this->undo_tracker;
+    }
+
+    /**
      * Enable hydration of elements. (populating class elements with information from their ancestors)
      *
      * This is called after the parse phase is finished.
