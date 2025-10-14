@@ -13,6 +13,7 @@ use Phan\Tests\BaseTest;
  */
 final class FileRefTest extends BaseTest
 {
+    /** @var ?string Original project root directory to restore after test */
     private ?string $original_project_root = null;
 
     public function setUp(): void
