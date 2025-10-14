@@ -5433,6 +5433,16 @@ class UnionType implements Serializable, Stringable
         if ($empty_array_shape_type && !$has_other_array_type) {
             $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
         }
+        // Issue #4533: If we have both array{} and non-empty-array types, convert non-empty-array to array
+        // to avoid false positives in MoreSpecificElementTypePlugin.
+        // array{} | non-empty-array<K,V> is semantically equivalent to array<K,V>
+        if ($empty_array_shape_type && $has_other_array_type) {
+            foreach ($result as $i => $type) {
+                if ($type instanceof NonEmptyArrayInterface) {
+                    $result[$i] = $type->asPossiblyEmptyArrayType();
+                }
+            }
+        }
         return $result;
     }
 

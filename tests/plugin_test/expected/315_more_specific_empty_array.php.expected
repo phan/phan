@@ -1,0 +1,5 @@
+src/315_more_specific_empty_array.php:6 PhanUnreferencedClass Possibly zero references to class \TestEmptyArrayReturn
+src/315_more_specific_empty_array.php:14 PhanUnreferencedPublicMethod Possibly zero references to public method \TestEmptyArrayReturn::getFiles()
+src/315_more_specific_empty_array.php:19 PhanPluginNonBoolBranch Non bool value of type 0|1|false evaluated in if clause
+src/315_more_specific_empty_array.php:32 PhanUnreferencedPublicMethod Possibly zero references to public method \TestEmptyArrayReturn::filterItems()
+src/315_more_specific_empty_array.php:46 PhanUnreferencedPublicMethod Possibly zero references to public method \TestEmptyArrayReturn::alwaysHasItems()
