@@ -13,6 +13,9 @@ Breaking changes:
 - Dropped the `backward_compatibility_checks` config option, along with its respective `--backward-compatibility-checks` and `-b` CLI flags
 
 New features (Analysis):
+- Detect implicit float-to-int conversion in modulo operator (deprecated in PHP 8.1)
+  - New issue type: PhanTypeInvalidModuloOperand
+  - Warns when float types are used with the modulo (%) operator
 - Full support for PHP 8.5 features:
   - #[NoDiscard] attribute support with detection of ignored return values (PhanNoDiscardReturnValueIgnored)
   - #[Override] attribute extended to properties (in addition to methods)

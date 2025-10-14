@@ -2134,7 +2134,7 @@ class CodeBase
 
     private static function phpVersionIdToString(int $php_version_id): string
     {
-        return \sprintf('%d.%d', $php_version_id / 10000, ($php_version_id / 100) % 100);
+        return \sprintf('%d.%d', (int)($php_version_id / 10000), (int)($php_version_id / 100) % 100);
     }
 
     /**
