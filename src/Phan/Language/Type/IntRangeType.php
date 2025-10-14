@@ -136,6 +136,30 @@ final class IntRangeType extends IntType
     }
 
     /**
+     * @return string
+     * A human readable representation of this int-range type including the bounds
+     */
+    public function __toString(): string
+    {
+        return $this->memoize(__METHOD__, function (): string {
+            $string = $this->asFQSENString();
+
+            // Include the range bounds in the string representation for clearer error messages
+            if ($this->lower_bound !== null && $this->upper_bound !== null) {
+                $string .= '<' . $this->lower_bound . ', ' . $this->upper_bound . '>';
+            } elseif (count($this->template_parameter_type_list) > 0) {
+                $string .= $this->templateParameterTypeListAsString();
+            }
+
+            if ($this->is_nullable) {
+                $string = '?' . $string;
+            }
+
+            return $string;
+        });
+    }
+
+    /**
      * @param list<UnionType> $template_parameter_type_list
      * @return ?list<UnionType>
      */
