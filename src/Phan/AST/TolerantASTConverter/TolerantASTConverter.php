@@ -1230,7 +1230,8 @@ class TolerantASTConverter
                 } else {
                     $inner_node = self::parseMultiPartString($n, $children);
                 }
-                if ($n->startQuote !== null && $n->startQuote->kind === TokenKind::BacktickToken) {
+                $start_quote = $n->startQuote;
+                if ($start_quote !== null && $start_quote->kind === TokenKind::BacktickToken) {
                     return new ast\Node(ast\AST_SHELL_EXEC, 0, ['expr' => $inner_node], isset($children[0]) ? self::getStartLine($children[0]) : $start_line);
                     // TODO: verify match
                 }
@@ -2975,9 +2976,6 @@ class TolerantASTConverter
         );
     }
 
-    /**
-     * @suppress PhanTypeMismatchArgument
-     */
     private static function phpParserEnumCaseDeclarationToAstNode(PhpParser\Node\EnumCaseDeclaration $n, int $start_line): ast\Node
     {
         $assignment = $n->assignment;
@@ -3362,7 +3360,8 @@ class TolerantASTConverter
      */
     private static function parseMultiPartString(PhpParser\Node\StringLiteral $n, array $children): ast\Node
     {
-        if ($n->startQuote->length >= 3) {
+        $start_quote = $n->startQuote;
+        if ($start_quote !== null && $start_quote->length >= 3) {
             return self::parseMultiPartHeredoc($n, $children);
         }
         return self::parseMultiPartRegularString($n, $children);
@@ -3374,7 +3373,10 @@ class TolerantASTConverter
     private static function parseMultiPartRegularString(PhpParser\Node\StringLiteral $n, array $children): ast\Node
     {
         $inner_node_parts = [];
-        $start_quote_text = static::tokenToString($n->startQuote);
+        $start_quote = $n->startQuote;
+        // @phan-suppress-next-line PhanPluginNoAssert for type narrowing
+        \assert($start_quote !== null);
+        $start_quote_text = static::tokenToString($start_quote);
         $end_quote_text = $n->endQuote->getText(self::$file_contents);
         $deprecated = false;
 
@@ -3435,7 +3437,10 @@ class TolerantASTConverter
     private static function parseMultiPartHeredoc(PhpParser\Node\StringLiteral $n, array $children): ast\Node
     {
         $inner_node_parts = [];
-        $end_of_start_quote = self::$file_contents[$n->startQuote->start + $n->startQuote->length - 1] ?? 0;
+        $start_quote = $n->startQuote;
+        // @phan-suppress-next-line PhanPluginNoAssert for type narrowing
+        \assert($start_quote !== null);
+        $end_of_start_quote = self::$file_contents[$start_quote->start + $start_quote->length - 1] ?? 0;
         $end_quote_text = $n->endQuote->getText(self::$file_contents);
 
         $spaces = \strspn($end_quote_text, " \t");
