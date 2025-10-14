@@ -1158,7 +1158,7 @@ EOT
 const JSON_PRETTY_PRINT = 128
 ```
 
-Use whitespace in returned data to format it. Available since PHP 5.4.0.
+Use whitespace in returned data to format it.
 EOT
             ],
             [
