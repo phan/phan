@@ -7,6 +7,7 @@ namespace Phan\Language;
 use AssertionError;
 use Phan\Config;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -37,6 +38,7 @@ abstract class Scope
     public const IN_INTERFACE_SCOPE     = 0x08;
     public const IN_CLASS_LIKE_SCOPE    = self::IN_CLASS_SCOPE | self::IN_TRAIT_SCOPE | self::IN_INTERFACE_SCOPE;
     public const IN_PROPERTY_SCOPE      = 0x10;
+    public const IN_CLASS_CONSTANT_SCOPE = 0x20;
 
     /**
      * @var Scope the parent scope, if this is not the global scope
@@ -204,6 +206,24 @@ abstract class Scope
     public function getPropertyFQSEN(): FullyQualifiedPropertyName
     {
         return $this->parent_scope->getPropertyFQSEN();
+    }
+
+    /**
+     * @return bool
+     * True if we're in a class constant scope
+     */
+    public function isInClassConstantScope(): bool
+    {
+        return (self::IN_CLASS_CONSTANT_SCOPE & $this->flags) !== 0;
+    }
+
+    /**
+     * @return FullyQualifiedClassConstantName
+     * Crawl the scope hierarchy to get a class constant FQSEN.
+     */
+    public function getClassConstantFQSEN(): FullyQualifiedClassConstantName
+    {
+        return $this->parent_scope->getClassConstantFQSEN();
     }
 
     /**

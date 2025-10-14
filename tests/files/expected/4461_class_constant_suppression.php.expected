@@ -1,0 +1,1 @@
+%s:18 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
