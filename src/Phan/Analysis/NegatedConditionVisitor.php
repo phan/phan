@@ -298,6 +298,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             return $this->analyzeArrayKeyExistsNegation($args);
         }
+        if ($function_name === 'in_array') {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            return $this->analyzeInArrayNegation($args);
+        }
         static $map;
         if ($map === null) {
             $map = self::createNegationCallbackMap();
@@ -421,6 +425,98 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             true,
             false
         );
+    }
+
+    /**
+     * Analyze !in_array($var, ['literal1', 'literal2'], true) to exclude literal values from $var's type.
+     * Only processes literal arrays with strict comparison for performance and correctness.
+     *
+     * @param list<Node|string|int|float> $args
+     */
+    private function analyzeInArrayNegation(array $args): Context
+    {
+        $context = $this->context;
+
+        // Require strict comparison (third argument must be true)
+        if (\count($args) < 3) {
+            return $context;
+        }
+        $is_strict = UnionTypeVisitor::checkCondUnconditionalTruthiness($args[2]) === true;
+        if (!$is_strict) {
+            return $context;
+        }
+
+        $var_node = $args[0];
+        if (!($var_node instanceof Node)) {
+            return $context;
+        }
+
+        $array_node = $args[1];
+        if (!($array_node instanceof Node) || $array_node->kind !== ast\AST_ARRAY) {
+            // Not a literal array, skip
+            return $context;
+        }
+
+        // Extract literal scalar values from the array
+        $literal_types = self::extractLiteralTypesFromArray($array_node);
+        if ($literal_types === null || $literal_types->isEmpty()) {
+            return $context;
+        }
+
+        // Update the variable to exclude these literal types
+        return $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $context,
+            static function (UnionType $_): bool {
+                return true;
+            },
+            static function (UnionType $type) use ($literal_types): UnionType {
+                // Subtract each literal type from the variable's type
+                foreach ($literal_types->getTypeSet() as $literal_type) {
+                    $type = $type->withoutType($literal_type);
+                }
+                return $type;
+            },
+            true,
+            false
+        );
+    }
+
+    /**
+     * Extract literal scalar types from a literal array node.
+     * Returns null if the array is too complex or contains non-literals.
+     * Limits to 50 elements for performance.
+     */
+    private static function extractLiteralTypesFromArray(Node $array_node): ?UnionType
+    {
+        $children = $array_node->children;
+        if (\count($children) > 50) {
+            // Safety limit to prevent performance issues
+            return null;
+        }
+
+        $type_builder = new UnionTypeBuilder();
+
+        foreach ($children as $elem) {
+            if (!($elem instanceof Node) || $elem->kind !== ast\AST_ARRAY_ELEM) {
+                continue;
+            }
+
+            $value = $elem->children['value'];
+
+            // Only extract literal scalar values
+            if ($value instanceof Node) {
+                // Skip computed values, only process literals
+                continue;
+            }
+
+            if (\is_string($value) || \is_int($value) || \is_float($value) || \is_bool($value) || $value === null) {
+                $type_builder->addType(Type::fromObject($value));
+            }
+        }
+
+        $union_type = $type_builder->getPHPDocUnionType();
+        return $union_type->isEmpty() ? null : $union_type;
     }
 
     // TODO: empty, isset
