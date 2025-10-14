@@ -1022,13 +1022,47 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @unused-param $node
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryMod(Node $node): UnionType
     {
-        // TODO: Warn about invalid left or right side
+        // Check for implicit float-to-int conversion (deprecated in PHP 8.1)
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left'],
+            $this->should_catch_issue_exception
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right'],
+            $this->should_catch_issue_exception
+        );
+
+        // Check if either operand is a float (or contains float types)
+        if ($left->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof FloatType)) {
+            $left_node = $node->children['left'];
+            $this->emitIssue(
+                Issue::TypeInvalidModuloOperand,
+                $left_node instanceof Node ? $left_node->lineno : $node->lineno,
+                ASTReverter::toShortString($left_node),
+                $left
+            );
+        }
+
+        if ($right->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof FloatType)) {
+            $right_node = $node->children['right'];
+            $this->emitIssue(
+                Issue::TypeInvalidModuloOperand,
+                $right_node instanceof Node ? $right_node->lineno : $node->lineno,
+                ASTReverter::toShortString($right_node),
+                $right
+            );
+        }
+
         return IntType::instance(false)->asRealUnionType();
     }
 

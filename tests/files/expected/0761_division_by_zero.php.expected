@@ -1,6 +1,7 @@
 %s:5 PhanDivisionByZero Saw (1 / 0) with a divisor of type 0
 %s:6 PhanModuloByZero Saw (1 % 0) with modulus of type 0
 %s:7 PhanModuloByZero Saw (1 % 0.0) with modulus of type 0.0
+%s:7 PhanTypeInvalidModuloOperand Operand 0.0 of type 0.0 to modulo (%) operator is implicitly converted to int (deprecated in PHP 8.1)
 %s:8 PhanModuloByZero Saw (1 % '0') with modulus of type '0'
 %s:9 PhanModuloByZero Saw (1 % $zero) with modulus of type 0
 %s:10 PhanModuloByZero Saw (1 % (2 - 2)) with modulus of type 0

@@ -1,2 +1,3 @@
 %s:3 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type array{0:float,1:float,2:int,3:float,4:float,5:float}(real=array{0:float,1:float,2:int,3:float,4:float,5:float})
+%s:3 PhanTypeInvalidModuloOperand Operand $f of type float to modulo (%) operator is implicitly converted to int (deprecated in PHP 8.1)
 %s:3 PhanUnusedVariable Unused definition of variable $g

@@ -306,6 +306,7 @@ class Issue
     public const ImpossibleIntersectionType = 'PhanImpossibleIntersectionType';
     public const TypeInvalidArrayKey = 'PhanTypeInvalidArrayKey';
     public const TypeInvalidArrayKeyLiteral = 'PhanTypeInvalidArrayKeyLiteral';
+    public const TypeInvalidModuloOperand = 'PhanTypeInvalidModuloOperand';
 
     // Issue::CATEGORY_ANALYSIS
     public const Unanalyzable              = 'PhanUnanalyzable';
@@ -3098,6 +3099,14 @@ class Issue
                 'Saw array key {CODE} with key value {SCALAR} but expected a value that could cast to int|string',
                 self::REMEDIATION_B,
                 10184
+            ),
+            new Issue(
+                self::TypeInvalidModuloOperand,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Operand {CODE} of type {TYPE} to modulo (%%) operator is implicitly converted to int (deprecated in PHP 8.1)',
+                self::REMEDIATION_B,
+                10189
             ),
 
             // Issue::CATEGORY_VARIABLE

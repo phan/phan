@@ -3359,6 +3359,14 @@ Instance method name must be a string, got {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0540_invalid_method_name.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0540_invalid_method_name.php#L4).
 
+## PhanTypeInvalidModuloOperand
+
+```
+Operand {CODE} of type {TYPE} to modulo (%%) operator is implicitly converted to int (deprecated in PHP 8.1)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5163_implicit_float_int_modulo.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5163_implicit_float_int_modulo.php#L7).
+
 ## PhanTypeInvalidPropertyName
 
 ```
