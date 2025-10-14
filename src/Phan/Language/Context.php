@@ -566,6 +566,27 @@ class Context extends FileRef
     }
 
     /**
+     * @return bool
+     * True if this context is currently within a class constant
+     * scope, else false.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function isInClassConstantScope(): bool
+    {
+        return $this->scope->isInClassConstantScope();
+    }
+
+    /**
+     * @return FullyQualifiedClassConstantName
+     * A fully-qualified structural element name describing
+     * the current class constant in scope.
+     */
+    public function getClassConstantFQSEN(): FullyQualifiedClassConstantName
+    {
+        return $this->scope->getClassConstantFQSEN();
+    }
+
+    /**
      * @param CodeBase $code_base
      * The global code base holding all state
      *
@@ -710,6 +731,36 @@ class Context extends FileRef
 
     /**
      * @param CodeBase $code_base
+     * The code base from which to retrieve a class constant in scope
+     *
+     * @return Element\ClassConstant
+     * Get the class constant in this scope, or fail real hard
+     *
+     * @throws CodeBaseException
+     * Thrown if we can't find the class constant in scope within the
+     * given codebase.
+     */
+    public function getClassConstantInScope(CodeBase $code_base): Element\ClassConstant
+    {
+        if (!$this->scope->isInClassConstantScope()) {
+            throw new AssertionError("Must be in class constant scope to get class constant");
+        }
+
+        $constant_fqsen = $this->scope->getClassConstantFQSEN();
+        if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
+            throw new CodeBaseException(
+                $constant_fqsen,
+                "Cannot find class constant with FQSEN {$constant_fqsen} in context {$this}"
+            );
+        }
+
+        return $code_base->getClassConstantByFQSEN(
+            $constant_fqsen
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
      * The code base from which to retrieve the TypedElement
      *
      * @return TypedElement
@@ -726,6 +777,8 @@ class Context extends FileRef
             return $this->getFunctionLikeInScope($code_base);
         } elseif ($this->scope->isInPropertyScope()) {
             return $this->getPropertyInScope($code_base);
+        } elseif ($this->scope->isInClassConstantScope()) {
+            return $this->getClassConstantInScope($code_base);
         } elseif ($this->scope->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }

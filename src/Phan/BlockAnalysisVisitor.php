@@ -31,9 +31,11 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\ClassConstantScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
@@ -3276,6 +3278,60 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each child node and get an
             // updated context for the node
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $default);
+        }
+
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Visit a class constant element (AST_CONST_ELEM) to set up proper scope
+     * for suppression annotations on the constant's PHPDoc.
+     *
+     * This is necessary to fix issue #4461 where @suppress annotations on class
+     * constants are ignored because the context doesn't have the constant's scope.
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitConstElem(Node $node): Context
+    {
+        $context = $this->context;
+
+        // Only create a ClassConstantScope for class constants, not global constants
+        if ($context->isInClassScope()) {
+            $const_name = (string)$node->children['name'];
+            $class = $context->getClassInScope($this->code_base);
+
+            $context = $this->context->withScope(new ClassConstantScope(
+                $context->getScope(),
+                FullyQualifiedClassConstantName::make($class->getFQSEN(), $const_name)
+            ))->withLineNumberStart(
+                $node->lineno
+            );
+
+            // Don't bother calling PreOrderAnalysisVisitor, it does nothing
+
+            // Let any configured plugins do a pre-order
+            // analysis of the node.
+            ConfigPluginSet::instance()->preAnalyzeNode(
+                $this->code_base,
+                $context,
+                $node
+            );
+        }
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $value = $node->children['value'] ?? null;
+        if ($value instanceof Node) {
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $value);
         }
 
         return $this->postOrderAnalyze($context, $node);
