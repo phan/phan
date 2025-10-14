@@ -59,6 +59,7 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTest
     ): void {
         if (\PHP_VERSION_ID < 80400) {
             $this->markTestSkipped("PHP 8.4 is required");
+            // @phan-suppress-next-line PhanPluginUnreachableCode
             return;
         }
 
