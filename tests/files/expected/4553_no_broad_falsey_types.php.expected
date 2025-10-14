@@ -1,0 +1,6 @@
+%s:59 PhanImpossibleCondition Impossible attempt to cast $value of type ?''|?'0'|?0|?0.0|?array{}|?false to truthy
+%s:71 PhanTypeVoidAssignment Cannot assign void return value
+%s:71 PhanUnusedVariable Unused definition of variable $id
+%s:76 PhanPossiblyInfiniteRecursionSameParams generateNewId() is calling itself with the same parameters it was called with. This may cause infinite recursion (Phan does not check for changes to global or shared state).
+%s:76 PhanTypeVoidAssignment Cannot assign void return value
+%s:76 PhanUnusedVariable Unused definition of variable $id
