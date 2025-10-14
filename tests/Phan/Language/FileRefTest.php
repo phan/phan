@@ -13,6 +13,24 @@ use Phan\Tests\BaseTest;
  */
 final class FileRefTest extends BaseTest
 {
+    private ?string $original_project_root = null;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        // Save the original project root directory
+        $this->original_project_root = Config::getProjectRootDirectory();
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        // Restore the original project root directory
+        if ($this->original_project_root !== null) {
+            Config::setProjectRootDirectory($this->original_project_root);
+        }
+    }
+
     private function expectProjectRelativePath(string $expected_path, string $original_path): void
     {
         $this->assertSame(\str_replace('/', \DIRECTORY_SEPARATOR, $expected_path), FileRef::getProjectRelativePathForPath($original_path));

@@ -47,7 +47,7 @@
     },
     "require-dev": {
         "cweagans/composer-patches": "^1.7",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^10.0"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"},

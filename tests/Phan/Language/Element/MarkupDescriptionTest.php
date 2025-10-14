@@ -27,7 +27,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @return list<array{0:string,1:string,2?:int}>
      */
-    public function extractDocCommentProvider(): array
+    public static function extractDocCommentProvider(): array
     {
         return [
             [
@@ -222,7 +222,7 @@ EOT
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function getDocCommentWithoutWhitespaceProvider(): array
+    public static function getDocCommentWithoutWhitespaceProvider(): array
     {
         return [
             [

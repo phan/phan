@@ -67,7 +67,7 @@ final class CSVPrinterTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function specialCharacterCasesProvider(): array
+    public static function specialCharacterCasesProvider(): array
     {
         return [
             // Valid ASCII

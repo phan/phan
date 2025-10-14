@@ -467,7 +467,7 @@ final class UnionTypeTest extends BaseTest
     }
 
     /** @return list<array{0:string}> */
-    public function unparseableUnionTypeProvider(): array
+    public static function unparseableUnionTypeProvider(): array
     {
         return [
             ['()'],
@@ -895,7 +895,7 @@ final class UnionTypeTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function isStrictSubtypeOfProvider(): array
+    public static function isStrictSubtypeOfProvider(): array
     {
         return [
             [false, "'literal'", '?int'],

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" backupStaticAttributes="true" verbose="false">
-  <coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" displayDetailsOnTestsThatTriggerDeprecations="true" displayDetailsOnTestsThatTriggerErrors="true" displayDetailsOnTestsThatTriggerNotices="true" displayDetailsOnTestsThatTriggerWarnings="true" displayDetailsOnPhpunitDeprecations="true">
+  <source>
     <include>
       <directory>src/Phan</directory>
     </include>
     <exclude>
       <directory>src/Phan/Language/Internal</directory>
     </exclude>
-  </coverage>
+  </source>
   <php>
     <!-- Affects tests of CLI, etc. -->
     <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true"/>
@@ -72,6 +72,9 @@
     </testsuite>
     <testsuite name="All">
       <directory>tests/Phan</directory>
+      <exclude>tests/Phan/AbstractPhanFileTest.php</exclude>
+      <exclude>tests/Phan/BaseTest.php</exclude>
+      <exclude>tests/Phan/CodeBaseAwareTest.php</exclude>
     </testsuite>
   </testsuites>
 </phpunit>

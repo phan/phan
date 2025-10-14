@@ -390,7 +390,7 @@ class Type implements Stringable
         $this->is_nullable = $is_nullable;
     }
 
-    // Override two magic methods to ensure that Type isn't being cloned accidentally.
+    // Override serialization methods to ensure that Type isn't being serialized accidentally.
     // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
     //  which saves and restores some static properties)
 
@@ -399,10 +399,10 @@ class Type implements Stringable
      * @suppress PhanPluginRemoveDebugCall deliberate output before uncatchable Error
      * @return never
      */
-    public function __wakeup()
+    public function __serialize(): array
     {
         \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
-        throw new Error("Cannot unserialize Type '$this'");
+        throw new Error("Cannot serialize Type '$this' - use fromFullyQualifiedString() instead");
     }
 
     /**
@@ -415,7 +415,7 @@ class Type implements Stringable
     public function __unserialize(array $data): void
     {
         \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
-        throw new Error("Cannot unserialize Type '$this'");
+        throw new Error("Cannot unserialize Type '$this' - use fromFullyQualifiedString() instead");
     }
 
     /** @throws Error this should not be called accidentally */

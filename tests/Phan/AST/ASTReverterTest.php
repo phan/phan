@@ -36,7 +36,7 @@ final class ASTReverterTest extends BaseTest
     /**
      * @return list<array{0:string}>
      */
-    public function revertShorthandProvider(): array
+    public static function revertShorthandProvider(): array
     {
         return [
             ["'2'"],

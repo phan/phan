@@ -63,7 +63,7 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTest
     /**
      * @return list<list>
      */
-    public function phpVersionIdProvider(): array
+    public static function phpVersionIdProvider(): array
     {
         return [
             [80100],  // PHP 8.1
@@ -122,7 +122,7 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTest
      * Provides values of PHP_VERSION_ID
      * @return list<list<int>>
      */
-    public function realFunctionSignatureMapVersionProvider(): array
+    public static function realFunctionSignatureMapVersionProvider(): array
     {
         return [[80100], [80200]];
     }

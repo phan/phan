@@ -29,7 +29,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
     /**
      * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles(): array;
+    abstract public static function getTestFiles(): array;
 
     public static function setUpBeforeClass(): void
     {
@@ -57,6 +57,9 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         parent::setUp();
 
         Type::clearAllMemoizations();
+        \Phan\Language\Scope\GlobalScope::reset();
+        // Ensure we start with the correct project root
+        Config::setProjectRootDirectory(\dirname(__DIR__, 2));
     }
 
     /**
@@ -67,6 +70,9 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         parent::tearDown();
 
         Type::clearAllMemoizations();
+        \Phan\Language\Scope\GlobalScope::reset();
+        // Restore the correct project root directory after each test
+        Config::setProjectRootDirectory(\dirname(__DIR__, 2));
     }
 
     /**
@@ -74,7 +80,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
      *
      * @return array<string,array{0:array,1:string}>
      */
-    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array
+    final protected static function scanSourceFilesDir(string $source_dir, string $expected_dir): array
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],

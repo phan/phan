@@ -44,7 +44,7 @@ final class InitializerTest extends BaseTest
      * Phan determines the minimum version based on https://getcomposer.org/doc/articles/versions.md
      * @return list<list>
      */
-    public function determineTargetPHPVersionProvider(): array
+    public static function determineTargetPHPVersionProvider(): array
     {
         return [
             [null, 'nonsense'],
@@ -71,7 +71,7 @@ final class InitializerTest extends BaseTest
     /**
      * @return list<list<list<string>>>
      */
-    public function filterDirectoryAndFileListProvider(): array
+    public static function filterDirectoryAndFileListProvider(): array
     {
         return [
             [

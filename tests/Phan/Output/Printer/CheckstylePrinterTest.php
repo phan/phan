@@ -42,7 +42,7 @@ final class CheckstylePrinterTest extends BaseTest
     /**
      * @return list<array{0:string}>
      */
-    public function invalidUTF8StringsProvider(): array
+    public static function invalidUTF8StringsProvider(): array
     {
         return [
             // Valid ASCII
