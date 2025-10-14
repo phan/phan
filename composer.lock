@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8cda2580b3db7171717b8eb8dea5947f",
+    "content-hash": "85126749a9ea8cc83c697bdb4d77f348",
     "packages": [
         {
             "name": "composer/pcre",
@@ -323,24 +323,26 @@
         },
         {
             "name": "microsoft/tolerant-php-parser",
-            "version": "v0.1.2",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/microsoft/tolerant-php-parser.git",
-                "reference": "3eccfd273323aaf69513e2f1c888393f5947804b"
+                "reference": "457738cbec8a6b337b00946df4228d830d6068b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/microsoft/tolerant-php-parser/zipball/3eccfd273323aaf69513e2f1c888393f5947804b",
-                "reference": "3eccfd273323aaf69513e2f1c888393f5947804b",
+                "url": "https://api.github.com/repos/microsoft/tolerant-php-parser/zipball/457738cbec8a6b337b00946df4228d830d6068b0",
+                "reference": "457738cbec8a6b337b00946df4228d830d6068b0",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2"
             },
             "require-dev": {
+                "phpstan/phpstan": "^1.8",
                 "phpunit/phpunit": "^8.5.15"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -362,9 +364,9 @@
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
             "support": {
                 "issues": "https://github.com/microsoft/tolerant-php-parser/issues",
-                "source": "https://github.com/microsoft/tolerant-php-parser/tree/v0.1.2"
+                "source": "https://github.com/microsoft/tolerant-php-parser/tree/main"
             },
-            "time": "2022-10-05T17:30:19+00:00"
+            "time": "2024-09-28T11:58:12+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -3450,7 +3452,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "microsoft/tolerant-php-parser": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
