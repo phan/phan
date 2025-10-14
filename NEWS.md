@@ -16,6 +16,11 @@ New features (Analysis):
 - Detect implicit float-to-int conversion in modulo operator (deprecated in PHP 8.1)
   - New issue type: PhanTypeInvalidModuloOperand
   - Warns when float types are used with the modulo (%) operator
+- Improved analysis of intersection types with unknown classes (#4431)
+  - When an intersection type includes both known and unknown classes, Phan now analyzes the known types
+  - Method calls and property access are checked against known classes in the intersection
+  - Enables type checking even when some dependencies are missing or stubs are incomplete
+  - Also improves analysis of catch blocks with mixed known/unknown exception types
 - Full support for PHP 8.5 features:
   - #[NoDiscard] attribute support with detection of ignored return values (PhanNoDiscardReturnValueIgnored)
   - #[Override] attribute extended to properties (in addition to methods)
