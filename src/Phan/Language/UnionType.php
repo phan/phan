@@ -457,15 +457,15 @@ class UnionType implements Serializable, Stringable
                 $parts[] = $type_name;
                 continue;
             }
-            if (substr($type_name, -1) === ')') {
-                if (substr($type_name, 0, 1) === '(') {
+            if (str_ends_with($type_name, ')')) {
+                if (str_starts_with($type_name, '(')) {
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 1, -1)) as $inner_type_name) {
                         $parts[] = $inner_type_name;
                     }
                     continue;
-                } elseif (substr($type_name, 0, 2) === '?(') {
+                } elseif (str_starts_with($type_name, '?(')) {
                     foreach (self::extractTypePartsForStringInContext(substr($type_name, 2, -1)) as $inner_type_name) {
-                        if (substr($inner_type_name, 0, 1) === '?') {
+                        if (str_starts_with($inner_type_name, '?')) {
                             $parts[] = $inner_type_name;
                         } else {
                             $parts[] = '?' . $inner_type_name;
@@ -588,7 +588,6 @@ class UnionType implements Serializable, Stringable
     /**
      * @return UnionType
      * A UnionType with 0 or more nullable/non-nullable Types
-     * (limited to at most 1 in php 7, unlimited in php 8)
      */
     public static function fromReflectionType(?\ReflectionType $reflection_type): UnionType
     {
@@ -5586,7 +5585,7 @@ class UnionType implements Serializable, Stringable
         try {
             foreach ($this->asClassList($code_base, $context) as $clazz) {
                 // NOTE: It's possible for an internal class to cast to string without implementing __toString.
-                // (PHP 8 implements that in more places)
+                // (PHP implements that in more places)
                 // The $is_direct to hasMethodWithName currently doesn't matter one way or another for that.
                 if ($clazz->hasMethodWithName($code_base, "__toString", false)) {
                     return true;

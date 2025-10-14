@@ -358,7 +358,7 @@ class Type implements Stringable
 
     /**
      * @var ?string the progress state of the app. Used to clear memoizations for Type instances not in canonical_object_map.
-     * TODO: Look into WeakMap and garbage collection in php 8, if it is supported?
+     * TODO: Look into WeakMap and garbage collection
      */
     protected static $current_progress_state = null;
 
@@ -470,7 +470,7 @@ class Type implements Stringable
         if ($pos > 0) {
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
-                \substr($type_name, 0, $pos),
+                substr($type_name, 0, $pos),
                 $template_parameter_type_list,
                 false,
                 $source
@@ -489,7 +489,7 @@ class Type implements Stringable
             throw new EmptyFQSENException("Type name cannot be empty", \rtrim($namespace, "\\") . "\\");
         }
 
-        if (\strpos($type_name, '|') !== false) {
+        if (str_contains($type_name, '|')) {
             throw new InvalidFQSENException("Type name '$type_name' may not contain a pipe", $type_name);
         }
 
@@ -849,7 +849,7 @@ class Type implements Stringable
         if (false !== ($pos = \strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    \substr($type_name, 0, $pos),
+                    substr($type_name, 0, $pos),
                     false,
                     $source,
                     $code_base,
@@ -974,8 +974,8 @@ class Type implements Stringable
                 return StaticType::instanceWithTemplateTypeList($is_nullable, $template_parameter_type_list);
         }
 
-        if (\substr($type_name, 0, 1) === '?') {
-            return self::fromInternalTypeName(\substr($type_name, 1), true, $source, $code_base, $context, $template_parameter_type_list);
+        if (str_starts_with($type_name, '?')) {
+            return self::fromInternalTypeName(substr($type_name, 1), true, $source, $code_base, $context, $template_parameter_type_list);
         }
         throw new AssertionError("No internal type with name $type_name");
     }
@@ -1061,20 +1061,20 @@ class Type implements Stringable
         if ($fully_qualified_string === '') {
             throw new InvalidArgumentException("Type cannot be empty");
         }
-        while (\substr($fully_qualified_string, -1) === ')') {
+        while (str_ends_with($fully_qualified_string, ')')) {
             if ($fully_qualified_string[0] === '?') {
-                $fully_qualified_string = '?' . \substr($fully_qualified_string, 2, -1);
+                $fully_qualified_string = '?' . substr($fully_qualified_string, 2, -1);
             } else {
-                $fully_qualified_string = \substr($fully_qualified_string, 1, -1);
+                $fully_qualified_string = substr($fully_qualified_string, 1, -1);
             }
         }
-        if (\substr($fully_qualified_string, -2) === '[]') {
+        if (str_ends_with($fully_qualified_string, '[]')) {
             if ($fully_qualified_string[0] === '?') {
                 $is_nullable = true;
-                $fully_qualified_substring = \substr($fully_qualified_string, 1, -2);
+                $fully_qualified_substring = substr($fully_qualified_string, 1, -2);
             } else {
                 $is_nullable = false;
-                $fully_qualified_substring = \substr($fully_qualified_string, 0, -2);
+                $fully_qualified_substring = substr($fully_qualified_string, 0, -2);
             }
             return GenericArrayType::fromElementType(
                 Type::fromFullyQualifiedString($fully_qualified_substring),
@@ -1120,7 +1120,7 @@ class Type implements Stringable
             );
         }
 
-        if (0 !== \strpos($namespace, '\\')) {
+        if (!str_starts_with($namespace, '\\')) {
             $namespace = '\\' . $namespace;
         }
 
@@ -1144,7 +1144,7 @@ class Type implements Stringable
     {
         $is_nullable = $escaped_literal[0] === '?';
         if ($is_nullable) {
-            $escaped_literal = \substr($escaped_literal, 1);
+            $escaped_literal = substr($escaped_literal, 1);
         }
         if ($escaped_literal[0] === "'") {
             return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
@@ -1188,9 +1188,9 @@ class Type implements Stringable
             throw new AssertionError("Expected at least one component of a closure phpdoc type");
         }
         $return_type = \array_pop($shape_components);
-        if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
+        if ($return_type[0] === '(' && str_ends_with($return_type, ')')) {
             // TODO: Maybe catch that in UnionType parsing instead
-            $return_type = \substr($return_type, 1, -1);
+            $return_type = substr($return_type, 1, -1);
         }
         $params = self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE);
         $return_type = UnionType::fromStringInContext($return_type, new Context(), Type::FROM_NODE);
@@ -1406,28 +1406,28 @@ class Type implements Stringable
         if ($string === '') {
             throw new EmptyFQSENException("Type cannot be empty", '');
         }
-        while (\substr($string, -1) === ')') {
+        while (str_ends_with($string, ')')) {
             if ($string[0] === '?') {
                 if ($string[1] !== '(') {
                     // Account for the Closure(params...):return syntax
                     break;
                 }
-                $string = '?' . \substr($string, 2, -1);
+                $string = '?' . substr($string, 2, -1);
             } else {
                 if ($string[0] !== '(') {
                     break;
                 }
-                $string = \substr($string, 1, -1);
+                $string = substr($string, 1, -1);
             }
         }
 
-        if (\substr($string, -2) === '[]') {
+        if (str_ends_with($string, '[]')) {
             if ($string[0] === '?') {
                 $is_nullable = true;
-                $substring = \substr($string, 1, -2);
+                $substring = substr($string, 1, -2);
             } else {
                 $is_nullable = false;
-                $substring = \substr($string, 0, -2);
+                $substring = substr($string, 0, -2);
             }
             if ($substring === '') {
                 return ArrayType::instance($is_nullable);
@@ -1460,13 +1460,15 @@ class Type implements Stringable
         $trim_string = ltrim($string, '?');
         if ($source === Type::FROM_PHPDOC) {
             if ($context->getScope()->hasTemplateType($trim_string)) {
-                return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(substr($string, 0, 1) === '?');
+                return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(
+                    str_starts_with($string, '?')
+                );
             }
         }
         $alias_type = $context->getTypeAlias($trim_string);
         if ($alias_type instanceof Type) {
             if ($source === Type::FROM_PHPDOC) {
-                return $alias_type->withIsNullable(substr($string, 0, 1) === '?');
+                return $alias_type->withIsNullable(str_starts_with($string, '?'));
             }
             if ($code_base) {
                 Issue::maybeEmit(
@@ -1528,7 +1530,7 @@ class Type implements Stringable
            && false !== ($pos = \strrpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
-                \substr($type_name, 0, $pos);
+                substr($type_name, 0, $pos);
         }
 
         // Check to see if the type name is mapped via
@@ -1556,7 +1558,7 @@ class Type implements Stringable
                 GenericArrayType::KEY_MIXED
             );
         }
-        if (\substr($non_generic_partially_qualified_array_type_name, 0, 1) !== '\\' && $context->hasNamespaceMapFor(
+        if (!str_starts_with($non_generic_partially_qualified_array_type_name, '\\') && $context->hasNamespaceMapFor(
             \ast\flags\USE_NORMAL,
             $non_generic_partially_qualified_array_type_name
         )) {
@@ -1750,8 +1752,8 @@ class Type implements Stringable
         if (!StringUtil::isNonZeroLengthString($return_type)) {
             throw new AssertionError("Expected a return type");
         }
-        if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
-            $return_type = \substr($return_type, 1, -1);
+        if ($return_type[0] === '(' && str_ends_with($return_type, ')')) {
+            $return_type = substr($return_type, 1, -1);
         }
         $params = self::closureParamComponentStringsToParams($shape_components, $context, $source);
         $return = UnionType::fromStringInContext($return_type, $context, $source);
@@ -1773,17 +1775,17 @@ class Type implements Stringable
     {
         $result = [];
         foreach ($shape_components as $key => $component_string) {
-            if (\is_string($key) && \strpos($key, '\\') !== false) {
+            if (\is_string($key) && str_contains($key, '\\')) {
                 $key = ArrayShapeType::unescapeKey($key);
             }
-            if (\is_string($key) && \substr($key, -1) === '?') {
-                if (\substr($component_string, -1) === '=') {
-                    $component_string = \substr($component_string, 0, -1);
+            if (\is_string($key) && str_ends_with($key, '?')) {
+                if (str_ends_with($component_string, '=')) {
+                    $component_string = substr($component_string, 0, -1);
                 }
-                $key = \substr($key, 0, -1);
+                $key = substr($key, 0, -1);
                 $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
-            } elseif (\substr($component_string, -1) === '=') {
-                $component_string = \substr($component_string, 0, -1);
+            } elseif (str_ends_with($component_string, '=')) {
+                $component_string = substr($component_string, 0, -1);
                 $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } else {
                 $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base);
@@ -3683,11 +3685,11 @@ class Type implements Stringable
             }
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
-                return self::typeStringComponents(\substr($match[1], 1, -1));
+                return self::typeStringComponents(substr($match[1], 1, -1));
             } elseif (!isset($match[4])) {
-                if (\substr($type_string, -1) === ')') {
+                if (str_ends_with($type_string, ')')) {
                     // Parse '?(X[]) as '?X[]'
-                    return self::typeStringComponents('?' . \substr($match[2], 2, -1));
+                    return self::typeStringComponents('?' . substr($match[2], 2, -1));
                 } else {
                     return new Tuple5(
                         '',
@@ -3704,7 +3706,7 @@ class Type implements Stringable
             // exists and note its nullability
             $is_nullable = ($match[5] ?? '') === '?';
             if ($is_nullable) {
-                $type_string = \substr($type_string, 1);
+                $type_string = substr($type_string, 1);
             }
 
             if (($match[8] ?? '') !== '') {
@@ -3719,7 +3721,7 @@ class Type implements Stringable
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
-        $is_fully_qualified = (0 === \strpos($type_string, '\\'));
+        $is_fully_qualified = ( str_starts_with($type_string, '\\') );
 
         $fq_class_name_elements = \array_filter(\explode('\\', $type_string));
 
@@ -3751,7 +3753,7 @@ class Type implements Stringable
      */
     private static function closureTypeStringComponents(string $type_string, string $inner): Tuple5
     {
-        $parts = self::closureParams(\trim(\substr($inner, 1, -1)));
+        $parts = self::closureParams(\trim(substr($inner, 1, -1)));
         // TODO: parse params, same as @method
 
         // Parse the optional return type for this closure
@@ -3759,7 +3761,7 @@ class Type implements Stringable
         $colon_index = \strpos($type_string, ':', $i);
 
         if ($colon_index !== false) {
-            $return_type_string = \ltrim(\substr($type_string, $colon_index + 1));
+            $return_type_string = \ltrim(substr($type_string, $colon_index + 1));
         } else {
             $return_type_string = 'void';
         }
@@ -3850,7 +3852,7 @@ class Type implements Stringable
 
             // e.g. we're breaking up T1<T2<X,Y>> into "T1<T2<X" and "Y>>"
         }
-        if (\strpos($list_string, "'") !== false) {
+        if (str_contains($list_string, "'")) {
             return self::joinQuotedStrings($results);
         }
         return $results;

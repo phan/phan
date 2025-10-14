@@ -10,7 +10,7 @@ set -xeu
 
 # Ensure the build directory exists.
 # Use PHP_EXTENSION_DIR as a way to check if the module version changed for dev php versions
-# (it's of the form yyyymmdd, e.g. 20180731 for php 7.3.)
+# (it's of the form yyyymmdd, e.g. 20240924 for php 8.4.)
 PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID . '_' . PHP_DEBUG . '_' . PHP_ZTS . '_new' . md5(PHP_EXTENSION_DIR);")
 PHAN_BUILD_DIR="$HOME/.cache/phan-ast"
 EXPECTED_AST_FILE="$PHAN_BUILD_DIR/build/php-ast-$PHP_VERSION_ID-2020-09-20.so"

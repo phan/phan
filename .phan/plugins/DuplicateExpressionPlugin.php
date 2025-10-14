@@ -415,7 +415,7 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
             $this->code_base,
             $this->context,
             'PhanPluginDuplicateConditionalNullCoalescing',
-            '"' . $expr . '" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
+            '"' . $expr . '" can usually be simplified to "X ?? Y". The duplicated expression X was {CODE}',
             [ASTReverter::toShortString($x_node)]
         );
     }

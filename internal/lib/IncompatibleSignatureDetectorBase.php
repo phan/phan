@@ -21,7 +21,7 @@ define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(__DIR__, 2) . '/src/Phan/
  * - Compare the signatures against Phan's to report incomplete or inaccurate signatures of Phan itself (or the external signature)
  *
  * TODO: could extend this to properties (the use of properties in extensions is rare).
- * TODO: Fix zookeeperconfig in phpdoc-en svn repo
+ * TODO: Fix zookeeperconfig in doc-en git repo
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  * @phan-file-suppress PhanPluginRemoveDebugAny only used internally
@@ -64,20 +64,19 @@ Usage: $program_name command [...args]
   $program_name update-real-param-names path/to/php-src-or-ext-dir
     Update param names of functions (without alternates) based on *.stub.php files in a directory.
 
-  $program_name update-svn path/to/phpdoc_svn_dir
+  $program_name update-source path/to/phpdoc_dir
     Update any of Phan's missing signatures based on a checkout of the docs.php.net source repo.
 
-    phpdoc_svn_dir can be checked out via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en' (subversion must be installed)
-    (and updated via 'svn update')
-    see http://doc.php.net/tutorial/structure.php
+    phpdoc_dir must be a directory with `doc-en` and `doc-base` as subdirectories, that are clones of
+    https://github.com/php/doc-en and https://github.com/php/doc-base respectively respectively
 
-  $program_name update-descriptions-svn path/to/phpdoc_svn_dir
+  $program_name update-descriptions-source path/to/phpdoc_dir
     Update Phan's descriptions for functions/methods based on the docs.php.net source repo.
 
   $program_name update-descriptions-stubs path/to/stubs_dir
     Update Phan's descriptions for functions/methods based on a checkout of a directory with stubs for extensions.
 
-  $program_name compare-named-parameters path/to/stubs_dir path/to/phpdoc_svn_dir
+  $program_name compare-named-parameters path/to/stubs_dir path/to/phpdoc_dir
 
     Compares the parameter names of the functions/methods in stub files used by php-src (or an extension) and the
     official documentation from the repo used to generate php.net function documentation.
@@ -207,7 +206,7 @@ EOT;
         $phan_signatures = static::readSignatureMap();
         $new_signatures = [];
         foreach ($phan_signatures as $method_name => $arguments) {
-            if (strpos($method_name, "'") !== false || isset($phan_signatures["$method_name'1"])) {
+            if (str_contains($method_name, "'") || isset($phan_signatures["$method_name'1"])) {
                 // Don't update functions/methods with alternate
                 $new_signatures[$method_name] = $arguments;
                 continue;
@@ -231,20 +230,20 @@ EOT;
     protected function updateSignature(string $function_like_name, array $arguments_from_phan): array
     {
         $return_type = $arguments_from_phan[0];
-        $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
-        if (is_null($arguments_from_svn)) {
+        $arguments_from_source = $this->parseFunctionLikeSignature($function_like_name);
+        if (is_null($arguments_from_source)) {
             return $arguments_from_phan;
         }
         if ($return_type === '') {
-            $svn_return_type = $arguments_from_svn[0] ?? '';
-            if ($svn_return_type !== '') {
-                static::debug("A better Phan return type for $function_like_name is " . $svn_return_type . "\n");
-                $arguments_from_phan[0] = $svn_return_type;
+            $source_return_type = $arguments_from_source[0] ?? '';
+            if ($source_return_type !== '') {
+                static::debug("A better Phan return type for $function_like_name is " . $source_return_type . "\n");
+                $arguments_from_phan[0] = $source_return_type;
             }
         }
         $param_index = 0;
-        $arguments_from_svn_list = array_values($arguments_from_svn);  // keys are 0, 1, 2,...
-        $arguments_from_svn_names = array_keys($arguments_from_svn);  // keys are 0, 1, 2,...
+        $arguments_from_source_list = array_values($arguments_from_source);  // keys are 0, 1, 2,...
+        $arguments_from_source_names = array_keys($arguments_from_source);  // keys are 0, 1, 2,...
         foreach ($arguments_from_phan as $param_name => $param_type_from_phan) {
             if ($param_name === 0) {
                 continue;
@@ -252,21 +251,21 @@ EOT;
             $param_index++;
 
             // after incrementing param_index
-            $param_from_svn_name = $arguments_from_svn_names[$param_index] ?? null;
-            if (is_string($param_from_svn_name)) {
+            $param_from_source_name = $arguments_from_source_names[$param_index] ?? null;
+            if (is_string($param_from_source_name)) {
                 $param_name = preg_replace('/^(rw|r|w)_/', '', trim((string)$param_name, '.=&'));
-                $param_from_svn_name = trim($param_from_svn_name, '.=&');
-                if ($param_from_svn_name !== $param_name) {
-                    echo "Name mismatch for $function_like_name: #$param_index is \$$param_name in Phan, \$$param_from_svn_name in source\n";
+                $param_from_source_name = trim($param_from_source_name, '.=&');
+                if ($param_from_source_name !== $param_name) {
+                    echo "Name mismatch for $function_like_name: #$param_index is \$$param_name in Phan, \$$param_from_source_name in source\n";
                 }
             }
             if ($param_type_from_phan !== '') {
                 continue;
             }
-            $param_from_svn = $arguments_from_svn_list[$param_index] ?? '';
-            if ($param_from_svn !== '') {
-                static::debug("A better Phan param type for $function_like_name (for param #$param_index called \$$param_name) is $param_from_svn\n");
-                $arguments_from_phan[$param_name] = $param_from_svn;
+            $param_from_source = $arguments_from_source_list[$param_index] ?? '';
+            if ($param_from_source !== '') {
+                static::debug("A better Phan param type for $function_like_name (for param #$param_index called \$$param_name) is $param_from_source\n");
+                $arguments_from_phan[$param_name] = $param_from_source;
             }
         }
         // TODO: Update param types
@@ -354,7 +353,7 @@ EOT;
         if (isset($this->aliases[$method_name])) {
             $method_name = $this->aliases[$method_name];
         }
-        if (strpos($method_name, '::') !== false) {
+        if (str_contains($method_name, '::')) {
             $parts = \explode('::', $method_name);
             if (\count($parts) !== 2) {
                 throw new InvalidArgumentException("Wrong number of parts in $method_name");

@@ -437,7 +437,7 @@ class Comment
     ): Comment {
 
         // Don't parse the comment if this doesn't need to.
-        if ($comment === '' || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
+        if ($comment === '' || !Config::getValue('read_type_annotations') || !str_contains($comment, '@')) {
             return NullComment::instance();
         }
 

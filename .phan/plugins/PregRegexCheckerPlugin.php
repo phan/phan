@@ -67,7 +67,7 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
             );
             return;
         }
-        if (strpos($pattern, '$') !== false && (Config::getValue('plugin_config')['regex_warn_if_newline_allowed_at_end'] ?? false)) {
+        if (str_contains($pattern, '$') && (Config::getValue('plugin_config')['regex_warn_if_newline_allowed_at_end'] ?? false)) {
             foreach (self::checkForSuspiciousRegexPatterns($pattern) as [$issue_type, $issue_template]) {
                 self::emitIssue(
                     $code_base,

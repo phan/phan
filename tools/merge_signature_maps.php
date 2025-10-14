@@ -54,7 +54,7 @@ function main(): void
         if (!isset($merged_map[$function_name]) && !isset($merged_map[$lowercase_name])) {
             // Create a basic signature with the return type from the real map
             // For methods, use a simple void parameter signature
-            if (strpos($function_name, '::') !== false) {
+            if (str_contains($function_name, '::')) {
                 $merged_map[$function_name] = [$real_return_type];
             } else {
                 // For functions, we need to be more careful about parameters

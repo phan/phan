@@ -10,7 +10,7 @@ use \Phan\Issue;
  * @see src/Phan/Config.php
  * See Config for all configurable options.
  *
- * This is a config file which tests Phan's real types for php 7.x.
+ * This is a config file which tests Phan's real types.
  */
 return [
     'target_php_version' => '8.1',

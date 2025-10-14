@@ -9,7 +9,7 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for occurrences of `$$x`,
- * which may be a typo, or behave differently in php 5 vs 7, or be hard to analyze code.
+ * which may be a typo, or hard to analyze code.
  *
  * This file demonstrates plugins for Phan. Plugins hook into various events.
  * DollarDollarPlugin hooks into one event:

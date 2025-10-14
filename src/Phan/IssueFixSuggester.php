@@ -134,7 +134,7 @@ class IssueFixSuggester
             if ($fqsen instanceof FullyQualifiedClassName) {
                 return "new $fqsen()";
             }
-            if (is_string($fqsen) && strpos($fqsen, 'added in PHP') !== false) {
+            if (is_string($fqsen) && str_contains($fqsen, 'added in PHP')) {
                 return $fqsen;
             }
             return $fqsen . '()';

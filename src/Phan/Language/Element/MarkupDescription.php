@@ -48,7 +48,7 @@ class MarkupDescription
             return '';
         }
         $description = \str_replace('*/', '*\/', \trim($description));
-        if (\strpos($description, "\n") !== false) {
+        if (str_contains($description, "\n")) {
             $result = "$indent/**\n";
             foreach (\explode("\n", $description) as $line) {
                 $line = \rtrim($line);
@@ -289,7 +289,7 @@ class MarkupDescription
         if (!\is_string($doc_comment)) {
             return [];
         }
-        if (\strpos($doc_comment, '@param') === false) {
+        if (!str_contains($doc_comment, '@param')) {
             return [];
         }
         // Trim the start and the end of the doc comment.

@@ -229,7 +229,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
                 continue;
             }
             $comment_text = $token->text;
-            if (\strpos($comment_text, '@phan-') === false) {
+            if (!str_contains($comment_text, '@phan-')) {
                 continue;
             }
             yield from self::yieldSuppressionCommentsFromTokenContents(
@@ -256,7 +256,7 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
                 continue;
             }
             $comment_text = $token[1];
-            if (\strpos($comment_text, '@phan-') === false) {
+            if (!str_contains($comment_text, '@phan-')) {
                 continue;
             }
             yield from self::yieldSuppressionCommentsFromTokenContents(

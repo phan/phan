@@ -28,7 +28,6 @@ use function is_string;
 use function json_encode;
 use function ltrim;
 use function preg_match;
-use function strpos;
 use function ucfirst;
 
 use const JSON_UNESCAPED_SLASHES;
@@ -112,7 +111,7 @@ final class HasPHPDocPlugin extends PluginV3 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!StringUtil::isNonZeroLengthString($description)) {
-            if (strpos($doc_comment, '@deprecated') !== false) {
+            if (str_contains($doc_comment, '@deprecated')) {
                 return;
             }
             self::emitIssue(

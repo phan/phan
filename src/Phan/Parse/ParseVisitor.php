@@ -494,11 +494,9 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
         } elseif ('__tostring' === $method_name_lower) {
-            // In PHP 8 and later having a __toString method automatically adds the Stringable interface, #4476
-            if (Config::get_closest_minimum_target_php_version_id() >= 80000) {
-                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen, built in type
-                $class->addAdditionalType(Type::fromFullyQualifiedString('\Stringable'));
-            }
+            // Having a __toString method automatically adds the Stringable interface, #4476
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen, built in type
+            $class->addAdditionalType(Type::fromFullyQualifiedString('\Stringable'));
         }
 
 
@@ -1972,7 +1970,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitStmtList(Node $node): Context
     {
         foreach ($node->children as $c) {
-            if (\is_string($c) && \strpos($c, '@phan-type') !== false) {
+            if (\is_string($c) && str_contains($c, '@phan-type')) {
                 $this->analyzePhanTypeAliasStatement($c);
             }
         }

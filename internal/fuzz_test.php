@@ -18,7 +18,7 @@ class FuzzTest
         $files = glob("$basename/*.php");
         $result = [];
         foreach ($files as $file) {
-            if (strpos($file, '0493_') !== false) {
+            if (str_contains($file, '0493_')) {
                 // TODO: Fix https://github.com/phan/phan/issues/1988
                 continue;
             }

@@ -89,10 +89,10 @@ class CLI
 
     /**
      * List of short flags passed to getopt
-     * still available: g,w
+     * still available: b, g,w
      * @internal
      */
-    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:N';
+    public const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqr:pid:3:y:l:ntuxXj:zhvs:SCP:I:DB:N';
 
     /**
      * List of long flags passed to getopt
@@ -104,7 +104,6 @@ class CLI
         'analyze-all-files',
         'assume-real-types-for-internal-functions',
         'automatic-fix',
-        'backward-compatibility-checks',
         'baseline-summary-type:',
         'color',
         'color-scheme:',
@@ -309,7 +308,7 @@ class CLI
                         throw new UsageException("Missing required value for '$arg'", EXIT_FAILURE);
                     }
                     if (strlen($key) === 1 && strlen($parts[0]) === 2) {
-                        if (\strpos($short_options_string, "$key:") !== false) {
+                        if (str_contains($short_options_string, "$key:")) {
                             throw new UsageException("Missing required value for '-$key'", EXIT_FAILURE);
                         }
                     }
@@ -1399,7 +1398,7 @@ class CLI
         $plugin_dirname = ConfigPluginSet::getBuiltinPluginDirectory();
         $candidates = [];
         foreach (\scandir($plugin_dirname) as $basename) {
-            if (\substr($basename, -4) !== '.php') {
+            if (!str_ends_with($basename, '.php')) {
                 continue;
             }
             $plugin_name = \substr($basename, 0, -4);
@@ -1680,9 +1679,6 @@ $init_help
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
-
- -b, --backward-compatibility-checks
-  Check for potential PHP 5 -> PHP 7 BC issues
 
  --target-php-version {8.1,8.2,8.3,8.4,8.5,native}
   The PHP version that the codebase will be checked for compatibility against.

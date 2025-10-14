@@ -1949,7 +1949,7 @@ class CodeBase
     public function getClassNamesOfNamespace(string $namespace): array
     {
         $namespace = strtolower($namespace);
-        if (\substr($namespace, 0, 1) !== '\\') {
+        if (!str_starts_with($namespace, '\\')) {
             $namespace = "\\$namespace";
         }
         return $this->getClassNamesInNamespaceMap()[$namespace] ?? [];
@@ -1961,7 +1961,7 @@ class CodeBase
     public function getFunctionNamesOfNamespace(string $namespace): array
     {
         $namespace = strtolower($namespace);
-        if (\substr($namespace, 0, 1) !== '\\') {
+        if (!str_starts_with($namespace, '\\')) {
             $namespace = "\\$namespace";
         }
         return $this->getFunctionNamesInNamespaceMap()[$namespace] ?? [];
@@ -1973,7 +1973,7 @@ class CodeBase
     public function getConstantNamesOfNamespace(string $namespace): array
     {
         $namespace = strtolower($namespace);
-        if (\substr($namespace, 0, 1) !== '\\') {
+        if (!str_starts_with($namespace, '\\')) {
             $namespace = "\\$namespace";
         }
         return $this->getConstantNamesInNamespaceMap()[$namespace] ?? [];

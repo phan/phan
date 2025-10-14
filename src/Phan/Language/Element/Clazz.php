@@ -4567,7 +4567,7 @@ class Clazz extends AddressableElement
                 // Check this after checking if it's an internal stub
                 $fqsen_string = $this->fqsen->__toString();
                 if ($fqsen_string === '\Attribute') {
-                    // Handle the most common case in php 8
+                    // Handle the most common case
                     return true;
                 }
                 if (\class_exists($fqsen_string)) {

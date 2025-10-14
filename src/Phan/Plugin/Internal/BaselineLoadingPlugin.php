@@ -89,7 +89,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         }
 
         if (\in_array($issue_type, $this->directory_suppressions[''] ?? [], true)) {
-            if (!Paths::isAbsolutePath($issue_type) && \substr($normalized_file, 0, 3) !== '../') {
+            if (!Paths::isAbsolutePath($issue_type) && !str_starts_with($normalized_file, '../')) {
                 return true;
             }
         }

@@ -125,7 +125,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             }
             $return_type = $this->return_type;
             $return_type_string = $return_type->__toString();
-            if ($return_type->typeCount() >= 2 || \substr($return_type_string, -1) === ']') {
+            if ($return_type->typeCount() >= 2 || str_ends_with($return_type_string, ']')) {
                 $return_type_string = "($return_type_string)";
             }
             return ($this->is_nullable ? '?' : '') . static::NAME . '(' . \implode(',', $parts) . '):' . $return_type_string;

@@ -25,8 +25,6 @@ use Phan\Parse\ParseVisitor;
  * Analyzer of the attributes of declarations.
  * Emits warnings, and will eventually modify the way the element is analyzed.
  * (this is why it's run before starting the analysis phase)
- *
- * NOTE: This runs without problems in php 7 because it uses constants from \Phan\Language\Element\Attribute, not from \Attribute
  */
 class AttributeAnalyzer
 {

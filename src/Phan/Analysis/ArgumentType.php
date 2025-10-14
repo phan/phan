@@ -1596,9 +1596,6 @@ final class ArgumentType
             if ($issue_type === Issue::TypeMismatchArgumentInternal) {
                 if ($argument_type->hasRealTypeSet() &&
                     !$argument_type->getRealUnionType()->canCastToDeclaredType($code_base, $context, $alternate_parameter_type)) {
-                    // PHP 7.x doesn't have reflection types for many methods and global functions and won't throw,
-                    // but will emit a warning and fail the call.
-                    //
                     // XXX: There are edge cases, e.g. some php functions will allow passing in null depending on the parameter parsing API used, without warning.
                     $issue_type = Issue::TypeMismatchArgumentInternalProbablyReal;
                 } else {

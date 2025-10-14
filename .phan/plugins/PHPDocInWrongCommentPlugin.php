@@ -63,7 +63,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
                 }
                 continue;
             }
-            if (strpos($comment_string, '@') === false) {
+            if (!str_contains($comment_string, '@')) {
                 continue;
             }
             $lineno = $token[2];

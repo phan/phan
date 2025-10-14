@@ -111,7 +111,7 @@ EOB;
     }
 
     // Guess if this is a snippet or file contents
-    $add_prefix = ($expr[0] ?? '') !== '<' && \substr($expr, 0, 2) !== '#!';
+    $add_prefix = ($expr[0] ?? '') !== '<' && !str_starts_with($expr, '#!');
     if ($add_prefix) {
         $expr = '<' . '?php ' . $expr;
     }

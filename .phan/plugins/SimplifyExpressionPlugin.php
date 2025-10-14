@@ -18,8 +18,6 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  *
  * - E.g. `$x > 0 ? true : false` can be simplified to `$x > 0`
  *
- * Note that in PHP 7, many functions did not yet have real return types
- *
  * This file demonstrates plugins for Phan. Plugins hook into various events.
  * DuplicateExpressionPlugin hooks into one event:
  *

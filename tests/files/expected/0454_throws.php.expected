@@ -2,7 +2,7 @@
 %s:15 PhanUndeclaredTypeReturnType Return type of example1() is undeclared type \MyNs\MissingType
 %s:21 PhanUndeclaredTypeThrowsType @throws type of example3 has undeclared type \MyNs\MissingException
 %s:23 PhanMisspelledAnnotation Saw misspelled annotation @throw. Did you mean @throws?
-%s:30 PhanTypeInvalidThrowsNonThrowable @throws annotation of a has suspicious class type \stdClass, which does not extend Error/Exception
+%s:30 PhanTypeInvalidThrowsNonThrowable @throws annotation of a has suspicious class type \stdClass, which does not extend Error/Exception (Did you mean to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class.)
 %s:33 PhanTypeInvalidThrowsNonObject @throws annotation of b has invalid non-object type false, expected a class
 %s:39 PhanTypeInvalidThrowsNonThrowable @throws annotation of d has suspicious class type \MyNs\Test454, which does not extend Error/Exception
 %s:42 PhanTypeInvalidThrowsNonObject @throws annotation of e has invalid non-object type resource, expected a class

@@ -183,7 +183,7 @@ final class Builder
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't
             // just skip it or we'd mess up the parameter order.
-            if (0 !== \strpos($type, '$')) {
+            if (!str_starts_with($type, '$')) {
                 $union_type =
                     UnionType::fromStringInContext(
                         $type,
@@ -194,9 +194,9 @@ final class Builder
             } else {
                 $union_type = UnionType::empty();
             }
-            $is_output_parameter = \strpos($line, '@phan-output-reference') !== false;
-            $is_ignored_parameter = \strpos($line, '@phan-ignore-reference') !== false;
-            $is_mandatory_in_phpdoc = \strpos($line, '@phan-mandatory-param') !== false;
+            $is_output_parameter = str_contains($line, '@phan-output-reference');
+            $is_ignored_parameter = str_contains($line, '@phan-ignore-reference');
+            $is_mandatory_in_phpdoc = str_contains($line, '@phan-mandatory-param');
 
             return new Parameter(
                 $variable_name,
@@ -327,7 +327,7 @@ final class Builder
     public function build(): Comment
     {
         foreach ($this->lines as $i => $line) {
-            if (\strpos($line, '@') === false) {
+            if (!str_contains($line, '@')) {
                 continue;
             }
             // https://docs.phpdoc.org/2.9/guides/docblocks.html
@@ -512,20 +512,20 @@ final class Builder
                     }
                     break;
                 default:
-                    if (\strpos($type, 'phan-') === 0) {
+                    if (str_starts_with($type, 'phan-')) {
                         $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
                     }
                     break;
             }
         }
 
-        if (\strpos($line, '@internal') !== false) {
+        if (str_contains($line, '@internal')) {
             if (\preg_match('/@internal\b/', $line, $match)) {
                 $this->comment_flags |= Flags::IS_NS_INTERNAL;
             }
         }
 
-        if (\strpos($line, 'verride') !== false) {
+        if (str_contains($line, 'verride')) {
             if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
                 // TODO: split class const and global const.
                 if ($this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST, Comment::ON_PROPERTY], $i)) {
@@ -1165,7 +1165,7 @@ final class Builder
         $trimmed_line = \trim($line);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
-            if (\strpos($cur_line, $line) !== false) {
+            if (str_contains($cur_line, $line)) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $this->comment_lines_count - 1) {
@@ -1200,7 +1200,7 @@ final class Builder
         $trimmed_line = \trim($lines[$i]);
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
             $cur_line = $lines_array[$check_lineno];
-            if (\strpos($cur_line, $line) !== false) {
+            if (str_contains($cur_line, $line)) {
                 // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
                 $j = $i - ($lineno_search - $check_lineno);
                 if ($j > 0 && $j < $count - 1) {
@@ -1757,7 +1757,7 @@ final class Builder
     {
         return \implode('@', \array_map(
             static function (string $annotation): string {
-                if (\strpos($annotation, "\n") === false
+                if (!str_contains($annotation, "\n")
                     || !\preg_match('/^((?:param|var|return)\s[^$\n]+[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;

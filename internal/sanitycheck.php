@@ -14,7 +14,7 @@ require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase
  */
 function load_internal_function(string $function_name): ReflectionFunctionAbstract
 {
-    if (strpos($function_name, '::') !== false) {
+    if (str_contains($function_name, '::')) {
         [$class_name, $method_name] = explode('::', $function_name, 2);
         $class = new ReflectionClass($class_name);
         return $class->getMethod($method_name);
@@ -43,10 +43,10 @@ function getParametersCountsFromPhan(array $fields): array
             throw new InvalidArgumentException("Invalid parameter description $type");
         }
 
-        if (strpos($type, '...') !== false) {
+        if (str_contains($type, '...')) {
             $num_optional = 10000;
             break;
-        } elseif (strpos($type, '=') === false) {
+        } elseif (!str_contains($type, '=')) {
             $num_required++;
             if ($saw_optional) {
                 $saw_optional_after_required = true;
@@ -140,7 +140,7 @@ class PhanParameterInfo
         $name = $original_name_spec;
         $this->is_by_reference = ($name[0] ?? '') === '&';
         $name = ltrim($name, '&');
-        $this->is_variadic = strpos($name, '...') !== false;
+        $this->is_variadic = str_contains($name, '...');
         $name = trim($name, '.');
         $this->is_optional = $name[strlen($name) - 1] === '=';
         $name = rtrim($name, '=');
@@ -358,7 +358,7 @@ function check_fields(string $function_name, array $fields, array $signatures): 
                 $reflection_representation = getUnionTypeStringForReflectionType($reflection_type);
                 $phan_representation = $phan_parameter->value;
                 if (strcasecmp($reflection_representation, $phan_representation) !== 0) {
-                    if ($reflection_representation === 'array' && strpos($phan_representation, '[]') !== false) {
+                    if ($reflection_representation === 'array' && str_contains($phan_representation, '[]')) {
                         // nothing to do
                     } else {
                         if ($has_alternate) {

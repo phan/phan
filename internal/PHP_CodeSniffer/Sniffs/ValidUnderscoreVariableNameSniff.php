@@ -56,7 +56,7 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
         // so we have to ignore a leading underscore if there is one and just
         // check the main part of the variable name.
         $original_var_name = $var_name;
-        if (substr($var_name, 0, 1) === '_') {
+        if (str_starts_with($var_name, '_')) {
             // Let PSR-12 checks deal with this
             return;
         }
@@ -97,7 +97,7 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
 
         $public = ($member_props['scope'] === 'public');
 
-        if (substr($var_name, 0, 1) === '_') {
+        if (str_starts_with($var_name, '_')) {
             // Phan's coding style uses PSR-12.
             // PSR-12 already checks for this, so skip these
             return;
@@ -169,7 +169,7 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
         if (preg_match("|[^$legal_chars]|", $var_name) > 0) {
             return false;
         }
-        if (strpos($var_name, '__') !== false) {
+        if (str_contains($var_name, '__')) {
             return false;
         }
         return true;

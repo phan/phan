@@ -1152,13 +1152,13 @@ EOT
             ],
             [
                 $example_file_contents,
-                new Position(27, 12),  // JSON_PRETTY_PRINT
+                new Position(27, 9),  // JSON_PRETTY_PRINT (position at start of token)
                 <<<'EOT'
 ```php
 const JSON_PRETTY_PRINT = 128
 ```
 
-Use whitespace in returned data to format it. Available since PHP 5.4.0.
+Use whitespace in returned data to format it.
 EOT
             ],
             [

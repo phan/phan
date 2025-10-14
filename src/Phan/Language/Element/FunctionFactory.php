@@ -276,13 +276,13 @@ class FunctionFactory
                 }
 
                 // Check to see if it's variadic
-                if (\strpos($parameter_name, '...') !== false) {
+                if (str_contains($parameter_name, '...')) {
                     $flags |= \ast\flags\PARAM_VARIADIC;
                     $parameter_name = \str_replace('...', '', $parameter_name);
                 }
 
                 // Check to see if it's an optional parameter
-                if (\strpos($parameter_name, '=') !== false) {
+                if (str_contains($parameter_name, '=')) {
                     $is_optional = true;
                     $parameter_name = \str_replace('=', '', $parameter_name);
                 }
