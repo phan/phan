@@ -29,6 +29,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
@@ -74,6 +75,12 @@ class Analysis
     {
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
+
+        // Register undo operation for global variables (will be restored when file changes)
+        // This is registered during parse phase when undo tracking is enabled
+        if (!$is_php_internal_stub) {
+            GlobalScope::registerUndoForFile($file_path);
+        }
         if ($is_php_internal_stub) {
             /** @see \Phan\Language\FileRef::isPHPInternal() */
             $file_path = 'internal';
@@ -530,6 +537,9 @@ class Analysis
         ?Request $request,
         ?string $override_contents = null
     ): Context {
+        // Track which file is being analyzed for global variable contribution tracking
+        GlobalScope::startAnalyzingFile($file_path);
+
         // Set the file on the context
         $context = (new Context())->withFile($file_path);
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -559,11 +569,13 @@ class Analysis
                     $file_path
                 );
 
+                GlobalScope::finishAnalyzingFile();
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
         } catch (ParseException | ParseError | CompileError) {
             // Issue::SyntaxError was already emitted.
+            GlobalScope::finishAnalyzingFile();
             return $context;
         }
 
@@ -585,6 +597,10 @@ class Analysis
         $context->warnAboutUnusedUseElements($code_base);
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
+
+        // Mark the end of this file's analysis for global variable tracking
+        GlobalScope::finishAnalyzingFile();
+
         return $context;
     }
 
