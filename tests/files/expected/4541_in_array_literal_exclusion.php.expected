@@ -1,0 +1,1 @@
+%s:62 PhanTypeMismatchArgument Argument 1 ($param) is $status of type 'active'|'inactive' but \NS4541\expects_alpha_or_beta() takes 'alpha'|'beta' defined at %s:11
