@@ -2045,6 +2045,43 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Check if a condition node represents a simple truthiness check (e.g. `if ($x)` or `if ($x == true)`).
+     * These are the cases where we want to avoid introducing broad falsey types per issue #4553.
+     *
+     * @return bool True if this is a simple truthiness check that should skip negated type narrowing
+     */
+    private static function isSimpleTruthinessCheck(Node $condition_node): bool
+    {
+        $kind = $condition_node->kind;
+
+        // Case 1: Simple variable check: if ($x)
+        if ($kind === \ast\AST_VAR) {
+            return true;
+        }
+
+        // Case 2: Comparison with boolean literal: if ($x == true), if ($x === false), etc.
+        if ($kind === \ast\AST_BINARY_OP) {
+            $flags = $condition_node->flags;
+            if ($flags !== \ast\flags\BINARY_IS_EQUAL && $flags !== \ast\flags\BINARY_IS_IDENTICAL) {
+                return false;
+            }
+
+            $left = $condition_node->children['left'];
+            $right = $condition_node->children['right'];
+
+            // Check if one side is a variable and the other is a boolean literal
+            if ($left instanceof Node && $left->kind === \ast\AST_VAR && \is_bool($right)) {
+                return true;
+            }
+            if ($right instanceof Node && $right->kind === \ast\AST_VAR && \is_bool($left)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param Node $node
      * An AST node we'd like to analyze the statements
      *
@@ -2088,7 +2125,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
+        $child_node_count = \count($child_nodes);
+        $child_index = 0;
         foreach ($child_nodes as $child_node) {
+            $child_index++;
             // The conditions need to communicate to the outer
             // scope for things like assigning variables.
             // $child_context = $fallthrough_context->withClonedScope();
@@ -2158,6 +2198,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     // Treat `else` as equivalent to `elseif (true)`
                     $inferred_cond_value = $condition_node ?? true;
                 }
+                $excluded_elem_count_before = $excluded_elem_count;
                 if (!$inferred_cond_value) {
                     // Don't merge this scope into the outer scope
                     // e.g. "if (false) { anything }"
@@ -2179,7 +2220,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                         // TODO: Could warn if this is not a condition on a static variable
                         $first_unconditionally_true_index ??= \count($child_context_list);
                     }
-                    $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($condition_node);
+                    // Issue #4553: Only apply negated condition when there are more branches to follow (elseif/else)
+                    // or when the current branch unconditionally exits, or when the condition is complex.
+                    // This avoids introducing overly broad falsey types (e.g. ?''|?'0'|?0|?0.0|?array{}|?false)
+                    // when a simple `if ($x) {}` is used without else/elseif and doesn't unconditionally exit.
+                    $is_last_branch = ($child_index >= $child_node_count);
+                    $current_branch_exits = ($excluded_elem_count > $excluded_elem_count_before);
+                    $is_simple_conditional = self::isSimpleTruthinessCheck($condition_node);
+                    if (!$is_last_branch || $current_branch_exits || !$is_simple_conditional) {
+                        $fallthrough_context = (new NegatedConditionVisitor($this->code_base, $fallthrough_context))->__invoke($condition_node);
+                    }
                 } elseif ($condition_node) {
                     $first_unconditionally_true_index ??= \count($child_context_list);
                 }
