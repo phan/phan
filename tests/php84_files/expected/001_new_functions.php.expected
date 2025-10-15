@@ -1,37 +1,16 @@
 %s:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($options) is 'value' of type string but \request_parse_body() takes ?array
 %s:8 PhanTypeMismatchArgumentInternal Argument 1 ($num) is 1 of type int but \bcceil() takes string
 %s:18 PhanTypeMismatchArgumentInternal Argument 1 ($timestamp) is '1' of type string but \DateTime::createFromTimestamp() takes float|int
-%s:32 PhanPluginPossiblyStaticClosure Closure(string $value) : string can be static
-%s:48 PhanPossiblyNonClassMethodCall Call to method parseToCalendar on type \IntlDateFormatter|false that could be a non-object
 %s:51 PhanTypeMismatchArgumentInternal Argument 1 ($string) is false of type false but \grapheme_str_split() takes string
 %s:57 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is ['array'] of type array{0:'array'} but \mb_trim() takes string
 %s:65 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is ['value'] of type array{0:'value'} but \mb_ucfirst() takes string
-%s:70 PhanPluginPossiblyStaticClosure Closure() : bool can be static
 %s:73 PhanInvalidFQSENInCallable Possible call to a function 'not a closure' with an invalid FQSEN.
 %s:73 PhanTypeMismatchArgumentInternalReal Argument 1 ($closure) is 'not a closure' of type string but \opcache_jit_blacklist() takes \Closure
 %s:78 PhanTypeMismatchArgumentInternalReal Argument 1 ($process_id) is 'invalid' of type string but \pcntl_getcpuaffinity() takes ?int
 %s:87 PhanTypeMismatchArgumentInternal Argument 3 ($info) is $_pcntl_info of type string but \pcntl_waitid() takes array
-%s:89 PhanPluginPossiblyStaticClosure Closure(string $message) : void can be static
-%s:89 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Pdo\Pgsql
-%s:89 PhanUndeclaredClassMethod Call to method setNoticeCallback from undeclared class \Pdo\Pgsql
-%s:90 PhanPluginRemoveDebugEcho Saw output expression/statement in echo $message;
 %s:102 PhanTypeMismatchArgumentInternal Argument 2 ($cmd) is 123 of type int but \pg_put_copy_data() takes string
-%s:109 PhanPluginCanUseVoidReturnType Can use void as a return type of {closure}
-%s:109 PhanPluginPossiblyStaticClosure Closure(\DateTime $dt) can be static
-%s:112 PhanPluginPossiblyStaticClosure Closure(\DateTime $dt) : \DateTime can be static
-%s:115 PhanPluginCanUseVoidReturnType Can use void as a return type of {closure}
-%s:115 PhanPluginPossiblyStaticClosure Closure(\DateTime $dt) can be static
-%s:118 PhanPluginPossiblyStaticClosure Closure(\DateTime $dt) : \DateTime can be static
-%s:130 PhanPluginNoCommentOnFunction Function \gen has no doc comment
-%s:133 PhanPluginDuplicateAdjacentStatement Statement (yield) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 %s:147 PhanParamTooManyInternal Call with 1 arg(s) to \http_get_last_response_headers() which only takes 0 arg(s). This would throw an ArgumentCountError.
-%s:158 PhanPluginPossiblyStaticClosure Closure(string $value) : bool can be static
-%s:161 PhanPluginPossiblyStaticClosure Closure(string $value) : bool can be static
-%s:164 PhanPluginPossiblyStaticClosure Closure(string $value) : bool can be static
-%s:167 PhanPluginPossiblyStaticClosure Closure(string $value) : bool can be static
-%s:170 PhanPluginPossiblyStaticClosure Closure() : bool can be static
 %s:170 PhanTypeMismatchArgumentInternalReal Argument 1 ($array) is 'not array' of type string but \array_all() takes array
 %s:173 PhanInvalidFQSENInCallable Possible call to a function 'not callable' with an invalid FQSEN.
-%s:174 PhanPluginPossiblyStaticClosure Closure(string $value) : bool can be static
 %s:174 PhanTypeMismatchArgumentInternalReal Argument 1 ($array) is 'not array' of type string but \array_find() takes array
 %s:177 PhanInvalidFQSENInCallable Possible call to a function 'not callable' with an invalid FQSEN.

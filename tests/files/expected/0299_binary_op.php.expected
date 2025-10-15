@@ -1,41 +1,21 @@
-%s:3 PhanPluginCanUseVoidReturnType Can use void as a return type of expect_string_298
-%s:3 PhanPluginNoCommentOnFunction Function \expect_string_298 has no doc comment
-%s:3 PhanPluginUseReturnValueNoopVoid The function/method \expect_string_298() is declared to return void and it has no side effects
-%s:3 PhanUnusedGlobalFunctionParameter Parameter $x is never used
-%s:4 PhanPluginCanUseVoidReturnType Can use void as a return type of expect_int_298
-%s:4 PhanPluginNoCommentOnFunction Function \expect_int_298 has no doc comment
-%s:4 PhanPluginUseReturnValueNoopVoid The function/method \expect_int_298() is declared to return void and it has no side effects
-%s:4 PhanUnusedGlobalFunctionParameter Parameter $x is never used
-%s:6 PhanPluginCanUseVoidReturnType Can use void as a return type of test298
-%s:6 PhanPluginNoCommentOnFunction Function \test298 has no doc comment
 %s:7 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' + '1') of type float|int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
 %s:10 PhanTypeMismatchArgument Argument 1 ($x) is ('0' ^ "\x01") of type string but \expect_int_298() takes int defined at %s:4
 %s:11 PhanTypeMismatchArgumentReal Argument 1 ($x) is (1 ^ 2) of type int but \expect_string_298() takes string defined at %s:3
-%s:12 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 xor 2 (result is false)
 %s:12 PhanTypeMismatchArgumentReal Argument 1 ($x) is (1 xor 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:13 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: '0' || '1' (result is true)
 %s:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
-%s:14 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: '0' || '1' (result is true)
-%s:14 PhanPluginDuplicateAdjacentStatement Statement expect_int_298(('0' || '1')) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
-%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is '01' of type string but \expect_int_298() takes int defined at %s:4
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' . '1') of type string but \expect_int_298() takes int defined at %s:4
 %s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 / 2) of type int but \expect_string_298() takes string defined at %s:3
-%s:17 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 == 2 (result is false)
 %s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '=='
 %s:17 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 == 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:18 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 === 2 (result is false)
 %s:18 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '==='
 %s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 === 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:19 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 != 2 (result is true)
 %s:19 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '!='
 %s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 != 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:20 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 !== 2 (result is true)
 %s:20 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '!=='
 %s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 !== 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:21 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 < 2 (result is false)
 %s:21 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '<'
 %s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 < 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:22 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 <= 2 (result is false)
 %s:22 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '<='
 %s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 <= 2) of type bool but \expect_string_298() takes string defined at %s:3
 %s:23 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 * 7) of type int but \expect_string_298() takes string defined at %s:3
@@ -43,21 +23,16 @@
 %s:25 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 ** 7) of type int but \expect_string_298() takes string defined at %s:3
 %s:26 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 << 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:27 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 >> 1) of type int but \expect_string_298() takes string defined at %s:3
-%s:28 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 <=> 2 (result is 1)
 %s:28 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '<=>'
 %s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 <=> 2) of type int|int|int but \expect_string_298() takes string defined at %s:3
-%s:29 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 <=> 2 (result is 1)
 %s:29 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '<=>'
 %s:30 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 - 2) of type int but \expect_string_298() takes string defined at %s:3
 %s:31 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 & 7) of type int but \expect_string_298() takes string defined at %s:3
 %s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 | 7) of type int but \expect_string_298() takes string defined at %s:3
 %s:33 PhanCoalescingNeverNull Using non-null 4 of type 4 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
-%s:33 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 ?? 7 (result is 4)
 %s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 ?? 7) of type int but \expect_string_298() takes string defined at %s:3
-%s:34 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 > 7 (result is false)
 %s:34 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 7 of type int with operator '>'
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 > 7) of type bool but \expect_string_298() takes string defined at %s:3
-%s:35 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 >= 7 (result is false)
 %s:35 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 7 of type int with operator '>='
 %s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 >= 7) of type bool but \expect_string_298() takes string defined at %s:3
 %s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($strVar .= 'suffix') of type string but \expect_int_298() takes int defined at %s:4
@@ -67,7 +42,6 @@
 %s:42 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar |= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:43 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar ^= 2) of type int but \expect_string_298() takes string defined at %s:3
 %s:44 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar &= 65535) of type int but \expect_string_298() takes string defined at %s:3
-%s:45 PhanPluginRemoveDebugEcho Saw output expression/statement in echo strlen($intVar);
 %s:45 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $intVar of type float but \strlen() takes string
 %s:45 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar /= 2) of type float but \expect_string_298() takes string defined at %s:3
 %s:46 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar *= 2) of type float but \expect_string_298() takes string defined at %s:3
@@ -79,4 +53,3 @@
 %s:52 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar <<= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:53 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar >>= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:55 PhanTypeMismatchArgument Argument 1 ($x) is ('0' | '1') of type string but \expect_int_298() takes int defined at %s:4
-%s:56 PhanPluginRemoveDebugEcho Saw output expression/statement in echo $intVar;
