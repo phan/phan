@@ -18,7 +18,7 @@
 %s:14 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: '0' || '1' (result is true)
 %s:14 PhanPluginDuplicateAdjacentStatement Statement expect_int_298(('0' || '1')) is a duplicate of the statement on the above line. Suppress this issue instance if there's a good reason for this.
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
-%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is '01' of type string but \expect_int_298() takes int defined at %s:4
+%s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' . '1') of type string but \expect_int_298() takes int defined at %s:4
 %s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 / 2) of type int but \expect_string_298() takes string defined at %s:3
 %s:17 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 4 == 2 (result is false)
 %s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int to 2 of type int with operator '=='
