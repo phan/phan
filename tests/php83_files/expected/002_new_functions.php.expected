@@ -5,4 +5,4 @@
 %s:42 PhanTypeMismatchArgumentInternalProbablyReal Argument 4 ($auth_mode) is 'test' of type string but \ldap_connect_wallet() takes int
 %s:53 PhanTypeMismatchArgumentInternal Argument 2 ($length) is false of type false but \mb_str_pad() takes int
 %s:66 PhanTypeMismatchArgumentInternal Argument 2 ($max) is '1' of type string but \Random\Randomizer::getFloat() takes float
-%s:77 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type int but \str_decrement() takes string
+%s:77 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type int (value: 12) but \str_decrement() takes string

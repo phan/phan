@@ -8,7 +8,7 @@
 %s:10 PhanTypeMismatchArgument Argument 1 ($value) is print_r(['key'], false) of type true but \expect_int412() takes int defined at %s:2
 %s:11 PhanTypeMismatchArgument Argument 1 ($value) is print_r(['key'], true) of type string but \expect_int412() takes int defined at %s:2
 %s:12 PhanTypeMismatchArgument Argument 1 ($value) is print_r(['key'], ((rand() % 2) > 0)) of type string|true but \expect_int412() takes int defined at %s:2
-%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 1 of type int but \var_export() takes bool
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 1 of type int (value: 1) but \var_export() takes bool
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is var_export(['key'], 0) of type void but \strlen() takes string
-%s:15 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 0 of type int but \var_export() takes bool
+%s:15 PhanTypeMismatchArgumentInternal Argument 2 ($return) is 0 of type int (value: 0) but \var_export() takes bool
 %s:15 PhanTypeVoidArgument Cannot use void return value var_export(['key'], 0) as a function argument

@@ -1,6 +1,3 @@
-src/212_NoDiscard_polyfill.php:18 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
-src/212_NoDiscard_polyfill.php:25 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
-src/212_NoDiscard_polyfill.php:31 PhanUndeclaredClassAttribute Reference to undeclared class \NoDiscard in an attribute
 src/212_NoDiscard_polyfill.php:38 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \withoutSideEffects() defined at src/212_NoDiscard_polyfill.php:4
 src/212_NoDiscard_polyfill.php:40 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::instanceMethod() defined at src/212_NoDiscard_polyfill.php:9
 src/212_NoDiscard_polyfill.php:41 PhanPluginUseReturnValueKnown Expected to use the return value of the user-defined function/method \ClassWithoutSideEffects::staticMethod() defined at src/212_NoDiscard_polyfill.php:13

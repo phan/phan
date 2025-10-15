@@ -1,2 +1,2 @@
 %s:21 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $a of type \stdClass but \intdiv() takes int
-%s:22 PhanTypeMismatchPropertyProbablyReal Assigning 2 of type int to property but \A273->y is \stdClass (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:22 PhanTypeMismatchPropertyProbablyReal Assigning 2 of type int (value: 2) to property but \A273->y is \stdClass (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)

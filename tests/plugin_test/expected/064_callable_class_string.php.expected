@@ -12,7 +12,7 @@ src/064_callable_class_string.php:25 PhanEmptyFQSENInCallable Possible call to a
 src/064_callable_class_string.php:25 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is '' of type string but \ReflectionFunction::__construct() takes \Closure|callable-string
 src/064_callable_class_string.php:27 PhanInvalidFQSENInCallable Possible call to a function 'an invalid function name' with an invalid FQSEN.
 src/064_callable_class_string.php:27 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($function) is 'an invalid function name' of type string but \ReflectionFunction::__construct() takes \Closure|callable-string
-src/064_callable_class_string.php:28 PhanTypeMismatchArgument Argument 1 ($x) is 2 of type int but \test_callable_string() takes callable-string defined at src/064_callable_class_string.php:7
+src/064_callable_class_string.php:28 PhanTypeMismatchArgument Argument 1 ($x) is 2 of type int (value: 2) but \test_callable_string() takes callable-string defined at src/064_callable_class_string.php:7
 src/064_callable_class_string.php:38 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type class-string but \intdiv() takes int
 src/064_callable_class_string.php:42 PhanUndeclaredClassReference Reference to undeclared class \strlen
 src/064_callable_class_string.php:44 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.

@@ -4,11 +4,11 @@
 %s:9 PhanTypeMismatchArgument Argument 2 ($p2) is $v5 of type string|string but \f248_1() takes bool defined at %s:2
 %s:10 PhanTypeMismatchArgument Argument 1 ($p1) is $v6 of type string|string but \f248_1() takes bool defined at %s:2
 %s:10 PhanTypeMismatchArgument Argument 2 ($p2) is $v7 of type string|string but \f248_1() takes bool defined at %s:2
-%s:14 PhanTypeMismatchArgument Argument 1 ($p1) is $v9 of type int but \f248_1() takes bool defined at %s:2
-%s:14 PhanTypeMismatchArgument Argument 2 ($p2) is $v10 of type int but \f248_1() takes bool defined at %s:2
-%s:16 PhanTypeMismatchArgument Argument 1 ($p1) is $v11 of type int but \f248_1() takes bool defined at %s:2
-%s:16 PhanTypeMismatchArgument Argument 2 ($p2) is $v12 of type int but \f248_1() takes bool defined at %s:2
-%s:19 PhanTypeMismatchArgument Argument 1 ($p1) is $v14 of type int but \f248_1() takes bool defined at %s:2
-%s:19 PhanTypeMismatchArgument Argument 2 ($p2) is $v15 of type int but \f248_1() takes bool defined at %s:2
-%s:20 PhanTypeMismatchArgument Argument 1 ($p1) is $v16 of type int but \f248_1() takes bool defined at %s:2
-%s:20 PhanTypeMismatchArgument Argument 2 ($p2) is $v17 of type int but \f248_1() takes bool defined at %s:2
+%s:14 PhanTypeMismatchArgument Argument 1 ($p1) is $v9 of type int (value: 42) but \f248_1() takes bool defined at %s:2
+%s:14 PhanTypeMismatchArgument Argument 2 ($p2) is $v10 of type int (value: 43) but \f248_1() takes bool defined at %s:2
+%s:16 PhanTypeMismatchArgument Argument 1 ($p1) is $v11 of type int (value: 42) but \f248_1() takes bool defined at %s:2
+%s:16 PhanTypeMismatchArgument Argument 2 ($p2) is $v12 of type int (value: 43) but \f248_1() takes bool defined at %s:2
+%s:19 PhanTypeMismatchArgument Argument 1 ($p1) is $v14 of type int (value: 42) but \f248_1() takes bool defined at %s:2
+%s:19 PhanTypeMismatchArgument Argument 2 ($p2) is $v15 of type int (value: 43) but \f248_1() takes bool defined at %s:2
+%s:20 PhanTypeMismatchArgument Argument 1 ($p1) is $v16 of type int (value: 42) but \f248_1() takes bool defined at %s:2
+%s:20 PhanTypeMismatchArgument Argument 2 ($p2) is $v17 of type int (value: 43) but \f248_1() takes bool defined at %s:2

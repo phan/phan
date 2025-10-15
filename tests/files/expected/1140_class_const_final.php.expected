@@ -1,1 +1,1 @@
-%s:7 PhanSuspiciousValueComparison Suspicious attempt to compare static::X of type int to 123 of type int with operator '!=='
+%s:7 PhanSuspiciousValueComparison Suspicious attempt to compare static::X of type int (value: 123) to 123 of type int (value: 123) with operator '!=='

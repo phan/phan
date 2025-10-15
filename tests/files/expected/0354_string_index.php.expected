@@ -14,7 +14,7 @@
 %s:31 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of $arr of array type array{offset:'c'}
 %s:33 PhanTypeInvalidDimOffset Invalid offset "offset2" of $arr of array type array{offset:'c'}
 %s:35 PhanTypeInvalidDimOffset Invalid offset "offset2" of $arr of array type array{offset:'c'}
-%s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x[1] of type int but \strlen() takes string
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x[1] of type int (value: 2) but \strlen() takes string
 %s:41 PhanTypeInvalidDimOffset Invalid offset 2 of $x of array type array{0:1,1:2,3:'x'}
 %s:41 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x[2] of type null but \strlen() takes string
 %s:43 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is $x[3] of type string but \intdiv() takes int

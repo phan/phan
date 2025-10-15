@@ -1,2 +1,2 @@
 %s:7 PhanPossiblyUndeclaredVariable Variable $42 is possibly undeclared
-%s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is ${42} of type ?int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:7 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is ${42} of type ?int (value: 24) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)

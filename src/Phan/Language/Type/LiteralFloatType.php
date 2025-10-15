@@ -76,12 +76,14 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
     }
 
     /**
-     * Returns "float" for error messages instead of the literal value.
-     * This makes error messages like "is 1.5 of type float" instead of "is 1.5 of type 1.5".
+     * Returns "float (value: X)" for error messages instead of just the literal value.
+     * This makes error messages like "is $var of type float (value: 21.5)" which shows
+     * both the base type and the computed value.
      */
     public function toErrorMessageString(): string
     {
-        return $this->is_nullable ? '?float' : 'float';
+        $base = $this->is_nullable ? '?float' : 'float';
+        return $base . ' (value: ' . \var_export($this->value, true) . ')';
     }
 
     /** @var FloatType the non-nullable float type instance. */
