@@ -50,7 +50,7 @@ final class CLITest extends TestBase
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function getFlagSuggestionStringProvider(): array
+    public static function getFlagSuggestionStringProvider(): array
     {
         $wrap_suggestion = static function (string $text): string {
             return " (did you mean $text?)";
@@ -125,7 +125,7 @@ final class CLITest extends TestBase
     /**
      * @return list<array{0:array,1:array,2?:array}>
      */
-    public function setsConfigOptionsProvider(): array
+    public static function setsConfigOptionsProvider(): array
     {
         return [
             [
@@ -249,7 +249,7 @@ final class CLITest extends TestBase
     }
 
     /** @return list<list> */
-    public function versionOptProvider(): array
+    public static function versionOptProvider(): array
     {
         return [
             [['version' => false]],

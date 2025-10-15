@@ -29,7 +29,7 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
     /**
      * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles(): array;
+    abstract public static function getTestFiles(): array;
 
     public static function setUpBeforeClass(): void
     {
@@ -74,7 +74,7 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
      *
      * @return array<string,array{0:array,1:string}>
      */
-    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array
+    final protected static function scanSourceFilesDir(string $source_dir, string $expected_dir): array
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],

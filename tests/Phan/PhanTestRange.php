@@ -17,10 +17,10 @@ abstract class PhanTestRange extends PhanTestCommon
     public const START_RANGE = '';
     public const END_RANGE = '';
 
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
         return \array_filter(
-            $this->getAllTestFiles(),
+            self::getAllTestFiles(),
             /**
              * @param array{0:array{0:string},1:string} $data
              */

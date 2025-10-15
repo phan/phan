@@ -33,7 +33,7 @@ final class ConversionTest extends TestBase
      * @return list<string>
      * @suppress PhanPluginUnknownObjectMethodCall
      */
-    protected function scanSourceDirForPHP(string $source_dir): array
+    protected static function scanSourceDirForPHP(string $source_dir): array
     {
         $files = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_dir)) as $file_path => $file_info) {
@@ -90,12 +90,12 @@ final class ConversionTest extends TestBase
      *
      * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
      */
-    public function astValidFileExampleProvider(): array
+    public static function astValidFileExampleProvider(): array
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $source_dir = \dirname(\realpath(__DIR__), 3) . '/misc/fallback_ast_src';
-        $paths = $this->scanSourceDirForPHP($source_dir);
+        $paths = self::scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
         $supports80 = self::hasNativeASTSupport(Config::AST_VERSION);

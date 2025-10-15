@@ -36,7 +36,7 @@ final class IssueFixingPluginTest extends CodeBaseAwareTestBase
     /**
      * @return list<array{0:string,1:string,2:list<IssueInstance>}>
      */
-    public function computeAndApplyFixesProvider(): array
+    public static function computeAndApplyFixesProvider(): array
     {
         /**
          * @param int|string ...$args
@@ -88,7 +88,7 @@ EOT
     /**
      * @return list<array{0:?string,1:string,2:FileEdit[]}>
      */
-    public function computeNewContentsProvider(): array
+    public static function computeNewContentsProvider(): array
     {
         return [
             [

@@ -75,7 +75,7 @@ final class BlockExitStatusCheckerTest extends TestBase
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function exitStatusProvider(): array
+    public static function exitStatusProvider(): array
     {
         return [
             [

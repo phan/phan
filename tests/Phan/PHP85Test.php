@@ -72,8 +72,8 @@ final class PHP85Test extends AbstractPhanFileTestBase
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
-        return $this->scanSourceFilesDir(\PHP85_TEST_FILE_DIR, \PHP85_EXPECTED_DIR);
+        return self::scanSourceFilesDir(\PHP85_TEST_FILE_DIR, \PHP85_EXPECTED_DIR);
     }
 }

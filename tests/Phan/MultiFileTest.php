@@ -23,7 +23,7 @@ class MultiFileTest extends AbstractPhanFileTestBase
      * The constant MULTI_FILE_DIR is defined in `phpunit.xml`.
      * @return list<array{0:list<string>,1:string}>
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
         return [
             // Issue #157

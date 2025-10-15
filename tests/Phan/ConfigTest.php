@@ -47,7 +47,7 @@ final class ConfigTest extends TestBase
     /**
      * @return list<list>
      */
-    public function warnsEnableCompletionProvider(): array
+    public static function warnsEnableCompletionProvider(): array
     {
         return [
             [false],

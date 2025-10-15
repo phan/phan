@@ -27,7 +27,7 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
     /**
      * @return list<list>
      */
-    public function getTypeMatchingBonusProvider(): array
+    public static function getTypeMatchingBonusProvider(): array
     {
         return [
             [0.0, 'int', 'mixed'],
@@ -56,7 +56,7 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
     /**
      * @return list<list>
      */
-    public function matchesParamTypesProvider(): array
+    public static function matchesParamTypesProvider(): array
     {
         return [
             [8.6, ['\stdClass'], ['\stdClass']],

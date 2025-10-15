@@ -106,7 +106,7 @@ final class TolerantASTConverterWithNodeMappingTest extends TestBase
     /**
      * @return list<array{0:int,1:int,2:string,3:Node}>
      */
-    public function byteOffsetLookupProvider(): array
+    public static function byteOffsetLookupProvider(): array
     {
         // using 1-based lines, 0-based columns
         $default_file = <<<'EOT'

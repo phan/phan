@@ -29,7 +29,7 @@ final class RegexKeyExtractorTest extends TestBase
     /**
      * @return list<array{0:string,1:list<int|string>}>
      */
-    public function getKeysProvider(): array
+    public static function getKeysProvider(): array
     {
         return [
             ['//',          [0]],
