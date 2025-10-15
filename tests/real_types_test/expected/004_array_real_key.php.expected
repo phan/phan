@@ -1,18 +1,3 @@
-src/001_array_key_exists.php:2 PhanImpossibleCondition Impossible attempt to cast true of type true to int
-src/001_array_key_exists.php:5 PhanImpossibleCondition Impossible attempt to cast true of type true to array
-src/001_array_key_exists.php:8 PhanImpossibleCondition Impossible attempt to cast [] of type array{} to object
-src/001_array_key_exists.php:13 PhanImpossibleCondition Impossible attempt to cast array_key_exists('foo', []) of type bool to array
-src/001_array_key_exists.php:13 PhanImpossibleTypeComparison Impossible attempt to check if 'foo' of type 'foo' is identical to keys of [] of type (no types in empty array)
-src/001_array_key_exists.php:16 PhanPluginUnknownFunctionParamType Function test1() has no declared or inferred parameter type for $x (Types inferred after analysis: array)
-src/001_array_key_exists.php:16 PhanPluginUnknownFunctionReturnType Function \test1() has no declared or inferred return type (Types inferred after analysis: array)
-src/001_array_key_exists.php:17 PhanImpossibleCondition Impossible attempt to cast key($x) of type int|null|string to array
-src/002_unknown_return_type.php:3 PhanPluginUnknownFunctionReturnType Function \test2() has no declared or inferred return type (Types inferred after analysis: list<\stdClass>)
-src/002_unknown_return_type.php:8 PhanPluginUnknownMethodReturnType Method \MyClass2::test() has no declared or inferred return type (Types inferred after analysis: list<array>)
-src/003_unknown_property_type.php:4 PhanPluginUnknownPropertyType Property \Test003::$prop has an initial type that cannot be inferred (Types inferred after analysis: bool)
-src/003_unknown_property_type.php:5 PhanPluginUnknownMethodParamType Method \Test003::f has no declared or inferred parameter type for $obj (Types inferred after analysis: ?string)
-src/003_unknown_property_type.php:15 PhanPluginUnknownClosureParamType Closure Closure($x) has no declared or inferred parameter type for $x (Types inferred after analysis: int)
-src/003_unknown_property_type.php:15 PhanPluginUnknownClosureReturnType Closure Closure($x) has no declared or inferred return type (Types inferred after analysis: float|int)
-src/003_unknown_property_type.php:19 PhanPluginUnknownFunctionParamType Function fetch_value() has no declared or inferred parameter type for $x (Types inferred after analysis: int)
 src/004_array_real_key.php:8 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type int|list<mixed>(real=array|int|null)
 src/004_array_real_key.php:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $i of type int but \strlen() takes string
 src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
@@ -23,35 +8,3 @@ src/004_array_real_key.php:27 PhanTypeMismatchArgumentInternal Argument 1 ($num1
 src/004_array_real_key.php:28 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type array{0:'value'}(real=array{0:'value'})
 src/004_array_real_key.php:28 PhanTypeErrorInInternalCall Saw a call to an internal function strlen() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: strlen(): Argument #1 ($string) must be of type string, array given
 src/004_array_real_key.php:28 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $value of type array{0:'value'} but \strlen() takes string
-src/006_type_check_undeclared_function.php:6 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s). This would throw an ArgumentCountError.
-src/006_type_check_undeclared_function.php:6 PhanTypeMismatchArgumentInternal Argument 1 ($object) is xdebug_get_stack_depth('stack') of type int but \spl_object_hash() takes object
-src/006_type_check_undeclared_function.php:6 PhanUndeclaredFunction Call to undeclared function \xdebug_get_stack_depth()
-src/006_type_check_undeclared_function.php:9 PhanParamTooManyInternal Call with 1 arg(s) to \xdebug_get_stack_depth() which only takes 0 arg(s). This would throw an ArgumentCountError.
-src/006_type_check_undeclared_function.php:9 PhanTypeMismatchArgumentInternal Argument 1 ($object) is xdebug_get_stack_depth('stack') of type int but \spl_object_hash() takes object
-src/006_type_check_undeclared_function.php:9 PhanUndeclaredFunction Call to undeclared function \xdebug_get_stack_depth()
-src/007_avoidable_getter.php:18 PhanPluginAvoidableGetter Can replace $this->getProp() with $this->prop
-src/007_avoidable_getter.php:24 PhanPluginAvoidableGetter Can replace $this->getProp() with $this->prop
-src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred parameter type for $x (Types inferred after analysis: array)
-src/008_substr.php:2 PhanPluginUnknownFunctionParamType Function test188() has no declared or inferred parameter type for $y (Types inferred after analysis: array)
-src/008_substr.php:2 PhanPluginUnknownFunctionReturnType Function \test188() has no declared or inferred return type (Types inferred after analysis: bool)
-src/008_substr.php:3 PhanImpossibleTypeComparison Impossible attempt to check if substr($x, $y) of type string is identical to null of type null
-src/008_substr.php:3 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type array but \substr() takes string
-src/008_substr.php:3 PhanTypeMismatchArgumentInternal Argument 2 ($offset) is $y of type array but \substr() takes int
-src/009_impossible_cast.php:27 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type false|string(real=?false|?string)
-src/009_impossible_cast.php:27 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int|string)
-src/009_impossible_cast.php:30 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
-src/010_possibly_undefined_property.php:13 PhanTypeMismatchPropertyProbablyReal Assigning 0 of type int to property but \C10->prop is array (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
-src/011_nullsafe_property.php:4 PhanReadOnlyPublicProperty Possibly zero write references to public property \Address->street
-src/011_nullsafe_property.php:8 PhanReadOnlyPublicProperty Possibly zero write references to public property \Person->code
-src/011_nullsafe_property.php:9 PhanReadOnlyPublicProperty Possibly zero write references to public property \Person->address
-src/011_nullsafe_property.php:12 PhanUnreferencedClass Possibly zero references to class \Test
-src/011_nullsafe_property.php:13 PhanReadOnlyPublicProperty Possibly zero write references to public property \Test->person
-src/011_nullsafe_property.php:15 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testNullsafeOperator()
-src/011_nullsafe_property.php:17 PhanUnusedVariable Unused definition of variable $code
-src/011_nullsafe_property.php:20 PhanUnusedVariable Unused definition of variable $street
-src/011_nullsafe_property.php:23 PhanUnusedVariable Unused definition of variable $mixed
-src/011_nullsafe_property.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testRegularAccess()
-src/011_nullsafe_property.php:28 PhanUnusedVariable Unused definition of variable $code
-src/011_nullsafe_property.php:31 PhanUnusedVariable Unused definition of variable $street
-src/011_nullsafe_property.php:34 PhanUnreferencedPublicMethod Possibly zero references to public method \Test::testNonNullable()
-src/011_nullsafe_property.php:37 PhanUnusedVariable Unused definition of variable $code
