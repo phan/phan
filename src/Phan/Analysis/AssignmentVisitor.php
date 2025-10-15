@@ -1339,10 +1339,10 @@ class AssignmentVisitor extends AnalysisVisitor
                 Issue::TypeMismatchPropertyReal,
                 $node->lineno,
                 $this->getAssignedExpressionString(),
-                $warn_type,
+                $warn_type->toErrorMessageString(),
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($warn_type),
                 $property->getRepresentationForIssue(),
-                $property_union_type,
+                $property_union_type->toErrorMessageString(),
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($property_union_type)
             );
             return;
