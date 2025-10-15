@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Phan\Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\TextUI\Configuration\TestSuiteCollection;
 use PHPUnit\TextUI\XmlConfiguration\Loader;
-use PHPUnit\TextUI\XmlConfiguration\TestSuiteCollection;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SebastianBergmann\FileIterator\Facade;
