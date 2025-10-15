@@ -6,7 +6,7 @@
 %s:65 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is ['value'] of type array{0:'value'} but \mb_ucfirst() takes string
 %s:73 PhanInvalidFQSENInCallable Possible call to a function 'not a closure' with an invalid FQSEN.
 %s:73 PhanTypeMismatchArgumentInternalReal Argument 1 ($closure) is 'not a closure' of type string but \opcache_jit_blacklist() takes \Closure
-%s:78 PhanTypeMismatchArgumentInternalReal Argument 1 ($process_id) is 'invalid' of type string but \pcntl_getcpuaffinity() takes ?int
+%s:78 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($process_id) is 'invalid' of type string but \pcntl_getcpuaffinity() takes ?int
 %s:87 PhanTypeMismatchArgumentInternal Argument 3 ($info) is $_pcntl_info of type string but \pcntl_waitid() takes array
 %s:102 PhanTypeMismatchArgumentInternal Argument 2 ($cmd) is 123 of type int but \pg_put_copy_data() takes string
 %s:147 PhanParamTooManyInternal Call with 1 arg(s) to \http_get_last_response_headers() which only takes 0 arg(s). This would throw an ArgumentCountError.
