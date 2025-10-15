@@ -69,6 +69,15 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return (string)$this->value;
     }
 
+    /**
+     * Returns "int" for error messages instead of the literal value.
+     * This makes error messages like "is 0 of type int" instead of "is 0 of type 0".
+     */
+    public function toErrorMessageString(): string
+    {
+        return $this->is_nullable ? '?int' : 'int';
+    }
+
     /** @var IntType the non-nullable int type instance. */
     private static $non_nullable_int_type;
     /** @var IntType the nullable int type instance. */

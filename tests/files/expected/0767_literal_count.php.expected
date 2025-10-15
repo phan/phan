@@ -1,4 +1,4 @@
-%s:4 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is count([]) of type 0 but \spl_object_hash() takes object
-%s:5 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is count(['x'=>'y','w'=>'z']) of type 2 but \spl_object_hash() takes object
-%s:6 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($object) is count(['x'=>'y','x'=>2]) of type 1 but \spl_object_hash() takes object
-%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare count($my_value) of type 0 to 0 of type 0 with operator '>'
+%s:4 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is count([]) of type int but \spl_object_hash() takes object
+%s:5 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is count(['x'=>'y','w'=>'z']) of type int but \spl_object_hash() takes object
+%s:6 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is count(['x'=>'y','x'=>2]) of type int but \spl_object_hash() takes object
+%s:10 PhanSuspiciousValueComparison Suspicious attempt to compare count($my_value) of type int to 0 of type int with operator '>'

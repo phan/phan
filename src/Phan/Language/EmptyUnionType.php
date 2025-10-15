@@ -1226,6 +1226,17 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return string
+     * A human-readable string representation of this union type for error messages.
+     * This converts literal types to their base types (e.g., "42" becomes "int").
+     * @override
+     */
+    public function toErrorMessageString(): string
+    {
+        return '';
+    }
+
+    /**
      * @return UnionType - A normalized version of this union type (May or may not be the same object, if no modifications were made)
      *
      * The following normalization rules apply

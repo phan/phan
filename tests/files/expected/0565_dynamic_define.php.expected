@@ -1,6 +1,6 @@
 %s:11 PhanUndeclaredConstant Reference to undeclared constant \MISSINGCONST565. This would throw an Error.
-%s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($constant_name) is 2 of type 2 but \define() takes string
-%s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($constant_name) is 2.3 of type 2.3 but \define() takes string
+%s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($constant_name) is 2 of type int but \define() takes string
+%s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($constant_name) is 2.3 of type float but \define() takes string
 %s:15 PhanTypeMismatchArgumentInternalReal Argument 1 ($constant_name) is null of type null but \define() takes string
 %s:16 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
 %s:17 PhanInvalidConstantFQSEN '\\' is an invalid FQSEN for a constant

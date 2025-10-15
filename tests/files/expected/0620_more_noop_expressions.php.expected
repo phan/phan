@@ -1,10 +1,10 @@
-%s:3 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $a of type 2 to empty in the global scope (may be a false positive)
+%s:3 PhanImpossibleConditionInGlobalScope Impossible attempt to cast $a of type int to empty in the global scope (may be a false positive)
 %s:3 PhanNoopEmpty Unused result of an empty($a) check
 %s:4 PhanNoopIsset Unused result of an isset($a) check
-%s:4 PhanRedundantConditionInGlobalScope Redundant attempt to cast $a of type 2 to isset in the global scope (likely a false positive)
+%s:4 PhanRedundantConditionInGlobalScope Redundant attempt to cast $a of type int to isset in the global scope (likely a false positive)
 %s:7 PhanNoopCast Unused result of a (string)($a) cast
 %s:8 PhanNoopCast Unused result of a (int)($a) cast
-%s:8 PhanRedundantConditionInGlobalScope Redundant attempt to cast $a of type 2 to int in the global scope (likely a false positive)
+%s:8 PhanRedundantConditionInGlobalScope Redundant attempt to cast $a of type int to int in the global scope (likely a false positive)
 %s:9 PhanNoopCast Unused result of a (bool)($a) cast
 %s:10 PhanCompatibleUnsetCast The unset cast (in (unset)($a)) is a fatal error.
 %s:10 PhanNoopCast Unused result of a (unset)($a) cast

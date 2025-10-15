@@ -3602,6 +3602,16 @@ class Type implements Stringable
     }
 
     /**
+     * Returns a string representation suitable for error messages.
+     * For most types this is identical to __toString(), but literal types
+     * override this to return the base type name (e.g., "int" instead of "0").
+     */
+    public function toErrorMessageString(): string
+    {
+        return (string)$this;
+    }
+
+    /**
      * Gets the part of the Type string for the template parameters.
      * Precondition: $this->template_parameter_string is not null.
      */

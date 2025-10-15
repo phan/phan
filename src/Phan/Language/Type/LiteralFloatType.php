@@ -75,6 +75,15 @@ final class LiteralFloatType extends FloatType implements LiteralTypeInterface
         return $str;
     }
 
+    /**
+     * Returns "float" for error messages instead of the literal value.
+     * This makes error messages like "is 1.5 of type float" instead of "is 1.5 of type 1.5".
+     */
+    public function toErrorMessageString(): string
+    {
+        return $this->is_nullable ? '?float' : 'float';
+    }
+
     /** @var FloatType the non-nullable float type instance. */
     private static $non_nullable_float_type;
     /** @var FloatType the nullable float type instance. */

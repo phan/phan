@@ -1,2 +1,2 @@
 %s:50 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type non-empty-mixed(real=non-empty-mixed)
-%s:53 PhanImpossibleTypeComparison Impossible attempt to check if $x of type non-empty-mixed is identical to 0 of type 0
+%s:53 PhanImpossibleTypeComparison Impossible attempt to check if $x of type non-empty-mixed is identical to 0 of type int

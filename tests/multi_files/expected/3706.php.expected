@@ -1,1 +1,1 @@
-%s:8 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($value) is MediumSpecificBagOStuff::ERR_NONE of type 0 but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array%S
+%s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is MediumSpecificBagOStuff::ERR_NONE of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)

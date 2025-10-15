@@ -1,4 +1,4 @@
-%s:20 PhanTypeMismatchReturnProbablyReal Returning 'baz' of type 'baz' but invalid_key_of_shape() is declared to return 'bar'|'foo' (real type string) (the inferred real return type has nothing in common with the declared phpdoc return type)
-%s:28 PhanTypeMismatchReturn Returning 3 of type 3 but invalid_key_of_generic() is declared to return string
+%s:20 PhanTypeMismatchReturnProbablyReal Returning 'baz' of type string but invalid_key_of_shape() is declared to return string|string (real type string) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:28 PhanTypeMismatchReturn Returning 3 of type int but invalid_key_of_generic() is declared to return string
 %s:44 PhanTypeMismatchReturn Returning false of type false but invalid_value_of_shape() is declared to return int|string
-%s:52 PhanTypeMismatchReturnReal Returning 'nope' of type 'nope' but invalid_value_of_generic() is declared to return int
+%s:52 PhanTypeMismatchReturnReal Returning 'nope' of type string but invalid_value_of_generic() is declared to return int

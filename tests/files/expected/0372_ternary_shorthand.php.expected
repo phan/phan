@@ -1,4 +1,4 @@
-%s:21 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '' of type '' but \expect_int382() takes int (no real type) defined at %s:17 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:21 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is '' of type string but \expect_int382() takes int (no real type) defined at %s:17 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:21 PhanTypeMismatchArgument Argument 1 ($x) is foo382() of type non-empty-string but \expect_int382() takes int defined at %s:17
 %s:21 PhanTypeSuspiciousEcho Suspicious argument expect_int382((foo382() ?: '')) of type void for an echo/print statement
 %s:22 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is ['x'] of type array{0:'x'} but \expect_int382() takes int (no real type) defined at %s:17 (the inferred real argument type has nothing in common with the parameter's phpdoc type)

@@ -136,6 +136,15 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
+     * Returns "string" for error messages instead of the literal value.
+     * This makes error messages like "is 'foo' of type string" instead of "is 'foo' of type 'foo'".
+     */
+    public function toErrorMessageString(): string
+    {
+        return $this->is_nullable ? '?string' : 'string';
+    }
+
+    /**
      * The opposite of __toString()
      * @return StringType|LiteralStringType
      * @throws InvalidArgumentException

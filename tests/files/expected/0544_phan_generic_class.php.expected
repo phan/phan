@@ -1,2 +1,2 @@
-%s:41 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e1 of type 'string' but \check() takes int defined at %s:32
-%s:41 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->e0 of type 42 but \check() takes string defined at %s:32
+%s:41 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e1 of type string but \check() takes int defined at %s:32
+%s:41 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->e0 of type int but \check() takes string defined at %s:32
