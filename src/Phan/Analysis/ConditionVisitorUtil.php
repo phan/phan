@@ -643,6 +643,8 @@ trait ConditionVisitorUtil
                     return $this->updateDimExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues, $check_empty);
                 } elseif ($var_node->kind === ast\AST_PROP) {
                     return $this->updatePropertyExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
+                } elseif ($var_node->kind === ast\AST_STATIC_PROP) {
+                    return $this->updateStaticPropertyExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
                 }
                 return $context;
             }
@@ -792,6 +794,39 @@ trait ConditionVisitorUtil
         );
     }
 
+    /**
+     * Analyze an expression such as `assert(!is_int(self::$prop_name))`
+     * and infer the effects on self::$prop_name in the local scope.
+     *
+     * @param Node $node a node of kind ast\AST_STATIC_PROP
+     * @unused-param $suppress_issues
+     */
+    final protected function updateStaticPropertyExpressionWithConditionalFilter(
+        Node $node,
+        Context $context,
+        Closure $should_filter_cb,
+        Closure $filter_union_type_cb,
+        bool $suppress_issues
+    ): Context {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $context;
+        }
+        $property_name = $node->children['prop'];
+        if (!is_string($property_name)) {
+            return $context;
+        }
+        return $this->modifyStaticPropertySimple(
+            $node,
+            static function (UnionType $type) use ($should_filter_cb, $filter_union_type_cb): UnionType {
+                if (!$should_filter_cb($type)) {
+                    return $type;
+                }
+                return $filter_union_type_cb($type);
+            },
+            $context
+        );
+    }
+
     final protected function updateVariableWithNewType(
         Node $var_node,
         Context $context,
@@ -801,6 +836,15 @@ trait ConditionVisitorUtil
     ): Context {
         if ($var_node->kind === ast\AST_PROP) {
             return $this->modifyPropertySimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion): UnionType {
+                if ($is_weak_type_assertion) {
+                    return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
+                } else {
+                    return $this->combineTypesAfterStrictEqualityCheck($old_type, $new_union_type);
+                }
+            }, $context);
+        }
+        if ($var_node->kind === ast\AST_STATIC_PROP) {
+            return $this->modifyStaticPropertySimple($var_node, function (UnionType $old_type) use ($new_union_type, $is_weak_type_assertion): UnionType {
                 if ($is_weak_type_assertion) {
                     return $this->combineTypesAfterWeakEqualityCheck($old_type, $new_union_type);
                 } else {
@@ -1197,6 +1241,12 @@ trait ConditionVisitorUtil
         }
         if ($kind === ast\AST_PROP) {
             if (self::isThisVarNode($var_node->children['expr']) && is_string($var_node->children['prop'])) {
+                return $condition->analyzeVar($this, $var_node, $expr_node);
+            }
+            return null;
+        }
+        if ($kind === ast\AST_STATIC_PROP) {
+            if (self::isSelfOrStaticClassNode($var_node->children['class']) && is_string($var_node->children['prop'])) {
                 return $condition->analyzeVar($this, $var_node, $expr_node);
             }
             return null;
@@ -1684,6 +1734,32 @@ trait ConditionVisitorUtil
             return $context;
         }
         return self::modifyPropertyOfThisSimple($node, $type_mapping_callback, $context);
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_STATIC_PROP (e.g. the argument of is_array(self::$prop_name))
+     *                   This is a no-op if the class is not self, static, or parent.
+     * @param Closure(UnionType):UnionType $type_mapping_callback
+     *        Given a union type, returns the resulting union type.
+     * @param Context $context
+     */
+    protected function modifyStaticPropertySimple(Node $node, Closure $type_mapping_callback, Context $context): Context
+    {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $context;
+        }
+        $property_name = $node->children['prop'];
+        if (!is_string($property_name)) {
+            return $context;
+        }
+        // Compute the old type and the new narrowed type
+        $old_property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        $new_property_type = $type_mapping_callback($old_property_type);
+        if ($new_property_type->isIdenticalTo($old_property_type)) {
+            // This didn't change anything
+            return $context;
+        }
+        return $context->withStaticPropertySetToTypeByName($property_name, $new_property_type);
     }
 
     /**

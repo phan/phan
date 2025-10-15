@@ -1,2 +1,1 @@
 %s:18 PhanUnusedVariable Unused definition of variable $x
-%s:23 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is self::$nullableProp of type ?string but \strlen() takes string (expected type to be non-nullable)

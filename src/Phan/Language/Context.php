@@ -1006,6 +1006,11 @@ class Context extends FileRef
     public const VAR_NAME_CLASS_CONSTANTS = "phan\0class_const";
 
     /**
+     * This name is internally used by Phan to track narrowed types of static properties (e.g., after `if (self::$prop !== null)`)
+     */
+    public const VAR_NAME_STATIC_PROPERTIES = "phan\0static_prop";
+
+    /**
      * Analyzes the side effects of setting the type of $this->property to $type
      * @suppress PhanUnreferencedPublicMethod this might be used in the future
      */
@@ -1155,6 +1160,69 @@ class Context extends FileRef
             return null;
         }
         $types = $this->scope->getVariableByName(self::VAR_NAME_CLASS_CONSTANTS)->getUnionType();
+        if ($types->isEmpty()) {
+            return null;
+        }
+
+        $result = null;
+        foreach ($types->getTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                return null;
+            }
+            $extra = $type->getFieldTypes()[$name] ?? null;
+            if (!$extra || ($extra->isPossiblyUndefined() && !$extra->isDefinitelyUndefined())) {
+                return null;
+            }
+            if ($result) {
+                '@phan-var UnionType $result';
+                $result = $result->withUnionType($extra);
+            } else {
+                $result = $extra;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Analyzes the side effects of setting the type of a static property to $type
+     *
+     * @param string $property_name the name of the static property (without the $)
+     * @param UnionType $type the narrowed type
+     */
+    public function withStaticPropertySetToTypeByName(string $property_name, UnionType $type): Context
+    {
+        if ($this->scope->hasVariableWithName(self::VAR_NAME_STATIC_PROPERTIES)) {
+            $variable = clone($this->scope->getVariableByName(self::VAR_NAME_STATIC_PROPERTIES));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asPHPDocUnionType());
+        } else {
+            // There is nothing inferred about any static property type
+
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $variable = new Variable(
+                $this,
+                self::VAR_NAME_STATIC_PROPERTIES,
+                $override_type->asPHPDocUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * Get the overridden type of a static property if it has been narrowed in this context
+     *
+     * @param string $name the name of the static property (without the $)
+     */
+    public function getStaticPropertyIfOverridden(string $name): ?UnionType
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_STATIC_PROPERTIES)) {
+            return null;
+        }
+        $types = $this->scope->getVariableByName(self::VAR_NAME_STATIC_PROPERTIES)->getUnionType();
         if ($types->isEmpty()) {
             return null;
         }
