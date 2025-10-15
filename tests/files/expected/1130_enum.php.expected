@@ -10,6 +10,7 @@
 %s:16 PhanPluginNoCommentOnClass Class \Enums\HasDuplicate has no doc comment
 %s:19 PhanReusedEnumCaseValue Enum case IS_ALSO_ZERO has the same value('0') as a previous declared enum case IS_ZERO defined at %s:18
 %s:20 PhanReusedEnumCaseValue Enum case IS_ALSO_EMPTY has the same value('') as a previous declared enum case IS_EMPTY defined at %s:17
+%s:20 PhanTypeMismatchDeclaredConstant Constant \Enums\HasDuplicate::IS_ALSO_EMPTY is declared with type \Enums\HasDuplicate but has value ('' . '') of type ''
 %s:21 PhanInvalidConstantExpression Constant expression contains invalid operations ($var)
 %s:21 PhanTypeMismatchDeclaredConstant Constant \Enums\HasDuplicate::Invalid is declared with type \Enums\HasDuplicate but has value $var of type null=
 %s:21 PhanUndeclaredGlobalVariable Global variable $var is undeclared
