@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Phan\Tests;
+
+use PHPUnit\Framework\TestCase;
+use PHPUnit\TextUI\XmlConfiguration\Loader;
+use PHPUnit\TextUI\XmlConfiguration\TestSuiteCollection;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SebastianBergmann\FileIterator\Facade;
+use SplFileInfo;
+
+/**
+ * Test to verify that all PHPUnit test files are in exactly one test suite.
+ * @coversNothing
+ * @backupStaticAttributes disabled
+ */
+class TestSuitesTest extends TestCase
+{
+    public function testAllTestFilesAreInASuite(): void {
+        $baseDirectory = __DIR__;
+
+        $it = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $baseDirectory ) );
+        $testFiles = [];
+        /** @var SplFileInfo $file */
+        foreach ($it as $file) {
+            if ($file->isDir()) {
+                continue;
+            }
+            $file_name = $file->getFilename();
+            if (
+                str_ends_with($file_name, 'Test.php') ||
+                preg_match( '/^PhanTest\d+\.php/', $file_name ) ||
+                $file_name === 'PhanTestNew.php'
+            ) {
+                $testFiles[] = $file->getRealPath();
+            }
+        }
+
+        $config = (new Loader)->load( __DIR__ . '/../../phpunit.xml' );
+        $suiteFiles = $this->getSuiteFiles($config->testSuite());
+
+        sort($testFiles);
+        sort($suiteFiles);
+
+        $this->assertSame($testFiles, $suiteFiles, 'All PHPUnit test files should be part of exactly one suite');
+    }
+
+    /**
+     * Modified version of TestSuiteMapper::map that doesn't actually load test files, to avoid side effects (we only
+     * need file names, not classes).
+     */
+    private function getSuiteFiles(TestSuiteCollection $configuration): array {
+        $suiteFilesMap = [];
+
+        foreach ($configuration as $testSuiteConfiguration) {
+            $exclude = [];
+
+            foreach ($testSuiteConfiguration->exclude()->asArray() as $file) {
+                $exclude[] = $file->path();
+            }
+
+            foreach ($testSuiteConfiguration->directories() as $directory) {
+                if (!version_compare(
+                    PHP_VERSION,
+                    $directory->phpVersion(),
+                    $directory->phpVersionOperator()->asString()
+                )) {
+                    continue;
+                }
+
+                $files = (new Facade)->getFilesAsArray(
+                    $directory->path(),
+                    $directory->suffix(),
+                    $directory->prefix(),
+                    $exclude,
+                );
+
+                if (!empty($files)) {
+                    $suiteFilesMap += array_flip($files);
+                }
+            }
+
+            foreach ($testSuiteConfiguration->files() as $file) {
+                if (!version_compare(PHP_VERSION, $file->phpVersion(), $file->phpVersionOperator()->asString())) {
+                    continue;
+                }
+
+                $suiteFilesMap[$file->path()] = 1;
+            }
+        }
+
+        return array_map(realpath(...), array_keys($suiteFilesMap));
+    }
+}
