@@ -38,7 +38,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 use function get_class;
 
@@ -46,7 +46,7 @@ use function get_class;
  * Unit tests of Type
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class TypeTest extends CodeBaseAwareTest
+final class TypeTest extends CodeBaseAwareTestBase
 {
     private function makePHPDocType(string $type_string): Type
     {

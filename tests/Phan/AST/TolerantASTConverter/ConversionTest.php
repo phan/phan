@@ -11,7 +11,7 @@ use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Config;
 use Phan\Debug;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -27,7 +27,7 @@ Shim::load();
 /**
  * Tests that the polyfill works with valid ASTs
  */
-final class ConversionTest extends BaseTest
+final class ConversionTest extends TestBase
 {
     /**
      * @return list<string>

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Output;
 
 use Phan\Output\HTML;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of converting to HTML and the color schemes
  */
-final class HTMLTest extends BaseTest
+final class HTMLTest extends TestBase
 {
     public function testHTMLTemplate(): void
     {

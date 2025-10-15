@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Tests\Language\Internal;
 
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use ReflectionExtension;
 
 use function array_key_exists;
@@ -14,7 +14,7 @@ use function uksort;
  * This is a sanity check that Phan's property signature map has the correct structure
  * and can be parsed into a property signature.
  */
-final class ConstantDocumentationMapTest extends BaseTest
+final class ConstantDocumentationMapTest extends TestBase
 {
     private const EXTENSIONS_TESTED = [
         'ast',

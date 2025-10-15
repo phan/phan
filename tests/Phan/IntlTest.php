@@ -9,7 +9,7 @@ namespace Phan\Tests;
  *
  * @requires extension intl
  */
-final class IntlTest extends AbstractPhanFileTest
+final class IntlTest extends AbstractPhanFileTestBase
 {
 
     /**

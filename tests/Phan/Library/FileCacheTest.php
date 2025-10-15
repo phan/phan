@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Library;
 
 use Phan\Library\FileCache;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of FileCache
  */
-final class FileCacheTest extends BaseTest
+final class FileCacheTest extends TestBase
 {
     public const MOCK_PATH = '/path/to/a';
     public const MOCK_CONTENTS = "Mock contents\nOther lines\n";

@@ -6,12 +6,12 @@ namespace Phan\Tests\Analysis;
 
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Config;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of BlockExitStatusChecker on various AST Nodes
  */
-final class BlockExitStatusCheckerTest extends BaseTest
+final class BlockExitStatusCheckerTest extends TestBase
 {
 
     /**

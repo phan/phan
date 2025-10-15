@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  * Any common initialization or configuration should go here
  * (E.g. this changes https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state for some classes)
  */
-abstract class BaseTest extends TestCase
+abstract class TestBase extends TestCase
 {
     /**
      * @suppress PhanAccessMethodInternal

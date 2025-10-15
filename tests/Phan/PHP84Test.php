@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan;
 
 use Phan\Plugin\ConfigPluginSet;
-use Phan\Tests\AbstractPhanFileTest;
+use Phan\Tests\AbstractPhanFileTestBase;
 
 /**
  * Unit tests of Phan analysis targeting PHP 8.4 codebases with minimum_target_php_version of 8.4.
  */
-final class PHP84Test extends AbstractPhanFileTest
+final class PHP84Test extends AbstractPhanFileTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,  // for use with tests of arrow functions

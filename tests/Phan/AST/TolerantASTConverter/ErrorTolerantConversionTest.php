@@ -9,12 +9,12 @@ use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Config;
 use Phan\Debug;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Various tests of the error-tolerant conversion mode of TolerantASTConverter
  */
-final class ErrorTolerantConversionTest extends BaseTest
+final class ErrorTolerantConversionTest extends TestBase
 {
     public function testIncompleteVar(): void
     {

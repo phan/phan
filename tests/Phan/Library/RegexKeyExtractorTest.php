@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Library;
 
 use Phan\Library\RegexKeyExtractor;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests of RegexKeyExtractor
  */
-final class RegexKeyExtractorTest extends BaseTest
+final class RegexKeyExtractorTest extends TestBase
 {
     /**
      * Test that $expected_keys are extracted from $regex

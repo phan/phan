@@ -7,7 +7,7 @@ namespace Phan\Tests;
 /**
  * Tests written by rasmus, in RASMUS_TEST_FILE_DIR
  */
-class RasmusTest extends AbstractPhanFileTest
+class RasmusTest extends AbstractPhanFileTestBase
 {
     /**
      * @suppress PhanUndeclaredConstant

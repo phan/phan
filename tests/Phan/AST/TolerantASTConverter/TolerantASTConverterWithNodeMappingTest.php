@@ -10,12 +10,12 @@ use InvalidArgumentException;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\Config;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
  */
-final class TolerantASTConverterWithNodeMappingTest extends BaseTest
+final class TolerantASTConverterWithNodeMappingTest extends TestBase
 {
     public static function setUpBeforeClass(): void
     {

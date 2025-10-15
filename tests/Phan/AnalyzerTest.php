@@ -20,7 +20,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class AnalyzerTest extends BaseTest
+final class AnalyzerTest extends TestBase
 {
     /**
      * @var CodeBase represents the known state of the test code base we're analyzing.

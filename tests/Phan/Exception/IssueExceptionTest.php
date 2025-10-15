@@ -7,12 +7,12 @@ namespace Phan\Tests\Exception;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests of IssueException
  */
-final class IssueExceptionTest extends BaseTest
+final class IssueExceptionTest extends TestBase
 {
     public function testToString(): void
     {

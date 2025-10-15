@@ -8,12 +8,12 @@ use Phan\CodeBase;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\MarkupDescription;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of MarkupDescription functionality
  */
-final class MarkupDescriptionTest extends BaseTest
+final class MarkupDescriptionTest extends TestBase
 {
     /**
      * @dataProvider extractDocCommentProvider

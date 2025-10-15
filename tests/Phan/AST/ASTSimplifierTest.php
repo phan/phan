@@ -7,12 +7,12 @@ namespace Phan\Tests\AST;
 use Phan\AST\ASTSimplifier;
 use Phan\Config;
 use Phan\Debug;
-use Phan\Tests\AbstractPhanFileTest;
+use Phan\Tests\AbstractPhanFileTestBase;
 
 /**
  * Tests of ASTSimplifier converting one AST to the expected AST.
  */
-final class ASTSimplifierTest extends AbstractPhanFileTest
+final class ASTSimplifierTest extends AbstractPhanFileTestBase
 {
     /**
      * @suppress PhanUndeclaredConstant

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Phan\Tests\Output;
 
 use Phan\Output\Colorizing;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Colorizing and the color schemes
  * @phan-file-suppress PhanAccessClassConstantInternal
  */
-final class ColorizingTest extends BaseTest
+final class ColorizingTest extends TestBase
 {
     public function testColorSchemesAreValid(): void
     {

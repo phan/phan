@@ -8,12 +8,12 @@ use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 /**
  * Unit tests of fixes to issues
  */
-final class IssueFixingPluginTest extends CodeBaseAwareTest
+final class IssueFixingPluginTest extends CodeBaseAwareTestBase
 {
     private const FILE = 'fix_test.php';
 

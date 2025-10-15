@@ -19,7 +19,7 @@ use Phan\Phan;
  * TODO: Add more tests
  * @phan-file-suppress PhanAccessMethodInternal
  */
-final class CLITest extends BaseTest
+final class CLITest extends TestBase
 {
     /**
      * @suppress PhanAccessMethodInternal

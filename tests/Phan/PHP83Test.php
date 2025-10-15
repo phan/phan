@@ -10,7 +10,7 @@ use Phan\Plugin\ConfigPluginSet;
 /**
  * Unit tests of Phan analysis targeting PHP 8.3 codebases with minimum_target_php_version of 8.3.
  */
-final class PHP83Test extends AbstractPhanFileTest
+final class PHP83Test extends AbstractPhanFileTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,  // for use with tests of arrow functions

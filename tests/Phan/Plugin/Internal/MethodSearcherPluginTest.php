@@ -6,12 +6,12 @@ namespace Phan\Tests\Plugin\Internal;
 
 use Phan\Language\UnionType;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 /**
  * Unit tests of Context and scopes
  */
-final class MethodSearcherPluginTest extends CodeBaseAwareTest
+final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
 {
     /**
      * @dataProvider getTypeMatchingBonusProvider

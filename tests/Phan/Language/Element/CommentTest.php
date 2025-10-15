@@ -13,13 +13,13 @@ use Phan\Language\Type\StaticType;
 use Phan\Library\None;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Comment
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class CommentTest extends BaseTest
+final class CommentTest extends TestBase
 {
     /** @var CodeBase The code base within which we're operating */
     protected $code_base;

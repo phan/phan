@@ -14,12 +14,12 @@ use Phan\LanguageServer\Protocol\SaveOptions;
 use Phan\LanguageServer\Protocol\ServerCapabilities;
 use Phan\LanguageServer\Protocol\TextDocumentSyncKind;
 use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Test functionality of the Language Server
  */
-final class LanguageServerTest extends BaseTest
+final class LanguageServerTest extends TestBase
 {
     public function testInitializeMinimal(): void
     {

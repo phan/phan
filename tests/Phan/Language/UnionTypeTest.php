@@ -32,7 +32,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 // Grab these before we define our own classes
 $internal_class_name_list = \get_declared_classes();
@@ -44,7 +44,7 @@ $internal_function_name_list = \get_defined_functions()['internal'];
  * Unit tests of the many methods of UnionType
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class UnionTypeTest extends BaseTest
+final class UnionTypeTest extends TestBase
 {
     /** @var CodeBase The code base within which this unit test is operating */
     protected static $code_base = null;

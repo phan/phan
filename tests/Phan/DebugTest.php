@@ -9,7 +9,7 @@ use Phan\Debug;
 /**
  * Unit tests of static helper methods used for debugging in Debug
  */
-final class DebugTest extends BaseTest
+final class DebugTest extends TestBase
 {
     public function testNodeToString(): void
     {

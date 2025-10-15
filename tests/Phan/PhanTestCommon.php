@@ -12,7 +12,7 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * Verifies that the analysis of a single file with default settings has the expected output.
  */
-abstract class PhanTestCommon extends AbstractPhanFileTest
+abstract class PhanTestCommon extends AbstractPhanFileTestBase
 {
     public static function setUpBeforeClass(): void
     {

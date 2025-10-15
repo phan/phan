@@ -14,7 +14,7 @@ use const MULTI_FILE_DIR;
  *
  * @see self::getTestFiles() for how file groups are represented to test.
  */
-class MultiFileTest extends AbstractPhanFileTest
+class MultiFileTest extends AbstractPhanFileTestBase
 {
 
     /**
@@ -32,7 +32,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '157_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '157_b.php'
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '157.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '157.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
             ],
 
             // Issue #245
@@ -41,7 +41,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '245_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '245_b.php'
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '245.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '245.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
             ],
 
             // Issue #301
@@ -50,7 +50,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '301_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '301_b.php'
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '301.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '301.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
             ],
 
             // Issue #321
@@ -59,7 +59,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_b.php'
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '321.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '321.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
                 MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '321_config.php',
             ],
 
@@ -70,7 +70,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '551_c.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '551_a.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '551.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '551.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
             ],
 
             // #699
@@ -78,7 +78,7 @@ class MultiFileTest extends AbstractPhanFileTest
                 [
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '699.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '699.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '699.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
                 MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '699_config.php',
             ],
 
@@ -87,7 +87,7 @@ class MultiFileTest extends AbstractPhanFileTest
                 [
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '704.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '704.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '704.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
                 MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '704_config.php',
             ],
 
@@ -97,14 +97,14 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '1898_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '1898_b.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '1898.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '1898.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
             ],
             // #3085
             [
                 [
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '3085.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '3085.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '3085.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
                 MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '3085_config.php',
             ],
             // #3706
@@ -114,7 +114,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '3706_MediumBagOStuff.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '3706_StorageAwareness.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '3706.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '3706.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
             ],
             // #4827
             [
@@ -122,7 +122,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '4827_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '4827_b.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '4827.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '4827.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
             ],
             // #6001 - Global variable type pollution in incremental analysis
             [
@@ -130,7 +130,7 @@ class MultiFileTest extends AbstractPhanFileTest
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '6001_a.php',
                     MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '6001_b.php',
                 ],
-                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '6001.php' . AbstractPhanFileTest::EXPECTED_SUFFIX,
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '6001.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX,
             ],
             // Manually add additional file sets and expected
             // output here.

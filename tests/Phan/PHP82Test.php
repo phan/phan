@@ -11,7 +11,7 @@ use Phan\Plugin\ConfigPluginSet;
  * Unit tests of Phan analysis targeting PHP 8.2 codebases with minimum_target_php_version of 8.2.
  * PHP 8.2 will be out in 2022.
  */
-final class PHP82Test extends AbstractPhanFileTest
+final class PHP82Test extends AbstractPhanFileTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,  // for use with tests of arrow functions

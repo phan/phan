@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\LanguageServer;
 
 use Phan\LanguageServer\Utils;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of FileCache
  */
-final class UtilsTest extends BaseTest
+final class UtilsTest extends TestBase
 {
     public function testUriToPath(): void
     {

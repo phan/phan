@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use Phan\LanguageServer\Server\TextDocument;
 use Phan\LanguageServer\Server\Workspace;
 use Phan\Library\StringUtil;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\Types\ContextFactory;
 use ReflectionClass;
@@ -21,7 +21,7 @@ use ReflectionClass;
  *
  * @see https://microsoft.github.io/language-server-protocol/specification
  */
-final class DocBlockTest extends BaseTest
+final class DocBlockTest extends TestBase
 {
     public function testAllCommentsValid(): void
     {

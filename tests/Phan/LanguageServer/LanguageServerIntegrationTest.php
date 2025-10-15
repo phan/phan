@@ -15,7 +15,7 @@ use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use RuntimeException;
 use stdClass;
 
@@ -33,7 +33,7 @@ use function strlen;
  * @phan-file-suppress PhanPluginPossiblyStaticPrivateMethod there are a lot of methods
  * @phan-file-suppress PhanPluginRemoveDebugAny
  */
-final class LanguageServerIntegrationTest extends BaseTest
+final class LanguageServerIntegrationTest extends TestBase
 {
     // Uncomment to enable debug logging within this test.
     // There are separate config settings to make the language server emit debug messages.

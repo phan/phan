@@ -7,13 +7,13 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\GitHubPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Tests of the GitHubPrinter converting `IssueInstance`s to the expected GitHub output
  */
-final class GitHubPrinterTest extends BaseTest
+final class GitHubPrinterTest extends TestBase
 {
 
     public function testPrintOutput(): void

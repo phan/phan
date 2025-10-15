@@ -7,7 +7,7 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CheckstylePrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
  *
  * TODO: Add tests that the output has the expected XML.
  */
-final class CheckstylePrinterTest extends BaseTest
+final class CheckstylePrinterTest extends TestBase
 {
 
     /**

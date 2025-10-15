@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Language\Type;
 
 use Phan\Language\Type\ArrayShapeType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of ArrayShapeType
  */
-final class ArrayShapeTypeTest extends BaseTest
+final class ArrayShapeTypeTest extends TestBase
 {
     private function assertUnescapedKeyEquals(string $expected, string $unescaped): void
     {

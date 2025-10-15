@@ -6,12 +6,12 @@ namespace Phan\Tests\Config;
 
 use Phan\Config;
 use Phan\Config\Initializer;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
  */
-final class InitializerTest extends BaseTest
+final class InitializerTest extends TestBase
 {
     public function testInitializesValid(): void
     {

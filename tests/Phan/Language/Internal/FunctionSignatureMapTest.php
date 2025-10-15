@@ -7,7 +7,7 @@ namespace Phan\Tests\Language\Internal;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 use function is_array;
 use function is_string;
@@ -16,7 +16,7 @@ use function is_string;
  * This is a sanity check that Phan's function signature map has the correct structure
  * and can be parsed into a function signature.
  */
-final class FunctionSignatureMapTest extends CodeBaseAwareTest
+final class FunctionSignatureMapTest extends CodeBaseAwareTestBase
 {
     private const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/iD';
     private const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/iD';

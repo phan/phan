@@ -9,7 +9,7 @@ use Phan\Config;
 /**
  * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
  */
-final class ConfigTest extends BaseTest
+final class ConfigTest extends TestBase
 {
     public function testDefaultsValid(): void
     {

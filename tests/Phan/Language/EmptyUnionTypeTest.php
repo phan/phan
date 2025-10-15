@@ -26,7 +26,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -39,7 +39,7 @@ use function count;
  * Checks that EmptyUnionType behaves the same way as an empty UnionType instance
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class EmptyUnionTypeTest extends BaseTest
+final class EmptyUnionTypeTest extends TestBase
 {
     private const SKIPPED_METHOD_NAMES = [
         'unserialize',  // throws

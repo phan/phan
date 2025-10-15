@@ -22,7 +22,7 @@ use function strlen;
  * - a src/ folder with analyzed PHP files, and
  * - the expected/ folder of expected error (template) lines for the corresponding files.
  */
-abstract class AbstractPhanFileTest extends CodeBaseAwareTest
+abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
 {
     public const EXPECTED_SUFFIX = '.expected';
 

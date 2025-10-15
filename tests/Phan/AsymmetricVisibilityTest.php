@@ -9,12 +9,12 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Plugin\ConfigPluginSet;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 /**
  * Unit tests of Phan analysis targeting AsymmetricVisibility (introduced in PHP 8.4).
  */
-final class AsymmetricVisibilityTest extends CodeBaseAwareTest
+final class AsymmetricVisibilityTest extends CodeBaseAwareTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,  // for use with tests of arrow functions

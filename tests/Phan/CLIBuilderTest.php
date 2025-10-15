@@ -9,7 +9,7 @@ use Phan\CLIBuilder;
 /**
  * Unit tests of helper methods in the class CLIBuilder
  */
-final class CLIBuilderTest extends BaseTest
+final class CLIBuilderTest extends TestBase
 {
     public function testSetOptions(): void
     {
