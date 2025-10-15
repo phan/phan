@@ -2929,6 +2929,21 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
 
+            // Check for narrowed static property types (e.g., after `if (self::$prop !== null)`)
+            if ($is_static) {
+                $class_node = $node->children['class'] ?? null;
+                if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+                    $class_name = $class_node->children['name'] ?? null;
+                    if (\is_string($class_name) && \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
+                        $override_union_type = $this->context->getStaticPropertyIfOverridden($property->getName());
+                        if ($override_union_type) {
+                            // There was an earlier type narrowing in scope such as `if (self::$prop !== null)`
+                            return $override_union_type;
+                        }
+                    }
+                }
+            }
+
             $union_type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
 
             // Map template types to concrete types

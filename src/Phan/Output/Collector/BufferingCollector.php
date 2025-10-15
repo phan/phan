@@ -55,7 +55,7 @@ final class BufferingCollector implements IssueCollectorInterface
         if (!$this->filter->supports($issue)) {
             return;
         }
-        if (self::$trace_issues) {
+        if (self::$trace_issues !== null) {
             CLI::printToStderr("Backtrace of {$issue->getIssue()->getType()} $issue is:\n");
             if (self::$trace_issues === Issue::TRACE_VERBOSE) {
                 \phan_print_backtrace();

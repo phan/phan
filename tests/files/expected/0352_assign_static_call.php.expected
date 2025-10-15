@@ -1,2 +1,4 @@
 %s:10 PhanTypeMissingReturn Method \Container352::offsetGet is declared to return mixed in phpdoc but has no return value
 %s:12 PhanTypeMissingReturn Method \Container352::offsetExists is declared to return bool in phpdoc but has no return value
+%s:31 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result $reg::getData()['foo'] for function returning null
+%s:32 PhanTypeInvalidCallExpressionAssignment Probably unused assignment to function result $reg->getData()['x'] for function returning null

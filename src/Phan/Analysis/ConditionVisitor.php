@@ -650,6 +650,34 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     /**
      * @param Node $node
+     * A node to parse, with kind ast\AST_STATIC_PROP (e.g. `if (self::$prop_name)`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitStaticProp(Node $node): Context
+    {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $this->context;
+        }
+        if (!\is_string($node->children['prop'])) {
+            return $this->context;
+        }
+        return $this->modifyStaticPropertySimple(
+            $node,
+            function (UnionType $type) use ($node): UnionType {
+                if (Config::getValue('error_prone_truthy_condition_detection')) {
+                    $this->checkErrorProneTruthyCast($node, $this->context, $type);
+                }
+                return $type->nonFalseyClone();
+            },
+            $this->context
+        );
+    }
+
+    /**
+     * @param Node $node
      * A node to parse
      *
      * @return Context
