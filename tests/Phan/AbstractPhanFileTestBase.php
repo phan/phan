@@ -67,6 +67,9 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
         parent::tearDown();
 
         Type::clearAllMemoizations();
+        \Phan\Language\Scope\GlobalScope::reset();
+        // Ensure we start with the correct project root
+        Config::setProjectRootDirectory(\dirname(__DIR__, 2));
     }
 
     /**

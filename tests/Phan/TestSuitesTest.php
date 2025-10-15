@@ -15,7 +15,6 @@ use SplFileInfo;
 /**
  * Test to verify that all PHPUnit test files are in exactly one test suite.
  * @coversNothing
- * @backupStaticAttributes disabled
  */
 class TestSuitesTest extends TestCase
 {
