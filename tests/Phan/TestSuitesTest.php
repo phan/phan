@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+/* @phan-file-suppress PhanAccessMethodInternal There doesn't seem to be a clean way of doing it. */
+
 namespace Phan\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -25,6 +27,7 @@ class TestSuitesTest extends TestCase
         $testFiles = [];
         /** @var SplFileInfo $file */
         foreach ($it as $file) {
+            '@phan-var SplFileInfo $file';
             if ($file->isDir()) {
                 continue;
             }
@@ -39,7 +42,7 @@ class TestSuitesTest extends TestCase
         }
 
         $config = (new Loader)->load( __DIR__ . '/../../phpunit.xml' );
-        $suiteFiles = $this->getSuiteFiles($config->testSuite());
+        $suiteFiles = self::getSuiteFiles($config->testSuite());
 
         sort($testFiles);
         sort($suiteFiles);
@@ -50,14 +53,16 @@ class TestSuitesTest extends TestCase
     /**
      * Modified version of TestSuiteMapper::map that doesn't actually load test files, to avoid side effects (we only
      * need file names, not classes).
+     * @return list<string>
      */
-    private function getSuiteFiles(TestSuiteCollection $configuration): array {
+    private static function getSuiteFiles(TestSuiteCollection $configuration): array {
         $suiteFilesMap = [];
 
         foreach ($configuration as $testSuiteConfiguration) {
             $exclude = [];
 
             foreach ($testSuiteConfiguration->exclude()->asArray() as $file) {
+                '@phan-var \PHPUnit\TextUI\Configuration\File $file';
                 $exclude[] = $file->path();
             }
 
@@ -90,7 +95,9 @@ class TestSuitesTest extends TestCase
                 $suiteFilesMap[$file->path()] = 1;
             }
         }
+        '@phan-var array<string,1> $suiteFilesMap';
 
-        return array_map(realpath(...), array_keys($suiteFilesMap));
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn These are all valid paths
+        return array_map('realpath', array_keys($suiteFilesMap));
     }
 }

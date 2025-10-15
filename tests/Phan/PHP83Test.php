@@ -65,7 +65,6 @@ final class PHP83Test extends AbstractPhanFileTestBase
         }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");
-            return;
         }
         parent::testFiles($test_file_list, $expected_file_path, $config_file_path);
     }

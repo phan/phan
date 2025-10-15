@@ -233,13 +233,12 @@ final class ConversionTest extends TestBase
         $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
-            return;  // unreachable
         }
         try {
             $ast = @ast\parse_code($contents, $ast_version, $file_name);
         } catch (\ParseError $e) {
             $this->fail("Failed for $file_name:{$e->getLine()}: {$e->getMessage()}");
-            return;  // unreachable
+            return;  // @phan-suppress-current-line PhanPluginUnreachableCode TODO Fix
         }
         self::normalizeOriginalAST($ast);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');

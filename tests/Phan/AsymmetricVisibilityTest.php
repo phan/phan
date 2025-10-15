@@ -59,7 +59,6 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTestBase
     ): void {
         if (\PHP_VERSION_ID < 80400) {
             $this->markTestSkipped("PHP 8.4 is required");
-            return;
         }
 
         $this->parseFile($file);;
