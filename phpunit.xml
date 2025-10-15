@@ -54,6 +54,7 @@
       <file>tests/Phan/DebugTest.php</file>
       <directory>tests/Phan/Analysis</directory>
       <directory>tests/Phan/AST</directory>
+      <directory>tests/Phan/Debug</directory>
       <directory>tests/Phan/Exception</directory>
       <directory>tests/Phan/Internal</directory>
       <directory>tests/Phan/LanguageServer</directory>
@@ -72,8 +73,19 @@
     <testsuite name="PHP85Test">
       <file>tests/Phan/PHP85Test.php</file>
     </testsuite>
-    <testsuite name="All">
-      <directory>tests/Phan</directory>
+    <testsuite name="Structure">
+      <file>tests/Phan/TestSuitesTest.php</file>
+    </testsuite>
+    <testsuite name="Plugin">
+      <file>tests/Phan/PluginV3Test.php</file>
+      <directory>tests/Phan/Plugin</directory>
+    </testsuite>
+    <testsuite name="Misc">
+      <file>tests/Phan/AsymmetricVisibilityTest.php</file>
+      <file>tests/Phan/CLIBuilderTest.php</file>
+      <file>tests/Phan/CLITest.php</file>
+      <file>tests/Phan/ConfigTest.php</file>
+      <directory>tests/Phan/Config</directory>
     </testsuite>
   </testsuites>
 </phpunit>
