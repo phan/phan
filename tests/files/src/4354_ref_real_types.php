@@ -111,3 +111,37 @@ function test_undefined_ref() {
     '@phan-debug-var $x'; // Should show int(real=int), not 42(real=42)
     '@phan-debug-var $ref'; // Should show int(real=int)
 }
+
+// Test existing variable becoming a reference (issue #4354 review #3)
+function test_existing_var_becomes_ref() {
+    $b = 17;
+    '@phan-debug-var $b'; // Should show 17(real=17)
+
+    $b =& $a;  // Existing $b becomes reference to undefined $a
+    '@phan-debug-var $b'; // Should show empty type since $a is undefined
+    '@phan-debug-var $a'; // Should show empty type
+
+    $b = 99;   // Assign through the reference
+    '@phan-debug-var $b'; // Should show int(real=int), NOT 99(real=99) - literal erased
+
+    $a = 42;   // Assign to the other reference
+    '@phan-debug-var $a'; // Should show int(real=int), NOT 42(real=42) - literal erased
+}
+
+// Test both variables exist before reference
+function test_both_exist_before_ref() {
+    $a = 10;
+    $b = 20;
+    '@phan-debug-var $a'; // Should show 10(real=10)
+    '@phan-debug-var $b'; // Should show 20(real=20)
+
+    $b =& $a;  // $b becomes reference to $a
+    '@phan-debug-var $a'; // Should show int(real=int) - literal erased
+    '@phan-debug-var $b'; // Should show int(real=int) - literal erased
+
+    $a = 42;
+    '@phan-debug-var $a'; // Should show int(real=int), NOT 42(real=42)
+
+    $b = 99;
+    '@phan-debug-var $b'; // Should show int(real=int), NOT 99(real=99)
+}

@@ -46,3 +46,16 @@
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $ref - it has union type null(real=null)
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)
 %s:110 PhanUnusedVariableReference Unused definition of variable $x as a reference
+%s:117 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type 17(real=17)
+%s:120 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type (empty union type)
+%s:120 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type (empty union type)
+%s:120 PhanUndeclaredVariable Variable $a is undeclared (Did you mean $b)
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
+%s:127 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:127 PhanUnusedVariableReference Unused definition of variable $a as a reference
+%s:134 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type 10(real=10)
+%s:134 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type 20(real=20)
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
+%s:142 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:145 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
