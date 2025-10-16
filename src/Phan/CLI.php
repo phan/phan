@@ -2335,10 +2335,22 @@ EOB
             CLI::printWarningToStderr("Caught exception while listing files in '$directory_name': {$exception->getMessage()}\n");
         }
 
-        // Normalize leading './' in paths.
+        // Normalize leading './' in paths and deduplicate by realpath (issue #3738)
         $normalized_file_list = [];
+        $seen_realpaths = [];
         foreach ($file_list as $file_path) {
             $file_path = \preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
+
+            // Deduplicate by realpath to handle multiple symlinks to the same file (issue #3738)
+            $real_path = \realpath($file_path);
+            if ($real_path !== false) {
+                // If we've already seen this realpath, skip this symlink
+                if (isset($seen_realpaths[$real_path])) {
+                    continue;
+                }
+                $seen_realpaths[$real_path] = true;
+            }
+
             // Treat src/file.php and src//file.php and src\file.php the same way
             $normalized_file_list[\preg_replace("@[/\\\\]+@", "\0", $file_path)] = $file_path;
         }
