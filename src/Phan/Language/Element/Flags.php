@@ -84,6 +84,10 @@ class Flags
     // only set on properties
     public const IS_PROMOTED_PROPERTY = (1 << 30);
 
+    // only set on variables - indicates the variable is involved in a reference assignment
+    // and should have its real types erased to avoid incorrect literal type tracking
+    public const HAS_REFERENCE = (1 << 31);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

@@ -24,6 +24,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -584,6 +585,13 @@ class AssignmentVisitor extends AnalysisVisitor
         // Let the caller warn about possibly undefined offsets, e.g. ['field' => $value] = ...
         // TODO: Convert real types to nullable?
         $element_type = $element_type->withIsPossiblyUndefined(false);
+
+        // If this variable is involved in a reference assignment, erase literal types
+        // to avoid incorrect literal type tracking (issue #4354)
+        if ($element instanceof Variable && $element->getPhanFlagsHasState(Flags::HAS_REFERENCE)) {
+            $element_type = $element_type->asNonLiteralType();
+        }
+
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['expr' => $node], $node->lineno ?? $this->assignment_node->lineno);
@@ -2010,6 +2018,25 @@ class AssignmentVisitor extends AnalysisVisitor
                         );
                     } catch (IssueException | NodeException) {
                         // Hopefully caught elsewhere
+                    }
+                } elseif ($expr instanceof Node && $expr->kind === ast\AST_VAR) {
+                    // Handle variable-to-variable references like $var2 =& $var1
+                    // Mark both variables as involved in references and erase their literal types
+                    // to avoid incorrect literal type tracking when one is modified.
+                    $variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
+
+                    // Erase literal types from the newly created reference variable
+                    $variable->setUnionType($variable->getUnionType()->asNonLiteralType());
+
+                    // Also mark and erase literal types from the source variable
+                    $source_var_name = $expr->children['name'];
+                    if (\is_string($source_var_name)) {
+                        $scope = $this->context->getScope();
+                        if ($scope->hasVariableWithName($source_var_name)) {
+                            $source_variable = $scope->getVariableByName($source_var_name);
+                            $source_variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
+                            $source_variable->setUnionType($source_variable->getUnionType()->asNonLiteralType());
+                        }
                     }
                 }
             }
