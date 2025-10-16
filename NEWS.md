@@ -3,12 +3,10 @@ Phan NEWS
 TBD, Phan 6.0.0-dev
 -----------------------
 Breaking changes:
-- Requires PHP 8.1+ to run (dropped PHP 8.0 support)
+- Requires PHP 8.1+ to run and minimum target version is now PHP 8.1
 - Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
 - The `-i` CLI option is now an alias of `--incremental` instead of `--ignore-undeclared`
-- Dropped support for (minimum) target PHP version < 8.1.
 - Renamed the `PhanPluginCanUsePHP71Void` issue to `PhanPluginCanUseVoidReturnType`
-- Phan will throw an error and exit when none of the files in `include_analysis_file_list` exist
 - Dropped the `allow_method_param_type_widening` config option (contravariance is now always allowed)
 - Dropped the `backward_compatibility_checks` config option, along with its respective `--backward-compatibility-checks` and `-b` CLI flags
 
@@ -27,7 +25,7 @@ New features (Analysis):
   - Pipe operator (`|>`) with full type inference through piped call chains
   - `(void)` cast support for suppressing NoDiscard warnings
   - Updated function signatures for PHP 8.5 standard library changes
-- Full support for PHP 8.4 property hooks with AST version 110/120
+- Full support for PHP 8.4 property hooks
   - Parse and validate property hook syntax (get/set hooks)
   - Parameter type checking for set hook parameters
   - Validation of hooks with default values (PhanPropertyHookWithDefaultValue)
@@ -53,8 +51,46 @@ New features (Analysis):
   - `PHPDocRedundantPlugin` now flags redundant `@var` annotations on typed
     properties, matching its existing coverage for functions and methods.
 - `PreferNamespaceUsePlugin` now handles union types
+- Improved generics support (#5182)
+  - Enhanced template type handling and generic type inference
+  - Better resolution of generic types in complex scenarios
+- Full support for PHP 8.3 typed class constants (#5140, #5128)
+  - Inheritance checking and validation
+  - New issue types: PhanTypeMismatchDeclaredConstant, PhanTypeMismatchDeclaredConstantNever, PhanConstantTypeMismatchInheritance
+  - Proper type narrowing for class constants in conditions (#5127)
+- Literal type exclusion in `!in_array()` checks (#5185)
+  - Type narrowing when checking values against literal arrays (up to 50 elements)
+  - Improves precision when checking against known sets of values
+- Reference assignment literal type erasure (#5197, #4354)
+  - Variables involved in reference assignments (`$var2 =& $var1`) now have their literal types erased
+  - Prevents incorrect literal type tracking when variables are aliased
+  - Applies to both sides of reference assignment and persists across subsequent assignments
+- Enhanced type inference improvements:
+  - `array_filter()` recognizes null-stripping callbacks and keeps element types non-null (#5100)
+  - `array_chunk()` return type inference based on `preserve_keys` parameter (#5165)
+  - `constant()` return type inference from Phan's constant table for non-dynamic constants (#5157)
+  - stdClass property inference from array shape casts (#5151)
+  - Better static return type resolution preserving intersection types and generics (#5126)
+  - Improved `foreach` iterator type inference honoring explicit iterator generics (#5108)
+  - Conditional type refinement after array field checks (#5179)
+  - Static properties in conditional expressions (#5194)
+  - Type conditions with intermediary variables (#5125)
+  - Enum property access in constant expressions (#5158): support for `self::CASE->value`
+- New detection capabilities:
+  - UncoveredEnumCasesInMatchPlugin (#5164): Detects when match expressions with enum conditions don't cover all enum cases
+  - Duplicate static variable detection (#5176): New PhanDuplicateStaticVariable issue (fatal error in PHP 8.3+)
+  - Multiple readonly property assignment (#5175): New PhanAccessReadOnlyPropertyMultipleTimes issue
+  - Redundant boolean type combinations (#5174): Warns on redundant type combinations
+  - Trait constant compatibility (#5119): New PhanIncompatibleCompositionConstant for conflicting trait constants
+  - Interface traits and readonly classes (#5118): Warns when interfaces use traits or readonly classes use non-readonly trait properties
+  - Improved unused variable detection (#5093): Catches more cases with compound assignment operators (`+=`, `-=`, etc.)
+  - Redundant property comments (#5107): Warns on redundant `@var` docblocks on typed properties
 
 New features (CLI):
+- Git-style config discovery (#5092):
+  - Searches parent directories for `.phan/config.php`
+  - Filters output when running from subdirectories
+  - New `--subdirectory-only` flag for analyzing specific modules with better performance
 - `-n`/`--no-config-file` implicitly limits analysis to just the files provided
   on the command line (e.g. `phan -n test1.php test2.php`) avoiding analysis of
   the rest of the project when you only want quick ad-hoc checks.
@@ -64,11 +100,121 @@ New features (CLI):
   - Add the `--force-full-analysis` flag to force a full re-analysis of all files, ignoring the incremental analysis manifest.
   - Add the `--no-incremental` / `-N` option that disables incremental analysis (useful if it was enabled in config.php).
 
+Performance improvements:
+- phan_helpers C extension integration (#5096):
+  - Optional C extension for 2-3x faster AST hashing and type deduplication
+  - Overall analysis speedup: 5-15% for large projects
+  - Automatically detected and used when available
+- Conditional visitor optimization (#5186):
+  - Skip visitor creation for ~60-70% of if statements (those without else/elseif)
+  - Reduces memory usage and improves analysis speed
+- Incremental analysis support (see CLI features above)
+- Subdirectory-only mode for faster focused analysis
+
 Bug fixes:
+
+Type Inference & Analysis:
+- Fixed intersection types with unknown classes: Proper method resolution when intersection contains both known and unknown classes (#5190)
+- Fixed template type compatibility: No more false positive `PhanTypeMismatchDeclaredReturn` with template types (#5181)
+- Fixed readonly property access: No more false positives with `isset()` on readonly properties in `@phan-side-effect-free` classes (#5180)
+- Fixed switch fall-through variable tracking: Variable definitions now flow correctly through fall-through cases (#5155)
+- Fixed try/catch variable scope: Variable definitions in try blocks with finally clauses now track correctly (#5152, #5131)
+- Fixed global variable type pollution in daemon mode: Incremental re-analysis no longer pollutes global variable types (#5183)
+- Fixed ternary in function arguments: Proper type narrowing for conditional expressions in arguments (#5166)
+- Fixed empty array vs non-empty union: Re-checks union arguments mixing empty and non-empty arrays (#5115)
+- Fixed array map callback analysis: No more false positive `PhanParamTooFewUnpack` with array_map (#5114)
+- Fixed static call on trait properties: No more false positives after instanceof checks (#5111)
+- Fixed never return type inheritance: Proper detection of inherited never methods via `parent::`/`static::` (#5109)
+- Fixed nested array shape field refinement: Suppressed property mismatch warnings when refining nested fields (#5106)
+- Fixed enums as class constants: Allow enum types as class constant values (#5103)
+- Fixed SID constant handling: Special-case handling for dynamically defined SID constant (#5150)
+- Fixed reference assignment literal type erasure: Variables involved in reference assignments now correctly erase literal types to prevent false positives (#5197)
+
+PHPDoc & Attributes:
+- Fixed @phan-suppress on class constants: Suppression annotations are no longer ignored (#5188)
+- Fixed @phan-mandatory-param inheritance: Inherit annotation from interface methods (#5116)
+- Fixed @phan-pure inheritance: Exclude `__call` and `__callStatic` from automatic inheritance (#5124)
+- Fixed internal method purity: ArrayObject->count() now inherits pure flag from Countable (#5122)
+- Fixed PHPDoc type inheritance: Proper inheritance of parameter types from interfaces (#5117)
+
+Plugin Fixes:
+- Fixed MoreSpecificElementTypePlugin: No more false positives with `array{}|non-empty-array<K,V>` (#5187)
+- Fixed UnknownElementTypePlugin: No more false positives on inherited methods (#5177)
+- Fixed RedundantConditionVisitor: No more false positives with static property empty() checks (#5148)
+- Fixed CompactPlugin: Added check for possibly undefined variables (#5167)
+- Fixed PHPDocRedundantPlugin: Added auto-fixer for redundant property comments (#5178)
+
+Loop & Control Flow:
+- Fixed possibly infinite loop detection: No more false positives when loop condition uses array count (#5153)
+- Fixed `!isset()` variable tracking: Possibly-undefined flag preservation now works correctly (#5172)
+- Fixed redundant condition after `empty()`: Proper static property handling (#5148)
+
+Other Fixes:
+- Fixed nullsafe property access: No more strict object checking false positives with `?->` (#5112)
+- Fixed trait method multi-level inheritance: Track trait methods through multiple inheritance levels (#5120)
+- Fixed DNS aliases: Corrected reversed DNS aliases (#5170)
+- Fixed private final constructor: Don't warn on private final constructors (exempted in PHP 8.0+) (#5169)
+- Fixed float-to-int in modulo: Detect implicit float-to-int conversion in `%` operator (#5189)
+- Fixed sibling type compatibility: Assignment visitor type checking now works correctly (#5168)
+- Fixed dynamic array offset constants: Skip premature constant resolution for `define()` (#5156)
+- Fixed unary operator type aggregation: Corrected numeric fallback ordering bug (#5146)
+- Fixed xml_parser_create signature: Corrected incorrect signature (#5139)
+- Fixed crash with intersection types: No more `EmptyFQSENException` with `--analyze-twice` (#5086)
+- Fixed class constant regression: Corrected typed constant false positives after #5128 (#5133)
+
+AST Compatibility:
 - Fixed AST version 110/120 compatibility for PHP 8.4
   - Updated TolerantASTConverter to support AST version 120
   - Fixed AST structural changes: closure 'name' field removal, parameter 'hooks' field addition, property 'hooks' field addition
   - Fixed `clone` being incorrectly treated as a function call in AST version 110+ (it's now AST_CALL instead of AST_CLONE)
+
+Oct 4 2025, Phan 5.5.2
+-----------------------
+New features(Analysis):
+- Detect duplicate `@template` annotations [#5082](https://github.com/phan/phan/pull/5082)
+  - New issue type: `PhanTemplateTypeDuplicate` - when the same `@template` type appears more than once in one comment
+  - New issue type: `PhanTemplateTypeShadowsClass` - when the same `@template` type appears in a class comment and a (non-static) method comment
+- Handle intersection types in `@throws` annotations [#5073](https://github.com/phan/phan/pull/5073), [#5071](https://github.com/phan/phan/issues/5071)
+- Flag `catch` variables declared as unused in PHP 8 [#5050](https://github.com/phan/phan/pull/5050)
+
+New features(Plugins):
+- UseReturnValuePlugin: support `#[\NoDiscard]` attribute [#5051](https://github.com/phan/phan/pull/5051)
+  - Detects when return values of functions/methods with `#[\NoDiscard]` attribute are ignored
+  - Works even when the attribute class does not exist (PHP < 8.5)
+
+Bug fixes:
+- Fix never-return type narrowing [#5078](https://github.com/phan/phan/pull/5078)
+- Fix SelfType instantiation in certain contexts [#5069](https://github.com/phan/phan/pull/5069), [#5057](https://github.com/phan/phan/issues/5057)
+- Fix method type inheritance with generic concrete subclass overrides [#5068](https://github.com/phan/phan/pull/5068), [#4843](https://github.com/phan/phan/issues/4843)
+  - Map overridden method types before inheriting them
+- Fix `static` return type resolution in traits [#5067](https://github.com/phan/phan/pull/5067), [#4845](https://github.com/phan/phan/issues/4845)
+  - Resolve `static` before emitting PhanTypeMismatchReturn
+- Fix handling of `@extends`/`@inherits` in PHPDoc on traits [#5061](https://github.com/phan/phan/pull/5061), [#5002](https://github.com/phan/phan/issues/5002)
+  - Allow `@extends`/`@inherits` on traits to document that the trait is only used on specific classes
+- Fix ArrayObject/ArrayIterator type checking with object type parameters [#5064](https://github.com/phan/phan/pull/5064)
+  - Now complains about ArrayObject/ArrayIterator with objects as type parameters
+- Normalize generic multi-type elements before expanding them [#5059](https://github.com/phan/phan/pull/5059), [#5049](https://github.com/phan/phan/issues/5049)
+  - `(A|null)[]` and `(?A)[]` are now treated consistently
+- Use `mixed` instead of empty union to substitute unspecified template types [#5058](https://github.com/phan/phan/pull/5058), [#5052](https://github.com/phan/phan/issues/5052)
+  - Better handling of template types used in union types (e.g., `T|null` becomes `mixed|null` instead of just `null`)
+- Fix phan_client `-l` flag handling to support one or multiple files [#5056](https://github.com/phan/phan/pull/5056)
+- Fix type inference for array unions [#5047](https://github.com/phan/phan/pull/5047)
+  - Infer more partial types for array union
+- Increase max recursion depth in asExpandedTypes [#5046](https://github.com/phan/phan/pull/5046)
+  - Fixes issues with long inheritance chains
+- Restore compatibility with older php-ast versions [#5045](https://github.com/phan/phan/pull/5045)
+- Consider ClosureType as callable in CallableParamPlugin [#5041](https://github.com/phan/phan/pull/5041)
+- Improve handling of complex callables [#5039](https://github.com/phan/phan/pull/5039)
+  - Move code for complex callables from ContextNode to UnionTypeVisitor
+- Respect log_error for invalid maybe-callable FQSENs [#5038](https://github.com/phan/phan/pull/5038)
+
+Miscellaneous:
+- Add hash options argument to the 8.1 function signature delta map [#5048](https://github.com/phan/phan/pull/5048)
+- Update php-ast to 1.1.3 [#5042](https://github.com/phan/phan/pull/5042)
+- Add PHP 8.5 compatibility fixes
+  - Fix SplObjectStorage deprecations (replaced `attach()` with `offsetSet()`, `contains()` with `offsetExists()`)
+  - Add `__unserialize()` method to Type class to address PHP 8.5 deprecation
+  - Suppress PHP 8.5 deprecation warnings in error handler for symfony/string compatibility
 
 August 6 2025, Phan 5.5.1
 -----------------------
