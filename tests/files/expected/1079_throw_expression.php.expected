@@ -8,4 +8,4 @@
 %s:24 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
 %s:26 PhanRedundantCondition Redundant attempt to cast $condition of type true to truthy
 %s:27 PhanImpossibleCondition Impossible attempt to cast $condition of type false to truthy
-%s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type 0 to 10 of type 10 with operator '<' in a loop (likely a false positive)
+%s:31 PhanSuspiciousValueComparisonInLoop Suspicious attempt to compare $i of type int (value: 0) to 10 of type int (value: 10) with operator '<' in a loop (likely a false positive)
