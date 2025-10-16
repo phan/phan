@@ -600,7 +600,6 @@ class Issue
     public const CompatibleImplodeOrder             = 'PhanCompatibleImplodeOrder';
     public const CompatibleUnparenthesizedTernary   = 'PhanCompatibleUnparenthesizedTernary';
     public const CompatibleDefaultEqualsNull        = 'PhanCompatibleDefaultEqualsNull';
-    public const CompatiblePHP8PHP4Constructor      = 'PhanCompatiblePHP8PHP4Constructor';
     public const CompatibleSerializeInterfaceDeprecated  = 'PhanCompatibleSerializeInterfaceDeprecated';
     public const CompatibleAccessMethodOnTraitDefinition = 'PhanCompatibleAccessMethodOnTraitDefinition';
     public const CompatibleAccessPropertyOnTraitDefinition  = 'PhanCompatibleAccessPropertyOnTraitDefinition';
@@ -5189,15 +5188,6 @@ class Issue
                 "Unparenthesized '{CODE}' is deprecated. Use either '{CODE}' or '{CODE}'",
                 self::REMEDIATION_B,
                 3020
-            ),
-            // TODO mention that they will be treated like regular methods.
-            new Issue(
-                self::CompatiblePHP8PHP4Constructor,
-                self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
-                "PHP4 constructors are no longer supported. __construct() should be added/used instead to avoid accidentally calling {METHOD}",
-                self::REMEDIATION_B,
-                3022
             ),
             new Issue(
                 self::CompatibleDefaultEqualsNull,

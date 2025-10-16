@@ -517,14 +517,6 @@ e.g. this issue is emitted when analyzing #[Override] while targeting versions t
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L18).
 
-## PhanCompatiblePHP8PHP4Constructor
-
-```
-PHP4 constructors are no longer supported. __construct() should be added/used instead to avoid accidentally calling {METHOD}
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0198_list_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0198_list_property.php#L7).
-
 ## PhanCompatibleReadonlyClass
 
 ```
