@@ -24,6 +24,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -584,6 +585,13 @@ class AssignmentVisitor extends AnalysisVisitor
         // Let the caller warn about possibly undefined offsets, e.g. ['field' => $value] = ...
         // TODO: Convert real types to nullable?
         $element_type = $element_type->withIsPossiblyUndefined(false);
+
+        // If this variable is involved in a reference assignment, erase literal types
+        // to avoid incorrect literal type tracking (issue #4354)
+        if ($element instanceof Variable && $element->getPhanFlagsHasState(Flags::HAS_REFERENCE)) {
+            $element_type = $element_type->asNonLiteralType();
+        }
+
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['expr' => $node], $node->lineno ?? $this->assignment_node->lineno);
@@ -605,6 +613,12 @@ class AssignmentVisitor extends AnalysisVisitor
         UnionType $element_type,
         Node|float|int|string $node
     ): void {
+        // If this variable is involved in a reference assignment, erase literal types
+        // to avoid incorrect literal type tracking (issue #4354)
+        if ($element instanceof Variable && $element->getPhanFlagsHasState(Flags::HAS_REFERENCE)) {
+            $element_type = $element_type->asNonLiteralType();
+        }
+
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
             self::analyzeSetUnionTypePassByRef(
@@ -1958,7 +1972,16 @@ class AssignmentVisitor extends AnalysisVisitor
                 // TODO: Handle `$x = 'x'; $s[0] = '0';`
                 $this->analyzeSetUnionType($variable, $new_union_type->nonFalseyClone(), $this->assignment_node->children['expr'] ?? null);
             } else {
-                $this->analyzeSetUnionType($variable, $this->right_type, $this->assignment_node->children['expr'] ?? null);
+                // Handle variable-to-variable references (issue #4354)
+                // Mark with HAS_REFERENCE flag and get type AFTER marking to ensure literals are erased
+                if ($this->assignment_node->kind === ast\AST_ASSIGN_REF && $this->dim_depth === 0) {
+                    $this->markVariablesAsReferences($variable, $this->assignment_node->children['expr']);
+                    // Get the type of the source variable after marking
+                    $source_type = $this->getRefSourceType($this->assignment_node->children['expr']);
+                    $this->analyzeSetUnionType($variable, $source_type, $this->assignment_node->children['expr'] ?? null);
+                } else {
+                    $this->analyzeSetUnionType($variable, $this->right_type, $this->assignment_node->children['expr'] ?? null);
+                }
             }
 
             $this->context->addScopeVariable(
@@ -2011,6 +2034,10 @@ class AssignmentVisitor extends AnalysisVisitor
                     } catch (IssueException | NodeException) {
                         // Hopefully caught elsewhere
                     }
+                } else {
+                    // Handle variable-to-variable references (issue #4354)
+                    // Mark with HAS_REFERENCE flag so subsequent type operations erase literals
+                    $this->markVariablesAsReferences($variable, $expr);
                 }
             }
         }
@@ -2265,5 +2292,73 @@ class AssignmentVisitor extends AnalysisVisitor
             $node->lineno
         );
         return $this->context;
+    }
+
+    /**
+     * Get the type of the source variable in a reference assignment after marking (issue #4354)
+     *
+     * @param Node|string|int|float|null $expr The right-hand side expression
+     * @return UnionType The type of the source variable
+     */
+    private function getRefSourceType(Node|string|int|float|null $expr): UnionType
+    {
+        if (!($expr instanceof Node && $expr->kind === ast\AST_VAR)) {
+            return UnionType::empty();
+        }
+
+        $source_var_name = $expr->children['name'];
+        if (!\is_string($source_var_name)) {
+            return UnionType::empty();
+        }
+
+        $scope = $this->context->getScope();
+        if ($scope->hasVariableWithName($source_var_name)) {
+            return $scope->getVariableByName($source_var_name)->getUnionType();
+        }
+
+        return UnionType::empty();
+    }
+
+    /**
+     * Mark both variables in a reference assignment with HAS_REFERENCE flag (issue #4354)
+     * This ensures that analyzeSetUnionType will erase literal types automatically.
+     * Also erase existing literal types on both variables.
+     *
+     * @param Variable $variable The left-hand side variable
+     * @param Node|string|int|float|null $expr The right-hand side expression
+     */
+    private function markVariablesAsReferences(Variable $variable, Node|string|int|float|null $expr): void
+    {
+        if (!($expr instanceof Node && $expr->kind === ast\AST_VAR)) {
+            return;
+        }
+
+        // Mark the left-hand variable and erase any existing literal types
+        $variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
+        $variable->setUnionType($variable->getUnionType()->asNonLiteralType());
+
+        // Also mark the source variable
+        // Create the variable if it doesn't exist yet to ensure the flag is set
+        $source_var_name = $expr->children['name'];
+        if (!\is_string($source_var_name)) {
+            return;
+        }
+
+        $scope = $this->context->getScope();
+        if ($scope->hasVariableWithName($source_var_name)) {
+            $source_variable = $scope->getVariableByName($source_var_name);
+        } else {
+            // Variable doesn't exist yet (e.g., $ref =& $x; $x = 42;)
+            // Create it now so we can mark it with HAS_REFERENCE
+            $source_variable = new Variable(
+                $this->context->withLineNumberStart($expr->lineno ?? 0),
+                $source_var_name,
+                UnionType::empty(),
+                0
+            );
+            $scope->addVariable($source_variable);
+        }
+        $source_variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
+        $source_variable->setUnionType($source_variable->getUnionType()->asNonLiteralType());
     }
 }
