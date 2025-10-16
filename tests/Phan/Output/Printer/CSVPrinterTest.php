@@ -7,13 +7,13 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CSVPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Unit tests of CSVPrinter converting `IssueInstance`s to CSV text
  */
-final class CSVPrinterTest extends BaseTest
+final class CSVPrinterTest extends TestBase
 {
 
     public function testHeaderCorrespondsToData(): void
@@ -67,7 +67,7 @@ final class CSVPrinterTest extends BaseTest
     }
 
     /** @return list<list> */
-    public function specialCharacterCasesProvider(): array
+    public static function specialCharacterCasesProvider(): array
     {
         return [
             // Valid ASCII

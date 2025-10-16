@@ -12,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Test the behavior of MixedType and its variants
- * @backupStaticAttributes disabled
  */
 class MixedTypeTest extends TestCase
 {

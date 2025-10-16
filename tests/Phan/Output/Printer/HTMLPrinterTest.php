@@ -7,13 +7,13 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\HTMLPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Tests of the HTMLPrinter converting `IssueInstance`s to the expected html fragment.
  */
-final class HTMLPrinterTest extends BaseTest
+final class HTMLPrinterTest extends TestBase
 {
 
     public function testPrintOutput(): void

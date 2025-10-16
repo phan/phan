@@ -1,3 +1,4 @@
+%s:12 PhanTypeInvalidArrayKey Saw array key new MyStringable() with key type \MyStringable but expected a value that could cast to int|string
 %s:12 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [new MyStringable()=>1] of type non-empty-associative-array<1> (real type non-empty-array<mixed,1>) but \strlen() takes string
 %s:13 PhanTypeInvalidArrayKeyLiteral Saw array key 4.5 with key value 4.5 but expected a value that could cast to int|string
 %s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is [4.5=>1] of type array{4:1} but \strlen() takes string

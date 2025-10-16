@@ -7,13 +7,13 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\PylintPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Tests of the PylintPrinter converting `IssueInstance`s to the expected pylint output
  */
-final class PylintPrinterTest extends BaseTest
+final class PylintPrinterTest extends TestBase
 {
 
     public function testPrintOutput(): void

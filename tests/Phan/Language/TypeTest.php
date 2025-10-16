@@ -38,7 +38,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 use function get_class;
 
@@ -46,7 +46,7 @@ use function get_class;
  * Unit tests of Type
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class TypeTest extends CodeBaseAwareTest
+final class TypeTest extends CodeBaseAwareTestBase
 {
     private function makePHPDocType(string $type_string): Type
     {
@@ -484,7 +484,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<list> */
-    public function canCastToTypeProvider(): array
+    public static function canCastToTypeProvider(): array
     {
         return [
             ['int', 'int'],
@@ -535,7 +535,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<list> */
-    public function cannotCastToTypeProvider(): array
+    public static function cannotCastToTypeProvider(): array
     {
         return [
             ['?int', 'int'],
@@ -574,7 +574,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<list> */
-    public function declaredTypeProvider(): array
+    public static function declaredTypeProvider(): array
     {
         return [
             [false, "'literal'", '?int'],
@@ -594,7 +594,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<array{0:bool, 1: string, 2: string, 3?: bool}> */
-    public function isSubtypeOfProvider(): array
+    public static function isSubtypeOfProvider(): array
     {
         return [
             [false, 'ArrayObject', 'stdClass'],
@@ -726,7 +726,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<array{0: string, 1: string}> */
-    public function nonWeakOverlappingTypeProvider(): array
+    public static function nonWeakOverlappingTypeProvider(): array
     {
         return [
             ['ArrayObject', 'stdClass'],
@@ -763,10 +763,10 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return list<array{0: string}> */
-    public function isSubtypeOfSelfProvider(): array
+    public static function isSubtypeOfSelfProvider(): array
     {
         $values = [];
-        foreach ($this->isSubtypeOfProvider() as [1 => $from_type_string, 2 => $to_type_string]) {
+        foreach (self::isSubtypeOfProvider() as [1 => $from_type_string, 2 => $to_type_string]) {
             $values[$from_type_string] = [$from_type_string];
             $values[$to_type_string] = [$to_type_string];
         }
@@ -802,7 +802,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return array<int,array> */
-    public function arrayShapeProvider(): array
+    public static function arrayShapeProvider(): array
     {
         return [
             [
@@ -872,7 +872,7 @@ final class TypeTest extends CodeBaseAwareTest
     }
 
     /** @return array<int,array> */
-    public function unparsableTypeProvider(): array
+    public static function unparsableTypeProvider(): array
     {
         return [
             ['array{'],

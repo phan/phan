@@ -7,12 +7,12 @@ namespace Phan\Tests\AST;
 use AssertionError;
 use Phan\AST\ASTReverter;
 use Phan\Config;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests of ASTReverter converting a Node to a compact string representation of that node
  */
-final class ASTReverterTest extends BaseTest
+final class ASTReverterTest extends TestBase
 {
     /**
      * @param string $snippet
@@ -36,7 +36,7 @@ final class ASTReverterTest extends BaseTest
     /**
      * @return list<array{0:string}>
      */
-    public function revertShorthandProvider(): array
+    public static function revertShorthandProvider(): array
     {
         return [
             ["'2'"],

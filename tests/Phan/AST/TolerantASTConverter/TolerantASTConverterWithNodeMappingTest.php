@@ -10,12 +10,12 @@ use InvalidArgumentException;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\Config;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
  */
-final class TolerantASTConverterWithNodeMappingTest extends BaseTest
+final class TolerantASTConverterWithNodeMappingTest extends TestBase
 {
     public static function setUpBeforeClass(): void
     {
@@ -106,7 +106,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     /**
      * @return list<array{0:int,1:int,2:string,3:Node}>
      */
-    public function byteOffsetLookupProvider(): array
+    public static function byteOffsetLookupProvider(): array
     {
         // using 1-based lines, 0-based columns
         $default_file = <<<'EOT'

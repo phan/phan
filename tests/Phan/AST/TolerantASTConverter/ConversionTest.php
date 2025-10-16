@@ -11,7 +11,7 @@ use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Config;
 use Phan\Debug;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -27,13 +27,13 @@ Shim::load();
 /**
  * Tests that the polyfill works with valid ASTs
  */
-final class ConversionTest extends BaseTest
+final class ConversionTest extends TestBase
 {
     /**
      * @return list<string>
      * @suppress PhanPluginUnknownObjectMethodCall
      */
-    protected function scanSourceDirForPHP(string $source_dir): array
+    protected static function scanSourceDirForPHP(string $source_dir): array
     {
         $files = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_dir)) as $file_path => $file_info) {
@@ -90,12 +90,12 @@ final class ConversionTest extends BaseTest
      *
      * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
      */
-    public function astValidFileExampleProvider(): array
+    public static function astValidFileExampleProvider(): array
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $source_dir = \dirname(\realpath(__DIR__), 3) . '/misc/fallback_ast_src';
-        $paths = $this->scanSourceDirForPHP($source_dir);
+        $paths = self::scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
         $supports80 = self::hasNativeASTSupport(Config::AST_VERSION);
@@ -233,13 +233,12 @@ final class ConversionTest extends BaseTest
         $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
-            return;  // unreachable
         }
         try {
             $ast = @ast\parse_code($contents, $ast_version, $file_name);
         } catch (\ParseError $e) {
             $this->fail("Failed for $file_name:{$e->getLine()}: {$e->getMessage()}");
-            return;  // unreachable
+            return;  // @phan-suppress-current-line PhanPluginUnreachableCode TODO Fix
         }
         self::normalizeOriginalAST($ast);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');

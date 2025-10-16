@@ -15,7 +15,7 @@ use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use RuntimeException;
 use stdClass;
 
@@ -33,7 +33,7 @@ use function strlen;
  * @phan-file-suppress PhanPluginPossiblyStaticPrivateMethod there are a lot of methods
  * @phan-file-suppress PhanPluginRemoveDebugAny
  */
-final class LanguageServerIntegrationTest extends BaseTest
+final class LanguageServerIntegrationTest extends TestBase
 {
     // Uncomment to enable debug logging within this test.
     // There are separate config settings to make the language server emit debug messages.
@@ -185,7 +185,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     /**
      * @return list<array{0:bool,1:bool}>
      */
-    public function initializeProvider(): array
+    public static function initializeProvider(): array
     {
         $results = [
             [false, true],
@@ -659,7 +659,7 @@ EOT;
     /**
      * @return list<array{0:Position,1:array,2:bool}>
      */
-    public function completionBasicProvider(): array
+    public static function completionBasicProvider(): array
     {
         $cases = \array_merge(
             self::createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
@@ -870,7 +870,7 @@ EOT;
     /**
      * @return list<array{0:Position,1:array,2:bool}>
      */
-    public function completionVariableProvider(): array
+    public static function completionVariableProvider(): array
     {
         $cases = \array_merge(
             self::createCompletionVariableTestCases('', false),
@@ -925,7 +925,7 @@ EOT;
     /**
      * @return list<array{0:string,1:Position,2:?string,3?:?string}>
      */
-    public function hoverInOtherFileProvider(): array
+    public static function hoverInOtherFileProvider(): array
     {
         $parse_code_default = "'string code'";
         $error_default_message = "''";
@@ -1480,7 +1480,7 @@ EOT
     /**
      * @return list<array{0:string,1:Position,2:string,3:?int,4?:string}>
      */
-    public function definitionInOtherFileProvider(): array
+    public static function definitionInOtherFileProvider(): array
     {
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
@@ -1659,7 +1659,7 @@ EOT;
     /**
      * @return list<array{0:string,1:Position,2:string,3:?int,4?:string}>
      */
-    public function typeDefinitionInOtherFileProvider(): array
+    public static function typeDefinitionInOtherFileProvider(): array
     {
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
@@ -1732,7 +1732,7 @@ EOT;
     }
 
     /** @return list<list> */
-    public function pcntlEnabledProvider(): array
+    public static function pcntlEnabledProvider(): array
     {
         $cases = [
             [false],

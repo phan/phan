@@ -1,0 +1,1 @@
+%s:29 PhanTypeMismatchArgumentSuperType Argument 1 ($o) is new BaseClass() of type \NS1069\BaseClass but \NS1069\BarFactory::build() takes \NS1069\SubClass defined at %s:24 (expected type to be the same or a subtype, but saw a supertype instead)

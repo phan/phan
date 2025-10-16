@@ -13,14 +13,14 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Parse\ParseVisitor;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Context and scopes
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  * @phan-file-suppress PhanTypeMismatchArgumentNullable
  */
-final class ContextTest extends BaseTest
+final class ContextTest extends TestBase
 {
 
     /** @var CodeBase The code base within which this unit test is running */

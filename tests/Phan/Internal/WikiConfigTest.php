@@ -6,7 +6,7 @@ namespace Phan\Tests\Internal;
 
 use InvalidArgumentException;
 use Phan\Config\Initializer;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 use function array_key_exists;
 use function dirname;
@@ -22,7 +22,7 @@ use const STDERR;
 /**
  * Parts of this are based on https://github.com/phan/phan/issues/445#issue-195541058 by algo13
  */
-class WikiConfigTest extends BaseTest
+class WikiConfigTest extends TestBase
 {
     /**
      * @return array<string,ConfigEntry>

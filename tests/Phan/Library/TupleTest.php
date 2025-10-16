@@ -6,12 +6,12 @@ namespace Phan\Tests\Library;
 
 use Phan\Library\Tuple1;
 use Phan\Library\Tuple2;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Tuple
  */
-final class TupleTest extends BaseTest
+final class TupleTest extends TestBase
 {
     public function testSimple1(): void
     {

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Library;
 
 use Phan\Library\RegexKeyExtractor;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Tests of RegexKeyExtractor
  */
-final class RegexKeyExtractorTest extends BaseTest
+final class RegexKeyExtractorTest extends TestBase
 {
     /**
      * Test that $expected_keys are extracted from $regex
@@ -29,7 +29,7 @@ final class RegexKeyExtractorTest extends BaseTest
     /**
      * @return list<array{0:string,1:list<int|string>}>
      */
-    public function getKeysProvider(): array
+    public static function getKeysProvider(): array
     {
         return [
             ['//',          [0]],

@@ -12,7 +12,7 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * Verifies that the analysis of a single file with default settings has the expected output.
  */
-abstract class PhanTestCommon extends AbstractPhanFileTest
+abstract class PhanTestCommon extends AbstractPhanFileTestBase
 {
     public static function setUpBeforeClass(): void
     {
@@ -33,9 +33,9 @@ abstract class PhanTestCommon extends AbstractPhanFileTest
      * @suppress PhanUndeclaredConstant
      * @return array<string,array{0:array{0:string},1:string}>
      */
-    final public function getAllTestFiles(): array
+    final public static function getAllTestFiles(): array
     {
         static $results = null;
-        return $results ?? $results = $this->scanSourceFilesDir(\TEST_FILE_DIR, \EXPECTED_DIR);
+        return $results ?? $results = self::scanSourceFilesDir(\TEST_FILE_DIR, \EXPECTED_DIR);
     }
 }

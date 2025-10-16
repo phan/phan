@@ -12,7 +12,7 @@ use Phan\CodeBase;
  * The CodeBase instance is created as a shallow clone to isolate
  * changes (e.g. adding element declarations) made by tests.
  */
-abstract class CodeBaseAwareTest extends BaseTest
+abstract class CodeBaseAwareTestBase extends TestBase
 {
     /** @var CodeBase a temporary codebase for this test case run */
     protected $code_base;

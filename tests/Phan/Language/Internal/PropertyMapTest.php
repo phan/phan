@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\Language\Internal;
 
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 use function is_array;
 use function is_string;
@@ -14,7 +14,7 @@ use function is_string;
  * This is a sanity check that Phan's property signature map has the correct structure
  * and can be parsed into a property signature.
  */
-final class PropertyMapTest extends BaseTest
+final class PropertyMapTest extends TestBase
 {
     private const CLASS_NAME_LOWER_REGEX = '/^([a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*|\*)$/D';
 

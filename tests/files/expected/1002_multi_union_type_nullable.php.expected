@@ -1,0 +1,1 @@
+%s:10 PhanTypeMismatchReturnReal Returning (object)([]) of type \stdClass (real type array{}) but getObj() is declared to return ?\stdClass

@@ -22,14 +22,14 @@ use function strlen;
  * - a src/ folder with analyzed PHP files, and
  * - the expected/ folder of expected error (template) lines for the corresponding files.
  */
-abstract class AbstractPhanFileTest extends CodeBaseAwareTest
+abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
 {
     public const EXPECTED_SUFFIX = '.expected';
 
     /**
      * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
-    abstract public function getTestFiles(): array;
+    abstract public static function getTestFiles(): array;
 
     public static function setUpBeforeClass(): void
     {
@@ -67,6 +67,9 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
         parent::tearDown();
 
         Type::clearAllMemoizations();
+        \Phan\Language\Scope\GlobalScope::reset();
+        // Ensure we start with the correct project root
+        Config::setProjectRootDirectory(\dirname(__DIR__, 2));
     }
 
     /**
@@ -74,7 +77,7 @@ abstract class AbstractPhanFileTest extends CodeBaseAwareTest
      *
      * @return array<string,array{0:array,1:string}>
      */
-    final protected function scanSourceFilesDir(string $source_dir, string $expected_dir): array
+    final protected static function scanSourceFilesDir(string $source_dir, string $expected_dir): array
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],

@@ -10,13 +10,13 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use stdClass;
 
 /**
  * Unit tests of static helper methods used for debugging in Debug
  */
-final class FrameTest extends BaseTest
+final class FrameTest extends TestBase
 {
 
     private function assertHasEncodedValue(string $expected, mixed $value): void

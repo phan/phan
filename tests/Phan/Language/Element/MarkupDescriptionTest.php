@@ -8,12 +8,12 @@ use Phan\CodeBase;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\MarkupDescription;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of MarkupDescription functionality
  */
-final class MarkupDescriptionTest extends BaseTest
+final class MarkupDescriptionTest extends TestBase
 {
     /**
      * @dataProvider extractDocCommentProvider
@@ -27,7 +27,7 @@ final class MarkupDescriptionTest extends BaseTest
     /**
      * @return list<array{0:string,1:string,2?:int}>
      */
-    public function extractDocCommentProvider(): array
+    public static function extractDocCommentProvider(): array
     {
         return [
             [
@@ -222,7 +222,7 @@ EOT
     /**
      * @return list<array{0:string,1:string}>
      */
-    public function getDocCommentWithoutWhitespaceProvider(): array
+    public static function getDocCommentWithoutWhitespaceProvider(): array
     {
         return [
             [

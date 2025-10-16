@@ -9,14 +9,14 @@ use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Colorizing;
 use Phan\Output\Printer\PlainTextPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Unit tests that PlainTextPrinter converts `IssueInstance`s to the expected 'text' output format.
  * NOTE: Changing the name of this file to something equivalent case-insensitively may cause issues in case-sensitive file systems (e.g. Windows)
  */
-final class PlaintextPrinterTest extends BaseTest
+final class PlaintextPrinterTest extends TestBase
 {
 
     public function setUp(): void

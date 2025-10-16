@@ -1,13 +1,5 @@
 <?xml version="1.0"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" backupStaticAttributes="true" verbose="false">
-  <coverage>
-    <include>
-      <directory>src/Phan</directory>
-    </include>
-    <exclude>
-      <directory>src/Phan/Language/Internal</directory>
-    </exclude>
-  </coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="tests/bootstrap.php" colors="true" displayDetailsOnTestsThatTriggerDeprecations="true" displayDetailsOnTestsThatTriggerErrors="true" displayDetailsOnTestsThatTriggerNotices="true" displayDetailsOnTestsThatTriggerWarnings="true" displayDetailsOnPhpunitDeprecations="true" stopOnError="true" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" cacheDirectory=".phpunit.cache">
   <php>
     <!-- Affects tests of CLI, etc. -->
     <env name="PHAN_ENABLE_COLOR_OUTPUT" value="" force="true"/>
@@ -30,6 +22,8 @@
       <file>tests/Phan/PhanTest6.php</file>
       <file>tests/Phan/PhanTest7.php</file>
       <file>tests/Phan/PhanTest8.php</file>
+      <file>tests/Phan/PhanTest9.php</file>
+      <file>tests/Phan/PhanTest10.php</file>
       <file>tests/Phan/PhanTestNew.php</file>
     </testsuite>
     <testsuite name="RasmusTest">
@@ -52,6 +46,7 @@
       <file>tests/Phan/DebugTest.php</file>
       <directory>tests/Phan/Analysis</directory>
       <directory>tests/Phan/AST</directory>
+      <directory>tests/Phan/Debug</directory>
       <directory>tests/Phan/Exception</directory>
       <directory>tests/Phan/Internal</directory>
       <directory>tests/Phan/LanguageServer</directory>
@@ -70,8 +65,27 @@
     <testsuite name="PHP85Test">
       <file>tests/Phan/PHP85Test.php</file>
     </testsuite>
-    <testsuite name="All">
-      <directory>tests/Phan</directory>
+    <testsuite name="Structure">
+      <file>tests/Phan/TestSuitesTest.php</file>
+    </testsuite>
+    <testsuite name="Plugin">
+      <file>tests/Phan/PluginV3Test.php</file>
+      <directory>tests/Phan/Plugin</directory>
+    </testsuite>
+    <testsuite name="Misc">
+      <file>tests/Phan/AsymmetricVisibilityTest.php</file>
+      <file>tests/Phan/CLIBuilderTest.php</file>
+      <file>tests/Phan/CLITest.php</file>
+      <file>tests/Phan/ConfigTest.php</file>
+      <directory>tests/Phan/Config</directory>
     </testsuite>
   </testsuites>
+  <source>
+    <include>
+      <directory>src/Phan</directory>
+    </include>
+    <exclude>
+      <directory>src/Phan/Language/Internal</directory>
+    </exclude>
+  </source>
 </phpunit>

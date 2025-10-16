@@ -6,12 +6,12 @@ namespace Phan\Tests\Language;
 
 use Phan\Config;
 use Phan\Language\FileRef;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of FileRef
  */
-final class FileRefTest extends BaseTest
+final class FileRefTest extends TestBase
 {
     private function expectProjectRelativePath(string $expected_path, string $original_path): void
     {

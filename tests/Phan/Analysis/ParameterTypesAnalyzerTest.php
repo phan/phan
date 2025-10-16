@@ -7,12 +7,12 @@ namespace Phan\Tests\Analysis;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Config;
 use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of helper methods of ParameterTypesAnalyzer
  */
-final class ParameterTypesAnalyzerTest extends BaseTest
+final class ParameterTypesAnalyzerTest extends TestBase
 {
     public function setUp(): void
     {

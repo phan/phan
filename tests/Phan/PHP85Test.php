@@ -10,7 +10,7 @@ use Phan\Plugin\ConfigPluginSet;
 /**
  * Unit tests of Phan analysis targeting PHP 8.5 codebases with minimum_target_php_version of 8.5.
  */
-final class PHP85Test extends AbstractPhanFileTest
+final class PHP85Test extends AbstractPhanFileTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,
@@ -64,7 +64,6 @@ final class PHP85Test extends AbstractPhanFileTest
         }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");
-            return;
         }
         parent::testFiles($test_file_list, $expected_file_path, $config_file_path);
     }
@@ -72,8 +71,8 @@ final class PHP85Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
-        return $this->scanSourceFilesDir(\PHP85_TEST_FILE_DIR, \PHP85_EXPECTED_DIR);
+        return self::scanSourceFilesDir(\PHP85_TEST_FILE_DIR, \PHP85_EXPECTED_DIR);
     }
 }

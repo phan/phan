@@ -13,10 +13,10 @@ namespace Phan\Tests;
  */
 class PhanTestNew extends PhanTestCommon
 {
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
         return \array_filter(
-            $this->getAllTestFiles(),
+            self::getAllTestFiles(),
             /**
              * @param array{0:array{0:string},1:string} $data
              */

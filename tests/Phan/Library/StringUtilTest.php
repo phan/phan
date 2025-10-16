@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Library;
 
 use Phan\Library\StringUtil;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of StringUtil
  */
-final class StringUtilTest extends BaseTest
+final class StringUtilTest extends TestBase
 {
     public function testJsonEncode(): void
     {

@@ -7,19 +7,19 @@ namespace Phan\Tests\AST;
 use Phan\AST\ASTSimplifier;
 use Phan\Config;
 use Phan\Debug;
-use Phan\Tests\AbstractPhanFileTest;
+use Phan\Tests\AbstractPhanFileTestBase;
 
 /**
  * Tests of ASTSimplifier converting one AST to the expected AST.
  */
-final class ASTSimplifierTest extends AbstractPhanFileTest
+final class ASTSimplifierTest extends AbstractPhanFileTestBase
 {
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
-        return $this->scanSourceFilesDir(\AST_TEST_FILE_DIR, \AST_EXPECTED_DIR);
+        return self::scanSourceFilesDir(\AST_TEST_FILE_DIR, \AST_EXPECTED_DIR);
     }
 
     /**

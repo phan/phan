@@ -11,7 +11,7 @@ use Phan\Plugin\ConfigPluginSet;
  * Unit tests of Phan analysis targeting PHP 8.2 codebases with minimum_target_php_version of 8.2.
  * PHP 8.2 will be out in 2022.
  */
-final class PHP82Test extends AbstractPhanFileTest
+final class PHP82Test extends AbstractPhanFileTestBase
 {
     private const OVERRIDES = [
         'unused_variable_detection' => true,  // for use with tests of arrow functions
@@ -68,7 +68,6 @@ final class PHP82Test extends AbstractPhanFileTest
         }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");
-            return;
         }
         parent::testFiles($test_file_list, $expected_file_path, $config_file_path);
     }
@@ -76,8 +75,8 @@ final class PHP82Test extends AbstractPhanFileTest
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
-        return $this->scanSourceFilesDir(\PHP82_TEST_FILE_DIR, \PHP82_EXPECTED_DIR);
+        return self::scanSourceFilesDir(\PHP82_TEST_FILE_DIR, \PHP82_EXPECTED_DIR);
     }
 }

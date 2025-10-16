@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\AST;
 
 use Phan\AST\ASTHasher;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 use function bin2hex;
 use function hex2bin;
@@ -15,7 +15,7 @@ use const PHP_INT_SIZE;
 /**
  * Tests of ASTHasher generating 16-byte binary hashes of nodes
  */
-final class ASTHasherTest extends BaseTest
+final class ASTHasherTest extends TestBase
 {
     private function assertSameBinaryString(string $expected, string $actual): void
     {

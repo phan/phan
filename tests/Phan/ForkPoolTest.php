@@ -12,7 +12,7 @@ use Phan\ForkPool;
  * @requires extension pcntl
  * @phan-file-suppress PhanAccessMethodInternal
  */
-final class ForkPoolTest extends BaseTest
+final class ForkPoolTest extends TestBase
 {
     /**
      * Test that workers are able to send their data back

@@ -10,7 +10,7 @@ use Phan\IssueInstance;
 use Phan\Library\FileCache;
 use Phan\Output\Colorizing;
 use Phan\Output\Printer\VerbosePlainTextPrinter;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 use function sprintf;
@@ -19,7 +19,7 @@ use function sprintf;
  * Unit tests that VerbosePlainTextPrinter converts `IssueInstance`s to the expected 'text' output format.
  * NOTE: Changing the name of this file to something equivalent case-insensitively may cause issues in case-sensitive file systems (e.g. Windows)
  */
-final class VerbosePlaintextPrinterTest extends BaseTest
+final class VerbosePlaintextPrinterTest extends TestBase
 {
 
     private static function setUpFakeEntry(string $path): void

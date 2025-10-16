@@ -10,7 +10,7 @@ use ReflectionClass;
 /**
  * Unit tests of PluginV3's documentation
  */
-final class PluginV3Test extends BaseTest
+final class PluginV3Test extends TestBase
 {
     public function testDocumentation(): void
     {

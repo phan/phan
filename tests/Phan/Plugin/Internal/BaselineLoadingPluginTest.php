@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phan\Tests\Plugin\Internal;
 
 use Phan\Plugin\Internal\BaselineLoadingPlugin;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of fixes to issues
  */
-final class BaselineLoadingPluginTest extends BaseTest
+final class BaselineLoadingPluginTest extends TestBase
 {
     public function testShouldSuppressIssue(): void
     {

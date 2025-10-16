@@ -6,12 +6,12 @@ namespace Phan\Tests\Plugin\Internal;
 
 use Phan\Language\UnionType;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 /**
  * Unit tests of Context and scopes
  */
-final class MethodSearcherPluginTest extends CodeBaseAwareTest
+final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
 {
     /**
      * @dataProvider getTypeMatchingBonusProvider
@@ -27,7 +27,7 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTest
     /**
      * @return list<list>
      */
-    public function getTypeMatchingBonusProvider(): array
+    public static function getTypeMatchingBonusProvider(): array
     {
         return [
             [0.0, 'int', 'mixed'],
@@ -56,7 +56,7 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTest
     /**
      * @return list<list>
      */
-    public function matchesParamTypesProvider(): array
+    public static function matchesParamTypesProvider(): array
     {
         return [
             [8.6, ['\stdClass'], ['\stdClass']],

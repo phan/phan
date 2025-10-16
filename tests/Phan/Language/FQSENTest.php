@@ -12,13 +12,13 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 /**
  * Unit tests of various FQSEN subclasses.
  * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
-final class FQSENTest extends BaseTest
+final class FQSENTest extends TestBase
 {
 
     /** @var Context the context within which this unit test will run */

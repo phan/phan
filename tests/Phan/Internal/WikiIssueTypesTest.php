@@ -6,7 +6,7 @@ namespace Phan\Tests\Internal;
 
 use InvalidArgumentException;
 use Phan\Issue;
-use Phan\Tests\BaseTest;
+use Phan\Tests\TestBase;
 
 use function array_key_exists;
 use function array_merge;
@@ -33,7 +33,7 @@ use const STDERR;
  *
  * @phan-file-suppress PhanPluginRemoveDebugAny
  */
-class WikiIssueTypesTest extends BaseTest
+class WikiIssueTypesTest extends TestBase
 {
     /** @var array<string,array>|null an example for a subset of the issue types */
     private static $examples;

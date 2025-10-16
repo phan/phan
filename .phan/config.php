@@ -464,6 +464,7 @@ return [
         'vendor/phpdocumentor/reflection-common/src',
         'vendor/phpdocumentor/type-resolver/src',
         'vendor/phpunit/phpunit/src',
+        'vendor/phpunit/php-file-iterator/src',
         'vendor/psr/log',  // subdirectory depends on dependency version
         'vendor/sabre/event/lib',
         'vendor/symfony/console',

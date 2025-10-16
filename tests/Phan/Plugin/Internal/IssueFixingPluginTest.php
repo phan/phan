@@ -8,12 +8,12 @@ use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
-use Phan\Tests\CodeBaseAwareTest;
+use Phan\Tests\CodeBaseAwareTestBase;
 
 /**
  * Unit tests of fixes to issues
  */
-final class IssueFixingPluginTest extends CodeBaseAwareTest
+final class IssueFixingPluginTest extends CodeBaseAwareTestBase
 {
     private const FILE = 'fix_test.php';
 
@@ -36,7 +36,7 @@ final class IssueFixingPluginTest extends CodeBaseAwareTest
     /**
      * @return list<array{0:string,1:string,2:list<IssueInstance>}>
      */
-    public function computeAndApplyFixesProvider(): array
+    public static function computeAndApplyFixesProvider(): array
     {
         /**
          * @param int|string ...$args
@@ -88,7 +88,7 @@ EOT
     /**
      * @return list<array{0:?string,1:string,2:FileEdit[]}>
      */
-    public function computeNewContentsProvider(): array
+    public static function computeNewContentsProvider(): array
     {
         return [
             [
