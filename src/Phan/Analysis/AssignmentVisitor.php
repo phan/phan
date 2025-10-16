@@ -2300,7 +2300,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param Node|string|int|float|null $expr The right-hand side expression
      * @return UnionType The type of the source variable
      */
-    private function getRefSourceType($expr): UnionType
+    private function getRefSourceType(Node|string|int|float|null $expr): UnionType
     {
         if (!($expr instanceof Node && $expr->kind === ast\AST_VAR)) {
             return UnionType::empty();
@@ -2327,7 +2327,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param Variable $variable The left-hand side variable
      * @param Node|string|int|float|null $expr The right-hand side expression
      */
-    private function markVariablesAsReferences(Variable $variable, $expr): void
+    private function markVariablesAsReferences(Variable $variable, Node|string|int|float|null $expr): void
     {
         if (!($expr instanceof Node && $expr->kind === ast\AST_VAR)) {
             return;
