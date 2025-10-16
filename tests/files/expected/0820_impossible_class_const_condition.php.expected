@@ -1,2 +1,2 @@
-%s:23 PhanSuspiciousValueComparison Suspicious attempt to compare $result of type bool to MY_GLOBAL of type 2 with operator '==='
-%s:31 PhanSuspiciousValueComparison Suspicious attempt to compare !$e->getCode() of type bool to HasConst::MY_VAL of type 1 with operator '==='
+%s:23 PhanSuspiciousValueComparison Suspicious attempt to compare $result of type bool to MY_GLOBAL of type int (value: 2) with operator '==='
+%s:31 PhanSuspiciousValueComparison Suspicious attempt to compare !$e->getCode() of type bool to HasConst::MY_VAL of type int (value: 1) with operator '==='

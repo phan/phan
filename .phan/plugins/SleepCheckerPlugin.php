@@ -196,7 +196,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
                         $context,
                         'SleepCheckerInvalidPropNameType',
                         '__sleep is returning an array with a value of type {TYPE}, expected {TYPE}',
-                        [(string)$prop_type, 'string']
+                        [$prop_type->toErrorMessageString(), 'string']
                     );
                 }
                 continue;

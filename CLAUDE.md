@@ -386,6 +386,141 @@ When writing tests that create Type instances, be aware of PHPUnit's global stat
 - Use `./tests/run_test TestName` for integration tests
 - Use `./vendor/bin/phpunit` for unit tests
 
+### Generating Expected Test Output Files
+
+**CRITICAL: Understanding PHPUnit Test Behavior vs Manual Phan Execution**
+
+There is a fundamental difference between running Phan manually and running it through PHPUnit tests:
+
+1. **Manual Phan execution** (`./phan --no-progress-bar tests/files/src/file.php`):
+   - Uses `.phan/config.php` which loads ALL plugins
+   - Output includes plugin warnings (e.g., `PhanPluginNoCommentOnClass`, `PhanPluginRemoveDebugEcho`)
+   - File paths are full paths (e.g., `tests/files/src/file.php`)
+
+2. **PHPUnit test execution** (`./vendor/bin/phpunit --filter="testFiles.*file\.php"`):
+   - Uses `tests/.phan_for_test/config.php` which has **NO plugins configured**
+   - Output does NOT include plugin warnings
+   - File paths are relative paths (e.g., `./tests/files/src/file.php`)
+
+**NEVER generate .expected files by running Phan manually!** This will include plugin warnings that won't match the PHPUnit test output.
+
+**Correct Procedure for Generating/Updating Expected Files:**
+
+```bash
+# 1. Switch to the appropriate PHP version
+sudo newphp 81  # or 82, 83, 84, 85 depending on the test
+
+# 2. Use PHPUnit's built-in mechanism to generate .expected files
+UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*filename\.php"
+
+# 3. This creates a .expected.new file (or .expectedXX.new for version-specific)
+# Example: tests/files/expected/0299_binary_op.php.expected.new
+
+# 4. Review the .new file to ensure it's correct
+cat tests/files/expected/filename.php.expected.new
+
+# 5. Move it to replace the old .expected file
+mv tests/files/expected/filename.php.expected.new tests/files/expected/filename.php.expected
+
+# OR for version-specific files (e.g., PHP 8.1 only):
+mv tests/files/expected/filename.php.expected.new tests/files/expected/filename.php.expected81
+```
+
+**Version-Specific Expected Files:**
+
+The test framework uses `getFileForPHPVersion()` to select expected files based on PHP version:
+
+```php
+// On PHP 8.5, it checks in this order:
+// 1. filename.php.expected85  (if exists, use this)
+// 2. filename.php.expected84  (if exists, use this)
+// 3. filename.php.expected83  (if exists, use this)
+// 4. filename.php.expected82  (if exists, use this)
+// 5. filename.php.expected81  (if exists, use this)
+// 6. filename.php.expected    (fallback - always exists)
+```
+
+**When to Create Version-Specific Expected Files:**
+
+1. **PHP behavior differences**: When Phan output genuinely differs between PHP versions
+   - Example: PHP 8.1 may not evaluate string concatenation `"0" . "1"` to `'01'` but PHP 8.2+ does
+   - Solution: Create `.expected81` for PHP 8.1, use `.expected` for PHP 8.2+
+
+2. **PHP version-specific features**: When testing features only available in certain versions
+   - Tests in `tests/php84_files/` use `.expected` (only run on PHP 8.4+)
+   - Tests in `tests/php85_files/` use `.expected` (only run on PHP 8.5+)
+
+**Common Mistakes to Avoid:**
+
+1. ❌ **Running `./phan` manually to generate expected output**
+   - This includes plugin warnings that won't match PHPUnit tests
+   - Always use `UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit` instead
+
+2. ❌ **Creating .expected files with full paths instead of `%s` placeholders**
+   - Manual Phan run outputs: `tests/files/src/file.php:10 PhanIssue...`
+   - Correct expected format: `%s:10 PhanIssue...`
+   - The `UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1` mechanism handles this automatically
+
+3. ❌ **Forgetting to test on all PHP versions**
+   - A change might work on PHP 8.2+ but break on PHP 8.1
+   - Always run: `for ver in 81 82 83 84 85; do sudo newphp $ver; ./vendor/bin/phpunit; done`
+
+4. ❌ **Creating version-specific files for the wrong PHP version**
+   - `.expected81` means "use this ONLY on PHP 8.1"
+   - If PHP 8.2 finds `.expected81`, it will use it (first match wins)
+   - Make sure version-specific files are truly specific to that version
+
+**Example Workflow:**
+
+```bash
+# Scenario: You made changes that affect literal type output on PHP 8.1 only
+
+# Step 1: Switch to PHP 8.1
+sudo newphp 81
+
+# Step 2: Run the failing test to generate new expected output
+UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*0299_binary_op\.php"
+
+# Step 3: Check what was generated
+ls -la tests/files/expected/0299_binary_op.php.expected*
+# Output:
+#   tests/files/expected/0299_binary_op.php.expected       (original, for PHP 8.2+)
+#   tests/files/expected/0299_binary_op.php.expected.new   (newly generated)
+
+# Step 4: Create PHP 8.1 specific version
+mv tests/files/expected/0299_binary_op.php.expected.new \
+   tests/files/expected/0299_binary_op.php.expected81
+
+# Step 5: Verify PHP 8.1 test passes
+./vendor/bin/phpunit --filter="testFiles.*0299_binary_op\.php"
+# Output: OK (1 test, 2 assertions)
+
+# Step 6: Verify PHP 8.2+ still uses the original .expected file
+sudo newphp 82
+./vendor/bin/phpunit --filter="testFiles.*0299_binary_op\.php"
+# Output: OK (1 test, 2 assertions)
+
+# Step 7: Run full test suite on all versions
+for ver in 81 82 83 84 85; do
+    echo "Testing PHP 8.$((ver-80))..."
+    sudo newphp $ver
+    ./vendor/bin/phpunit
+done
+```
+
+**Debugging Expected File Issues:**
+
+```bash
+# Compare actual vs expected output manually
+./vendor/bin/phpunit --filter="testFiles.*filename\.php" 2>&1 | grep "Failed asserting"
+
+# See the exact diff
+PHAN_DUMP_NEW_TEST_EXPECTATION=1 ./vendor/bin/phpunit --filter="testFiles.*filename\.php" 2>&1 | less
+
+# Check which expected file is being used
+ls -la tests/files/expected/filename.php.expected*
+```
+
 ### Common Type System Pitfalls and Bug Patterns
 
 **CRITICAL: Type Expansion with asExpandedTypesPreservingTemplate()**

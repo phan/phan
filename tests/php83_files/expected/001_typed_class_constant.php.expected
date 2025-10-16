@@ -1,5 +1,5 @@
 %s:5 PhanTypeMismatchDeclaredConstant Constant \C0::bad is declared with type int but has value 'x' of type 'x'
 %s:6 PhanTypeMismatchDeclaredConstantNever Constant \C0::more is declared with type never which always results in a compile error
-%s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::x of type 123 (real type int) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:9 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::bad of type 'x' (real type int) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($value) is C0::more of type 'x' but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:8 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::x of type int (value: 123) (real type int) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:9 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is C0::bad of type string (real type int) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($value) is C0::more of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array

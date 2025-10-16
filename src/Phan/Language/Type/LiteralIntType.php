@@ -69,6 +69,17 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return (string)$this->value;
     }
 
+    /**
+     * Returns "int (value: X)" for error messages instead of just the literal value.
+     * This makes error messages like "is (4 + 2) of type int (value: 6)" which shows
+     * both the base type and the computed value.
+     */
+    public function toErrorMessageString(): string
+    {
+        $base = $this->is_nullable ? '?int' : 'int';
+        return $base . ' (value: ' . $this->value . ')';
+    }
+
     /** @var IntType the non-nullable int type instance. */
     private static $non_nullable_int_type;
     /** @var IntType the nullable int type instance. */

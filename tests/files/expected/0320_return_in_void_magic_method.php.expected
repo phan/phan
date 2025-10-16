@@ -10,4 +10,4 @@
 %s:72 PhanTypeMismatchReturnProbablyReal Returning false of type false but __unset() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
 %s:77 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__wakeup, expected void return type
 %s:78 PhanTypeMismatchReturnProbablyReal Returning false of type false but __wakeup() is declared to return void (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
-%s:84 PhanTypeMismatchReturnProbablyReal Returning 'data' of type 'data' but __set_state() is declared to return object (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:84 PhanTypeMismatchReturnProbablyReal Returning 'data' of type string but __set_state() is declared to return object (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)

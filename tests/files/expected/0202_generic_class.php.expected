@@ -1,14 +1,14 @@
-%s:70 PhanTypeMismatchReturn Returning 42 of type 42 but failMismatch() is declared to return T0
+%s:70 PhanTypeMismatchReturn Returning 42 of type int (value: 42) but failMismatch() is declared to return T0
 %s:74 PhanTypeMissingReturn Method \Tuple2::failVoid is declared to return T0 in phpdoc but has no return value
 %s:79 PhanTypeMismatchReturn Returning $this->e1 of type T1 but failWrongGenericGet() is declared to return T0
 %s:84 PhanTypeMismatchProperty Assigning $e0 of type T0 to property but \Tuple2->e1 is T1
 %s:88 PhanTemplateTypeStaticMethod static method \Tuple2::failStatic does not declare template type in its own comment and may not use the template type of class instances
-%s:89 PhanTypeMismatchReturn Returning 42 of type 42 but failStatic() is declared to return T0
+%s:89 PhanTypeMismatchReturn Returning 42 of type int (value: 42) but failStatic() is declared to return T0
 %s:93 PhanTemplateTypeStaticMethod static method \Tuple2::failStaticLeak does not declare template type in its own comment and may not use the template type of class instances
-%s:114 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e1 of type 'string' but \check() takes int defined at %s:99
-%s:114 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->e0 of type 42 but \check() takes string defined at %s:99
-%s:115 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->getE1() of type 'string' but \check() takes int defined at %s:99
-%s:115 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->getE0() of type 42 but \check() takes string defined at %s:99
-%s:116 PhanTypeMismatchPropertyProbablyReal Assigning 42 of type 42 to property but \Tuple2->e1 is 'string' (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
-%s:117 PhanTypeMismatchArgumentProbablyReal Argument 1 ($e1) is 42 of type 42 but \Tuple2::setE1() takes 'string' (no real type) defined at %s:46 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:118 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e0 of type 42 but \check2() takes bool defined at %s:100
+%s:114 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e1 of type string but \check() takes int defined at %s:99
+%s:114 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->e0 of type int (value: 42) but \check() takes string defined at %s:99
+%s:115 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->getE1() of type string but \check() takes int defined at %s:99
+%s:115 PhanTypeMismatchArgument Argument 2 ($p1) is $tuple_a->getE0() of type int (value: 42) but \check() takes string defined at %s:99
+%s:116 PhanTypeMismatchPropertyProbablyReal Assigning 42 of type int (value: 42) to property but \Tuple2->e1 is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:117 PhanTypeMismatchArgumentProbablyReal Argument 1 ($e1) is 42 of type int (value: 42) but \Tuple2::setE1() takes string (no real type) defined at %s:46 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:118 PhanTypeMismatchArgument Argument 1 ($p0) is $tuple_a->e0 of type int (value: 42) but \check2() takes bool defined at %s:100

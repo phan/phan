@@ -4638,6 +4638,27 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * Returns a string representation suitable for error messages.
+     * For most types this is identical to __toString(), but literal types
+     * use their base type names (e.g., "int" instead of "0").
+     */
+    public function toErrorMessageString(): string
+    {
+        $types = $this->type_set;
+        $type_name_list =
+            \array_map(static function (Type $type) use ($types): string {
+                $error_str = $type->toErrorMessageString();
+                if (count($types) > 1 && $type instanceof IntersectionType) {
+                    return '(' . $error_str . ')';
+                }
+                return $error_str;
+            }, $types);
+
+        \asort($type_name_list);
+        return \implode('|', $type_name_list);
+    }
+
+    /**
      * @return array<string,array<int|string,string>>
      * A map from builtin function name to type information
      *

@@ -5,6 +5,6 @@
 %s:18 PhanTypeMissingReturnReal Method \C16::staticMethod is declared to return bool in its real type signature but has no return value
 %s:19 PhanTypeMissingReturnReal Method \C16::instanceMethod is declared to return \C16 in its real type signature but has no return value
 %s:22 PhanStaticCallToNonStatic Static call to non-static method \C16::instanceMethod() defined at %s:19. This would throw an Error.
-%s:22 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 1 of type 1 but \C16::instanceMethod() takes \stdClass defined at %s:19
+%s:22 PhanTypeMismatchArgumentReal Argument 1 ($arg) is 1 of type int (value: 1) but \C16::instanceMethod() takes \stdClass defined at %s:19
 %s:23 PhanTypeMismatchArgumentInternal Argument 1 ($string) is C16::staticMethod(...)(new stdClass()) of type bool but \strlen() takes string
 %s:23 PhanTypeMismatchArgumentReal Argument 1 ($arg) is new stdClass() of type \stdClass but \C16::staticMethod() takes int defined at %s:18

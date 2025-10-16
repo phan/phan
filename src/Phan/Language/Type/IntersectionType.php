@@ -262,6 +262,23 @@ final class IntersectionType extends Type
     }
 
     /**
+     * @return string
+     * A human-readable string representation of this intersection type for error messages.
+     * This converts literal types to their base types (e.g., "42" becomes "int").
+     * @override
+     */
+    public function toErrorMessageString(): string
+    {
+        return $this->memoize(__METHOD__, function (): string {
+            $parts = [];
+            foreach ($this->type_parts as $part) {
+                $parts[] = $part->toErrorMessageString();
+            }
+            return implode('&', $parts);
+        });
+    }
+
+    /**
      * Emit an issue and return true if this intersection type contains an impossible combination
      */
     public function checkImpossibleCombination(CodeBase $code_base, Context $context): bool

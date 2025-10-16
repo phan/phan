@@ -1,5 +1,5 @@
-%s:17 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type 0 but \takesPositive() takes positive-int defined at %s:14
-%s:19 PhanTypeMismatchArgument Argument 1 ($value) is -3 of type -3 but \takesPositive() takes positive-int defined at %s:14
-%s:27 PhanTypeMismatchArgument Argument 1 ($value) is 4 of type 4 but \takesNegative() takes negative-int defined at %s:24
-%s:42 PhanTypeMismatchReturn Returning -1 of type -1 but returnsPositiveWrong() is declared to return positive-int
-%s:58 PhanTypeMismatchReturn Returning 3 of type 3 but returnsNegativeWrong() is declared to return negative-int
+%s:17 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type int (value: 0) but \takesPositive() takes positive-int defined at %s:14
+%s:19 PhanTypeMismatchArgument Argument 1 ($value) is -3 of type int (value: -3) but \takesPositive() takes positive-int defined at %s:14
+%s:27 PhanTypeMismatchArgument Argument 1 ($value) is 4 of type int (value: 4) but \takesNegative() takes negative-int defined at %s:24
+%s:42 PhanTypeMismatchReturn Returning -1 of type int (value: -1) but returnsPositiveWrong() is declared to return positive-int
+%s:58 PhanTypeMismatchReturn Returning 3 of type int (value: 3) but returnsNegativeWrong() is declared to return negative-int

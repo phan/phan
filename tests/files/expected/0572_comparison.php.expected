@@ -2,11 +2,11 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type false|int but \strlen() takes string
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type non-zero-int but \strlen() takes string
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type ?int but \strlen() takes string
-%s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type 3 but \strlen() takes string
-%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type 2 but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type int (value: 3) but \strlen() takes string
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type int (value: 2) but \strlen() takes string
 %s:33 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type false|int but \strlen() takes string
 %s:35 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x of type non-zero-int but \strlen() takes string
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type ?int but \strlen() takes string
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $y of type non-zero-int but \strlen() takes string
-%s:43 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type 2 but \strlen() takes string
-%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type 3 but \strlen() takes string
+%s:43 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type int (value: 2) but \strlen() takes string
+%s:45 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $z of type int (value: 3) but \strlen() takes string

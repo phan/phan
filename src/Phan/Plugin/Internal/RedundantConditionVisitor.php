@@ -64,7 +64,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($var_node),
-                    $type->getRealUnionType(),
+                    $type->getRealUnionType()->toErrorMessageString(),
                     'empty',
                 ],
                 static function (UnionType $type): bool {
@@ -79,7 +79,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::ImpossibleCondition,
                 [
                     ASTReverter::toShortString($var_node),
-                    $type->getRealUnionType(),
+                    $type->getRealUnionType()->toErrorMessageString(),
                     'empty',
                 ],
                 static function (UnionType $type): bool {
@@ -259,9 +259,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         }
         $issue_args = [
             ASTReverter::toShortString($left_node),
-            $left,
+            $left->toErrorMessageString(),
             ASTReverter::toShortString($right_node),
-            $right,
+            $right->toErrorMessageString(),
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$flags],
         ];
@@ -392,9 +392,9 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $right_node ??= $node->children['right'];
         $issue_args = [
             ASTReverter::toShortString($left_node),
-            $left,
+            $left->toErrorMessageString(),
             ASTReverter::toShortString($right_node),
-            $right,
+            $right->toErrorMessageString(),
         ];
         $code_base = $this->code_base;
         $context = $this->context;
@@ -511,7 +511,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($var_node),
-                    $real_type,
+                    $real_type->toErrorMessageString(),
                     'isset'
                 ],
                 static function (UnionType $type): bool {
@@ -526,7 +526,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::ImpossibleCondition,
                 [
                     ASTReverter::toShortString($var_node),
-                    $real_type,
+                    $real_type->toErrorMessageString(),
                     'isset'
                 ],
                 static function (UnionType $type): bool {
@@ -614,7 +614,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::RedundantCondition,
                 [
                     ASTReverter::toShortString($expr_node),
-                    $real_type_unresolved,
+                    $real_type_unresolved->toErrorMessageString(),
                     $class_type,
                 ],
                 static function (UnionType $type) use ($code_base, $class_type): bool {
@@ -629,7 +629,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                 Issue::ImpossibleCondition,
                 [
                     ASTReverter::toShortString($expr_node),
-                    $real_type,
+                    $real_type->toErrorMessageString(),
                     $class_type,
                 ],
                 static function (UnionType $type) use ($code_base, $class_type): bool {
@@ -662,7 +662,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $this->chooseIssue($expr_node, Issue::RedundantCondition),
             $expr_node->lineno ?? $node->lineno,
             ASTReverter::toShortString($expr_node),
-            $real_expr_type,
+            $real_expr_type->toErrorMessageString(),
             $expected_type
         );
     }

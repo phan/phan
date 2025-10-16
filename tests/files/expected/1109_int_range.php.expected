@@ -1,7 +1,7 @@
-%s:17 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type 0 but \takesRange() takes int-range<1, 10> defined at %s:14
-%s:18 PhanTypeMismatchArgument Argument 1 ($value) is 12 of type 12 but \takesRange() takes int-range<1, 10> defined at %s:14
-%s:19 PhanTypeMismatchArgument Argument 1 ($value) is 101 of type 101 but \takesRange() takes int-range<1, 10> defined at %s:14
-%s:27 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type 0 but \takesNegativeRange() takes int-range<-10, -1> defined at %s:24
-%s:35 PhanTypeMismatchArgument Argument 1 ($value) is 4 of type 4 but \takesReversedRange() takes int-range<5, 10> defined at %s:32
-%s:50 PhanTypeMismatchReturn Returning 0 of type 0 but returnsTooLow() is declared to return int-range<1, 10>
-%s:58 PhanTypeMismatchReturn Returning 11 of type 11 but returnsTooHigh() is declared to return int-range<1, 10>
+%s:17 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type int (value: 0) but \takesRange() takes int-range<1, 10> defined at %s:14
+%s:18 PhanTypeMismatchArgument Argument 1 ($value) is 12 of type int (value: 12) but \takesRange() takes int-range<1, 10> defined at %s:14
+%s:19 PhanTypeMismatchArgument Argument 1 ($value) is 101 of type int (value: 101) but \takesRange() takes int-range<1, 10> defined at %s:14
+%s:27 PhanTypeMismatchArgument Argument 1 ($value) is 0 of type int (value: 0) but \takesNegativeRange() takes int-range<-10, -1> defined at %s:24
+%s:35 PhanTypeMismatchArgument Argument 1 ($value) is 4 of type int (value: 4) but \takesReversedRange() takes int-range<5, 10> defined at %s:32
+%s:50 PhanTypeMismatchReturn Returning 0 of type int (value: 0) but returnsTooLow() is declared to return int-range<1, 10>
+%s:58 PhanTypeMismatchReturn Returning 11 of type int (value: 11) but returnsTooHigh() is declared to return int-range<1, 10>

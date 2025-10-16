@@ -1895,10 +1895,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         Issue::TypeMismatchReturnReal,
                         $lineno,
                         self::returnExpressionToShortString($inner_node),
-                        (string)$expression_type,
+                        $expression_type->toErrorMessageString(),
                         self::toDetailsForRealTypeMismatch($expression_type),
                         $method->getNameForIssue(),
-                        (string)$method_return_type,
+                        $method_return_type->toErrorMessageString(),
                         self::toDetailsForRealTypeMismatch($method_return_type)
                     );
                     return;
@@ -1922,10 +1922,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TypeMismatchReturnProbablyReal,
                     $lineno,
                     self::returnExpressionToShortString($inner_node),
-                    $expression_type,
+                    $expression_type->toErrorMessageString(),
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($expression_type),
                     $method->getNameForIssue(),
-                    $method_return_type,
+                    $method_return_type->toErrorMessageString(),
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($method_return_type)
                 );
                 return;
@@ -1940,9 +1940,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::TypeMismatchReturnSuperType,
                 $lineno,
                 self::returnExpressionToShortString($inner_node),
-                (string)$expression_type,
+                $expression_type->toErrorMessageString(),
                 $method->getNameForIssue(),
-                (string)$method_return_type
+                $method_return_type->toErrorMessageString()
             );
             return;
         }
@@ -1950,9 +1950,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $issue_type,
             $lineno,
             self::returnExpressionToShortString($inner_node),
-            (string)$expression_type,
+            $expression_type->toErrorMessageString(),
             $method->getNameForIssue(),
-            (string)$method_return_type
+            $method_return_type->toErrorMessageString()
         );
     }
 

@@ -4,7 +4,7 @@
 %s:10 PhanTypeComparisonFromArray array to \FinalClass718 comparison
 %s:11 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to null of type null
 %s:12 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $f of type \FinalClass718 to false of type false
-%s:13 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $a of type array to 2.3 of type 2.3
+%s:13 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $a of type array to 2.3 of type float (value: 2.3)
 %s:13 PhanTypeComparisonFromArray array to float comparison
 %s:14 PhanSuspiciousWeakTypeComparison Suspicious attempt to compare $a of type array to $f of type \FinalClass718
 %s:14 PhanTypeComparisonFromArray array to \FinalClass718 comparison

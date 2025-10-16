@@ -1,7 +1,7 @@
 src/004_array_real_key.php:8 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type int|list<mixed>(real=array|int|null)
 src/004_array_real_key.php:10 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $i of type int but \strlen() takes string
-src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type 'x' but \intdiv() takes int
-src/004_array_real_key.php:19 PhanTypeMismatchArgument Argument 1 ($s) is $i of type 0|1 but \accepts_string() takes string defined at src/004_array_real_key.php:3
+src/004_array_real_key.php:15 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int
+src/004_array_real_key.php:19 PhanTypeMismatchArgument Argument 1 ($s) is $i of type int (value: 0)|int (value: 1) but \accepts_string() takes string defined at src/004_array_real_key.php:3
 src/004_array_real_key.php:23 PhanPluginUnknownArrayFunctionReturnType Function \create_array() has a return type of array, but does not specify key or value types
 src/004_array_real_key.php:23 PhanUnreferencedFunction Possibly zero references to function \create_array()
 src/004_array_real_key.php:27 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $i of type string but \intdiv() takes int

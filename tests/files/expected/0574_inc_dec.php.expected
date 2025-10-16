@@ -16,7 +16,7 @@
 %s:26 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $bool of type bool but \strlen() takes string
 %s:27 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of (expr)-- is ?\stdClass (expected int or string or float)
 %s:28 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $s of type \stdClass|int but \strlen() takes string
-%s:31 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $v of type 3 but \strlen() takes string
+%s:31 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $v of type int (value: 3) but \strlen() takes string
 %s:37 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of ++(expr) is object (expected int or string or float)
 %s:37 PhanTypeMismatchArgumentInternal Argument 1 ($string) is ++$x of type object but \strlen() takes string
 %s:38 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of --(expr) is array (expected int or string or float)
@@ -26,7 +26,7 @@
 %s:40 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of ++(expr) is resource (expected int or string or float)
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 ($string) is ++$r of type resource but \strlen() takes string
 %s:42 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of (expr)++ is null (expected int or string or float)
-%s:42 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $null++ of type null but \strlen() takes string
+%s:42 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $null++ of type null but \strlen() takes string
 %s:44 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of ++(expr) is null (expected int or string or float)
 %s:44 PhanTypeMismatchArgumentInternal Argument 1 ($string) is ++$null of type int but \strlen() takes string
 %s:46 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of ++(expr) is false (expected int or string or float)
@@ -38,8 +38,8 @@
 %s:51 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of --(expr) is ?\stdClass (expected int or string or float)
 %s:51 PhanTypeMismatchArgumentInternal Argument 1 ($string) is --$s of type \stdClass|int but \strlen() takes string
 %s:52 PhanTypeInvalidUnaryOperandIncOrDec Invalid operator: unary operand of (expr)-- is ?\stdClass (expected int or string or float)
-%s:52 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $s2-- of type ?\stdClass but \strlen() takes string
+%s:52 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $s2-- of type ?\stdClass but \strlen() takes string
 %s:54 PhanTypeMismatchArgumentInternal Argument 1 ($string) is ++$v of type int but \strlen() takes string
 %s:56 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $v++ of type int but \strlen() takes string
 %s:58 PhanTypeMismatchArgumentInternal Argument 1 ($string) is ++$f of type float but \strlen() takes string
-%s:61 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $f of type 4.25 but \strlen() takes string
+%s:61 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $f of type float (value: 4.25) but \strlen() takes string

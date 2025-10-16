@@ -1614,10 +1614,10 @@ final class ArgumentType
                     ($i + 1),
                     $alternate_parameter->getName(),
                     ASTReverter::toShortString($argument_node),
-                    $argument_type_expanded,
+                    $argument_type_expanded->toErrorMessageString(),
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                     $method->getRepresentationForIssue(),
-                    (string)$alternate_parameter_type,
+                    $alternate_parameter_type->toErrorMessageString(),
                     $issue_type === Issue::TypeMismatchArgumentInternalReal ? PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type) : ''
                 );
                 return;
@@ -1630,9 +1630,9 @@ final class ArgumentType
                 ($i + 1),
                 $alternate_parameter->getName(),
                 ASTReverter::toShortString($argument_node),
-                $argument_type_expanded,
+                $argument_type_expanded->toErrorMessageString(),
                 $method->getRepresentationForIssue(),
-                (string)$alternate_parameter_type
+                $alternate_parameter_type->toErrorMessageString()
             );
             return;
         }
@@ -1652,10 +1652,10 @@ final class ArgumentType
                 ($i + 1),
                 $alternate_parameter->getName(),
                 ASTReverter::toShortString($argument_node),
-                $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
+                $argument_type_expanded->withUnionType($argument_type_expanded_resolved)->toErrorMessageString(),
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                 $method->getRepresentationForIssue(),
-                (string)$alternate_parameter_type,
+                $alternate_parameter_type->toErrorMessageString(),
                 PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
                 $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart()
@@ -1680,10 +1680,10 @@ final class ArgumentType
                     ($i + 1),
                     $alternate_parameter->getName(),
                     ASTReverter::toShortString($argument_node),
-                    $argument_type_expanded,
+                    $argument_type_expanded->toErrorMessageString(),
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($argument_type),
                     $method->getRepresentationForIssue(),
-                    $alternate_parameter_type,
+                    $alternate_parameter_type->toErrorMessageString(),
                     PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($alternate_parameter_type),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
@@ -1707,9 +1707,9 @@ final class ArgumentType
                     ($i + 1),
                     $alternate_parameter->getName(),
                     ASTReverter::toShortString($argument_node),
-                    $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
+                    $argument_type_expanded->withUnionType($argument_type_expanded_resolved)->toErrorMessageString(),
                     $method->getRepresentationForIssue(),
-                    (string)$alternate_parameter_type,
+                    $alternate_parameter_type->toErrorMessageString(),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
                 );
@@ -1724,9 +1724,9 @@ final class ArgumentType
             ($i + 1),
             $alternate_parameter->getName(),
             ASTReverter::toShortString($argument_node),
-            $argument_type_expanded->withUnionType($argument_type_expanded_resolved),
+            $argument_type_expanded->withUnionType($argument_type_expanded_resolved)->toErrorMessageString(),
             $method->getRepresentationForIssue(),
-            (string)$alternate_parameter_type,
+            $alternate_parameter_type->toErrorMessageString(),
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );
@@ -1788,10 +1788,10 @@ final class ArgumentType
                 ($i + 1),
                 $alternate_parameter->getName(),
                 ASTReverter::toShortString($argument_node),
-                $argument_type,
+                $argument_type->toErrorMessageString(),
                 $method->getRepresentationForIssue(),
-                (string)$parameter_type,
-                $mismatch_resolved_types->asExpandedTypes($code_base)
+                $parameter_type->toErrorMessageString(),
+                $mismatch_resolved_types->asExpandedTypes($code_base)->toErrorMessageString()
             );
             return;
         }
@@ -1803,10 +1803,10 @@ final class ArgumentType
             ($i + 1),
             $alternate_parameter->getName(),
             ASTReverter::toShortString($argument_node),
-            $argument_type,
+            $argument_type->toErrorMessageString(),
             $method->getRepresentationForIssue(),
-            (string)$parameter_type,
-            $mismatch_resolved_types->asExpandedTypes($code_base),
+            $parameter_type->toErrorMessageString(),
+            $mismatch_resolved_types->asExpandedTypes($code_base)->toErrorMessageString(),
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );
