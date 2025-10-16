@@ -140,7 +140,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV3 implement
             'json_encode'  => $wrap('json_encode', 1, 3),
             'substr'       => $wrap('substr', 1, 3),
             'strlen'       => $wrap('strlen', 1, 3),
-            'join'         => $wrap('join', 1),
+            'join'         => $wrap('join', 1), // @phan-suppress-current-line PhanDeprecatedFunctionInternal - TODO: Replace with 'implode'
             'ltrim'        => $wrap('ltrim', 1, 2),
             'preg_quote'   => $wrap('preg_quote', 1, 2),
             'rtrim'        => $wrap('rtrim', 1, 2),

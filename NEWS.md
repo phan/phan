@@ -131,6 +131,7 @@ Type Inference & Analysis:
 - Fixed reference assignment literal type erasure: Variables involved in reference assignments now correctly erase literal types to prevent false positives ([#5197](https://github.com/phan/phan/pull/5197))
 
 PHPDoc & Attributes:
+- Fixed @deprecated detection for callable parameters: Emit PhanDeprecatedFunction when deprecated functions are passed as callable string arguments ([#4858](https://github.com/phan/phan/issues/4858))
 - Fixed @phan-suppress on class constants: Suppression annotations are no longer ignored ([#5188](https://github.com/phan/phan/pull/5188))
 - Fixed @phan-mandatory-param inheritance: Inherit annotation from interface methods ([#5116](https://github.com/phan/phan/pull/5116))
 - Fixed @phan-pure inheritance: Exclude `__call` and `__callStatic` from automatic inheritance ([#5124](https://github.com/phan/phan/pull/5124))
