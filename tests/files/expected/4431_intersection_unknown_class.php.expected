@@ -1,0 +1,9 @@
+%s:15 PhanUndeclaredTypeParameter Parameter $obj has undeclared type \KnownInterface&\UnknownClass
+%s:21 PhanTypeMismatchArgument Argument 1 ($arg) is 123 of type 123 but \KnownInterface::knownMethod() takes string defined at %s:6
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type string(real=string)
+%s:24 PhanUnusedVariable Unused definition of variable $result
+%s:28 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'not an int' of type 'not an int' but \KnownInterface::anotherMethod() takes int defined at %s:7
+%s:39 PhanTypeMismatchArgument Argument 1 ($arg) is 456 of type 456 but \KnownInterface::knownMethod() takes string defined at %s:6
+%s:45 PhanUndeclaredTypeParameter Parameter $both_unknown has undeclared type \UnknownClass1&\UnknownClass2
+%s:54 PhanUndeclaredTypeParameter Parameter $multi has undeclared type \KnownInterface&\Traversable&\UnknownClass
+%s:57 PhanTypeMismatchArgument Argument 1 ($arg) is 789 of type 789 but \KnownInterface::knownMethod() takes string defined at %s:6

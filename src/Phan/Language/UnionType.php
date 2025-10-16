@@ -3012,6 +3012,10 @@ class UnionType implements Serializable, Stringable
         CodeBase $code_base,
         Context $context
     ): Generator {
+        // Check if this union contains intersection types.
+        // For intersection types, we want to analyze known classes even if some are unknown.
+        $has_intersection = $this->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof IntersectionType);
+
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->getUniqueFlattenedTypeSet() as $class_type) {
@@ -3057,6 +3061,11 @@ class UnionType implements Serializable, Stringable
             $class_fqsen = FullyQualifiedClassName::fromType($class_type);
             // See if the class exists
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                // For intersection types, skip unknown classes but continue with known ones.
+                // This allows method resolution and type checking against known types.
+                if ($has_intersection) {
+                    continue;
+                }
                 throw new CodeBaseException(
                     $class_fqsen,
                     "Cannot find class $class_fqsen"
