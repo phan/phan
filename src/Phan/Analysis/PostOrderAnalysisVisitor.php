@@ -3214,8 +3214,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             $class = $method->getClass($this->code_base);
             $has_interface_class = $class->isInterface();
-
-            $this->checkForPHP4StyleConstructor($class, $method);
         } catch (Exception) {
         }
 
@@ -5309,36 +5307,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node);
     }
 
-    /**
-     * Check if the class is using PHP4-style constructor (without having its own __construct method)
-     */
-    private function checkForPHP4StyleConstructor(Clazz $class, Method $method): void
-    {
-        if ($class->isClass()
-            && ($class->getElementNamespace() ?: "\\") === "\\"
-            && \strcasecmp($class->getName(), $method->getName()) === 0
-            && $class->hasMethodWithName($this->code_base, "__construct", false)  // return true for the fake constructor
-        ) {
-            try {
-                $constructor = $class->getMethodByName($this->code_base, "__construct");
-
-                // Phan always makes up the __construct if it's not explicitly defined, so we need to check
-                // if there is no __construct method *actually* defined before we emit the issue
-                if ($constructor->getPhanFlagsHasState(\Phan\Language\Element\Flags::IS_FAKE_CONSTRUCTOR)) {
-                    Issue::maybeEmit(
-                        $this->code_base,
-                        $this->context,
-                        Issue::CompatiblePHP8PHP4Constructor,
-                        $this->context->getLineNumberStart(),
-                        $method->getRepresentationForIssue()
-                    );
-                }
-            } catch (CodeBaseException) {
-                // actually __construct always exists as per Phan's current logic, so this exception won't be thrown.
-                // but just in case let's leave this here
-            }
-        }
-    }
 
     /**
      * @param Node $node @unused-param
