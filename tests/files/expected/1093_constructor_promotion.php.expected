@@ -1,6 +1,6 @@
 %s:5 PhanUndeclaredTypeParameter Parameter $other has undeclared type ?\MissingClass
 %s:5 PhanUndeclaredTypeProperty Property \ConstructorPromotion21->other has undeclared type ?\MissingClass
 %s:7 PhanTypeArraySuspicious Suspicious array access to $value of type int
-%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type 'invalid' but \ConstructorPromotion21::__construct() takes int defined at %s:4
+%s:10 PhanTypeMismatchArgumentReal Argument 1 ($value) is 'invalid' of type string but \ConstructorPromotion21::__construct() takes int defined at %s:4
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $x->value of type int but \strlen() takes string
 %s:17 PhanRedefineProperty Property $value defined at %s:17 was previously defined at %s:14

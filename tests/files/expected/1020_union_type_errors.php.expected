@@ -3,4 +3,4 @@
 %s:18 PhanCompatibleStandaloneType Cannot use false as a standalone type before php 8.2.
 %s:18 PhanCompatibleStandaloneType Cannot use null as a standalone type before php 8.2.
 %s:22 PhanUndeclaredMethod Call to undeclared method \X::missingMethod
-%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' of type 'invalid' to property but \X::$prop is ?int
+%s:23 PhanTypeMismatchPropertyReal Assigning 'invalid' of type string to property but \X::$prop is ?int

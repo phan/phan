@@ -1,7 +1,7 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value of type 2|3 but \strlen() takes string
-%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value2 of type 2|3 but \strlen() takes string
-%s:13 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $x of type array{0:2} but \strlen() takes string
-%s:17 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $y of type array{0:2} but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value of type int (value: 2)|int (value: 3) but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $value2 of type int (value: 2)|int (value: 3) but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $x of type array{0:2} but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $y of type array{0:2} but \strlen() takes string
 %s:20 PhanUnusedVariable Unused definition of variable $a
 %s:21 PhanSyntaxMixedKeyNoKeyArrayDestructuring Cannot mix keyed and unkeyed array entries in array destructuring assignments (list($a,1=>$z))
-%s:24 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $z of type array{0:3} but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $z of type array{0:3} but \strlen() takes string

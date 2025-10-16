@@ -1,4 +1,4 @@
-%s:13 PhanTypeMismatchPropertyReal Assigning 2 of type 2 to property but \NS1060\HasTypedProperties->obj is \stdClass
+%s:13 PhanTypeMismatchPropertyReal Assigning 2 of type int (value: 2) to property but \NS1060\HasTypedProperties->obj is \stdClass
 %s:14 PhanTypeMismatchPropertyRealByRef 'invalid value' of type 'invalid value' may end up assigned to property \NS1060\HasTypedProperties::$static_int of type int by reference at %s:29
 %s:15 PhanTypeMismatchPropertyRealByRef 'invalid value' of type 'invalid value' may end up assigned to property \NS1060\HasTypedProperties->obj of type \stdClass by reference at %s:29
 %s:17 PhanTypeMismatchPropertyRealByRef 'invalid instance value' of type 'invalid instance value' may end up assigned to property \NS1060\HasTypedProperties->obj of type \stdClass by reference at %s:26
