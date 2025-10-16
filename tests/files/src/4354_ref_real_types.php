@@ -85,3 +85,19 @@ function test_ref_chain() {
     '@phan-debug-var $y'; // Should show int(real=int)
     '@phan-debug-var $z'; // Should show int(real=int)
 }
+
+// Test reference with parameter passing
+function modify_ref(&$param) {
+    $param = 42;
+}
+
+function test_ref_with_function_param() {
+    $a = 10;
+    $b =& $a;
+    '@phan-debug-var $a'; // Should show int(real=int)
+    '@phan-debug-var $b'; // Should show int(real=int)
+
+    modify_ref($a);  // This should not reintroduce literal types
+    '@phan-debug-var $a'; // Should still show int (no literal type)
+    '@phan-debug-var $b'; // Should still show int(real=int)
+}

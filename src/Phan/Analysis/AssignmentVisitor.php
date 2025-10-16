@@ -613,6 +613,12 @@ class AssignmentVisitor extends AnalysisVisitor
         UnionType $element_type,
         Node|float|int|string $node
     ): void {
+        // If this variable is involved in a reference assignment, erase literal types
+        // to avoid incorrect literal type tracking (issue #4354)
+        if ($element instanceof Variable && $element->getPhanFlagsHasState(Flags::HAS_REFERENCE)) {
+            $element_type = $element_type->asNonLiteralType();
+        }
+
         $element->setUnionType($element_type);
         if ($element instanceof PassByReferenceVariable) {
             self::analyzeSetUnionTypePassByRef(

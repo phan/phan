@@ -35,3 +35,8 @@
 %s:83 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type int(real=int)
 %s:83 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type int(real=int)
 %s:83 PhanUnusedVariableReference Unused definition of variable $z as a reference
+%s:96 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:96 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
+%s:96 PhanUnusedVariableReference Unused definition of variable $b as a reference
+%s:100 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:100 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
