@@ -2035,14 +2035,25 @@ class AssignmentVisitor extends AnalysisVisitor
                     $variable->setUnionType($variable->getUnionType()->asNonLiteralType());
 
                     // Also mark and erase literal types from the source variable
+                    // Create the variable if it doesn't exist yet to ensure the flag is set
                     $source_var_name = $expr->children['name'];
                     if (\is_string($source_var_name)) {
                         $scope = $this->context->getScope();
                         if ($scope->hasVariableWithName($source_var_name)) {
                             $source_variable = $scope->getVariableByName($source_var_name);
-                            $source_variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
-                            $source_variable->setUnionType($source_variable->getUnionType()->asNonLiteralType());
+                        } else {
+                            // Variable doesn't exist yet (e.g., $ref =& $x; $x = 42;)
+                            // Create it now so we can mark it with HAS_REFERENCE
+                            $source_variable = new Variable(
+                                $this->context->withLineNumberStart($expr->lineno ?? 0),
+                                $source_var_name,
+                                UnionType::empty(),
+                                0
+                            );
+                            $scope->addVariable($source_variable);
                         }
+                        $source_variable->enablePhanFlagBits(Flags::HAS_REFERENCE);
+                        $source_variable->setUnionType($source_variable->getUnionType()->asNonLiteralType());
                     }
                 }
             }

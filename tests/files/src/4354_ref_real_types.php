@@ -101,3 +101,13 @@ function test_ref_with_function_param() {
     '@phan-debug-var $a'; // Should still show int (no literal type)
     '@phan-debug-var $b'; // Should still show int(real=int)
 }
+
+// Test reference to undefined variable
+function test_undefined_ref() {
+    $ref =& $x;  // Reference to undefined variable
+    '@phan-debug-var $x'; // Should show empty type initially
+
+    $x = 42;     // Now assign to $x
+    '@phan-debug-var $x'; // Should show int(real=int), not 42(real=42)
+    '@phan-debug-var $ref'; // Should show int(real=int)
+}
