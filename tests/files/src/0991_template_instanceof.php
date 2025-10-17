@@ -37,7 +37,7 @@ class X {
 			// $foo is T&B
 			$this->a = $foo; // OK
 			$this->b[] = $foo; // OK
-			$this->c = $foo; // Error (not detected, seems like a bug)
+			$this->c = $foo; // Error
 			$this->d[] = $foo; // Error
 			$this->a($foo); // OK
 			$this->c($foo); // Error
@@ -45,7 +45,7 @@ class X {
 			// $foo is T
 			$this->a = $foo; // OK
 			$this->b[] = $foo; // OK
-			$this->c = $foo; // Error (not detected, seems like a bug)
+			$this->c = $foo; // Error
 			$this->d[] = $foo; // Error
 			$this->a($foo); // OK
 			$this->c($foo); // Error
