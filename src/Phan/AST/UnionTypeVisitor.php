@@ -2725,26 +2725,29 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // ignore nonsense like (0)::class, and dynamic accesses such as $var::CLASS
                 return $union_type->eraseRealTypeSet();
             }
+
+            // Check for narrowed constant types (e.g., after if (static::CONST !== null))
+            // This check must come BEFORE eraseRealTypeSet() so the narrowed type takes precedence
+            $class_name = $class_node->children['name'];
+            if (\is_string($class_name) && \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
+                $const_name = $node->children['const'];
+                if (\is_string($const_name)) {
+                    $override_union_type = $this->context->getClassConstantIfOverridden($const_name);
+                    if ($override_union_type !== null) {
+                        // There was an earlier narrowing in scope such as `if (static::CONST !== null)`
+                        // Note: $override_union_type might be empty if narrowing removed all types,
+                        // which can happen when narrowing `static::CONST !== null` where the base class has `const CONST = null`
+                        return $override_union_type;
+                    }
+                }
+            }
+
             if (\strcasecmp($class_node->children['name'], 'static') === 0) {
                 if ($this->context->isInClassScope() && $this->context->getClassInScope($this->code_base)->isFinal()) {
                     // static::X should be treated like self::X in a final class.
                     return $union_type;
                 }
                 $union_type = $union_type->eraseRealTypeSet();
-            }
-
-            // Check for narrowed constant types (e.g., after if (static::CONST !== null))
-            // This check must come after eraseRealTypeSet() so we start with the PHPDoc type
-            $class_name = $class_node->children['name'];
-            if (\is_string($class_name) && \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
-                $const_name = $node->children['const'];
-                if (\is_string($const_name)) {
-                    $override_union_type = $this->context->getClassConstantIfOverridden($const_name);
-                    if ($override_union_type) {
-                        // There was an earlier narrowing in scope such as `if (static::CONST !== null)`
-                        return $override_union_type;
-                    }
-                }
             }
 
             return $union_type;
