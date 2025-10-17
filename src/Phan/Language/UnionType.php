@@ -805,18 +805,10 @@ class UnionType implements Serializable, Stringable
      */
     public function withoutType(Type $type): UnionType
     {
-        // Copy the array $this->type_set
-        $type_set = $this->type_set;
-        foreach ($type_set as $key => $other_type) {
-            if ($type === $other_type) {
-                // Remove the only instance of $type from the copy.
-                // TODO: Make this work for removing from the real type set
-                unset($type_set[$key]);
-                return UnionType::ofUnique(\array_values($type_set), []);
-            }
-        }
-        // We did not find $type in type_set. The resulting union type is unchanged.
-        return $this->eraseRealTypeSetRecursively();
+        return UnionType::ofUnique(
+            \array_values(array_diff($this->type_set, [$type])),
+            \array_values(array_diff($this->real_type_set, [$type])),
+        );
     }
 
     /**

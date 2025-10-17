@@ -1,4 +1,4 @@
-%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \B
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \B(real=\B)
 %s:26 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \A&\X(real=\A&\X)
-%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \A&\X
-%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \A&\X
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \A&\X(real=\A&\X)
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \A&\X(real=\A&\X)

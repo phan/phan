@@ -190,7 +190,7 @@ class Parser
         string $file_path,
         string $file_contents,
         bool $suppress_parse_errors,
-        Error $native_parse_error,
+        CompileError $native_parse_error,
         ?Request $request = null
     ): Node {
         if ($file_path !== 'internal') {
