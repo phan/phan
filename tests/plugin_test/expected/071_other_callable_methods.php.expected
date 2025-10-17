@@ -1,4 +1,3 @@
-src/071_other_callable_methods.php:5 PhanTypeMismatchReturnReal Returning (object)(['arg'=>$arg]) of type \stdClass (real type array{arg:mixed}) but __invoke() is declared to return \stdClass
 src/071_other_callable_methods.php:22 PhanTypeMismatchArgumentInternal Argument 1 ($string) is template_return_test(['InvokableTemplateTest','createArrayObject']) of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string
 src/071_other_callable_methods.php:23 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \InvokableTemplateTest::missingMethod in callable
 src/071_other_callable_methods.php:24 PhanTypeMismatchArgumentInternal Argument 1 ($string) is template_return_test([$o,'createArrayObject']) of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string

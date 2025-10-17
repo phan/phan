@@ -1867,6 +1867,57 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Check if the expression is stdClass with an array shape real type (from object cast)
+     * and the return type is stdClass (possibly nullable). In this case, we allow the mismatch because
+     * (object)[] creates a valid stdClass, and the array shape is just implementation detail.
+     * @suppress PhanThrowTypeAbsentForCall
+     */
+    private static function isStdClassWithArrayShapeRealType(UnionType $expression_type, UnionType $return_type): bool
+    {
+        static $stdclass_type = null;
+        if ($stdclass_type === null) {
+            $stdclass_type = \Phan\Language\Type::fromFullyQualifiedString('\\stdClass');
+        }
+        $object_type = \Phan\Language\Type\ObjectType::instance(false);
+
+        // Check if expression is stdClass
+        $has_stdclass_expr = false;
+        foreach ($expression_type->getTypeSet() as $type) {
+            $type = $type->withIsNullable(false);
+            if ($type === $stdclass_type || $type === $object_type) {
+                $has_stdclass_expr = true;
+                break;
+            }
+        }
+        if (!$has_stdclass_expr) {
+            return false;
+        }
+
+        // Check if return type is stdClass (possibly nullable)
+        $has_stdclass_return = false;
+        foreach ($return_type->getTypeSet() as $type) {
+            $type = $type->withIsNullable(false);
+            if ($type === $stdclass_type || $type === $object_type) {
+                $has_stdclass_return = true;
+                break;
+            }
+        }
+        if (!$has_stdclass_return) {
+            return false;
+        }
+
+        // Check if expression has array shape as real type
+        $real_types = $expression_type->getRealUnionType();
+        foreach ($real_types->getTypeSet() as $type) {
+            if ($type instanceof \Phan\Language\Type\ArrayShapeType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Emits Issue::TypeMismatchReturnNullable or TypeMismatchReturn, unless suppressed
      * @param Node|string|int|float|null $inner_node
      */
@@ -1885,23 +1936,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             $issue_type = Issue::TypeMismatchReturn;
             // TODO: Don't warn for callable <-> string
-            if ($method_return_type->hasRealTypeSet()) {
-                // Always emit a real type warning about returning a value in a void method
+            if ($method_return_type->hasRealTypeSet() && $expression_type->hasRealTypeSet()) {
+                // Only check real type compatibility when the return type has explicit real type constraints.
+                // For stdClass with array shape real types (from object casts), the base types must match
+                // but we allow array shapes as real types since (object)[] is a valid stdClass.
                 $real_method_return_type = $method_return_type->getRealUnionType();
                 $real_expression_type = $expression_type->getRealUnionType();
-                if ($real_method_return_type->isVoidType() ||
-                    ($expression_type->hasRealTypeSet() && !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type))) {
-                    $this->emitIssue(
-                        Issue::TypeMismatchReturnReal,
-                        $lineno,
-                        self::returnExpressionToShortString($inner_node),
-                        $expression_type->toErrorMessageString(),
-                        self::toDetailsForRealTypeMismatch($expression_type),
-                        $method->getNameForIssue(),
-                        $method_return_type->toErrorMessageString(),
-                        self::toDetailsForRealTypeMismatch($method_return_type)
-                    );
-                    return;
+
+                // Special case: If expression is stdClass with array shape real type (from object cast),
+                // and return type is stdClass, allow it - array shapes are implementation details of stdClass
+                if (!self::isStdClassWithArrayShapeRealType($expression_type, $method_return_type)) {
+                    if ($real_method_return_type->isVoidType() ||
+                        !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
+                        $this->emitIssue(
+                            Issue::TypeMismatchReturnReal,
+                            $lineno,
+                            self::returnExpressionToShortString($inner_node),
+                            $expression_type->toErrorMessageString(),
+                            self::toDetailsForRealTypeMismatch($expression_type),
+                            $method->getNameForIssue(),
+                            $method_return_type->toErrorMessageString(),
+                            self::toDetailsForRealTypeMismatch($method_return_type)
+                        );
+                        return;
+                    }
                 }
             }
         }
@@ -1918,17 +1976,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // The argument's real type is completely incompatible with the documented phpdoc type.
                 //
                 // Either the phpdoc type is wrong or the argument is likely wrong.
-                $this->emitIssue(
-                    Issue::TypeMismatchReturnProbablyReal,
-                    $lineno,
-                    self::returnExpressionToShortString($inner_node),
-                    $expression_type->toErrorMessageString(),
-                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($expression_type),
-                    $method->getNameForIssue(),
-                    $method_return_type->toErrorMessageString(),
-                    PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($method_return_type)
-                );
-                return;
+                // Skip this check for stdClass with array shape real types (from object casts)
+                if (!self::isStdClassWithArrayShapeRealType($expression_type, $method_return_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchReturnProbablyReal,
+                        $lineno,
+                        self::returnExpressionToShortString($inner_node),
+                        $expression_type->toErrorMessageString(),
+                        PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($expression_type),
+                        $method->getNameForIssue(),
+                        $method_return_type->toErrorMessageString(),
+                        PostOrderAnalysisVisitor::toDetailsForRealTypeMismatch($method_return_type)
+                    );
+                    return;
+                }
             }
         }
         if ($context->hasSuppressIssue($this->code_base, $issue_type)) {
@@ -2237,8 +2298,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($expression_type->hasRealTypeSet() && $method_return_type->hasRealTypeSet()) {
             $real_expression_type = $expression_type->getRealUnionType();
             $real_method_return_type = $method_return_type->getRealUnionType();
-            if (!$real_method_return_type->isNull() && !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
-                return false;
+            // Skip real type check for stdClass with array shape real types (from object casts)
+            if (!self::isStdClassWithArrayShapeRealType($expression_type, $method_return_type)) {
+                if (!$real_method_return_type->isNull() && !$real_expression_type->canCastToDeclaredType($this->code_base, $this->context, $real_method_return_type)) {
+                    return false;
+                }
             }
         }
         try {
