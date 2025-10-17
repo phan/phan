@@ -1758,7 +1758,7 @@ final class Builder
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:param|var|return)\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                    || !\preg_match('/^((?:(?:phan-)?(?:param|var|return|real-return|property(?:-read|-write)?|assert|type|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;
                 }

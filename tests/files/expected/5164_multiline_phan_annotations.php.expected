@@ -1,0 +1,11 @@
+%s:17 PhanUnusedVariable Unused definition of variable $key
+%s:20 PhanTypeInvalidDimOffset Invalid offset "missing" of $value of array type array{id:int,name:string}
+%s:20 PhanTypeSuspiciousEcho Suspicious argument $value['missing'] of type null for an echo/print statement
+%s:63 PhanTypeInvalidDimOffset Invalid offset "invalid" of $user of array type array{id:int,username:string,email:string,profile:array{age:int,location:string}}
+%s:63 PhanTypeSuspiciousEcho Suspicious argument $user['invalid'] of type null for an echo/print statement
+%s:83 PhanTypeConversionFromArray array to string conversion
+%s:85 PhanTypeInvalidDimOffset Invalid offset "invalid" of $this->config of array type array{settings:array<string,mixed>,metadata:array{created:int,updated:int}}
+%s:85 PhanTypeSuspiciousEcho Suspicious argument $this->config['invalid'] of type null for an echo/print statement
+%s:143 PhanTypeInvalidDimOffset Invalid offset "missing" of $input of array type array{id:int,name:string}
+%s:143 PhanTypeSuspiciousEcho Suspicious argument $input['missing'] of type null for an echo/print statement
+%s:204 PhanTypeConversionFromArray array to string conversion

@@ -48,6 +48,7 @@ New features (Analysis):
   - Doc comment parsing now normalizes multi-line `@param`, `@var`, and `@return`
     annotations before analysis, allowing nested array/generic syntax to be laid out
     across several lines without being misinterpreted.
+  - Extended multiline support to Phan-specific annotations: `@phan-param`, `@phan-var`, `@phan-return`, `@phan-real-return`, `@phan-property*`, `@phan-assert`, `@phan-type`, `@phan-implements`, `@phan-extends`, `@phan-inherits`, `@phan-use` ([#4252](https://github.com/phan/phan/issues/4252))
   - `PHPDocRedundantPlugin` now flags redundant `@var` annotations on typed
     properties, matching its existing coverage for functions and methods.
 - `PreferNamespaceUsePlugin` now handles union types
