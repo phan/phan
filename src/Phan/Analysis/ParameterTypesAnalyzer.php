@@ -916,11 +916,16 @@ class ParameterTypesAnalyzer
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
+                // Check if the parameter type is exclusively from its default value, and not from the doc comment
+                // or a type declaration (default types are not added as real types).
+                $type_is_exclusively_from_default = !$comment_parameter &&
+                    $parameter->hasDefaultValue() &&
+                    !$parameter->getUnionType()->hasRealTypeSet();
                 // Allow @inheritDoc to be used to indicate that phpdoc parent parameter types
                 // should override inferred contravariant parameter types.
-                // Also inherit when there's no comment parameter (type may be from default value)
+                // Also inherit when the type is exclusively from the default value
                 if ($parameter_type->isEmpty() ||
-                        !$comment_parameter ||
+                        $type_is_exclusively_from_default ||
                         ($parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type) &&
                         ($parameter_type->isExclusivelyArray() || \stripos((string) $method->getDocComment(), '@inheritDoc') !== false))) {
                     $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($parameter_type->getRealTypeSet()));
