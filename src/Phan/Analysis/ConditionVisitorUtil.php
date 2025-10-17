@@ -645,6 +645,8 @@ trait ConditionVisitorUtil
                     return $this->updatePropertyExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
                 } elseif ($var_node->kind === ast\AST_STATIC_PROP) {
                     return $this->updateStaticPropertyExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
+                } elseif ($var_node->kind === ast\AST_CLASS_CONST) {
+                    return $this->updateClassConstExpressionWithConditionalFilter($var_node, $context, $should_filter_cb, $filter_union_type_cb, $suppress_issues);
                 }
                 return $context;
             }
@@ -737,6 +739,39 @@ trait ConditionVisitorUtil
             // Swallow it
         }
         return $context;
+    }
+
+    /**
+     * Analyze an expression such as `assert(!is_null(static::CONST_NAME))`
+     * and infer the effects on static::CONST_NAME in the local scope.
+     *
+     * @param Node $node a node of kind ast\AST_CLASS_CONST
+     * @unused-param $suppress_issues
+     */
+    final protected function updateClassConstExpressionWithConditionalFilter(
+        Node $node,
+        Context $context,
+        Closure $should_filter_cb,
+        Closure $filter_union_type_cb,
+        bool $suppress_issues
+    ): Context {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $context;
+        }
+        $constant_name = $node->children['const'];
+        if (!is_string($constant_name)) {
+            return $context;
+        }
+        return $this->modifyClassConstantSimple(
+            $node,
+            static function (UnionType $type) use ($should_filter_cb, $filter_union_type_cb): UnionType {
+                if (!$should_filter_cb($type)) {
+                    return $type;
+                }
+                return $filter_union_type_cb($type);
+            },
+            $context
+        );
     }
 
     /**
@@ -1712,12 +1747,38 @@ trait ConditionVisitorUtil
             return $context;
         }
         // Compute the old type and the new narrowed type
-        $old_constant_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
-        $new_constant_type = $type_mapping_callback($old_constant_type);
-        if ($new_constant_type->isIdenticalTo($old_constant_type)) {
-            // This didn't change anything
-            return $context;
+        // For static:: constants, we need to narrow based on the REAL types (from child classes),
+        // not just the PHPDoc type. Get the constant and use its real types if available.
+        try {
+            $context_node = new ContextNode($this->code_base, $context, $node);
+            $constant = $context_node->getClassConst();
+            $old_constant_type = $constant->getUnionType();
+
+            // For static:: constants, the visitClassConst() will erase real types.
+            // But for narrowing, we want to preserve and narrow the real types.
+            // Check if this is a static:: reference
+            $class_node = $node->children['class'];
+            if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+                $class_name = $class_node->children['name'];
+                if (\is_string($class_name) && \strcasecmp($class_name, 'static') === 0) {
+                    // For static:: constants, make sure we include real types in the narrowing
+                    // The real types represent possible values from child class overrides
+                    if (!$old_constant_type->hasRealTypeSet()) {
+                        // Try to infer real types from the context if not already set
+                        // This is a simplified version - in practice, Phan would need to look at all child classes
+                        $old_constant_type = $old_constant_type->asRealUnionType();
+                    }
+                }
+            }
+        } catch (\Exception) {
+            // Fall back to regular type inference
+            $old_constant_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
         }
+
+        $new_constant_type = $type_mapping_callback($old_constant_type);
+
+        // Always store the narrowing, even if it results in an empty type
+        // This ensures that visitClassConst() can see that narrowing was attempted
         return $context->withClassConstantSetToType($constant_name, $new_constant_type);
     }
 
