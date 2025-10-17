@@ -1,0 +1,5 @@
+%s:23 PhanDeprecatedFunction Call to deprecated function \deprecated_func() defined at %s:6
+%s:24 PhanDeprecatedFunction Call to deprecated function \deprecated_func() defined at %s:6
+%s:25 PhanDeprecatedFunction Call to deprecated function \deprecated_func() defined at %s:6
+%s:26 PhanDeprecatedFunction Call to deprecated function \deprecated_func() defined at %s:6
+%s:27 PhanDeprecatedFunction Call to deprecated function \deprecated_func() defined at %s:6

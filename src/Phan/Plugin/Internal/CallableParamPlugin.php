@@ -9,6 +9,7 @@ use Closure;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -76,6 +77,39 @@ final class CallableParamPlugin extends PluginV3 implements
                     $class_list = UnionTypeVisitor::classListFromClassNameNode($code_base, $context, $arg, false);
                     if ($class_list) {
                         $references[] = $class_list;
+                    }
+                }
+
+                // Check if callable is deprecated (issue #4858)
+                if ($references) {
+                    foreach ($references as $reference_list) {
+                        foreach ($reference_list as $addressable) {
+                            if ($addressable instanceof FunctionInterface && $addressable->isDeprecated()) {
+                                $lineno = $arg instanceof Node ? $arg->lineno : $context->getLineNumberStart();
+
+                                if ($addressable->isPHPInternal()) {
+                                    Issue::maybeEmit(
+                                        $code_base,
+                                        $context,
+                                        Issue::DeprecatedFunctionInternal,
+                                        $lineno,
+                                        $addressable->getRepresentationForIssue(),
+                                        $addressable->getDeprecationReason()
+                                    );
+                                } else {
+                                    Issue::maybeEmit(
+                                        $code_base,
+                                        $context,
+                                        Issue::DeprecatedFunction,
+                                        $lineno,
+                                        $addressable->getRepresentationForIssue(),
+                                        $addressable->getFileRef()->getFile(),
+                                        $addressable->getFileRef()->getLineNumberStart(),
+                                        $addressable->getDeprecationReason()
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
 
