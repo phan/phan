@@ -25,11 +25,21 @@ function takesShapedObject(\stdClass $x): void
 function returnsShapedObject(): \stdClass
 {
     $obj = (object)['foo' => 'bar'];
-    if (rand() !== 0) {
+    if (random_int(0, 1) !== 0) {
         return $obj; // Missing bar
     }
     $obj->bar = true;
     '@phan-debug-var $obj';
+    return $obj;
+}
+
+/** @return \stdClass{foo?:int} */
+function returnsOptionalFoo(): \stdClass
+{
+    $obj = (object)[];
+    if (random_int(0, 1) !== 0) {
+        $obj->foo = random_int(0, 100);
+    }
     return $obj;
 }
 
@@ -53,5 +63,20 @@ function returnsShapedObject(): \stdClass
     $fooProp = $ret->foo;
     '@phan-debug-var $barProp, $fooProp';
 
-    takesShapedObject($ret);
+takesShapedObject($ret);
 })(new \stdClass());
+
+$maybeFoo = (object)[];
+if (random_int(0, 1) !== 0) {
+    $maybeFoo->foo = 1;
+}
+'@phan-debug-var $maybeFoo';
+
+$disjoint = random_int(0, 1) !== 0 ? (object)['foo' => 1] : (object)['bar' => 2];
+'@phan-debug-var $disjoint';
+$maybeDisjointFoo = $disjoint->foo;
+'@phan-debug-var $maybeDisjointFoo';
+takesShapedObject($disjoint);
+
+$mergedOptionalFoo = random_int(0, 1) !== 0 ? returnsOptionalFoo() : returnsShapedObject();
+'@phan-debug-var $mergedOptionalFoo';

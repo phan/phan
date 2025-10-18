@@ -3090,12 +3090,19 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $builder = new UnionTypeBuilder();
         $is_possibly_undefined = false;
+        $missing_on_some_shape = false;
+        $saw_shape = false;
         foreach ($expr_union_type->getTypeSet() as $type) {
             if (!($type instanceof StdClassShapeType)) {
+                if (self::isPlainStdClassType($type)) {
+                    $missing_on_some_shape = true;
+                }
                 continue;
             }
+            $saw_shape = true;
             $field_union = $type->getFieldType($property_name);
             if ($field_union === null) {
+                $missing_on_some_shape = true;
                 continue;
             }
             if ($field_union->isPossiblyUndefined()) {
@@ -3108,10 +3115,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($result_union->isEmpty()) {
             return null;
         }
-        if ($is_possibly_undefined) {
+        if ($is_possibly_undefined || ($missing_on_some_shape && $saw_shape)) {
             $result_union = $result_union->withIsPossiblyUndefined(true);
         }
         return $result_union;
+    }
+
+    private static function isPlainStdClassType(Type $type): bool
+    {
+        return !($type instanceof StdClassShapeType)
+            && $type->getNamespace() === '\\'
+            && $type->getName() === StdClassShapeType::NAME;
     }
 
     private function warnIfPossiblyUndefinedProperty(Node $node, string $prop_name, UnionType $union_type): void
