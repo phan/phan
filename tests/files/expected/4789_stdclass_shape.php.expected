@@ -1,0 +1,9 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $empty - it has union type \stdClass(real=\stdClass)
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $status_value - it has union type 'string'|int
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $obj - it has union type \stdClass{foo:'bar'}(real=\stdClass)
+%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type \stdClass{bar:42}(real=\stdClass)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $setProp - it has union type 42|true
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $unsetProp - it has union type (empty union type)
+%s:50 PhanDebugAnnotation @phan-debug-var requested for variable $ret - it has union type \stdClass{bar:bool,foo?:string}(real=\stdClass)
+%s:53 PhanDebugAnnotation @phan-debug-var requested for variable $barProp - it has union type bool|true
+%s:53 PhanDebugAnnotation @phan-debug-var requested for variable $fooProp - it has union type ?string

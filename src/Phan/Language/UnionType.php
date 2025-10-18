@@ -51,6 +51,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
+use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
@@ -378,25 +379,85 @@ class UnionType implements Serializable, Stringable
      */
     private static function mergeUniqueTypes(array $type_list, array $other_type_list): array
     {
-        if (\count($other_type_list) <= 4) {
-            // NOTE: implementing it this way takes advantage of copy-on-write for small arrays.
-            // If no new types were added, the original array $type_list will be reused.
-            foreach ($other_type_list as $type) {
-                if (!\in_array($type, $type_list, true)) {
-                    $type_list[] = $type;
+        foreach ($other_type_list as $type) {
+            $type_list = self::addTypeToList($type_list, $type);
+        }
+        return $type_list;
+    }
+
+    /**
+     * @param list<Type> $type_list
+     * @return list<Type>
+     */
+    private static function addTypeToList(array $type_list, Type $type): array
+    {
+        foreach ($type_list as $existing_type) {
+            if ($existing_type === $type) {
+                return $type_list;
+            }
+        }
+        if ($type instanceof StdClassShapeType) {
+            return self::addStdClassShapeTypeToSet($type_list, $type);
+        }
+        if (self::isPlainStdClass($type)) {
+            return self::addPlainStdClassTypeToSet($type_list, $type);
+        }
+        $type_list[] = $type;
+        return $type_list;
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function addStdClassShapeTypeToSet(array $type_set, StdClassShapeType $new_type): array
+    {
+        foreach ($type_set as $idx => $existing_type) {
+            if (self::isPlainStdClass($existing_type)) {
+                if ($new_type->isNullable() && !$existing_type->isNullable()) {
+                    $type_set[$idx] = $existing_type->withIsNullable(true);
+                }
+                return \array_values($type_set);
+            }
+            if ($existing_type instanceof StdClassShapeType) {
+                $new_type = $existing_type->mergeWithShape($new_type);
+                unset($type_set[$idx]);
+            }
+        }
+        $type_set[] = $new_type;
+        return \array_values($type_set);
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @return list<Type>
+     */
+    private static function addPlainStdClassTypeToSet(array $type_set, Type $plain_type): array
+    {
+        $found_plain = false;
+        foreach ($type_set as $idx => $existing_type) {
+            if ($existing_type instanceof StdClassShapeType) {
+                unset($type_set[$idx]);
+                continue;
+            }
+            if (self::isPlainStdClass($existing_type)) {
+                $found_plain = true;
+                if ($plain_type->isNullable() && !$existing_type->isNullable()) {
+                    $type_set[$idx] = $existing_type->withIsNullable(true);
                 }
             }
-            return $type_list;
         }
-        $new_type_list = [];
-        // Avoid worst-case quadratic runtime
-        foreach ($type_list as $type) {
-            $new_type_list[\spl_object_id($type)] = $type;
+        if (!$found_plain) {
+            $type_set[] = $plain_type;
         }
-        foreach ($other_type_list as $type) {
-            $new_type_list[\spl_object_id($type)] = $type;
-        }
-        return \array_values($new_type_list);
+        return \array_values($type_set);
+    }
+
+    private static function isPlainStdClass(Type $type): bool
+    {
+        return !($type instanceof StdClassShapeType)
+            && $type->getNamespace() === '\\'
+            && $type->getName() === StdClassShapeType::NAME;
     }
 
     /**
@@ -787,12 +848,11 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) === 0) {
             return $type->withErasedUnionTypes()->asPHPDocUnionType();
         }
-        if (\in_array($type, $type_set, true)) {
+        $new_type_set = self::addTypeToList($type_set, $type);
+        if ($new_type_set === $type_set) {
             return $this->eraseRealTypeSetRecursively();
         }
-        // 2 or more types in type_set
-        $type_set[] = $type;
-        return new UnionType($type_set, true, []);
+        return new UnionType($new_type_set, true, []);
     }
 
     /**

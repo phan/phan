@@ -71,6 +71,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
+use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
@@ -1100,6 +1101,12 @@ class Type implements Stringable
                     $is_nullable
                 );
             }
+            if (\strcasecmp($type_name, 'stdClass') === 0) {
+                return StdClassShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
+                    $is_nullable
+                );
+            }
             if ($type_name === 'Closure' || $type_name === 'callable') {
                 return self::fromFullyQualifiedFunctionLike($type_name === 'Closure', $shape_components, $is_nullable);
             }
@@ -1499,6 +1506,12 @@ class Type implements Stringable
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($shape_components, $context, $source, $code_base),
+                    $is_nullable
+                );
+            }
+            if (\strcasecmp($type_name, 'stdClass') === 0) {
+                return StdClassShapeType::fromFieldTypes(
                     self::shapeComponentStringsToTypes($shape_components, $context, $source, $code_base),
                     $is_nullable
                 );
