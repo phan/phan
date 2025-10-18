@@ -62,6 +62,7 @@ use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\SelfType;
+use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
@@ -1607,28 +1608,83 @@ class UnionTypeVisitor extends AnalysisVisitor
             $stdclass = Type::fromFullyQualifiedString('\stdClass');
         }
         $has_array = $expr_type->hasArray();
-        if ($has_array) {
-            if ($expr_type->isExclusivelyArray()) {
-                return $stdclass->asRealUnionType();
+        $stdclass_shape_union = self::stdClassShapesFromArrayLikeUnion($expr_type);
+        if ($has_array && $expr_type->isExclusivelyArray()) {
+            if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+                return $stdclass_shape_union->withRealType($stdclass);
             }
+            return $stdclass->asRealUnionType();
         }
         $expr_type = $expr_type->objectTypes();
         if ($expr_type->isEmpty()) {
-            return ObjectType::instance(false)->asRealUnionType();
+            $result = ObjectType::instance(false)->asRealUnionType();
+            if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+                $result = $result->withUnionType($stdclass_shape_union);
+            }
+            return $result;
         }
         $expr_type = $expr_type->nonNullableClone();
         if ($has_array) {
             $expr_type = $expr_type->withType($stdclass);
-            if ($expr_type->hasRealTypeSet()) {
-                return $expr_type->withRealTypeSet(\array_merge($expr_type->getRealTypeSet(), [$stdclass]));
-            } else {
-                return $expr_type->withRealType(ObjectType::instance(false));
+            if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+                $expr_type = $expr_type->withUnionType($stdclass_shape_union);
             }
+            if ($expr_type->hasRealTypeSet()) {
+                $real_types = $expr_type->getRealTypeSet();
+                $real_types[] = $stdclass;
+                return $expr_type->withRealTypeSet($real_types);
+            }
+            return $expr_type->withRealType(ObjectType::instance(false));
+        }
+        if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+            $expr_type = $expr_type->withUnionType($stdclass_shape_union);
         }
         if (!$expr_type->hasRealTypeSet()) {
             return $expr_type->withRealType(ObjectType::instance(false));
         }
         return $expr_type;
+    }
+
+    /**
+     * @throws \InvalidArgumentException|\Phan\Exception\FQSENException if a shaped type could not be constructed
+     */
+    private static function stdClassShapesFromArrayLikeUnion(UnionType $expr_type): ?UnionType
+    {
+        $array_shape_types = [];
+        foreach ($expr_type->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $array_shape_types[] = $type;
+            }
+        }
+        if (!$array_shape_types) {
+            return null;
+        }
+        $stdclass_shape_types = [];
+        foreach ($array_shape_types as $array_shape_type) {
+            $stdclass_shape = self::arrayShapeToStdClassShapeType($array_shape_type);
+            if ($stdclass_shape instanceof StdClassShapeType) {
+                $stdclass_shape_types[] = $stdclass_shape;
+            }
+        }
+        if (!$stdclass_shape_types) {
+            return null;
+        }
+        return UnionType::of($stdclass_shape_types);
+    }
+
+    /**
+     * @throws \InvalidArgumentException|\Phan\Exception\FQSENException if the created shape is invalid
+     */
+    private static function arrayShapeToStdClassShapeType(ArrayShapeType $array_shape_type): Type
+    {
+        $field_types = [];
+        foreach ($array_shape_type->getFieldTypes() as $key => $field_union_type) {
+            if (\is_int($key)) {
+                $key = (string)$key;
+            }
+            $field_types[$key] = $field_union_type;
+        }
+        return StdClassShapeType::fromFieldTypes($field_types, $array_shape_type->isNullable());
     }
 
     /**
@@ -2874,6 +2930,11 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         // Either expr(instance) or class(static) is set
         $expr_node = $node->children['expr'] ?? null;
+        $prop_name = $node->children['prop'];
+        $stdclass_shape_union = null;
+        if (\is_string($prop_name) && $expr_node instanceof Node) {
+            $stdclass_shape_union = $this->inferStdClassShapePropertyType($expr_node, $prop_name);
+        }
         try {
             $property = (new ContextNode(
                 $this->code_base,
@@ -2955,6 +3016,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $property->getRealUnionType()->getTypeSet()
                 );
             }
+            if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+                $union_type = $union_type->withUnionType($stdclass_shape_union);
+            }
             return $union_type;
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
@@ -3003,7 +3067,65 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
 
+        if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
+            return $stdclass_shape_union;
+        }
+
         return UnionType::empty();
+    }
+
+    private function inferStdClassShapePropertyType(?Node $expr_node, string $property_name): ?UnionType
+    {
+        if (!$expr_node instanceof Node) {
+            return null;
+        }
+        $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $expr_node,
+            $this->should_catch_issue_exception
+        );
+        if ($expr_union_type->isEmpty()) {
+            return null;
+        }
+        $builder = new UnionTypeBuilder();
+        $is_possibly_undefined = false;
+        $missing_on_some_shape = false;
+        $saw_shape = false;
+        foreach ($expr_union_type->getTypeSet() as $type) {
+            if (!($type instanceof StdClassShapeType)) {
+                if (self::isPlainStdClassType($type)) {
+                    $missing_on_some_shape = true;
+                }
+                continue;
+            }
+            $saw_shape = true;
+            $field_union = $type->getFieldType($property_name);
+            if ($field_union === null) {
+                $missing_on_some_shape = true;
+                continue;
+            }
+            if ($field_union->isPossiblyUndefined()) {
+                $is_possibly_undefined = true;
+                $field_union = $field_union->withIsPossiblyUndefined(false);
+            }
+            $builder->addUnionType($field_union);
+        }
+        $result_union = $builder->getPHPDocUnionType();
+        if ($result_union->isEmpty()) {
+            return null;
+        }
+        if ($is_possibly_undefined || ($missing_on_some_shape && $saw_shape)) {
+            $result_union = $result_union->withIsPossiblyUndefined(true);
+        }
+        return $result_union;
+    }
+
+    private static function isPlainStdClassType(Type $type): bool
+    {
+        return !($type instanceof StdClassShapeType)
+            && $type->getNamespace() === '\\'
+            && $type->getName() === StdClassShapeType::NAME;
     }
 
     private function warnIfPossiblyUndefinedProperty(Node $node, string $prop_name, UnionType $union_type): void

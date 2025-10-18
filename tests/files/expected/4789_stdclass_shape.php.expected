@@ -1,0 +1,14 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $empty - it has union type \stdClass(real=\stdClass)
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $status_value - it has union type 'string'|int
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $obj - it has union type \stdClass{foo:'bar'}(real=\stdClass)
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type \stdClass{bar:42}(real=\stdClass)
+%s:59 PhanDebugAnnotation @phan-debug-var requested for variable $setProp - it has union type 42|true
+%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $unsetProp - it has union type int
+%s:69 PhanDebugAnnotation @phan-debug-var requested for variable $ret - it has union type \stdClass{bar:bool,foo?:string}(real=\stdClass)
+%s:72 PhanDebugAnnotation @phan-debug-var requested for variable $barProp - it has union type bool|true
+%s:72 PhanDebugAnnotation @phan-debug-var requested for variable $fooProp - it has union type int|string
+%s:79 PhanDebugAnnotation @phan-debug-var requested for variable $maybeFoo - it has union type \stdClass(real=\stdClass)
+%s:84 PhanDebugAnnotation @phan-debug-var requested for variable $disjoint - it has union type \stdClass{bar?:2,foo?:1}(real=\stdClass)
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $maybeDisjointFoo - it has union type 1|int
+%s:90 PhanDebugAnnotation @phan-debug-var requested for variable $mergedOptionalFoo - it has union type \stdClass{bar?:bool,foo?:int|string}(real=\stdClass)
+%s:93 PhanDebugAnnotation @phan-debug-var requested for variable $nullableShapeOrPlain - it has union type ?\stdClass(real=?\stdClass)

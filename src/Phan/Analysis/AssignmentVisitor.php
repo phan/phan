@@ -44,6 +44,7 @@ use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 
@@ -1149,6 +1150,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 ))->getOrCreateProperty($property_name, false);
 
                 $this->addTypesToProperty($property, $node);
+                $this->refineStdClassShapeAfterDynamicPropertyAssignment($expr_node, $expr_union_type, $property_name);
             } catch (\Exception) {
                 // swallow it
             }
@@ -1177,6 +1179,71 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * @throws \InvalidArgumentException|\Phan\Exception\FQSENException if a new shaped type cannot be constructed
+     */
+    private function refineStdClassShapeAfterDynamicPropertyAssignment(mixed $expr_node, ?UnionType $expr_union_type, string $property_name): void
+    {
+        if (!($expr_node instanceof Node)) {
+            return;
+        }
+        if ($expr_union_type === null || $expr_union_type->isEmpty()) {
+            return;
+        }
+        if ($this->dim_depth !== 0) {
+            return;
+        }
+        if ($this->assignment_node->kind !== ast\AST_ASSIGN) {
+            return;
+        }
+        if ($expr_node->kind !== ast\AST_VAR) {
+            return;
+        }
+        $variable_name = $expr_node->children['name'] ?? null;
+        if (!\is_string($variable_name) || $variable_name === '') {
+            return;
+        }
+        $scope = $this->context->getScope();
+        if (!$scope->hasVariableWithName($variable_name)) {
+            return;
+        }
+        $variable = clone($scope->getVariableByName($variable_name));
+        $property_union = $this->right_type->withStaticResolvedInContext($this->context)->withIsPossiblyUndefined(false);
+        $updated_union_type = self::computeStdClassShapeAssignment($variable->getUnionType(), $property_union, $property_name);
+        if ($updated_union_type === null) {
+            return;
+        }
+        $this->analyzeSetUnionType($variable, $updated_union_type, $this->assignment_node->children['expr'] ?? null);
+        $this->context->addScopeVariable($variable);
+    }
+
+    /**
+     * @throws \InvalidArgumentException|\Phan\Exception\FQSENException if a new shaped type cannot be constructed
+     */
+    private static function computeStdClassShapeAssignment(UnionType $union_type, UnionType $property_union, string $property_name): ?UnionType
+    {
+        $result = $union_type;
+        $changed = false;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof StdClassShapeType) {
+                $updated_type = $type->withMergedField($property_name, $property_union, false);
+                if ($updated_type !== $type) {
+                    $result = $result->withoutType($type)->withType($updated_type);
+                    $changed = true;
+                }
+                continue;
+            }
+            if ($type->getName() === StdClassShapeType::NAME && $type->getNamespace() === '\\') {
+                $new_type = StdClassShapeType::fromFieldTypes([$property_name => $property_union], $type->isNullable());
+                if ($new_type instanceof StdClassShapeType) {
+                    $result = $result->withoutType($type)->withType($new_type);
+                    $changed = true;
+                }
+            }
+        }
+        return $changed ? $result : null;
     }
 
     /**
