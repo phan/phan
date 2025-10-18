@@ -159,7 +159,13 @@ final class StdClassShapeType extends Type
         $builder = $this->field_types;
         foreach ($other->field_types as $field_name => $field_union_type) {
             if (isset($builder[$field_name])) {
-                $builder[$field_name] = $builder[$field_name]->withUnionType($field_union_type);
+                $existing_union_type = $builder[$field_name];
+                $combined = $existing_union_type->withIsPossiblyUndefined(false)
+                    ->withUnionType($field_union_type->withIsPossiblyUndefined(false));
+                if ($existing_union_type->isPossiblyUndefined() || $field_union_type->isPossiblyUndefined()) {
+                    $combined = $combined->withIsPossiblyUndefined(true);
+                }
+                $builder[$field_name] = $combined;
             } else {
                 $builder[$field_name] = $field_union_type->withIsPossiblyUndefined(true);
             }
