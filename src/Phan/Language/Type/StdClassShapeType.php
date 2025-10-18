@@ -144,7 +144,8 @@ final class StdClassShapeType extends Type
         $existing_union_type = $this->field_types[$field_name] ?? null;
         $field_type = self::applyOptionalFlag($field_type, $is_optional);
         if ($existing_union_type instanceof UnionType) {
-            $field_type = $existing_union_type->withUnionType($field_type);
+            $normalized_existing = $is_optional ? $existing_union_type : $existing_union_type->withIsPossiblyUndefined(false);
+            $field_type = $normalized_existing->withUnionType($field_type);
         }
         $new_field_types = $this->field_types;
         $new_field_types[$field_name] = $field_type;
