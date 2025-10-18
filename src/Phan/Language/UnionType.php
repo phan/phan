@@ -435,8 +435,10 @@ class UnionType implements Serializable, Stringable
     private static function addPlainStdClassTypeToSet(array $type_set, Type $plain_type): array
     {
         $found_plain = false;
+        $removed_shape_was_nullable = false;
         foreach ($type_set as $idx => $existing_type) {
             if ($existing_type instanceof StdClassShapeType) {
+                $removed_shape_was_nullable = $removed_shape_was_nullable || $existing_type->isNullable();
                 unset($type_set[$idx]);
                 continue;
             }
@@ -448,7 +450,11 @@ class UnionType implements Serializable, Stringable
             }
         }
         if (!$found_plain) {
-            $type_set[] = $plain_type;
+            if (($removed_shape_was_nullable && !$plain_type->isNullable())) {
+                $type_set[] = $plain_type->withIsNullable(true);
+            } else {
+                $type_set[] = $plain_type;
+            }
         }
         return \array_values($type_set);
     }

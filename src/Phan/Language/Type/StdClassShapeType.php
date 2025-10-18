@@ -142,10 +142,14 @@ final class StdClassShapeType extends Type
     public function withMergedField(string $field_name, UnionType $field_type, bool $is_optional): StdClassShapeType
     {
         $existing_union_type = $this->field_types[$field_name] ?? null;
-        $field_type = self::applyOptionalFlag($field_type, $is_optional);
         if ($existing_union_type instanceof UnionType) {
             $normalized_existing = $is_optional ? $existing_union_type : $existing_union_type->withIsPossiblyUndefined(false);
-            $field_type = $normalized_existing->withUnionType($field_type);
+            $normalized_new = $field_type->withIsPossiblyUndefined(false);
+            $field_type = $normalized_existing->withUnionType($normalized_new);
+        }
+        $field_type = self::applyOptionalFlag($field_type, $is_optional);
+        if (!$is_optional && $field_type->isPossiblyUndefined()) {
+            $field_type = UnionType::of($field_type->getTypeSet(), $field_type->getRealTypeSet());
         }
         $new_field_types = $this->field_types;
         $new_field_types[$field_name] = $field_type;

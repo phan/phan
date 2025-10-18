@@ -33,6 +33,15 @@ function returnsShapedObject(): \stdClass
     return $obj;
 }
 
+/** @return ?\stdClass{foo:int} */
+function returnsNullableShape(): ?\stdClass
+{
+    if (random_int(0, 1) === 0) {
+        return null;
+    }
+    return (object)['foo' => 42];
+}
+
 /** @return \stdClass{foo?:int} */
 function returnsOptionalFoo(): \stdClass
 {
@@ -80,3 +89,6 @@ takesShapedObject($disjoint);
 
 $mergedOptionalFoo = random_int(0, 1) !== 0 ? returnsOptionalFoo() : returnsShapedObject();
 '@phan-debug-var $mergedOptionalFoo';
+
+$nullableShapeOrPlain = random_int(0, 1) !== 0 ? returnsNullableShape() : new \stdClass();
+'@phan-debug-var $nullableShapeOrPlain';
