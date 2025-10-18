@@ -3088,7 +3088,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($expr_union_type->isEmpty()) {
             return null;
         }
-        $result_union = null;
+        $builder = new UnionTypeBuilder();
         $is_possibly_undefined = false;
         foreach ($expr_union_type->getTypeSet() as $type) {
             if (!($type instanceof StdClassShapeType)) {
@@ -3102,13 +3102,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $is_possibly_undefined = true;
                 $field_union = $field_union->withIsPossiblyUndefined(false);
             }
-            if ($result_union === null) {
-                $result_union = $field_union;
-            } else {
-                $result_union = $result_union->withUnionType($field_union);
-            }
+            $builder->addUnionType($field_union);
         }
-        if (!$result_union) {
+        $result_union = $builder->getPHPDocUnionType();
+        if ($result_union->isEmpty()) {
             return null;
         }
         if ($is_possibly_undefined) {
