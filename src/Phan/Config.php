@@ -688,10 +688,6 @@ class Config
         // to stdout instead of parsing and analyzing files.
         'dump_parsed_file_list' => false,
 
-        // Path to directory for caching parsed ASTs as PHP files.
-        // If null or an empty string, AST caching is disabled.
-        'ast_cache_directory' => null,
-
         // Include a progress bar in the output.
         'progress_bar' => false,
 
@@ -1578,7 +1574,6 @@ class Config
             'dump_ast' => $is_bool,
             'dump_matching_functions' => $is_bool,
             'dump_parsed_file_list' => $is_bool,
-            'ast_cache_directory' => $is_string_or_null,
             'dump_signatures_file' => $is_string_or_null,
             'enable_class_alias_support' => $is_bool,
             'enable_include_path_checks' => $is_bool,
