@@ -43,8 +43,6 @@ class Method extends ClassElement implements FunctionInterface
      */
     private static bool $handling_real_parameter_list = false;
 
-    /** @var array<string,self> caches template-substituted methods keyed by normalized template map */
-    private array $template_clone_cache = [];
 
     /**
      * @var ?FullyQualifiedMethodName If this was originally defined in a trait, this is the trait's defining fqsen.
@@ -1113,16 +1111,6 @@ class Method extends ClassElement implements FunctionInterface
             return $method;
         }
 
-        $cache_key = self::templateTypeMapCacheKey($template_type_map);
-        if ($cache_key !== '' && isset($this->template_clone_cache[$cache_key])) {
-            $cached_method = clone $this->template_clone_cache[$cache_key];
-            $cached_method->cloneParameterList();
-            if ($comment = $cached_method->getComment()) {
-                $cached_method->setComment(clone $comment);
-            }
-            return $cached_method;
-        }
-
         // Map the method's return type
         if ($method->getUnionType()->hasTemplateTypeRecursive()) {
             $new_union_type = $method->getUnionType()->withTemplateParameterTypeMap($template_type_map);
@@ -1176,15 +1164,6 @@ class Method extends ClassElement implements FunctionInterface
 
         // We may have removed all template types, check if we still need to treat this method as generic
         $method->checkForTemplateTypes();
-
-        if ($cache_key !== '') {
-            $cached_method = clone $method;
-            $cached_method->cloneParameterList();
-            if ($cached_comment = $cached_method->getComment()) {
-                $cached_method->setComment(clone $cached_comment);
-            }
-            $this->template_clone_cache[$cache_key] = $cached_method;
-        }
 
         return $method;
     }
