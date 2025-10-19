@@ -122,7 +122,6 @@ class CLI
         'disable-plugins',
         'dump-analyzed-file-list',
         'dump-ast',
-        'dump-template-clone-stats',
         'dump-ctags:',
         'dump-parsed-file-list',
         'dump-signatures-file:',
@@ -653,9 +652,6 @@ class CLI
                     break;
                 case 'dump-analyzed-file-list':
                     Config::setValue('dump_parsed_file_list', self::DUMP_ANALYZED);
-                    break;
-                case 'dump-template-clone-stats':
-                    Config::setValue('dump_template_clone_stats', true);
                     break;
                 case 'dump-signatures-file':
                     Config::setValue('dump_signatures_file', $value);
@@ -1930,10 +1926,6 @@ Extended help:
   Currently, this only dumps classes/constants/functions/properties,
   and not variable definitions.
   This should be used with --quick, and can't be used with --processes <int>.
-
- --dump-template-clone-stats
-  Emit per-run statistics about template method cloning overhead to stderr.
-  Useful when profiling generics-heavy codebases.
 
  --always-exit-successfully-after-analysis
   Always exit with an exit code of 0, even if unsuppressed issues were emitted.

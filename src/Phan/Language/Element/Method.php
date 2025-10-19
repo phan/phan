@@ -42,30 +42,6 @@ class Method extends ClassElement implements FunctionInterface
      */
     private static bool $handling_real_parameter_list = false;
 
-    /** @var array<string,int> aggregate counts of template clone requests per defining FQSEN when profiling is enabled */
-    private static array $template_clone_counts = [];
-
-    /** @var array<int,int> frequency of template maps by entry count when profiling is enabled */
-    private static array $template_clone_map_sizes = [];
-
-    /** Total number of template clone attempts recorded when profiling is enabled */
-    private static int $template_clone_total = 0;
-
-    /** Number of recorded template clone attempts that had an empty template map */
-    private static int $template_clone_empty_map = 0;
-
-    /** Tracks whether the shutdown handler for dumping template clone stats was registered */
-    private static bool $template_clone_stats_registered = false;
-
-    /** Number of clone requests that skipped substitution because no template types were present */
-    private static int $template_clone_no_template = 0;
-
-    /** Number of clone requests that reused cached substitution results */
-    private static int $template_clone_cache_hits = 0;
-
-    /** @var array<string,array<string,bool>> */
-    private static array $template_clone_unique_map_keys = [];
-
     /**
      * @var array<string,array{
      *     return_union_type:?UnionType,
@@ -739,90 +715,6 @@ class Method extends ClassElement implements FunctionInterface
         return $method;
     }
 
-    /**
-     * @param array<string,UnionType> $template_type_map
-     */
-    private static function recordTemplateCloneStat(array $template_type_map, Method $method): void
-    {
-        if (!self::$template_clone_stats_registered) {
-            self::$template_clone_stats_registered = true;
-            \register_shutdown_function([self::class, 'dumpTemplateCloneStats']);
-        }
-        self::$template_clone_total++;
-        if ($template_type_map === []) {
-            self::$template_clone_empty_map++;
-        }
-        $size = \count($template_type_map);
-        self::$template_clone_map_sizes[$size] = (self::$template_clone_map_sizes[$size] ?? 0) + 1;
-        $fqsen = (string)$method->getFQSEN();
-        self::$template_clone_counts[$fqsen] = (self::$template_clone_counts[$fqsen] ?? 0) + 1;
-        if ($size > 0) {
-            $key = self::templateTypeMapCacheKey($template_type_map);
-            if ($key !== '') {
-                self::$template_clone_unique_map_keys[$fqsen][$key] = true;
-            }
-        }
-    }
-
-    public static function dumpTemplateCloneStats(): void
-    {
-        if (!self::$template_clone_stats_registered || self::$template_clone_total === 0) {
-            return;
-        }
-
-        $total = self::$template_clone_total;
-        \fwrite(
-            \STDERR,
-            \sprintf(
-                "[phan] template clone stats: total=%d empty_map=%d no_template=%d cache_hits=%d%s",
-                $total,
-                self::$template_clone_empty_map,
-                self::$template_clone_no_template,
-                self::$template_clone_cache_hits,
-                \PHP_EOL
-            )
-        );
-
-        if (self::$template_clone_map_sizes) {
-            $sizes = self::$template_clone_map_sizes;
-            \ksort($sizes);
-            foreach ($sizes as $size => $count) {
-                \fwrite(\STDERR, \sprintf(
-                    "  map_size=%d count=%d (%.2f%%)%s",
-                    $size,
-                    $count,
-                    $count * 100 / $total,
-                    \PHP_EOL
-                ));
-            }
-        }
-
-        if (self::$template_clone_counts) {
-            $counts = self::$template_clone_counts;
-            \arsort($counts);
-            $top = \array_slice($counts, 0, 20, true);
-            \fwrite(\STDERR, "  top template clone requestors:" . \PHP_EOL);
-            foreach ($top as $fqsen => $count) {
-                $unique = isset(self::$template_clone_unique_map_keys[$fqsen]) ? \count(self::$template_clone_unique_map_keys[$fqsen]) : 0;
-                \fwrite(\STDERR, \sprintf(
-                    "    %s => %d (%.2f%%)%s",
-                    $fqsen,
-                    $count,
-                    $count * 100 / $total,
-                    \PHP_EOL
-                ));
-                if ($unique > 0) {
-                    \fwrite(\STDERR, \sprintf(
-                        "      unique_template_maps=%d%s",
-                        $unique,
-                        \PHP_EOL
-                    ));
-                }
-            }
-        }
-        self::$template_clone_unique_map_keys = [];
-    }
-
     private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
         $new_type = $comment_return_union_type;
@@ -1217,23 +1109,17 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
     {
-        if (Config::getValue('dump_template_clone_stats')) {
-            self::recordTemplateCloneStat($template_type_map, $this);
-        }
-
         $method = clone($this);
 
         // Clone the parameter list, so that modifying the parameters won't modify the others.
         $method->cloneParameterList();
 
         if ($template_type_map === [] || !$this->hasTemplateType()) {
-            self::$template_clone_no_template++;
             return $method;
         }
 
         $cache_key = self::templateTypeMapCacheKey($template_type_map);
         if ($cache_key !== '' && isset($this->template_clone_cache[$cache_key])) {
-            self::$template_clone_cache_hits++;
             $cached = $this->template_clone_cache[$cache_key];
             if ($cached['return_union_type'] instanceof UnionType) {
                 $method->setUnionType($cached['return_union_type']);
