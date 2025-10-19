@@ -1108,7 +1108,6 @@ EOT
                 new Position(19, 15),  // $strVal
                 '`false|string` line 15 description text',
                 null,
-                true
             ],
             [
                 $example_file_contents,

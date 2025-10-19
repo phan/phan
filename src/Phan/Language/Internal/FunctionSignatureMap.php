@@ -76,7 +76,6 @@ namespace Phan\Language\Internal;
  *
  *    Available from https://github.com/JetBrains/phpstorm-stubs under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0)
  *
- * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  *
  * Note: Some of Phan's inferences about return types are written as plugins for functions/methods where the return type depends on the parameter types.
  */

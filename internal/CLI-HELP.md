@@ -160,12 +160,21 @@ Usage: ./phan [options] [files...]
  --disable-cache
   Don't cache any ASTs from the polyfill/fallback.
 
-  ASTs from the native parser (php-ast) don't need to be cached.
+ ASTs from the native parser (php-ast) don't need to be cached.
 
   This is useful if Phan will be run only once and php-ast is unavailable (e.g. in Travis)
 
  --disable-plugins
   Don't run any plugins. Slightly faster.
+
+ --ast-trim-max-elements-per-level <int>
+  Override the maximum number of literal array elements ASTSimplifier keeps at a single nesting level (default 256).
+
+ --ast-trim-max-total-elements <int>
+  Override the maximum total literal array elements ASTSimplifier keeps while summarizing nested arrays (default 512).
+
+ --max-union-type-set-size <int>
+  Override the maximum number of distinct types retained in a union before it is summarized to generic array/mixed types (default 1024).
 
  -P, --plugin <pluginName|path/to/Plugin.php>
   Add a plugin to run. This flag can be repeated.

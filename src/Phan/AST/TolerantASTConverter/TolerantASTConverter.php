@@ -36,8 +36,6 @@ use function substr;
 use function var_export;
 use function var_representation;
 
-use const FILTER_FLAG_ALLOW_HEX;
-use const FILTER_FLAG_ALLOW_OCTAL;
 use const FILTER_VALIDATE_FLOAT;
 use const FILTER_VALIDATE_INT;
 use const PHP_VERSION_ID;
@@ -1195,7 +1193,7 @@ class TolerantASTConverter
                 $n = $n->children;
                 $text = \str_replace('_', '', static::tokenToString($n));
                 if (($n->kind ?? null) === TokenKind::IntegerLiteralToken) {
-                    $as_int = \filter_var($text, FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL | FILTER_FLAG_ALLOW_HEX);
+                    $as_int = \filter_var($text, \FILTER_VALIDATE_INT, \FILTER_FLAG_ALLOW_OCTAL | \FILTER_FLAG_ALLOW_HEX);
                     if ($as_int !== false) {
                         return $as_int;
                     }

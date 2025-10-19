@@ -9,11 +9,22 @@ use ast;
 use ast\flags;
 use ast\Node;
 
+use Phan\Config;
+use function array_fill;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_unique;
+use function array_values;
 use function count;
-use function in_array;
+use function intdiv;
+use function ltrim;
+use function max;
+use function min;
+use function preg_match;
+use function preg_split;
+use function substr;
+use function trim;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze,
@@ -24,6 +35,9 @@ use function in_array;
  */
 class ASTSimplifier
 {
+    private const SYNTHETIC_DOC_COMMENT_VAR = '/** @var array<array-key,mixed> */';
+    private const SYNTHETIC_DOC_COMMENT_RETURN = '/** @return array<array-key,mixed> */';
+
     public function __construct()
     {
     }
@@ -45,13 +59,25 @@ class ASTSimplifier
                 return self::normalizeForStatement($node);
             case ast\AST_WHILE:
                 return self::normalizeWhileStatement($node);
+            case ast\AST_PROP_GROUP:
+                return [self::applyToPropertyGroup($node)];
+            case ast\AST_ASSIGN:
+                return [self::applyToAssignment($node)];
+            case ast\AST_STATIC:
+                return [self::applyToStatic($node)];
+            case ast\AST_RETURN:
+                return [self::applyToReturn($node)];
+            case ast\AST_ARRAY:
+                [$trimmed_array] = self::trimArrayNode($node, self::getTrimMaxTotalElements());
+                return [$trimmed_array];
             //case ast\AST_BREAK:
             //case ast\AST_CONTINUE:
             //case ast\AST_RETURN:
             //case ast\AST_THROW:
             //case ast\AST_EXIT:
             default:
-                return [$node];
+                [$trimmed_node] = self::trimDescendantArrays($node);
+                return [$trimmed_node];
             case ast\AST_STMT_LIST:
                 return [self::applyToStatementList($node)];
         // Conditional blocks:
@@ -148,6 +174,452 @@ class ASTSimplifier
         return [$modified ? $new_statements : $statements, $modified];
     }
 
+    private static function docCommentHasArrayShape(?string $doc_comment, string $tag): bool
+    {
+        if ($doc_comment === null || $doc_comment === '') {
+            return false;
+        }
+        $pattern = '/@' . $tag . '\s+[^\n]*?(array\{|array<|\w+\[\]|\[[^\]]*\])/';
+        return preg_match($pattern, $doc_comment) === 1;
+    }
+
+    private static function appendDocCommentLine(string $doc_comment, string $tag, string $line): string
+    {
+        $trimmed = trim($doc_comment);
+        if (substr($trimmed, 0, 3) !== '/**' || substr($trimmed, -2) !== '*/') {
+            return '/** ' . $line . ' */';
+        }
+        $inner = trim(substr($trimmed, 3, -2));
+        $existing_lines = $inner === '' ? [] : (preg_split('/\r?\n/', $inner) ?: []);
+        $normalized = "/**\n";
+        foreach ($existing_lines as $existing_line) {
+            $existing_line = trim((string)$existing_line);
+            if ($existing_line === '') {
+                continue;
+            }
+            $canonical = ltrim($existing_line, " *\t");
+            if (preg_match('/^@' . $tag . '\\b/i', $canonical) === 1 &&
+                    preg_match('/^@' . $tag . '\s+[^\n]*?(array\{|array<|\\w+\[\]|\[[^\]]*\])/i', $canonical) !== 1) {
+                continue;
+            }
+            if ($existing_line[0] === '*') {
+                $normalized .= ' ' . $existing_line . "\n";
+            } else {
+                $normalized .= ' * ' . $existing_line . "\n";
+            }
+        }
+        $normalized .= ' * ' . $line . "\n */";
+        return $normalized;
+    }
+
+    private static function ensureDocCommentForArray(Node $node, string $tag): void
+    {
+        $doc_comment = $node->children['docComment'] ?? null;
+        if (self::docCommentHasArrayShape($doc_comment, $tag)) {
+            return;
+        }
+        $line = '@' . $tag . ' array<array-key,mixed>';
+        if ($doc_comment === null || $doc_comment === '') {
+            $node->children['docComment'] = $tag === 'return' ? self::SYNTHETIC_DOC_COMMENT_RETURN : self::SYNTHETIC_DOC_COMMENT_VAR;
+            return;
+        }
+        $node->children['docComment'] = self::appendDocCommentLine($doc_comment, $tag, $line);
+    }
+
+    private static function getTrimMaxElementsPerLevel(): int
+    {
+        $value = (int)Config::getValue('ast_trim_max_elements_per_level');
+        return $value > 0 ? $value : 1;
+    }
+
+    private static function getTrimMaxTotalElements(): int
+    {
+        $value = (int)Config::getValue('ast_trim_max_total_elements');
+        return $value > 0 ? $value : 1;
+    }
+
+    private static function applyToPropertyGroup(Node $node): Node
+    {
+        $props_node = $node->children['props'] ?? null;
+        if (!($props_node instanceof Node)) {
+            return $node;
+        }
+        $props_children = $props_node->children;
+        $child_modified = false;
+        foreach ($props_children as $index => $child) {
+            if (!($child instanceof Node)) {
+                continue;
+            }
+            $new_child = self::simplifyPropertyElement($child);
+            if ($new_child !== $child) {
+                if (!$child_modified) {
+                    $props_children = $props_node->children;
+                    $child_modified = true;
+                }
+                $props_children[$index] = $new_child;
+            }
+        }
+        $updated_props = $child_modified ? clone($props_node) : $props_node;
+        if ($child_modified) {
+            $updated_props->children = $props_children;
+        }
+        [$final_props, $trimmed_child] = self::trimDescendantArrays($updated_props);
+        if (!$child_modified && !$trimmed_child) {
+            return $node;
+        }
+        $clone = clone($node);
+        $clone->children['props'] = $final_props;
+        return $clone;
+    }
+
+    private static function simplifyPropertyElement(Node $prop): Node
+    {
+        $default = $prop->children['default'] ?? null;
+        $new_default = $default;
+        $trimmed = false;
+        if ($default instanceof Node) {
+            if ($default->kind === ast\AST_ARRAY) {
+                [$new_default, , $default_trimmed] = self::trimArrayNode($default, self::getTrimMaxTotalElements());
+                if ($default_trimmed) {
+                    $trimmed = true;
+                }
+            } else {
+                [$new_default, $default_trimmed] = self::trimDescendantArrays($default);
+                if ($default_trimmed) {
+                    $trimmed = true;
+                }
+            }
+        }
+        if ($new_default === $default && !$trimmed) {
+            return $prop;
+        }
+        $clone = clone($prop);
+        $clone->children['default'] = $new_default;
+        if ($trimmed) {
+            self::ensureDocCommentForArray($clone, 'var');
+        }
+        return $clone;
+    }
+
+    private static function applyToAssignment(Node $node): Node
+    {
+        $expr = $node->children['expr'] ?? null;
+        $var = $node->children['var'] ?? null;
+
+        $expr_trimmed = false;
+        $new_expr = $expr;
+        if ($expr instanceof Node) {
+            if ($expr->kind === ast\AST_ARRAY) {
+                [$new_expr, , $expr_trimmed] = self::trimArrayNode($expr, self::getTrimMaxTotalElements());
+            } else {
+                [$new_expr, $expr_trimmed] = self::trimDescendantArrays($expr);
+            }
+        }
+
+        $new_var = $var;
+        $var_modified = false;
+        if ($var instanceof Node) {
+            [$new_var, $var_trimmed] = self::trimDescendantArrays($var);
+            $var_modified = $var_trimmed || $new_var !== $var;
+        }
+
+        if (!$expr_trimmed && !$var_modified && $new_expr === $expr) {
+            return $node;
+        }
+        $clone = clone($node);
+        $clone->children['expr'] = $new_expr;
+        $clone->children['var'] = $new_var;
+        if ($expr_trimmed) {
+            self::ensureDocCommentForArray($clone, 'var');
+        }
+        return $clone;
+    }
+
+    private static function applyToReturn(Node $node): Node
+    {
+        $expr = $node->children['expr'] ?? null;
+        if (!($expr instanceof Node)) {
+            return $node;
+        }
+        if ($expr->kind === ast\AST_ARRAY) {
+            [$new_expr, , $expr_trimmed] = self::trimArrayNode($expr, self::getTrimMaxTotalElements());
+        } else {
+            [$new_expr, $expr_trimmed] = self::trimDescendantArrays($expr);
+        }
+        if ($new_expr === $expr && !$expr_trimmed) {
+            return $node;
+        }
+        $clone = clone($node);
+        $clone->children['expr'] = $new_expr;
+        if ($expr_trimmed) {
+            self::ensureDocCommentForArray($clone, 'return');
+        }
+        return $clone;
+    }
+
+    private static function applyToStatic(Node $node): Node
+    {
+        $default = $node->children['default'] ?? null;
+        $var = $node->children['var'] ?? null;
+
+        $default_trimmed = false;
+        $new_default = $default;
+        if ($default instanceof Node) {
+            if ($default->kind === ast\AST_ARRAY) {
+                [$new_default, , $default_trimmed] = self::trimArrayNode($default, self::getTrimMaxTotalElements());
+            } else {
+                [$new_default, $default_trimmed] = self::trimDescendantArrays($default);
+            }
+        }
+        $new_var = $var;
+        if ($var instanceof Node) {
+            [$new_var] = self::trimDescendantArrays($var);
+        }
+        if ($new_default === $default && $new_var === $var && !$default_trimmed) {
+            return $node;
+        }
+        $clone = clone($node);
+        $clone->children['default'] = $new_default;
+        $clone->children['var'] = $new_var;
+        if ($default_trimmed) {
+            self::ensureDocCommentForArray($clone, 'var');
+        }
+        return $clone;
+    }
+
+    /**
+     * @return array{0:Node,1:int,2:bool}
+     */
+    private static function trimArrayNode(Node $array_node, int $budget): array
+    {
+        if ($array_node->kind !== ast\AST_ARRAY) {
+            return [$array_node, 0, false];
+        }
+        if ($budget <= 0) {
+            if (self::arrayHasPossibleSideEffects($array_node)) {
+                return [$array_node, 0, false];
+            }
+            if (!$array_node->children) {
+                return [$array_node, 0, false];
+            }
+            $clone = clone($array_node);
+            $clone->children = [];
+            return [$clone, 0, true];
+        }
+        $children = $array_node->children;
+        $total = count($children);
+        if ($total === 0) {
+            return [$array_node, 0, false];
+        }
+        $allowed = min($budget, self::getTrimMaxElementsPerLevel(), $total);
+        $indexes = self::selectRepresentativeIndexes($total, $allowed);
+
+        $side_effect_indexes = [];
+        foreach ($children as $index => $child) {
+            if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
+                $side_effect_indexes[] = $index;
+            }
+        }
+        if ($side_effect_indexes) {
+            $indexes = array_values(array_unique(array_merge($indexes, $side_effect_indexes)));
+            sort($indexes, SORT_NUMERIC);
+        }
+
+        $extra_budget = max(0, $budget - count($indexes));
+        $nested_budgets = self::distributeBudget($extra_budget, count($indexes));
+
+        $new_children = [];
+        $total_used = 0;
+        $modified = count($indexes) !== $total;
+        foreach ($indexes as $position => $index) {
+            $child = $children[$index];
+            if (!($child instanceof Node)) {
+                $total_used += 1;
+                $new_children[] = $child;
+                continue;
+            }
+            [$new_child, $child_used, $child_modified] = self::trimArrayElement($child, $nested_budgets[$position] ?? 0);
+            if ($child_modified) {
+                $modified = true;
+            }
+            $total_used += $child_used;
+            $new_children[] = $new_child;
+        }
+        if (!$modified) {
+            return [$array_node, $total_used, false];
+        }
+        $clone = clone($array_node);
+        $clone->children = array_values($new_children);
+        return [$clone, $total_used, true];
+    }
+
+    private static function arrayElementHasPossibleSideEffects(Node $element): bool
+    {
+        if ($element->kind !== ast\AST_ARRAY_ELEM) {
+            return true;
+        }
+        if (!self::isExpressionWithoutSideEffects($element->children['key'] ?? null)) {
+            return true;
+        }
+        return !self::isExpressionWithoutSideEffects($element->children['value'] ?? null);
+    }
+
+    private static function arrayHasPossibleSideEffects(Node $array_node): bool
+    {
+        if ($array_node->kind !== ast\AST_ARRAY) {
+            return false;
+        }
+        foreach ($array_node->children as $child) {
+            if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return array{0:Node,1:int,2:bool}
+     */
+    private static function trimArrayElement(Node $element, int $nested_budget): array
+    {
+        $used = 1;
+        $modified = false;
+        $new_element = $element;
+
+        $key = $element->children['key'] ?? null;
+        if ($key instanceof Node) {
+            if ($key->kind === ast\AST_ARRAY) {
+                [$new_key, $key_used, $key_modified] = self::trimArrayNode($key, $nested_budget);
+                if ($key_modified) {
+                    $new_element = clone($new_element);
+                    $new_element->children['key'] = $new_key;
+                    $modified = true;
+                }
+                $used += $key_used;
+                $nested_budget = max(0, $nested_budget - $key_used);
+            } else {
+                [$new_key] = self::trimDescendantArrays($key);
+                if ($new_key !== $key) {
+                    $new_element = clone($new_element);
+                    $new_element->children['key'] = $new_key;
+                    $modified = true;
+                }
+            }
+        }
+
+        $value = $element->children['value'] ?? null;
+        if ($value instanceof Node) {
+            if ($value->kind === ast\AST_ARRAY) {
+                [$new_value, $value_used, $value_modified] = self::trimArrayNode($value, $nested_budget);
+                if ($value_modified) {
+                    if ($new_element === $element) {
+                        $new_element = clone($element);
+                    }
+                    $new_element->children['value'] = $new_value;
+                    $modified = true;
+                }
+                $used += $value_used;
+            } else {
+                [$new_value] = self::trimDescendantArrays($value);
+                if ($new_value !== $value) {
+                    if ($new_element === $element) {
+                        $new_element = clone($element);
+                    }
+                    $new_element->children['value'] = $new_value;
+                    $modified = true;
+                }
+            }
+        }
+        return [$modified ? $new_element : $element, $used, $modified];
+    }
+
+    /**
+     * @return list<int>
+     */
+    private static function selectRepresentativeIndexes(int $total, int $limit): array
+    {
+        if ($limit >= $total) {
+            return range(0, $total - 1);
+        }
+        if ($limit <= 0) {
+            return [];
+        }
+        if ($limit === 1) {
+            return [0];
+        }
+        $indexes = [];
+        for ($i = 0; $i < $limit; $i++) {
+            $indexes[] = intdiv($i * ($total - 1), $limit - 1);
+        }
+        $indexes = array_values(array_unique($indexes));
+        if (count($indexes) < $limit) {
+            for ($i = 0; $i < $total && count($indexes) < $limit; $i++) {
+                if (!in_array($i, $indexes, true)) {
+                    $indexes[] = $i;
+                }
+            }
+            sort($indexes);
+        }
+        return $indexes;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private static function distributeBudget(int $budget, int $count): array
+    {
+        if ($count <= 0 || $budget <= 0) {
+            return array_fill(0, $count, 0);
+        }
+        $base = intdiv($budget, $count);
+        $remainder = $budget % $count;
+        $result = [];
+        for ($i = 0; $i < $count; $i++) {
+            $extra = $base;
+            if ($i < $remainder) {
+                $extra++;
+            }
+            $result[] = $extra;
+        }
+        return $result;
+    }
+
+    /**
+     * @return array{0:Node,1:bool}
+     */
+    private static function trimDescendantArrays(Node $node): array
+    {
+        $children = $node->children;
+        $modified = false;
+        $trimmed = false;
+        foreach ($children as $key => $child) {
+            if (!($child instanceof Node)) {
+                continue;
+            }
+            if ($child->kind === ast\AST_ARRAY) {
+                [$new_child, , $child_trimmed] = self::trimArrayNode($child, self::getTrimMaxTotalElements());
+            } else {
+                [$new_child, $child_trimmed] = self::trimDescendantArrays($child);
+            }
+            if ($child_trimmed) {
+                $trimmed = true;
+            }
+            if ($new_child !== $child) {
+                if (!$modified) {
+                    $children = $node->children;
+                    $modified = true;
+                }
+                $children[$key] = $new_child;
+            }
+        }
+        if (!$modified) {
+            return [$node, $trimmed];
+        }
+        $clone = clone($node);
+        $clone->children = $children;
+        return [$clone, $trimmed];
+    }
+
     /**
      * Replaces the last node in a list with a list of 0 or more nodes
      * @param list<Node> $nodes
@@ -180,12 +652,15 @@ class ASTSimplifier
      * If this returns true, the expression has no side effects, and can safely be reordered.
      * (E.g. returns true for `MY_CONST` or `false` in `if (MY_CONST === ($x = y))`
      *
-     * @param Node|string|float|int $node
+     * @param Node|string|float|int|null $node
      * @internal the way this behaves may change
      * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
-    public static function isExpressionWithoutSideEffects(Node|float|int|string $node): bool
+    public static function isExpressionWithoutSideEffects(Node|float|int|string|null $node): bool
     {
+        if ($node === null) {
+            return true;
+        }
         if (!($node instanceof Node)) {
             return true;
         }
@@ -202,6 +677,20 @@ class ASTSimplifier
             case ast\AST_CLASS_CONST:
             case ast\AST_CLASS_NAME:
                 return self::isExpressionWithoutSideEffects($node->children['class']);
+            case ast\AST_ARRAY:
+                foreach ($node->children as $child) {
+                    if (!($child instanceof Node) || $child->kind !== ast\AST_ARRAY_ELEM) {
+                        return false;
+                    }
+                    if (!self::isExpressionWithoutSideEffects($child->children['key'] ?? null) ||
+                            !self::isExpressionWithoutSideEffects($child->children['value'] ?? null)) {
+                        return false;
+                    }
+                }
+                return true;
+            case ast\AST_ARRAY_ELEM:
+                return self::isExpressionWithoutSideEffects($node->children['key'] ?? null) &&
+                    self::isExpressionWithoutSideEffects($node->children['value'] ?? null);
             default:
                 return false;
         }

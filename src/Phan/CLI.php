@@ -137,6 +137,9 @@ class CLI
         'help',
         'help-annotations',
         'ignore-undeclared',
+        'ast-trim-max-elements-per-level:',
+        'ast-trim-max-total-elements:',
+        'max-union-type-set-size:',
         'include-analysis-file-list:',
         'incremental',
         'init',
@@ -263,6 +266,37 @@ class CLI
             $value_set[$file] = $file;
         }
         return \array_values($value_set);
+    }
+
+    /**
+     * @throws UsageException if the provided option value is not a positive integer
+     */
+    private static function parsePositiveIntOption(mixed $value, string $option_name): int
+    {
+        if (is_array($value)) {
+            $value = \end($value);
+        }
+        if (!is_string($value)) {
+            $value = (string) $value;
+        }
+        if ($value === '' || !\ctype_digit($value)) {
+            throw new UsageException(
+                sprintf('Invalid value for --%s: expected a positive integer, saw %s', $option_name, StringUtil::jsonEncode($value)),
+                EXIT_FAILURE,
+                null,
+                true
+            );
+        }
+        $int_value = (int)$value;
+        if ($int_value <= 0) {
+            throw new UsageException(
+                sprintf('Invalid value for --%s: expected a positive integer, saw %s', $option_name, StringUtil::jsonEncode($value)),
+                EXIT_FAILURE,
+                null,
+                true
+            );
+        }
+        return $int_value;
     }
 
     /**
@@ -661,6 +695,15 @@ class CLI
                     break;
                 case 'ignore-undeclared':
                     $mask &= ~Issue::CATEGORY_UNDEFINED;
+                    break;
+                case 'ast-trim-max-elements-per-level':
+                    Config::setValue('ast_trim_max_elements_per_level', self::parsePositiveIntOption($value, 'ast-trim-max-elements-per-level'));
+                    break;
+                case 'ast-trim-max-total-elements':
+                    Config::setValue('ast_trim_max_total_elements', self::parsePositiveIntOption($value, 'ast-trim-max-total-elements'));
+                    break;
+                case 'max-union-type-set-size':
+                    Config::setValue('max_union_type_set_size', self::parsePositiveIntOption($value, 'max-union-type-set-size'));
                     break;
                 case '3':
                 case 'exclude-directory-list':
@@ -1731,12 +1774,21 @@ $init_help
  --disable-cache
   Don't cache any ASTs from the polyfill/fallback.
 
-  ASTs from the native parser (php-ast) don't need to be cached.
+ ASTs from the native parser (php-ast) don't need to be cached.
 
   This is useful if Phan will be run only once and php-ast is unavailable (e.g. in Travis)
 
  --disable-plugins
   Don't run any plugins. Slightly faster.
+
+ --ast-trim-max-elements-per-level <int>
+  Override the maximum number of literal array elements ASTSimplifier keeps at a single nesting level (default 256).
+
+ --ast-trim-max-total-elements <int>
+  Override the maximum total literal array elements ASTSimplifier keeps while summarizing nested arrays (default 512).
+
+ --max-union-type-set-size <int>
+  Override the maximum number of distinct types retained in a union before it is summarized to generic array/mixed types (default 1024).
 
  -P, --plugin <pluginName|path/to/Plugin.php>
   Add a plugin to run. This flag can be repeated.
@@ -2136,7 +2188,7 @@ EOB
             return Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], $cli_flag);
         };
         $section = \preg_replace_callback('@<\S+>|\{\S+\}@', $colorize_opt_cb, $section);
-        $section = \preg_replace('@^ERROR:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['light_red'], '\0'), $section);
+        $section = \preg_replace('@^ERROR:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['light_magenta'], '\0'), $section);
         $section = \preg_replace('@^WARNING:@', Colorizing::colorizeTextWithColorCode(Colorizing::STYLES['yellow'], '\0'), $section);
         return $section;
     }
