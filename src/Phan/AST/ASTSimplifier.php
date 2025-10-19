@@ -410,6 +410,18 @@ class ASTSimplifier
         }
         $allowed = min($budget, self::getTrimMaxElementsPerLevel(), $total);
         $indexes = self::selectRepresentativeIndexes($total, $allowed);
+
+        $side_effect_indexes = [];
+        foreach ($children as $index => $child) {
+            if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
+                $side_effect_indexes[] = $index;
+            }
+        }
+        if ($side_effect_indexes) {
+            $indexes = array_values(array_unique(array_merge($indexes, $side_effect_indexes)));
+            sort($indexes, SORT_NUMERIC);
+        }
+
         $extra_budget = max(0, $budget - count($indexes));
         $nested_budgets = self::distributeBudget($extra_budget, count($indexes));
 
@@ -436,6 +448,17 @@ class ASTSimplifier
         $clone = clone($array_node);
         $clone->children = array_values($new_children);
         return [$clone, $total_used, true];
+    }
+
+    private static function arrayElementHasPossibleSideEffects(Node $element): bool
+    {
+        if ($element->kind !== ast\AST_ARRAY_ELEM) {
+            return true;
+        }
+        if (!self::isExpressionWithoutSideEffects($element->children['key'] ?? null)) {
+            return true;
+        }
+        return !self::isExpressionWithoutSideEffects($element->children['value'] ?? null);
     }
 
     /**
@@ -613,12 +636,15 @@ class ASTSimplifier
      * If this returns true, the expression has no side effects, and can safely be reordered.
      * (E.g. returns true for `MY_CONST` or `false` in `if (MY_CONST === ($x = y))`
      *
-     * @param Node|string|float|int $node
+     * @param Node|string|float|int|null $node
      * @internal the way this behaves may change
      * @see ScopeImpactCheckingVisitor::hasPossibleImpact() for a more general check
      */
-    public static function isExpressionWithoutSideEffects(Node|float|int|string $node): bool
+    public static function isExpressionWithoutSideEffects(Node|float|int|string|null $node): bool
     {
+        if ($node === null) {
+            return true;
+        }
         if (!($node instanceof Node)) {
             return true;
         }
@@ -635,6 +661,20 @@ class ASTSimplifier
             case ast\AST_CLASS_CONST:
             case ast\AST_CLASS_NAME:
                 return self::isExpressionWithoutSideEffects($node->children['class']);
+            case ast\AST_ARRAY:
+                foreach ($node->children as $child) {
+                    if (!($child instanceof Node) || $child->kind !== ast\AST_ARRAY_ELEM) {
+                        return false;
+                    }
+                    if (!self::isExpressionWithoutSideEffects($child->children['key'] ?? null) ||
+                            !self::isExpressionWithoutSideEffects($child->children['value'] ?? null)) {
+                        return false;
+                    }
+                }
+                return true;
+            case ast\AST_ARRAY_ELEM:
+                return self::isExpressionWithoutSideEffects($node->children['key'] ?? null) &&
+                    self::isExpressionWithoutSideEffects($node->children['value'] ?? null);
             default:
                 return false;
         }
