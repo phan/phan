@@ -6423,6 +6423,7 @@ class UnionType implements Serializable, Stringable
         }
         $new_type = clone($this);
         $new_type->real_type_set = $real_type_set;
+        $new_type->clampLargeTypeSets();
         return $new_type;
     }
 
@@ -6444,6 +6445,7 @@ class UnionType implements Serializable, Stringable
         }
         $new_type = clone($this);
         $new_type->real_type_set = $real_type_set;
+        $new_type->clampLargeTypeSets();
         return $new_type;
     }
 
