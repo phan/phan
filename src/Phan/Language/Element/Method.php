@@ -1152,44 +1152,44 @@ class Method extends ClassElement implements FunctionInterface
                 }
             }
 
-            // Map the parameters' PHPDoc types as well
-            // (the final union type may not have been computed yet)
-            if ($comment = $method->getComment()) {
-                $needs_template_substitution = false;
-                foreach ($comment->getParameterList() as $comment_param) {
-                    if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                        $needs_template_substitution = true;
-                        break;
-                    }
-                }
-                if (!$needs_template_substitution) {
-                    foreach ($comment->getParameterMap() as $comment_param) {
-                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                            $needs_template_substitution = true;
-                            break;
-                        }
-                    }
-                }
-                if ($needs_template_substitution) {
-                    $comment = clone($comment);
-                    foreach ($comment->getAndMutateParameters() as &$comment_param) {
-                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                            $comment_param = clone($comment_param);
-                            // @phan-suppress-next-line PhanAccessMethodInternal
-                            $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
-                            $comment_param->setUnionType($new_union_type);
-                        }
-                    }
-                    unset($comment_param);
-                    $method->setComment($comment);
-                }
-            }
-
             if ($cache_key !== '') {
                 $this->template_clone_cache[$cache_key] = [
                     'return_union_type' => $return_union_type,
                     'parameter_union_types' => $parameter_union_types,
                 ];
+            }
+        }
+
+        // Map the parameters' PHPDoc types as well
+        // (the final union type may not have been computed yet)
+        if ($comment = $method->getComment()) {
+            $needs_template_substitution = false;
+            foreach ($comment->getParameterList() as $comment_param) {
+                if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                    $needs_template_substitution = true;
+                    break;
+                }
+            }
+            if (!$needs_template_substitution) {
+                foreach ($comment->getParameterMap() as $comment_param) {
+                    if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                        $needs_template_substitution = true;
+                        break;
+                    }
+                }
+            }
+            if ($needs_template_substitution) {
+                $comment = clone($comment);
+                foreach ($comment->getAndMutateParameters() as &$comment_param) {
+                    if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                        $comment_param = clone($comment_param);
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                        $comment_param->setUnionType($new_union_type);
+                    }
+                }
+                unset($comment_param);
+                $method->setComment($comment);
             }
         }
 
