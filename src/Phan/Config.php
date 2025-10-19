@@ -199,6 +199,17 @@ class Config
         // (e.g. `'@Test\.php$@'`, or `'@vendor/.*/(tests|Tests)/@'`)
         'exclude_file_regex' => '',
 
+        // Maximum number of literal array elements that ASTSimplifier keeps from a single array level
+        // before trimming large arrays down to a representative subset.
+        'ast_trim_max_elements_per_level' => 256,
+
+        // Maximum total number of literal array entries that ASTSimplifier keeps while summarizing nested arrays.
+        'ast_trim_max_total_elements' => 512,
+
+        // Maximum number of distinct types that may be tracked in a union before Phan summarizes it to generic
+        // array/mixed types to conserve memory.
+        'max_union_type_set_size' => 1024,
+
         // A list of files that will be excluded from parsing and analysis
         // and will not be read at all.
         //

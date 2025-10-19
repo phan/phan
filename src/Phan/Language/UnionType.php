@@ -128,6 +128,81 @@ class UnionType implements Serializable, Stringable
      */
     private $real_type_set;
 
+    private function clampLargeTypeSets(): void
+    {
+        if (\count($this->type_set) > self::getMaxTypeSetSize()) {
+            [$this->type_set] = self::summarizeLargeTypeSet($this->type_set);
+        }
+        if (\count($this->real_type_set) > self::getMaxTypeSetSize()) {
+            [$this->real_type_set] = self::summarizeLargeTypeSet($this->real_type_set);
+        }
+    }
+
+    /**
+     * @param list<Type> $type_list
+     * @return array{0:list<Type>,1:bool}
+     */
+    private static function summarizeLargeTypeSet(array $type_list): array
+    {
+        $max_size = self::getMaxTypeSetSize();
+
+        if (\count($type_list) <= $max_size) {
+            return [$type_list, false];
+        }
+
+        $non_array_types = [];
+        $has_nullable_array = false;
+        $has_non_nullable_array = false;
+        $has_null = false;
+
+        foreach ($type_list as $type) {
+            if ($type instanceof ArrayType) {
+                if ($type->isNullable()) {
+                    $has_nullable_array = true;
+                } else {
+                    $has_non_nullable_array = true;
+                }
+                continue;
+            }
+            if ($type instanceof NullType) {
+                $has_null = true;
+            }
+            $non_array_types[] = $type;
+        }
+
+        if (\count($non_array_types) > $max_size) {
+            $result = [MixedType::instance(false)];
+            if ($has_nullable_array) {
+                $result[] = ArrayType::instance(true);
+            } elseif ($has_non_nullable_array) {
+                $result[] = ArrayType::instance(false);
+            }
+            if ($has_null) {
+                $result[] = NullType::instance(false);
+            }
+            return [self::getUniqueTypes($result), true];
+        }
+
+        if ($has_nullable_array) {
+            $non_array_types[] = ArrayType::instance(true);
+        } elseif ($has_non_nullable_array) {
+            $non_array_types[] = ArrayType::instance(false);
+        }
+
+        $non_array_types = self::getUniqueTypes($non_array_types);
+        if (\count($non_array_types) > $max_size) {
+            $non_array_types = [MixedType::instance(false)];
+        }
+
+        return [$non_array_types, true];
+    }
+
+    private static function getMaxTypeSetSize(): int
+    {
+        $value = (int)Config::getValue('max_union_type_set_size');
+        return $value > 0 ? $value : 1;
+    }
+
     /**
      * @param list<Type> $type_list
      * An optional list of types represented by this union
@@ -140,6 +215,7 @@ class UnionType implements Serializable, Stringable
     {
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
         $this->real_type_set = ($is_unique || \count($real_type_set) <= 1) ? $real_type_set : self::getUniqueTypes($real_type_set);
+        $this->clampLargeTypeSets();
     }
 
     /**

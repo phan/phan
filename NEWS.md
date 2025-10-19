@@ -11,6 +11,10 @@ Breaking changes:
 - Dropped the `backward_compatibility_checks` config option, along with its respective `--backward-compatibility-checks` and `-b` CLI flags
 
 New features (Analysis):
+- Large literal arrays are now summarized to representative samples during parsing, significantly reducing peak memory when analyzing massive datasets.
+  - Default limits can be tuned via the new config options `ast_trim_max_elements_per_level` (default 256) and `ast_trim_max_total_elements` (default 512).
+- Union types are automatically clamped once they exceed `max_union_type_set_size` (default 1024), preventing runaway growth from deeply nested array merges while keeping type inference useful.
+- These trim/clamp thresholds are also exposed as CLI flags (`--ast-trim-max-elements-per-level`, `--ast-trim-max-total-elements`, `--max-union-type-set-size`) for easy experimentation without editing config files.
 - Detect implicit float-to-int conversion in modulo operator (deprecated in PHP 8.1)
   - New issue type: PhanTypeInvalidModuloOperand
   - Warns when float types are used with the modulo (%) operator

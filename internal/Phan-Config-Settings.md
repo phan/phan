@@ -1018,3 +1018,27 @@ A lower value such as 50 works for suggesting misspelled classes/constants in na
 but won't give you suggestions for globally namespaced functions.
 
 (Default: `1000`)
+
+# misc
+
+TODO: Document config category misc (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
+
+## ast_trim_max_elements_per_level
+
+Maximum number of literal array elements that ASTSimplifier keeps from a single array level
+before trimming large arrays down to a representative subset.
+
+(Default: `256`)
+
+## ast_trim_max_total_elements
+
+Maximum total number of literal array entries that ASTSimplifier keeps while summarizing nested arrays.
+
+(Default: `512`)
+
+## max_union_type_set_size
+
+Maximum number of distinct types that may be tracked in a union before Phan summarizes it to generic
+array/mixed types to conserve memory.
+
+(Default: `1024`)
