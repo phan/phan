@@ -14,7 +14,6 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
-use Phan\Language\Element\Parameter;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
@@ -1173,7 +1172,7 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 if ($needs_template_substitution) {
                     $comment = clone($comment);
-                    foreach ($comment->getAndMutateParameters() as $index => &$comment_param) {
+                    foreach ($comment->getAndMutateParameters() as &$comment_param) {
                         if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
                             $comment_param = clone($comment_param);
                             // @phan-suppress-next-line PhanAccessMethodInternal
