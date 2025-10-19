@@ -1115,7 +1115,12 @@ class Method extends ClassElement implements FunctionInterface
 
         $cache_key = self::templateTypeMapCacheKey($template_type_map);
         if ($cache_key !== '' && isset($this->template_clone_cache[$cache_key])) {
-            return clone $this->template_clone_cache[$cache_key];
+            $cached_method = clone $this->template_clone_cache[$cache_key];
+            $cached_method->cloneParameterList();
+            if ($comment = $cached_method->getComment()) {
+                $cached_method->setComment(clone $comment);
+            }
+            return $cached_method;
         }
 
         // Map the method's return type
@@ -1173,7 +1178,12 @@ class Method extends ClassElement implements FunctionInterface
         $method->checkForTemplateTypes();
 
         if ($cache_key !== '') {
-            $this->template_clone_cache[$cache_key] = clone $method;
+            $cached_method = clone $method;
+            $cached_method->cloneParameterList();
+            if ($cached_comment = $cached_method->getComment()) {
+                $cached_method->setComment(clone $cached_comment);
+            }
+            $this->template_clone_cache[$cache_key] = $cached_method;
         }
 
         return $method;
