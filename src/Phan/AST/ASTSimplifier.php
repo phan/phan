@@ -396,6 +396,9 @@ class ASTSimplifier
             return [$array_node, 0, false];
         }
         if ($budget <= 0) {
+            if (self::arrayHasPossibleSideEffects($array_node)) {
+                return [$array_node, 0, false];
+            }
             if (!$array_node->children) {
                 return [$array_node, 0, false];
             }
@@ -459,6 +462,19 @@ class ASTSimplifier
             return true;
         }
         return !self::isExpressionWithoutSideEffects($element->children['value'] ?? null);
+    }
+
+    private static function arrayHasPossibleSideEffects(Node $array_node): bool
+    {
+        if ($array_node->kind !== ast\AST_ARRAY) {
+            return false;
+        }
+        foreach ($array_node->children as $child) {
+            if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
