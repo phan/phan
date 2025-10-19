@@ -43,7 +43,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     private static bool $handling_real_parameter_list = false;
 
-    /** @var array<string,array{return_union_type:?UnionType,parameter_union_types:array<int,UnionType>}> caches template substitutions keyed by normalized template map */
+    /** @var array<string,self> caches template-substituted methods keyed by normalized template map */
     private array $template_clone_cache = [];
 
     /**
@@ -1115,86 +1115,66 @@ class Method extends ClassElement implements FunctionInterface
 
         $cache_key = self::templateTypeMapCacheKey($template_type_map);
         if ($cache_key !== '' && isset($this->template_clone_cache[$cache_key])) {
-            $cached = $this->template_clone_cache[$cache_key];
-            if ($cached['return_union_type'] instanceof UnionType) {
-                $method->setUnionType($cached['return_union_type']);
-            }
-            if ($cached['parameter_union_types']) {
-                $parameter_list = $method->getParameterList();
-                /** @phan-var array<int,\Phan\Language\Element\Parameter> $parameter_list */
-                foreach ($cached['parameter_union_types'] as $index => $union_type) {
-                    if (!\is_int($index) || !isset($parameter_list[$index])) {
-                        continue;
-                    }
-                    $parameter_list[$index]->setUnionType($union_type);
-                }
-            }
-        } else {
-            // Map the method's return type
-            $return_union_type = null;
-            if ($method->getUnionType()->hasTemplateTypeRecursive()) {
-                $new_union_type = $method->getUnionType()->withTemplateParameterTypeMap($template_type_map);
-                if ($new_union_type !== $method->getUnionType()) {
-                    $method->setUnionType($new_union_type);
-                    $return_union_type = $new_union_type;
-                }
-            }
+            return clone $this->template_clone_cache[$cache_key];
+        }
 
-            // Map each method parameter
-            // Note: We've already cloned the parameter list above, so we can mutate them
-            $parameter_union_types = [];
-            foreach ($method->getParameterList() as $index => $parameter) {
-                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                    $new_union_type = $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map);
-                    if ($new_union_type !== $parameter->getUnionType()) {
-                        $parameter->setUnionType($new_union_type);
-                        $parameter_union_types[$index] = $new_union_type;
-                    }
+        // Map the method's return type
+        if ($method->getUnionType()->hasTemplateTypeRecursive()) {
+            $new_union_type = $method->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+            if ($new_union_type !== $method->getUnionType()) {
+                $method->setUnionType($new_union_type);
+            }
+        }
+
+        // Map each method parameter
+        // Note: We've already cloned the parameter list above, so we can mutate them
+        foreach ($method->getParameterList() as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                $new_union_type = $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                if ($new_union_type !== $parameter->getUnionType()) {
+                    $parameter->setUnionType($new_union_type);
                 }
             }
+        }
 
-            // Map the parameters' PHPDoc types as well
-            // (the final union type may not have been computed yet)
-            if ($comment = $method->getComment()) {
-                $needs_template_substitution = false;
-                foreach ($comment->getParameterList() as $comment_param) {
+        // Map the parameters' PHPDoc types as well
+        // (the final union type may not have been computed yet)
+        if ($comment = $method->getComment()) {
+            $needs_template_substitution = false;
+            foreach ($comment->getParameterList() as $comment_param) {
+                if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                    $needs_template_substitution = true;
+                    break;
+                }
+            }
+            if (!$needs_template_substitution) {
+                foreach ($comment->getParameterMap() as $comment_param) {
                     if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
                         $needs_template_substitution = true;
                         break;
                     }
                 }
-                if (!$needs_template_substitution) {
-                    foreach ($comment->getParameterMap() as $comment_param) {
-                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                            $needs_template_substitution = true;
-                            break;
-                        }
-                    }
-                }
-                if ($needs_template_substitution) {
-                    $comment = clone($comment);
-                    foreach ($comment->getAndMutateParameters() as &$comment_param) {
-                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                            $comment_param = clone($comment_param);
-                            $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
-                            $comment_param->setUnionType($new_union_type);
-                        }
-                    }
-                    unset($comment_param);
-                    $method->setComment($comment);
-                }
             }
-
-            if ($cache_key !== '') {
-                $this->template_clone_cache[$cache_key] = [
-                    'return_union_type' => $return_union_type,
-                    'parameter_union_types' => $parameter_union_types,
-                ];
+            if ($needs_template_substitution) {
+                $comment = clone($comment);
+                foreach ($comment->getAndMutateParameters() as &$comment_param) {
+                    if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                        $comment_param = clone($comment_param);
+                        $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                        $comment_param->setUnionType($new_union_type);
+                    }
+                }
+                unset($comment_param);
+                $method->setComment($comment);
             }
         }
 
         // We may have removed all template types, check if we still need to treat this method as generic
         $method->checkForTemplateTypes();
+
+        if ($cache_key !== '') {
+            $this->template_clone_cache[$cache_key] = clone $method;
+        }
 
         return $method;
     }
