@@ -14,7 +14,6 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
-use Phan\Language\Element\Parameter;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
@@ -48,9 +47,8 @@ class Method extends ClassElement implements FunctionInterface
      *     return_union_type:?UnionType,
      *     parameter_union_types:array<int,UnionType>,
      *     comment_param_union_types:array<int,UnionType>
-     * }>
+     * }> caches template substitutions keyed by normalized template map
      */
-    /** @var array<string,array<string,mixed>> caches template substitutions keyed by normalized template map */
     private array $template_clone_cache = [];
 
     /**
@@ -1128,7 +1126,7 @@ class Method extends ClassElement implements FunctionInterface
             }
             if ($cached['parameter_union_types']) {
                 $parameter_list = $method->getParameterList();
-                /** @phan-var array<int,Parameter> $parameter_list */
+                /** @phan-var array<int,\Phan\Language\Element\Parameter> $parameter_list */
                 foreach ($cached['parameter_union_types'] as $index => $union_type) {
                     if (!\is_int($index) || !isset($parameter_list[$index])) {
                         continue;
@@ -1140,13 +1138,16 @@ class Method extends ClassElement implements FunctionInterface
                 $comment = $method->getComment();
                 if ($comment) {
                     $comment = clone($comment);
-                    foreach ($comment->getAndMutateParameters() as $index => &$comment_param) {
-                        if (!isset($cached['comment_param_union_types'][$index])) {
+                    $i = 0;
+                    foreach ($comment->getAndMutateParameters() as &$comment_param) {
+                        if (!isset($cached['comment_param_union_types'][$i])) {
+                            $i++;
                             continue;
                         }
                         $comment_param = clone($comment_param);
                         // @phan-suppress-next-line PhanAccessMethodInternal
-                        $comment_param->setUnionType($cached['comment_param_union_types'][$index]);
+                        $comment_param->setUnionType($cached['comment_param_union_types'][$i]);
+                        $i++;
                     }
                     unset($comment_param);
                     $method->setComment($comment);
@@ -1197,14 +1198,16 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 if ($needs_template_substitution) {
                     $comment = clone($comment);
-                    foreach ($comment->getAndMutateParameters() as $index => &$comment_param) {
+                    $i = 0;
+                    foreach ($comment->getAndMutateParameters() as &$comment_param) {
                         if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
                             $comment_param = clone($comment_param);
                             // @phan-suppress-next-line PhanAccessMethodInternal
                             $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
                             $comment_param->setUnionType($new_union_type);
-                            $comment_param_union_types[$index] = $new_union_type;
+                            $comment_param_union_types[$i] = $new_union_type;
                         }
+                        $i++;
                     }
                     unset($comment_param);
                     $method->setComment($comment);
