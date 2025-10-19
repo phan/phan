@@ -42,6 +42,39 @@ class Method extends ClassElement implements FunctionInterface
      */
     private static bool $handling_real_parameter_list = false;
 
+    /** @var array<string,int> aggregate counts of template clone requests per defining FQSEN when profiling is enabled */
+    private static array $template_clone_counts = [];
+
+    /** @var array<int,int> frequency of template maps by entry count when profiling is enabled */
+    private static array $template_clone_map_sizes = [];
+
+    /** Total number of template clone attempts recorded when profiling is enabled */
+    private static int $template_clone_total = 0;
+
+    /** Number of recorded template clone attempts that had an empty template map */
+    private static int $template_clone_empty_map = 0;
+
+    /** Tracks whether the shutdown handler for dumping template clone stats was registered */
+    private static bool $template_clone_stats_registered = false;
+
+    /** Number of clone requests that skipped substitution because no template types were present */
+    private static int $template_clone_no_template = 0;
+
+    /** Number of clone requests that reused cached substitution results */
+    private static int $template_clone_cache_hits = 0;
+
+    /** @var array<string,array<string,bool>> */
+    private static array $template_clone_unique_map_keys = [];
+
+    /**
+     * @var array<string,array{
+     *     return_union_type:?UnionType,
+     *     parameter_union_types:array<int,UnionType>,
+     *     comment_param_union_types:array<int,UnionType>
+     * }>
+     */
+    private array $template_clone_cache = [];
+
     /**
      * @var ?FullyQualifiedMethodName If this was originally defined in a trait, this is the trait's defining fqsen.
      * This is tracked separately from getDefiningFQSEN() in order to not break access checks on protected/private methods.
@@ -132,6 +165,7 @@ class Method extends ClassElement implements FunctionInterface
     public function __clone()
     {
         $this->setInternalScope(clone($this->getInternalScope()));
+        $this->template_clone_cache = [];
     }
 
     /**
@@ -244,6 +278,22 @@ class Method extends ClassElement implements FunctionInterface
         if ($is_overridden_by_another && $fqsen) {
             $this->method_overrides->offsetSet($fqsen);
         }
+    }
+
+    /**
+     * @param array<string,UnionType> $template_type_map
+     */
+    private static function templateTypeMapCacheKey(array $template_type_map): string
+    {
+        if ($template_type_map === []) {
+            return '';
+        }
+        \ksort($template_type_map);
+        $parts = [];
+        foreach ($template_type_map as $name => $type) {
+            $parts[] = $name . ':' . $type->generateUniqueId();
+        }
+        return \implode('|', $parts);
     }
 
     /**
@@ -689,6 +739,90 @@ class Method extends ClassElement implements FunctionInterface
         return $method;
     }
 
+    /**
+     * @param array<string,UnionType> $template_type_map
+     */
+    private static function recordTemplateCloneStat(array $template_type_map, Method $method): void
+    {
+        if (!self::$template_clone_stats_registered) {
+            self::$template_clone_stats_registered = true;
+            \register_shutdown_function([self::class, 'dumpTemplateCloneStats']);
+        }
+        self::$template_clone_total++;
+        if ($template_type_map === []) {
+            self::$template_clone_empty_map++;
+        }
+        $size = \count($template_type_map);
+        self::$template_clone_map_sizes[$size] = (self::$template_clone_map_sizes[$size] ?? 0) + 1;
+        $fqsen = (string)$method->getFQSEN();
+        self::$template_clone_counts[$fqsen] = (self::$template_clone_counts[$fqsen] ?? 0) + 1;
+        if ($size > 0) {
+            $key = self::templateTypeMapCacheKey($template_type_map);
+            if ($key !== '') {
+                self::$template_clone_unique_map_keys[$fqsen][$key] = true;
+            }
+        }
+    }
+
+    public static function dumpTemplateCloneStats(): void
+    {
+        if (!self::$template_clone_stats_registered || self::$template_clone_total === 0) {
+            return;
+        }
+
+        $total = self::$template_clone_total;
+        \fwrite(
+            \STDERR,
+            \sprintf(
+                "[phan] template clone stats: total=%d empty_map=%d no_template=%d cache_hits=%d%s",
+                $total,
+                self::$template_clone_empty_map,
+                self::$template_clone_no_template,
+                self::$template_clone_cache_hits,
+                \PHP_EOL
+            )
+        );
+
+        if (self::$template_clone_map_sizes) {
+            $sizes = self::$template_clone_map_sizes;
+            \ksort($sizes);
+            foreach ($sizes as $size => $count) {
+                \fwrite(\STDERR, \sprintf(
+                    "  map_size=%d count=%d (%.2f%%)%s",
+                    $size,
+                    $count,
+                    $count * 100 / $total,
+                    \PHP_EOL
+                ));
+            }
+        }
+
+        if (self::$template_clone_counts) {
+            $counts = self::$template_clone_counts;
+            \arsort($counts);
+            $top = \array_slice($counts, 0, 20, true);
+            \fwrite(\STDERR, "  top template clone requestors:" . \PHP_EOL);
+            foreach ($top as $fqsen => $count) {
+                $unique = isset(self::$template_clone_unique_map_keys[$fqsen]) ? \count(self::$template_clone_unique_map_keys[$fqsen]) : 0;
+                \fwrite(\STDERR, \sprintf(
+                    "    %s => %d (%.2f%%)%s",
+                    $fqsen,
+                    $count,
+                    $count * 100 / $total,
+                    \PHP_EOL
+                ));
+                if ($unique > 0) {
+                    \fwrite(\STDERR, \sprintf(
+                        "      unique_template_maps=%d%s",
+                        $unique,
+                        \PHP_EOL
+                    ));
+                }
+            }
+        }
+        self::$template_clone_unique_map_keys = [];
+    }
+
     private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
         $new_type = $comment_return_union_type;
@@ -1083,42 +1217,116 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
     {
+        if (Config::getValue('dump_template_clone_stats')) {
+            self::recordTemplateCloneStat($template_type_map, $this);
+        }
+
         $method = clone($this);
 
         // Clone the parameter list, so that modifying the parameters won't modify the others.
         $method->cloneParameterList();
 
-        // Map the method's return type
-        if ($method->getUnionType()->hasTemplateTypeRecursive()) {
-            $method->setUnionType(
-                $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
-            );
+        if ($template_type_map === [] || !$this->hasTemplateType()) {
+            self::$template_clone_no_template++;
+            return $method;
         }
 
-        // Map each method parameter
-        // Note: We've already cloned the parameter list above, so we can mutate them
-        foreach ($method->getParameterList() as $parameter) {
-            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
-                $parameter->setUnionType(
-                    $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map)
-                );
+        $cache_key = self::templateTypeMapCacheKey($template_type_map);
+        if ($cache_key !== '' && isset($this->template_clone_cache[$cache_key])) {
+            self::$template_clone_cache_hits++;
+            $cached = $this->template_clone_cache[$cache_key];
+            if ($cached['return_union_type'] instanceof UnionType) {
+                $method->setUnionType($cached['return_union_type']);
             }
-        }
-
-        // Map the parameters' PHPDoc types as well
-        // (the final union type may not have been computed yet)
-        if ($comment = $method->getComment()) {
-            $comment = clone($comment);
-            foreach ($comment->getAndMutateParameters() as &$comment_param) {
-                if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
-                    $comment_param = clone($comment_param);
-                    // @phan-suppress-next-line PhanAccessMethodInternal
-                    $comment_param->setUnionType(
-                        $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map)
-                    );
+            if ($cached['parameter_union_types']) {
+                $parameter_list = $method->getParameterList();
+                foreach ($cached['parameter_union_types'] as $index => $union_type) {
+                    if (isset($parameter_list[$index])) {
+                        $parameter_list[$index]->setUnionType($union_type);
+                    }
                 }
             }
-            $method->setComment($comment);
+            if ($cached['comment_param_union_types']) {
+                $comment = $method->getComment();
+                if ($comment) {
+                    $comment = clone($comment);
+                    foreach ($comment->getAndMutateParameters() as $index => &$comment_param) {
+                        if (!isset($cached['comment_param_union_types'][$index])) {
+                            continue;
+                        }
+                        $comment_param = clone($comment_param);
+                        $comment_param->setUnionType($cached['comment_param_union_types'][$index]);
+                    }
+                    unset($comment_param);
+                    $method->setComment($comment);
+                }
+            }
+        } else {
+            // Map the method's return type
+            $return_union_type = null;
+            if ($method->getUnionType()->hasTemplateTypeRecursive()) {
+                $new_union_type = $method->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                if ($new_union_type !== $method->getUnionType()) {
+                    $method->setUnionType($new_union_type);
+                    $return_union_type = $new_union_type;
+                }
+            }
+
+            // Map each method parameter
+            // Note: We've already cloned the parameter list above, so we can mutate them
+            $parameter_union_types = [];
+            foreach ($method->getParameterList() as $index => $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $new_union_type = $parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                    if ($new_union_type !== $parameter->getUnionType()) {
+                        $parameter->setUnionType($new_union_type);
+                        $parameter_union_types[$index] = $new_union_type;
+                    }
+                }
+            }
+
+            // Map the parameters' PHPDoc types as well
+            // (the final union type may not have been computed yet)
+            $comment_param_union_types = [];
+            if ($comment = $method->getComment()) {
+                $needs_template_substitution = false;
+                foreach ($comment->getParameterList() as $comment_param) {
+                    if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                        $needs_template_substitution = true;
+                        break;
+                    }
+                }
+                if (!$needs_template_substitution) {
+                    foreach ($comment->getParameterMap() as $comment_param) {
+                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                            $needs_template_substitution = true;
+                            break;
+                        }
+                    }
+                }
+                if ($needs_template_substitution) {
+                    $comment = clone($comment);
+                    foreach ($comment->getAndMutateParameters() as $index => &$comment_param) {
+                        if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                            $comment_param = clone($comment_param);
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $new_union_type = $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+                            $comment_param->setUnionType($new_union_type);
+                            $comment_param_union_types[$index] = $new_union_type;
+                        }
+                    }
+                    unset($comment_param);
+                    $method->setComment($comment);
+                }
+            }
+
+            if ($cache_key !== '') {
+                $this->template_clone_cache[$cache_key] = [
+                    'return_union_type' => $return_union_type,
+                    'parameter_union_types' => $parameter_union_types,
+                    'comment_param_union_types' => $comment_param_union_types,
+                ];
+            }
         }
 
         // We may have removed all template types, check if we still need to treat this method as generic

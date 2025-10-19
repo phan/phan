@@ -1948,11 +1948,16 @@ class Clazz extends AddressableElement
             // If we have a parent type defined, map the method's
             // return type and parameter types through it
             if ($type_option->isDefined()) {
-                $method = $method->cloneWithTemplateParameterTypeMap(
-                    $type_option->get()->getTemplateParameterTypeMap($code_base)
-                );
+                $template_type_map = $type_option->get()->getTemplateParameterTypeMap($code_base);
+                if ($template_type_map) {
+                    $method = $method->cloneWithTemplateParameterTypeMap($template_type_map);
+                } else {
+                    $method = clone($method);
+                    $method->cloneParameterList();
+                }
             } else {
                 $method = clone($method);
+                $method->cloneParameterList();
             }
 
             $method->setFQSEN($method_fqsen);
@@ -3377,9 +3382,13 @@ class Clazz extends AddressableElement
                 // This is necessary because adaptInheritedMethodFromTrait changes the FQSEN,
                 // which would prevent template resolution in addMethod
                 if ($type_option->isDefined()) {
-                    $method = $method->cloneWithTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap($code_base)
-                    );
+                    $template_type_map = $type_option->get()->getTemplateParameterTypeMap($code_base);
+                    if ($template_type_map) {
+                        $method = $method->cloneWithTemplateParameterTypeMap($template_type_map);
+                    } else {
+                        $method = clone($method);
+                        $method->cloneParameterList();
+                    }
                 }
                 $method = $this->adaptInheritedMethodFromTrait($method);
             }
