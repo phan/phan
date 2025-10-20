@@ -68,6 +68,11 @@ class Method extends ClassElement implements FunctionInterface
     private $inherited_throws_union_type;
 
     /**
+     * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
+     */
+    private $overridden_methods_cache = null;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -132,6 +137,7 @@ class Method extends ClassElement implements FunctionInterface
     public function __clone()
     {
         $this->setInternalScope(clone($this->getInternalScope()));
+        $this->overridden_methods_cache = null;
     }
 
     /**
@@ -817,6 +823,9 @@ class Method extends ClassElement implements FunctionInterface
     public function getOverriddenMethods(
         CodeBase $code_base
     ): array {
+        if ($this->overridden_methods_cache !== null) {
+            return $this->overridden_methods_cache;
+        }
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -861,7 +870,7 @@ class Method extends ClassElement implements FunctionInterface
         $method_list = \array_merge($abstract_method_list, $method_list);
         // Give up on throwing exceptions if this method doesn't override anything.
         // Mixins and traits result in too many edge cases: https://github.com/phan/phan/issues/3796
-        return $method_list;
+        return $this->overridden_methods_cache = $method_list;
     }
 
     /**
