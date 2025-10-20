@@ -11540,7 +11540,7 @@ return [
 'array_change_key_case' => ['associative-array', 'array'=>'array', 'case='=>'int'],
 'array_chunk' => ['list<array>', 'array'=>'array', 'length'=>'int', 'preserve_keys='=>'bool'],
 'array_column' => ['array', 'array'=>'array', 'column_key'=>'?int|?string', 'index_key='=>'?int|?string'],
-'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
+'array_combine' => ['associative-array', 'keys'=>'array<int|string|null>', 'values'=>'array'],
 'array_count_values' => ['associative-array<mixed,int>', 'array'=>'array'],
 'array_diff' => ['associative-array', 'array'=>'array', 'arrays'=>'array', '...args='=>'array'],
 'array_diff_assoc' => ['associative-array', 'array'=>'array', 'arrays'=>'array', '...args='=>'array'],
