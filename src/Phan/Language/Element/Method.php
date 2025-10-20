@@ -1088,6 +1088,10 @@ class Method extends ClassElement implements FunctionInterface
         // Clone the parameter list, so that modifying the parameters won't modify the others.
         $method->cloneParameterList();
 
+        if (!$template_type_map) {
+            return $method;
+        }
+
         // Map the method's return type
         if ($method->getUnionType()->hasTemplateTypeRecursive()) {
             $method->setUnionType(

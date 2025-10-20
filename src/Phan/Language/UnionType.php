@@ -1163,6 +1163,9 @@ class UnionType implements Serializable, Stringable
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this;
+        }
         $has_template = false;
         $concrete_type_list = [];
         foreach ($this->type_set as $type) {

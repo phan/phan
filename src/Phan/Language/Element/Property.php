@@ -645,6 +645,10 @@ class Property extends ClassElement
     {
         $property = clone($this);
 
+        if (!$template_type_map) {
+            return $property;
+        }
+
         if (
             !$property->hasUnresolvedFutureUnionType()
             && $property->getUnionType()->hasTemplateTypeRecursive()

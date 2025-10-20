@@ -554,6 +554,9 @@ final class IntersectionType extends Type
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         return $this->mapTypeParts(static function (Type $part) use ($template_parameter_type_map): Type {
             $mapped = $part->withTemplateParameterTypeMap($template_parameter_type_map);
             return $mapped->typeCount() === 1 ? $mapped->getTypeSet()[0] : $part;

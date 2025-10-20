@@ -158,6 +158,9 @@ final class GenericIterableType extends IterableType
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         $new_key_type = $this->key_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
         $new_element_type = $this->element_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_element_type === $this->element_union_type &&

@@ -678,6 +678,9 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         $element_type = $this->genericArrayElementUnionType();
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($element_type === $new_element_type) {
