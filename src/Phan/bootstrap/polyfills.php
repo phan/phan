@@ -14,3 +14,8 @@ if (!function_exists('phan_unique_types')) {
 if (!function_exists('phan_unique_union_id')) {
     require __DIR__ . '/../polyfills/phan_unique_union_id.php';
 }
+
+if (!function_exists('phan_array_shape_cache_key')) {
+    require __DIR__ . '/../polyfills/phan_array_shape_cache_key.php';
+}
+

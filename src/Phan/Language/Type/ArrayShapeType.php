@@ -530,12 +530,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // TODO: Investigate if caching makes this any more efficient?
         static $cache = [];
 
-        $key_parts = [];
-        foreach ($field_types as $key => $field_union_type) {
-            $key_parts[$key] = $field_union_type->generateUniqueId();
-        }
-        // NOTE: Use serialize instead of json_encode, because json_encode will fail for invalid utf-8
-        $key = \serialize($key_parts) . ($is_nullable ? '?' : '');
+        $key = \phan_array_shape_cache_key($field_types, $is_nullable);
 
         return $cache[$key] ?? ($cache[$key] = new self($field_types, $is_nullable));
     }
