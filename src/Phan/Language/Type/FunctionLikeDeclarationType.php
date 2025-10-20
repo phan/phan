@@ -79,6 +79,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      * @var bool
      */
     private $is_variadic;
+
+    /**
+     * @var bool set to true once ParameterTypesAnalyzer has run for this declaration type.
+     */
+    private $parameter_types_analyzed = false;
     // end computed properties
 
     /**
@@ -647,6 +652,21 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function setParameterList(array $parameter_list): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function resetParameterTypesAnalysis(): void
+    {
+        $this->parameter_types_analyzed = false;
+    }
+
+    public function markParameterTypesAnalyzed(): void
+    {
+        $this->parameter_types_analyzed = true;
+    }
+
+    public function hasParameterTypesBeenAnalyzed(): bool
+    {
+        return $this->parameter_types_analyzed;
     }
 
     /**
