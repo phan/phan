@@ -190,14 +190,14 @@ interface FunctionInterface extends AddressableElementInterface
     public function resetParameterTypesAnalysis(): void;
 
     /**
-     * Mark that parameter types have already been analyzed for this function-like.
+     * Mark that parameter types have already been analyzed for this function-like using the given analysis hash.
      */
-    public function markParameterTypesAnalyzed(): void;
+    public function markParameterTypesAnalyzed(string $analysis_hash): void;
 
     /**
-     * True if parameter type analysis has already been performed for this function-like.
+     * True if parameter type analysis has already been performed for this function-like with the same analysis hash.
      */
-    public function hasParameterTypesBeenAnalyzed(): bool;
+    public function hasParameterTypesBeenAnalyzed(string $analysis_hash): bool;
 
     /**
      * @internal - moves real parameter defaults to the inferred phpdoc parameters

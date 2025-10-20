@@ -241,7 +241,8 @@ trait FunctionTrait
     /**
      * @var bool set to true once ParameterTypesAnalyzer has successfully run for this function-like.
      */
-    private $parameter_types_analyzed = false;
+    /** @var ?string hash of analysis inputs when parameter types were last analyzed */
+    private $parameter_types_analysis_hash = null;
 
     /**
      * @var FunctionLikeDeclarationType|null (Lazily generated representation of this as a closure type)
@@ -595,22 +596,22 @@ trait FunctionTrait
         if (\is_null($this->parameter_list_hash)) {
             $this->initParameterListInfo();
         }
-        $this->parameter_types_analyzed = false;
+        $this->parameter_types_analysis_hash = null;
     }
 
     public function resetParameterTypesAnalysis(): void
     {
-        $this->parameter_types_analyzed = false;
+        $this->parameter_types_analysis_hash = null;
     }
 
-    public function markParameterTypesAnalyzed(): void
+    public function markParameterTypesAnalyzed(string $analysis_hash): void
     {
-        $this->parameter_types_analyzed = true;
+        $this->parameter_types_analysis_hash = $analysis_hash;
     }
 
-    public function hasParameterTypesBeenAnalyzed(): bool
+    public function hasParameterTypesBeenAnalyzed(string $analysis_hash): bool
     {
-        return $this->parameter_types_analyzed;
+        return $this->parameter_types_analysis_hash === $analysis_hash;
     }
 
     /**
@@ -760,6 +761,8 @@ trait FunctionTrait
     public function appendParameter(Parameter $parameter): void
     {
         $this->parameter_list[] = $parameter;
+        $this->parameter_list_hash = null;
+        $this->parameter_types_analysis_hash = null;
     }
 
     /**
@@ -772,7 +775,7 @@ trait FunctionTrait
     {
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
-        $this->parameter_types_analyzed = false;
+        $this->parameter_types_analysis_hash = null;
     }
 
     /**
@@ -1263,6 +1266,7 @@ trait FunctionTrait
     public function setComment(Comment $comment): void
     {
         $this->comment = $comment;
+        $this->parameter_types_analysis_hash = null;
     }
 
     public function getOwnThrowsUnionType(): UnionType

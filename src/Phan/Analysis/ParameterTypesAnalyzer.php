@@ -14,6 +14,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -50,7 +51,8 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ): void {
-        if ($method->hasParameterTypesBeenAnalyzed()) {
+        $analysis_hash = self::computeAnalysisHash($code_base, $method);
+        if ($method->hasParameterTypesBeenAnalyzed($analysis_hash)) {
             return;
         }
         try {
@@ -58,7 +60,7 @@ class ParameterTypesAnalyzer
         } catch (RecursionDepthException) {
             return;
         }
-        $method->markParameterTypesAnalyzed();
+        $method->markParameterTypesAnalyzed($analysis_hash);
     }
 
     /**
@@ -258,6 +260,73 @@ class ParameterTypesAnalyzer
             $prev_name = $parameter_name;
             $prev_index = $parameter_index_in_comment;
         }
+    }
+
+    /**
+     * @return string hash representing the inputs relevant to parameter type analysis for $method.
+     */
+    private static function computeAnalysisHash(CodeBase $code_base, FunctionInterface $method): string
+    {
+        $parts = [];
+        $parts[] = 'self:' . self::hashParameterList($method->getParameterList());
+        $parts[] = 'doc:' . self::hashComment($method->getComment());
+
+        if ($method instanceof Method) {
+            $ancestor_parts = [];
+            foreach ($method->getOverriddenMethods($code_base) as $overridden_method) {
+                $ancestor_parts[] = $overridden_method->getFQSEN() . ':' .
+                    self::hashParameterList($overridden_method->getParameterList()) . ':' .
+                    self::hashComment($overridden_method->getComment());
+            }
+            if ($ancestor_parts) {
+                $parts[] = 'parents:' . \implode('|', $ancestor_parts);
+            }
+        }
+        return \md5(\implode(';', $parts));
+    }
+
+    /**
+     * @param list<Parameter> $parameters
+     */
+    private static function hashParameterList(array $parameters): string
+    {
+        if (!$parameters) {
+            return '[]';
+        }
+        $parts = [];
+        foreach ($parameters as $parameter) {
+            $parts[] = $parameter->getName() . ':' .
+                $parameter->getUnionType()->__toString() . ':' .
+                ($parameter->isOptional() ? '1' : '0') . ':' .
+                ($parameter->isVariadic() ? '1' : '0');
+        }
+        return \md5(\implode(',', $parts));
+    }
+
+    private static function hashComment(?Comment $comment): string
+    {
+        if (!$comment) {
+            return '';
+        }
+        $parts = [];
+        foreach ($comment->getParameterMap() as $name => $comment_param) {
+            $parts[] = 'map:' . $name . ':' . $comment_param->getUnionType()->__toString() . ':' .
+                ($comment_param->isVariadic() ? '1' : '0') . ':' .
+                ($comment_param->isMandatoryInPHPDoc() ? '1' : '0');
+        }
+        foreach ($comment->getParameterList() as $comment_param) {
+            $parts[] = 'list:' . $comment_param->getUnionType()->__toString();
+        }
+        foreach ($comment->getVariableList() as $comment_variable) {
+            $parts[] = 'var:' . $comment_variable->getName();
+        }
+        if ($comment->hasReturnUnionType()) {
+            $parts[] = 'return:' . $comment->getReturnType()->__toString();
+        }
+        if ($parts === []) {
+            return '';
+        }
+        return \md5(\implode('|', $parts));
     }
 
     /**

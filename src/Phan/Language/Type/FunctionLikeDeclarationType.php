@@ -80,10 +80,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     private $is_variadic;
 
-    /**
-     * @var bool set to true once ParameterTypesAnalyzer has run for this declaration type.
-     */
-    private $parameter_types_analyzed = false;
     // end computed properties
 
     /**
@@ -656,17 +652,17 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     public function resetParameterTypesAnalysis(): void
     {
-        $this->parameter_types_analyzed = false;
+        // noop for declaration types
     }
 
-    public function markParameterTypesAnalyzed(): void
+    public function markParameterTypesAnalyzed(string $analysis_hash): void
     {
-        $this->parameter_types_analyzed = true;
+        // noop for declaration types
     }
 
-    public function hasParameterTypesBeenAnalyzed(): bool
+    public function hasParameterTypesBeenAnalyzed(string $analysis_hash): bool
     {
-        return $this->parameter_types_analyzed;
+        return false;
     }
 
     /**
