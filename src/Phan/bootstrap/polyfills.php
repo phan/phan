@@ -10,3 +10,7 @@ if (!function_exists('phan_ast_hash')) {
 if (!function_exists('phan_unique_types')) {
     require __DIR__ . '/../polyfills/phan_unique_types.php';
 }
+
+if (!function_exists('phan_unique_union_id')) {
+    require __DIR__ . '/../polyfills/phan_unique_union_id.php';
+}
