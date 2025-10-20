@@ -5316,18 +5316,10 @@ class UnionType implements Serializable, Stringable
      */
     public function generateUniqueId(): string
     {
-        /** @var list<int> $ids */
-        // Real types are given negative ids, and phpdoc types are given non-negative ids.
-        $ids = [];
-        foreach ($this->real_type_set as $type) {
-            $ids[] = ~\spl_object_id($type);
-        }
-        foreach ($this->type_set as $type) {
-            $ids[] = \spl_object_id($type);
-        }
-        // Sort the unique identifiers of Type instances so that int|string generates the same id as string|int
-        \sort($ids);
-        return \implode(',', $ids);
+        return \phan_unique_union_id(
+            \array_values($this->type_set),
+            \array_values($this->real_type_set)
+        );
     }
 
     /**

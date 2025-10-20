@@ -18,3 +18,4 @@ if (!function_exists('phan_unique_union_id')) {
 if (!function_exists('phan_array_shape_cache_key')) {
     require __DIR__ . '/../polyfills/phan_array_shape_cache_key.php';
 }
+
