@@ -51,6 +51,13 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ): void {
+        if ($code_base->getUndoTracker()) {
+            try {
+                self::analyzeParameterTypesInner($code_base, $method);
+            } catch (RecursionDepthException) {
+            }
+            return;
+        }
         try {
             $analysis_hash = self::computeAnalysisHash($code_base, $method);
             if ($method->hasParameterTypesBeenAnalyzed($analysis_hash)) {
