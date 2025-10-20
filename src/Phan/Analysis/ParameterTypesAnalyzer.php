@@ -50,10 +50,15 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ): void {
+        if ($method->hasParameterTypesBeenAnalyzed()) {
+            return;
+        }
         try {
             self::analyzeParameterTypesInner($code_base, $method);
         } catch (RecursionDepthException) {
+            return;
         }
+        $method->markParameterTypesAnalyzed();
     }
 
     /**

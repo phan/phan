@@ -132,6 +132,8 @@ class Method extends ClassElement implements FunctionInterface
     public function __clone()
     {
         $this->setInternalScope(clone($this->getInternalScope()));
+        $this->overridden_methods_cache = null;
+        $this->resetParameterTypesAnalysis();
     }
 
     /**

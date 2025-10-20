@@ -239,6 +239,11 @@ trait FunctionTrait
     private $function_call_analyzer_callback_set = [];
 
     /**
+     * @var bool set to true once ParameterTypesAnalyzer has successfully run for this function-like.
+     */
+    private $parameter_types_analyzed = false;
+
+    /**
      * @var FunctionLikeDeclarationType|null (Lazily generated representation of this as a closure type)
      */
     private $as_closure_declaration_type;
@@ -590,6 +595,22 @@ trait FunctionTrait
         if (\is_null($this->parameter_list_hash)) {
             $this->initParameterListInfo();
         }
+        $this->parameter_types_analyzed = false;
+    }
+
+    public function resetParameterTypesAnalysis(): void
+    {
+        $this->parameter_types_analyzed = false;
+    }
+
+    public function markParameterTypesAnalyzed(): void
+    {
+        $this->parameter_types_analyzed = true;
+    }
+
+    public function hasParameterTypesBeenAnalyzed(): bool
+    {
+        return $this->parameter_types_analyzed;
     }
 
     /**
@@ -751,6 +772,7 @@ trait FunctionTrait
     {
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
+        $this->parameter_types_analyzed = false;
     }
 
     /**

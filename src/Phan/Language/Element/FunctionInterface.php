@@ -185,6 +185,21 @@ interface FunctionInterface extends AddressableElementInterface
     public function setParameterList(array $parameter_list): void;
 
     /**
+     * Reset the cached state that indicates parameter types have already been analyzed.
+     */
+    public function resetParameterTypesAnalysis(): void;
+
+    /**
+     * Mark that parameter types have already been analyzed for this function-like.
+     */
+    public function markParameterTypesAnalyzed(): void;
+
+    /**
+     * True if parameter type analysis has already been performed for this function-like.
+     */
+    public function hasParameterTypesBeenAnalyzed(): bool;
+
+    /**
      * @internal - moves real parameter defaults to the inferred phpdoc parameters
      */
     public function inheritRealParameterDefaults(): void;
