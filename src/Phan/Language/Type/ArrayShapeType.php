@@ -860,6 +860,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         $field_types = $this->field_types;
         foreach ($field_types as $i => $type) {
             $new_type = $type->withTemplateParameterTypeMap($template_parameter_type_map);

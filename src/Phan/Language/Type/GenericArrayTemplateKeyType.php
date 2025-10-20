@@ -45,6 +45,9 @@ class GenericArrayTemplateKeyType extends GenericArrayType
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         $element_type = $this->genericArrayElementUnionType();
         $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
         $new_key_type = $this->template_key_type->withTemplateParameterTypeMap($template_parameter_type_map);

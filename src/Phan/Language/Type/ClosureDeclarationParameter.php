@@ -142,6 +142,9 @@ final class ClosureDeclarationParameter
      */
     public function withTemplateParameterTypeMap(array $template_parameter_type_map): ClosureDeclarationParameter
     {
+        if (!$template_parameter_type_map) {
+            return $this;
+        }
         $new_type = $this->type->withTemplateParameterTypeMap($template_parameter_type_map);
         if ($new_type === $this->type) {
             return $this;

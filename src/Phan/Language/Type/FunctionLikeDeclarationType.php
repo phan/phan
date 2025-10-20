@@ -1092,6 +1092,9 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         $new_params = \array_map(static function (ClosureDeclarationParameter $param) use ($template_parameter_type_map): ClosureDeclarationParameter {
             return $param->withTemplateParameterTypeMap($template_parameter_type_map);
         }, $this->params);

@@ -4168,6 +4168,9 @@ class Type implements Stringable
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ): UnionType {
+        if (!$template_parameter_type_map) {
+            return $this->asPHPDocUnionType();
+        }
         if (!$this->template_parameter_type_list) {
             return $this->asPHPDocUnionType();
         }
