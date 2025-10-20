@@ -250,22 +250,6 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param array<string,UnionType> $template_type_map
-     */
-    private static function templateTypeMapCacheKey(array $template_type_map): string
-    {
-        if ($template_type_map === []) {
-            return '';
-        }
-        \ksort($template_type_map);
-        $parts = [];
-        foreach ($template_type_map as $name => $type) {
-            $parts[] = $name . ':' . $type->generateUniqueId();
-        }
-        return \implode('|', $parts);
-    }
-
-    /**
      * @return bool
      * True if this is an abstract method
      */
