@@ -1,0 +1,100 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "TraitDeclaration": {
+                    "attributes": null,
+                    "traitKeyword": {
+                        "kind": "TraitKeyword",
+                        "textLength": 5
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "traitMembers": {
+                        "TraitMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "traitMemberDeclarations": [
+                                {
+                                    "TraitUseClause": {
+                                        "useKeyword": {
+                                            "kind": "UseKeyword",
+                                            "textLength": 3
+                                        },
+                                        "traitNameList": {
+                                            "QualifiedNameList": {
+                                                "children": [
+                                                    {
+                                                        "QualifiedName": {
+                                                            "globalSpecifier": null,
+                                                            "relativeSpecifier": null,
+                                                            "nameParts": [
+                                                                {
+                                                                    "kind": "Name",
+                                                                    "textLength": 1
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "kind": "CommaToken",
+                                                        "textLength": 1
+                                                    },
+                                                    {
+                                                        "QualifiedName": {
+                                                            "globalSpecifier": null,
+                                                            "relativeSpecifier": null,
+                                                            "nameParts": [
+                                                                {
+                                                                    "kind": "Name",
+                                                                    "textLength": 1
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "semicolonOrOpenBrace": {
+                                            "error": "MissingToken",
+                                            "kind": "OpenBraceToken",
+                                            "textLength": 0
+                                        },
+                                        "traitSelectAndAliasClauses": null,
+                                        "closeBrace": {
+                                            "kind": "CloseBraceToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

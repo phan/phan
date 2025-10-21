@@ -1,0 +1,37 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "NamespaceDefinition": {
+                    "namespaceKeyword": {
+                        "kind": "NamespaceKeyword",
+                        "textLength": 9
+                    },
+                    "name": {
+                        "error": "MissingToken",
+                        "kind": "QualifiedName",
+                        "textLength": 0
+                    },
+                    "compoundStatementOrSemicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

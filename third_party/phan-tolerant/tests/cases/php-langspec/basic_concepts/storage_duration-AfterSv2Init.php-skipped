@@ -1,0 +1,6 @@
+/* Auto-generated from php/php-langspec tests */
+<?php
+
+  if ($p1)
+  {
+    

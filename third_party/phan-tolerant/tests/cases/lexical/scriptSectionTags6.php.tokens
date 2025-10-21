@@ -1,0 +1,22 @@
+[
+    {
+        "kind": "InlineHtml",
+        "textLength": 6
+    },
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "StringLiteralToken",
+        "textLength": 4
+    },
+    {
+        "kind": "SemicolonToken",
+        "textLength": 1
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

@@ -1,0 +1,48 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "FunctionStaticDeclaration": {
+                    "staticKeyword": {
+                        "kind": "StaticKeyword",
+                        "textLength": 6
+                    },
+                    "staticVariableNameList": {
+                        "StaticVariableNameList": {
+                            "children": [
+                                {
+                                    "StaticVariableDeclaration": {
+                                        "variableName": {
+                                            "kind": "VariableName",
+                                            "textLength": 2
+                                        },
+                                        "equalsToken": null,
+                                        "assignment": null
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

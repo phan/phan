@@ -1,0 +1,3 @@
+<?php
+b'hel
+lo'

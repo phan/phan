@@ -1,0 +1,7 @@
+parameters:
+    level: 4
+    paths:
+        - src/
+    ignoreErrors:
+        # phpstan issue, see: https://github.com/phpstan/phpstan/issues/1306
+        - "/Variable .unaryExpression might not be defined./"

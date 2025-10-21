@@ -1,0 +1,86 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "StringLiteral": {
+                                    "startQuote": {
+                                        "kind": "DoubleQuoteToken",
+                                        "textLength": 1
+                                    },
+                                    "children": [
+                                        {
+                                            "SubscriptExpression": {
+                                                "postfixExpression": {
+                                                    "Variable": {
+                                                        "dollar": null,
+                                                        "name": {
+                                                            "kind": "VariableName",
+                                                            "textLength": 4
+                                                        }
+                                                    }
+                                                },
+                                                "openBracketOrBrace": {
+                                                    "kind": "OpenBracketToken",
+                                                    "textLength": 1
+                                                },
+                                                "accessExpression": {
+                                                    "error": "MissingToken",
+                                                    "kind": "Expression",
+                                                    "textLength": 0
+                                                },
+                                                "closeBracketOrBrace": {
+                                                    "kind": "CloseBracketToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "endQuote": {
+                                        "kind": "DoubleQuoteToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

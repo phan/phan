@@ -1,0 +1,20 @@
+[
+    {
+        "kind": 0,
+        "message": "'Name' expected.",
+        "start": 53,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'VariableName' expected.",
+        "start": 164,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'ReturnType' expected.",
+        "start": 177,
+        "length": 0
+    }
+]

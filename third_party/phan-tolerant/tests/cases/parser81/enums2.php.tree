@@ -1,0 +1,199 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EnumDeclaration": {
+                    "attributes": null,
+                    "enumKeyword": {
+                        "kind": "EnumKeyword",
+                        "textLength": 4
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "colonToken": {
+                        "kind": "ColonToken",
+                        "textLength": 1
+                    },
+                    "enumType": {
+                        "kind": "IntReservedWord",
+                        "textLength": 3
+                    },
+                    "enumInterfaceClause": null,
+                    "enumMembers": {
+                        "EnumMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "enumMemberDeclarations": [
+                                {
+                                    "ClassConstDeclaration": {
+                                        "attributes": null,
+                                        "modifiers": [],
+                                        "constKeyword": {
+                                            "kind": "ConstKeyword",
+                                            "textLength": 5
+                                        },
+                                        "constElements": {
+                                            "ConstElementList": {
+                                                "children": [
+                                                    {
+                                                        "ConstElement": {
+                                                            "name": {
+                                                                "kind": "Name",
+                                                                "textLength": 1
+                                                            },
+                                                            "equalsToken": {
+                                                                "kind": "EqualsToken",
+                                                                "textLength": 1
+                                                            },
+                                                            "assignment": {
+                                                                "NumericLiteral": {
+                                                                    "children": {
+                                                                        "kind": "IntegerLiteralToken",
+                                                                        "textLength": 3
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                },
+                                {
+                                    "MethodDeclaration": {
+                                        "attributes": null,
+                                        "modifiers": [
+                                            {
+                                                "kind": "PublicKeyword",
+                                                "textLength": 6
+                                            }
+                                        ],
+                                        "functionKeyword": {
+                                            "kind": "FunctionKeyword",
+                                            "textLength": 8
+                                        },
+                                        "byRefToken": null,
+                                        "name": {
+                                            "kind": "Name",
+                                            "textLength": 4
+                                        },
+                                        "openParen": {
+                                            "kind": "OpenParenToken",
+                                            "textLength": 1
+                                        },
+                                        "parameters": null,
+                                        "closeParen": {
+                                            "kind": "CloseParenToken",
+                                            "textLength": 1
+                                        },
+                                        "colonToken": null,
+                                        "questionToken": null,
+                                        "returnTypeList": null,
+                                        "compoundStatementOrSemicolon": {
+                                            "CompoundStatementNode": {
+                                                "openBrace": {
+                                                    "kind": "OpenBraceToken",
+                                                    "textLength": 1
+                                                },
+                                                "statements": [],
+                                                "closeBrace": {
+                                                    "kind": "CloseBraceToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "EmptyStatement": {
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "FunctionDeclaration": {
+                    "attributes": null,
+                    "functionKeyword": {
+                        "kind": "FunctionKeyword",
+                        "textLength": 8
+                    },
+                    "byRefToken": null,
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 5
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "parameters": null,
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colonToken": null,
+                    "questionToken": null,
+                    "returnTypeList": null,
+                    "compoundStatementOrSemicolon": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "error": "MissingToken",
+                                "kind": "OpenBraceToken",
+                                "textLength": 0
+                            },
+                            "statements": [
+                                {
+                                    "EmptyStatement": {
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

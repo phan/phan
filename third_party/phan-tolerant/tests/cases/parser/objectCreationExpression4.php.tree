@@ -1,0 +1,71 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ObjectCreationExpression": {
+                            "newKeword": {
+                                "kind": "NewKeyword",
+                                "textLength": 3
+                            },
+                            "attributes": null,
+                            "classTypeDesignator": {
+                                "ParenthesizedExpression": {
+                                    "openParen": {
+                                        "kind": "OpenParenToken",
+                                        "textLength": 1
+                                    },
+                                    "expression": {
+                                        "StringLiteral": {
+                                            "startQuote": null,
+                                            "children": {
+                                                "kind": "StringLiteralToken",
+                                                "textLength": 3
+                                            },
+                                            "endQuote": null
+                                        }
+                                    },
+                                    "closeParen": {
+                                        "kind": "CloseParenToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "argumentExpressionList": null,
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "classBaseClause": null,
+                            "classInterfaceClause": null,
+                            "classMembers": null
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

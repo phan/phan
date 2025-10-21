@@ -1,0 +1,14 @@
+[
+    {
+        "kind": 0,
+        "message": "Unexpected 'HaltCompilerKeyword'",
+        "start": 56,
+        "length": 15
+    },
+    {
+        "kind": 0,
+        "message": "'Expression' expected.",
+        "start": 72,
+        "length": 0
+    }
+]

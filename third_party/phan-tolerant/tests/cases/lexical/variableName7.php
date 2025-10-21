@@ -1,0 +1,2 @@
+<?php
+$77function

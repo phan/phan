@@ -1,0 +1,3 @@
+<?php
+#[MyAttribute]
+function main() {}

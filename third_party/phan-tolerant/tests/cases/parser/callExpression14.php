@@ -1,0 +1,2 @@
+<?php
+(new MyClass())();

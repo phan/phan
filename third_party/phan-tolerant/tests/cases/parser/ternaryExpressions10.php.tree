@@ -1,0 +1,120 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "TernaryExpression": {
+                            "condition": {
+                                "ReservedWord": {
+                                    "children": {
+                                        "kind": "TrueReservedWord",
+                                        "textLength": 4
+                                    }
+                                }
+                            },
+                            "questionToken": {
+                                "kind": "QuestionToken",
+                                "textLength": 1
+                            },
+                            "ifExpression": {
+                                "TernaryExpression": {
+                                    "condition": {
+                                        "ReservedWord": {
+                                            "children": {
+                                                "kind": "TrueReservedWord",
+                                                "textLength": 4
+                                            }
+                                        }
+                                    },
+                                    "questionToken": {
+                                        "kind": "QuestionToken",
+                                        "textLength": 1
+                                    },
+                                    "ifExpression": {
+                                        "TernaryExpression": {
+                                            "condition": {
+                                                "ReservedWord": {
+                                                    "children": {
+                                                        "kind": "TrueReservedWord",
+                                                        "textLength": 4
+                                                    }
+                                                }
+                                            },
+                                            "questionToken": {
+                                                "kind": "QuestionToken",
+                                                "textLength": 1
+                                            },
+                                            "ifExpression": {
+                                                "ReservedWord": {
+                                                    "children": {
+                                                        "kind": "TrueReservedWord",
+                                                        "textLength": 4
+                                                    }
+                                                }
+                                            },
+                                            "colonToken": {
+                                                "kind": "ColonToken",
+                                                "textLength": 1
+                                            },
+                                            "elseExpression": {
+                                                "ReservedWord": {
+                                                    "children": {
+                                                        "kind": "FalseReservedWord",
+                                                        "textLength": 5
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "colonToken": {
+                                        "kind": "ColonToken",
+                                        "textLength": 1
+                                    },
+                                    "elseExpression": {
+                                        "ReservedWord": {
+                                            "children": {
+                                                "kind": "FalseReservedWord",
+                                                "textLength": 5
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "elseExpression": {
+                                "ReservedWord": {
+                                    "children": {
+                                        "kind": "FalseReservedWord",
+                                        "textLength": 5
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

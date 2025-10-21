@@ -1,0 +1,3 @@
+<?php
+
+goto $name;

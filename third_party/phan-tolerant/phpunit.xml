@@ -1,0 +1,65 @@
+<phpunit bootstrap="src/bootstrap.php"
+	beStrictAboutTestsThatDoNotTestAnything="false"
+	>
+  <testsuites>
+    <testsuite name="invariants">
+      <!--
+      Tests that token/tree production is "structurally" sound.
+      * INPUT: All PHP files in `tests/cases/**/`
+      * OUTPUT: TODO - output failing tests
+      -->
+      <file>tests/LexerInvariantsTest.php</file>
+      <file>tests/ParserInvariantsTest.php</file>
+    </testsuite>
+
+    <testsuite name="grammar">
+      <!--
+      Tests that we are properly implementing the grammar.
+      * INPUT: All files in `tests/cases/**/`
+      * OUTPUT: TODO - output failing tests
+      -->
+      <file>tests/LexicalGrammarTest.php</file>
+      <file>tests/ParserGrammarTest.php</file>
+    </testsuite>
+
+    <testsuite name="validation">
+      <!--
+      Validates against real-world scenarios.
+      * INPUT: All files in `validation/frameworks/<framework-name>/*`
+      * OUTPUT: Failing tests are output to `tests/output/<framework-name>`
+      -->
+      <file>tests/ParserFrameworkValidationTests.php</file>
+    </testsuite>
+
+    <testsuite name="api">
+      <file>tests/api/NodeApiTest.php</file>
+      <file>tests/api/getNodeAtPosition.php</file>
+      <file>tests/api/getResolvedName.php</file>
+      <file>tests/api/PositionUtilitiesTest.php</file>
+      <file>tests/api/TextEditTest.php</file>
+    </testsuite>
+
+    <testsuite name="performance">
+      <!-- TODO: Validates that there are no performance regressions. -->
+    </testsuite>
+  </testsuites>
+
+  <filter>
+    <!-- Code coverage whitelist. -->
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">/src/Node</directory>
+      <file>/src/Parser.php</file>
+      <file>/src/PhpTokenizer.php</file>
+    </whitelist>
+  </filter>
+
+  <php>
+    <!--
+    TODO: see if we can remove this in the future. It may be indicative of not passing things
+    by reference properly in the API.
+    https://github.com/Microsoft/tolerant-php-parser/issues/23
+    -->
+    <ini name="memory_limit" value="500M"/>
+    <ini name="assert.exception" value="1"/>
+  </php>
+</phpunit>

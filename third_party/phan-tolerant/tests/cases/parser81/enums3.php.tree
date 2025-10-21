@@ -1,0 +1,164 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EnumDeclaration": {
+                    "attributes": [
+                        {
+                            "AttributeGroup": {
+                                "startToken": {
+                                    "kind": "AttributeToken",
+                                    "textLength": 2
+                                },
+                                "attributes": {
+                                    "AttributeElementList": {
+                                        "children": [
+                                            {
+                                                "Attribute": {
+                                                    "name": {
+                                                        "QualifiedName": {
+                                                            "globalSpecifier": null,
+                                                            "relativeSpecifier": null,
+                                                            "nameParts": [
+                                                                {
+                                                                    "kind": "Name",
+                                                                    "textLength": 6
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "openParen": null,
+                                                    "argumentExpressionList": null,
+                                                    "closeParen": null
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "endToken": {
+                                    "kind": "CloseBracketToken",
+                                    "textLength": 1
+                                }
+                            }
+                        }
+                    ],
+                    "enumKeyword": {
+                        "kind": "EnumKeyword",
+                        "textLength": 4
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "colonToken": null,
+                    "enumType": null,
+                    "enumInterfaceClause": null,
+                    "enumMembers": {
+                        "EnumMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "enumMemberDeclarations": [
+                                {
+                                    "EnumCaseDeclaration": {
+                                        "attributes": null,
+                                        "caseKeyword": {
+                                            "kind": "CaseKeyword",
+                                            "textLength": 4
+                                        },
+                                        "name": {
+                                            "kind": "Name",
+                                            "textLength": 1
+                                        },
+                                        "equalsToken": null,
+                                        "assignment": null,
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                },
+                                {
+                                    "EnumCaseDeclaration": {
+                                        "attributes": [
+                                            {
+                                                "AttributeGroup": {
+                                                    "startToken": {
+                                                        "kind": "AttributeToken",
+                                                        "textLength": 2
+                                                    },
+                                                    "attributes": {
+                                                        "AttributeElementList": {
+                                                            "children": [
+                                                                {
+                                                                    "Attribute": {
+                                                                        "name": {
+                                                                            "QualifiedName": {
+                                                                                "globalSpecifier": null,
+                                                                                "relativeSpecifier": null,
+                                                                                "nameParts": [
+                                                                                    {
+                                                                                        "kind": "Name",
+                                                                                        "textLength": 11
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        "openParen": null,
+                                                                        "argumentExpressionList": null,
+                                                                        "closeParen": null
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "endToken": {
+                                                        "kind": "CloseBracketToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "caseKeyword": {
+                                            "kind": "CaseKeyword",
+                                            "textLength": 4
+                                        },
+                                        "name": {
+                                            "kind": "Name",
+                                            "textLength": 1
+                                        },
+                                        "equalsToken": null,
+                                        "assignment": null,
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

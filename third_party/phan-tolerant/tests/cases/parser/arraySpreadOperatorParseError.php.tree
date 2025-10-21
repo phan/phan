@@ -1,0 +1,210 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrayCreationExpression": {
+                            "arrayKeyword": null,
+                            "openParenOrBracket": {
+                                "kind": "OpenBracketToken",
+                                "textLength": 1
+                            },
+                            "arrayElements": {
+                                "ArrayElementList": {
+                                    "children": [
+                                        {
+                                            "ArrayElement": {
+                                                "elementKey": {
+                                                    "StringLiteral": {
+                                                        "startQuote": null,
+                                                        "children": {
+                                                            "kind": "StringLiteralToken",
+                                                            "textLength": 5
+                                                        },
+                                                        "endQuote": null
+                                                    }
+                                                },
+                                                "arrowToken": {
+                                                    "kind": "DoubleArrowToken",
+                                                    "textLength": 2
+                                                },
+                                                "byRef": null,
+                                                "dotDotDot": null,
+                                                "elementValue": {
+                                                    "error": "MissingToken",
+                                                    "kind": "Expression",
+                                                    "textLength": 0
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParenOrBracket": {
+                                "error": "MissingToken",
+                                "kind": "CloseBracketToken",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "DotDotDotToken",
+                "textLength": 3
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "Variable": {
+                            "dollar": null,
+                            "name": {
+                                "kind": "VariableName",
+                                "textLength": 5
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "CloseBracketToken",
+                "textLength": 1
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrayCreationExpression": {
+                            "arrayKeyword": {
+                                "kind": "ArrayKeyword",
+                                "textLength": 5
+                            },
+                            "openParenOrBracket": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "arrayElements": null,
+                            "closeParenOrBracket": {
+                                "error": "MissingToken",
+                                "kind": "CloseParenToken",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "DoubleArrowToken",
+                "textLength": 2
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "DotDotDotToken",
+                "textLength": 3
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrayCreationExpression": {
+                            "arrayKeyword": null,
+                            "openParenOrBracket": {
+                                "kind": "OpenBracketToken",
+                                "textLength": 1
+                            },
+                            "arrayElements": null,
+                            "closeParenOrBracket": {
+                                "kind": "CloseBracketToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "CloseParenToken",
+                "textLength": 1
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrayCreationExpression": {
+                            "arrayKeyword": null,
+                            "openParenOrBracket": {
+                                "kind": "OpenBracketToken",
+                                "textLength": 1
+                            },
+                            "arrayElements": {
+                                "ArrayElementList": {
+                                    "children": [
+                                        {
+                                            "ArrayElement": {
+                                                "elementKey": null,
+                                                "arrowToken": null,
+                                                "byRef": null,
+                                                "dotDotDot": {
+                                                    "kind": "DotDotDotToken",
+                                                    "textLength": 3
+                                                },
+                                                "elementValue": {
+                                                    "error": "MissingToken",
+                                                    "kind": "Expression",
+                                                    "textLength": 0
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParenOrBracket": {
+                                "kind": "CloseBracketToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

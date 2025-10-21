@@ -1,0 +1,137 @@
+{
+    "SourceFileNode": {
+        "scriptSectionList": [
+            {
+                "ScriptSection": {
+                    "text": {
+                        "kind": "ScriptSectionPrependedText",
+                        "textLength": 0
+                    },
+                    "startTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    },
+                    "statementList": [
+                        {
+                            "ClassNode": {
+                                "abstractOrFinalModifier": null,
+                                "classKeyword": {
+                                    "kind": "ClassKeyword",
+                                    "textLength": 5
+                                },
+                                "name": {
+                                    "kind": "Name",
+                                    "textLength": 1
+                                },
+                                "classBaseClause": null,
+                                "classInterfaceClause": null,
+                                "classMembers": {
+                                    "ClassMembersNode": {
+                                        "openBrace": {
+                                            "kind": "OpenBraceToken",
+                                            "textLength": 1
+                                        },
+                                        "classMemberDeclarations": [
+                                            {
+                                                "ClassConstDeclaration": {
+                                                    "modifiers": [],
+                                                    "constKeyword": {
+                                                        "kind": "ConstKeyword",
+                                                        "textLength": 5
+                                                    },
+                                                    "constElements": {
+                                                        "DelimitedList": {
+                                                            "children": [
+                                                                {
+                                                                    "ConstElement": {
+                                                                        "name": {
+                                                                            "kind": "Name",
+                                                                            "textLength": 1
+                                                                        },
+                                                                        "equalsToken": {
+                                                                            "kind": "EqualsToken",
+                                                                            "textLength": 1
+                                                                        },
+                                                                        "assignment": {
+                                                                            "NumericLiteral": {
+                                                                                "children": {
+                                                                                    "kind": "DecimalLiteralToken",
+                                                                                    "textLength": 1
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "kind": "CommaToken",
+                                                                    "textLength": 1
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "semicolon": {
+                                                        "error": "MissingToken",
+                                                        "kind": "SemicolonToken",
+                                                        "textLength": 0
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "ClassConstDeclaration": {
+                                                    "modifiers": [],
+                                                    "constKeyword": {
+                                                        "kind": "ConstKeyword",
+                                                        "textLength": 5
+                                                    },
+                                                    "constElements": {
+                                                        "DelimitedList": {
+                                                            "children": [
+                                                                {
+                                                                    "ConstElement": {
+                                                                        "name": {
+                                                                            "kind": "Name",
+                                                                            "textLength": 1
+                                                                        },
+                                                                        "equalsToken": {
+                                                                            "kind": "EqualsToken",
+                                                                            "textLength": 1
+                                                                        },
+                                                                        "assignment": {
+                                                                            "NumericLiteral": {
+                                                                                "children": {
+                                                                                    "kind": "DecimalLiteralToken",
+                                                                                    "textLength": 1
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "semicolon": {
+                                                        "kind": "SemicolonToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "closeBrace": {
+                                            "kind": "CloseBraceToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "endTag": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,30 @@
+[
+    {
+        "kind": "InlineHtml",
+        "textLength": 6
+    },
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "EchoKeyword",
+        "textLength": 4
+    },
+    {
+        "kind": "StringLiteralToken",
+        "textLength": 4
+    },
+    {
+        "kind": "SemicolonToken",
+        "textLength": 1
+    },
+    {
+        "kind": "FunctionKeyword",
+        "textLength": 8
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

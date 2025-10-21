@@ -1,0 +1,53 @@
+{
+    "SourceFileNode": {
+        "scriptSectionList": [
+            {
+                "ScriptSection": {
+                    "text": {
+                        "kind": "ScriptSectionPrependedText",
+                        "textLength": 0
+                    },
+                    "startTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    },
+                    "statementList": [
+                        {
+                            "ConstDeclaration": {
+                                "constKeyword": {
+                                    "kind": "ConstKeyword",
+                                    "textLength": 5
+                                },
+                                "constElements": null,
+                                "semicolon": {
+                                    "error": "MissingToken",
+                                    "kind": "SemicolonToken",
+                                    "textLength": 0
+                                }
+                            }
+                        },
+                        {
+                            "ConstDeclaration": {
+                                "constKeyword": {
+                                    "kind": "ConstKeyword",
+                                    "textLength": 5
+                                },
+                                "constElements": null,
+                                "semicolon": {
+                                    "error": "MissingToken",
+                                    "kind": "SemicolonToken",
+                                    "textLength": 0
+                                }
+                            }
+                        }
+                    ],
+                    "endTag": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

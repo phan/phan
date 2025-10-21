@@ -1,0 +1,618 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "parameters": {
+                                "ParameterDeclarationList": {
+                                    "children": [
+                                        {
+                                            "Parameter": {
+                                                "attributes": null,
+                                                "visibilityToken": null,
+                                                "modifiers": null,
+                                                "questionToken": null,
+                                                "typeDeclarationList": {
+                                                    "QualifiedNameList": {
+                                                        "children": [
+                                                            {
+                                                                "kind": "IntReservedWord",
+                                                                "textLength": 3
+                                                            },
+                                                            {
+                                                                "kind": "BarToken",
+                                                                "textLength": 1
+                                                            },
+                                                            {
+                                                                "kind": "FalseReservedWord",
+                                                                "textLength": 5
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "byRefToken": {
+                                                    "kind": "AmpersandToken",
+                                                    "textLength": 1
+                                                },
+                                                "dotDotDotToken": null,
+                                                "variableName": {
+                                                    "kind": "VariableName",
+                                                    "textLength": 7
+                                                },
+                                                "equalsToken": null,
+                                                "default": null
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "questionToken": null,
+                            "returnTypeList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "kind": "IntReservedWord",
+                                            "textLength": 3
+                                        }
+                                    ]
+                                }
+                            },
+                            "arrowToken": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            },
+                            "resultExpression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "parameters": {
+                                "ParameterDeclarationList": {
+                                    "children": [
+                                        {
+                                            "Parameter": {
+                                                "attributes": null,
+                                                "visibilityToken": null,
+                                                "modifiers": null,
+                                                "questionToken": null,
+                                                "typeDeclarationList": {
+                                                    "QualifiedNameList": {
+                                                        "children": [
+                                                            {
+                                                                "QualifiedName": {
+                                                                    "globalSpecifier": null,
+                                                                    "relativeSpecifier": null,
+                                                                    "nameParts": [
+                                                                        {
+                                                                            "kind": "Name",
+                                                                            "textLength": 8
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "kind": "BarToken",
+                                                                "textLength": 1
+                                                            },
+                                                            {
+                                                                "error": "MissingToken",
+                                                                "kind": "Name",
+                                                                "textLength": 0
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "byRefToken": null,
+                                                "dotDotDotToken": null,
+                                                "variableName": {
+                                                    "kind": "VariableName",
+                                                    "textLength": 2
+                                                },
+                                                "equalsToken": null,
+                                                "default": null
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "questionToken": null,
+                            "returnTypeList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "kind": "IntReservedWord",
+                                            "textLength": 3
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "kind": "FalseReservedWord",
+                                            "textLength": 5
+                                        }
+                                    ]
+                                }
+                            },
+                            "arrowToken": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            },
+                            "resultExpression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "parameters": {
+                                "ParameterDeclarationList": {
+                                    "children": [
+                                        {
+                                            "Parameter": {
+                                                "attributes": null,
+                                                "visibilityToken": null,
+                                                "modifiers": null,
+                                                "questionToken": null,
+                                                "typeDeclarationList": {
+                                                    "QualifiedNameList": {
+                                                        "children": [
+                                                            {
+                                                                "kind": "IterableReservedWord",
+                                                                "textLength": 8
+                                                            },
+                                                            {
+                                                                "kind": "BarToken",
+                                                                "textLength": 1
+                                                            },
+                                                            {
+                                                                "QualifiedName": {
+                                                                    "globalSpecifier": null,
+                                                                    "relativeSpecifier": null,
+                                                                    "nameParts": [
+                                                                        {
+                                                                            "kind": "Name",
+                                                                            "textLength": 8
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "byRefToken": null,
+                                                "dotDotDotToken": null,
+                                                "variableName": {
+                                                    "kind": "VariableName",
+                                                    "textLength": 6
+                                                },
+                                                "equalsToken": null,
+                                                "default": null
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "questionToken": null,
+                            "returnTypeList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "QualifiedName": {
+                                                "globalSpecifier": {
+                                                    "kind": "BackslashToken",
+                                                    "textLength": 1
+                                                },
+                                                "relativeSpecifier": null,
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 8
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "kind": "BoolReservedWord",
+                                            "textLength": 4
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "kind": "ArrayKeyword",
+                                            "textLength": 5
+                                        }
+                                    ]
+                                }
+                            },
+                            "arrowToken": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            },
+                            "resultExpression": {
+                                "ArrayCreationExpression": {
+                                    "arrayKeyword": null,
+                                    "openParenOrBracket": {
+                                        "kind": "OpenBracketToken",
+                                        "textLength": 1
+                                    },
+                                    "arrayElements": {
+                                        "ArrayElementList": {
+                                            "children": [
+                                                {
+                                                    "ArrayElement": {
+                                                        "elementKey": null,
+                                                        "arrowToken": null,
+                                                        "byRef": null,
+                                                        "dotDotDot": null,
+                                                        "elementValue": {
+                                                            "Variable": {
+                                                                "dollar": null,
+                                                                "name": {
+                                                                    "kind": "VariableName",
+                                                                    "textLength": 6
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "closeParenOrBracket": {
+                                        "kind": "CloseBracketToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "parameters": {
+                                "ParameterDeclarationList": {
+                                    "children": [
+                                        {
+                                            "Parameter": {
+                                                "attributes": null,
+                                                "visibilityToken": null,
+                                                "modifiers": null,
+                                                "questionToken": null,
+                                                "typeDeclarationList": {
+                                                    "QualifiedNameList": {
+                                                        "children": [
+                                                            {
+                                                                "kind": "IterableReservedWord",
+                                                                "textLength": 8
+                                                            },
+                                                            {
+                                                                "kind": "BarToken",
+                                                                "textLength": 1
+                                                            },
+                                                            {
+                                                                "QualifiedName": {
+                                                                    "globalSpecifier": null,
+                                                                    "relativeSpecifier": null,
+                                                                    "nameParts": [
+                                                                        {
+                                                                            "kind": "Name",
+                                                                            "textLength": 8
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "byRefToken": null,
+                                                "dotDotDotToken": {
+                                                    "kind": "DotDotDotToken",
+                                                    "textLength": 3
+                                                },
+                                                "variableName": {
+                                                    "error": "MissingToken",
+                                                    "kind": "VariableName",
+                                                    "textLength": 0
+                                                },
+                                                "equalsToken": null,
+                                                "default": null
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "questionToken": null,
+                            "returnTypeList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "QualifiedName": {
+                                                "globalSpecifier": {
+                                                    "kind": "BackslashToken",
+                                                    "textLength": 1
+                                                },
+                                                "relativeSpecifier": null,
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 8
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "error": "MissingToken",
+                                            "kind": "ReturnType",
+                                            "textLength": 0
+                                        }
+                                    ]
+                                }
+                            },
+                            "arrowToken": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            },
+                            "resultExpression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "parameters": null,
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colonToken": {
+                                "kind": "ColonToken",
+                                "textLength": 1
+                            },
+                            "questionToken": null,
+                            "returnTypeList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "QualifiedName": {
+                                                "globalSpecifier": null,
+                                                "relativeSpecifier": {
+                                                    "RelativeSpecifier": {
+                                                        "namespaceKeyword": {
+                                                            "kind": "NamespaceKeyword",
+                                                            "textLength": 9
+                                                        },
+                                                        "backslash": {
+                                                            "kind": "BackslashToken",
+                                                            "textLength": 1
+                                                        }
+                                                    }
+                                                },
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 8
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "QualifiedName": {
+                                                "globalSpecifier": null,
+                                                "relativeSpecifier": null,
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 11
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "kind": "BarToken",
+                                            "textLength": 1
+                                        },
+                                        {
+                                            "kind": "IterableReservedWord",
+                                            "textLength": 8
+                                        }
+                                    ]
+                                }
+                            },
+                            "arrowToken": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            },
+                            "resultExpression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,78 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "BinaryExpression": {
+                            "leftOperand": {
+                                "QualifiedName": {
+                                    "globalSpecifier": {
+                                        "kind": "BackslashToken",
+                                        "textLength": 1
+                                    },
+                                    "relativeSpecifier": null,
+                                    "nameParts": []
+                                }
+                            },
+                            "operator": {
+                                "kind": "AmpersandToken",
+                                "textLength": 1
+                            },
+                            "rightOperand": {
+                                "QualifiedName": {
+                                    "globalSpecifier": null,
+                                    "relativeSpecifier": null,
+                                    "nameParts": [
+                                        {
+                                            "kind": "Name",
+                                            "textLength": 6
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "QualifiedName": {
+                            "globalSpecifier": {
+                                "kind": "BackslashToken",
+                                "textLength": 1
+                            },
+                            "relativeSpecifier": null,
+                            "nameParts": []
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

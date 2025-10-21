@@ -1,0 +1,97 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EnumDeclaration": {
+                    "attributes": null,
+                    "enumKeyword": {
+                        "kind": "EnumKeyword",
+                        "textLength": 4
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 3
+                    },
+                    "colonToken": {
+                        "kind": "ColonToken",
+                        "textLength": 1
+                    },
+                    "enumType": {
+                        "kind": "IntReservedWord",
+                        "textLength": 3
+                    },
+                    "enumInterfaceClause": null,
+                    "enumMembers": {
+                        "EnumMembers": {
+                            "openBrace": {
+                                "error": "MissingToken",
+                                "kind": "OpenBraceToken",
+                                "textLength": 0
+                            },
+                            "enumMemberDeclarations": [
+                                {
+                                    "error": "SkippedToken",
+                                    "kind": "BarToken",
+                                    "textLength": 1
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "SubscriptExpression": {
+                            "postfixExpression": {
+                                "QualifiedName": {
+                                    "globalSpecifier": null,
+                                    "relativeSpecifier": null,
+                                    "nameParts": [
+                                        {
+                                            "kind": "Name",
+                                            "textLength": 6
+                                        }
+                                    ]
+                                }
+                            },
+                            "openBracketOrBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "accessExpression": null,
+                            "closeBracketOrBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

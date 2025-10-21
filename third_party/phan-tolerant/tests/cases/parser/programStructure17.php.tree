@@ -1,0 +1,33 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": {
+                        "kind": "InlineHtml",
+                        "textLength": 3
+                    },
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "AsteriskToken",
+                "textLength": 1
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "SlashToken",
+                "textLength": 1
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

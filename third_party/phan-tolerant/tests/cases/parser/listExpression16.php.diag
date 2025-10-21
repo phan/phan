@@ -1,0 +1,20 @@
+[
+    {
+        "kind": 0,
+        "message": "'(' expected.",
+        "start": 81,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "')' expected.",
+        "start": 88,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 88,
+        "length": 0
+    }
+]

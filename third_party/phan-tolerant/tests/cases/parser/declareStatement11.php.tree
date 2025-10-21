@@ -1,0 +1,112 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "DeclareStatement": {
+                    "declareKeyword": {
+                        "kind": "DeclareKeyword",
+                        "textLength": 7
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "declareDirectiveList": {
+                        "DeclareDirectiveList": {
+                            "children": [
+                                {
+                                    "DeclareDirective": {
+                                        "name": {
+                                            "kind": "Name",
+                                            "textLength": 5
+                                        },
+                                        "equals": {
+                                            "kind": "EqualsToken",
+                                            "textLength": 1
+                                        },
+                                        "literal": {
+                                            "kind": "FloatingLiteralToken",
+                                            "textLength": 3
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colon": null,
+                    "statements": {
+                        "ForStatement": {
+                            "for": {
+                                "kind": "ForKeyword",
+                                "textLength": 3
+                            },
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "forInitializer": null,
+                            "exprGroupSemicolon1": {
+                                "kind": "SemicolonToken",
+                                "textLength": 1
+                            },
+                            "forControl": null,
+                            "exprGroupSemicolon2": {
+                                "kind": "SemicolonToken",
+                                "textLength": 1
+                            },
+                            "forEndOfLoop": null,
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            },
+                            "colon": null,
+                            "statements": {
+                                "CompoundStatementNode": {
+                                    "openBrace": {
+                                        "kind": "OpenBraceToken",
+                                        "textLength": 1
+                                    },
+                                    "statements": [],
+                                    "closeBrace": {
+                                        "kind": "CloseBraceToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "endFor": null,
+                            "endForSemicolon": null
+                        }
+                    },
+                    "enddeclareKeyword": null,
+                    "semicolon": null
+                }
+            },
+            {
+                "EmptyStatement": {
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

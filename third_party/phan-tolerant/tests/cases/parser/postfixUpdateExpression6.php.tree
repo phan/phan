@@ -1,0 +1,65 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "PostfixUpdateExpression": {
+                            "operand": {
+                                "SubscriptExpression": {
+                                    "postfixExpression": {
+                                        "Variable": {
+                                            "dollar": null,
+                                            "name": {
+                                                "kind": "VariableName",
+                                                "textLength": 3
+                                            }
+                                        }
+                                    },
+                                    "openBracketOrBrace": {
+                                        "kind": "OpenBracketToken",
+                                        "textLength": 1
+                                    },
+                                    "accessExpression": {
+                                        "NumericLiteral": {
+                                            "children": {
+                                                "kind": "IntegerLiteralToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    },
+                                    "closeBracketOrBrace": {
+                                        "kind": "CloseBracketToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "incrementOrDecrementOperator": {
+                                "kind": "MinusMinusToken",
+                                "textLength": 2
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

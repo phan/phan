@@ -1,0 +1,124 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "TryStatement": {
+                    "tryKeyword": {
+                        "kind": "TryKeyword",
+                        "textLength": 3
+                    },
+                    "compoundStatement": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "catchClauses": [
+                        {
+                            "CatchClause": {
+                                "catch": {
+                                    "kind": "CatchKeyword",
+                                    "textLength": 5
+                                },
+                                "openParen": {
+                                    "kind": "OpenParenToken",
+                                    "textLength": 1
+                                },
+                                "qualifiedNameList": {
+                                    "error": "MissingToken",
+                                    "kind": "QualifiedName",
+                                    "textLength": 0
+                                },
+                                "variableName": null,
+                                "closeParen": {
+                                    "error": "MissingToken",
+                                    "kind": "CloseParenToken",
+                                    "textLength": 0
+                                },
+                                "compoundStatement": {
+                                    "CompoundStatementNode": {
+                                        "openBrace": {
+                                            "error": "MissingToken",
+                                            "kind": "OpenBraceToken",
+                                            "textLength": 0
+                                        },
+                                        "statements": [
+                                            {
+                                                "error": "SkippedToken",
+                                                "kind": "BarToken",
+                                                "textLength": 1
+                                            },
+                                            {
+                                                "ExpressionStatement": {
+                                                    "expression": {
+                                                        "Variable": {
+                                                            "dollar": null,
+                                                            "name": {
+                                                                "kind": "VariableName",
+                                                                "textLength": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "semicolon": {
+                                                        "error": "MissingToken",
+                                                        "kind": "SemicolonToken",
+                                                        "textLength": 0
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "error": "SkippedToken",
+                                                "kind": "CloseParenToken",
+                                                "textLength": 1
+                                            },
+                                            {
+                                                "CompoundStatementNode": {
+                                                    "openBrace": {
+                                                        "kind": "OpenBraceToken",
+                                                        "textLength": 1
+                                                    },
+                                                    "statements": [],
+                                                    "closeBrace": {
+                                                        "kind": "CloseBraceToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "closeBrace": {
+                                            "error": "MissingToken",
+                                            "kind": "CloseBraceToken",
+                                            "textLength": 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "finallyClause": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

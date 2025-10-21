@@ -1,0 +1,18 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "DoubleQuoteToken",
+        "textLength": 1
+    },
+    {
+        "kind": "EncapsedAndWhitespace",
+        "textLength": 8
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

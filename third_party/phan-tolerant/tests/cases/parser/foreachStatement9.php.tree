@@ -1,0 +1,114 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ForeachStatement": {
+                    "foreach": {
+                        "kind": "ForeachKeyword",
+                        "textLength": 7
+                    },
+                    "openParen": {
+                        "error": "MissingToken",
+                        "kind": "OpenParenToken",
+                        "textLength": 0
+                    },
+                    "forEachCollectionName": {
+                        "Variable": {
+                            "dollar": null,
+                            "name": {
+                                "kind": "VariableName",
+                                "textLength": 2
+                            }
+                        }
+                    },
+                    "asKeyword": {
+                        "kind": "AsKeyword",
+                        "textLength": 2
+                    },
+                    "foreachKey": {
+                        "ForeachKey": {
+                            "expression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "arrow": {
+                                "kind": "DoubleArrowToken",
+                                "textLength": 2
+                            }
+                        }
+                    },
+                    "foreachValue": {
+                        "ForeachValue": {
+                            "ampersand": null,
+                            "expression": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "closeParen": {
+                        "error": "MissingToken",
+                        "kind": "CloseParenToken",
+                        "textLength": 0
+                    },
+                    "colon": {
+                        "kind": "ColonToken",
+                        "textLength": 1
+                    },
+                    "statements": [
+                        {
+                            "EmptyStatement": {
+                                "semicolon": {
+                                    "kind": "SemicolonToken",
+                                    "textLength": 1
+                                }
+                            }
+                        },
+                        {
+                            "EmptyStatement": {
+                                "semicolon": {
+                                    "kind": "SemicolonToken",
+                                    "textLength": 1
+                                }
+                            }
+                        }
+                    ],
+                    "endForeach": {
+                        "error": "MissingToken",
+                        "kind": "EndForEachKeyword",
+                        "textLength": 0
+                    },
+                    "endForeachSemicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

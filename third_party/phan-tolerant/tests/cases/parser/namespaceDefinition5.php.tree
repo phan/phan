@@ -1,0 +1,51 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "QualifiedName": {
+                            "globalSpecifier": null,
+                            "relativeSpecifier": {
+                                "RelativeSpecifier": {
+                                    "namespaceKeyword": {
+                                        "kind": "NamespaceKeyword",
+                                        "textLength": 9
+                                    },
+                                    "backslash": {
+                                        "kind": "BackslashToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "nameParts": [
+                                {
+                                    "kind": "Name",
+                                    "textLength": 5
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

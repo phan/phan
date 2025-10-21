@@ -1,0 +1,147 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ClassDeclaration": {
+                    "attributes": null,
+                    "abstractOrFinalModifier": null,
+                    "modifiers": [],
+                    "classKeyword": {
+                        "kind": "ClassKeyword",
+                        "textLength": 5
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "classBaseClause": null,
+                    "classInterfaceClause": null,
+                    "classMembers": {
+                        "ClassMembersNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "classMemberDeclarations": [
+                                {
+                                    "MethodDeclaration": {
+                                        "attributes": null,
+                                        "modifiers": [
+                                            {
+                                                "kind": "PublicKeyword",
+                                                "textLength": 6
+                                            }
+                                        ],
+                                        "functionKeyword": {
+                                            "kind": "FunctionKeyword",
+                                            "textLength": 8
+                                        },
+                                        "byRefToken": null,
+                                        "name": {
+                                            "kind": "Name",
+                                            "textLength": 4
+                                        },
+                                        "openParen": {
+                                            "kind": "OpenParenToken",
+                                            "textLength": 1
+                                        },
+                                        "parameters": null,
+                                        "closeParen": {
+                                            "error": "MissingToken",
+                                            "kind": "CloseParenToken",
+                                            "textLength": 0
+                                        },
+                                        "colonToken": null,
+                                        "questionToken": null,
+                                        "returnTypeList": null,
+                                        "compoundStatementOrSemicolon": {
+                                            "CompoundStatementNode": {
+                                                "openBrace": {
+                                                    "error": "MissingToken",
+                                                    "kind": "OpenBraceToken",
+                                                    "textLength": 0
+                                                },
+                                                "statements": [
+                                                    {
+                                                        "FunctionStaticDeclaration": {
+                                                            "staticKeyword": {
+                                                                "kind": "StaticKeyword",
+                                                                "textLength": 6
+                                                            },
+                                                            "staticVariableNameList": {
+                                                                "StaticVariableNameList": {
+                                                                    "children": [
+                                                                        {
+                                                                            "StaticVariableDeclaration": {
+                                                                                "variableName": {
+                                                                                    "kind": "VariableName",
+                                                                                    "textLength": 2
+                                                                                },
+                                                                                "equalsToken": null,
+                                                                                "assignment": null
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "semicolon": {
+                                                                "error": "MissingToken",
+                                                                "kind": "SemicolonToken",
+                                                                "textLength": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "error": "SkippedToken",
+                                                        "kind": "CloseParenToken",
+                                                        "textLength": 1
+                                                    },
+                                                    {
+                                                        "CompoundStatementNode": {
+                                                            "openBrace": {
+                                                                "kind": "OpenBraceToken",
+                                                                "textLength": 1
+                                                            },
+                                                            "statements": [],
+                                                            "closeBrace": {
+                                                                "kind": "CloseBraceToken",
+                                                                "textLength": 1
+                                                            }
+                                                        }
+                                                    }
+                                                ],
+                                                "closeBrace": {
+                                                    "kind": "CloseBraceToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

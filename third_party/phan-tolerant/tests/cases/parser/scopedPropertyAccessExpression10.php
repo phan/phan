@@ -1,0 +1,3 @@
+<?php
+
+ClassName::awesome()->hi;

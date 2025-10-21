@@ -1,0 +1,55 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "GlobalDeclaration": {
+                    "globalKeyword": {
+                        "kind": "GlobalKeyword",
+                        "textLength": 6
+                    },
+                    "variableNameList": {
+                        "VariableNameList": {
+                            "children": [
+                                {
+                                    "Variable": {
+                                        "dollar": {
+                                            "kind": "DollarToken",
+                                            "textLength": 1
+                                        },
+                                        "name": {
+                                            "Variable": {
+                                                "dollar": null,
+                                                "name": {
+                                                    "kind": "VariableName",
+                                                    "textLength": 2
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

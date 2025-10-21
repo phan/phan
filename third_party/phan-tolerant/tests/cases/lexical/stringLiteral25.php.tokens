@@ -1,0 +1,30 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "DoubleQuoteToken",
+        "textLength": 1
+    },
+    {
+        "kind": "DollarOpenBraceToken",
+        "textLength": 2
+    },
+    {
+        "kind": "VariableName",
+        "textLength": 2
+    },
+    {
+        "kind": "CloseBraceToken",
+        "textLength": 1
+    },
+    {
+        "kind": "DoubleQuoteToken",
+        "textLength": 1
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

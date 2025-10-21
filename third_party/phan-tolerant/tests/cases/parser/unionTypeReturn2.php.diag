@@ -1,0 +1,20 @@
+[
+    {
+        "kind": 0,
+        "message": "'ReturnType' expected.",
+        "start": 24,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 46,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'ReturnType' expected.",
+        "start": 112,
+        "length": 0
+    }
+]

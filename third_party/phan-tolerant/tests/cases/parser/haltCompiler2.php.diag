@@ -1,0 +1,26 @@
+[
+    {
+        "kind": 0,
+        "message": "Unexpected 'HaltCompilerKeyword'",
+        "start": 22,
+        "length": 15
+    },
+    {
+        "kind": 0,
+        "message": "'Expression' expected.",
+        "start": 38,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected 'InlineHtml'",
+        "start": 40,
+        "length": 3
+    },
+    {
+        "kind": 0,
+        "message": "'}' expected.",
+        "start": 43,
+        "length": 0
+    }
+]

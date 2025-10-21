@@ -1,0 +1,96 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "ObjectCreationExpression": {
+                                    "newKeword": {
+                                        "kind": "NewKeyword",
+                                        "textLength": 3
+                                    },
+                                    "attributes": null,
+                                    "classTypeDesignator": {
+                                        "ScopedPropertyAccessExpression": {
+                                            "scopeResolutionQualifier": {
+                                                "QualifiedName": {
+                                                    "globalSpecifier": null,
+                                                    "relativeSpecifier": null,
+                                                    "nameParts": [
+                                                        {
+                                                            "kind": "Name",
+                                                            "textLength": 6
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "doubleColon": {
+                                                "kind": "ColonColonToken",
+                                                "textLength": 2
+                                            },
+                                            "memberName": {
+                                                "Variable": {
+                                                    "dollar": null,
+                                                    "name": {
+                                                        "kind": "VariableName",
+                                                        "textLength": 2
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "openParen": {
+                                        "kind": "OpenParenToken",
+                                        "textLength": 1
+                                    },
+                                    "argumentExpressionList": null,
+                                    "closeParen": {
+                                        "kind": "CloseParenToken",
+                                        "textLength": 1
+                                    },
+                                    "classBaseClause": null,
+                                    "classInterfaceClause": null,
+                                    "classMembers": null
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,14 @@
+[
+    {
+        "kind": 0,
+        "message": "Positive integer literal expected.",
+        "start": 73,
+        "length": 3
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 76,
+        "length": 0
+    }
+]

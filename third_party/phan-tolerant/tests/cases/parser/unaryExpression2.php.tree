@@ -1,0 +1,69 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "UnaryOpExpression": {
+                            "operator": {
+                                "kind": "PlusToken",
+                                "textLength": 1
+                            },
+                            "operand": {
+                                "UnaryOpExpression": {
+                                    "operator": {
+                                        "kind": "MinusToken",
+                                        "textLength": 1
+                                    },
+                                    "operand": {
+                                        "UnaryOpExpression": {
+                                            "operator": {
+                                                "kind": "PlusToken",
+                                                "textLength": 1
+                                            },
+                                            "operand": {
+                                                "UnaryOpExpression": {
+                                                    "operator": {
+                                                        "kind": "MinusToken",
+                                                        "textLength": 1
+                                                    },
+                                                    "operand": {
+                                                        "Variable": {
+                                                            "dollar": null,
+                                                            "name": {
+                                                                "kind": "VariableName",
+                                                                "textLength": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

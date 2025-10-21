@@ -1,0 +1,4 @@
+<?php
+trait A {
+    use A { A as B, B as C; }
+}

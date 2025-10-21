@@ -1,0 +1,14 @@
+[
+    {
+        "kind": 0,
+        "message": "'endswitch' expected.",
+        "start": 42,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 42,
+        "length": 0
+    }
+]
