@@ -198,6 +198,7 @@ class TolerantASTConverter
         TokenKind::PercentToken                         => flags\BINARY_MOD,
         TokenKind::PlusToken                            => flags\BINARY_ADD,
         TokenKind::QuestionQuestionToken                => flags\BINARY_COALESCE,
+        TokenKind::PipeToken                             => flags\BINARY_PIPE,
         TokenKind::SlashToken                           => flags\BINARY_DIV,
         TokenKind::XorKeyword                           => flags\BINARY_BOOL_XOR,
     ];

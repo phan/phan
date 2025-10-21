@@ -2303,11 +2303,14 @@ class Parser {
             TokenKind::QuestionToken => [10, Associativity::Left],
 //            TokenKind::ColonToken => [9, Associativity::Left],
 
-            // TODO coalesce-expression (R)
-            TokenKind::QuestionQuestionToken => [9, Associativity::Right],
+        // TODO coalesce-expression (R)
+        TokenKind::QuestionQuestionToken => [9, Associativity::Right],
 
-            //logical-inc-OR-expression-1 (L)
-            TokenKind::BarBarToken => [12, Associativity::Left],
+        // pipe-expression (L)
+        TokenKind::PipeToken => [11, Associativity::Left],
+
+        //logical-inc-OR-expression-1 (L)
+        TokenKind::BarBarToken => [12, Associativity::Left],
 
             // logical-AND-expression-1 (L)
             TokenKind::AmpersandAmpersandToken => [13, Associativity::Left],

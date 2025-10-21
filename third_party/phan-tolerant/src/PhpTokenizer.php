@@ -14,6 +14,7 @@ define(__NAMESPACE__ . '\T_FN', defined('T_FN') ? constant('T_FN') : 'T_FN');
 define(__NAMESPACE__ . '\T_MATCH', defined('T_MATCH') ? constant('T_MATCH') : 'T_MATCH');
 define(__NAMESPACE__ . '\T_NULLSAFE_OBJECT_OPERATOR', defined('T_NULLSAFE_OBJECT_OPERATOR') ? constant('T_NULLSAFE_OBJECT_OPERATOR') : 'T_NULLSAFE_OBJECT_OPERATOR');
 define(__NAMESPACE__ . '\T_ATTRIBUTE', defined('T_ATTRIBUTE') ? constant('T_ATTRIBUTE') : 'T_ATTRIBUTE');
+define(__NAMESPACE__ . '\T_PIPE', defined('T_PIPE') ? constant('T_PIPE') : 'T_PIPE');
 // If this predates PHP 8.1, T_ENUM is unavailable. The replacement value is arbitrary - it just has to be different from other values of token constants.
 define(__NAMESPACE__ . '\T_ENUM', defined('T_ENUM') ? constant('T_ENUM') : 'T_ENUM');
 define(__NAMESPACE__ . '\T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') ? constant('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') : 'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG');
@@ -107,11 +108,22 @@ class PhpTokenizer implements TokenStreamProviderInterface {
 
         // Convert tokens from token_get_all to Token instances,
         // skipping whitespace and (usually, when parseContext is null) comments.
-        foreach ($tokens as $token) {
+        $tokens = \array_values($tokens);
+        $tokenCount = \count($tokens);
+        for ($i = 0; $i < $tokenCount; $i++) {
+            $token = $tokens[$i];
             if (\is_array($token)) {
                 $tokenKind = $token[0];
                 $strlen = \strlen($token[1]);
             } else {
+                if ($token === '|' && $i + 1 < $tokenCount && $tokens[$i + 1] === '>') {
+                    $pos += 1; // '|'
+                    $i++;
+                    $pos += 1; // '>'
+                    $arr[] = new Token(TokenKind::PipeToken, $fullStart, $start, $pos - $fullStart);
+                    $start = $fullStart = $pos;
+                    continue;
+                }
                 $pos += \strlen($token);
                 $newTokenKind = self::TOKEN_MAP[$token] ?? TokenKind::Unknown;
                 $arr[] = new Token($newTokenKind, $fullStart, $start, $pos - $fullStart);
@@ -346,6 +358,7 @@ class PhpTokenizer implements TokenStreamProviderInterface {
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => TokenKind::AmpersandToken,
         T_BOOLEAN_AND => TokenKind::AmpersandAmpersandToken,
         T_BOOLEAN_OR => TokenKind::BarBarToken,
+        T_PIPE => TokenKind::PipeToken,
         ":" => TokenKind::ColonToken,
         ";" => TokenKind::SemicolonToken,
         "=" => TokenKind::EqualsToken,

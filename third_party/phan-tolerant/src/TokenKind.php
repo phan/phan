@@ -156,6 +156,7 @@ class TokenKind {
     const QuestionQuestionEqualsToken = 262;
     const QuestionArrowToken = 263;
     const AttributeToken = 264;
+    const PipeToken = 265;
 
     const DecimalLiteralToken = 301;
     const OctalLiteralToken = 302;

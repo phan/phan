@@ -75,7 +75,7 @@ Recommended sample inputs for AST diffs (update as new fixtures are added):
 | Dynamic class const fetch | `tests/samples/dynamic_class_const.php` | 8.3 | `php ~/phan/tools/dump_ast.php --json …` | `php tools/PrintTolerantAst.php …` + `php ~/phan/internal/dump_fallback_ast.php --php-ast …` |
 | Property hooks | `tests/samples/property_hooks.php` | 8.4 | (run after `sudo newphp 84`) | same as above |
 | Asymmetric visibility props | (add fixture) | 8.4 | … | … |
-| Pipe operator | (add fixture once implemented) | 8.5 | … | … |
+| Pipe operator | `tests/samples/pipe_operator.php` | 8.5 | `php ~/phan/tools/dump_ast.php --json …` | `php tools/PrintTolerantAst.php …`, `php ~/phan/internal/dump_fallback_ast.php --php-ast …` |
 | `clone with` expressions | (add fixture) | 8.5 | … | … |
 
 ## Next Steps
