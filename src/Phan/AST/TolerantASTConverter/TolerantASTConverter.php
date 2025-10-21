@@ -2926,6 +2926,12 @@ class TolerantASTConverter
             $params = static::phpParserParamsToAstParams($parameter_list, self::getStartLine($parameter_list));
         }
 
+        $modifier_tokens = $hook->modifiers ?? [];
+        if (!\is_array($modifier_tokens)) {
+            $modifier_tokens = [];
+        }
+        $flags = $modifier_tokens !== [] ? static::phpParserVisibilityToAstVisibility($modifier_tokens, false) : 0;
+
         if ($hook->arrowToken) {
             $expression = $hook->expression;
             $expr = $expression instanceof PhpParser\Node ? static::phpParserNodeToAstNode($expression) : static::newPlaceholderExpression($hook);
@@ -2950,7 +2956,7 @@ class TolerantASTConverter
 
         return static::newAstDecl(
             ast\AST_PROPERTY_HOOK,
-            0,
+            $flags,
             [
                 'params' => $params,
                 'stmts' => $stmts,
