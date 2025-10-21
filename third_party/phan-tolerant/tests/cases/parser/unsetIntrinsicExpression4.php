@@ -1,2 +1,0 @@
-<?php
-unset ($hi, $there);

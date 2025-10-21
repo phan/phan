@@ -1,2 +1,0 @@
-<?php
-exit ($hello);

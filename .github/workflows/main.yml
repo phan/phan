@@ -42,21 +42,3 @@ jobs:
       - name: Build and test in docker
         run: bash tests/run_all_tests_dockerized ${{ matrix.PHP_VERSION }} ${{ matrix.DOCKER_ARCHITECTURE }}
 
-  tolerant-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          tools: composer
-          coverage: none
-      - name: Install root dependencies
-        run: composer install --no-interaction --no-progress
-      - name: Install phan-tolerant dependencies
-        working-directory: third_party/phan-tolerant
-        run: composer install --no-interaction --no-progress
-      - name: Run phan-tolerant PHPUnit suite (invariants + api)
-        working-directory: third_party/phan-tolerant
-        run: php -d zend.assertions=1 -d assert.exception=1 vendor/bin/phpunit --testsuite invariants,api

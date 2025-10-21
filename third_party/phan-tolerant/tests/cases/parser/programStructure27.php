@@ -1,4 +1,0 @@
-<?php
-if (true) {
-    ?>
-hello

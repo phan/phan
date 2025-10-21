@@ -29,11 +29,12 @@
         "composer/semver": "^1.4|^2.0|^3.0",
         "composer/xdebug-handler": "^2.0|^3.0",
         "felixfbecker/advanced-json-rpc": "^3.0.4",
+        "microsoft/tolerant-php-parser": "0.1.3",
         "netresearch/jsonmapper": "^1.6.0|^2.0|^3.0|^4.0|^5.0",
         "sabre/event": "^5.1.3",
         "symfony/console": "^6.0",
-        "symfony/string": "^6.0",
         "symfony/polyfill-mbstring": "^1.11.0",
+        "symfony/string": "^6.0",
         "tysonandre/var_representation_polyfill": "^0.0.2|^0.1.0"
     },
     "suggest": {
@@ -50,8 +51,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Phan\\": "src/Phan",
-            "Microsoft\\PhpParser\\": "third_party/phan-tolerant/src"
+            "Phan\\": "src/Phan"
         },
         "files": ["src/Phan/bootstrap/polyfills.php"]
     },
@@ -65,5 +65,20 @@
                 "Fix deprecated semicolon in switch case for PHP 8.5 compatibility": "patches/var_representation_polyfill_php85_compat.patch"
             }
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "microsoft/tolerant-php-parser",
+                "type": "library",
+                "version": "0.1.3",
+                "source": {
+                    "url": "https://github.com/phan/phan-tolerant.git",
+                    "type": "git",
+                    "reference": "main"
+                }
+            }
+        }
+    ]
 }

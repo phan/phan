@@ -1,5 +1,0 @@
-<?php
-// TODO eventually throw error
-$arr = [0=>3];
-list(0=>$a,0=>$b, 1=>$c+$b) = $arr;
-var_dump($c);

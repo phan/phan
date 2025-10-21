@@ -1,4 +1,0 @@
-<?php
-function test() {
-    target:
-}

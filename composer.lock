@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7001356fbdac4e407497514743f02b12",
+    "content-hash": "4c42c75a361b465a5cc494045fc82c15",
     "packages": [
         {
             "name": "composer/pcre",
@@ -320,6 +320,16 @@
                 "source": "https://github.com/felixfbecker/php-advanced-json-rpc/tree/v3.2.1"
             },
             "time": "2021-06-11T22:34:44+00:00"
+        },
+        {
+            "name": "microsoft/tolerant-php-parser",
+            "version": "0.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phan/phan-tolerant.git",
+                "reference": "main"
+            },
+            "type": "library"
         },
         {
             "name": "netresearch/jsonmapper",
