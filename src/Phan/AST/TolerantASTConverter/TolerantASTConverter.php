@@ -3074,9 +3074,23 @@ class TolerantASTConverter
         ];
         // AST version 120+ running on PHP 8.3+ adds 'type' field to AST_CLASS_CONST_GROUP
         // (typed class constants are a PHP 8.3+ feature with php-ast 1.1.2+)
-        // Note: tolerant-php-parser doesn't support class const types yet, so always null
         if (self::$ast_version_parsing >= 120 && \PHP_VERSION_ID >= 80300) {
-            $children['type'] = null;
+            $type = null;
+            if (\property_exists($n, 'typeDeclarationList')) {
+                // @phan-suppress-next-line PhanUndeclaredProperty
+                $type_declaration_list = $n->typeDeclarationList;
+                $type_line = static::getEndLine($type_declaration_list) ?: $const_start_line;
+                $type = static::phpParserUnionTypeToAstNode($type_declaration_list, $type_line);
+                $question_token = null;
+                if (\property_exists($n, 'questionToken')) {
+                    // @phan-suppress-next-line PhanUndeclaredProperty
+                    $question_token = $n->questionToken;
+                }
+                if ($type !== null && $question_token !== null) {
+                    $type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $type], $const_start_line);
+                }
+            }
+            $children['type'] = $type;
         }
         return new ast\Node(
             ast\AST_CLASS_CONST_GROUP,
