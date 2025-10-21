@@ -1,1 +1,0 @@
-<?php /* has implicit ';' and no trailing newline byte */ __halt_compiler() ?>

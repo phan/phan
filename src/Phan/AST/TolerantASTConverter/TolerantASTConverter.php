@@ -18,9 +18,6 @@ use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression;
 use Microsoft\PhpParser\Node\Expression\TernaryExpression;
-use Microsoft\PhpParser\Node\PropertyElement;
-use Microsoft\PhpParser\Node\PropertyHook;
-use Microsoft\PhpParser\Node\PropertyHookList;
 use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
@@ -2874,9 +2871,10 @@ class TolerantASTConverter
         if (!($name instanceof Token) || !$name->length) {
             throw new InvalidNodeException();
         }
+        $initializer = $n->initializer;
         $children = [
             'name' => static::tokenToString($name),
-            'default' => $n->initializer ? static::phpParserNodeToAstNode($n->initializer) : null,
+            'default' => $initializer instanceof PhpParser\Node ? static::phpParserNodeToAstNode($initializer) : null,
             'docComment' => static::extractPhpdocComment($n) ?? $doc_comment,
         ];
         if (self::$ast_version_parsing >= 120) {
@@ -2923,22 +2921,31 @@ class TolerantASTConverter
         $name = \strtolower(static::tokenToString($keyword));
 
         $params = null;
-        if ($hook->parameterList) {
-            $params = static::phpParserParamsToAstParams($hook->parameterList, self::getStartLine($hook->parameterList));
+        $parameter_list = $hook->parameterList;
+        if ($parameter_list instanceof PhpParser\Node\DelimitedList\ParameterDeclarationList) {
+            $params = static::phpParserParamsToAstParams($parameter_list, self::getStartLine($parameter_list));
         }
 
         if ($hook->arrowToken) {
-            $expr = $hook->expression ? static::phpParserNodeToAstNode($hook->expression) : static::newPlaceholderExpression($hook);
+            $expression = $hook->expression;
+            $expr = $expression instanceof PhpParser\Node ? static::phpParserNodeToAstNode($expression) : static::newPlaceholderExpression($hook);
             $stmts = new ast\Node(
                 ast\AST_PROPERTY_HOOK_SHORT_BODY,
                 0,
                 ['expr' => $expr],
                 $expr->lineno ?? self::getStartLine($hook)
             );
-        } elseif ($hook->compoundStatement) {
-            $stmts = static::phpParserStmtlistToAstNode($hook->compoundStatement, self::getStartLine($hook->compoundStatement), false);
         } else {
-            $stmts = null;
+            $compound_statement = $hook->compoundStatement;
+            if ($compound_statement instanceof PhpParser\Node\Statement\CompoundStatementNode) {
+                $stmts = static::phpParserStmtlistToAstNode(
+                    $compound_statement,
+                    self::getStartLine($compound_statement),
+                    false
+                );
+            } else {
+                $stmts = null;
+            }
         }
 
         return static::newAstDecl(

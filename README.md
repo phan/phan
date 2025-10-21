@@ -35,25 +35,20 @@ Phan and details on how to configure Phan for your project.<br />
 
 The [Wiki has more information about using Phan](https://github.com/phan/phan/wiki#using-phan).
 
-# Vendored tolerant parser
+# Tolerant parser dependency
 
-Phan vendors a trimmed snapshot of [`phan/phan-tolerant`](https://github.com/phan/phan-tolerant) in `third_party/phan-tolerant/` for the fallback parser and language-server mapping. The subtree already ships with releases and regular clones; no extra steps are needed for day-to-day development. If you want to run the parser’s own test suite, install its dev dependencies and invoke PHPUnit from that directory:
+Phan relies on [`phan/phan-tolerant`](https://github.com/phan/phan-tolerant) for the fallback parser and language-server mapping. The project is now consumed as a Composer dependency (`microsoft/tolerant-php-parser`, overridden to our fork via the repository entry in `composer.json`) rather than via a vendored subtree.
+
+To run the tolerant parser’s own PHPUnit suites, install its dev dependencies and invoke PHPUnit from the dependency directory:
 
 ```
-cd third_party/phan-tolerant
 composer install
-./vendor/bin/phpunit
+cd vendor/microsoft/tolerant-php-parser
+composer install
+php -d zend.assertions=1 -d assert.exception=1 vendor/bin/phpunit --testsuite invariants,api
 ```
 
-Maintainers can update the snapshot with:
-
-```
-git subtree pull --prefix=third_party/phan-tolerant phan-tolerant main
-```
-
-After pulling, drop any non-essential directories you don’t want vendored (e.g. `ci/`, `docs/`, `tools/`) before committing, mirroring the structure already in-tree.
-
-GitHub Actions runs the invariants and api PHPUnit suites from `third_party/phan-tolerant` (with assertions enabled via `zend.assertions=1`) on every PR/push, so keep the snapshot in sync with those tests.
+When you need to refresh the parser to a newer commit, adjust the constraint in `composer.json` (or run `composer update microsoft/tolerant-php-parser`) and commit the resulting lockfile change.
 
 # Features
 

@@ -1,3 +1,0 @@
-<?php
-
-true ? true : false;

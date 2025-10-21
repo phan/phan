@@ -1,3 +1,0 @@
-<?php
-
-global $a, $b;

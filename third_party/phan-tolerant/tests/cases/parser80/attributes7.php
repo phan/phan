@@ -1,3 +1,0 @@
-<?php
-#[Attribute
-function main() {}
