@@ -76,6 +76,12 @@ class Shim
         if (!defined('ast\AST_ENUM_CASE')) {
             define('ast\AST_ENUM_CASE', 0x4ff);
         }
+        if (!defined('ast\AST_PROPERTY_HOOK')) {
+            define('ast\AST_PROPERTY_HOOK', 0x500);
+        }
+        if (!defined('ast\AST_PROPERTY_HOOK_SHORT_BODY')) {
+            define('ast\AST_PROPERTY_HOOK_SHORT_BODY', 0x501);
+        }
         // Define flags
         if (!defined('ast\flags\DIM_ALTERNATIVE_SYNTAX')) {
             define('ast\flags\DIM_ALTERNATIVE_SYNTAX', 1 << 1);

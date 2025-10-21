@@ -1,2 +1,0 @@
-<?php
-unset($a, $b);

@@ -1,7 +1,0 @@
-function a () {
-
-}
-
-<?php
-
-<?php

@@ -1,2 +1,0 @@
-<?php
-(int)(bool)$a;

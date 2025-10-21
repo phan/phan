@@ -10,6 +10,7 @@ use Microsoft\PhpParser\FunctionLike;
 use Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression;
 use Microsoft\PhpParser\Node\MethodDeclaration;
 use Microsoft\PhpParser\Node\PropertyDeclaration;
+use Microsoft\PhpParser\Node\PropertyElement;
 use Microsoft\PhpParser\Node\Statement\FunctionDeclaration;
 use Microsoft\PhpParser\ParseContext;
 use Microsoft\PhpParser\PhpTokenizer;
@@ -297,7 +298,12 @@ class Fixers
                 foreach ($property_elements->getElements() as $element) {
                     $name_token = null;
                     // Properties can be either Variable nodes or AssignmentExpression nodes (with default values)
-                    if ($element instanceof PhpParser\Node\Expression\AssignmentExpression) {
+                    if ($element instanceof PropertyElement) {
+                        $variable_node = $element->variable;
+                        if ($variable_node instanceof PhpParser\Node\Expression\Variable) {
+                            $name_token = $variable_node->name ?? null;
+                        }
+                    } elseif ($element instanceof PhpParser\Node\Expression\AssignmentExpression) {
                         // Property with default value: public int $count = 0;
                         $left = $element->leftOperand;
                         if ($left instanceof PhpParser\Node\Expression\Variable) {

@@ -1,6 +1,0 @@
-<?php
-
-if ($awesome) :
-    ;
-    ;
-endif;

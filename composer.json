@@ -17,10 +17,19 @@
     ],
     "config": {
         "sort-packages": true,
+        "preferred-install": {
+            "microsoft/tolerant-php-parser": "source"
+        },
         "allow-plugins": {
             "cweagans/composer-patches": true
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/phan/phan-tolerant.git"
+        }
+    ],
     "require": {
         "php": "^8.1.0",
         "ext-filter": "*",
@@ -34,7 +43,8 @@
         "symfony/console": "^6.0",
         "symfony/string": "^6.0",
         "symfony/polyfill-mbstring": "^1.11.0",
-        "tysonandre/var_representation_polyfill": "^0.0.2|^0.1.0"
+        "tysonandre/var_representation_polyfill": "^0.0.2|^0.1.0",
+        "microsoft/tolerant-php-parser": "dev-main"
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is needed, 1.0.16+ is recommended.",
@@ -50,8 +60,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Phan\\": "src/Phan",
-            "Microsoft\\PhpParser\\": "third_party/phan-tolerant/src"
+            "Phan\\": "src/Phan"
         },
         "files": ["src/Phan/bootstrap/polyfills.php"]
     },

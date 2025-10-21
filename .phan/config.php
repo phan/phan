@@ -458,7 +458,7 @@ return [
         'vendor/composer/semver/src',
         'vendor/composer/xdebug-handler/src',
         'vendor/felixfbecker/advanced-json-rpc/lib',
-        'third_party/phan-tolerant/src',
+        'vendor/microsoft/tolerant-php-parser/src',
         'vendor/netresearch/jsonmapper/src',
         'vendor/phpdocumentor/reflection-docblock/src',
         'vendor/phpdocumentor/reflection-common/src',
