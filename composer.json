@@ -17,6 +17,9 @@
     ],
     "config": {
         "sort-packages": true,
+        "preferred-install": {
+            "microsoft/tolerant-php-parser": "source"
+        },
         "allow-plugins": {
             "cweagans/composer-patches": true
         }
