@@ -75,7 +75,7 @@
                 "version": "0.1.3",
                 "source": {
                     "url": "https://github.com/phan/phan-tolerant.git",
-                    "type": "git",
+                    "type": "vcs",
                     "reference": "main"
                 }
             }
