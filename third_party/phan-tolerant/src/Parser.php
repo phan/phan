@@ -73,7 +73,11 @@ use Microsoft\PhpParser\Node\NamespaceAliasingClause;
 use Microsoft\PhpParser\Node\NamespaceUseGroupClause;
 use Microsoft\PhpParser\Node\NumericLiteral;
 use Microsoft\PhpParser\Node\ParenthesizedIntersectionType;
+use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\PropertyDeclaration;
+use Microsoft\PhpParser\Node\PropertyElement;
+use Microsoft\PhpParser\Node\PropertyHook;
+use Microsoft\PhpParser\Node\PropertyHookList;
 use Microsoft\PhpParser\Node\ReservedWord;
 use Microsoft\PhpParser\Node\StringLiteral;
 use Microsoft\PhpParser\Node\MethodDeclaration;
@@ -3423,10 +3427,133 @@ class Parser {
         } elseif ($questionToken) {
             $propertyDeclaration->typeDeclarationList = new MissingToken(TokenKind::PropertyType, $this->token->fullStart);
         }
-        $propertyDeclaration->propertyElements = $this->parseExpressionList($propertyDeclaration);
-        $propertyDeclaration->semicolon = $this->eat1(TokenKind::SemicolonToken);
+        $propertyDeclaration->propertyElements = $this->parsePropertyElementList($propertyDeclaration);
+        $requiresSemicolon = true;
+        foreach ($propertyDeclaration->propertyElements->children ?? [] as $child) {
+            if ($child instanceof PropertyElement && $child->hookList !== null) {
+                $requiresSemicolon = false;
+                break;
+            }
+        }
+        if ($requiresSemicolon) {
+            $propertyDeclaration->semicolon = $this->eat1(TokenKind::SemicolonToken);
+        } else {
+            $propertyDeclaration->semicolon = $this->eatOptional1(TokenKind::SemicolonToken);
+        }
 
         return $propertyDeclaration;
+    }
+
+    private function parsePropertyElementList($parentNode): DelimitedList\PropertyElementList
+    {
+        return $this->parseDelimitedList(
+            DelimitedList\PropertyElementList::class,
+            TokenKind::CommaToken,
+            $this->isPropertyElementStartFn(),
+            function ($list) {
+                return $this->parsePropertyElement($list);
+            },
+            $parentNode
+        ) ?? new DelimitedList\PropertyElementList();
+    }
+
+    private function isPropertyElementStartFn()
+    {
+        return function (Token $token): bool {
+            return $token->kind === TokenKind::VariableName || $token->kind === TokenKind::DollarToken;
+        };
+    }
+
+    private function parsePropertyElement($parentNode): PropertyElement
+    {
+        $element = new PropertyElement();
+        $element->parent = $parentNode;
+        $element->variable = $this->parseSimpleVariable($element);
+        $element->equalsToken = $this->eatOptional1(TokenKind::EqualsToken);
+        if ($element->equalsToken !== null) {
+            $element->initializer = $this->parseExpression($element);
+        }
+        if ($this->getCurrentToken()->kind === TokenKind::OpenBraceToken) {
+            $element->hookList = $this->parsePropertyHookList($element);
+        }
+        return $element;
+    }
+
+    private function parsePropertyHookList(PropertyElement $parentNode): PropertyHookList
+    {
+        $hookList = new PropertyHookList();
+        $hookList->parent = $parentNode;
+        $hookList->openBrace = $this->eat1(TokenKind::OpenBraceToken);
+        $hookList->hooks = [];
+
+        while (true) {
+            $token = $this->getCurrentToken();
+            if ($token->kind === TokenKind::CloseBraceToken || $token->kind === TokenKind::EndOfFileToken) {
+                break;
+            }
+            $previousFullStart = $token->fullStart;
+            $hook = $this->parsePropertyHook($hookList);
+            if ($hook instanceof PropertyHook) {
+                $hookList->hooks[] = $hook;
+            } else {
+                // Ensure forward progress to avoid infinite loops.
+                $this->advanceToken();
+            }
+            if ($this->getCurrentToken()->fullStart === $previousFullStart) {
+                // No progress was made; advance once to prevent infinite loops.
+                $this->advanceToken();
+            }
+        }
+
+        $hookList->closeBrace = $this->eat1(TokenKind::CloseBraceToken);
+        return $hookList;
+    }
+
+    private function parsePropertyHook(PropertyHookList $parentNode): ?PropertyHook
+    {
+        $hook = new PropertyHook();
+        $hook->parent = $parentNode;
+
+        if ($this->getCurrentToken()->kind === TokenKind::AttributeToken) {
+            $hook->attributes = $this->parseAttributeGroups($hook);
+        }
+
+        $token = $this->getCurrentToken();
+        if ($token->kind === TokenKind::Name) {
+            $text = \strtolower(\trim($token->getText($this->sourceFile->fileContents)));
+            if (\in_array($text, ['get', 'set', 'init'], true)) {
+                $hook->hookKeyword = $token;
+                $this->advanceToken();
+            } else {
+                $hook->hookKeyword = new MissingToken(TokenKind::Name, $token->fullStart);
+                return $hook;
+            }
+        } else {
+            $hook->hookKeyword = new MissingToken(TokenKind::Name, $token->fullStart);
+            return $hook;
+        }
+
+        if ($this->checkToken(TokenKind::OpenParenToken)) {
+            $hook->openParen = $this->eat1(TokenKind::OpenParenToken);
+            $hook->parameterList = $this->parseDelimitedList(
+                DelimitedList\ParameterDeclarationList::class,
+                TokenKind::CommaToken,
+                $this->isParameterStartFn(),
+                $this->parseParameterFn(),
+                $hook
+            );
+            $hook->closeParen = $this->eat1(TokenKind::CloseParenToken);
+        }
+
+        if ($this->checkToken(TokenKind::DoubleArrowToken)) {
+            $hook->arrowToken = $this->eat1(TokenKind::DoubleArrowToken);
+            $hook->expression = $this->parseExpression($hook);
+            $hook->semicolon = $this->eatOptional1(TokenKind::SemicolonToken) ?? new MissingToken(TokenKind::SemicolonToken, $this->getCurrentToken()->fullStart);
+        } else {
+            $hook->compoundStatement = $this->parseCompoundStatement($hook);
+        }
+
+        return $hook;
     }
 
     /**

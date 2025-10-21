@@ -18,6 +18,9 @@ use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression;
 use Microsoft\PhpParser\Node\Expression\TernaryExpression;
+use Microsoft\PhpParser\Node\PropertyElement;
+use Microsoft\PhpParser\Node\PropertyHook;
+use Microsoft\PhpParser\Node\PropertyHookList;
 use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
@@ -2818,13 +2821,16 @@ class TolerantASTConverter
     }
 
     /**
-     * @param PhpParser\Node\Expression\AssignmentExpression|PhpParser\Node\Expression\Variable $n
+     * @param PhpParser\Node\PropertyElement|PhpParser\Node\Expression\AssignmentExpression|PhpParser\Node\Expression\Variable $n
      * @param ?string $doc_comment
      * @throws InvalidNodeException if the type can't be converted to a valid AST
      * @throws InvalidArgumentException if the passed in class is completely unexpected
      */
-    private static function phpParserPropelemToAstPropelem(\Microsoft\PhpParser\Node\Expression\AssignmentExpression|\Microsoft\PhpParser\Node\Expression\Variable $n, ?string $doc_comment): ast\Node
+    private static function phpParserPropelemToAstPropelem(PhpParser\Node\PropertyElement|\Microsoft\PhpParser\Node\Expression\AssignmentExpression|\Microsoft\PhpParser\Node\Expression\Variable $n, ?string $doc_comment): ast\Node
     {
+        if ($n instanceof PhpParser\Node\PropertyElement) {
+            return static::phpParserPropertyElementToAstPropelem($n, $doc_comment);
+        }
         if ($n instanceof PhpParser\Node\Expression\AssignmentExpression) {
             $name_node = $n->leftOperand;
             if (!($name_node instanceof PhpParser\Node\Expression\Variable)) {
@@ -2850,12 +2856,104 @@ class TolerantASTConverter
 
         $children['docComment'] = static::extractPhpdocComment($n) ?? $doc_comment;
 
-        // AST version 110+ adds 'hooks' field to AST_PROP_ELEM
-        if (self::$ast_version_parsing >= 110) {
-            $children['hooks'] = null;  // TODO: Parse property hooks when tolerant-php-parser supports them
+        if (self::$ast_version_parsing >= 120) {
+            $children['hooks'] = null;
         }
 
         return new ast\Node(ast\AST_PROP_ELEM, 0, $children, $start_line);
+    }
+
+    private static function phpParserPropertyElementToAstPropelem(PhpParser\Node\PropertyElement $n, ?string $doc_comment): ast\Node
+    {
+        $variable = $n->variable;
+        if (!($variable instanceof PhpParser\Node\Expression\Variable)) {
+            throw new InvalidNodeException();
+        }
+        $name = $variable->name;
+        if (!($name instanceof Token) || !$name->length) {
+            throw new InvalidNodeException();
+        }
+        $children = [
+            'name' => static::tokenToString($name),
+            'default' => $n->initializer ? static::phpParserNodeToAstNode($n->initializer) : null,
+            'docComment' => static::extractPhpdocComment($n) ?? $doc_comment,
+        ];
+        if (self::$ast_version_parsing >= 120) {
+            $children['hooks'] = static::phpParserPropertyHookListToAstNode($n->hookList);
+        } else {
+            $children['hooks'] = null;
+        }
+        return new ast\Node(
+            ast\AST_PROP_ELEM,
+            0,
+            $children,
+            self::getStartLine($n)
+        );
+    }
+
+    private static function phpParserPropertyHookListToAstNode(?PhpParser\Node\PropertyHookList $hook_list): ?ast\Node
+    {
+        if (!$hook_list) {
+            return null;
+        }
+        $ast_hooks = [];
+        foreach ($hook_list->hooks ?? [] as $hook) {
+            if (!($hook instanceof PhpParser\Node\PropertyHook)) {
+                continue;
+            }
+            try {
+                $ast_hooks[] = static::phpParserPropertyHookToAstNode($hook);
+            } catch (InvalidNodeException) {
+                continue;
+            }
+        }
+        if (!$ast_hooks) {
+            return null;
+        }
+        return new ast\Node(ast\AST_STMT_LIST, 0, $ast_hooks, self::getStartLine($hook_list));
+    }
+
+    private static function phpParserPropertyHookToAstNode(PhpParser\Node\PropertyHook $hook): ast\Node
+    {
+        $keyword = $hook->hookKeyword;
+        if (!($keyword instanceof Token)) {
+            throw new InvalidNodeException();
+        }
+        $name = \strtolower(static::tokenToString($keyword));
+
+        $params = null;
+        if ($hook->parameterList) {
+            $params = static::phpParserParamsToAstParams($hook->parameterList, self::getStartLine($hook->parameterList));
+        }
+
+        if ($hook->arrowToken) {
+            $expr = $hook->expression ? static::phpParserNodeToAstNode($hook->expression) : static::newPlaceholderExpression($hook);
+            $stmts = new ast\Node(
+                ast\AST_PROPERTY_HOOK_SHORT_BODY,
+                0,
+                ['expr' => $expr],
+                $expr->lineno ?? self::getStartLine($hook)
+            );
+        } elseif ($hook->compoundStatement) {
+            $stmts = static::phpParserStmtlistToAstNode($hook->compoundStatement, self::getStartLine($hook->compoundStatement), false);
+        } else {
+            $stmts = null;
+        }
+
+        return static::newAstDecl(
+            ast\AST_PROPERTY_HOOK,
+            0,
+            [
+                'params' => $params,
+                'stmts' => $stmts,
+                'attributes' => static::phpParserAttributeGroupsToAstAttributeList($hook->attributes),
+            ],
+            self::getStartLine($hook),
+            static::extractPhpdocComment($hook),
+            $name,
+            self::getEndLine($hook),
+            self::nextDeclId()
+        );
     }
 
     private static function phpParserConstelemToAstConstelem(PhpParser\Node\ConstElement $n, ?string $doc_comment): ast\Node
