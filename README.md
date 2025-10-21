@@ -53,6 +53,8 @@ git subtree pull --prefix=third_party/phan-tolerant phan-tolerant main
 
 After pulling, drop any non-essential directories you don’t want vendored (e.g. `ci/`, `docs/`, `tools/`) before committing, mirroring the structure already in-tree.
 
+GitHub Actions runs the invariants and api PHPUnit suites from `third_party/phan-tolerant` (with assertions enabled via `zend.assertions=1`) on every PR/push, so keep the snapshot in sync with those tests.
+
 # Features
 
 Phan is able to perform the following kinds of analysis:
