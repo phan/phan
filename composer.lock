@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c42c75a361b465a5cc494045fc82c15",
+    "content-hash": "8b9e9c70651869e9cfe359f8a7ab1f24",
     "packages": [
         {
             "name": "composer/pcre",
@@ -325,7 +325,7 @@
             "name": "microsoft/tolerant-php-parser",
             "version": "0.1.3",
             "source": {
-                "type": "git",
+                "type": "vcs",
                 "url": "https://github.com/phan/phan-tolerant.git",
                 "reference": "main"
             },
