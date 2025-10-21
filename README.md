@@ -35,6 +35,24 @@ Phan and details on how to configure Phan for your project.<br />
 
 The [Wiki has more information about using Phan](https://github.com/phan/phan/wiki#using-phan).
 
+# Vendored tolerant parser
+
+Phan vendors a trimmed snapshot of [`phan/phan-tolerant`](https://github.com/phan/phan-tolerant) in `third_party/phan-tolerant/` for the fallback parser and language-server mapping. The subtree already ships with releases and regular clones; no extra steps are needed for day-to-day development. If you want to run the parser’s own test suite, install its dev dependencies and invoke PHPUnit from that directory:
+
+```
+cd third_party/phan-tolerant
+composer install
+./vendor/bin/phpunit
+```
+
+Maintainers can update the snapshot with:
+
+```
+git subtree pull --prefix=third_party/phan-tolerant phan-tolerant main
+```
+
+After pulling, drop any non-essential directories you don’t want vendored (e.g. `ci/`, `docs/`, `tools/`) before committing, mirroring the structure already in-tree.
+
 # Features
 
 Phan is able to perform the following kinds of analysis:

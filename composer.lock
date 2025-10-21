@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "40b903fefc95af232657d58d598dd46a",
+    "content-hash": "7001356fbdac4e407497514743f02b12",
     "packages": [
         {
             "name": "composer/pcre",
@@ -320,53 +320,6 @@
                 "source": "https://github.com/felixfbecker/php-advanced-json-rpc/tree/v3.2.1"
             },
             "time": "2021-06-11T22:34:44+00:00"
-        },
-        {
-            "name": "microsoft/tolerant-php-parser",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/microsoft/tolerant-php-parser.git",
-                "reference": "457738cbec8a6b337b00946df4228d830d6068b0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/microsoft/tolerant-php-parser/zipball/457738cbec8a6b337b00946df4228d830d6068b0",
-                "reference": "457738cbec8a6b337b00946df4228d830d6068b0",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^1.8",
-                "phpunit/phpunit": "^8.5.15"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Microsoft\\PhpParser\\": [
-                        "src/"
-                    ]
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Rob Lourens",
-                    "email": "roblou@microsoft.com"
-                }
-            ],
-            "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
-            "support": {
-                "issues": "https://github.com/microsoft/tolerant-php-parser/issues",
-                "source": "https://github.com/microsoft/tolerant-php-parser/tree/main"
-            },
-            "time": "2024-09-28T11:58:12+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -3324,9 +3277,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "microsoft/tolerant-php-parser": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
