@@ -1,0 +1,41 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "HaltCompilerStatement": {
+                    "haltCompilerKeyword": {
+                        "kind": "HaltCompilerKeyword",
+                        "textLength": 15
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "semicolonOrCloseTag": {
+                        "kind": "ScriptSectionEndTag",
+                        "textLength": 2
+                    },
+                    "data": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

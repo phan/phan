@@ -1,0 +1,7 @@
+*.out
+*.diff
+*.exp
+*.log
+*.sh
+*.repo
+.DS_Store

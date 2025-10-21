@@ -1,0 +1,46 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartWithEchoTag",
+                        "textLength": 3
+                    }
+                }
+            },
+            {
+                "EchoStatement": {
+                    "echoKeyword": null,
+                    "expressions": {
+                        "ExpressionList": {
+                            "children": [
+                                {
+                                    "StringLiteral": {
+                                        "startQuote": null,
+                                        "children": {
+                                            "kind": "StringLiteralToken",
+                                            "textLength": 12
+                                        },
+                                        "endQuote": null
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

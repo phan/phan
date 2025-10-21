@@ -1,0 +1,124 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ThrowExpression": {
+                            "throwKeyword": {
+                                "kind": "ThrowKeyword",
+                                "textLength": 5
+                            },
+                            "expression": {
+                                "BinaryExpression": {
+                                    "leftOperand": {
+                                        "ObjectCreationExpression": {
+                                            "newKeword": {
+                                                "kind": "NewKeyword",
+                                                "textLength": 3
+                                            },
+                                            "attributes": null,
+                                            "classTypeDesignator": {
+                                                "QualifiedName": {
+                                                    "globalSpecifier": null,
+                                                    "relativeSpecifier": null,
+                                                    "nameParts": [
+                                                        {
+                                                            "kind": "Name",
+                                                            "textLength": 16
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "openParen": {
+                                                "kind": "OpenParenToken",
+                                                "textLength": 1
+                                            },
+                                            "argumentExpressionList": null,
+                                            "closeParen": {
+                                                "kind": "CloseParenToken",
+                                                "textLength": 1
+                                            },
+                                            "classBaseClause": null,
+                                            "classInterfaceClause": null,
+                                            "classMembers": null
+                                        }
+                                    },
+                                    "operator": {
+                                        "kind": "AmpersandAmpersandToken",
+                                        "textLength": 2
+                                    },
+                                    "rightOperand": {
+                                        "CallExpression": {
+                                            "callableExpression": {
+                                                "QualifiedName": {
+                                                    "globalSpecifier": null,
+                                                    "relativeSpecifier": null,
+                                                    "nameParts": [
+                                                        {
+                                                            "kind": "Name",
+                                                            "textLength": 6
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "openParen": {
+                                                "kind": "OpenParenToken",
+                                                "textLength": 1
+                                            },
+                                            "argumentExpressionList": {
+                                                "ArgumentExpressionList": {
+                                                    "children": [
+                                                        {
+                                                            "ArgumentExpression": {
+                                                                "name": null,
+                                                                "colonToken": null,
+                                                                "dotDotDotToken": null,
+                                                                "expression": {
+                                                                    "StringLiteral": {
+                                                                        "startQuote": null,
+                                                                        "children": {
+                                                                            "kind": "StringLiteralToken",
+                                                                            "textLength": 37
+                                                                        },
+                                                                        "endQuote": null
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "closeParen": {
+                                                "kind": "CloseParenToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

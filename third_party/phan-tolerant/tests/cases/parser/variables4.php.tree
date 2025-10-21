@@ -1,0 +1,58 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "Variable": {
+                            "dollar": {
+                                "kind": "DollarToken",
+                                "textLength": 1
+                            },
+                            "name": {
+                                "BracedExpression": {
+                                    "openBrace": {
+                                        "kind": "OpenBraceToken",
+                                        "textLength": 1
+                                    },
+                                    "expression": {
+                                        "StringLiteral": {
+                                            "startQuote": null,
+                                            "children": {
+                                                "kind": "StringLiteralToken",
+                                                "textLength": 7
+                                            },
+                                            "endQuote": null
+                                        }
+                                    },
+                                    "closeBrace": {
+                                        "kind": "CloseBraceToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

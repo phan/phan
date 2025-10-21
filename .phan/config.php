@@ -458,7 +458,7 @@ return [
         'vendor/composer/semver/src',
         'vendor/composer/xdebug-handler/src',
         'vendor/felixfbecker/advanced-json-rpc/lib',
-        'vendor/microsoft/tolerant-php-parser/src',
+        'third_party/phan-tolerant/src',
         'vendor/netresearch/jsonmapper/src',
         'vendor/phpdocumentor/reflection-docblock/src',
         'vendor/phpdocumentor/reflection-common/src',
@@ -489,7 +489,8 @@ return [
     //       should be added to the `directory_list` as
     //       to `exclude_analysis_directory_list`.
     'exclude_analysis_directory_list' => [
-        'vendor/'
+        'vendor/',
+        'third_party/',
     ],
 
     // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.

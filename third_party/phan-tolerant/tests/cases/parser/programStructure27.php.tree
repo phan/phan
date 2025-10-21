@@ -1,0 +1,77 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "IfStatementNode": {
+                    "ifKeyword": {
+                        "kind": "IfKeyword",
+                        "textLength": 2
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "expression": {
+                        "ReservedWord": {
+                            "children": {
+                                "kind": "TrueReservedWord",
+                                "textLength": 4
+                            }
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colon": null,
+                    "statements": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [
+                                {
+                                    "InlineHtml": {
+                                        "scriptSectionEndTag": {
+                                            "kind": "ScriptSectionEndTag",
+                                            "textLength": 3
+                                        },
+                                        "text": {
+                                            "kind": "InlineHtml",
+                                            "textLength": 5
+                                        },
+                                        "scriptSectionStartTag": null
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "elseIfClauses": [],
+                    "elseClause": null,
+                    "endifKeyword": null,
+                    "semicolon": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

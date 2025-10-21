@@ -1,0 +1,14 @@
+[
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 22,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected 'instanceof'",
+        "start": 23,
+        "length": 10
+    }
+]

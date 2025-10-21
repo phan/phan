@@ -1,0 +1,4 @@
+<?php
+if (true) {
+    ?>
+hello

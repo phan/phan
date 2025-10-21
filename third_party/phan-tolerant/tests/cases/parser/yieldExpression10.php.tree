@@ -1,0 +1,81 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "FunctionDeclaration": {
+                    "attributes": null,
+                    "functionKeyword": {
+                        "kind": "FunctionKeyword",
+                        "textLength": 8
+                    },
+                    "byRefToken": null,
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 3
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "parameters": null,
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colonToken": null,
+                    "questionToken": null,
+                    "returnTypeList": null,
+                    "compoundStatementOrSemicolon": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [
+                                {
+                                    "ReturnStatement": {
+                                        "returnKeyword": {
+                                            "kind": "ReturnKeyword",
+                                            "textLength": 6
+                                        },
+                                        "expression": {
+                                            "YieldExpression": {
+                                                "yieldOrYieldFromKeyword": {
+                                                    "kind": "YieldKeyword",
+                                                    "textLength": 5
+                                                },
+                                                "arrayElement": null
+                                            }
+                                        },
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

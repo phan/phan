@@ -1,0 +1,3 @@
+<?php
+// This is rather morbid...
+die die;

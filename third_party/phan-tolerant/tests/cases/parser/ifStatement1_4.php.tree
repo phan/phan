@@ -1,0 +1,133 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "IfStatementNode": {
+                    "ifKeyword": {
+                        "kind": "IfKeyword",
+                        "textLength": 2
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "expression": {
+                        "Variable": {
+                            "dollar": null,
+                            "name": {
+                                "kind": "VariableName",
+                                "textLength": 8
+                            }
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colon": null,
+                    "statements": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [
+                                {
+                                    "EmptyStatement": {
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "elseIfClauses": [
+                        {
+                            "ElseIfClauseNode": {
+                                "elseIfKeyword": {
+                                    "kind": "ElseIfKeyword",
+                                    "textLength": 6
+                                },
+                                "openParen": {
+                                    "kind": "OpenParenToken",
+                                    "textLength": 1
+                                },
+                                "expression": {
+                                    "Variable": {
+                                        "dollar": null,
+                                        "name": {
+                                            "kind": "VariableName",
+                                            "textLength": 8
+                                        }
+                                    }
+                                },
+                                "closeParen": {
+                                    "kind": "CloseParenToken",
+                                    "textLength": 1
+                                },
+                                "colon": null,
+                                "statements": {
+                                    "CompoundStatementNode": {
+                                        "openBrace": {
+                                            "kind": "OpenBraceToken",
+                                            "textLength": 1
+                                        },
+                                        "statements": [],
+                                        "closeBrace": {
+                                            "kind": "CloseBraceToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "elseClause": {
+                        "ElseClauseNode": {
+                            "elseKeyword": {
+                                "kind": "ElseKeyword",
+                                "textLength": 4
+                            },
+                            "colon": null,
+                            "statements": {
+                                "CompoundStatementNode": {
+                                    "openBrace": {
+                                        "kind": "OpenBraceToken",
+                                        "textLength": 1
+                                    },
+                                    "statements": [],
+                                    "closeBrace": {
+                                        "kind": "CloseBraceToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "endifKeyword": null,
+                    "semicolon": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

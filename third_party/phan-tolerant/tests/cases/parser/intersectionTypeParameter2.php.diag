@@ -1,0 +1,44 @@
+[
+    {
+        "kind": 0,
+        "message": "'VariableName' expected.",
+        "start": 25,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "')' expected.",
+        "start": 25,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'{' expected.",
+        "start": 25,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 26,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 29,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected ')'",
+        "start": 29,
+        "length": 1
+    },
+    {
+        "kind": 0,
+        "message": "'}' expected.",
+        "start": 33,
+        "length": 0
+    }
+]

@@ -1,0 +1,14 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 7
+    },
+    {
+        "kind": "InvalidBinaryLiteral",
+        "textLength": 4
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

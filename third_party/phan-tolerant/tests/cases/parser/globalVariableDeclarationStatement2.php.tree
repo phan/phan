@@ -1,0 +1,60 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "GlobalDeclaration": {
+                    "globalKeyword": {
+                        "kind": "GlobalKeyword",
+                        "textLength": 6
+                    },
+                    "variableNameList": {
+                        "VariableNameList": {
+                            "children": [
+                                {
+                                    "Variable": {
+                                        "dollar": null,
+                                        "name": {
+                                            "kind": "VariableName",
+                                            "textLength": 2
+                                        }
+                                    }
+                                },
+                                {
+                                    "kind": "CommaToken",
+                                    "textLength": 1
+                                },
+                                {
+                                    "Variable": {
+                                        "dollar": null,
+                                        "name": {
+                                            "kind": "VariableName",
+                                            "textLength": 2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

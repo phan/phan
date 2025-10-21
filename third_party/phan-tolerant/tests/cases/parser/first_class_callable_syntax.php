@@ -1,0 +1,2 @@
+<?php
+$sl = strlen(...);

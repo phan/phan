@@ -1,0 +1,49 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EnumDeclaration": {
+                    "attributes": null,
+                    "enumKeyword": {
+                        "kind": "EnumKeyword",
+                        "textLength": 4
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "colonToken": null,
+                    "enumType": null,
+                    "enumInterfaceClause": null,
+                    "enumMembers": {
+                        "EnumMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "enumMemberDeclarations": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

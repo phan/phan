@@ -1,0 +1,149 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 3
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "AnonymousFunctionCreationExpression": {
+                                    "attributes": [
+                                        {
+                                            "AttributeGroup": {
+                                                "startToken": {
+                                                    "kind": "AttributeToken",
+                                                    "textLength": 2
+                                                },
+                                                "attributes": {
+                                                    "AttributeElementList": {
+                                                        "children": [
+                                                            {
+                                                                "Attribute": {
+                                                                    "name": {
+                                                                        "QualifiedName": {
+                                                                            "globalSpecifier": null,
+                                                                            "relativeSpecifier": null,
+                                                                            "nameParts": [
+                                                                                {
+                                                                                    "kind": "Name",
+                                                                                    "textLength": 6
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "openParen": null,
+                                                                    "argumentExpressionList": null,
+                                                                    "closeParen": null
+                                                                }
+                                                            },
+                                                            {
+                                                                "kind": "CommaToken",
+                                                                "textLength": 1
+                                                            },
+                                                            {
+                                                                "Attribute": {
+                                                                    "name": {
+                                                                        "QualifiedName": {
+                                                                            "globalSpecifier": null,
+                                                                            "relativeSpecifier": null,
+                                                                            "nameParts": [
+                                                                                {
+                                                                                    "kind": "Name",
+                                                                                    "textLength": 7
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "openParen": null,
+                                                                    "argumentExpressionList": null,
+                                                                    "closeParen": null
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "endToken": {
+                                                    "error": "MissingToken",
+                                                    "kind": "CloseBracketToken",
+                                                    "textLength": 0
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "staticModifier": {
+                                        "kind": "StaticKeyword",
+                                        "textLength": 6
+                                    },
+                                    "functionKeyword": {
+                                        "kind": "FunctionKeyword",
+                                        "textLength": 8
+                                    },
+                                    "byRefToken": null,
+                                    "name": null,
+                                    "openParen": {
+                                        "kind": "OpenParenToken",
+                                        "textLength": 1
+                                    },
+                                    "parameters": null,
+                                    "closeParen": {
+                                        "kind": "CloseParenToken",
+                                        "textLength": 1
+                                    },
+                                    "anonymousFunctionUseClause": null,
+                                    "colonToken": null,
+                                    "questionToken": null,
+                                    "returnTypeList": null,
+                                    "compoundStatementOrSemicolon": {
+                                        "CompoundStatementNode": {
+                                            "openBrace": {
+                                                "kind": "OpenBraceToken",
+                                                "textLength": 1
+                                            },
+                                            "statements": [],
+                                            "closeBrace": {
+                                                "kind": "CloseBraceToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

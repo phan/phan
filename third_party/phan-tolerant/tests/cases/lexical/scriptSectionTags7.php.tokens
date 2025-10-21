@@ -1,0 +1,30 @@
+[
+    {
+        "kind": "InlineHtml",
+        "textLength": 6
+    },
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "DoubleQuoteToken",
+        "textLength": 1
+    },
+    {
+        "kind": "DollarOpenBraceToken",
+        "textLength": 2
+    },
+    {
+        "kind": "ScriptSectionEndTag",
+        "textLength": 2
+    },
+    {
+        "kind": "InlineHtml",
+        "textLength": 1
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

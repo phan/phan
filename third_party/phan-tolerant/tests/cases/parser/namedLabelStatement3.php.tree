@@ -1,0 +1,41 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "QualifiedName": {
+                            "globalSpecifier": null,
+                            "relativeSpecifier": null,
+                            "nameParts": [
+                                {
+                                    "kind": "Name",
+                                    "textLength": 5
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

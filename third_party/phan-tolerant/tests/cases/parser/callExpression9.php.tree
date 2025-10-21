@@ -1,0 +1,73 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "CallExpression": {
+                            "callableExpression": {
+                                "QualifiedName": {
+                                    "globalSpecifier": null,
+                                    "relativeSpecifier": null,
+                                    "nameParts": [
+                                        {
+                                            "kind": "Name",
+                                            "textLength": 2
+                                        }
+                                    ]
+                                }
+                            },
+                            "openParen": {
+                                "kind": "OpenParenToken",
+                                "textLength": 1
+                            },
+                            "argumentExpressionList": {
+                                "ArgumentExpressionList": {
+                                    "children": [
+                                        {
+                                            "ArgumentExpression": {
+                                                "name": null,
+                                                "colonToken": null,
+                                                "dotDotDotToken": null,
+                                                "expression": {
+                                                    "NumericLiteral": {
+                                                        "children": {
+                                                            "kind": "IntegerLiteralToken",
+                                                            "textLength": 1
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "kind": "CloseParenToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

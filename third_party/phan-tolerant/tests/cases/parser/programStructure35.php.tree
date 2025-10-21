@@ -1,0 +1,79 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartWithEchoTag",
+                        "textLength": 3
+                    }
+                }
+            },
+            {
+                "EchoStatement": {
+                    "echoKeyword": null,
+                    "expressions": {
+                        "ExpressionList": {
+                            "children": [
+                                {
+                                    "error": "MissingToken",
+                                    "kind": "Expression",
+                                    "textLength": 0
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "EchoStatement": {
+                    "echoKeyword": {
+                        "kind": "EchoKeyword",
+                        "textLength": 4
+                    },
+                    "expressions": {
+                        "ExpressionList": {
+                            "children": [
+                                {
+                                    "StringLiteral": {
+                                        "startQuote": null,
+                                        "children": {
+                                            "kind": "StringLiteralToken",
+                                            "textLength": 7
+                                        },
+                                        "endQuote": null
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            },
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": {
+                        "kind": "ScriptSectionEndTag",
+                        "textLength": 2
+                    },
+                    "text": null,
+                    "scriptSectionStartTag": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

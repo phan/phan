@@ -1,0 +1,22 @@
+[
+    {
+        "kind": "InlineHtml",
+        "textLength": 6
+    },
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "DoubleQuoteToken",
+        "textLength": 1
+    },
+    {
+        "kind": "EncapsedAndWhitespace",
+        "textLength": 2
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

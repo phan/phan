@@ -1,0 +1,52 @@
+{
+    "SourceFileNode": {
+        "scriptSectionList": [
+            {
+                "ScriptSection": {
+                    "text": {
+                        "kind": "ScriptSectionPrependedText",
+                        "textLength": 0
+                    },
+                    "startTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    },
+                    "statementList": [
+                        {
+                            "ExpressionStatement": {
+                                "expression": {
+                                    "TemplateExpression": {
+                                        "children": [
+                                            {
+                                                "kind": "TemplateStringStart",
+                                                "textLength": 15
+                                            },
+                                            {
+                                                "kind": "VariableName",
+                                                "textLength": 6
+                                            },
+                                            {
+                                                "kind": "TemplateStringEnd",
+                                                "textLength": 5
+                                            }
+                                        ]
+                                    }
+                                },
+                                "semicolon": {
+                                    "error": "MissingToken",
+                                    "kind": "SemicolonToken",
+                                    "textLength": 0
+                                }
+                            }
+                        }
+                    ],
+                    "endTag": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

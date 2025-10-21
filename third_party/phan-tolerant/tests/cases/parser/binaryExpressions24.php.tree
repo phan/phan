@@ -1,0 +1,71 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "BinaryExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "QuestionQuestionToken",
+                                "textLength": 2
+                            },
+                            "rightOperand": {
+                                "error": "MissingToken",
+                                "kind": "Expression",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "ReturnStatement": {
+                    "returnKeyword": {
+                        "kind": "ReturnKeyword",
+                        "textLength": 6
+                    },
+                    "expression": {
+                        "ReservedWord": {
+                            "children": {
+                                "kind": "NullReservedWord",
+                                "textLength": 4
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

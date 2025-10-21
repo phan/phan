@@ -1,0 +1,14 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 7
+    },
+    {
+        "kind": "UnterminatedNoSubstitutionTemplateLiteral",
+        "textLength": 9
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

@@ -1,0 +1,123 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "FunctionDeclaration": {
+                    "attributes": null,
+                    "functionKeyword": {
+                        "kind": "FunctionKeyword",
+                        "textLength": 8
+                    },
+                    "byRefToken": null,
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 7
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "parameters": {
+                        "ParameterDeclarationList": {
+                            "children": [
+                                {
+                                    "Parameter": {
+                                        "attributes": [
+                                            {
+                                                "AttributeGroup": {
+                                                    "startToken": {
+                                                        "kind": "AttributeToken",
+                                                        "textLength": 2
+                                                    },
+                                                    "attributes": {
+                                                        "AttributeElementList": {
+                                                            "children": [
+                                                                {
+                                                                    "Attribute": {
+                                                                        "name": {
+                                                                            "QualifiedName": {
+                                                                                "globalSpecifier": null,
+                                                                                "relativeSpecifier": null,
+                                                                                "nameParts": [
+                                                                                    {
+                                                                                        "kind": "Name",
+                                                                                        "textLength": 11
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        "openParen": null,
+                                                                        "argumentExpressionList": null,
+                                                                        "closeParen": null
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "endToken": {
+                                                        "kind": "CloseBracketToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "visibilityToken": null,
+                                        "modifiers": null,
+                                        "questionToken": null,
+                                        "typeDeclarationList": null,
+                                        "byRefToken": null,
+                                        "dotDotDotToken": null,
+                                        "variableName": {
+                                            "kind": "VariableName",
+                                            "textLength": 6
+                                        },
+                                        "equalsToken": null,
+                                        "default": null
+                                    }
+                                },
+                                {
+                                    "kind": "CommaToken",
+                                    "textLength": 1
+                                }
+                            ]
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colonToken": null,
+                    "questionToken": null,
+                    "returnTypeList": null,
+                    "compoundStatementOrSemicolon": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

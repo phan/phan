@@ -1,0 +1,26 @@
+[
+    {
+        "kind": 0,
+        "message": "'(' expected.",
+        "start": 14,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "')' expected.",
+        "start": 27,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'endforeach' expected.",
+        "start": 41,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 41,
+        "length": 0
+    }
+]

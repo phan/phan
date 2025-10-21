@@ -1,0 +1,116 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "ListIntrinsicExpression": {
+                                    "listKeyword": {
+                                        "kind": "ListKeyword",
+                                        "textLength": 4
+                                    },
+                                    "openParen": {
+                                        "kind": "OpenParenToken",
+                                        "textLength": 1
+                                    },
+                                    "listElements": {
+                                        "ListExpressionList": {
+                                            "children": [
+                                                {
+                                                    "ArrayElement": {
+                                                        "elementKey": {
+                                                            "NumericLiteral": {
+                                                                "children": {
+                                                                    "kind": "IntegerLiteralToken",
+                                                                    "textLength": 1
+                                                                }
+                                                            }
+                                                        },
+                                                        "arrowToken": {
+                                                            "kind": "DoubleArrowToken",
+                                                            "textLength": 2
+                                                        },
+                                                        "byRef": null,
+                                                        "dotDotDot": null,
+                                                        "elementValue": {
+                                                            "Variable": {
+                                                                "dollar": null,
+                                                                "name": {
+                                                                    "kind": "VariableName",
+                                                                    "textLength": 2
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "kind": "CommaToken",
+                                                    "textLength": 1
+                                                },
+                                                {
+                                                    "ArrayElement": {
+                                                        "elementKey": null,
+                                                        "arrowToken": null,
+                                                        "byRef": null,
+                                                        "dotDotDot": null,
+                                                        "elementValue": {
+                                                            "Variable": {
+                                                                "dollar": null,
+                                                                "name": {
+                                                                    "kind": "VariableName",
+                                                                    "textLength": 2
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "closeParen": {
+                                        "kind": "CloseParenToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 4
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

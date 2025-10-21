@@ -1,0 +1,82 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "FunctionStaticDeclaration": {
+                    "staticKeyword": {
+                        "kind": "StaticKeyword",
+                        "textLength": 6
+                    },
+                    "staticVariableNameList": {
+                        "StaticVariableNameList": {
+                            "children": [
+                                {
+                                    "StaticVariableDeclaration": {
+                                        "variableName": {
+                                            "kind": "VariableName",
+                                            "textLength": 2
+                                        },
+                                        "equalsToken": {
+                                            "kind": "EqualsToken",
+                                            "textLength": 1
+                                        },
+                                        "assignment": {
+                                            "NumericLiteral": {
+                                                "children": {
+                                                    "kind": "IntegerLiteralToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "kind": "CommaToken",
+                                    "textLength": 1
+                                },
+                                {
+                                    "StaticVariableDeclaration": {
+                                        "variableName": {
+                                            "kind": "VariableName",
+                                            "textLength": 2
+                                        },
+                                        "equalsToken": {
+                                            "kind": "EqualsToken",
+                                            "textLength": 1
+                                        },
+                                        "assignment": {
+                                            "NumericLiteral": {
+                                                "children": {
+                                                    "kind": "IntegerLiteralToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

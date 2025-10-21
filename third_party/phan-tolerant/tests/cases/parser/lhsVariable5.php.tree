@@ -1,0 +1,75 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EchoStatement": {
+                    "echoKeyword": {
+                        "kind": "EchoKeyword",
+                        "textLength": 4
+                    },
+                    "expressions": {
+                        "ExpressionList": {
+                            "children": [
+                                {
+                                    "BinaryExpression": {
+                                        "leftOperand": {
+                                            "ErrorControlExpression": {
+                                                "operator": {
+                                                    "kind": "AtSymbolToken",
+                                                    "textLength": 1
+                                                },
+                                                "operand": {
+                                                    "Variable": {
+                                                        "dollar": null,
+                                                        "name": {
+                                                            "kind": "VariableName",
+                                                            "textLength": 2
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "operator": {
+                                            "kind": "InstanceOfKeyword",
+                                            "textLength": 10
+                                        },
+                                        "rightOperand": {
+                                            "QualifiedName": {
+                                                "globalSpecifier": null,
+                                                "relativeSpecifier": null,
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 8
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

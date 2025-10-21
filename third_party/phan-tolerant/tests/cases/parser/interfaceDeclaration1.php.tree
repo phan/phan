@@ -1,0 +1,47 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "InterfaceDeclaration": {
+                    "attributes": null,
+                    "interfaceKeyword": {
+                        "kind": "InterfaceKeyword",
+                        "textLength": 9
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 1
+                    },
+                    "interfaceBaseClause": null,
+                    "interfaceMembers": {
+                        "InterfaceMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "interfaceMemberDeclarations": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

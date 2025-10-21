@@ -1,0 +1,135 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "ObjectCreationExpression": {
+                                    "newKeword": {
+                                        "kind": "NewKeyword",
+                                        "textLength": 3
+                                    },
+                                    "attributes": null,
+                                    "classTypeDesignator": {
+                                        "kind": "ClassKeyword",
+                                        "textLength": 5
+                                    },
+                                    "openParen": {
+                                        "kind": "OpenParenToken",
+                                        "textLength": 1
+                                    },
+                                    "argumentExpressionList": null,
+                                    "closeParen": {
+                                        "kind": "CloseParenToken",
+                                        "textLength": 1
+                                    },
+                                    "classBaseClause": null,
+                                    "classInterfaceClause": {
+                                        "ClassInterfaceClause": {
+                                            "implementsKeyword": {
+                                                "kind": "ImplementsKeyword",
+                                                "textLength": 10
+                                            },
+                                            "interfaceNameList": {
+                                                "QualifiedNameList": {
+                                                    "children": [
+                                                        {
+                                                            "QualifiedName": {
+                                                                "globalSpecifier": null,
+                                                                "relativeSpecifier": null,
+                                                                "nameParts": [
+                                                                    {
+                                                                        "kind": "Name",
+                                                                        "textLength": 1
+                                                                    }
+                                                                ]
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "classMembers": null
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            },
+            {
+                "error": "SkippedToken",
+                "kind": "ExtendsKeyword",
+                "textLength": 7
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "SubscriptExpression": {
+                            "postfixExpression": {
+                                "QualifiedName": {
+                                    "globalSpecifier": null,
+                                    "relativeSpecifier": null,
+                                    "nameParts": [
+                                        {
+                                            "kind": "Name",
+                                            "textLength": 1
+                                        }
+                                    ]
+                                }
+                            },
+                            "openBracketOrBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "accessExpression": null,
+                            "closeBracketOrBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ReturnStatement": {
+                    "returnKeyword": {
+                        "kind": "ReturnKeyword",
+                        "textLength": 6
+                    },
+                    "expression": {
+                        "Variable": {
+                            "dollar": null,
+                            "name": {
+                                "kind": "VariableName",
+                                "textLength": 2
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

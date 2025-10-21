@@ -1,0 +1,80 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "EnumDeclaration": {
+                    "attributes": null,
+                    "enumKeyword": {
+                        "kind": "EnumKeyword",
+                        "textLength": 4
+                    },
+                    "name": {
+                        "kind": "Name",
+                        "textLength": 3
+                    },
+                    "colonToken": {
+                        "kind": "ColonToken",
+                        "textLength": 1
+                    },
+                    "enumType": {
+                        "kind": "IntReservedWord",
+                        "textLength": 3
+                    },
+                    "enumInterfaceClause": {
+                        "EnumInterfaceClause": {
+                            "implementsKeyword": {
+                                "kind": "ImplementsKeyword",
+                                "textLength": 10
+                            },
+                            "interfaceNameList": {
+                                "QualifiedNameList": {
+                                    "children": [
+                                        {
+                                            "QualifiedName": {
+                                                "globalSpecifier": null,
+                                                "relativeSpecifier": null,
+                                                "nameParts": [
+                                                    {
+                                                        "kind": "Name",
+                                                        "textLength": 3
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "enumMembers": {
+                        "EnumMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "enumMemberDeclarations": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

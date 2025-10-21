@@ -1,0 +1,1 @@
+<?php if (true): ?><?= 'x' ?><?php endif; ?>

@@ -1,0 +1,44 @@
+[
+    {
+        "kind": 0,
+        "message": "'QualifiedName' expected.",
+        "start": 169,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "')' expected.",
+        "start": 169,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "'{' expected.",
+        "start": 169,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected '|'",
+        "start": 169,
+        "length": 1
+    },
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 173,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected ')'",
+        "start": 173,
+        "length": 1
+    },
+    {
+        "kind": 0,
+        "message": "'}' expected.",
+        "start": 179,
+        "length": 0
+    }
+]

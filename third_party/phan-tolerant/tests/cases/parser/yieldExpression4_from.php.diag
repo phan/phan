@@ -1,0 +1,14 @@
+[
+    {
+        "kind": 0,
+        "message": "';' expected.",
+        "start": 103,
+        "length": 0
+    },
+    {
+        "kind": 0,
+        "message": "Unexpected '=>'",
+        "start": 104,
+        "length": 2
+    }
+]

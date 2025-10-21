@@ -1,0 +1,47 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "TraitDeclaration": {
+                    "attributes": null,
+                    "traitKeyword": {
+                        "kind": "TraitKeyword",
+                        "textLength": 5
+                    },
+                    "name": {
+                        "error": "MissingToken",
+                        "kind": "Name",
+                        "textLength": 0
+                    },
+                    "traitMembers": {
+                        "TraitMembers": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "traitMemberDeclarations": [],
+                            "closeBrace": {
+                                "kind": "CloseBraceToken",
+                                "textLength": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

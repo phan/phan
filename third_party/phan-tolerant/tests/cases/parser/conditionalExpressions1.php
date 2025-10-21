@@ -1,0 +1,3 @@
+<?php
+
+true ? true : false;

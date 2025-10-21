@@ -1,0 +1,98 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "IfStatementNode": {
+                    "ifKeyword": {
+                        "kind": "IfKeyword",
+                        "textLength": 2
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "expression": {
+                        "ReservedWord": {
+                            "children": {
+                                "kind": "TrueReservedWord",
+                                "textLength": 4
+                            }
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colon": {
+                        "kind": "ColonToken",
+                        "textLength": 1
+                    },
+                    "statements": [
+                        {
+                            "EchoStatement": {
+                                "echoKeyword": {
+                                    "kind": "EchoKeyword",
+                                    "textLength": 4
+                                },
+                                "expressions": {
+                                    "ExpressionList": {
+                                        "children": [
+                                            {
+                                                "StringLiteral": {
+                                                    "startQuote": null,
+                                                    "children": {
+                                                        "kind": "StringLiteralToken",
+                                                        "textLength": 7
+                                                    },
+                                                    "endQuote": null
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "semicolon": null
+                            }
+                        },
+                        {
+                            "InlineHtml": {
+                                "scriptSectionEndTag": {
+                                    "kind": "ScriptSectionEndTag",
+                                    "textLength": 3
+                                },
+                                "text": null,
+                                "scriptSectionStartTag": {
+                                    "kind": "ScriptSectionStartTag",
+                                    "textLength": 6
+                                }
+                            }
+                        }
+                    ],
+                    "elseIfClauses": [],
+                    "elseClause": null,
+                    "endifKeyword": {
+                        "kind": "EndIfKeyword",
+                        "textLength": 5
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

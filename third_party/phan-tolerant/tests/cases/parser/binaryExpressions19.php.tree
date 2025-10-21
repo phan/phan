@@ -1,0 +1,68 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "BinaryExpression": {
+                            "leftOperand": {
+                                "NumericLiteral": {
+                                    "children": {
+                                        "kind": "IntegerLiteralToken",
+                                        "textLength": 1
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "LessThanLessThanToken",
+                                "textLength": 2
+                            },
+                            "rightOperand": {
+                                "BinaryExpression": {
+                                    "leftOperand": {
+                                        "NumericLiteral": {
+                                            "children": {
+                                                "kind": "IntegerLiteralToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    },
+                                    "operator": {
+                                        "kind": "PlusToken",
+                                        "textLength": 1
+                                    },
+                                    "rightOperand": {
+                                        "NumericLiteral": {
+                                            "children": {
+                                                "kind": "IntegerLiteralToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,22 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "LessThanToken",
+        "textLength": 1
+    },
+    {
+        "kind": "QuestionToken",
+        "textLength": 1
+    },
+    {
+        "kind": "Name",
+        "textLength": 3
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

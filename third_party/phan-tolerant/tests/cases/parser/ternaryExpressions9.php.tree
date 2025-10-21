@@ -1,0 +1,110 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "AssignmentExpression": {
+                            "leftOperand": {
+                                "Variable": {
+                                    "dollar": null,
+                                    "name": {
+                                        "kind": "VariableName",
+                                        "textLength": 2
+                                    }
+                                }
+                            },
+                            "operator": {
+                                "kind": "EqualsToken",
+                                "textLength": 1
+                            },
+                            "byRef": null,
+                            "rightOperand": {
+                                "TernaryExpression": {
+                                    "condition": {
+                                        "NumericLiteral": {
+                                            "children": {
+                                                "kind": "IntegerLiteralToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    },
+                                    "questionToken": {
+                                        "kind": "QuestionToken",
+                                        "textLength": 1
+                                    },
+                                    "ifExpression": {
+                                        "TernaryExpression": {
+                                            "condition": {
+                                                "NumericLiteral": {
+                                                    "children": {
+                                                        "kind": "IntegerLiteralToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            },
+                                            "questionToken": {
+                                                "kind": "QuestionToken",
+                                                "textLength": 1
+                                            },
+                                            "ifExpression": {
+                                                "NumericLiteral": {
+                                                    "children": {
+                                                        "kind": "IntegerLiteralToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            },
+                                            "colonToken": {
+                                                "kind": "ColonToken",
+                                                "textLength": 1
+                                            },
+                                            "elseExpression": {
+                                                "NumericLiteral": {
+                                                    "children": {
+                                                        "kind": "IntegerLiteralToken",
+                                                        "textLength": 1
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "colonToken": {
+                                        "kind": "ColonToken",
+                                        "textLength": 1
+                                    },
+                                    "elseExpression": {
+                                        "NumericLiteral": {
+                                            "children": {
+                                                "kind": "IntegerLiteralToken",
+                                                "textLength": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "kind": "SemicolonToken",
+                        "textLength": 1
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "IfStatementNode": {
+                    "ifKeyword": {
+                        "kind": "IfKeyword",
+                        "textLength": 2
+                    },
+                    "openParen": {
+                        "kind": "OpenParenToken",
+                        "textLength": 1
+                    },
+                    "expression": {
+                        "ReservedWord": {
+                            "children": {
+                                "kind": "TrueReservedWord",
+                                "textLength": 4
+                            }
+                        }
+                    },
+                    "closeParen": {
+                        "kind": "CloseParenToken",
+                        "textLength": 1
+                    },
+                    "colon": null,
+                    "statements": {
+                        "CompoundStatementNode": {
+                            "openBrace": {
+                                "kind": "OpenBraceToken",
+                                "textLength": 1
+                            },
+                            "statements": [
+                                {
+                                    "error": "SkippedToken",
+                                    "kind": "HaltCompilerKeyword",
+                                    "textLength": 15
+                                },
+                                {
+                                    "ExpressionStatement": {
+                                        "expression": {
+                                            "ParenthesizedExpression": {
+                                                "openParen": {
+                                                    "kind": "OpenParenToken",
+                                                    "textLength": 1
+                                                },
+                                                "expression": {
+                                                    "error": "MissingToken",
+                                                    "kind": "Expression",
+                                                    "textLength": 0
+                                                },
+                                                "closeParen": {
+                                                    "kind": "CloseParenToken",
+                                                    "textLength": 1
+                                                }
+                                            }
+                                        },
+                                        "semicolon": {
+                                            "kind": "SemicolonToken",
+                                            "textLength": 1
+                                        }
+                                    }
+                                },
+                                {
+                                    "error": "SkippedToken",
+                                    "kind": "InlineHtml",
+                                    "textLength": 3
+                                }
+                            ],
+                            "closeBrace": {
+                                "error": "MissingToken",
+                                "kind": "CloseBraceToken",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "elseIfClauses": [],
+                    "elseClause": null,
+                    "endifKeyword": null,
+                    "semicolon": null
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

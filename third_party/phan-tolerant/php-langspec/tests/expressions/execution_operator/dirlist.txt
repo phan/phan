@@ -1,0 +1,11 @@
+ Volume in drive C is Windows
+ Volume Serial Number is 402E-CB36
+
+ Directory of C:\Rex's Data\PHP\Test Suite\Expressions\Execution Operator
+
+04/25/2014  01:03 PM    <DIR>          .
+04/25/2014  01:03 PM    <DIR>          ..
+06/02/2014  03:06 PM                 0 dirlist.txt
+06/02/2014  03:06 PM               610 execution_operator.php
+               2 File(s)            610 bytes
+               2 Dir(s)  88,273,268,736 bytes free

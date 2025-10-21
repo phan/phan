@@ -1,0 +1,107 @@
+{
+    "SourceFileNode": {
+        "statementList": [
+            {
+                "InlineHtml": {
+                    "scriptSectionEndTag": null,
+                    "text": null,
+                    "scriptSectionStartTag": {
+                        "kind": "ScriptSectionStartTag",
+                        "textLength": 6
+                    }
+                }
+            },
+            {
+                "ExpressionStatement": {
+                    "expression": {
+                        "ArrowFunctionCreationExpression": {
+                            "attributes": null,
+                            "staticModifier": null,
+                            "functionKeyword": {
+                                "kind": "FnKeyword",
+                                "textLength": 2
+                            },
+                            "byRefToken": null,
+                            "name": null,
+                            "openParen": {
+                                "error": "MissingToken",
+                                "kind": "OpenParenToken",
+                                "textLength": 0
+                            },
+                            "parameters": {
+                                "ParameterDeclarationList": {
+                                    "children": [
+                                        {
+                                            "Parameter": {
+                                                "attributes": [
+                                                    {
+                                                        "AttributeGroup": {
+                                                            "startToken": {
+                                                                "kind": "AttributeToken",
+                                                                "textLength": 2
+                                                            },
+                                                            "attributes": {
+                                                                "error": "MissingToken",
+                                                                "kind": "Name",
+                                                                "textLength": 0
+                                                            },
+                                                            "endToken": {
+                                                                "error": "MissingToken",
+                                                                "kind": "CloseBracketToken",
+                                                                "textLength": 0
+                                                            }
+                                                        }
+                                                    }
+                                                ],
+                                                "visibilityToken": null,
+                                                "modifiers": null,
+                                                "questionToken": null,
+                                                "typeDeclarationList": null,
+                                                "byRefToken": null,
+                                                "dotDotDotToken": null,
+                                                "variableName": {
+                                                    "error": "MissingToken",
+                                                    "kind": "VariableName",
+                                                    "textLength": 0
+                                                },
+                                                "equalsToken": null,
+                                                "default": null
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "closeParen": {
+                                "error": "MissingToken",
+                                "kind": "CloseParenToken",
+                                "textLength": 0
+                            },
+                            "colonToken": null,
+                            "questionToken": null,
+                            "returnTypeList": null,
+                            "arrowToken": {
+                                "error": "MissingToken",
+                                "kind": "DoubleArrowToken",
+                                "textLength": 0
+                            },
+                            "resultExpression": {
+                                "error": "MissingToken",
+                                "kind": "Expression",
+                                "textLength": 0
+                            }
+                        }
+                    },
+                    "semicolon": {
+                        "error": "MissingToken",
+                        "kind": "SemicolonToken",
+                        "textLength": 0
+                    }
+                }
+            }
+        ],
+        "endOfFileToken": {
+            "kind": "EndOfFileToken",
+            "textLength": 0
+        }
+    }
+}

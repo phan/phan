@@ -1,0 +1,22 @@
+[
+    {
+        "kind": "ScriptSectionStartTag",
+        "textLength": 6
+    },
+    {
+        "kind": "AsteriskAsteriskToken",
+        "textLength": 2
+    },
+    {
+        "kind": "AsteriskAsteriskEqualsToken",
+        "textLength": 3
+    },
+    {
+        "kind": "EqualsToken",
+        "textLength": 1
+    },
+    {
+        "kind": "EndOfFileToken",
+        "textLength": 0
+    }
+]

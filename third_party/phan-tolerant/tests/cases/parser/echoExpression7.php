@@ -1,0 +1,2 @@
+<?php
+ecHO $hi;
