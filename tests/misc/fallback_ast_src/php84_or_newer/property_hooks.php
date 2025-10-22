@@ -6,7 +6,7 @@ class PropertyHookExample
 
     public int $value {
         get => $this->counter;
-        set {
+        set(int $value) {
             $this->counter = $value;
         }
     }

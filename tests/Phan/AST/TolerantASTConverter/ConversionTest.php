@@ -145,16 +145,49 @@ final class ConversionTest extends TestBase
 
     private static function supportsPropertyHooks(): bool
     {
-        if (self::$supportsPropertyHooks !== null) {
-            return self::$supportsPropertyHooks;
+        if (!self::$hasCheckedPropertyHooks) {
+            self::$supportsPropertyHooks = self::probePropertyHooks();
+            self::$hasCheckedPropertyHooks = true;
         }
+        return self::$supportsPropertyHooks;
+    }
+
+    private static function supportsFinalPropertyPromotion(): bool
+    {
+        if (!self::$hasCheckedFinalPropertyPromotion) {
+            self::$supportsFinalPropertyPromotion = self::probeFinalPropertyPromotion();
+            self::$hasCheckedFinalPropertyPromotion = true;
+        }
+        return self::$supportsFinalPropertyPromotion;
+    }
+
+    private static function supportsPipeOperator(): bool
+    {
+        if (!self::$hasCheckedPipeOperator) {
+            self::$supportsPipeOperator = self::probePipeOperator();
+            self::$hasCheckedPipeOperator = true;
+        }
+        return self::$supportsPipeOperator;
+    }
+
+    private static function supportsPropertyOverrideAttribute(): bool
+    {
+        if (!self::$hasCheckedPropertyOverrideAttribute) {
+            self::$supportsPropertyOverrideAttribute = self::probePropertyOverrideAttribute();
+            self::$hasCheckedPropertyOverrideAttribute = true;
+        }
+        return self::$supportsPropertyOverrideAttribute;
+    }
+
+    private static function probePropertyHooks(): bool
+    {
         $code = <<<'PHP'
 <?php
 class PropertyHookCheck {
     private int $counter = 0;
     public int $value {
         get => $this->counter;
-        set {
+        set(int $value) {
             $this->counter = $value;
         }
     }
@@ -162,18 +195,14 @@ class PropertyHookCheck {
 PHP;
         try {
             ast\parse_code($code, Config::AST_VERSION);
-            self::$supportsPropertyHooks = true;
+            return true;
         } catch (\Throwable) {
-            self::$supportsPropertyHooks = false;
+            return false;
         }
-        return self::$supportsPropertyHooks;
     }
 
-    private static function supportsFinalPropertyPromotion(): bool
+    private static function probeFinalPropertyPromotion(): bool
     {
-        if (self::$supportsFinalPropertyPromotion !== null) {
-            return self::$supportsFinalPropertyPromotion;
-        }
         $code = <<<'PHP'
 <?php
 class FinalPromotionCheck {
@@ -182,36 +211,28 @@ class FinalPromotionCheck {
 PHP;
         try {
             ast\parse_code($code, Config::AST_VERSION);
-            self::$supportsFinalPropertyPromotion = true;
+            return true;
         } catch (\Throwable) {
-            self::$supportsFinalPropertyPromotion = false;
+            return false;
         }
-        return self::$supportsFinalPropertyPromotion;
     }
 
-    private static function supportsPipeOperator(): bool
+    private static function probePipeOperator(): bool
     {
-        if (self::$supportsPipeOperator !== null) {
-            return self::$supportsPipeOperator;
-        }
         $code = <<<'PHP'
 <?php
 $result = "example" |> strlen(...);
 PHP;
         try {
             ast\parse_code($code, Config::AST_VERSION);
-            self::$supportsPipeOperator = true;
+            return true;
         } catch (\Throwable) {
-            self::$supportsPipeOperator = false;
+            return false;
         }
-        return self::$supportsPipeOperator;
     }
 
-    private static function supportsPropertyOverrideAttribute(): bool
+    private static function probePropertyOverrideAttribute(): bool
     {
-        if (self::$supportsPropertyOverrideAttribute !== null) {
-            return self::$supportsPropertyOverrideAttribute;
-        }
         $code = <<<'PHP'
 <?php
 class OverrideBase {
@@ -224,16 +245,11 @@ class OverrideChild extends OverrideBase {
 PHP;
         try {
             ast\parse_code($code, Config::AST_VERSION);
-            self::$supportsPropertyOverrideAttribute = true;
+            return true;
         } catch (\Throwable) {
-            self::$supportsPropertyOverrideAttribute = false;
+            return false;
         }
-        return self::$supportsPropertyOverrideAttribute;
     }
-
-    /**
-     * @param \ast\Node|int|string|float|null|array $node
-     */
     private static function normalizeOriginalAST(\ast\Node|float|int|null|string|array $node): void
     {
         if ($node instanceof ast\Node) {
@@ -291,10 +307,22 @@ PHP;
         ast\AST_ARROW_FUNC,
     ];
 
-    private static ?bool $supportsPropertyHooks = null;
-    private static ?bool $supportsFinalPropertyPromotion = null;
-    private static ?bool $supportsPipeOperator = null;
-    private static ?bool $supportsPropertyOverrideAttribute = null;
+    /** Cached property hook support result @var bool */
+    private static bool $supportsPropertyHooks = false;
+    /** Cached final promotion support result @var bool */
+    private static bool $supportsFinalPropertyPromotion = false;
+    /** Cached pipe operator support result @var bool */
+    private static bool $supportsPipeOperator = false;
+    /** Cached property override attribute support result @var bool */
+    private static bool $supportsPropertyOverrideAttribute = false;
+    /** Whether property hook support was checked @var bool */
+    private static bool $hasCheckedPropertyHooks = false;
+    /** Whether final promotion support was checked @var bool */
+    private static bool $hasCheckedFinalPropertyPromotion = false;
+    /** Whether pipe operator support was checked @var bool */
+    private static bool $hasCheckedPipeOperator = false;
+    /** Whether property override attribute support was checked @var bool */
+    private static bool $hasCheckedPropertyOverrideAttribute = false;
 
     /**
      * Normalizes the flags on function declaration caused by \ast\flags\FUNC_GENERATOR.
