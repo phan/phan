@@ -55,8 +55,8 @@ jobs:
       - name: Install root dependencies
         run: composer install --no-interaction --no-progress
       - name: Install phan-tolerant dependencies
-        working-directory: vendor/microsoft/tolerant-php-parser
+        working-directory: vendor/phan/tolerant-php-parser
         run: composer install --no-interaction --no-progress
       - name: Run phan-tolerant PHPUnit suite (invariants + api)
-        working-directory: vendor/microsoft/tolerant-php-parser
+        working-directory: vendor/phan/tolerant-php-parser
         run: php -d zend.assertions=1 -d assert.exception=1 vendor/bin/phpunit --testsuite invariants,api
