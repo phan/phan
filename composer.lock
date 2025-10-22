@@ -327,12 +327,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phan/phan-tolerant.git",
-                "reference": "8fe08bc24fc1edb35d29322348187185817469bb"
+                "reference": "69b481cff49d8d7ec9670e94b56a51a987a2a581"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/8fe08bc24fc1edb35d29322348187185817469bb",
-                "reference": "8fe08bc24fc1edb35d29322348187185817469bb",
+                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/69b481cff49d8d7ec9670e94b56a51a987a2a581",
+                "reference": "69b481cff49d8d7ec9670e94b56a51a987a2a581",
                 "shasum": ""
             },
             "require": {
@@ -372,7 +372,7 @@
                 "source": "https://github.com/phan/phan-tolerant/tree/main",
                 "issues": "https://github.com/phan/phan-tolerant/issues"
             },
-            "time": "2025-10-21T23:09:18+00:00"
+            "time": "2025-10-22T03:33:19+00:00"
         },
         {
             "name": "netresearch/jsonmapper",

@@ -2105,21 +2105,31 @@ class TolerantASTConverter
     }
 
     private const VISIBILITY_FLAG_MAP = [
-        TokenKind::PublicKeyword    => ast\flags\MODIFIER_PUBLIC,
-        TokenKind::ProtectedKeyword => ast\flags\MODIFIER_PROTECTED,
-        TokenKind::PrivateKeyword   => ast\flags\MODIFIER_PRIVATE,
-        TokenKind::ReadonlyKeyword   => ast\flags\MODIFIER_READONLY,
+        TokenKind::VarKeyword       => flags\MODIFIER_PUBLIC,
+        TokenKind::PublicKeyword    => flags\MODIFIER_PUBLIC,
+        TokenKind::ProtectedKeyword => flags\MODIFIER_PROTECTED,
+        TokenKind::PrivateKeyword   => flags\MODIFIER_PRIVATE,
+        TokenKind::StaticKeyword    => flags\MODIFIER_STATIC,
+        TokenKind::AbstractKeyword  => flags\MODIFIER_ABSTRACT,
+        TokenKind::FinalKeyword     => flags\MODIFIER_FINAL,
+        TokenKind::ReadonlyKeyword  => flags\MODIFIER_READONLY,
     ];
+
+    /** @var array<int,int>|null */
+    private static ?array $asymmetricVisibilityFlagMap = null;
 
     private static function getParamFlags(PhpParser\Node\Parameter $n): int
     {
         $flags = ($n->byRefToken ? flags\PARAM_REF : 0) | ($n->dotDotDotToken ? flags\PARAM_VARIADIC : 0);
         if ($visibilityToken = $n->visibilityToken) {
-            $flags |= (self::VISIBILITY_FLAG_MAP[$visibilityToken->kind] ?? 0);
+            $flags |= self::tokenKindToVisibilityFlag($visibilityToken);
+        }
+        if ($setVisibilityToken = $n->setVisibilityToken) {
+            $flags |= self::tokenKindToVisibilityFlag($setVisibilityToken);
         }
         foreach ($n->modifiers ?? [] as $visibilityToken) {
             if ($visibilityToken instanceof Token) {
-                $flags |= (self::VISIBILITY_FLAG_MAP[$visibilityToken->kind] ?? 0);
+                $flags |= self::tokenKindToVisibilityFlag($visibilityToken);
             }
         }
         return $flags;
@@ -2990,39 +3000,64 @@ class TolerantASTConverter
     {
         $ast_visibility = 0;
         foreach ($visibility as $token) {
-            switch ($token->kind) {
-                case TokenKind::VarKeyword:
-                    $ast_visibility |= flags\MODIFIER_PUBLIC;
-                    break;
-                case TokenKind::PublicKeyword:
-                    $ast_visibility |= flags\MODIFIER_PUBLIC;
-                    break;
-                case TokenKind::ProtectedKeyword:
-                    $ast_visibility |= flags\MODIFIER_PROTECTED;
-                    break;
-                case TokenKind::PrivateKeyword:
-                    $ast_visibility |= flags\MODIFIER_PRIVATE;
-                    break;
-                case TokenKind::StaticKeyword:
-                    $ast_visibility |= flags\MODIFIER_STATIC;
-                    break;
-                case TokenKind::AbstractKeyword:
-                    $ast_visibility |= flags\MODIFIER_ABSTRACT;
-                    break;
-                case TokenKind::FinalKeyword:
-                    $ast_visibility |= flags\MODIFIER_FINAL;
-                    break;
-                case TokenKind::ReadonlyKeyword:
-                    $ast_visibility |= flags\MODIFIER_READONLY;
-                    break;
-                default:
-                    throw new \RuntimeException("Unexpected visibility modifier '" . Token::getTokenKindNameFromValue($token->kind) . "'");
+            if (!($token instanceof Token)) {
+                continue;
             }
+            $ast_visibility |= self::tokenKindToVisibilityFlag($token);
         }
         if ($automatically_add_public && !($ast_visibility & (flags\MODIFIER_PUBLIC | flags\MODIFIER_PROTECTED | flags\MODIFIER_PRIVATE))) {
             $ast_visibility |= flags\MODIFIER_PUBLIC;
         }
         return $ast_visibility;
+    }
+
+    private static function tokenKindToVisibilityFlag(Token $token): int
+    {
+        $kind = $token->kind;
+        if (isset(self::VISIBILITY_FLAG_MAP[$kind])) {
+            return self::VISIBILITY_FLAG_MAP[$kind];
+        }
+        $asymmetric = self::getAsymmetricVisibilityFlagMap();
+        if (isset($asymmetric[$kind])) {
+            return $asymmetric[$kind];
+        }
+        throw new RuntimeException("Unexpected visibility modifier '" . Token::getTokenKindNameFromValue($kind) . "'");
+    }
+
+    /**
+     * @return array<int,int>
+     */
+    private static function getAsymmetricVisibilityFlagMap(): array
+    {
+        if (self::$asymmetricVisibilityFlagMap !== null) {
+            return self::$asymmetricVisibilityFlagMap;
+        }
+        $map = [];
+        foreach ([
+            'PublicSetKeyword' => 'MODIFIER_PUBLIC_SET',
+            'ProtectedSetKeyword' => 'MODIFIER_PROTECTED_SET',
+            'PrivateSetKeyword' => 'MODIFIER_PRIVATE_SET',
+        ] as $token_name => $flag_name) {
+            $token_kind = self::resolveTokenKind($token_name);
+            $flag_value = self::resolveAstFlag($flag_name);
+            if ($token_kind !== null && $flag_value !== null) {
+                $map[$token_kind] = $flag_value;
+            }
+        }
+        self::$asymmetricVisibilityFlagMap = $map;
+        return $map;
+    }
+
+    private static function resolveTokenKind(string $token_name): ?int
+    {
+        $const = TokenKind::class . '::' . $token_name;
+        return \defined($const) ? \constant($const) : null;
+    }
+
+    private static function resolveAstFlag(string $flag_name): ?int
+    {
+        $const = 'ast\\flags\\' . $flag_name;
+        return \defined($const) ? \constant($const) : null;
     }
 
     private static function phpParserPropertyToAstNode(PhpParser\Node\PropertyDeclaration $n, int $start_line): ast\Node
