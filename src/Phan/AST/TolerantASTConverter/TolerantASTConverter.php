@@ -845,8 +845,9 @@ class TolerantASTConverter
                     $args = [];
                     $expr_node = static::phpParserNodeToAstNode($n->expression);
                     $args[] = $expr_node;
-                    if ($n->modifications !== null) {
-                        $args[] = static::phpParserNodeToAstNode($n->modifications);
+                    $modifications = $n->modifications;
+                    if ($modifications instanceof PhpParser\Node) {
+                        $args[] = static::phpParserNodeToAstNode($modifications);
                     }
                     $args_line = isset($args[0]) && $args[0] instanceof ast\Node ? $args[0]->lineno : $start_line;
                     return new ast\Node(
