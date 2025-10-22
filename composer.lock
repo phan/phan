@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee7c0f9941d4cd466b5320be8f99d890",
+    "content-hash": "0a2abbd1fef100abb009409ce68c3f32",
     "packages": [
         {
             "name": "composer/pcre",
@@ -322,59 +322,6 @@
             "time": "2021-06-11T22:34:44+00:00"
         },
         {
-            "name": "microsoft/tolerant-php-parser",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phan/phan-tolerant.git",
-                "reference": "329ef9577642c52e1f1495f3f00c199e898d873d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/329ef9577642c52e1f1495f3f00c199e898d873d",
-                "reference": "329ef9577642c52e1f1495f3f00c199e898d873d",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^1.8",
-                "phpunit/phpunit": "^8.5.15"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Microsoft\\PhpParser\\": [
-                        "src/"
-                    ]
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Microsoft\\PhpParser\\Tests\\Unit\\": [
-                        "tests/unit/"
-                    ]
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Rob Lourens",
-                    "email": "roblou@microsoft.com"
-                }
-            ],
-            "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
-            "support": {
-                "source": "https://github.com/phan/phan-tolerant/tree/main",
-                "issues": "https://github.com/phan/phan-tolerant/issues"
-            },
-            "time": "2025-10-22T14:25:01+00:00"
-        },
-        {
             "name": "netresearch/jsonmapper",
             "version": "v4.5.0",
             "source": {
@@ -424,6 +371,16 @@
                 "source": "https://github.com/cweiske/jsonmapper/tree/v4.5.0"
             },
             "time": "2024-09-08T10:13:13+00:00"
+        },
+        {
+            "name": "phan/tolerant-php-parser",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phan/phan-tolerant.git",
+                "reference": "main"
+            },
+            "type": "library"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -3331,7 +3288,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "microsoft/tolerant-php-parser": 20
+        "phan/tolerant-php-parser": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
