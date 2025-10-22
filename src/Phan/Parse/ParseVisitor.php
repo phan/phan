@@ -1404,6 +1404,10 @@ class ParseVisitor extends ScopeVisitor
             if (!$child_node instanceof Node) {
                 throw new AssertionError("Expected global constant element to be a Node");
             }
+            if ($child_node->kind === ast\AST_ATTRIBUTE_LIST) {
+                // Skip attribute lists appended to AST_CONST_DECL
+                continue;
+            }
 
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node && !$this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CONSTANT)) {

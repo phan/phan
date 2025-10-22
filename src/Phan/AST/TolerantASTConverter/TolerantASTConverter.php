@@ -3170,8 +3170,13 @@ class TolerantASTConverter
             }
             $const_elems[] = static::phpParserConstelemToAstConstelem($prop, $i === 0 ? $doc_comment : null);
         }
+        $children = $const_elems;
+        $attributes = static::phpParserAttributeGroupsToAstAttributeList($n->attributes);
+        if ($attributes) {
+            $children[] = $attributes;
+        }
 
-        return new ast\Node(ast\AST_CONST_DECL, 0, $const_elems, $const_elems[0]->lineno ?? $start_line);
+        return new ast\Node(ast\AST_CONST_DECL, 0, $children, $const_elems[0]->lineno ?? $start_line);
     }
 
     private static function phpParserDeclareListToAstDeclares(PhpParser\Node\Statement\DeclareStatement $declareStatement, int $start_line, ?string $first_doc_comment): ast\Node
