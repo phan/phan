@@ -348,6 +348,9 @@ class TolerantASTConverter
         $parser = CompatibleParser::create();
         $result = $parser->parseSourceFile($file_contents);
         $errors = DiagnosticsProvider::getDiagnostics($result);
+        if (isset($result->unterminatedCommentDiagnostic) && $result->unterminatedCommentDiagnostic instanceof Diagnostic) {
+            $errors[] = $result->unterminatedCommentDiagnostic;
+        }
         return $result;
     }
 
@@ -3136,6 +3139,16 @@ class TolerantASTConverter
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
+        $set_visibility_token = \property_exists($n, 'setVisibilityToken') ? $n->setVisibilityToken : null;
+        if ($set_visibility_token instanceof Token) {
+            try {
+                $flags |= self::tokenKindToVisibilityFlag($set_visibility_token);
+            } catch (RuntimeException $exception) {
+                if (!self::$should_add_placeholders) {
+                    throw $exception;
+                }
+            }
+        }
 
         $line = $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line);
         $prop_decl = new ast\Node(ast\AST_PROP_DECL, 0, $prop_elems, $line);

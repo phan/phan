@@ -42,6 +42,18 @@ final class CachingTolerantASTConverter extends TolerantASTConverter
             \reset(self::$php_parser_node_cache);
             unset(self::$php_parser_node_cache[\key(self::$php_parser_node_cache)]);
         }
+        $filtered_errors = [];
+        foreach ($new_errors as $diagnostic) {
+            if ($diagnostic instanceof Diagnostic) {
+                $filtered_errors[] = $diagnostic;
+            }
+        }
+        $new_errors = $filtered_errors;
+        if ($node->unterminatedCommentDiagnostic instanceof Diagnostic) {
+            $unterminated_comment_diagnostic = $node->unterminatedCommentDiagnostic;
+            $new_errors[] = $unterminated_comment_diagnostic;
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument filtered diagnostics guarantee type safety
         $entry = new PhpParserNodeEntry($node, $new_errors);
         self::$php_parser_node_cache[$file_contents] = $entry;
 
