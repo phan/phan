@@ -861,6 +861,13 @@ class TolerantASTConverter
                             throw $e;
                         }
                     }
+                    if (\PHP_VERSION_ID < 80300 || self::$ast_version_parsing < 110) {
+                        return static::phpParserClassConstFetchToAstClassConstFetch(
+                            $n->scopeResolutionQualifier,
+                            self::INCOMPLETE_CLASS_CONST,
+                            $start_line
+                        );
+                    }
                     return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $dynamic_name, $start_line);
                 }
                 throw new InvalidNodeException();
