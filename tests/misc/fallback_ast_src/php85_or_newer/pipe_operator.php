@@ -1,7 +1,18 @@
 <?php
 
+// Basic pipe usage
 $length = "Hello World" |> strlen(...);
 
-$upper = "hello" |> strtoupper(...);
+// Chain multiple pipes (unary functions only)
+$result = "  Text  "
+    |> trim(...)
+    |> strtoupper(...);
 
-$mapped = [1, 2, 3] |> array_map(fn (int $value): int => $value * 2, ...);
+// Pipe into a user-defined function
+function double(int $value): int
+{
+    return $value * 2;
+}
+$computed = 5
+    |> double(...)
+    |> double(...);
