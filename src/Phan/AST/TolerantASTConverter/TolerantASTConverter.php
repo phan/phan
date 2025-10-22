@@ -118,6 +118,15 @@ class TolerantASTConverter
 {
     use TolerantASTConverterTrait;
 
+    /**
+     * Converter parity TODOs being addressed in this branch:
+     * - Prevent scalar ExpressionStatements from returning raw values (0470_noop_scalar).
+     * - Reconcile named-argument replay in setRealParameterList()/argument conversion.
+     * - Map tolerant first-class callable nodes to ast\AST_FIRST_CLASS_CALL.
+     * - Preserve dynamic class-const fetch operands (e.g. invalid names) for analysis.
+     * - Mirror php-ast structure for spread assignments and related suggestion metadata.
+     */
+
     // The latest stable version of php-ast.
     // For something != 85, update the library's release.
     public const AST_VERSION = 85;
@@ -641,6 +650,19 @@ class TolerantASTConverter
                 if ($n->dotDotDotToken !== null) {
                     return new ast\Node(ast\AST_UNPACK, 0, ['expr' => $result], $start_line);
                 }
+                $name_token = $n->name;
+                if ($name_token !== null) {
+                    $name = static::tokenToString($name_token);
+                    return new ast\Node(
+                        ast\AST_NAMED_ARG,
+                        0,
+                        [
+                            'name' => $name,
+                            'expr' => $result,
+                        ],
+                        self::getStartLine($name_token) ?: $start_line
+                    );
+                }
                 return $result;
             },
             /**
@@ -821,23 +843,36 @@ class TolerantASTConverter
                         ],
                         $start_line
                     );
-                } else {
-                    if ($member_name instanceof Token) {
-                        if (\get_class($member_name) !== Token::class) {
-                            if (self::$should_add_placeholders) {
-                                $member_name = self::INCOMPLETE_CLASS_CONST;
-                            } else {
-                                throw new InvalidNodeException();
-                            }
+                }
+                if ($member_name instanceof Token) {
+                    if (\get_class($member_name) !== Token::class) {
+                        if (self::$should_add_placeholders) {
+                            $member_name = self::INCOMPLETE_CLASS_CONST;
                         } else {
-                            $member_name = static::tokenToString($member_name);
+                            throw new InvalidNodeException();
                         }
                     } else {
-                        // E.g. Node\Expression\BracedExpression
-                        throw new InvalidNodeException();
+                        $member_name = static::tokenToString($member_name);
                     }
                     return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $member_name, $start_line);
                 }
+                if ($member_name instanceof PhpParser\Node\Expression\BracedExpression) {
+                    $expr = $member_name->expression;
+                    if ($expr === null) {
+                        throw new InvalidNodeException();
+                    }
+                    try {
+                        $dynamic_name = static::phpParserNodeToAstNode($expr);
+                    } catch (InvalidNodeException $e) {
+                        if (self::$should_add_placeholders) {
+                            $dynamic_name = self::INCOMPLETE_CLASS_CONST;
+                        } else {
+                            throw $e;
+                        }
+                    }
+                    return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $dynamic_name, $start_line);
+                }
+                throw new InvalidNodeException();
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
                 // AST version 120 represents clone as AST_CALL instead of AST_CLONE
@@ -1261,11 +1296,11 @@ class TolerantASTConverter
                 return $children;
             },
             /**
-             * @return int|string|ast\Node|null
+             * @return int|float|string|ast\Node|null
              * null if incomplete
              * int|string for no-op scalar statements like `;2;`
              */
-            'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => static function (PhpParser\Node\Statement\ExpressionStatement $n, int $_): \ast\Node|int|null|string {
+            'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => static function (PhpParser\Node\Statement\ExpressionStatement $n, int $_): \ast\Node|int|float|null|string {
                 $expression = $n->expression;
                 // tolerant-php-parser uses parseExpression(..., $force=true), which can return an array.
                 // It is the only thing that uses $force=true at the time of writing.
@@ -3323,6 +3358,15 @@ class TolerantASTConverter
             if (!($item instanceof PhpParser\Node\ArrayElement)) {
                 throw new AssertionError("Expected ArrayElement");
             }
+            if ($item->dotDotDot) {
+                $ast_items[] = new ast\Node(
+                    ast\AST_UNPACK,
+                    0,
+                    ['expr' => static::phpParserNodeToAstNode($item->elementValue)],
+                    self::getStartLine($item)
+                );
+                continue;
+            }
             $element_key = $item->elementKey;
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, 0, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),
@@ -3474,9 +3518,12 @@ class TolerantASTConverter
         return $result;
     }
 
-    private static function phpParserClassConstFetchToAstClassConstFetch(\Microsoft\PhpParser\Node\Expression|\Microsoft\PhpParser\Node\QualifiedName|Token $scope_resolution_qualifier, string $name, int $start_line): ast\Node
+    /**
+     * @param string|int|float|bool|null|ast\Node $name
+     */
+    private static function phpParserClassConstFetchToAstClassConstFetch(\Microsoft\PhpParser\Node\Expression|\Microsoft\PhpParser\Node\QualifiedName|Token $scope_resolution_qualifier, string|int|float|bool|null|ast\Node $name, int $start_line): ast\Node
     {
-        if (\strcasecmp($name, 'class') === 0) {
+        if (\is_string($name) && \strcasecmp($name, 'class') === 0) {
             $class_node = static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier);
             if (!$class_node instanceof ast\Node) {
                 // e.g. (0)::class
