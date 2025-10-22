@@ -3139,9 +3139,10 @@ class TolerantASTConverter
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
-        if (\property_exists($n, 'setVisibilityToken') && $n->setVisibilityToken instanceof Token) {
+        $set_visibility_token = \property_exists($n, 'setVisibilityToken') ? $n->setVisibilityToken : null;
+        if ($set_visibility_token instanceof Token) {
             try {
-                $flags |= self::tokenKindToVisibilityFlag($n->setVisibilityToken);
+                $flags |= self::tokenKindToVisibilityFlag($set_visibility_token);
             } catch (RuntimeException $exception) {
                 if (!self::$should_add_placeholders) {
                     throw $exception;
