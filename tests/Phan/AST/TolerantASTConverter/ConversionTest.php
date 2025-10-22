@@ -106,6 +106,9 @@ final class ConversionTest extends TestBase
             if (\PHP_VERSION_ID < 80200 && \str_contains($path, '/php82_or_newer/')) {
                 continue;
             }
+            if (\PHP_VERSION_ID < 80300 && \str_contains($path, '/php83_or_newer/')) {
+                continue;
+            }
             if (\PHP_VERSION_ID < 80400 && \str_contains($path, '/php84_or_newer/')) {
                 continue;
             }
