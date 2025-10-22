@@ -3142,11 +3142,9 @@ class TolerantASTConverter
         if (\property_exists($n, 'setVisibilityToken') && $n->setVisibilityToken instanceof Token) {
             try {
                 $flags |= self::tokenKindToVisibilityFlag($n->setVisibilityToken);
-            } catch (RuntimeException) {
-                if (self::$should_add_placeholders) {
-                    // ignore unexpected token when adding placeholders
-                } else {
-                    throw;
+            } catch (RuntimeException $exception) {
+                if (!self::$should_add_placeholders) {
+                    throw $exception;
                 }
             }
         }
