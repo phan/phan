@@ -116,6 +116,18 @@ final class ConversionTest extends TestBase
             if (\PHP_VERSION_ID < 80500 && \str_contains($normalized_path, '/php85_or_newer/')) {
                 continue;
             }
+            if (\str_contains($normalized_path, '/php84_or_newer/property_hooks.php') && !self::supportsPropertyHooks()) {
+                continue;
+            }
+            if (\str_contains($normalized_path, '/php85_or_newer/final_property_promotion.php') && !self::supportsFinalPropertyPromotion()) {
+                continue;
+            }
+            if (\str_contains($normalized_path, '/php85_or_newer/pipe_operator.php') && !self::supportsPipeOperator()) {
+                continue;
+            }
+            if (\str_contains($normalized_path, '/php85_or_newer/override_property.php') && !self::supportsPropertyOverrideAttribute()) {
+                continue;
+            }
             if (\PHP_VERSION_ID >= 80400) {
                 foreach ([
                     '/misc/fallback_ast_src/exit.php',
@@ -131,9 +143,113 @@ final class ConversionTest extends TestBase
         return $tests;
     }
 
-    /**
-     * @param \ast\Node|int|string|float|null|array $node
-     */
+    private static function supportsPropertyHooks(): bool
+    {
+        if (!self::$hasCheckedPropertyHooks) {
+            self::$supportsPropertyHooks = self::probePropertyHooks();
+            self::$hasCheckedPropertyHooks = true;
+        }
+        return self::$supportsPropertyHooks;
+    }
+
+    private static function supportsFinalPropertyPromotion(): bool
+    {
+        if (!self::$hasCheckedFinalPropertyPromotion) {
+            self::$supportsFinalPropertyPromotion = self::probeFinalPropertyPromotion();
+            self::$hasCheckedFinalPropertyPromotion = true;
+        }
+        return self::$supportsFinalPropertyPromotion;
+    }
+
+    private static function supportsPipeOperator(): bool
+    {
+        if (!self::$hasCheckedPipeOperator) {
+            self::$supportsPipeOperator = self::probePipeOperator();
+            self::$hasCheckedPipeOperator = true;
+        }
+        return self::$supportsPipeOperator;
+    }
+
+    private static function supportsPropertyOverrideAttribute(): bool
+    {
+        if (!self::$hasCheckedPropertyOverrideAttribute) {
+            self::$supportsPropertyOverrideAttribute = self::probePropertyOverrideAttribute();
+            self::$hasCheckedPropertyOverrideAttribute = true;
+        }
+        return self::$supportsPropertyOverrideAttribute;
+    }
+
+    private static function probePropertyHooks(): bool
+    {
+        $code = <<<'PHP'
+<?php
+class PropertyHookCheck {
+    private int $counter = 0;
+    public int $value {
+        get => $this->counter;
+        set(int $value) {
+            $this->counter = $value;
+        }
+    }
+}
+PHP;
+        try {
+            ast\parse_code($code, Config::AST_VERSION);
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private static function probeFinalPropertyPromotion(): bool
+    {
+        $code = <<<'PHP'
+<?php
+class FinalPromotionCheck {
+    public function __construct(public final string $value) {}
+}
+PHP;
+        try {
+            ast\parse_code($code, Config::AST_VERSION);
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private static function probePipeOperator(): bool
+    {
+        $code = <<<'PHP'
+<?php
+$result = "example" |> strlen(...);
+PHP;
+        try {
+            ast\parse_code($code, Config::AST_VERSION);
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private static function probePropertyOverrideAttribute(): bool
+    {
+        $code = <<<'PHP'
+<?php
+class OverrideBase {
+    protected string $value = 'base';
+}
+class OverrideChild extends OverrideBase {
+    #[Override]
+    protected string $value = 'child';
+}
+PHP;
+        try {
+            ast\parse_code($code, Config::AST_VERSION);
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
     private static function normalizeOriginalAST(\ast\Node|float|int|null|string|array $node): void
     {
         if ($node instanceof ast\Node) {
@@ -190,6 +306,23 @@ final class ConversionTest extends TestBase
         ast\AST_CLOSURE,
         ast\AST_ARROW_FUNC,
     ];
+
+    /** Cached property hook support result @var bool */
+    private static bool $supportsPropertyHooks = false;
+    /** Cached final promotion support result @var bool */
+    private static bool $supportsFinalPropertyPromotion = false;
+    /** Cached pipe operator support result @var bool */
+    private static bool $supportsPipeOperator = false;
+    /** Cached property override attribute support result @var bool */
+    private static bool $supportsPropertyOverrideAttribute = false;
+    /** Whether property hook support was checked @var bool */
+    private static bool $hasCheckedPropertyHooks = false;
+    /** Whether final promotion support was checked @var bool */
+    private static bool $hasCheckedFinalPropertyPromotion = false;
+    /** Whether pipe operator support was checked @var bool */
+    private static bool $hasCheckedPipeOperator = false;
+    /** Whether property override attribute support was checked @var bool */
+    private static bool $hasCheckedPropertyOverrideAttribute = false;
 
     /**
      * Normalizes the flags on function declaration caused by \ast\flags\FUNC_GENERATOR.

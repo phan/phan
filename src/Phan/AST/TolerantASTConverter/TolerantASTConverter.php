@@ -2480,6 +2480,28 @@ class TolerantASTConverter
 
     private static function phpParserArgListToAstArgList(?\Microsoft\PhpParser\Node\DelimitedList\ArgumentExpressionList $args, int $line): ast\Node
     {
+        if ($args !== null) {
+            $filtered_children = [];
+            foreach ($args->children ?? [] as $arg) {
+                if ($arg instanceof Token && $arg->kind === TokenKind::CommaToken) {
+                    continue;
+                }
+                $filtered_children[] = $arg;
+            }
+            if (\count($filtered_children) === 1) {
+                $only_arg = $filtered_children[0];
+                if ($only_arg instanceof PhpParser\Node\Expression\ArgumentExpression
+                    && $only_arg->dotDotDotToken !== null
+                    && $only_arg->expression === null) {
+                    return new ast\Node(
+                        ast\AST_CALLABLE_CONVERT,
+                        0,
+                        [],
+                        self::getStartLine($only_arg)
+                    );
+                }
+            }
+        }
         $ast_args = [];
         foreach ($args->children ?? [] as $arg) {
             if ($arg instanceof Token && $arg->kind === TokenKind::CommaToken) {
