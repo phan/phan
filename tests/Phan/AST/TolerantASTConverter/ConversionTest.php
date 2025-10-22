@@ -113,6 +113,9 @@ final class ConversionTest extends TestBase
             if (\PHP_VERSION_ID < 80400 && \str_contains($normalized_path, '/php84_or_newer/')) {
                 continue;
             }
+            if (\PHP_VERSION_ID < 80500 && \str_contains($normalized_path, '/php85_or_newer/')) {
+                continue;
+            }
             if (\PHP_VERSION_ID >= 80400) {
                 foreach ([
                     '/misc/fallback_ast_src/exit.php',

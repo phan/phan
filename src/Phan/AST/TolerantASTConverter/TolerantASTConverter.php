@@ -842,12 +842,19 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
                 // AST version 120 represents clone as AST_CALL instead of AST_CLONE
                 if (self::$ast_version_parsing >= 120) {
+                    $args = [];
+                    $expr_node = static::phpParserNodeToAstNode($n->expression);
+                    $args[] = $expr_node;
+                    if ($n->modifications !== null) {
+                        $args[] = static::phpParserNodeToAstNode($n->modifications);
+                    }
+                    $args_line = isset($args[0]) && $args[0] instanceof ast\Node ? $args[0]->lineno : $start_line;
                     return new ast\Node(
                         ast\AST_CALL,
                         0,
                         [
                             'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'clone'], $start_line),
-                            'args' => new ast\Node(ast\AST_ARG_LIST, 0, [static::phpParserNodeToAstNode($n->expression)], $start_line),
+                            'args' => new ast\Node(ast\AST_ARG_LIST, 0, $args, $args_line),
                         ],
                         $start_line
                     );
