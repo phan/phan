@@ -118,15 +118,6 @@ class TolerantASTConverter
 {
     use TolerantASTConverterTrait;
 
-    /**
-     * Converter parity TODOs being addressed in this branch:
-     * - Prevent scalar ExpressionStatements from returning raw values (0470_noop_scalar).
-     * - Reconcile named-argument replay in setRealParameterList()/argument conversion.
-     * - Map tolerant first-class callable nodes to ast\AST_FIRST_CLASS_CALL.
-     * - Preserve dynamic class-const fetch operands (e.g. invalid names) for analysis.
-     * - Mirror php-ast structure for spread assignments and related suggestion metadata.
-     */
-
     // The latest stable version of php-ast.
     // For something != 85, update the library's release.
     public const AST_VERSION = 85;
