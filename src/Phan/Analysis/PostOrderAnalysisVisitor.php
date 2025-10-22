@@ -1582,6 +1582,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$child_node instanceof Node) {
                 throw new AssertionError('expected const element to be a Node');
             }
+            if ($child_node->kind === ast\AST_ATTRIBUTE_LIST) {
+                // Skip appended attribute groups (PHP 8.5+)
+                continue;
+            }
             $name = $child_node->children['name'];
             if (!\is_string($name)) {
                 throw new AssertionError('expected const name to be a string');
