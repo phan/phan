@@ -1,0 +1,5 @@
+%s:7 PhanDeprecatedFunctionInternal Call to deprecated function \imagedestroy()
+%s:10 PhanDeprecatedFunctionInternal Call to deprecated function \curl_close()
+%s:13 PhanDeprecatedFunctionInternal Call to deprecated function \curl_share_close()
+%s:16 PhanDeprecatedFunctionInternal Call to deprecated function \finfo_close()
+%s:19 PhanDeprecatedFunctionInternal Call to deprecated function \xml_parser_free()

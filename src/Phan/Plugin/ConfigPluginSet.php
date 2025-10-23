@@ -44,7 +44,7 @@ use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\ExtendedDependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 use Phan\Plugin\Internal\MiscParamPlugin;
-use Phan\Plugin\Internal\Php83DeprecationPlugin;
+use Phan\Plugin\Internal\PhpDeprecationPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\NodeSelectionVisitor;
 use Phan\Plugin\Internal\RedundantConditionCallPlugin;
@@ -979,7 +979,7 @@ final class ConfigPluginSet extends PluginV3 implements
                 new DependentReturnTypeOverridePlugin(),
                 new StringFunctionPlugin(),
                 new MiscParamPlugin(),
-                new Php83DeprecationPlugin(),
+                new PhpDeprecationPlugin(),
             ];
             if (Config::getValue('enable_extended_internal_return_type_plugins')) {
                 \array_unshift($internal_return_type_plugins, new ExtendedDependentReturnTypeOverridePlugin());
