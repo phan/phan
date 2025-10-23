@@ -275,8 +275,11 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             return;
         }
 
+        // Mark as deprecated but don't add a custom doc comment with the reason.
+        // When the extension is loaded, PHP's own deprecation attributes provide the info.
+        // When the extension is not loaded, we still want consistent test output.
+        // Users can look up the deprecation reason in PHP documentation.
         $function->setIsDeprecated(true);
-        $function->setDocComment('/** @deprecated ' . $deprecation_info['reason'] . ' */');
     }
 
     public static function getPostAnalyzeNodeVisitorClassName(): string
