@@ -1,679 +1,1122 @@
 <?php
 
-// Start of pcntl v.
-
-
-
-
-/**
- * Forks the currently running process
- * @link https://php.net/manual/en/function.pcntl-fork.php
- * @return int On success, the PID of the child process is returned in the
- * parent's thread of execution, and a 0 is returned in the child's
- * thread of execution. On failure, a -1 will be returned in the
- * parent's context, no child process will be created, and a PHP
- * error is raised.
- */
-function pcntl_fork(): int {}
-
-/**
- * Waits on or returns the status of a forked child
- * @link https://php.net/manual/en/function.pcntl-waitpid.php
- * @param int $process_id <p>
- * The value of <i>pid</i> can be one of the following:
- * <table>
- * possible values for <i>pid</i>
- * <tr valign="top">
- * <td>&lt; -1</td>
- * <td>
- * wait for any child process whose process group ID is equal to
- * the absolute value of <i>pid</i>.
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>-1</td>
- * <td>
- * wait for any child process; this is the same behaviour that
- * the wait function exhibits.
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>0</td>
- * <td>
- * wait for any child process whose process group ID is equal to
- * that of the calling process.
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>&gt; 0</td>
- * <td>
- * wait for the child whose process ID is equal to the value of
- * <i>pid</i>.
- * </td>
- * </tr>
- * </table>
- * </p>
- * <p>
- * Specifying -1 as the <i>pid</i> is
- * equivalent to the functionality <b>pcntl_wait</b> provides
- * (minus <i>options</i>).
- * </p>
- * @param int &$status <p>
- * <b>pcntl_waitpid</b> will store status information
- * in the <i>status</i> parameter which can be
- * evaluated using the following functions:
- * <b>pcntl_wifexited</b>,
- * <b>pcntl_wifstopped</b>,
- * <b>pcntl_wifsignaled</b>,
- * <b>pcntl_wexitstatus</b>,
- * <b>pcntl_wtermsig</b> and
- * <b>pcntl_wstopsig</b>.
- * </p>
- * @param int $flags [optional] <p>
- * The value of <i>options</i> is the value of zero
- * or more of the following two global constants
- * OR'ed together:
- * <table>
- * possible values for <i>options</i>
- * <tr valign="top">
- * <td>WNOHANG</td>
- * <td>
- * return immediately if no child has exited.
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>WUNTRACED</td>
- * <td>
- * return for children which are stopped, and whose status has
- * not been reported.
- * </td>
- * </tr>
- * </table>
- * </p>
- * @param array &$resource_usage
- * @return int <b>pcntl_waitpid</b> returns the process ID of the
- * child which exited, -1 on error or zero if <b>WNOHANG</b> was used and no
- * child was available
- */
-function pcntl_waitpid(
-    int $process_id,
-    &$status,
-    int $flags = 0,
-    , default: "bool")]
-function pcntl_exec(string $path, array $args = [], array $env_vars = []) {}
-
-/**
- * Set an alarm clock for delivery of a signal
- * @link https://php.net/manual/en/function.pcntl-alarm.php
- * @param int $seconds <p>
- * The number of seconds to wait. If <i>seconds</i> is
- * zero, no new alarm is created.
- * </p>
- * @return int the time in seconds that any previously scheduled alarm had
- * remaining before it was to be delivered, or 0 if there
- * was no previously scheduled alarm.
- */
-function pcntl_alarm(int $seconds): int {}
-
-/**
- * Retrieve the error number set by the last pcntl function which failed
- * @link https://php.net/manual/en/function.pcntl-get-last-error.php
- * @return int error code.
- * @since 5.3.4
- */
-, default: "string|false")]
-function pcntl_strerror(int $error_code): false|string {}
-
-/**
- * Get the priority of any process
- * @link https://php.net/manual/en/function.pcntl-getpriority.php
- * @param int|null $process_id [optional] <p>
- * If not specified, the pid of the current process  (getmypid()) is used.
- * </p>
- * @param int $mode [optional] <p>
- * One of <b>PRIO_PGRP</b>, <b>PRIO_USER</b>
- * or <b>PRIO_PROCESS</b>.
- * </p>
- * @return int|false <b>pcntl_getpriority</b> returns the priority of the process
- * or <b>FALSE</b> on error. A lower numerical value causes more favorable
- * scheduling.
- */
-function pcntl_getpriority(?int $process_id, int $mode = PRIO_PROCESS): int|false {}
-
-/**
- * Change the priority of any process
- * @link https://php.net/manual/en/function.pcntl-setpriority.php
- * @param int $priority <p>
- * <i>priority</i> is generally a value in the range
- * -20 to 20. The default priority
- * is 0 while a lower numerical value causes more
- * favorable scheduling. Because priority levels can differ between
- * system types and kernel versions, please see your system's setpriority(2)
- * man page for specific details.
- * </p>
- * @param int|null $process_id [optional] <p>
- * If not specified, the pid of the current process (getmypid()) is used.
- * </p>
- * @param int $mode [optional] <p>
- * One of <b>PRIO_PGRP</b>, <b>PRIO_USER</b>
- * or <b>PRIO_PROCESS</b>.
- * </p>
- * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
- */
-function pcntl_setpriority(int $priority, ?int $process_id, int $mode = PRIO_PROCESS): bool {}
-
-/**
- * Sets and retrieves blocked signals
- * @link https://php.net/manual/en/function.pcntl-sigprocmask.php
- * @param int $mode <p>
- * Sets the behavior of <b>pcntl_sigprocmask</b>. Possible
- * values:
- * <b>SIG_BLOCK</b>: Add the signals to the
- * currently blocked signals.
- * <b>SIG_UNBLOCK</b>: Remove the signals from the
- * currently blocked signals.
- * <b>SIG_SETMASK</b>: Replace the currently
- * blocked signals by the given list of signals.
- * </p>
- * @param array $signals <p>
- * List of signals.
- * </p>
- * @param array &$old_signals [optional] <p>
- * The <i>old_signals</i> parameter is set to an array
- * containing the list of the previously blocked signals.
- * </p>
- * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
- */
-function pcntl_sigprocmask(int $mode, array $signals, &$old_signals): bool {}
-
-/**
- * Waits for signals
- * @link https://php.net/manual/en/function.pcntl-sigwaitinfo.php
- * @param array $signals <p>
- * Array of signals to wait for.
- * </p>
- * @param array &$info <p>
- * The <i>info</i> parameter is set to an array containing
- * informations about the signal.
- * </p>
- * <p>
- * The following elements are set for all signals:
- * signo: Signal number
- * errno: An error number
- * code: Signal code
- * </p>
- * <p>
- * The following elements may be set for the <b>SIGCHLD</b> signal:
- * status: Exit value or signal
- * utime: User time consumed
- * stime: System time consumed
- * pid: Sending process ID
- * uid: Real user ID of sending process
- * </p>
- * <p>
- * The following elements may be set for the <b>SIGILL</b>,
- * <b>SIGFPE</b>, <b>SIGSEGV</b> and
- * <b>SIGBUS</b> signals:
- * addr: Memory location which caused fault
- * </p>
- * <p>
- * The following element may be set for the <b>SIGPOLL</b>
- * signal:
- * band: Band event
- * fd: File descriptor number
- * </p>
- * @return int|false On success, <b>pcntl_sigwaitinfo</b> returns a signal number.
- */
-function pcntl_sigwaitinfo(array $signals, &$info = []): int|false {}
-
-/**
- * Waits for signals, with a timeout
- * @link https://php.net/manual/en/function.pcntl-sigtimedwait.php
- * @param array $signals <p>
- * Array of signals to wait for.
- * </p>
- * @param array &$info <p>
- * The <i>siginfo</i> is set to an array containing
- * informations about the signal. See
- * <b>pcntl_sigwaitinfo</b>.
- * </p>
- * @param int $seconds [optional] <p>
- * Timeout in seconds.
- * </p>
- * @param int $nanoseconds [optional] <p>
- * Timeout in nanoseconds.
- * </p>
- * @return int|false On success, <b>pcntl_sigtimedwait</b> returns a signal number.
- */
-function pcntl_sigtimedwait(array $signals, &$info = [], int $seconds = 0, int $nanoseconds = 0): int|false {}
-
-/**
- * Enable/disable asynchronous signal handling or return the old setting.<br>
- * If the <b>enable</b> parameter is omitted, it returns whether asynchronous
- * signal handling is enabled.
- * @link https://www.php.net/manual/en/function.pcntl-async-signals.php
- *
- * @param bool|null $enable <p>
- * Whether asynchronous signal handling should be enabled.
- * </p>
- *
- * @return bool
- * @since 7.1
- */
-function pcntl_async_signals(
-    #[PhpStormStubsElementAvailable(from: '5.3', to: '7.4')] ?bool $enable,
-    #[PhpStormStubsElementAvailable(from: '8.0')] ??bool $enable = null
-): bool {}
-
-/**
- * Get the current handler for specified signal.
- * @link https://www.php.net/manual/en/function.pcntl-signal-get-handler.php
- *
- * @param int $signal <p>
- * The signal number.
- * </p>
- *
- * @return bool|resource
- * @since 7.1
- */
-function pcntl_signal_get_handler(int $signal) {}
-
-/**
- * @param int $flags
- * @return bool
- * @since 7.4
- */
-function pcntl_unshare(int $flags): bool {}
-
-/**
- * @since 8.4
- */
-function pcntl_waitid(int $idtype = P_ALL, ??int $id = null, &$info = [], int $flags = WEXITED, #[PhpStormStubsElementAvailable(from: '8.5')] &$resource_usage = []): bool {}
-/**
- * @since 8.4
- */
-function pcntl_getcpuaffinity(??int $process_id = null): array|false {}
-/**
- * @since 8.4
- */
-function pcntl_setcpuaffinity(??int $process_id = null, array $cpu_ids = []): bool {}
-/**
- * @since 8.4
- */
-function pcntl_getcpu(): int {}
-
-define('WNOHANG', 1);
-define('WUNTRACED', 2);
-define('WCONTINUED', 8);
-define('SIG_IGN', 1);
-define('SIG_DFL', 0);
-define('SIG_ERR', -1);
-define('SIGHUP', 1);
-define('SIGINT', 2);
-define('SIGQUIT', 3);
-define('SIGILL', 4);
-define('SIGTRAP', 5);
-define('SIGABRT', 6);
-define('SIGIOT', 6);
-define('SIGBUS', 7);
-define('SIGFPE', 8);
-define('SIGKILL', 9);
-define('SIGUSR1', 10);
-define('SIGSEGV', 11);
-define('SIGUSR2', 12);
-define('SIGPIPE', 13);
-define('SIGALRM', 14);
-define('SIGTERM', 15);
-define('SIGSTKFLT', 16);
-define('SIGCLD', 17);
-define('SIGCHLD', 17);
-define('SIGCONT', 18);
-define('SIGSTOP', 19);
-define('SIGTSTP', 20);
-define('SIGTTIN', 21);
-define('SIGTTOU', 22);
-define('SIGURG', 23);
-define('SIGXCPU', 24);
-define('SIGXFSZ', 25);
-define('SIGVTALRM', 26);
-define('SIGPROF', 27);
-define('SIGWINCH', 28);
-define('SIGPOLL', 29);
-define('SIGIO', 29);
-define('SIGPWR', 30);
-define('SIGSYS', 31);
-define('SIGBABY', 31);
-define('PRIO_PGRP', 1);
-define('PRIO_USER', 2);
-define('PRIO_PROCESS', 0);
+/** @generate-class-entries */
 
+/* Wait Constants */
+
+namespace
+{
+#ifdef WNOHANG
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WNOHANG)
  */
-define('SIG_BLOCK', 0);
-
+const WNOHANG = UNKNOWN;
+#endif
+#ifdef WUNTRACED
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WUNTRACED)
  */
-define('SIG_UNBLOCK', 1);
-
+const WUNTRACED = UNKNOWN;
+#endif
+#ifdef HAVE_WCONTINUED
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WCONTINUED)
  */
-define('SIG_SETMASK', 2);
-
+const WCONTINUED = UNKNOWN;
+#endif
+#if defined (HAVE_DECL_WEXITED) && HAVE_DECL_WEXITED == 1
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WEXITED)
  */
-define('SIGRTMIN', 35);
-
+const WEXITED = UNKNOWN;
+#endif
+#if defined (HAVE_DECL_WSTOPPED) && HAVE_DECL_WSTOPPED == 1
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WSTOPPED)
  */
-define('SIGRTMAX', 64);
-
+const WSTOPPED = UNKNOWN;
+#endif
+#if defined (HAVE_DECL_WNOWAIT) && HAVE_DECL_WNOWAIT== 1
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(WNOWAIT)
  */
-define('SI_USER', 0);
+const WNOWAIT = UNKNOWN;
+#endif
 
+#ifdef HAVE_WAITID
+/* First argument to waitid */
+#ifdef HAVE_POSIX_IDTYPES
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_ALL)
  */
-define('SI_KERNEL', 128);
-
+const P_ALL = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_PID)
  */
-define('SI_QUEUE', -1);
-
+const P_PID = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_PGID)
  */
-define('SI_TIMER', -2);
-define('SI_MESGQ', -3);
-
+const P_PGID = UNKNOWN;
+#endif
+/* Linux specific idtype */
+#ifdef HAVE_LINUX_IDTYPES
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_PIDFD)
  */
-define('SI_ASYNCIO', -4);
-
+const P_PIDFD = UNKNOWN;
+#endif
+/* NetBSD specific idtypes */
+#ifdef HAVE_NETBSD_IDTYPES
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_UID)
  */
-define('SI_SIGIO', -5);
-
+const P_UID = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_GID)
  */
-define('SI_TKILL', -6);
-
+const P_GID = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_SID)
  */
-define('CLD_EXITED', 1);
-
+const P_SID = UNKNOWN;
+#endif
+/* FreeBSD specific idtype */
+#ifdef HAVE_FREEBSD_IDTYPES
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(P_JAILID)
  */
-define('CLD_KILLED', 2);
+const P_JAILID = UNKNOWN;
+#endif
+#endif
 
+/* Signal Constants */
+
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIG_IGN)
  */
-define('CLD_DUMPED', 3);
-
+const SIG_IGN = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIG_DFL)
  */
-define('CLD_TRAPPED', 4);
-
+const SIG_DFL = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIG_ERR)
  */
-define('CLD_STOPPED', 5);
-
+const SIG_ERR = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGHUP)
  */
-define('CLD_CONTINUED', 6);
-
+const SIGHUP = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGINT)
  */
-define('TRAP_BRKPT', 1);
-
+const SIGINT = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGQUIT)
  */
-define('TRAP_TRACE', 2);
-
+const SIGQUIT = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGILL)
  */
-define('POLL_IN', 1);
-
+const SIGILL = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGTRAP)
  */
-define('POLL_OUT', 2);
-
+const SIGTRAP = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGABRT)
  */
-define('POLL_MSG', 3);
-
+const SIGABRT = UNKNOWN;
+#ifdef SIGIOT
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGIOT)
  */
-define('POLL_ERR', 4);
+const SIGIOT = UNKNOWN;
+#endif
 
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGBUS)
  */
-define('POLL_PRI', 5);
-
+const SIGBUS = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGFPE)
  */
-define('POLL_HUP', 6);
-
+const SIGFPE = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGKILL)
  */
-define('ILL_ILLOPC', 1);
-
+const SIGKILL = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGUSR1)
  */
-define('ILL_ILLOPN', 2);
-
+const SIGUSR1 = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGSEGV)
  */
-define('ILL_ILLADR', 3);
-
+const SIGSEGV = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGUSR2)
  */
-define('ILL_ILLTRP', 4);
-
+const SIGUSR2 = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGPIPE)
  */
-define('ILL_PRVOPC', 5);
-
+const SIGPIPE = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGALRM)
  */
-define('ILL_PRVREG', 6);
-
+const SIGALRM = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGTERM)
  */
-define('ILL_COPROC', 7);
-
+const SIGTERM = UNKNOWN;
+#ifdef SIGSTKFLT
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGSTKFLT)
  */
-define('ILL_BADSTK', 8);
-
+const SIGSTKFLT = UNKNOWN;
+#endif
+#ifdef SIGCLD
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGCLD)
  */
-define('FPE_INTDIV', 1);
-
+const SIGCLD = UNKNOWN;
+#endif
+#ifdef SIGCHLD
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGCHLD)
  */
-define('FPE_INTOVF', 2);
+const SIGCHLD = UNKNOWN;
+#endif
 
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGCONT)
  */
-define('FPE_FLTDIV', 3);
-
+const SIGCONT = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGSTOP)
  */
-define('FPE_FLTOVF', 4);
-
+const SIGSTOP = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGTSTP)
  */
-define('FPE_FLTUND', 5);
-
+const SIGTSTP = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGTTIN)
  */
-define('FPE_FLTRES', 6);
-
+const SIGTTIN = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGTTOU)
  */
-define('FPE_FLTINV', 7);
-
+const SIGTTOU = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGURG)
  */
-define('FPE_FLTSUB', 8);
-
+const SIGURG = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGXCPU)
  */
-define('SEGV_MAPERR', 1);
-
+const SIGXCPU = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGXFSZ)
  */
-define('SEGV_ACCERR', 2);
-
+const SIGXFSZ = UNKNOWN;
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGVTALRM)
+ */
+const SIGVTALRM = UNKNOWN;
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGPROF)
+ */
+const SIGPROF = UNKNOWN;
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGWINCH)
+ */
+const SIGWINCH = UNKNOWN;
+#ifdef SIGPOLL
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGPOLL)
+ */
+const SIGPOLL = UNKNOWN;
+#endif
+#ifdef SIGIO
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGIO)
+ */
+const SIGIO = UNKNOWN;
+#endif
+#ifdef SIGPWR
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGPWR)
+ */
+const SIGPWR = UNKNOWN;
+#endif
+#ifdef SIGINFO
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGINFO)
+ */
+const SIGINFO = UNKNOWN;
+#endif
+#ifdef SIGSYS
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGSYS)
+ */
+const SIGSYS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGSYS)
+ */
+const SIGBABY = UNKNOWN;
+#endif
+#ifdef SIGCKPT
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGCKPT)
+ */
+const SIGCKPT = UNKNOWN;
+#endif
+#ifdef SIGCKPTEXIT
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue LONG_CONST(SIGCKPTEXIT)
  */
-define('BUS_ADRALN', 1);
+const SIGCKPTEXIT = UNKNOWN;
+#endif
+#ifdef SIGRTMIN
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGRTMIN)
+ */
+const SIGRTMIN = UNKNOWN;
+#endif
+#ifdef SIGRTMAX
+/**
+ * @var int
+ * @cvalue LONG_CONST(SIGRTMAX)
+ */
+const SIGRTMAX = UNKNOWN;
+#endif
 
+#if (defined(HAVE_GETPRIORITY) || defined(HAVE_SETPRIORITY))
+/**
+ * @var int
+ * @cvalue PRIO_PGRP
+ */
+const PRIO_PGRP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PRIO_USER
+ */
+const PRIO_USER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PRIO_PROCESS
+ */
+const PRIO_PROCESS = UNKNOWN;
+#if defined(PRIO_DARWIN_BG)
+/**
+ * @var int
+ * @cvalue PRIO_DARWIN_BG
+ */
+const PRIO_DARWIN_BG = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue PRIO_DARWIN_THREAD
  */
-define('BUS_ADRERR', 2);
+const PRIO_DARWIN_THREAD = UNKNOWN;
+#endif
+#endif
+
+/* "mode" argument for sigprocmask */
 
+#ifdef HAVE_SIGPROCMASK
+/**
+ * @var int
+ * @cvalue SIG_BLOCK
+ */
+const SIG_BLOCK = UNKNOWN;
 /**
- * @link https://php.net/manual/en/pcntl.constants.php
+ * @var int
+ * @cvalue SIG_UNBLOCK
  */
-define('BUS_OBJERR', 3);
-define('PCNTL_EINTR', 4);
-define('PCNTL_ECHILD', 10);
-define('PCNTL_EINVAL', 22);
-define('PCNTL_EAGAIN', 11);
-define('PCNTL_ESRCH', 3);
-define('PCNTL_EACCES', 13);
-define('PCNTL_EPERM', 1);
-define('PCNTL_ENOMEM', 12);
-define('PCNTL_E2BIG', 7);
-define('PCNTL_EFAULT', 14);
-define('PCNTL_EIO', 5);
-define('PCNTL_EISDIR', 21);
-define('PCNTL_ELIBBAD', 80);
-define('PCNTL_ELOOP', 40);
-define('PCNTL_EMFILE', 24);
-define('PCNTL_ENAMETOOLONG', 36);
-define('PCNTL_ENFILE', 23);
-define('PCNTL_ENOENT', 2);
-define('PCNTL_ENOEXEC', 8);
-define('PCNTL_ENOTDIR', 20);
-define('PCNTL_ETXTBSY', 26);
+const SIG_UNBLOCK = UNKNOWN;
+/**
+ * @var int
+ * @cvalue SIG_SETMASK
+ */
+const SIG_SETMASK = UNKNOWN;
+#endif
 
+#if (defined(HAVE_SIGWAITINFO) && defined(HAVE_SIGTIMEDWAIT))
+/**
+ * @var int
+ * @cvalue SI_USER
+ */
+const SI_USER = UNKNOWN;
+#ifdef SI_NOINFO
+/**
+ * @var int
+ * @cvalue SI_NOINFO
+ */
+const SI_NOINFO = UNKNOWN;
+#endif
+#ifdef SI_KERNEL
+/**
+ * @var int
+ * @cvalue SI_KERNEL
+ */
+const SI_KERNEL = UNKNOWN;
+#endif
+/**
+ * @var int
+ * @cvalue SI_QUEUE
+ */
+const SI_QUEUE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue SI_TIMER
+ */
+const SI_TIMER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue SI_MESGQ
+ */
+const SI_MESGQ = UNKNOWN;
+/**
+ * @var int
+ * @cvalue SI_ASYNCIO
+ */
+const SI_ASYNCIO = UNKNOWN;
+#ifdef SI_SIGIO
 /**
- * @since 7.4
+ * @var int
+ * @cvalue SI_SIGIO
  */
-define('PCNTL_ENOSPC', 28);
+const SI_SIGIO = UNKNOWN;
+#endif
+#ifdef SI_TKILL
+/**
+ * @var int
+ * @cvalue SI_TKILL
+ */
+const SI_TKILL = UNKNOWN;
+#endif
 
+/* si_code for SIGCHILD */
+
+#ifdef CLD_EXITED
+/**
+ * @var int
+ * @cvalue CLD_EXITED
+ */
+const CLD_EXITED = UNKNOWN;
+#endif
+#ifdef CLD_KILLED
+/**
+ * @var int
+ * @cvalue CLD_KILLED
+ */
+const CLD_KILLED = UNKNOWN;
+#endif
+#ifdef CLD_DUMPED
+/**
+ * @var int
+ * @cvalue CLD_DUMPED
+ */
+const CLD_DUMPED = UNKNOWN;
+#endif
+#ifdef CLD_TRAPPED
+/**
+ * @var int
+ * @cvalue CLD_TRAPPED
+ */
+const CLD_TRAPPED = UNKNOWN;
+#endif
+#ifdef CLD_STOPPED
+/**
+ * @var int
+ * @cvalue CLD_STOPPED
+ */
+const CLD_STOPPED = UNKNOWN;
+#endif
+#ifdef CLD_CONTINUED
 /**
- * @since 7.4
+ * @var int
+ * @cvalue CLD_CONTINUED
  */
-define('PCNTL_EUSERS', 87);
+const CLD_CONTINUED = UNKNOWN;
+#endif
+
+/* si_code for SIGTRAP */
 
+#ifdef TRAP_BRKPT
+/**
+ * @var int
+ * @cvalue TRAP_BRKPT
+ */
+const TRAP_BRKPT = UNKNOWN;
+#endif
+#ifdef TRAP_TRACE
 /**
- * @since 7.4
+ * @var int
+ * @cvalue TRAP_TRACE
  */
-define('CLONE_NEWNS', 131072);
+const TRAP_TRACE = UNKNOWN;
+#endif
 
+/* si_code for SIGPOLL */
+
+#ifdef POLL_IN
+/**
+ * @var int
+ * @cvalue POLL_IN
+ */
+const POLL_IN = UNKNOWN;
+#endif
+#ifdef POLL_OUT
+/**
+ * @var int
+ * @cvalue POLL_OUT
+ */
+const POLL_OUT = UNKNOWN;
+#endif
+#ifdef POLL_MSG
+/**
+ * @var int
+ * @cvalue POLL_MSG
+ */
+const POLL_MSG = UNKNOWN;
+#endif
+#ifdef POLL_ERR
+/**
+ * @var int
+ * @cvalue POLL_ERR
+ */
+const POLL_ERR = UNKNOWN;
+#endif
+#ifdef POLL_PRI
+/**
+ * @var int
+ * @cvalue POLL_PRI
+ */
+const POLL_PRI = UNKNOWN;
+#endif
+#ifdef POLL_HUP
 /**
- * @since 7.4
+ * @var int
+ * @cvalue POLL_HUP
  */
-define('CLONE_NEWIPC', 134217728);
+const POLL_HUP = UNKNOWN;
+#endif
 
+#ifdef ILL_ILLOPC
+/**
+ * @var int
+ * @cvalue ILL_ILLOPC
+ */
+const ILL_ILLOPC = UNKNOWN;
+#endif
+#ifdef ILL_ILLOPN
+/**
+ * @var int
+ * @cvalue ILL_ILLOPN
+ */
+const ILL_ILLOPN = UNKNOWN;
+#endif
+#ifdef ILL_ILLADR
+/**
+ * @var int
+ * @cvalue ILL_ILLADR
+ */
+const ILL_ILLADR = UNKNOWN;
+#endif
+#ifdef ILL_ILLTRP
+/**
+ * @var int
+ * @cvalue ILL_ILLTRP
+ */
+const ILL_ILLTRP = UNKNOWN;
+#endif
+#ifdef ILL_PRVOPC
+/**
+ * @var int
+ * @cvalue ILL_PRVOPC
+ */
+const ILL_PRVOPC = UNKNOWN;
+#endif
+#ifdef ILL_PRVREG
+/**
+ * @var int
+ * @cvalue ILL_PRVREG
+ */
+const ILL_PRVREG = UNKNOWN;
+#endif
+#ifdef ILL_COPROC
+/**
+ * @var int
+ * @cvalue ILL_COPROC
+ */
+const ILL_COPROC = UNKNOWN;
+#endif
+#ifdef ILL_BADSTK
+/**
+ * @var int
+ * @cvalue ILL_BADSTK
+ */
+const ILL_BADSTK = UNKNOWN;
+#endif
+#ifdef FPE_INTDIV
+/**
+ * @var int
+ * @cvalue FPE_INTDIV
+ */
+const FPE_INTDIV = UNKNOWN;
+#endif
+#ifdef FPE_INTOVF
+/**
+ * @var int
+ * @cvalue FPE_INTOVF
+ */
+const FPE_INTOVF = UNKNOWN;
+#endif
+#ifdef FPE_FLTDIV
+/**
+ * @var int
+ * @cvalue FPE_FLTDIV
+ */
+const FPE_FLTDIV = UNKNOWN;
+#endif
+#ifdef FPE_FLTOVF
+/**
+ * @var int
+ * @cvalue FPE_FLTOVF
+ */
+const FPE_FLTOVF = UNKNOWN;
+#endif
+#ifdef FPE_FLTUND
+/**
+ * @var int
+ * @cvalue FPE_FLTUND
+ */
+const FPE_FLTUND = UNKNOWN;
+#endif
+#ifdef FPE_FLTRES
+/**
+ * @var int
+ * @cvalue FPE_FLTRES
+ */
+const FPE_FLTRES = UNKNOWN;
+#endif
+#ifdef FPE_FLTINV
+/**
+ * @var int
+ * @cvalue FPE_FLTINV
+ */
+const FPE_FLTINV = UNKNOWN;
+#endif
+#ifdef FPE_FLTSUB
+/**
+ * @var int
+ * @cvalue FPE_FLTSUB
+ */
+const FPE_FLTSUB = UNKNOWN;
+#endif
+#ifdef SEGV_MAPERR
+/**
+ * @var int
+ * @cvalue SEGV_MAPERR
+ */
+const SEGV_MAPERR = UNKNOWN;
+#endif
+#ifdef SEGV_ACCERR
+/**
+ * @var int
+ * @cvalue SEGV_ACCERR
+ */
+const SEGV_ACCERR = UNKNOWN;
+#endif
+#ifdef BUS_ADRALN
 /**
- * @since 7.4
+ * @var int
+ * @cvalue BUS_ADRALN
  */
-define('CLONE_NEWUTS', 67108864);
+const BUS_ADRALN = UNKNOWN;
+#endif
+#ifdef BUS_ADRERR
+/**
+ * @var int
+ * @cvalue BUS_ADRERR
+ */
+const BUS_ADRERR = UNKNOWN;
+#endif
+#ifdef BUS_OBJERR
+/**
+ * @var int
+ * @cvalue BUS_OBJERR
+ */
+const BUS_OBJERR = UNKNOWN;
+#endif
+#endif
 
+/* unshare(/clone) constants */
+
+#ifdef HAVE_UNSHARE
+/**
+ * @var int
+ * @cvalue CLONE_NEWNS
+ */
+const CLONE_NEWNS = UNKNOWN;
+#ifdef CLONE_NEWIPC
+/**
+ * @var int
+ * @cvalue CLONE_NEWIPC
+ */
+const CLONE_NEWIPC = UNKNOWN;
+#endif
+#ifdef CLONE_NEWUTS
+/**
+ * @var int
+ * @cvalue CLONE_NEWUTS
+ */
+const CLONE_NEWUTS = UNKNOWN;
+#endif
+#ifdef CLONE_NEWNET
+/**
+ * @var int
+ * @cvalue CLONE_NEWNET
+ */
+const CLONE_NEWNET = UNKNOWN;
+#endif
+#ifdef CLONE_NEWPID
+/**
+ * @var int
+ * @cvalue CLONE_NEWPID
+ */
+const CLONE_NEWPID = UNKNOWN;
+#endif
+#ifdef CLONE_NEWUSER
+/**
+ * @var int
+ * @cvalue CLONE_NEWUSER
+ */
+const CLONE_NEWUSER = UNKNOWN;
+#endif
+#ifdef CLONE_NEWCGROUP
 /**
- * @since 7.4
+ * @var int
+ * @cvalue CLONE_NEWCGROUP
  */
-define('CLONE_NEWNET', 1073741824);
+const CLONE_NEWCGROUP = UNKNOWN;
+#endif
+#endif
 
+#ifdef HAVE_RFORK
+#ifdef RFPROC
+/**
+ * @var int
+ * @cvalue RFPROC
+ */
+const RFPROC = UNKNOWN;
+#endif
+#ifdef RFNOWAIT
+/**
+ * @var int
+ * @cvalue RFNOWAIT
+ */
+const RFNOWAIT = UNKNOWN;
+#endif
+#ifdef RFCFDG
+/**
+ * @var int
+ * @cvalue RFCFDG
+ */
+const RFCFDG = UNKNOWN;
+#endif
+#ifdef RFFDG
+/**
+ * @var int
+ * @cvalue RFFDG
+ */
+const RFFDG = UNKNOWN;
+#endif
+#ifdef RFLINUXTHPN
+/**
+ * @var int
+ * @cvalue RFLINUXTHPN
+ */
+const RFLINUXTHPN = UNKNOWN;
+#endif
+#ifdef RFTSIGZMB
+/**
+ * @var int
+ * @cvalue RFTSIGZMB
+ */
+const RFTSIGZMB = UNKNOWN;
+#endif
+#ifdef RFTHREAD
 /**
- * @since 7.4
+ * @var int
+ * @cvalue RFTHREAD
  */
-define('CLONE_NEWPID', 536870912);
+const RFTHREAD = UNKNOWN;
+#endif
+#endif
 
+#ifdef HAVE_FORKX
+/**
+ * @var int
+ * @cvalue FORK_NOSIGCHLD
+ */
+const FORK_NOSIGCHLD = UNKNOWN;
 /**
- * @since 7.4
+ * @var int
+ * @cvalue FORK_WAITPID
  */
-define('CLONE_NEWUSER', 268435456);
+const FORK_WAITPID = UNKNOWN;
+#endif
 
+#ifdef EINTR
+/**
+ * @var int
+ * @cvalue EINTR
+ */
+const PCNTL_EINTR = UNKNOWN;
+#endif
+#ifdef ECHILD
+/**
+ * @var int
+ * @cvalue ECHILD
+ */
+const PCNTL_ECHILD = UNKNOWN;
+#endif
+#ifdef EINVAL
+/**
+ * @var int
+ * @cvalue EINVAL
+ */
+const PCNTL_EINVAL = UNKNOWN;
+#endif
+#ifdef EAGAIN
+/**
+ * @var int
+ * @cvalue EAGAIN
+ */
+const PCNTL_EAGAIN = UNKNOWN;
+#endif
+#ifdef ESRCH
+/**
+ * @var int
+ * @cvalue ESRCH
+ */
+const PCNTL_ESRCH = UNKNOWN;
+#endif
+#ifdef EACCES
+/**
+ * @var int
+ * @cvalue EACCES
+ */
+const PCNTL_EACCES = UNKNOWN;
+#endif
+#ifdef EPERM
+/**
+ * @var int
+ * @cvalue EPERM
+ */
+const PCNTL_EPERM = UNKNOWN;
+#endif
+#ifdef ENOMEM
+/**
+ * @var int
+ * @cvalue ENOMEM
+ */
+const PCNTL_ENOMEM = UNKNOWN;
+#endif
+#ifdef E2BIG
+/**
+ * @var int
+ * @cvalue E2BIG
+ */
+const PCNTL_E2BIG = UNKNOWN;
+#endif
+#ifdef EFAULT
+/**
+ * @var int
+ * @cvalue EFAULT
+ */
+const PCNTL_EFAULT = UNKNOWN;
+#endif
+#ifdef EIO
+/**
+ * @var int
+ * @cvalue EIO
+ */
+const PCNTL_EIO = UNKNOWN;
+#endif
+#ifdef EISDIR
+/**
+ * @var int
+ * @cvalue EISDIR
+ */
+const PCNTL_EISDIR = UNKNOWN;
+#endif
+#ifdef ELIBBAD
+/**
+ * @var int
+ * @cvalue ELIBBAD
+ */
+const PCNTL_ELIBBAD = UNKNOWN;
+#endif
+#ifdef ELOOP
+/**
+ * @var int
+ * @cvalue ELOOP
+ */
+const PCNTL_ELOOP = UNKNOWN;
+#endif
+#ifdef EMFILE
+/**
+ * @var int
+ * @cvalue EMFILE
+ */
+const PCNTL_EMFILE = UNKNOWN;
+#endif
+#ifdef ENAMETOOLONG
+/**
+ * @var int
+ * @cvalue ENAMETOOLONG
+ */
+const PCNTL_ENAMETOOLONG = UNKNOWN;
+#endif
+#ifdef ENFILE
 /**
- * @since 7.4
+ * @var int
+ * @cvalue ENFILE
  */
-define('CLONE_NEWCGROUP', 33554432);
+const PCNTL_ENFILE = UNKNOWN;
+#endif
+#ifdef ENOENT
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ENOENT
  */
-define('P_ALL', 0);
+const PCNTL_ENOENT = UNKNOWN;
+#endif
+#ifdef ENOEXEC
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ENOEXEC
  */
-define('WEXITED', 4);
+const PCNTL_ENOEXEC = UNKNOWN;
+#endif
+#ifdef ENOTDIR
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ENOTDIR
  */
-define('WSTOPPED', 2);
+const PCNTL_ENOTDIR = UNKNOWN;
+#endif
+#ifdef ETXTBSY
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ETXTBSY
  */
-define('WNOWAIT', 16777216);
+const PCNTL_ETXTBSY = UNKNOWN;
+#endif
+#ifdef ENOSPC
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ENOSPC
  */
-define('P_PID', 1);
+const PCNTL_ENOSPC = UNKNOWN;
+#endif
+#ifdef EUSERS
 /**
- * @since 8.4
+ * @var int
+ * @cvalue EUSERS
  */
-define('P_PGID', 2);
+const PCNTL_EUSERS = UNKNOWN;
+#endif
+#ifdef ECAPMODE
 /**
- * @since 8.4
+ * @var int
+ * @cvalue ECAPMODE
  */
-define('P_PIDFD', 3);
-// End of pcntl v.
+const PCNTL_ECAPMODE = UNKNOWN;
+#endif
+
+    function pcntl_fork(): int {}
+
+    /**
+    * @param int $status
+    * @param array $resource_usage
+    */
+    function pcntl_waitpid(int $process_id, &$status, int $flags = 0, &$resource_usage = []): int {}
+
+#if defined (HAVE_WAITID) && defined (HAVE_POSIX_IDTYPES) && defined (HAVE_DECL_WEXITED) && HAVE_DECL_WEXITED == 1
+    /**
+    * @param array $info
+    * @param array $resource_usage
+    */
+    function pcntl_waitid(int $idtype = P_ALL, ?int $id = null, &$info = [], int $flags = WEXITED, &$resource_usage = []): bool {}
+#endif
+
+    /**
+    * @param int $status
+    * @param array $resource_usage
+    */
+    function pcntl_wait(&$status, int $flags = 0, &$resource_usage = []): int {}
+
+    /** @param callable|int $handler */
+    function pcntl_signal(int $signal, $handler, bool $restart_syscalls = true): bool {}
+
+    /** @return callable|int */
+    function pcntl_signal_get_handler(int $signal) {}
+
+    function pcntl_signal_dispatch(): bool {}
+
+#ifdef HAVE_SIGPROCMASK
+/** @param array $old_signals */
+    function pcntl_sigprocmask(int $mode, array $signals, &$old_signals = null): bool {}
+#endif
+
+#ifdef HAVE_STRUCT_SIGINFO_T
+#if (defined(HAVE_SIGWAITINFO) && defined(HAVE_SIGTIMEDWAIT))
+    /** @param array $info */
+    function pcntl_sigwaitinfo(array $signals, &$info = []): int|false {}
+
+    /** @param array $info */
+    function pcntl_sigtimedwait(array $signals, &$info = [], int $seconds = 0, int $nanoseconds = 0): int|false {}
+#endif
+#endif
+
+    function pcntl_wifexited(int $status): bool {}
+
+    function pcntl_wifstopped(int $status): bool {}
+
+#ifdef HAVE_WCONTINUED
+function pcntl_wifcontinued(int $status): bool {}
+#endif
+
+    function pcntl_wifsignaled(int $status): bool {}
+
+    function pcntl_wexitstatus(int $status): int|false {}
+
+    function pcntl_wtermsig(int $status): int|false {}
+
+    function pcntl_wstopsig(int $status): int|false {}
+
+    function pcntl_exec(string $path, array $args = [], array $env_vars = []): false {}
+
+    function pcntl_alarm(int $seconds): int {}
+
+    function pcntl_get_last_error(): int {}
+
+    /** @alias pcntl_get_last_error */
+    function pcntl_errno(): int {}
+
+#ifdef HAVE_GETPRIORITY
+    function pcntl_getpriority(?int $process_id = null, int $mode = PRIO_PROCESS): int|false {}
+#endif
+
+#ifdef HAVE_SETPRIORITY
+    function pcntl_setpriority(int $priority, ?int $process_id = null, int $mode = PRIO_PROCESS): bool{}
+#endif
+
+    function pcntl_strerror(int $error_code): string {}
+
+    function pcntl_async_signals(?bool $enable = null): bool {}
+
+#ifdef HAVE_UNSHARE
+    function pcntl_unshare(int $flags): bool {}
+#endif
+
+#ifdef HAVE_RFORK
+    function pcntl_rfork(int $flags, int $signal = 0): int{}
+#endif
+
+#ifdef HAVE_FORKX
+    function pcntl_forkx(int $flags): int{}
+#endif
+
+#ifdef HAVE_PIDFD_OPEN
+    function pcntl_setns(?int $process_id = null, int $nstype = CLONE_NEWNET): bool {}
+#endif
+
+#ifdef HAVE_SCHED_SETAFFINITY
+    function pcntl_getcpuaffinity(?int $process_id = null): array|false {}
+    function pcntl_setcpuaffinity(?int $process_id = null, array $cpu_ids = []): bool {}
+#endif
+
+#ifdef HAVE_SCHED_GETCPU
+    function pcntl_getcpu(): int {}
+#endif
+#ifdef HAVE_PTHREAD_SET_QOS_CLASS_SELF_NP
+    function pcntl_getqos_class(): Pcntl\QosClass {}
+    function pcntl_setqos_class(Pcntl\QosClass $qos_class = Pcntl\QosClass::Default): void {}
+#endif
+}
+
+namespace Pcntl
+{
+    enum QosClass
+    {
+	case UserInteractive;
+	case UserInitiated;
+	case Default;
+	case Utility;
+	case Background;
+    }
+}

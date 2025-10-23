@@ -1,320 +1,253 @@
 <?php
 
-// Start of mbstring v.
+/** @generate-class-entries */
 
-
-
-
-
-
+#ifdef HAVE_MBREGEX
+/**
+ * @var string
+ * @cvalue php_mb_oniguruma_version
+ */
+const MB_ONIGURUMA_VERSION = UNKNOWN;
+#endif
 
 /**
- * Perform case folding on a string
- * @link https://php.net/manual/en/function.mb-convert-case.php
- * @param string $string <p>
- * The string being converted.
- * </p>
- * @param int $mode <p>
- * The mode of the conversion. It can be one of
- * MB_CASE_UPPER,
- * MB_CASE_LOWER, or
- * MB_CASE_TITLE.
- * </p>
- * @param string|null $encoding [optional]
- * @return string A case folded version of string converted in the
- * way specified by mode.
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_UPPER
  */
-, default: 'array|bool')]
+const MB_CASE_UPPER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_LOWER
+ */
+const MB_CASE_LOWER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_TITLE
+ */
+const MB_CASE_TITLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_FOLD
+ */
+const MB_CASE_FOLD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_UPPER_SIMPLE
+ */
+const MB_CASE_UPPER_SIMPLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_LOWER_SIMPLE
+ */
+const MB_CASE_LOWER_SIMPLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_TITLE_SIMPLE
+ */
+const MB_CASE_TITLE_SIMPLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue PHP_UNICODE_CASE_FOLD_SIMPLE
+ */
+const MB_CASE_FOLD_SIMPLE = UNKNOWN;
+
+/** @refcount 1 */
+function mb_language(?string $language = null): string|bool {}
+
+/** @refcount 1 */
+function mb_internal_encoding(?string $encoding = null): string|bool {}
+
+/**
+ * @return array<int, string>|string|false
+ * @refcount 1
+ */
+function mb_http_input(?string $type = null): array|string|false {}
+
+/** @refcount 1 */
+function mb_http_output(?string $encoding = null): string|bool {}
+
+/**
+ * @return array<int, string>|true
+ * @refcount 1
+ */
 function mb_detect_order(array|string|null $encoding = null): array|bool {}
 
-/**
- * Set/Get substitution character
- * @link https://php.net/manual/en/function.mb-substitute-character.php
- * @param string|int|null $substitute_character [optional] <p>
- * Specify the Unicode value as an integer,
- * or as one of the following strings:</p><ul>
- * <li>"none" : no output</li>
- * <li>"long": Output character code value (Example: U+3000, JIS+7E7E)</li>
- * <li>"entity": Output character entity (Example: Ȁ)</li>
- * </ul>
- * @return bool|int|string If substchar is set, it returns true for success,
- * otherwise returns false.
- * If substchar is not set, it returns the Unicode value,
- * or "none" or "long".
- */
+/** @refcount 1 */
 function mb_substitute_character(string|int|null $substitute_character = null): string|int|bool {}
 
-/**
- * Parse GET/POST/COOKIE data and set global variable
- * @link https://php.net/manual/en/function.mb-parse-str.php
- * @param string $string <p>
- * The URL encoded data.
- * </p>
- * @param array &$result [optional] <p>
- * An array containing decoded and character encoded converted values.
- * </p>
- * @return bool true on success or false on failure.
- */
-, default: 'int|false')]
-function mb_strlen(string $string, , default: 'string')] $encoding) {}
+/** @refcount 1 */
+function mb_preferred_mime_name(string $encoding): string|false {}
+
+/** @param array $result */
+function mb_parse_str(string $string, &$result): bool {}
+
+/** @refcount 1 */
+function mb_output_handler(string $string, int $status): string {}
+
+function mb_str_split(string $string, int $length = 1, ?string $encoding = null): array {}
+
+function mb_strlen(string $string, ?string $encoding = null): int {}
+
+function mb_strpos(string $haystack, string $needle, int $offset = 0, ?string $encoding = null): int|false {}
+
+function mb_strrpos(string $haystack, string $needle, int $offset = 0, ?string $encoding = null): int|false {}
+
+function mb_stripos(string $haystack, string $needle, int $offset = 0, ?string $encoding = null): int|false {}
+
+function mb_strripos(string $haystack, string $needle, int $offset = 0, ?string $encoding = null): int|false {}
+
+/** @refcount 1 */
+function mb_strstr(string $haystack, string $needle, bool $before_needle = false, ?string $encoding = null): string|false {}
+
+/** @refcount 1 */
+function mb_strrchr(string $haystack, string $needle, bool $before_needle = false, ?string $encoding = null): string|false {}
+
+/** @refcount 1 */
+function mb_stristr(string $haystack, string $needle, bool $before_needle = false, ?string $encoding = null): string|false {}
+
+/** @refcount 1 */
+function mb_strrichr(string $haystack, string $needle, bool $before_needle = false, ?string $encoding = null): string|false {}
+
+function mb_substr_count(string $haystack, string $needle, ?string $encoding = null): int {}
+
+/** @refcount 1 */
+function mb_substr(string $string, int $start, ?int $length = null, ?string $encoding = null): string {}
+
+/** @refcount 1 */
+function mb_strcut(string $string, int $start, ?int $length = null, ?string $encoding = null): string {}
+
+function mb_strwidth(string $string, ?string $encoding = null): int {}
+
+function mb_strimwidth(string $string, int $start, int $width, string $trim_marker = "", ?string $encoding = null): string {}
 
 /**
- * Find position of first occurrence of string in a string
- * @link https://php.net/manual/en/function.mb-strpos.php
- * @param string $haystack <p>
- * The string being checked.
- * </p>
- * @param string $needle <p>
- * The position counted from the beginning of haystack.
- * </p>
- * @param int<0,max> $offset [optional] <p>
- * The search offset. If it is not specified, 0 is used.
- * </p>
- * @param string|null $encoding [optional]
- * @return int<0,max>|false the numeric position of
- * the first occurrence of needle in the
- * haystack string. If
- * needle is not found, it returns false.
+ * @return array<int|string, mixed>|string|false
+ * @refcount 1
  */
-, default: "array|false")]
-function mb_encoding_aliases(string $encoding) {}
+function mb_convert_encoding(array|string $string, string $to_encoding, array|string|null $from_encoding = null): array|string|false {}
+
+/** @refcount 1 */
+function mb_convert_case(string $string, int $mode, ?string $encoding = null): string {}
+
+/** @refcount 1 */
+function mb_strtoupper(string $string, ?string $encoding = null): string {}
+
+/** @refcount 1 */
+function mb_strtolower(string $string, ?string $encoding = null): string {}
+
+function mb_ucfirst(string $string, ?string $encoding = null): string {}
+
+function mb_lcfirst(string $string, ?string $encoding = null): string {}
+
+function mb_trim(string $string, ?string $characters = null, ?string $encoding = null): string {}
+
+function mb_ltrim(string $string, ?string $characters = null, ?string $encoding = null): string {}
+
+function mb_rtrim(string $string, ?string $characters = null, ?string $encoding = null): string {}
+
+/** @refcount 1 */
+function mb_detect_encoding(string $string, array|string|null $encodings = null, bool $strict = false): string|false {}
 
 /**
- * Convert "kana" one from another ("zen-kaku", "han-kaku" and more)
- * @link https://php.net/manual/en/function.mb-convert-kana.php
- * @param string $string <p>
- * The string being converted.
- * </p>
- * @param string $mode [optional] <p>
- * The conversion option.
- * </p>
- * <p>
- * Specify with a combination of following options.
- * <table>
- * Applicable Conversion Options
- * <tr valign="top">
- * <td>Option</td>
- * <td>Meaning</td>
- * </tr>
- * <tr valign="top">
- * <td>r</td>
- * <td>
- * Convert "zen-kaku" alphabets to "han-kaku"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>R</td>
- * <td>
- * Convert "han-kaku" alphabets to "zen-kaku"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>n</td>
- * <td>
- * Convert "zen-kaku" numbers to "han-kaku"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>N</td>
- * <td>
- * Convert "han-kaku" numbers to "zen-kaku"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>a</td>
- * <td>
- * Convert "zen-kaku" alphabets and numbers to "han-kaku"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>A</td>
- * <td>
- * Convert "han-kaku" alphabets and numbers to "zen-kaku"
- * (Characters included in "a", "A" options are
- * U+0021 - U+007E excluding U+0022, U+0027, U+005C, U+007E)
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>s</td>
- * <td>
- * Convert "zen-kaku" space to "han-kaku" (U+3000 -> U+0020)
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>S</td>
- * <td>
- * Convert "han-kaku" space to "zen-kaku" (U+0020 -> U+3000)
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>k</td>
- * <td>
- * Convert "zen-kaku kata-kana" to "han-kaku kata-kana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>K</td>
- * <td>
- * Convert "han-kaku kata-kana" to "zen-kaku kata-kana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>h</td>
- * <td>
- * Convert "zen-kaku hira-gana" to "han-kaku kata-kana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>H</td>
- * <td>
- * Convert "han-kaku kata-kana" to "zen-kaku hira-gana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>c</td>
- * <td>
- * Convert "zen-kaku kata-kana" to "zen-kaku hira-gana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>C</td>
- * <td>
- * Convert "zen-kaku hira-gana" to "zen-kaku kata-kana"
- * </td>
- * </tr>
- * <tr valign="top">
- * <td>V</td>
- * <td>
- * Collapse voiced sound notation and convert them into a character. Use with "K","H"
- * </td>
- * </tr>
- * </table>
- * </p>
- * @param string|null $encoding [optional]
- * @return string The converted string.
+ * @return array<int, string>
  */
-, default: 'string|false|null')]
-function mb_decode_numericentity(string $string, array $map, ??string $encoding = null, , default: 'array|string|int|false')]
-function mb_get_info(string $type = 'all') {}
+function mb_list_encodings(): array {}
 
 /**
- * Check if the string is valid for the specified encoding
- * @link https://php.net/manual/en/function.mb-check-encoding.php
- * @param string|string[]|null $value [optional] <p>
- * The byte stream to check. If it is omitted, this function checks
- * all the input from the beginning of the request.
- * </p>
- * @param string|null $encoding [optional] <p>
- * The expected encoding.
- * </p>
- * @return bool true on success or false on failure.
- * @since 5.1.3
+ * @return array<int, string>
+ * @refcount 1
  */
-, default: "false|int")]
-function mb_eregi(string $pattern, string $string, &$matches): bool {}
+function mb_encoding_aliases(string $encoding): array {}
+
+/** @refcount 1 */
+function mb_encode_mimeheader(string $string, ?string $charset = null, ?string $transfer_encoding = null, string $newline = "\r\n", int $indent = 0): string {}
+
+/** @refcount 1 */
+function mb_decode_mimeheader(string $string): string {}
+
+/** @refcount 1 */
+function mb_convert_kana(string $string, string $mode = "KV", ?string $encoding = null): string {}
+
+/** @refcount 1 */
+function mb_convert_variables(string $to_encoding, array|string $from_encoding, mixed &$var, mixed &...$vars): string|false {}
+
+/** @refcount 1 */
+function mb_encode_numericentity(string $string, array $map, ?string $encoding = null, bool $hex = false): string {}
+
+/** @refcount 1 */
+function mb_decode_numericentity(string $string, array $map, ?string $encoding = null): string {}
+
+function mb_send_mail(string $to, string $subject, string $message, array|string $additional_headers = [], ?string $additional_params = null): bool {}
 
 /**
- * Replace regular expression with multibyte support
- * @link https://php.net/manual/en/function.mb-ereg-replace.php
- * @param string $pattern <p>
- * The regular expression pattern.
- * </p>
- * <p>
- * Multibyte characters may be used in pattern.
- * </p>
- * @param string $replacement <p>
- * The replacement text.
- * </p>
- * @param string $string <p>
- * The string being checked.
- * </p>
- * @param string|null $options Matching condition can be set by option
- * parameter. If i is specified for this
- * parameter, the case will be ignored. If x is
- * specified, white space will be ignored. If m
- * is specified, match will be executed in multiline mode and line
- * break will be included in '.'. If p is
- * specified, match will be executed in POSIX mode, line break
- * will be considered as normal character. If e
- * is specified, replacement string will be
- * evaluated as PHP expression.
- * <p>PHP 7.1: The <i>e</i> modifier has been deprecated.</p>
- * @return string|false|null The resultant string on success, or false on error.
+ * @return array<int|string, int|string|array>|string|int|false|null
+ * @refcount 1
  */
-, default: "string|false")]
-function mb_scrub(string $string, ?string $encoding): false|string {}
+function mb_get_info(string $type = "all"): array|string|int|false|null {}
+
+function mb_check_encoding(array|string|null $value = null, ?string $encoding = null): bool {}
+
+function mb_scrub(string $string, ?string $encoding = null): string {}
+
+function mb_ord(string $string, ?string $encoding = null): int|false {}
+
+function mb_chr(int $codepoint, ?string $encoding = null): string|false {}
+
+function mb_str_pad(string $string, int $length, string $pad_string = " ", int $pad_type = STR_PAD_RIGHT, ?string $encoding = null): string {}
+
+#ifdef HAVE_MBREGEX
+/** @refcount 1 */
+function mb_regex_encoding(?string $encoding = null): string|bool {}
+
+/** @param array $matches */
+function mb_ereg(string $pattern, string $string, &$matches = null): bool {}
+
+/** @param array $matches */
+function mb_eregi(string $pattern, string $string, &$matches = null): bool {}
+
+/** @refcount 1 */
+function mb_ereg_replace(string $pattern, string $replacement, string $string, ?string $options = null): string|false|null {}
+
+/** @refcount 1 */
+function mb_eregi_replace(string $pattern, string $replacement, string $string, ?string $options = null): string|false|null {}
+
+/** @refcount 1 */
+function mb_ereg_replace_callback(string $pattern, callable $callback, string $string, ?string $options = null): string|false|null {}
 
 /**
- * @param $position
- * @see mb_ereg_search_setpos
+ * @return array<int, string>|false
+ * @refcount 1
  */
-, default: "array|false")]
-function mb_str_split(string $string, int $length = 1, ?string $encoding) {}
+function mb_split(string $pattern, string $string, int $limit = -1): array|false {}
+
+function mb_ereg_match(string $pattern, string $string, ?string $options = null): bool {}
+
+function mb_ereg_search(?string $pattern = null, ?string $options = null): bool {}
 
 /**
- * @since 8.3
+ * @return array<int, int>|false
+ * @refcount 1
  */
-function mb_str_pad(string $string, int $length, string $pad_string = " ", int $pad_type = STR_PAD_RIGHT, ??string $encoding = null): string {}
-/**
- * @since 8.4
- */
-function mb_ucfirst(string $string, ??string $encoding = null): string {}
-/**
- * @since 8.4
- */
-function mb_lcfirst(string $string, ??string $encoding = null): string {}
-/**
- * @since 8.4
- */
-function mb_trim(string $string, ??string $characters = null, ??string $encoding = null): string {}
-/**
- * @since 8.4
- */
-function mb_ltrim(string $string, ??string $characters = null, ??string $encoding = null): string {}
-/**
- * @since 8.4
- */
-function mb_rtrim(string $string, ??string $characters = null, ??string $encoding = null): string {}
+function mb_ereg_search_pos(?string $pattern = null, ?string $options = null): array|false {}
 
 /**
- * @removed 8.0
+ * @return array<int|string, string|false>|false
+ * @refcount 1
  */
-define('MB_OVERLOAD_MAIL', 1);
-/**
- * @removed 8.0
- */
-define('MB_OVERLOAD_STRING', 2);
-/**
- * @removed 8.0
- */
-define('MB_OVERLOAD_REGEX', 4);
-define('MB_CASE_UPPER', 0);
-define('MB_CASE_LOWER', 1);
-define('MB_CASE_TITLE', 2);
-/**
- * @since 7.3
- */
-define('MB_CASE_FOLD', 3);
-/**
- * @since 7.3
- */
-define('MB_CASE_UPPER_SIMPLE', 4);
-/**
- * @since 7.3
- */
-define('MB_CASE_LOWER_SIMPLE', 5);
-/**
- * @since 7.3
- */
-define('MB_CASE_TITLE_SIMPLE', 6);
-/**
- * @since 7.3
- */
-define('MB_CASE_FOLD_SIMPLE', 7);
+function mb_ereg_search_regs(?string $pattern = null, ?string $options = null): array|false {}
+
+function mb_ereg_search_init(string $string, ?string $pattern = null, ?string $options = null): bool {}
 
 /**
- * @since 7.4
+ * @return array<int|string, string|false>|false
+ * @refcount 1
  */
-define('MB_ONIGURUMA_VERSION', '6.9.9');
+function mb_ereg_search_getregs(): array|false {}
 
-// End of mbstring v.
+function mb_ereg_search_getpos(): int {}
+
+function mb_ereg_search_setpos(int $offset): bool {}
+
+/** @refcount 1 */
+function mb_regex_set_options(?string $options = null): string {}
+#endif

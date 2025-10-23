@@ -1,1018 +1,1011 @@
 <?php
 
-// Start of tidy v.2.0
-
-
-
+/** @generate-class-entries */
 
 /**
- * An HTML node in an HTML file, as detected by tidy.
- * @link https://php.net/manual/en/class.tidy.php
+ * @var int
+ * @cvalue TidyNode_Root
  */
-class tidy
-{
-    /**
-     * @var string|null  The last warnings and errors from TidyLib
-     */
-    public ?string $errorBuffer;
-    public ?string $value;
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
-     * Returns the value of the specified configuration option for the tidy document
-     * @link https://php.net/manual/en/tidy.getopt.php
-     * @param string $option <p>
-     * You will find a list with each configuration option and their types
-     * at: http://tidy.sourceforge.net/docs/quickref.html.
-     * </p>
-     * @return string|int|bool the value of the specified <i>option</i>.
-     * The return type depends on the type of the specified one.
-     */
-    , default: '')] $option): string|int|bool {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
-     * Execute configured cleanup and repair operations on parsed markup
-     * @link https://php.net/manual/en/tidy.cleanrepair.php
-     * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
-     */
-    , default: '')] $filename,
-        , default: '')] $config = null,
-        , default: '')] $encoding = null,
-        , default: '')] $useIncludePath = false
-    ): bool {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
-     * Parse a document stored in a string
-     * @link https://php.net/manual/en/tidy.parsestring.php
-     * @param string $string <p>
-     * The data to be parsed.
-     * </p>
-     * @param mixed $config [optional] <p>
-     * The config <i>config</i> can be passed either as an
-     * array or as a string. If a string is passed, it is interpreted as the
-     * name of the configuration file, otherwise, it is interpreted as the
-     * options themselves.
-     * </p>
-     * <p>
-     * For an explanation about each option, visit http://tidy.sourceforge.net/docs/quickref.html.
-     * </p>
-     * @param string|null $encoding [optional] <p>
-     * The <i>encoding</i> parameter sets the encoding for
-     * input/output documents. The possible values for encoding are:
-     * ascii, latin0, latin1,
-     * raw, utf8, iso2022,
-     * mac, win1252, ibm858,
-     * utf16, utf16le, utf16be,
-     * big5, and shiftjis.
-     * </p>
-     * @return bool a new <b>tidy</b> instance.
-     */
-    , default: '')] $string,
-        , default: '')] $config = null,
-        , default: '')] $encoding = null
-    ): bool {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.7.0)<br/>
-     * Repair a string using an optionally provided configuration file
-     * @link https://php.net/manual/en/tidy.repairstring.php
-     * @param string $string <p>
-     * The data to be repaired.
-     * </p>
-     * @param array|string|null $config [optional] <p>
-     * The config <i>config</i> can be passed either as an
-     * array or as a string. If a string is passed, it is interpreted as the
-     * name of the configuration file, otherwise, it is interpreted as the
-     * options themselves.
-     * </p>
-     * <p>
-     * Check http://tidy.sourceforge.net/docs/quickref.html for
-     * an explanation about each option.
-     * </p>
-     * @param string|null $encoding [optional] <p>
-     * The <i>encoding</i> parameter sets the encoding for
-     * input/output documents. The possible values for encoding are:
-     * ascii, latin0, latin1,
-     * raw, utf8, iso2022,
-     * mac, win1252, ibm858,
-     * utf16, utf16le, utf16be,
-     * big5, and shiftjis.
-     * </p>
-     * @return string|false the repaired string.
-     */
-    , default: '')] $string,
-        , default: '')] $config = null,
-        , default: '')] $encoding = null
-    ): string|false {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.7.0)<br/>
-     * Repair a file and return it as a string
-     * @link https://php.net/manual/en/tidy.repairfile.php
-     * @param string $filename <p>
-     * The file to be repaired.
-     * </p>
-     * @param array|string|null $config [optional] <p>
-     * The config <i>config</i> can be passed either as an
-     * array or as a string. If a string is passed, it is interpreted as the
-     * name of the configuration file, otherwise, it is interpreted as the
-     * options themselves.
-     * </p>
-     * <p>
-     * Check http://tidy.sourceforge.net/docs/quickref.html for an
-     * explanation about each option.
-     * </p>
-     * @param string|null $encoding [optional] <p>
-     * The <i>encoding</i> parameter sets the encoding for
-     * input/output documents. The possible values for encoding are:
-     * ascii, latin0, latin1,
-     * raw, utf8, iso2022,
-     * mac, win1252, ibm858,
-     * utf16, utf16le, utf16be,
-     * big5, and shiftjis.
-     * </p>
-     * @param bool $useIncludePath [optional] <p>
-     * Search for the file in the include_path.
-     * </p>
-     * @return string|false the repaired contents as a string.
-     */
-    , default: '')] $filename,
-        , default: '')] $config = null,
-        , default: '')] $encoding = null,
-        , default: '')] $useIncludePath = false
-    ): string|false {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
-     * Run configured diagnostics on parsed and repaired markup
-     * @link https://php.net/manual/en/tidy.diagnose.php
-     * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
-     */
-    , default: '')] $option): string|false {}
-
-    /**
-     * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
-     * Indicates if the document is a XHTML document
-     * @link https://php.net/manual/en/tidy.isxhtml.php
-     * @return bool This function returns <b>TRUE</b> if the specified tidy
-     * <i>object</i> is a XHTML document, or <b>FALSE</b> otherwise.
-     * </p>
-     * <p>
-     * This function is not yet implemented in the Tidylib itself, so it always
-     * return <b>FALSE</b>.
-     */
-    , default: '')] $filename = null,
-        , default: '')] $config = null,
-        , default: '')] $encoding = null,
-        , default: '')] $useIncludePath = null
-    ) {}
-}
+const TIDY_NODETYPE_ROOT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_DocType
+ */
+const TIDY_NODETYPE_DOCTYPE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Comment
+ */
+const TIDY_NODETYPE_COMMENT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_ProcIns
+ */
+const TIDY_NODETYPE_PROCINS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Text
+ */
+const TIDY_NODETYPE_TEXT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Start
+ */
+const TIDY_NODETYPE_START = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_End
+ */
+const TIDY_NODETYPE_END = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_StartEnd
+ */
+const TIDY_NODETYPE_STARTEND = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_CDATA
+ */
+const TIDY_NODETYPE_CDATA = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Section
+ */
+const TIDY_NODETYPE_SECTION = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Asp
+ */
+const TIDY_NODETYPE_ASP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Jste
+ */
+const TIDY_NODETYPE_JSTE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_Php
+ */
+const TIDY_NODETYPE_PHP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyNode_XmlDecl
+ */
+const TIDY_NODETYPE_XMLDECL = UNKNOWN;
 
 /**
- * An HTML node in an HTML file, as detected by tidy.
- * @link https://php.net/manual/en/class.tidynode.php
+ * @var int
+ * @cvalue TidyTag_UNKNOWN
  */
-final class tidyNode
-{
-    /**
-     * <p style="margin-top:0;">The HTML representation of the node, including the surrounding tags.</p>
-     * @var string
-     */
-    public readonly string $value;
-
-    /**
-     * <p style="margin-top:0;">The name of the HTML node</p>
-     * @var string
-     */
-    public readonly string $name;
-
-    /**
-     * <p style="margin-top:0;">The type of the tag (one of the constants above, e.g. <b><code>TIDY_NODETYPE_PHP</code></b>)</p>
-     * @var int
-     */
-    public readonly int $type;
-
-    /**
-     * <p style="margin-top:0;">The line number at which the tags is located in the file</p>
-     * @var int
-     */
-    public readonly int $line;
-
-    /**
-     * <p style="margin-top:0;">The column number at which the tags is located in the file</p>
-     * @var int
-     */
-    public readonly int $column;
-
-    /**
-     * <p style="margin-top:0;">Indicates if the node is a proprietary tag</p>
-     * @var bool
-     */
-    public readonly bool $proprietary;
-
-    /**
-     * <p style="margin-top:0;">The ID of the tag (one of the constants above, e.g. <b><code>TIDY_TAG_FRAME</code></b>)</p>
-     * @var int|null
-     */
-    public readonly ?int $id;
-
-    /**
-     * <p style="margin-top:0;">
-     * An array of string, representing
-     * the attributes names (as keys) of the current node.
-     * </p>
-     * @var array|null
-     */
-    public readonly ?array $attribute;
-
-    /**
-     * <p style="margin-top:0;">
-     * An array of <b>tidyNode</b>, representing
-     * the children of the current node.
-     * </p>
-     * @var array|null
-     */
-    public readonly ?array $child;
-
-    /**
-     * Checks if a node has children
-     * @link https://php.net/manual/en/tidynode.haschildren.php
-     * @return bool <b>TRUE</b> if the node has children, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function hasChildren(): bool {}
-
-    /**
-     * Checks if a node has siblings
-     * @link https://php.net/manual/en/tidynode.hassiblings.php
-     * @return bool <b>TRUE</b> if the node has siblings, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function hasSiblings(): bool {}
-
-    /**
-     * Checks if a node represents a comment
-     * @link https://php.net/manual/en/tidynode.iscomment.php
-     * @return bool <b>TRUE</b> if the node is a comment, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isComment(): bool {}
-
-    /**
-     * Checks if a node is part of a HTML document
-     * @link https://php.net/manual/en/tidynode.ishtml.php
-     * @return bool <b>TRUE</b> if the node is part of a HTML document, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isHtml(): bool {}
-
-    /**
-     * Checks if a node represents text (no markup)
-     * @link https://php.net/manual/en/tidynode.istext.php
-     * @return bool <b>TRUE</b> if the node represent a text, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isText(): bool {}
-
-    /**
-     * Checks if this node is JSTE
-     * @link https://php.net/manual/en/tidynode.isjste.php
-     * @return bool <b>TRUE</b> if the node is JSTE, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isJste(): bool {}
-
-    /**
-     * Checks if this node is ASP
-     * @link https://php.net/manual/en/tidynode.isasp.php
-     * @return bool <b>TRUE</b> if the node is ASP, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isAsp(): bool {}
-
-    /**
-     * Checks if a node is PHP
-     * @link https://php.net/manual/en/tidynode.isphp.php
-     * @return bool <b>TRUE</b> if the current node is PHP code, <b>FALSE</b> otherwise.
-     * @since 5.0.1
-     */
-    public function isPhp(): bool {}
-
-    /**
-     * Returns the parent node of the current node
-     * @link https://php.net/manual/en/tidynode.getparent.php
-     * @return tidyNode|null a tidyNode if the node has a parent, or <b>NULL</b>
-     * otherwise.
-     * @since 5.2.2
-     */
-    public function getParent(): ?tidyNode {}
-
-    private function __construct() {}
-}
-
+const TIDY_TAG_UNKNOWN = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Returns the value of the specified configuration option for the tidy document
- * @link https://php.net/manual/en/tidy.getopt.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @param string $option <p>
- * You will find a list with each configuration option and their types
- * at: http://tidy.sourceforge.net/docs/quickref.html.
- * </p>
- * @return string|int|bool the value of the specified <i>option</i>.
- * The return type depends on the type of the specified one.
+ * @var int
+ * @cvalue TidyTag_A
  */
-function tidy_getopt(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy, string $option): string|int|bool {}
-
+const TIDY_TAG_A = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Parse a document stored in a string
- * @link https://php.net/manual/en/tidy.parsestring.php
- * @param string $string <p>
- * The data to be parsed.
- * </p>
- * @param mixed $config [optional] <p>
- * The config <i>config</i> can be passed either as an
- * array or as a string. If a string is passed, it is interpreted as the
- * name of the configuration file, otherwise, it is interpreted as the
- * options themselves.
- * </p>
- * <p>
- * For an explanation about each option, visit http://tidy.sourceforge.net/docs/quickref.html.
- * </p>
- * @param string|null $encoding [optional] <p>
- * The <i>encoding</i> parameter sets the encoding for
- * input/output documents. The possible values for encoding are:
- * ascii, latin0, latin1,
- * raw, utf8, iso2022,
- * mac, win1252, ibm858,
- * utf16, utf16le, utf16be,
- * big5, and shiftjis.
- * </p>
- * @return tidy|false a new <b>tidy</b> instance.
+ * @var int
+ * @cvalue TidyTag_ABBR
  */
-function tidy_parse_string(string $string, array|string|null $config = null, null|?string $encoding = null): tidy|false {}
-
+const TIDY_TAG_ABBR = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Parse markup in file or URI
- * @link https://php.net/manual/en/tidy.parsefile.php
- * @param string $filename <p>
- * If the <i>filename</i> parameter is given, this function
- * will also read that file and initialize the object with the file,
- * acting like <b>tidy_parse_file</b>.
- * </p>
- * @param mixed $config [optional] <p>
- * The config <i>config</i> can be passed either as an
- * array or as a string. If a string is passed, it is interpreted as the
- * name of the configuration file, otherwise, it is interpreted as the
- * options themselves.
- * </p>
- * <p>
- * For an explanation about each option, see
- * http://tidy.sourceforge.net/docs/quickref.html.
- * </p>
- * @param string|null $encoding [optional] <p>
- * The <i>encoding</i> parameter sets the encoding for
- * input/output documents. The possible values for encoding are:
- * ascii, latin0, latin1,
- * raw, utf8, iso2022,
- * mac, win1252, ibm858,
- * utf16, utf16le, utf16be,
- * big5, and shiftjis.
- * </p>
- * @param bool $useIncludePath [optional] <p>
- * Search for the file in the include_path.
- * </p>
- * @return tidy|false a new <b>tidy</b> instance.
+ * @var int
+ * @cvalue TidyTag_ACRONYM
  */
-function tidy_parse_file(string $filename, array|string|null $config = null, null|?string $encoding = null, bool $useIncludePath = false): tidy|false {}
-
+const TIDY_TAG_ACRONYM = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Return a string representing the parsed tidy markup
- * @link https://php.net/manual/en/function.tidy-get-output.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return string the parsed tidy markup.
+ * @var int
+ * @cvalue TidyTag_ADDRESS
  */
-function tidy_get_output(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): string {}
-
+const TIDY_TAG_ADDRESS = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Return warnings and errors which occurred parsing the specified document
- * @link https://php.net/manual/en/tidy.props.errorbuffer.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return string|false the error buffer as a string.
+ * @var int
+ * @cvalue TidyTag_ALIGN
  */
-function tidy_get_error_buffer(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): string|false {}
-
+const TIDY_TAG_ALIGN = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Execute configured cleanup and repair operations on parsed markup
- * @link https://php.net/manual/en/tidy.cleanrepair.php
- * @param tidy $tidy The Tidy object.
- * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
+ * @var int
+ * @cvalue TidyTag_APPLET
  */
-function tidy_clean_repair(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): bool {}
-
+const TIDY_TAG_APPLET = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.7.0)<br/>
- * Repair a string using an optionally provided configuration file
- * @link https://php.net/manual/en/tidy.repairstring.php
- * @param string $string <p>
- * The data to be repaired.
- * </p>
- * @param mixed $config [optional] <p>
- * The config <i>config</i> can be passed either as an
- * array or as a string. If a string is passed, it is interpreted as the
- * name of the configuration file, otherwise, it is interpreted as the
- * options themselves.
- * </p>
- * <p>
- * Check http://tidy.sourceforge.net/docs/quickref.html for
- * an explanation about each option.
- * </p>
- * @param string|null $encoding [optional] <p>
- * The <i>encoding</i> parameter sets the encoding for
- * input/output documents. The possible values for encoding are:
- * ascii, latin0, latin1,
- * raw, utf8, iso2022,
- * mac, win1252, ibm858,
- * utf16, utf16le, utf16be,
- * big5, and shiftjis.
- * </p>
- * @return string|false the repaired string.
+ * @var int
+ * @cvalue TidyTag_AREA
  */
-function tidy_repair_string(string $string, array|string|null $config = null, null|?string $encoding = null): string|false {}
-
+const TIDY_TAG_AREA = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.7.0)<br/>
- * Repair a file and return it as a string
- * @link https://php.net/manual/en/tidy.repairfile.php
- * @param string $filename <p>
- * The file to be repaired.
- * </p>
- * @param mixed $config [optional] <p>
- * The config <i>config</i> can be passed either as an
- * array or as a string. If a string is passed, it is interpreted as the
- * name of the configuration file, otherwise, it is interpreted as the
- * options themselves.
- * </p>
- * <p>
- * Check http://tidy.sourceforge.net/docs/quickref.html for an
- * explanation about each option.
- * </p>
- * @param string|null $encoding [optional] <p>
- * The <i>encoding</i> parameter sets the encoding for
- * input/output documents. The possible values for encoding are:
- * ascii, latin0, latin1,
- * raw, utf8, iso2022,
- * mac, win1252, ibm858,
- * utf16, utf16le, utf16be,
- * big5, and shiftjis.
- * </p>
- * @param bool $useIncludePath [optional] <p>
- * Search for the file in the include_path.
- * </p>
- * @return string|false the repaired contents as a string.
+ * @var int
+ * @cvalue TidyTag_B
  */
-function tidy_repair_file(string $filename, array|string|null $config = null, null|?string $encoding = null, bool $useIncludePath = false): string|false {}
-
+const TIDY_TAG_B = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Run configured diagnostics on parsed and repaired markup
- * @link https://php.net/manual/en/tidy.diagnose.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return bool <b>TRUE</b> on success or <b>FALSE</b> on failure.
+ * @var int
+ * @cvalue TidyTag_BASE
  */
-function tidy_diagnose(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): bool {}
-
+const TIDY_TAG_BASE = UNKNOWN;
 /**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Get release date (version) for Tidy library
- * @link https://php.net/manual/en/tidy.getrelease.php
- * @return string a string with the release date of the Tidy library.
+ * @var int
+ * @cvalue TidyTag_BASEFONT
  */
+const TIDY_TAG_BASEFONT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BDO
+ */
+const TIDY_TAG_BDO = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BGSOUND
+ */
+const TIDY_TAG_BGSOUND = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BIG
+ */
+const TIDY_TAG_BIG = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BLINK
+ */
+const TIDY_TAG_BLINK = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BLOCKQUOTE
+ */
+const TIDY_TAG_BLOCKQUOTE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BODY
+ */
+const TIDY_TAG_BODY = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BR
+ */
+const TIDY_TAG_BR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BUTTON
+ */
+const TIDY_TAG_BUTTON = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_CAPTION
+ */
+const TIDY_TAG_CAPTION = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_CENTER
+ */
+const TIDY_TAG_CENTER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_CITE
+ */
+const TIDY_TAG_CITE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_CODE
+ */
+const TIDY_TAG_CODE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_COL
+ */
+const TIDY_TAG_COL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_COLGROUP
+ */
+const TIDY_TAG_COLGROUP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_COMMENT
+ */
+const TIDY_TAG_COMMENT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DD
+ */
+const TIDY_TAG_DD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DEL
+ */
+const TIDY_TAG_DEL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DFN
+ */
+const TIDY_TAG_DFN = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DIR
+ */
+const TIDY_TAG_DIR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DIV
+ */
+const TIDY_TAG_DIV = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DL
+ */
+const TIDY_TAG_DL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DT
+ */
+const TIDY_TAG_DT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_EM
+ */
+const TIDY_TAG_EM = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_EMBED
+ */
+const TIDY_TAG_EMBED = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FIELDSET
+ */
+const TIDY_TAG_FIELDSET = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FONT
+ */
+const TIDY_TAG_FONT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FORM
+ */
+const TIDY_TAG_FORM = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FRAME
+ */
+const TIDY_TAG_FRAME = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FRAMESET
+ */
+const TIDY_TAG_FRAMESET = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H1
+ */
+const TIDY_TAG_H1 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H2
+ */
+const TIDY_TAG_H2 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H3
+ */
+const TIDY_TAG_H3 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H4
+ */
+const TIDY_TAG_H4 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H5
+ */
+const TIDY_TAG_H5 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_H6
+ */
+const TIDY_TAG_H6 = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_HEAD
+ */
+const TIDY_TAG_HEAD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_HR
+ */
+const TIDY_TAG_HR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_HTML
+ */
+const TIDY_TAG_HTML = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_I
+ */
+const TIDY_TAG_I = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_IFRAME
+ */
+const TIDY_TAG_IFRAME = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_ILAYER
+ */
+const TIDY_TAG_ILAYER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_IMG
+ */
+const TIDY_TAG_IMG = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_INPUT
+ */
+const TIDY_TAG_INPUT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_INS
+ */
+const TIDY_TAG_INS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_ISINDEX
+ */
+const TIDY_TAG_ISINDEX = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_KBD
+ */
+const TIDY_TAG_KBD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_KEYGEN
+ */
+const TIDY_TAG_KEYGEN = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LABEL
+ */
+const TIDY_TAG_LABEL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LAYER
+ */
+const TIDY_TAG_LAYER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LEGEND
+ */
+const TIDY_TAG_LEGEND = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LI
+ */
+const TIDY_TAG_LI = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LINK
+ */
+const TIDY_TAG_LINK = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_LISTING
+ */
+const TIDY_TAG_LISTING = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MAP
+ */
+const TIDY_TAG_MAP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MARQUEE
+ */
+const TIDY_TAG_MARQUEE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MENU
+ */
+const TIDY_TAG_MENU = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_META
+ */
+const TIDY_TAG_META = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MULTICOL
+ */
+const TIDY_TAG_MULTICOL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOBR
+ */
+const TIDY_TAG_NOBR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOEMBED
+ */
+const TIDY_TAG_NOEMBED = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOFRAMES
+ */
+const TIDY_TAG_NOFRAMES = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOLAYER
+ */
+const TIDY_TAG_NOLAYER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOSAVE
+ */
+const TIDY_TAG_NOSAVE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NOSCRIPT
+ */
+const TIDY_TAG_NOSCRIPT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_OBJECT
+ */
+const TIDY_TAG_OBJECT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_OL
+ */
+const TIDY_TAG_OL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_OPTGROUP
+ */
+const TIDY_TAG_OPTGROUP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_OPTION
+ */
+const TIDY_TAG_OPTION = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_P
+ */
+const TIDY_TAG_P = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_PARAM
+ */
+const TIDY_TAG_PARAM = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_PLAINTEXT
+ */
+const TIDY_TAG_PLAINTEXT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_PRE
+ */
+const TIDY_TAG_PRE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_Q
+ */
+const TIDY_TAG_Q = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RB
+ */
+const TIDY_TAG_RB = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RBC
+ */
+const TIDY_TAG_RBC = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RP
+ */
+const TIDY_TAG_RP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RT
+ */
+const TIDY_TAG_RT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RTC
+ */
+const TIDY_TAG_RTC = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_RUBY
+ */
+const TIDY_TAG_RUBY = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_S
+ */
+const TIDY_TAG_S = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SAMP
+ */
+const TIDY_TAG_SAMP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SCRIPT
+ */
+const TIDY_TAG_SCRIPT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SELECT
+ */
+const TIDY_TAG_SELECT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SERVER
+ */
+const TIDY_TAG_SERVER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SERVLET
+ */
+const TIDY_TAG_SERVLET = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SMALL
+ */
+const TIDY_TAG_SMALL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SPACER
+ */
+const TIDY_TAG_SPACER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SPAN
+ */
+const TIDY_TAG_SPAN = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_STRIKE
+ */
+const TIDY_TAG_STRIKE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_STRONG
+ */
+const TIDY_TAG_STRONG = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_STYLE
+ */
+const TIDY_TAG_STYLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SUB
+ */
+const TIDY_TAG_SUB = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SUP
+ */
+const TIDY_TAG_SUP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TABLE
+ */
+const TIDY_TAG_TABLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TBODY
+ */
+const TIDY_TAG_TBODY = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TD
+ */
+const TIDY_TAG_TD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TEXTAREA
+ */
+const TIDY_TAG_TEXTAREA = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TFOOT
+ */
+const TIDY_TAG_TFOOT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TH
+ */
+const TIDY_TAG_TH = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_THEAD
+ */
+const TIDY_TAG_THEAD = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TITLE
+ */
+const TIDY_TAG_TITLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TR
+ */
+const TIDY_TAG_TR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TT
+ */
+const TIDY_TAG_TT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_U
+ */
+const TIDY_TAG_U = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_UL
+ */
+const TIDY_TAG_UL = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_VAR
+ */
+const TIDY_TAG_VAR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_WBR
+ */
+const TIDY_TAG_WBR = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_XMP
+ */
+const TIDY_TAG_XMP = UNKNOWN;
+#ifdef HAVE_TIDYBUFFIO_H
+/**
+ * @var int
+ * @cvalue TidyTag_ARTICLE
+ */
+const TIDY_TAG_ARTICLE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_ASIDE
+ */
+const TIDY_TAG_ASIDE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_AUDIO
+ */
+const TIDY_TAG_AUDIO = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_BDI
+ */
+const TIDY_TAG_BDI = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_CANVAS
+ */
+const TIDY_TAG_CANVAS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_COMMAND
+ */
+const TIDY_TAG_COMMAND = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DATALIST
+ */
+const TIDY_TAG_DATALIST = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DETAILS
+ */
+const TIDY_TAG_DETAILS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_DIALOG
+ */
+const TIDY_TAG_DIALOG = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FIGCAPTION
+ */
+const TIDY_TAG_FIGCAPTION = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FIGURE
+ */
+const TIDY_TAG_FIGURE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_FOOTER
+ */
+const TIDY_TAG_FOOTER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_HEADER
+ */
+const TIDY_TAG_HEADER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_HGROUP
+ */
+const TIDY_TAG_HGROUP = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MAIN
+ */
+const TIDY_TAG_MAIN = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MARK
+ */
+const TIDY_TAG_MARK = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_MENUITEM
+ */
+const TIDY_TAG_MENUITEM = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_METER
+ */
+const TIDY_TAG_METER = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_NAV
+ */
+const TIDY_TAG_NAV = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_OUTPUT
+ */
+const TIDY_TAG_OUTPUT = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_PROGRESS
+ */
+const TIDY_TAG_PROGRESS = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SECTION
+ */
+const TIDY_TAG_SECTION = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SOURCE
+ */
+const TIDY_TAG_SOURCE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_SUMMARY
+ */
+const TIDY_TAG_SUMMARY = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TEMPLATE
+ */
+const TIDY_TAG_TEMPLATE = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TIME
+ */
+const TIDY_TAG_TIME = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_TRACK
+ */
+const TIDY_TAG_TRACK = UNKNOWN;
+/**
+ * @var int
+ * @cvalue TidyTag_VIDEO
+ */
+const TIDY_TAG_VIDEO = UNKNOWN;
+# endif
+
+function tidy_parse_string(string $string, array|string|null $config = null, ?string $encoding = null): tidy|false {}
+
+function tidy_get_error_buffer(tidy $tidy): string|false {}
+
+function tidy_get_output(tidy $tidy): string {}
+
+function tidy_parse_file(string $filename, array|string|null $config = null, ?string $encoding = null, bool $useIncludePath = false): tidy|false {}
+
+function tidy_clean_repair(tidy $tidy): bool {}
+
+function tidy_repair_string(string $string, array|string|null $config = null, ?string $encoding = null): string|false {}
+
+function tidy_repair_file(string $filename, array|string|null $config = null, ?string $encoding = null, bool $useIncludePath = false): string|false {}
+
+function tidy_diagnose(tidy $tidy): bool {}
+
 function tidy_get_release(): string {}
 
-/**
- * (PHP 5, PECL tidy &gt;= 0.7.0)<br/>
- * Get current Tidy configuration
- * @link https://php.net/manual/en/tidy.getconfig.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return array an array of configuration options.
- * <p>
- * For an explanation about each option, visit http://tidy.sourceforge.net/docs/quickref.html.
- * </p>
- */
-function tidy_get_config(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): array {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Get status of specified document
- * @link https://php.net/manual/en/tidy.getstatus.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int 0 if no error/warning was raised, 1 for warnings or accessibility
- * errors, or 2 for errors.
- */
-function tidy_get_status(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Get the Detected HTML version for the specified document
- * @link https://php.net/manual/en/tidy.gethtmlver.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int the detected HTML version.
- * <p>
- * This function is not yet implemented in the Tidylib itself, so it always
- * return 0.
- * </p>
- */
-function tidy_get_html_ver(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Indicates if the document is a XHTML document
- * @link https://php.net/manual/en/tidy.isxhtml.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return bool This function returns <b>TRUE</b> if the specified tidy
- * <i>object</i> is a XHTML document, or <b>FALSE</b> otherwise.
- * </p>
- * <p>
- * This function is not yet implemented in the Tidylib itself, so it always
- * return <b>FALSE</b>.
- */
-function tidy_is_xhtml(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): bool {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Indicates if the document is a generic (non HTML/XHTML) XML document
- * @link https://php.net/manual/en/tidy.isxml.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return bool This function returns <b>TRUE</b> if the specified tidy
- * <i>object</i> is a generic XML document (non HTML/XHTML),
- * or <b>FALSE</b> otherwise.
- * </p>
- * <p>
- * This function is not yet implemented in the Tidylib itself, so it always
- * return <b>FALSE</b>.
- */
-function tidy_is_xml(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): bool {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Returns the Number of Tidy errors encountered for specified document
- * @link https://php.net/manual/en/function.tidy-error-count.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int the number of errors.
- */
-function tidy_error_count(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Returns the Number of Tidy warnings encountered for specified document
- * @link https://php.net/manual/en/function.tidy-warning-count.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int the number of warnings.
- */
-function tidy_warning_count(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Returns the Number of Tidy accessibility warnings encountered for specified document
- * @link https://php.net/manual/en/function.tidy-access-count.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int the number of warnings.
- */
-function tidy_access_count(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * (PHP 5, PECL tidy &gt;= 0.5.2)<br/>
- * Returns the Number of Tidy configuration errors encountered for specified document
- * @link https://php.net/manual/en/function.tidy-config-count.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return int the number of errors.
- */
-function tidy_config_count(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): int {}
-
-/**
- * Returns the documentation for the given option name
- * @link https://php.net/manual/en/tidy.getoptdoc.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @param string $option <p>
- * The option name
- * </p>
- * @return string|false a string if the option exists and has documentation available, or
- * <b>FALSE</b> otherwise.
- */
+#ifdef HAVE_TIDYOPTGETDOC
 function tidy_get_opt_doc(tidy $tidy, string $option): string|false {}
+#endif
 
-/**
- * (PHP 5, PECL tidy 0.5.2-1.0.0)<br/>
- * Returns a <b>tidyNode</b> object representing the root of the tidy parse tree
- * @link https://php.net/manual/en/tidy.root.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return tidyNode|null the <b>tidyNode</b> object.
- */
-function tidy_get_root(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): ?tidyNode {}
+function tidy_get_config(tidy $tidy): array {}
 
-/**
- * (PHP 5, PECL tidy 0.5.2-1.0.0)<br/>
- * Returns a <b>tidyNode</b> object starting from the &lt;head&gt; tag of the tidy parse tree
- * @link https://php.net/manual/en/tidy.head.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return tidyNode|null the <b>tidyNode</b> object.
- */
-function tidy_get_head(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): ?tidyNode {}
+function tidy_get_status(tidy $tidy): int {}
 
-/**
- * (PHP 5, PECL tidy 0.5.2-1.0.0)<br/>
- * Returns a <b>tidyNode</b> object starting from the &lt;html&gt; tag of the tidy parse tree
- * @link https://php.net/manual/en/tidy.html.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return tidyNode|null the <b>tidyNode</b> object.
- */
-function tidy_get_html(#[PhpStormStubsElementAvailable(from: '8.0')] tidy $tidy): ?tidyNode {}
+function tidy_get_html_ver(tidy $tidy): int {}
 
-/**
- * (PHP 5, PECL tidy 0.5.2-1.0)<br/>
- * Returns a <b>tidyNode</b> object starting from the &lt;body&gt; tag of the tidy parse tree
- * @link https://php.net/manual/en/tidy.body.php
- * @param tidy $tidy <p>
- * The <b>Tidy</b> object.
- * </p>
- * @return tidyNode|null a <b>tidyNode</b> object starting from the
- * &lt;body&gt; tag of the tidy parse tree.
- */
+function tidy_is_xhtml(tidy $tidy): bool {}
+
+function tidy_is_xml(tidy $tidy): bool {}
+
+function tidy_error_count(tidy $tidy): int {}
+
+function tidy_warning_count(tidy $tidy): int {}
+
+function tidy_access_count(tidy $tidy): int {}
+
+function tidy_config_count(tidy $tidy): int {}
+
+function tidy_getopt(tidy $tidy, string $option): string|int|bool {}
+
+function tidy_get_root(tidy $tidy): ?tidyNode {}
+
+function tidy_get_html(tidy $tidy): ?tidyNode {}
+
+function tidy_get_head(tidy $tidy): ?tidyNode {}
+
 function tidy_get_body(tidy $tidy): ?tidyNode {}
 
-/**
- * ob_start callback function to repair the buffer
- * @link https://php.net/manual/en/function.ob-tidyhandler.php
- * @param string $input <p>
- * The buffer.
- * </p>
- * @param int $mode [optional] <p>
- * The buffer mode.
- * </p>
- * @return string the modified buffer.
- */
-function ob_tidyhandler($input, $mode = null) {}
+class tidy
+{
+    public ?string $errorBuffer = null;
+    public ?string $value = null;
 
-/**
- * description
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_TAG_UNKNOWN', 0);
-define('TIDY_TAG_A', 1);
-define('TIDY_TAG_ABBR', 2);
-define('TIDY_TAG_ACRONYM', 3);
-define('TIDY_TAG_ADDRESS', 4);
-define('TIDY_TAG_ALIGN', 5);
-define('TIDY_TAG_APPLET', 6);
-define('TIDY_TAG_AREA', 7);
-define('TIDY_TAG_B', 8);
-define('TIDY_TAG_BASE', 9);
-define('TIDY_TAG_BASEFONT', 10);
-define('TIDY_TAG_BDO', 11);
-define('TIDY_TAG_BGSOUND', 12);
-define('TIDY_TAG_BIG', 13);
-define('TIDY_TAG_BLINK', 14);
-define('TIDY_TAG_BLOCKQUOTE', 15);
-define('TIDY_TAG_BODY', 16);
-define('TIDY_TAG_BR', 17);
-define('TIDY_TAG_BUTTON', 18);
-define('TIDY_TAG_CAPTION', 19);
-define('TIDY_TAG_CENTER', 20);
-define('TIDY_TAG_CITE', 21);
-define('TIDY_TAG_CODE', 22);
-define('TIDY_TAG_COL', 23);
-define('TIDY_TAG_COLGROUP', 24);
-define('TIDY_TAG_COMMENT', 25);
-define('TIDY_TAG_DD', 26);
-define('TIDY_TAG_DEL', 27);
-define('TIDY_TAG_DFN', 28);
-define('TIDY_TAG_DIR', 29);
-define('TIDY_TAG_DIV', 30);
-define('TIDY_TAG_DL', 31);
-define('TIDY_TAG_DT', 32);
-define('TIDY_TAG_EM', 33);
-define('TIDY_TAG_EMBED', 34);
-define('TIDY_TAG_FIELDSET', 35);
-define('TIDY_TAG_FONT', 36);
-define('TIDY_TAG_FORM', 37);
-define('TIDY_TAG_FRAME', 38);
-define('TIDY_TAG_FRAMESET', 39);
-define('TIDY_TAG_H1', 40);
-define('TIDY_TAG_H2', 41);
-define('TIDY_TAG_H3', 42);
-define('TIDY_TAG_H4', 43);
-define('TIDY_TAG_H5', 44);
-define('TIDY_TAG_H6', 45);
-define('TIDY_TAG_HEAD', 46);
-define('TIDY_TAG_HR', 47);
-define('TIDY_TAG_HTML', 48);
-define('TIDY_TAG_I', 49);
-define('TIDY_TAG_IFRAME', 50);
-define('TIDY_TAG_ILAYER', 51);
-define('TIDY_TAG_IMG', 52);
-define('TIDY_TAG_INPUT', 53);
-define('TIDY_TAG_INS', 54);
-define('TIDY_TAG_ISINDEX', 55);
-define('TIDY_TAG_KBD', 56);
-define('TIDY_TAG_KEYGEN', 57);
-define('TIDY_TAG_LABEL', 58);
-define('TIDY_TAG_LAYER', 59);
-define('TIDY_TAG_LEGEND', 60);
-define('TIDY_TAG_LI', 61);
-define('TIDY_TAG_LINK', 62);
-define('TIDY_TAG_LISTING', 63);
-define('TIDY_TAG_MAP', 64);
-define('TIDY_TAG_MARQUEE', 65);
-define('TIDY_TAG_MENU', 66);
-define('TIDY_TAG_META', 67);
-define('TIDY_TAG_MULTICOL', 68);
-define('TIDY_TAG_NOBR', 69);
-define('TIDY_TAG_NOEMBED', 70);
-define('TIDY_TAG_NOFRAMES', 71);
-define('TIDY_TAG_NOLAYER', 72);
-define('TIDY_TAG_NOSAVE', 73);
-define('TIDY_TAG_NOSCRIPT', 74);
-define('TIDY_TAG_OBJECT', 75);
-define('TIDY_TAG_OL', 76);
-define('TIDY_TAG_OPTGROUP', 77);
-define('TIDY_TAG_OPTION', 78);
-define('TIDY_TAG_P', 79);
-define('TIDY_TAG_PARAM', 80);
-define('TIDY_TAG_PLAINTEXT', 81);
-define('TIDY_TAG_PRE', 82);
-define('TIDY_TAG_Q', 83);
-define('TIDY_TAG_RB', 84);
-define('TIDY_TAG_RBC', 85);
-define('TIDY_TAG_RP', 86);
-define('TIDY_TAG_RT', 87);
-define('TIDY_TAG_RTC', 88);
-define('TIDY_TAG_RUBY', 89);
-define('TIDY_TAG_S', 90);
-define('TIDY_TAG_SAMP', 91);
-define('TIDY_TAG_SCRIPT', 92);
-define('TIDY_TAG_SELECT', 93);
-define('TIDY_TAG_SERVER', 94);
-define('TIDY_TAG_SERVLET', 95);
-define('TIDY_TAG_SMALL', 96);
-define('TIDY_TAG_SPACER', 97);
-define('TIDY_TAG_SPAN', 98);
-define('TIDY_TAG_STRIKE', 99);
-define('TIDY_TAG_STRONG', 100);
-define('TIDY_TAG_STYLE', 101);
-define('TIDY_TAG_SUB', 102);
-define('TIDY_TAG_SUP', 103);
-define('TIDY_TAG_TABLE', 104);
-define('TIDY_TAG_TBODY', 105);
-define('TIDY_TAG_TD', 106);
-define('TIDY_TAG_TEXTAREA', 107);
-define('TIDY_TAG_TFOOT', 108);
-define('TIDY_TAG_TH', 109);
-define('TIDY_TAG_THEAD', 110);
-define('TIDY_TAG_TITLE', 111);
-define('TIDY_TAG_TR', 112);
-define('TIDY_TAG_TT', 113);
-define('TIDY_TAG_U', 114);
-define('TIDY_TAG_UL', 115);
-define('TIDY_TAG_VAR', 116);
-define('TIDY_TAG_WBR', 117);
-define('TIDY_TAG_XMP', 118);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_ARTICLE', 123);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_ASIDE', 124);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_AUDIO', 125);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_BDI', 126);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_CANVAS', 127);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_COMMAND', 128);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_DATALIST', 129);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_DETAILS', 130);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_DIALOG', 131);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_FIGCAPTION', 132);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_FIGURE', 133);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_FOOTER', 134);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_HEADER', 135);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_HGROUP', 136);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_MAIN', 137);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_MARK', 138);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_MENUITEM', 139);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_METER', 140);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_NAV', 141);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_OUTPUT', 142);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_PROGRESS', 143);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_SECTION', 144);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_SOURCE', 145);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_SUMMARY', 146);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_TEMPLATE', 147);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_TIME', 148);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_TRACK', 149);
-/**
- * @since 7.4
- */
-define('TIDY_TAG_VIDEO', 150);
+    public function __construct(?string $filename = null, array|string|null $config = null, ?string $encoding = null, bool $useIncludePath = false) {}
 
-/**
- * root node
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_ROOT', 0);
+    /**
+     * @tentative-return-type
+     * @alias tidy_getopt
+     */
+    public function getOpt(string $option): string|int|bool {}
 
-/**
- * doctype
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_DOCTYPE', 1);
+    /**
+     * @tentative-return-type
+     * @alias tidy_clean_repair
+     */
+    public function cleanRepair(): bool {}
 
-/**
- * HTML comment
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_COMMENT', 2);
+    /** @tentative-return-type */
+    public function parseFile(string $filename, array|string|null $config = null, ?string $encoding = null, bool $useIncludePath = false): bool {}
 
-/**
- * Processing Instruction
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_PROCINS', 3);
+    /** @tentative-return-type */
+    public function parseString(string $string, array|string|null $config = null, ?string $encoding = null): bool {}
 
-/**
- * Text
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_TEXT', 4);
+    /**
+     * @tentative-return-type
+     * @alias tidy_repair_string
+     */
+    public static function repairString(string $string, array|string|null $config = null, ?string $encoding = null): string|false {}
 
-/**
- * start tag
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_START', 5);
+    /**
+     * @tentative-return-type
+     * @alias tidy_repair_file
+     */
+    public static function repairFile(string $filename, array|string|null $config = null, ?string $encoding = null, bool $useIncludePath = false): string|false {}
 
-/**
- * end tag
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_END', 6);
+    /**
+     * @tentative-return-type
+     * @alias tidy_diagnose
+     */
+    public function diagnose(): bool {}
 
-/**
- * empty tag
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_STARTEND', 7);
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_release
+     */
+    public function getRelease(): string {}
 
-/**
- * CDATA
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_CDATA', 8);
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_config
+     */
+    public function getConfig(): array {}
 
-/**
- * XML section
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_SECTION', 9);
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_status
+     */
+    public function getStatus(): int {}
 
-/**
- * ASP code
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_ASP', 10);
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_html_ver
+     */
+    public function getHtmlVer(): int {}
 
-/**
- * JSTE code
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_JSTE', 11);
+#ifdef HAVE_TIDYOPTGETDOC
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_opt_doc
+     */
+    public function getOptDoc(string $option): string|false {}
+#endif
 
-/**
- * PHP code
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_PHP', 12);
+    /**
+     * @tentative-return-type
+     * @alias tidy_is_xhtml
+     */
+    public function isXhtml(): bool {}
 
-/**
- * XML declaration
- * @link https://php.net/manual/en/tidy.constants.php
- */
-define('TIDY_NODETYPE_XMLDECL', 13);
+    /**
+     * @tentative-return-type
+     * @alias tidy_is_xml
+     */
+    public function isXml(): bool {}
 
-// End of tidy v.2.0
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_root
+     */
+    public function root(): ?tidyNode {}
+
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_head
+     */
+    public function head(): ?tidyNode {}
+
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_html
+     */
+    public function html(): ?tidyNode {}
+
+    /**
+     * @tentative-return-type
+     * @alias tidy_get_body
+     */
+    public function body(): ?tidyNode {}
+}
+
+final class tidyNode
+{
+    public readonly string $value;
+    public readonly string $name;
+    public readonly int $type;
+    public readonly int $line;
+    public readonly int $column;
+    public readonly bool $proprietary;
+    public readonly ?int $id;
+    public readonly ?array $attribute;
+    public readonly ?array $child;
+
+    private function __construct() {}
+
+    public function hasChildren(): bool {}
+
+    public function hasSiblings(): bool {}
+
+    public function isComment(): bool {}
+
+    public function isHtml(): bool {}
+
+    public function isText(): bool {}
+
+    public function isJste(): bool {}
+
+    public function isAsp(): bool {}
+
+    public function isPhp(): bool {}
+
+    public function getParent(): ?tidyNode {}
+
+    public function getPreviousSibling(): ?tidyNode {}
+
+    public function getNextSibling(): ?tidyNode {}
+}
