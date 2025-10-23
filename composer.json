@@ -39,8 +39,8 @@
         "phan/tolerant-php-parser": "dev-main",
         "sabre/event": "^5.1.3",
         "symfony/console": "^6.0",
-        "symfony/string": "^6.0",
         "symfony/polyfill-mbstring": "^1.11.0",
+        "symfony/string": "^6.0",
         "tysonandre/var_representation_polyfill": "^0.0.2|^0.1.0"
     },
     "suggest": {
