@@ -27,21 +27,6 @@
     "conflict": {
         "microsoft/tolerant-php-parser": "*"
     },
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "phan/tolerant-php-parser",
-                "type": "library",
-                "version": "dev-main",
-                "source": {
-                    "url": "https://github.com/phan/phan-tolerant.git",
-                    "type": "git",
-                    "reference": "main"
-                }
-            }
-        }
-    ],
     "require": {
         "php": "^8.1.0",
         "ext-filter": "*",
@@ -72,8 +57,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Phan\\": "src/Phan",
-            "Microsoft\\PhpParser\\": "vendor/phan/tolerant-php-parser/src"
+            "Phan\\": "src/Phan"
         },
         "files": ["src/Phan/bootstrap/polyfills.php"]
     },
