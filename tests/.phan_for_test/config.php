@@ -114,23 +114,4 @@ return [
 
     // Not changing all of these tests to `PhanUnusedPublicNoOverrideMethodParameter` from `PhanUnusedPublicMethodParameter`
     'unused_variable_detection_assume_override_exists' => true,
-
-    // Load extension stubs when the extensions aren't available (e.g., in CI environments)
-    'autoload_internal_extension_signatures' => [
-        'bcmath'      => '.phan/internal_stubs/bcmath.phan_php',
-        'curl'        => '.phan/internal_stubs/curl.phan_php',
-        'intl'        => '.phan/internal_stubs/intl.phan_php',
-        'ldap'        => '.phan/internal_stubs/ldap.phan_php',
-        'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
-        'mysqli'      => '.phan/internal_stubs/mysqli.stub.php',
-        'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
-        'pdo_pgsql'   => '.phan/internal_stubs/pdo_pgsql.phan_php',
-        'pgsql'       => '.phan/internal_stubs/pgsql.phan_php',
-        'rounding'    => '.phan/internal_stubs/rounding.phan_php',
-        'soap'        => '.phan/internal_stubs/soap.phan_php',
-        'sodium'      => '.phan/internal_stubs/sodium.phan_php',
-        'tidy'        => '.phan/internal_stubs/tidy.phan_php',
-        'url'         => '.phan/internal_stubs/url.phan_php',
-        'xsl'         => '.phan/internal_stubs/xsl.phan_php',
-    ],
 ];
