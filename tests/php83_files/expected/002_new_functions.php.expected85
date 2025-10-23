@@ -1,0 +1,12 @@
+%s:7 PhanTypeMismatchArgumentInternal Argument 2 ($options) is false of type false but \DatePeriod::createFromISO8601String() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($other) is 'some value' of type string but \DOMElement::contains() takes \DOMNameSpaceNode|\DOMNode|null
+%s:26 PhanTypeMismatchArgumentInternal Argument 2 ($month) is '1' of type string but \IntlCalendar::setDate() takes int
+%s:36 PhanTypeMismatchArgumentInternal Argument 2 ($depth) is false of type false but \json_validate() takes int
+%s:40 PhanDeprecatedFunctionInternal Call to deprecated function \ldap_connect_wallet()
+%s:41 PhanDeprecatedFunctionInternal Call to deprecated function \ldap_connect_wallet()
+%s:42 PhanDeprecatedFunctionInternal Call to deprecated function \ldap_connect_wallet()
+%s:42 PhanTypeMismatchArgumentInternalReal Argument 4 ($auth_mode) is 'test' of type string but \ldap_connect_wallet() takes int
+%s:43 PhanDeprecatedFunctionInternal Call to deprecated function \ldap_connect_wallet()
+%s:53 PhanTypeMismatchArgumentInternal Argument 2 ($length) is false of type false but \mb_str_pad() takes int
+%s:66 PhanTypeMismatchArgumentInternal Argument 2 ($max) is '1' of type string but \Random\Randomizer::getFloat() takes float
+%s:77 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type int (value: 12) but \str_decrement() takes string

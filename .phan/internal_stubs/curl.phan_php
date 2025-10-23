@@ -1,0 +1,250 @@
+<?php
+
+
+
+
+
+
+
+class CURLFile
+{
+    function curl_share_close(function curl_close(, default: 'resource')] $handle): void {}
+
+/**
+ * Returns a new cURL multi handle
+ * @link https://php.net/manual/en/function.curl-multi-init.php
+ * @return resource|CurlMultiHandle a cURL multi handle resource or object depends on the php version
+ */
+, default: 'resource')]
+function curl_multi_init(): CurlMultiHandle {}
+
+/**
+ * Add a normal cURL handle to a cURL multi handle
+ * @link https://php.net/manual/en/function.curl-multi-add-handle.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param CurlHandle|resource $handle
+ * @return int 0 on success, or one of the CURLM_XXX errors
+ * code.
+ */
+function curl_multi_add_handle(, default: 'resource')] $multi_handle, , default: 'resource')] $handle): int {}
+
+/**
+ * Remove a multi handle from a set of cURL handles
+ * @link https://php.net/manual/en/function.curl-multi-remove-handle.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param CurlHandle|resource $handle
+ * @return int|false On success, returns one of the CURLM_XXX error codes, false on failure.
+ */
+, default: 'int|false')]
+function curl_multi_remove_handle(, default: 'resource')] $multi_handle, , default: 'resource')] $handle) {}
+
+/**
+ * Wait for activity on any curl_multi connection
+ * @link https://php.net/manual/en/function.curl-multi-select.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param float $timeout [optional] <p>
+ * Time, in seconds, to wait for a response.
+ * </p>
+ * @return int On success, returns the number of descriptors contained in,
+ * the descriptor sets. On failure, this function will return -1 on a select failure or timeout (from the underlying select system call).
+ */
+function curl_multi_select(, default: 'resource')] $multi_handle, float $timeout = 1.0): int {}
+
+/**
+ * (PHP 5 &gt;=5.5.0)<br/>
+ * Set an option for the cURL multi handle
+ * @link https://secure.php.net/manual/en/function.curl-multi-setopt.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param int $option <p>
+ * One of the <b>CURLMOPT_*</b> constants.
+ * </p>
+ * @param mixed $value <p>
+ * The value to be set on <em>option</em>.
+ * </p>
+ * <p>
+ * <em>value</em> should be an {@link https://php.net/manual/en/language.types.integer.php int} for the
+ * following values of the <em>option</em> parameter:
+ * </p><table>
+ *
+ * <thead>
+ * <tr>
+ * <th>Option</th>
+ * <th>Set <em><code class="parameter">value</code></em> to</th>
+ * </tr>
+ * </thead>
+ *
+ * <tbody>
+ * <tr>
+ * <td><b>CURLMOPT_PIPELINING</b></td>
+ * <td style="vertical-align: top;">
+ * Pass 1 to enable or 0 to disable. Enabling pipelining on a multi
+ * handle will make it attempt to perform HTTP Pipelining as far as
+ * possible for transfers using this handle. This means that if you add
+ * a second request that can use an already existing connection, the
+ * second request will be "piped" on the same connection rather than
+ * being executed in parallel.
+ * </td>
+ * </tr>
+ *
+ * <tr>
+ * <td style="vertical-align: top;"><b>CURLMOPT_MAXCONNECTS</b></td>
+ * <td style="vertical-align: top;">
+ * Pass a number that will be used as the maximum amount of
+ * simultaneously open connections that libcurl may cache. Default is
+ * 10. When the cache is full, curl closes the oldest one in the cache
+ * to prevent the number of open connections from increasing.
+ * </td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * @return bool Returns TRUE on success or FALSE on failure.
+ * @since 5.5
+ */
+function curl_multi_setopt(, default: 'resource')] $multi_handle, int $option, mixed $value): bool {}
+
+/**
+ * (PHP 5 &gt;=5.5.0)<br/>
+ * Return string describing error code
+ * @link https://secure.php.net/manual/en/function.curl-multi-strerror.php
+ * @param int $error_code <p>
+ * One of the {@link https://curl.haxx.se/libcurl/c/libcurl-errors.html CURLM error codes} constants.
+ * </p>
+ * @return string|null Returns error string for valid error code, NULL otherwise.
+ * @since 5.5
+ */
+function curl_multi_strerror(int $error_code): ?string {}
+
+/**
+ * (PHP 5 &gt;=5.5.0)<br/>
+ * Pause and unpause a connection
+ * @link https://secure.php.net/manual/en/function.curl-pause.php
+ * @param CurlHandle|resource $handle
+ * <p>A cURL handle returned by {@link https://secure.php.net/manual/en/function.curl-init.php curl_init()}.</p>
+ * @param int $flags <p>One of <b>CURLPAUSE_*</b> constants.</p>
+ * @return int Returns an error code (<b>CURLE_OK</b> for no error).
+ * @since 5.5
+ */
+function curl_pause(, default: 'resource')] $handle, int $flags): int {}
+
+/**
+ * (PHP 5 &gt;=5.5.0)<br/>
+ * Reset all options of a libcurl session handle
+ * @link https://secure.php.net/manual/en/function.curl-reset.php
+ * @param CurlHandle|resource $handle <p>A cURL handle returned by
+ * {@link https://secure.php.net/manual/en/function.curl-init.php curl_init()}.</p>
+ * @return void
+ * @since 5.5
+ */
+function curl_reset(, default: 'resource')] $handle): void {}
+
+/**
+ * Run the sub-connections of the current cURL handle
+ * @link https://php.net/manual/en/function.curl-multi-exec.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param int &$still_running <p>
+ * A reference to a flag to tell whether the operations are still running.
+ * </p>
+ * @return int A cURL code defined in the cURL Predefined Constants.
+ * <p>
+ * This only returns errors regarding the whole multi stack. There might still have
+ * occurred problems on individual transfers even when this function returns
+ * CURLM_OK.
+ * </p>
+ */
+function curl_multi_exec(
+    , default: 'resource')] $multi_handle,
+    , default: 'resource')] $handle): ?string {}
+
+/**
+ * Get information about the current transfers
+ * @link https://php.net/manual/en/function.curl-multi-info-read.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @param int &$queued_messages [optional] <p>
+ * Number of messages that are still in the queue
+ * </p>
+ * @return array|false On success, returns an associative array for the message, false on failure.
+ */
+, default: 'resource')] $multi_handle, &$queued_messages): array|false {}
+
+/**
+ * Close a set of cURL handles
+ * @link https://php.net/manual/en/function.curl-multi-close.php
+ * @param CurlMultiHandle|resource $multi_handle
+ * @return void
+ */
+function curl_multi_close(, default: 'resource')] $multi_handle): void {}
+
+/**
+ * Return the last multi curl error number
+ * @param CurlMultiHandle|resource $multi_handle
+ * @return int
+ * @since 7.1
+ */
+, default: 'resource')] $multi_handle): int {}
+
+/**
+ * Return the last share curl error number
+ * @param CurlMultiHandle|resource $share_handle
+ * @return int
+ * @since 7.1
+ */
+, default: 'resource')] $share_handle): int {}
+
+/**
+ * Return string describing the given error code
+ * @param int $error_code
+ * @return string|null
+ * @since 7.1
+ */
+function curl_share_strerror(int $error_code): ?string {}
+
+/**
+ * @since 8.2
+ */
+function curl_upkeep(CurlHandle $handle): bool {}
+
+/**
+ * @since 8.5
+ */
+function curl_multi_get_handles(CurlMultiHandle $multi_handle): array {}
+
+/**
+ * @since 8.5
+ */
+function curl_share_init_persistent(array $share_options): CurlSharePersistentHandle {}
+
+/**
+ * @since 8.0
+ */
+final class CurlHandle
+{
+    /**
+     * Cannot directly construct CurlHandle, use curl_init() instead
+     * @see curl_init()
+     */
+    private function __construct() {}
+}
+
+/**
+ * @since 8.0
+ */
+final class CurlMultiHandle
+{
+    /**
+     * Cannot directly construct CurlMultiHandle, use curl_multi_init() instead
+     * @see curl_multi_init()
+     */
+    private function __construct() {}
+}
+
+/**
+ * @since 8.0
+ */
+final class CurlShareHandle
+{
+    /**
+     * Cannot directly construct CurlShareHandle, use curl_share_init() instead
+     * @see  curl_share_init()
+     */
+    private function __construct() {}
+}
