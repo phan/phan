@@ -1,1 +1,1 @@
-src/157_polyfill_compilation_warning.php:3 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Parse error: Unterminated comment starting line 3"
+src/157_polyfill_compilation_warning.php:3 PhanSyntaxError Fallback parser diagnostic error: Unterminated comment starting line 3 (at column 1)

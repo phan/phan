@@ -348,6 +348,9 @@ class TolerantASTConverter
         $parser = CompatibleParser::create();
         $result = $parser->parseSourceFile($file_contents);
         $errors = DiagnosticsProvider::getDiagnostics($result);
+        if (isset($result->unterminatedCommentDiagnostic) && $result->unterminatedCommentDiagnostic instanceof Diagnostic) {
+            $errors[] = $result->unterminatedCommentDiagnostic;
+        }
         return $result;
     }
 
@@ -641,6 +644,19 @@ class TolerantASTConverter
                 if ($n->dotDotDotToken !== null) {
                     return new ast\Node(ast\AST_UNPACK, 0, ['expr' => $result], $start_line);
                 }
+                $name_token = $n->name;
+                if ($name_token !== null) {
+                    $name = static::tokenToString($name_token);
+                    return new ast\Node(
+                        ast\AST_NAMED_ARG,
+                        0,
+                        [
+                            'name' => $name,
+                            'expr' => $result,
+                        ],
+                        self::getStartLine($name_token) ?: $start_line
+                    );
+                }
                 return $result;
             },
             /**
@@ -821,23 +837,43 @@ class TolerantASTConverter
                         ],
                         $start_line
                     );
-                } else {
-                    if ($member_name instanceof Token) {
-                        if (\get_class($member_name) !== Token::class) {
-                            if (self::$should_add_placeholders) {
-                                $member_name = self::INCOMPLETE_CLASS_CONST;
-                            } else {
-                                throw new InvalidNodeException();
-                            }
+                }
+                if ($member_name instanceof Token) {
+                    if (\get_class($member_name) !== Token::class) {
+                        if (self::$should_add_placeholders) {
+                            $member_name = self::INCOMPLETE_CLASS_CONST;
                         } else {
-                            $member_name = static::tokenToString($member_name);
+                            throw new InvalidNodeException();
                         }
                     } else {
-                        // E.g. Node\Expression\BracedExpression
-                        throw new InvalidNodeException();
+                        $member_name = static::tokenToString($member_name);
                     }
                     return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $member_name, $start_line);
                 }
+                if ($member_name instanceof PhpParser\Node\Expression\BracedExpression) {
+                    $expr = $member_name->expression;
+                    if ($expr === null) {
+                        throw new InvalidNodeException();
+                    }
+                    try {
+                        $dynamic_name = static::phpParserNodeToAstNode($expr);
+                    } catch (InvalidNodeException $e) {
+                        if (self::$should_add_placeholders) {
+                            $dynamic_name = self::INCOMPLETE_CLASS_CONST;
+                        } else {
+                            throw $e;
+                        }
+                    }
+                    if (\PHP_VERSION_ID < 80300 || self::$ast_version_parsing < 110) {
+                        return static::phpParserClassConstFetchToAstClassConstFetch(
+                            $n->scopeResolutionQualifier,
+                            self::INCOMPLETE_CLASS_CONST,
+                            $start_line
+                        );
+                    }
+                    return static::phpParserClassConstFetchToAstClassConstFetch($n->scopeResolutionQualifier, $dynamic_name, $start_line);
+                }
+                throw new InvalidNodeException();
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
                 // AST version 120 represents clone as AST_CALL instead of AST_CLONE
@@ -1261,11 +1297,11 @@ class TolerantASTConverter
                 return $children;
             },
             /**
-             * @return int|string|ast\Node|null
+             * @return int|float|string|ast\Node|null
              * null if incomplete
              * int|string for no-op scalar statements like `;2;`
              */
-            'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => static function (PhpParser\Node\Statement\ExpressionStatement $n, int $_): \ast\Node|int|null|string {
+            'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => static function (PhpParser\Node\Statement\ExpressionStatement $n, int $_): \ast\Node|int|float|null|string {
                 $expression = $n->expression;
                 // tolerant-php-parser uses parseExpression(..., $force=true), which can return an array.
                 // It is the only thing that uses $force=true at the time of writing.
@@ -2480,6 +2516,28 @@ class TolerantASTConverter
 
     private static function phpParserArgListToAstArgList(?\Microsoft\PhpParser\Node\DelimitedList\ArgumentExpressionList $args, int $line): ast\Node
     {
+        if ($args !== null) {
+            $filtered_children = [];
+            foreach ($args->children ?? [] as $arg) {
+                if ($arg instanceof Token && $arg->kind === TokenKind::CommaToken) {
+                    continue;
+                }
+                $filtered_children[] = $arg;
+            }
+            if (\count($filtered_children) === 1) {
+                $only_arg = $filtered_children[0];
+                if ($only_arg instanceof PhpParser\Node\Expression\ArgumentExpression
+                    && $only_arg->dotDotDotToken !== null
+                    && $only_arg->expression === null) {
+                    return new ast\Node(
+                        ast\AST_CALLABLE_CONVERT,
+                        0,
+                        [],
+                        self::getStartLine($only_arg)
+                    );
+                }
+            }
+        }
         $ast_args = [];
         foreach ($args->children ?? [] as $arg) {
             if ($arg instanceof Token && $arg->kind === TokenKind::CommaToken) {
@@ -3081,6 +3139,16 @@ class TolerantASTConverter
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
+        $set_visibility_token = \property_exists($n, 'setVisibilityToken') ? $n->setVisibilityToken : null;
+        if ($set_visibility_token instanceof Token) {
+            try {
+                $flags |= self::tokenKindToVisibilityFlag($set_visibility_token);
+            } catch (RuntimeException $exception) {
+                if (!self::$should_add_placeholders) {
+                    throw $exception;
+                }
+            }
+        }
 
         $line = $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line);
         $prop_decl = new ast\Node(ast\AST_PROP_DECL, 0, $prop_elems, $line);
@@ -3301,6 +3369,15 @@ class TolerantASTConverter
             if (!($item instanceof PhpParser\Node\ArrayElement)) {
                 throw new AssertionError("Expected ArrayElement");
             }
+            if ($item->dotDotDot) {
+                $ast_items[] = new ast\Node(
+                    ast\AST_UNPACK,
+                    0,
+                    ['expr' => static::phpParserNodeToAstNode($item->elementValue)],
+                    self::getStartLine($item)
+                );
+                continue;
+            }
             $element_key = $item->elementKey;
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, 0, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),
@@ -3452,9 +3529,12 @@ class TolerantASTConverter
         return $result;
     }
 
-    private static function phpParserClassConstFetchToAstClassConstFetch(\Microsoft\PhpParser\Node\Expression|\Microsoft\PhpParser\Node\QualifiedName|Token $scope_resolution_qualifier, string $name, int $start_line): ast\Node
+    /**
+     * @param string|int|float|bool|null|ast\Node $name
+     */
+    private static function phpParserClassConstFetchToAstClassConstFetch(\Microsoft\PhpParser\Node\Expression|\Microsoft\PhpParser\Node\QualifiedName|Token $scope_resolution_qualifier, string|int|float|bool|null|ast\Node $name, int $start_line): ast\Node
     {
-        if (\strcasecmp($name, 'class') === 0) {
+        if (\is_string($name) && \strcasecmp($name, 'class') === 0) {
             $class_node = static::phpParserNonValueNodeToAstNode($scope_resolution_qualifier);
             if (!$class_node instanceof ast\Node) {
                 // e.g. (0)::class
