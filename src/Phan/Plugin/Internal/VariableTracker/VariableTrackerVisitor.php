@@ -970,8 +970,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
             '@phan-var VariableTrackingBranchScope $inner_scope';
 
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
-                $exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node);
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node, $this->code_base, $this->context)) {
+                $exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node, $this->code_base, $this->context);
                 $outer_scope->recordSkippedScope($inner_scope, $exits);
             } else {
                 $inner_scope_list[] = $inner_scope;
@@ -1096,7 +1096,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Determine if the try block might fail (throw an exception before completing).
         // If it might fail, variables defined in the try block should be treated as possibly undefined.
-        $try_might_fail = self::willTryBlockPossiblyFail($catches_node, $finally_node);
+        $try_might_fail = self::willTryBlockPossiblyFail($catches_node, $finally_node, $this->code_base, $this->context);
 
         // Merge the try scope with the outer scope.
         // If the try might fail, use mergeBranchScopeList with merge_parent_scope=true
@@ -1108,8 +1108,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
         }
 
-        $catches_will_throw_or_return = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catches_node);
-        $try_always_exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node);
+        $catches_will_throw_or_return = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catches_node, $this->code_base, $this->context);
+        $try_always_exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node, $this->code_base, $this->context);
 
         $catch_node_list = $catches_node->children;
         if (\count($catch_node_list) > 0) {
@@ -1145,7 +1145,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node|null $catches_node the AST_CATCH_LIST node
      * @param Node|null $finally_node the finally block node
      */
-    private static function willTryBlockPossiblyFail(?Node $catches_node, ?Node $finally_node): bool
+    private static function willTryBlockPossiblyFail(?Node $catches_node, ?Node $finally_node, CodeBase $code_base, Context $context): bool
     {
         // If there's a finally block, we analyze it as if the try block might have failed
         if ($finally_node !== null) {
@@ -1166,7 +1166,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 continue;
             }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable
-            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'], $code_base, $context)) {
                 // At least one catch block can fall through, so the try might have failed
                 return true;
             }

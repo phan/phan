@@ -806,13 +806,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this for loop
-            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts), $this->code_base))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
 
         $context = $context->withExitLoop($node);
         if (!$always_iterates_at_least_once) {
-            $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, [$context, $original_context], $this->code_base))->combineChildContextList();
         }
 
         // Check if this is side effect free with the variable types inferred by analyzing the loop body (heuristic).
@@ -949,13 +949,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this while loop
-            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts), $this->code_base))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
 
         $context = $context->withExitLoop($node);
         if (!$always_iterates_at_least_once) {
-            $context = (new ContextMergeVisitor($context, [$context, $original_context]))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, [$context, $original_context], $this->code_base))->combineChildContextList();
         }
 
         // Check if this is side effect free with the variable types inferred by analyzing the loop body (heuristic).
@@ -1088,7 +1088,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
 
             if (\count($context_list) >= 2) {
-                $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
+                $context = (new ContextMergeVisitor($context, $context_list, $this->code_base))->combineChildContextList();
             }
             // Perform deferred checks about the inside of the loop.
             $context = $context->withExitLoop($node);
@@ -1105,12 +1105,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Perform deferred checks about the inside of the loop.
             // Here, this combines the states of the inner loop (but not the outer loop) to avoid some types of false positives
             // such as undeclared variable warnings. (imperfect heuristic but works well for most uses)
-            $context_inside_loop_start = (new ContextMergeVisitor($context_inside_loop_start, $inner_context_list))->combineChildContextList();
+            $context_inside_loop_start = (new ContextMergeVisitor($context_inside_loop_start, $inner_context_list, $this->code_base))->combineChildContextList();
             $context_inside_loop_start = $context_inside_loop_start->withExitLoop($node);
 
             // Combine the outer scope with the inner scope
             $context_list = [$context, $context_inside_loop_start];
-            $context = (new ContextMergeVisitor($context, $context_list))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, $context_list, $this->code_base))->combineChildContextList();
         }
 
         return $this->postOrderAnalyze($context, $node);
@@ -1382,7 +1382,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if (isset($node->phan_loop_contexts)) {
             // Combine contexts from continue/break statements within this do-while loop
-            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts)))->combineChildContextList();
+            $context = (new ContextMergeVisitor($context, \array_merge([$context], $node->phan_loop_contexts), $this->code_base))->combineChildContextList();
             unset($node->phan_loop_contexts);
         }
         $context = $context->withExitLoop($node);
@@ -1519,7 +1519,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // on any possible branching structure
         $context = (new ContextMergeVisitor(
             $context,
-            $child_context_list
+            $child_context_list,
+            $this->code_base
         ))->__invoke($node);
 
         $this->postOrderAnalyze($context, $node);
@@ -1595,7 +1596,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     // The previous case statement fell through some of the time or all of the time.
                     $child_context = (new ContextMergeVisitor(
                         $previous_child_context,
-                        [$previous_child_context, $fallthrough_context]
+                        [$previous_child_context, $fallthrough_context],
+                        $this->code_base
                     ))->combineScopeList([$previous_child_context->getScope(), $fallthrough_context->getScope()]);
                 } else {
                     // The previous case statement did not fall through, or does not exist.
@@ -1709,7 +1711,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // on any possible branching structure
                 $context = (new ContextMergeVisitor(
                     $context,
-                    $child_context_list
+                    $child_context_list,
+                    $this->code_base
                 ))->combineChildContextList();
             } else {
                 $context = $child_context_list[0];
@@ -1966,7 +1969,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // on any possible branching structure
                 $context = (new ContextMergeVisitor(
                     $context,
-                    $child_context_list
+                    $child_context_list,
+                    $this->code_base
                 ))->combineChildContextList();
             } else {
                 $context = $child_context_list[0];
@@ -2208,7 +2212,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 } elseif (((new BlockExitStatusChecker($this->code_base, $this->context))->__invoke($stmts_node) & BlockExitStatusChecker::STATUS_MAYBE_PROCEED) === 0) {
                     // e.g. "if (!is_string($x)) { return; }" or break
                     $excluded_elem_count++;
-                    if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                    if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node, $this->code_base, $child_context)) {
                         $this->recordLoopContextForBreakOrContinue($child_context);
                     }
                 } else {
@@ -2251,7 +2255,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // If we have at least one child context that falls through, then use that one.
             $context = (new ContextMergeVisitor(
                 $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
-                \array_slice($child_context_list, 0, $first_unconditionally_true_index)
+                \array_slice($child_context_list, 0, $first_unconditionally_true_index),
+                $this->code_base
             ))->mergePossiblySingularChildContextList();
         } elseif (count($child_context_list) === 0 && $excluded_elem_count > 0) {
             // If no child contexts fall through but some branches were excluded (e.g. they never return),
@@ -2266,7 +2271,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // ContextMergeVisitor will include the incoming scope($context) if the if elements aren't comprehensive
             $context = (new ContextMergeVisitor(
                 $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
-                $child_context_list
+                $child_context_list,
+                $this->code_base
             ))->visitIf($node);
         }
 
@@ -2535,7 +2541,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
         $context = (new ContextMergeVisitor(
             $context,
-            [$try_context]
+            [$try_context],
+            $this->code_base
         ))->mergeTryContext($node);
 
         // We collect all child context so that the
@@ -2565,9 +2572,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // updated context for the node
             $catch_context = $this->analyzeAndGetUpdatedContext($catch_context, $node, $catch_node);
             $catch_stmts_node = $catch_node->children['stmts'];
-            if ($catch_stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_stmts_node)) {
+            if ($catch_stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_stmts_node, $this->code_base, $catch_context)) {
                 // e.g. "} catch (Exception $e) { break; }"
-                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catch_stmts_node)) {
+                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catch_stmts_node, $this->code_base, $catch_context)) {
                     $this->recordLoopContextForBreakOrContinue($catch_context);
                 }
             }
@@ -2584,8 +2591,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // on any possible branching structure
             $context = (new ContextMergeVisitor(
                 $context,
-                $catch_context_list
-            ))->mergeCatchContext($node, BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node));
+                $catch_context_list,
+                $this->code_base
+            ))->mergeCatchContext($node, BlockExitStatusChecker::willUnconditionallyThrowOrReturn($try_node, $this->code_base, $try_context));
         }
 
         $finally_node = $node->children['finally'] ?? null;
@@ -2740,7 +2748,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node)) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node, $this->code_base, $context_with_left_condition)) {
                 return $this->postOrderAnalyze($context_with_false_left_condition, $node);
             }
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {
@@ -2809,7 +2817,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
-            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node)) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($right_node, $this->code_base, $context_with_false_left_condition)) {
                 return $this->postOrderAnalyze($context_with_true_left_condition, $node);
             }
             if (ScopeImpactCheckingVisitor::hasPossibleImpact($this->code_base, $context, $right_node)) {

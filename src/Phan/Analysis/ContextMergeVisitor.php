@@ -7,6 +7,7 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
@@ -22,6 +23,9 @@ use Phan\Plugin\ConfigPluginSet;
  */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
+    /** @var ?CodeBase */
+    private $code_base;
+
     /**
      * @var Context
      * The context in which the node we're going to be looking
@@ -44,13 +48,17 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * @param list<Context> $child_context_list
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
+     * @param ?CodeBase $code_base
+     * The code base within which we're operating (optional)
      */
     public function __construct(
         Context $context,
-        array $child_context_list
+        array $child_context_list,
+        ?CodeBase $code_base = null
     ) {
         $this->context = $context;
         $this->child_context_list = $child_context_list;
+        $this->code_base = $code_base;
     }
 
     /**
@@ -95,7 +103,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $context = $this->context;
         $try_context = $this->child_context_list[0];
 
-        if (self::willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
+        if (self::willRemainingStatementsBeAnalyzedAsIfTryMightFail($node, $this->code_base, $context)) {
             return $this->combineScopeList([
                 $context->getScope(),
                 $try_context->getScope()
@@ -104,7 +112,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $try_context;
     }
 
-    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node): bool
+    private static function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node, ?CodeBase $code_base, Context $context): bool
     {
         if ($node->children['finally'] !== null) {
             // We want to analyze finally as if the try block (and one or more of the catch blocks) was or wasn't executed.
@@ -127,7 +135,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 continue;
             }
             // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
-            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'], $code_base, $context)) {
                 // At least one catch may fall through, so analyze as if the try might fail.
                 return true;
             }
@@ -154,8 +162,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $catch_scope_list = [];
         $catch_nodes = $node->children['catches']->children;
         foreach ($catch_nodes as $i => $catch_node) {
-            // @phan-suppress-next-line PhanTypeMismatchArgumentNullable, PhanPossiblyUndeclaredProperty this is never null
-            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+            if (!$catch_node instanceof Node) {
+                continue;
+            }
+            $catch_context = $this->child_context_list[$i + 1] ?? null;
+            $catch_stmts_node = $catch_node->children['stmts'];
+            if ($catch_stmts_node instanceof Node &&
+                !BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_stmts_node, $this->code_base, $catch_context ?? $this->context)) {
                 $catch_scope_list[] = $scope_list[$i + 1];
             }
         }

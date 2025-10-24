@@ -1060,7 +1060,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $false_node,
                     $this->should_catch_issue_exception
                 );
-                if ($false_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($false_node)) {
+                if ($false_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($false_node, $this->code_base, $false_context)) {
                     return $true_type->nonFalseyClone();
                 }
 
@@ -1150,7 +1150,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // TODO: Support inferring the type from the conditional
         $union_types = [];
         foreach ($node->children['stmts']->children as $arm_node) {
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($arm_node)) {
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($arm_node, $this->code_base, $this->context)) {
                 $union_types[] = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     clone($this->context),
