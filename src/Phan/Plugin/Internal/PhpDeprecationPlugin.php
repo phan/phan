@@ -196,6 +196,10 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80400,
             'reason' => 'Deprecated in PHP 8.4. CURLOPT_BINARYTRANSFER has no effect since PHP 5.1.3.',
         ],
+        'E_STRICT' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4. Error level is unused.',
+        ],
         // PHP 8.5 deprecations
         'DATE_RFC7231' => [
             'min_php_version' => 80500,
