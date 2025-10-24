@@ -221,6 +221,9 @@ function mysqli_get_warnings(\mysqli $mysql) : \mysqli_warning|false {}
 function mysqli_info(\mysqli $mysql) : ?string {}
 function mysqli_init() : \mysqli|false {}
 function mysqli_insert_id(\mysqli $mysql) : int|string {}
+/**
+ * @deprecated
+ */
 function mysqli_kill(\mysqli $mysql, int $process_id) : bool {}
 function mysqli_more_results(\mysqli $mysql) : bool {}
 function mysqli_multi_query(\mysqli $mysql, string $query) : bool {}
@@ -228,6 +231,9 @@ function mysqli_next_result(\mysqli $mysql) : bool {}
 function mysqli_num_fields(\mysqli_result $result) : int {}
 function mysqli_num_rows(\mysqli_result $result) : int|string {}
 function mysqli_options(\mysqli $mysql, int $option, $value) : bool {}
+/**
+ * @deprecated
+ */
 function mysqli_ping(\mysqli $mysql) : bool {}
 function mysqli_poll(?array &$read, ?array &$error, array &$reject, int $seconds, int $microseconds = 0) : false|int {}
 function mysqli_prepare(\mysqli $mysql, string $query) : \mysqli_stmt|false {}
@@ -236,6 +242,9 @@ function mysqli_real_connect(\mysqli $mysql, ?string $hostname = null, ?string $
 function mysqli_real_escape_string(\mysqli $mysql, string $string) : string {}
 function mysqli_real_query(\mysqli $mysql, string $query) : bool {}
 function mysqli_reap_async_query(\mysqli $mysql) : \mysqli_result|bool {}
+/**
+ * @deprecated
+ */
 function mysqli_refresh(\mysqli $mysql, int $flags) : bool {}
 function mysqli_release_savepoint(\mysqli $mysql, string $name) : bool {}
 function mysqli_report(int $flags) : true {}
