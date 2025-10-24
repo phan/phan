@@ -1011,25 +1011,25 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * Will the node $node unconditionally never fall through to the following statement?
      */
-    public static function willUnconditionallySkipRemainingStatements(Node $node): bool
+    public static function willUnconditionallySkipRemainingStatements(Node $node, ?CodeBase $code_base = null, ?Context $context = null): bool
     {
-        return ((new self())->__invoke($node) & self::STATUS_MAYBE_PROCEED) === 0;
+        return ((new self($code_base, $context))->__invoke($node) & self::STATUS_MAYBE_PROCEED) === 0;
     }
 
     /**
      * Will the node $node unconditionally throw or return (or exit),
      */
-    public static function willUnconditionallyThrowOrReturn(Node $node): bool
+    public static function willUnconditionallyThrowOrReturn(Node $node, ?CodeBase $code_base = null, ?Context $context = null): bool
     {
-        return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
+        return ((new self($code_base, $context))->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
     }
 
     /**
      * Will the node $node unconditionally throw or exit (or infinitely loop)
      */
-    public static function willUnconditionallyNeverReturn(Node $node): bool
+    public static function willUnconditionallyNeverReturn(Node $node, ?CodeBase $code_base = null, ?Context $context = null): bool
     {
-        return ((new self())->__invoke($node) & ~self::STATUS_NOT_RETURN_BITMASK) === 0;
+        return ((new self($code_base, $context))->__invoke($node) & ~self::STATUS_NOT_RETURN_BITMASK) === 0;
     }
 
     /**
