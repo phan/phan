@@ -1,1 +1,0 @@
-src/002_always_return.php:7 PhanDeprecatedFunctionInternal Call to deprecated function \rand() (Deprecated because: Deprecated in PHP 8.3. Use random_int() or Random\Randomizer::getInt().)

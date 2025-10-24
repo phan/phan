@@ -30,6 +30,7 @@ final class PHP84Test extends AbstractPhanFileTestBase
         'autoload_internal_extension_signatures' => [
             'bcmath'    => '.phan/internal_stubs/bcmath.phan_php',
             'intl'      => '.phan/internal_stubs/intl.phan_php',
+            'mysqli'    => '.phan/internal_stubs/mysqli.phan_php',
             'pdo_pgsql' => '.phan/internal_stubs/pdo_pgsql.phan_php',
             'pgsql'     => '.phan/internal_stubs/pgsql.phan_php',
             'soap'      => '.phan/internal_stubs/soap.phan_php',

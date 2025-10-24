@@ -1,0 +1,8 @@
+%s:6 PhanDeprecatedFunctionInternal Call to deprecated function \lcg_value()
+%s:7 PhanDeprecatedFunctionInternal Call to deprecated function \mysqli_ping()
+%s:7 PhanUndeclaredGlobalVariable Global variable $connection is undeclared
+%s:8 PhanDeprecatedFunctionInternal Call to deprecated function \mysqli_kill()
+%s:8 PhanUndeclaredGlobalVariable Global variable $connection is undeclared
+%s:9 PhanDeprecatedFunctionInternal Call to deprecated function \mysqli_refresh()
+%s:9 PhanUndeclaredGlobalVariable Global variable $connection is undeclared
+%s:12 PhanDeprecatedGlobalConstant Reference to deprecated constant \CURLOPT_BINARYTRANSFER (Deprecated because: Deprecated in PHP 8.4. CURLOPT_BINARYTRANSFER has no effect since PHP 5.1.3.)
