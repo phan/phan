@@ -62,6 +62,11 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      */
     private $plugin_active_suppression_list = [];
 
+    private static function shouldCheckUnusedSuppressions(): bool
+    {
+        return Config::getValue('processes') <= 1;
+    }
+
     /**
      * @param CodeBase $code_base
      * The code base in which the element exists
@@ -103,6 +108,9 @@ class UnusedSuppressionPlugin extends PluginV3 implements
 
     private function postponeAnalysisOfElement(AddressableElement $element): void
     {
+        if (!self::shouldCheckUnusedSuppressions()) {
+            return;
+        }
         if (count($element->getSuppressIssueList()) === 0) {
             // There are no suppressions, so there's no reason to check this
             return;
@@ -187,6 +195,9 @@ class UnusedSuppressionPlugin extends PluginV3 implements
      */
     public function finalizeProcess(CodeBase $code_base): void
     {
+        if (!self::shouldCheckUnusedSuppressions()) {
+            return;
+        }
         foreach ($this->elements_for_postponed_analysis as $element) {
             self::analyzeAddressableElement($code_base, $element);
         }
@@ -287,6 +298,9 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         string $file_contents,
         Node $node
     ): void {
+        if (!self::shouldCheckUnusedSuppressions()) {
+            return;
+        }
         $file = $context->getFile();
         $this->files_for_postponed_analysis[$file] = $file;
     }
@@ -301,6 +315,9 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         string $issue_type,
         int $line
     ): void {
+        if (!self::shouldCheckUnusedSuppressions()) {
+            return;
+        }
         $file_name = Config::projectPath($file_path);
         $plugin_class = \get_class($plugin);
         $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;
