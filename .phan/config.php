@@ -436,9 +436,14 @@ return [
     //
     // This is useful for excluding hopelessly unanalyzable
     // files that can't be removed for whatever reason.
-    'exclude_file_list' => [
+    'exclude_file_list' => array_merge([
         'internal/Sniffs/ValidUnderscoreVariableNameSniff.php',
-    ],
+    ], extension_loaded('phan_helpers') ? [
+        'src/Phan/polyfills/phan_ast_hash.php',
+        'src/Phan/polyfills/phan_unique_types.php',
+        'src/Phan/polyfills/phan_unique_union_id.php',
+        'src/Phan/polyfills/phan_array_shape_cache_key.php',
+    ] : []),
 
     // The number of processes to fork off during the analysis
     // phase.
