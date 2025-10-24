@@ -2,7 +2,7 @@
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 ($other) is 'some value' of type string but \DOMElement::contains() takes \DOMNameSpaceNode|\DOMNode|null
 %s:26 PhanTypeMismatchArgumentInternal Argument 2 ($month) is '1' of type string but \IntlCalendar::setDate() takes int
 %s:36 PhanTypeMismatchArgumentInternal Argument 2 ($depth) is false of type false but \json_validate() takes int
-%s:42 PhanTypeMismatchArgumentInternalProbablyReal Argument 4 ($auth_mode) is 'test' of type string but \ldap_connect_wallet() takes int
+%s:42 PhanTypeMismatchArgumentInternal%SReal Argument 4 ($auth_mode) is 'test' of type string but \ldap_connect_wallet() takes int
 %s:53 PhanTypeMismatchArgumentInternal Argument 2 ($length) is false of type false but \mb_str_pad() takes int
 %s:66 PhanTypeMismatchArgumentInternal Argument 2 ($max) is '1' of type string but \Random\Randomizer::getFloat() takes float
 %s:77 PhanTypeMismatchArgumentInternal Argument 1 ($string) is 12 of type int (value: 12) but \str_decrement() takes string
