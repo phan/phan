@@ -90,6 +90,14 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'reason' => 'Deprecated in PHP 8.2. Use mb_convert_encoding() instead.',
         ],
         // PHP 8.4 deprecations
+        'intlcal_set' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4. Use IntlCalendar::set(), IntlCalendar::setDate(), or IntlCalendar::setDateTime() instead.',
+        ],
+        'intlgregcal_create_instance' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4. Use IntlGregorianCalendar::__construct(), IntlGregorianCalendar::createFromDate(), or IntlGregorianCalendar::createFromDateTime() instead.',
+        ],
         'lcg_value' => [
             'min_php_version' => 80400,
             'reason' => 'Deprecated in PHP 8.4. Use Random\\Randomizer::getFloat() instead.',
@@ -107,10 +115,6 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'reason' => 'Deprecated in PHP 8.4. Use specific FLUSH commands via mysqli_query() instead.',
         ],
         // PHP 8.5 deprecations
-        'imagedestroy' => [
-            'min_php_version' => 80500,
-            'reason' => 'Deprecated in PHP 8.5. Has no effect since PHP 8.0; images are freed automatically.',
-        ],
         'curl_close' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Has no effect since PHP 8.0; handles are freed automatically.',
@@ -123,9 +127,21 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. finfo objects are freed automatically.',
         ],
+        'imagedestroy' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Has no effect since PHP 8.0; images are freed automatically.',
+        ],
         'ldap_connect_wallet' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
+        ],
+        'mysqli_execute' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Use mysqli_stmt_execute() instead.',
+        ],
+        'socket_set_timeout' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Use stream_set_timeout() instead.',
         ],
         'xml_parser_free' => [
             'min_php_version' => 80500,
@@ -139,6 +155,11 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         '\\NumberFormatter::TYPE_CURRENCY' => [
             'min_php_version' => 80300,
             'reason' => 'Deprecated in PHP 8.3. Use NumberFormatter::formatCurrency()/parseCurrency().',
+        ],
+        // PHP 8.5 deprecations
+        '\\DateTimeInterface::RFC7231' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Use DateTimeInterface::RFC7231_FORMAT instead.',
         ],
     ];
 
@@ -176,6 +197,10 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'reason' => 'Deprecated in PHP 8.4. CURLOPT_BINARYTRANSFER has no effect since PHP 5.1.3.',
         ],
         // PHP 8.5 deprecations
+        'DATE_RFC7231' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Use DATE_RFC7231_FORMAT instead.',
+        ],
         'GSLC_SSL_NO_AUTH' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
