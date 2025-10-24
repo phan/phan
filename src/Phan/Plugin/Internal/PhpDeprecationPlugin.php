@@ -123,6 +123,10 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. finfo objects are freed automatically.',
         ],
+        'ldap_connect_wallet' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
+        ],
         'xml_parser_free' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Has no effect since PHP 8.0; parsers are freed automatically.',
@@ -170,6 +174,19 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         'CURLOPT_BINARYTRANSFER' => [
             'min_php_version' => 80400,
             'reason' => 'Deprecated in PHP 8.4. CURLOPT_BINARYTRANSFER has no effect since PHP 5.1.3.',
+        ],
+        // PHP 8.5 deprecations
+        'GSLC_SSL_NO_AUTH' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
+        ],
+        'GSLC_SSL_ONEWAY_AUTH' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
+        ],
+        'GSLC_SSL_TWOWAY_AUTH' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
         ],
     ];
 
