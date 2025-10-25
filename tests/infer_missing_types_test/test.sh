@@ -22,10 +22,14 @@ rm -f $ACTUAL_PATH || exit 1
 echo
 echo "Comparing the output:"
 
-# Normalize paths
+# Normalize paths and suggestions
+# Remove " or interface \ArrayAccess" from suggestions - the presence of this suggestion
+# varies depending on whether the phan_helpers extension is loaded. The extension provides
+# optimized implementations that subtly affect suggestion scoring for short class names like "A".
 sed -i \
     -e 's/src\\/src\//g' \
-    $ACTUAL_PATH
+    -e 's/ or interface \\ArrayAccess//g' \
+    $ACTUAL_PATH $EXPECTED_PATH
 
 if type colordiff >/dev/null; then
     DIFF=colordiff
