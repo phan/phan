@@ -349,6 +349,7 @@ abstract class Scope
             throw new \Error("Bad variable {$variable->getName()}\n");
         }
          */
+
         $this->variable_map[$variable->getName()] = $variable;
     }
 

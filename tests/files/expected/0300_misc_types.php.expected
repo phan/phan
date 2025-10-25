@@ -26,5 +26,7 @@
 %s:34 PhanTypeMismatchArgument Argument 1 ($x) is ($definedStrVar &= $strVar) of type string but \expect_int_300() takes int defined at %s:4
 %s:35 PhanUnusedVariable Unused definition of variable $definedStrVar
 %s:37 PhanContextNotObject Cannot access self when not in object context
-%s:38 PhanRedundantCondition Redundant attempt to cast new ArrayObject() of type \ArrayObject to object
-%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is (object)(new ArrayObject()) of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \expect_string_300() takes string defined at %s:3
+%s:38 PhanRedundantCondition Redundant attempt to cast new ArrayObject() of type \ArrayObject<mixed,mixed> to object
+%s:38 PhanTypeMismatchArgumentReal Argument 1 ($x) is (object)(new ArrayObject()) of type \ArrayAccess|\ArrayObject|\ArrayObject<mixed,mixed>|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \expect_string_300() takes string defined at %s:3
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

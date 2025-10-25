@@ -1,2 +1,4 @@
 %s:3 PhanTypeMismatchDefaultIntersection Default value for \Countable&\Traversable $ct can't be null because the parameter contains intersection types
 %s:9 PhanTypeMismatchArgumentReal Argument 1 ($ct) is null of type null but \example20() takes \Countable&\Traversable defined at %s:3
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

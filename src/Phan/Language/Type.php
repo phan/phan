@@ -500,6 +500,26 @@ class Type implements Stringable
             $type_name = self::canonicalNameFromName($type_name);
         }
 
+        // For internal classes with template metadata, add default mixed parameters
+        // if none were provided. This ensures consistency with new expressions.
+        // Do this BEFORE generating the cache key!
+        // ONLY do this for FROM_PHPDOC (property/param types), NOT for FROM_TYPE (@extends/@implements)
+        // or FROM_NODE (which gets converted to FQSENs), as it breaks FQSEN parsing.
+        if ($namespace === '\\' &&
+            $source === Type::FROM_PHPDOC &&
+            empty($template_parameter_type_list) &&
+            \class_exists($namespace . $type_name) &&
+            Internal\ClassTemplateMap::hasTemplateMetadata($type_name)) {
+
+            $template_map = Internal\ClassTemplateMap::getTemplateMapForClass($type_name);
+            if ($template_map && isset($template_map['@template'])) {
+                // Add mixed type for each template parameter
+                foreach ($template_map['@template'] as $_) {
+                    $template_parameter_type_list[] = MixedType::instance(false)->asPHPDocUnionType();
+                }
+            }
+        }
+
         // Make sure we only ever create exactly one
         // object for any unique type
         $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
@@ -511,7 +531,6 @@ class Type implements Stringable
         }
 
         $key = strtolower($key);
-
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
             if ($namespace === '\\') {

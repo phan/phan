@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @phan-file-suppress PhanTypeArraySuspicious SimpleXMLElement array access is intentional in this tooling script
+ */
+
 use Phan\Config;
 use Phan\Memoize;
 

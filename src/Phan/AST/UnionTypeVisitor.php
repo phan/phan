@@ -37,6 +37,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Internal\ClassTemplateMap;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
@@ -2033,15 +2034,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         if ($element_types->isEmpty()) {
+            // First, check if this is an internal class with template metadata (before checking asClassList).
+            // Internal classes are skipped by asClassList() because they're native types,
+            // but we need to handle template parameter resolution for them.
+            $element_type_from_template = self::getArrayAccessElementTypeFromTemplateMap($union_type, $context);
+            if ($element_type_from_template !== null && !$element_type_from_template->isEmpty()) {
+                return $element_type_from_template;
+            }
+
             // Hunt for any types that are viable class names and
             // see if they inherit from ArrayAccess
             try {
                 foreach ($union_type->asClassList($code_base, $context) as $class) {
                     $expanded_types = $class->getUnionType()->asExpandedTypes($code_base);
+
                     if ($expanded_types->hasType($array_access_type) ||
                             $expanded_types->hasType($simple_xml_element_type)
                     ) {
-                        return $element_types;
+                        // For userland classes, continue with default ArrayAccess handling
+                        $element_types = UnionType::fromFullyQualifiedPHPDocString('mixed');
                     }
                 }
             } catch (CodeBaseException | RecursionDepthException) {
@@ -3330,6 +3341,24 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
                 return UnionType::empty();
             }
+
+            // Check for template metadata on internal classes BEFORE classListFromNode
+            // (classListFromNode filters out native types, but we need them for template resolution)
+            $expression_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $class_node,
+                $this->should_catch_issue_exception
+            );
+            $template_resolved_type = self::getArrayAccessElementTypeFromTemplateMap(
+                $expression_type,
+                $this->context,
+                $method_name
+            );
+            if ($template_resolved_type !== null && !$template_resolved_type->isEmpty()) {
+                return $template_resolved_type;
+            }
+
             $combined_union_type = null;
             foreach ($this->classListFromNode($class_node) as $class) {
                 if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
@@ -4684,5 +4713,113 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitExit(Node $node): UnionType
     {
         return NeverType::instance(false)->asRealUnionType();
+    }
+
+    /**
+     * Attempt to resolve the element type for array access on internal classes with template metadata.
+     *
+     * This handles internal classes like SplObjectStorage, WeakMap, ArrayObject that
+     * behave like templated containers but don't expose template info through reflection.
+     *
+     * For example, when analyzing `$storage[$key]` where $storage is `SplObjectStorage<stdClass,string>`,
+     * this extracts `string` as the element type.
+     *
+     * @param UnionType $union_type the type of the expression being accessed with []
+     * @param Context $context
+     * @return ?UnionType the resolved element type, or null if no template metadata exists
+     */
+    private static function getArrayAccessElementTypeFromTemplateMap(
+        UnionType $union_type,
+        Context $context,
+        string $method_name = 'offsetGet'
+    ): ?UnionType {
+        // For now, we only handle cases with a single, specific class type
+        $type_set = $union_type->getTypeSet();
+        if (\count($type_set) !== 1) {
+            return null;
+        }
+
+        $type = \reset($type_set);
+        $class_name = $type->getName();
+
+        // For internal classes, we don't require ObjectType - base Type works too
+        // since all Types have getTemplateParameterTypeList()
+        $template_params = $type->getTemplateParameterTypeList();
+
+        // Check if this class has template metadata
+        if (!ClassTemplateMap::hasTemplateMetadata($class_name)) {
+            return null;
+        }
+
+        $template_map = ClassTemplateMap::getTemplateMapForClass($class_name);
+        if (!$template_map || !isset($template_map['@template'])) {
+            return null;
+        }
+
+        if (empty($template_params)) {
+            // No template parameters specified, fall back to mixed
+            return null;
+        }
+
+        // Map template parameter names to indices
+        // e.g., ['TObject' => 0, 'TData' => 1] for SplObjectStorage
+        $template_names = \array_keys($template_map['@template']);
+        $template_name_to_index = \array_flip($template_names);
+
+        // Extract which template parameter is the return type for the method
+        // e.g., 'TData' for SplObjectStorage::offsetGet, 'TValue' for WeakMap::offsetGet
+        $method_sig = $template_map[$method_name] ?? null;
+        if (!$method_sig) {
+            return null;
+        }
+
+        $return_type_string = $method_sig[0];
+
+        // Check if the return type is a simple template parameter reference (e.g., "TData")
+        if (isset($template_name_to_index[$return_type_string])) {
+            $param_index = $template_name_to_index[$return_type_string];
+            if (isset($template_params[$param_index])) {
+                // Return the actual type provided for this template parameter
+                return $template_params[$param_index];
+            }
+        }
+
+        // If it's a complex type (e.g., "TValue|null"), parse and substitute template parameters
+        try {
+            $parsed_type = UnionType::fromStringInContext(
+                $return_type_string,
+                $context,
+                Type::FROM_TYPE
+            );
+
+            // Substitute template parameters in the parsed type
+            $resolved_types = [];
+            foreach ($parsed_type->getTypeSet() as $single_type) {
+                $type_name = $single_type->getName();
+                // Check if this is a template parameter name
+                if (isset($template_name_to_index[$type_name])) {
+                    $param_index = $template_name_to_index[$type_name];
+                    if (isset($template_params[$param_index])) {
+                        // Replace with the actual template argument
+                        $resolved_types[] = $template_params[$param_index];
+                    } else {
+                        // Keep the original type
+                        $resolved_types[] = UnionType::of([$single_type]);
+                    }
+                } else {
+                    // Not a template parameter, keep as-is
+                    $resolved_types[] = UnionType::of([$single_type]);
+                }
+            }
+
+            // Merge all resolved types
+            if (!empty($resolved_types)) {
+                return UnionType::merge($resolved_types);
+            }
+
+            return $parsed_type;
+        } catch (\Exception) {
+            return null;
+        }
     }
 }

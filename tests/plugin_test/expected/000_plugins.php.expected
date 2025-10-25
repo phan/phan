@@ -1,3 +1,5 @@
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject
 src/000_plugins.php:4 PhanPluginInstanceOfObject Cannot call instanceof against `object`
 src/000_plugins.php:4 PhanTypeInvalidInstanceof Found an instanceof class name object of type object, but class name must be a valid object or a string
 src/000_plugins.php:9 PhanUnusedGlobalFunctionParameter Parameter $a is never used

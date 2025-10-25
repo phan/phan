@@ -4,3 +4,5 @@
 %s:51 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type \UserModel
 %s:55 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type int
 %s:55 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type \UserModel
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayIterator
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayIterator

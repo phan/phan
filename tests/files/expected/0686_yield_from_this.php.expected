@@ -1,2 +1,4 @@
 %s:57 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression $this of type static (expected Traversable/array)
 %s:58 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression (clone($this)) of type static (expected Traversable/array)
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

@@ -1,2 +1,4 @@
 %s:6 PhanUnusedVariable Unused definition of variable $x
-%s:9 PhanTypeSuspiciousEcho Suspicious argument $x['key'] of type \ArrayObject for an echo/print statement
+%s:9 PhanTypeSuspiciousEcho Suspicious argument $x['key'] of type \ArrayObject<mixed,mixed> for an echo/print statement
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

@@ -1,3 +1,5 @@
 %s:10 PhanDebugAnnotation @phan-debug-var requested for variable $iterator - it has union type \ArrayIterator<string,string>(real=\ArrayIterator)
 %s:12 PhanDebugAnnotation @phan-debug-var requested for variable $key - it has union type string(real=int|null|string)
 %s:12 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string(real=mixed)
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayIterator
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayIterator

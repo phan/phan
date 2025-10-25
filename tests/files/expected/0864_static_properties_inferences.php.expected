@@ -1,3 +1,7 @@
 %s:20 PhanUndeclaredMethod Call to undeclared method \ArrayObject::missingMethod
 %s:22 PhanUndeclaredMethod Call to undeclared method \SplObjectStorage::missingMethod
 %s:24 PhanUndeclaredMethod Call to undeclared method \DefiningStaticProperties\A::missingMethod
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TData on constructor for generic class \SplObjectStorage
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TObject on constructor for generic class \SplObjectStorage
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

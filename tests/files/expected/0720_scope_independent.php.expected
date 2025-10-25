@@ -2,4 +2,6 @@
 %s:19 PhanRedundantCondition Redundant attempt to cast X::returns_object() of type object to truthy
 %s:22 PhanImpossibleCondition Impossible attempt to cast X::returns_object() of type object to array
 %s:25 PhanRedundantCondition Redundant attempt to cast X::returns_array() of type array to array
-%s:28 PhanImpossibleCondition Impossible attempt to cast new ArrayObject([]) of type \ArrayObject to array
+%s:28 PhanImpossibleCondition Impossible attempt to cast new ArrayObject([]) of type \ArrayObject<mixed,mixed> to array
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

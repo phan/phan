@@ -1,1 +1,3 @@
 %s:21 PhanTypeMismatchPropertyDefaultReal Default value for \Traversable $invalidActivities can't be null of type null
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

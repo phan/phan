@@ -1,2 +1,4 @@
 %s:41 PhanTypeMismatchArgument Argument 1 ($c) is new A946() of type \A946 but \accepts_incompatible_callable() takes ?callable():?bool defined at %s:29
-%s:43 PhanTypeMismatchArgument Argument 1 ($c) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \accepts_any_callable() takes callable defined at %s:36
+%s:43 PhanTypeMismatchArgument Argument 1 ($c) is new ArrayObject() of type \ArrayAccess|\ArrayObject|\ArrayObject<mixed,mixed>|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \accepts_any_callable() takes callable defined at %s:36
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

@@ -1,3 +1,5 @@
 %s:5 PhanRedundantCondition Redundant attempt to cast $x of type object to object
 %s:14 PhanRedundantCondition Redundant attempt to cast $x of type object to object
-%s:17 PhanTypeMismatchReturn Returning $x of type \ArrayObject but makeObject2() is declared to return \stdClass
+%s:17 PhanTypeMismatchReturn Returning $x of type \ArrayObject<mixed,mixed> but makeObject2() is declared to return \stdClass
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

@@ -610,7 +610,9 @@ final class TypeTest extends CodeBaseAwareTestBase
             [false, "Closure(int):int", 'Closure(string):int'],
             [true, 'never', 'Closure(int):int'],
             [true, 'never', 'null'],
-            [true, 'ArrayObject<int>', 'ArrayObject'],
+            // Note: ArrayObject without params now defaults to ArrayObject<mixed,mixed>
+            // ArrayObject<int> is not a subtype but CAN cast to it (covariant), so only check subtype
+            [false, 'ArrayObject<int>', 'ArrayObject', true],
             [false, 'ArrayObject<int>', 'ArrayObject<string>'],
             [false, 'Traversable<int,int>', 'Traversable<string,int>'],
             [true, 'iterable<string>', 'iterable'],

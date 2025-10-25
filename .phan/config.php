@@ -365,6 +365,7 @@ return [
         // TODO: Fix PhanParamNameIndicatingUnusedInClosure instances (low priority)
         'PhanParamNameIndicatingUnusedInClosure',
         'PhanUnreferencedPublicMethod',  // Parameter::isUsingNullableSyntax() - legitimately unused
+        'PhanGenericConstructorTypes',  // Internal classes like ArrayObject/SplObjectStorage have templates but constructors can't infer them
     ],
 
     // If this list is empty, no filter against issues types will be applied.

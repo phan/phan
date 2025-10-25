@@ -913,6 +913,7 @@ trait FunctionTrait
                 }
 
                 // if ($parameter->isCloneOfVariadic()) { throw new \Error("Impossible\n"); }
+
                 $parameter->addUnionType($comment_param_type);
             }
         }

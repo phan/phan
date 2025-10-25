@@ -2,3 +2,5 @@
 %s:49 PhanDebugAnnotation @phan-debug-var requested for variable $iVal - it has union type string
 %s:56 PhanDebugAnnotation @phan-debug-var requested for variable $aKey - it has union type int
 %s:56 PhanDebugAnnotation @phan-debug-var requested for variable $aVal - it has union type string
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayIterator
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayIterator

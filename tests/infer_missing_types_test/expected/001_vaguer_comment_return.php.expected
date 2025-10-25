@@ -1,3 +1,5 @@
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject
 src/001_vaguer_comment_return.php:10 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\test1() documented to have return type mixed (without an FQSEN) returns the more specific type \ArrayObject(real=\ArrayObject) (with an FQSEN)
 src/001_vaguer_comment_return.php:10 PhanUnreferencedFunction Possibly zero references to function \NS1\test1()
 src/001_vaguer_comment_return.php:13 PhanPluginMoreSpecificActualReturnTypeContainsFQSEN Phan inferred that \NS1\test2() documented to have return type object (without an FQSEN) returns the more specific type \ArrayObject(real=\ArrayObject) (with an FQSEN)

@@ -1,9 +1,11 @@
-%s:4 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject
-%s:5 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject
-%s:6 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
-%s:7 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
-%s:8 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
-%s:9 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject
-%s:9 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($callback) is [$o,$o] of type array{0:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable,1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
-%s:10 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject
-%s:10 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($callback) is ['Closure',$o] of type array{0:'Closure',1:\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
+%s:4 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject<mixed,mixed>
+%s:5 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject<mixed,mixed>
+%s:6 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject<mixed,mixed>
+%s:7 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject<mixed,mixed>
+%s:8 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject<mixed,mixed>
+%s:9 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject<mixed,mixed>
+%s:9 PhanTypeMismatchArgumentInternalReal Argument 1 ($callback) is [$o,$o] of type array{0:\ArrayAccess|\ArrayObject<mixed,mixed>|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable,1:\ArrayAccess|\ArrayObject<mixed,mixed>|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
+%s:10 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject<mixed,mixed>
+%s:10 PhanTypeMismatchArgumentInternalReal Argument 1 ($callback) is ['Closure',$o] of type array{0:'Closure',1:\ArrayAccess|\ArrayObject<mixed,mixed>|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable} but \call_user_func() takes callable
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

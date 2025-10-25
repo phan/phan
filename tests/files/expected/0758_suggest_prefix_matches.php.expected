@@ -12,3 +12,5 @@
 %s:11 PhanUndeclaredFunction Call to undeclared function \ast\pa() (Did you mean \ast\parse_code() or \ast\parse_file())
 %s:13 PhanUndeclaredMethod Call to undeclared method \ArrayObject::c (Did you mean expr->count())
 %s:15 PhanUndeclaredProperty Reference to undeclared property \ast\Node->ch (Did you mean expr->children)
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

@@ -1,4 +1,6 @@
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetExists(%S$offset)%S
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetGet(%S$offset)%S
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetSet(%S$offset, %S$value)%S
-%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetUnset(%S$offset)%S
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetExists(mixed $offset): bool
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetGet(mixed $offset): mixed
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetSet(mixed $offset, mixed $value): void
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \A254 contains abstract internal method \ArrayAccess::offsetUnset(mixed $offset): void
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

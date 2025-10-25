@@ -6,3 +6,5 @@
 %s:16 PhanTypeMismatchUnpackValue Attempting to unpack a value of type \stdClass which does not contain any subtypes of iterable (such as array or Traversable)
 %s:17 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
 %s:18 PhanParamTooFewUnpack Call with 0 or more arg(s) to \test_varargs401(\stdClass $a1, \stdClass ...$args) which requires 1 arg(s) defined at %s:3. This may throw an ArgumentCountError if there are too few args at runtime.
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \ArrayObject
+internal:0 PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \ArrayObject

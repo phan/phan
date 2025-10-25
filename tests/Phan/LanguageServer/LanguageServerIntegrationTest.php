@@ -964,9 +964,12 @@ function test(ExampleClass $c) {  // line 25
     $n = ast\parse_code('<?php $x = 2;', 70);
     var_export($n->kind);  // line 30
     var_export($_ENV);
+    /** @suppress PhanGenericMissingParameters */
     $y = new class extends ArrayObject { public function count() : int {return 0;} };  // no comment
     var_export($y->count());
-    $z = /** Documentation of anonymous class */ new class extends ArrayObject {};
+    /** Documentation of anonymous class
+     * @suppress PhanGenericMissingParameters */
+    $z = new class extends ArrayObject {};
     var_export($z->count());  // line 35
 }
 EOT;

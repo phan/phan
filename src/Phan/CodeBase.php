@@ -29,8 +29,10 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Internal\ClassTemplateMap;
 use Phan\Language\NamespaceMapEntry;
 use Phan\Language\Type;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Language\Type\StringType;
 use Phan\Library\Map;
@@ -1019,9 +1021,71 @@ class CodeBase
         ReflectionClass $reflection_class
     ): void {
         $class = Clazz::fromReflectionClass($this, $reflection_class);
+
+        // Apply template metadata for internal classes
+        self::applyClassTemplateMetadata($class, $this);
+
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_internal->offsetSet($fqsen, $class);
         $this->fqsen_class_map_reflection->offsetUnset($fqsen);
+    }
+
+    /**
+     * Apply template metadata from ClassTemplateMap to an internal class.
+     *
+     * This adds @template declarations to the class scope for internal classes
+     * that behave like generic containers.
+     *
+     * @param Clazz $class The internal class to enhance
+     * @param CodeBase $code_base The code base (reserved for future use)
+     * @suppress PhanUnusedPrivateMethodParameter
+     */
+    private static function applyClassTemplateMetadata(Clazz $class, CodeBase $code_base): void
+    {
+        $class_name = $class->getName();
+
+        // Check if this class has template metadata
+        if (!ClassTemplateMap::hasTemplateMetadata($class_name)) {
+            return;
+        }
+
+        $template_map = ClassTemplateMap::getTemplateMapForClass($class_name);
+        if (!$template_map) {
+            return;
+        }
+
+        // Step 1: Create TemplateType objects from @template declarations
+        $template_types = [];
+        if (isset($template_map['@template'])) {
+            $context = new Context();
+            foreach ($template_map['@template'] as $template_name => $constraint_string) {
+                // Parse the constraint type (e.g., 'object', 'mixed')
+                $constraint_type = UnionType::fromStringInContext(
+                    $constraint_string,
+                    $context,
+                    Type::FROM_TYPE
+                );
+
+                // Create a TemplateType using the factory method
+                $template_type = TemplateType::instanceForId(
+                    $template_name,
+                    false, // not nullable
+                    $constraint_type,
+                    TemplateType::VARIANCE_INVARIANT
+                );
+
+                $template_types[$template_name] = $template_type;
+            }
+        }
+
+        // Step 2: Add template types to the class scope
+        foreach ($template_types as $template_type) {
+            $class->getInternalScope()->addTemplateType($template_type);
+        }
+
+        // Note: We don't add @implements declarations to the class here.
+        // The interfaces already exist via reflection, and adding them would cause duplicates.
+        // The @implements metadata is only used for documentation and method signature lookups.
     }
 
     /**

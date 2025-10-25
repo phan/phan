@@ -1,1 +1,2 @@
+%s:3 PhanGenericMissingParameters Class \MyMap308 must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:0 (use @extends or @inherit)
 %s:7 PhanParamSignatureMismatchInternal Declaration of function key() : object should be compatible with internal function key() : int
