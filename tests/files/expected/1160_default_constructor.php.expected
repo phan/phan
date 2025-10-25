@@ -1,0 +1,1 @@
+%s:6 PhanParamTooMany Call with 1 arg(s) to \Test1160DefaultConstructor::__construct() which only takes 0 arg(s) defined at %s:3

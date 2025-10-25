@@ -2041,11 +2041,7 @@ class Clazz extends AddressableElement
             if ('__construct' === $name) {
                 // Create a default constructor if it's requested
                 // but doesn't exist yet
-                $default_constructor =
-                    Method::defaultConstructorForClass(
-                        $this,
-                        $code_base
-                    );
+                $default_constructor = Method::defaultConstructorForClass($this);
 
                 $this->addMethod($code_base, $default_constructor, $this->getParentTypeOption());
 

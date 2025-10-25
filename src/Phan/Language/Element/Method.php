@@ -360,37 +360,20 @@ class Method extends ClassElement implements FunctionInterface
      * @return Method
      * A default constructor for the given class
      */
-    public static function defaultConstructorForClass(
-        Clazz $clazz,
-        CodeBase $code_base
-    ): Method {
-        if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName(), true)) {
-            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
-        } else {
-            $old_style_constructor = null;
-        }
-
+    public static function defaultConstructorForClass(Clazz $clazz): Method {
         $method_fqsen = FullyQualifiedMethodName::make(
             $clazz->getFQSEN(),
             '__construct'
         );
 
         $method = new Method(
-            $old_style_constructor ? $old_style_constructor->getContext() : $clazz->getContext(),
+            $clazz->getContext(),
             '__construct',
             $clazz->getUnionType(),
             0,
             $method_fqsen,
-            $old_style_constructor ? $old_style_constructor->getParameterList() : null
+            null
         );
-
-        if ($old_style_constructor) {
-            $method->setRealParameterList($old_style_constructor->getRealParameterList());
-            $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
-            $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
-            $method->setRealReturnType($old_style_constructor->getRealReturnType());
-            $method->setUnionType($old_style_constructor->getUnionType());
-        }
 
         $method->setPhanFlags($method->getPhanFlags() | Flags::IS_FAKE_CONSTRUCTOR);
 
