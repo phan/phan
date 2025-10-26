@@ -207,6 +207,10 @@ class Daemon
             // This is normal and expected, do nothing
         } finally {
             $code_base->restoreFromRestorePoint($restore_point);
+            // Force garbage collection to reclaim memory from circular references
+            // created by CodeBase cloning and template type instantiations.
+            // This prevents memory growth in long-running daemon instances.
+            \gc_collect_cycles();
         }
     }
 

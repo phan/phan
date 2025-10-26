@@ -34,6 +34,7 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
+
         // Reset the config file
         Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
         // Clear the plugins
@@ -67,6 +68,11 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
         parent::tearDown();
 
         Type::clearAllMemoizations();
+
+        // Force garbage collection to reclaim memory from circular references
+        // created by template type instantiations (e.g., SplObjectStorage<T,TInfo>)
+        \gc_collect_cycles();
+
         \Phan\Language\Scope\GlobalScope::reset();
         // Ensure we start with the correct project root
         Config::setProjectRootDirectory(\dirname(__DIR__, 2));
@@ -171,7 +177,6 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
 
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
-
 
         Phan::analyzeFileList($this->code_base, /** @return list<string> */ static function () use ($test_file_list): array {
             return $test_file_list;

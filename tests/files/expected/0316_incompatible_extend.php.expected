@@ -7,3 +7,4 @@
 %s:19 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \Exception as if it were a Interface
 %s:23 PhanInvalidTraitUse Invalid trait use: Interfaces may not use traits
 %s:24 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal abstract Interface \ArrayAccess as if it were a Trait
+%s:28 PhanGenericMissingParameters Class \MyWeakMap316 must substitute all 2 template parameters when inheriting \WeakMap (found 0) defined at internal:%d (use @extends or @inherit)
