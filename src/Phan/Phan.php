@@ -943,11 +943,11 @@ class Phan implements IgnoredFilesFilterInterface
     {
         // Extensions that provide template annotations for CLASSES that aren't available via reflection.
         // These stubs must replace reflection classes to ensure template types are available.
-        $extensions_with_template_classes = ['spl'];
+        $extensions_with_template_classes = @Config::getValue('autoload_internal_extension_signatures_template_classes') ?: [];
 
         // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
         // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
-        $extensions_with_template_functions = ['standard'];
+        $extensions_with_template_functions = @Config::getValue('autoload_internal_extension_signatures_template_functions') ?: [];
 
         $stubs = Config::getValue('autoload_internal_extension_signatures');
         foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
