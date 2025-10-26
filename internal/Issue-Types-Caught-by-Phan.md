@@ -1961,6 +1961,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0278
 Declaration of {METHOD} should be compatible with internal {METHOD} (method where the return type in the real signature is '{TYPE}' cannot override method where the return type in the real signature is '{TYPE}')
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0308_inheritdoc_incompatible.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0308_inheritdoc_incompatible.php#L7).
+
 ## PhanParamSignatureRealMismatchTooFewParameters
 
 ```
