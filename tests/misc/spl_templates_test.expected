@@ -1,6 +1,0 @@
-tests/misc/spl_templates_test.php:14 PhanGenericMissingParameters Class \MySplStorage must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:%d (use @extends or @inherit)
-tests/misc/spl_templates_test.php:21 PhanPluginDescriptionlessCommentOnClass Class \MyTypedStorage has no readable description: "* @extends SplObjectStorage<\\stdClass,string>"
-tests/misc/spl_templates_test.php:31 PhanGenericMissingParameters Class \MyWeakMap must substitute all 2 template parameters when inheriting \WeakMap (found 0) defined at internal:%d (use @extends or @inherit)
-tests/misc/spl_templates_test.php:31 PhanPluginNoCommentOnClass Class \MyWeakMap has no doc comment
-tests/misc/spl_templates_test.php:38 PhanPluginDescriptionlessCommentOnClass Class \MyTypedWeakMap has no readable description: "* @extends WeakMap<\\stdClass,int>"
-tests/misc/spl_templates_test.php:42 PhanPluginRemoveDebugEcho Saw output expression/statement in echo "SPL stub test completed\n";

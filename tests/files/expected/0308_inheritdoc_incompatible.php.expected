@@ -1,1 +1,4 @@
+%s:3 PhanGenericMissingParameters Class \MyMap308 must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:%d (use @extends or @inherit)
 %s:7 PhanParamSignatureMismatchInternal Declaration of function key() : object should be compatible with internal function key() : int
+%s:7 PhanParamSignatureRealMismatchReturnTypeInternal Declaration of function key() should be compatible with internal function key() : int (method where the return type in the real signature is '' cannot override method where the return type in the real signature is 'int')
+%s:15 PhanParamSignatureRealMismatchReturnTypeInternal Declaration of function rewind() should be compatible with internal function rewind() : void (method where the return type in the real signature is '' cannot override method where the return type in the real signature is 'void')

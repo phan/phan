@@ -84,8 +84,17 @@ return [
         'PhanCompatibleTypedClassConstant',  // SPL stub has typed constants from PHP 8.3+
     ],
 
-    // Template extension configuration (for tests that don't load SPL stub)
-    'autoload_internal_extension_signatures_template_classes' => [],
+    // Load SPL stub with template support
+    'autoload_internal_extension_signatures' => [
+        'spl' => PHP_VERSION_ID >= 80400
+            ? '.phan/internal_stubs/spl.phan_php'
+            : '.phan/internal_stubs/spl_php81.phan_php',
+    ],
+
+    // Template extension configuration
+    'autoload_internal_extension_signatures_template_classes' => [
+        'spl',
+    ],
     'autoload_internal_extension_signatures_template_functions' => [],
 
     // Phan will give up on suggesting a different name in issue messages
