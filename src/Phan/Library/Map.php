@@ -13,8 +13,9 @@ use SplObjectStorage;
  * A map from object to object with key comparisons
  * based on spl_object_hash.
  *
- * @template K
+ * @template K of object
  * @template V
+ * @extends SplObjectStorage<K,V>
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignaturePHPDocMismatchParamType, PhanParamSignatureMismatchInternal
  * TODO: Add a way to indicate in Phan that T is subtype of object for keys K
@@ -35,6 +36,7 @@ class Map extends SplObjectStorage
      *
      * @return K
      * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
+     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - ReturnTypeWillChange attribute handles this.
      */
     #[ReturnTypeWillChange]
     public function key()
@@ -46,6 +48,7 @@ class Map extends SplObjectStorage
      * We redefine the current value to the current value rather
      * than the current key
      * @return V
+     * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - ReturnTypeWillChange attribute handles this.
      */
     #[ReturnTypeWillChange]
     public function current()

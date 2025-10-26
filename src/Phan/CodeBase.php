@@ -879,6 +879,44 @@ class CodeBase
     }
 
     /**
+     * Remove reflection classes for a specific extension.
+     * This is used when loading stubs for an extension that's already loaded,
+     * so the stub classes can replace the reflection classes.
+     */
+    public function flushReflectionClassesForExtension(string $extension_name): void
+    {
+        $extension_name_lower = \strtolower($extension_name);
+        $fqsens_to_remove = [];
+
+        foreach ($this->fqsen_class_map_reflection as $fqsen => $reflection_class) {
+            if (\strtolower($reflection_class->getExtensionName() ?: '') === $extension_name_lower) {
+                $fqsens_to_remove[] = $fqsen;
+            }
+        }
+
+        foreach ($fqsens_to_remove as $fqsen) {
+            $this->fqsen_class_map_reflection->offsetUnset($fqsen);
+        }
+    }
+
+    /**
+     * Remove a specific reflection class by its fully-qualified name.
+     * This is used when a stub provides template annotations for a class
+     * that isn't part of the extension being flushed.
+     *
+     * Silently ignores invalid FQSEN strings.
+     */
+    public function flushReflectionClassByName(string $fqsen_string): void
+    {
+        try {
+            $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
+            $this->fqsen_class_map_reflection->offsetUnset($fqsen);
+        } catch (\Exception) {
+            // Ignore if FQSEN is invalid (can throw InvalidArgumentException or FQSENException)
+        }
+    }
+
+    /**
      * Call this to record the existence of a class_alias in the global scope.
      * After parse phase is complete (And daemonize has split off a new process),
      * call resolveClassAliases() to create FQSEN entries.
@@ -1018,6 +1056,16 @@ class CodeBase
         FullyQualifiedClassName $fqsen,
         ReflectionClass $reflection_class
     ): void {
+        // Check if a stub class already exists for this FQSEN.
+        // If it does, prefer the stub (which may have template annotations) over reflection.
+        if ($this->fqsen_class_map->offsetExists($fqsen)) {
+            // Stub already loaded - keep it and just mark it as internal
+            $stub_class = $this->fqsen_class_map->offsetGet($fqsen);
+            $this->fqsen_class_map_internal->offsetSet($fqsen, $stub_class);
+            $this->fqsen_class_map_reflection->offsetUnset($fqsen);
+            return;
+        }
+
         $class = Clazz::fromReflectionClass($this, $reflection_class);
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_internal->offsetSet($fqsen, $class);

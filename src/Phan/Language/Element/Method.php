@@ -1077,6 +1077,7 @@ class Method extends ClassElement implements FunctionInterface
                     // @see AddressableElement::addReference()
                     $clone->reference_list = &$this->reference_list;
                 }
+
                 return $clone;
             }
             // TODO: What should happen if we resolved only some of the types, or if we resolved none of them?

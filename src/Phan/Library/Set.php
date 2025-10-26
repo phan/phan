@@ -11,7 +11,8 @@ use TypeError;
  * A set of objects supporting union and
  * intersection
  *
- * @template T
+ * @template T of object
+ * @extends \SplObjectStorage<T,T>
  *
  * TODO: Start tracking that SplObjectStorage<T,T> extends ArrayAccess<T,T>
  *
@@ -19,6 +20,7 @@ use TypeError;
  *
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchParamType TODO: Add a way to indicate in Phan that T is subtype of object
  * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType TODO: Add a way to indicate in Phan that T is subtype of object
+ * @phan-file-suppress PhanTemplateTypeConstraintViolation Mixed values used where T of object expected
  * @method void attach(T $object,mixed $data = null)
  * @method void detach(T $object)
  * @method bool offsetExists(T $object)

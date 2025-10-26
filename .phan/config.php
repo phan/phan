@@ -519,6 +519,8 @@ return [
         'readline'    => '.phan/internal_stubs/readline.phan_php',
         'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
         'soap'        => '.phan/internal_stubs/soap.phan_php',
+        'spl'         => '.phan/internal_stubs/spl.phan_php',  // includes WeakMap (PHP 8.0+)
+        'standard'    => '.phan/internal_stubs/standard_templates.phan_php',  // template annotations for array functions
         'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
         'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',

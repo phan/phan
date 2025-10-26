@@ -81,6 +81,7 @@ return [
         'PhanUnusedPublicFinalMethodParameter',
         'PhanUnusedGlobalFunctionParameter',
         'PhanUnusedClosureParameter',
+        'PhanCompatibleTypedClassConstant',  // SPL stub has typed constants from PHP 8.3+
     ],
 
     // Phan will give up on suggesting a different name in issue messages
