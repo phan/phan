@@ -7,7 +7,5 @@
 %s:39 PhanTypeInvalidThrowsNonThrowable @throws annotation of d has suspicious class type \MyNs\Test454, which does not extend Error/Exception
 %s:42 PhanTypeInvalidThrowsNonObject @throws annotation of e has invalid non-object type resource, expected a class
 %s:48 PhanTypeInvalidThrowsNonObject @throws annotation of f has invalid non-object type false, expected a class
-%s:51 PhanTypeInvalidThrowsNonThrowable @throws annotation of throwError has suspicious class type \Error, which does not extend Error/Exception (Did you mean to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class. (are the config settings 'included_extension_subset' and/or 'autoload_internal_extension_signatures' properly set up?))
-%s:54 PhanTypeInvalidThrowsNonThrowable @throws annotation of throwException has suspicious class type \Exception, which does not extend Error/Exception (Did you mean to configure a stub with https://github.com/phan/phan/wiki/How-To-Use-Stubs#internal-stubs or to enable the extension providing the class. (are the config settings 'included_extension_subset' and/or 'autoload_internal_extension_signatures' properly set up?))
 %s:57 PhanTypeInvalidThrowsIsInterface @throws annotation of throwInterface has suspicious interface type \ArrayAccess for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
 %s:60 PhanTypeInvalidThrowsIsTrait @throws annotation of throwTrait has invalid trait type \MyNs\MyTrait, expected a class
