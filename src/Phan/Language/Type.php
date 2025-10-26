@@ -503,8 +503,9 @@ class Type implements Stringable
         // For internal classes with template metadata, add default mixed parameters
         // if none were provided. This ensures consistency with new expressions.
         // Do this BEFORE generating the cache key!
-        // ONLY do this for FROM_PHPDOC (property/param types), NOT for FROM_TYPE (@extends/@implements)
-        // or FROM_NODE (which gets converted to FQSENs), as it breaks FQSEN parsing.
+        // ONLY do this for FROM_PHPDOC (property/param types), not for FROM_TYPE or FROM_NODE.
+        // FROM_TYPE is used in @extends/@implements which needs bare class names for FQSEN creation.
+        // FROM_NODE types get templates via eraseTemplatesRecursive() during asExpandedTypes().
         if ($namespace === '\\' &&
             $source === Type::FROM_PHPDOC &&
             empty($template_parameter_type_list) &&
