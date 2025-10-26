@@ -2689,6 +2689,32 @@ class Type implements Stringable
         // Given an Iterator, return the type of the value (from ->current())
         if ($expanded_types->hasTypeWithFQSEN($iterator_fqsen)) {
             $class = $code_base->getClassByFQSEN($fqsen);
+
+            // First, try to get the value type from the @implements Iterator<TKey, TValue> annotation
+            // This is more accurate than using valueTypeOfTraversable() which assumes positional mapping
+            $iterator_interface_fqsen = FullyQualifiedClassName::fromType($iterator_fqsen);
+            $iterator_interface_type_option = $class->getInterfaceType($iterator_interface_fqsen);
+            if ($iterator_interface_type_option->isDefined()) {
+                $iterator_interface_type = $iterator_interface_type_option->get();
+                // Get the template parameters from the @implements annotation
+                // e.g., for @implements Iterator<int, TObject>, get [int, TObject]
+                $interface_template_params = $iterator_interface_type->getTemplateParameterTypeList();
+                if (count($interface_template_params) >= 2) {
+                    // The second parameter (index 1) is the value type
+                    $value_type = $interface_template_params[1];
+
+                    // If it contains template types (like TObject), resolve them to concrete types
+                    if ($value_type->hasTemplateTypeRecursive()) {
+                        $value_type = $value_type->withTemplateParameterTypeMap(
+                            $iterator_type->getTemplateParameterTypeMap($code_base)
+                        );
+                    }
+
+                    return $value_type->asRealUnionType();
+                }
+            }
+
+            // Fallback to the old method if @implements annotation isn't available
             if (!$class->hasMethodWithName($code_base, 'current', true)) {
                 // Should be impossible
                 return null;

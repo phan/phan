@@ -837,6 +837,18 @@ class Config
         'autoload_internal_extension_signatures' => [
         ],
 
+        // A list of extension names that have template annotations in their stub files for CLASSES.
+        // For these extensions, the stub classes will completely replace reflection-based classes.
+        // (e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
+        'autoload_internal_extension_signatures_template_classes' => [
+        ],
+
+        // A list of extension names that have template annotations in their stub files for FUNCTIONS.
+        // For these extensions, stub functions will be used alongside reflection data.
+        // (e.g. `['array']` if array functions had template annotations in stubs)
+        'autoload_internal_extension_signatures_template_functions' => [
+        ],
+
         // This can be set to a list of extensions to limit Phan to using the reflection information of.
         // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
         // The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
@@ -1547,6 +1559,8 @@ class Config
             'analyze_signature_compatibility' => $is_bool,
             'array_casts_as_null' => $is_bool,
             'autoload_internal_extension_signatures' => $is_associative_string_array,
+            'autoload_internal_extension_signatures_template_classes' => $is_string_list,
+            'autoload_internal_extension_signatures_template_functions' => $is_string_list,
             'included_extension_subset' => $is_string_list_or_null,
             'incremental_analysis' => static function (mixed $value): bool {
                 return $value === null || \is_bool($value);

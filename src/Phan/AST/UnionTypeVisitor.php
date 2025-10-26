@@ -2041,7 +2041,37 @@ class UnionTypeVisitor extends AnalysisVisitor
                     if ($expanded_types->hasType($array_access_type) ||
                             $expanded_types->hasType($simple_xml_element_type)
                     ) {
-                        return $element_types;
+                        // Check if the class has @implements ArrayAccess<TKey, TValue> with template parameters
+                        $array_access_fqsen = FullyQualifiedClassName::fromType($array_access_type);
+                        $array_access_interface_type_option = $class->getInterfaceType($array_access_fqsen);
+                        if ($array_access_interface_type_option->isDefined()) {
+                            $array_access_interface_type = $array_access_interface_type_option->get();
+                            $interface_template_params = $array_access_interface_type->getTemplateParameterTypeList();
+                            // ArrayAccess<TKey, TValue> - the second parameter (index 1) is the value type
+                            if (count($interface_template_params) >= 2) {
+                                $value_type = $interface_template_params[1];
+                                // If it contains template types (like TValue), resolve them to concrete types
+                                if ($value_type->hasTemplateTypeRecursive()) {
+                                    // Get the template parameter map from the union type
+                                    // e.g., for SplObjectStorage<MyObj, string>, map is {TObject: MyObj, TValue: string}
+                                    foreach ($union_type->getTypeSet() as $type) {
+                                        $template_param_map = $type->getTemplateParameterTypeMap($code_base);
+                                        if (!empty($template_param_map)) {
+                                            $value_type = $value_type->withTemplateParameterTypeMap($template_param_map);
+                                            break;
+                                        }
+                                    }
+                                }
+                                return $value_type->asRealUnionType();
+                            }
+                        }
+                        // No template parameters found
+                        if ($expanded_types->hasType($simple_xml_element_type)) {
+                            // SimpleXMLElement has special handling - return empty to avoid false positives
+                            return $element_types;
+                        }
+                        // For ArrayAccess without templates, use mixed as fallback
+                        $element_types = UnionType::fromFullyQualifiedPHPDocString('mixed');
                     }
                 }
             } catch (CodeBaseException | RecursionDepthException) {

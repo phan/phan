@@ -1,0 +1,2 @@
+%s:14 PhanGenericMissingParameters Class \MySplStorage must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:%d (use @extends or @inherit)
+%s:31 PhanGenericMissingParameters Class \MyWeakMap must substitute all 2 template parameters when inheriting \WeakMap (found 0) defined at internal:%d (use @extends or @inherit)

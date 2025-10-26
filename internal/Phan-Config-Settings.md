@@ -1036,6 +1036,22 @@ Maximum total number of literal array entries that ASTSimplifier keeps while sum
 
 (Default: `512`)
 
+## autoload_internal_extension_signatures_template_classes
+
+A list of extension names that have template annotations in their stub files for CLASSES.
+For these extensions, the stub classes will completely replace reflection-based classes.
+(e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
+
+(Default: `[]`)
+
+## autoload_internal_extension_signatures_template_functions
+
+A list of extension names that have template annotations in their stub files for FUNCTIONS.
+For these extensions, stub functions will be used alongside reflection data.
+(e.g. `['array']` if array functions had template annotations in stubs)
+
+(Default: `[]`)
+
 ## max_union_type_set_size
 
 Maximum number of distinct types that may be tracked in a union before Phan summarizes it to generic

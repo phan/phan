@@ -23,3 +23,15 @@ interface MyGoodInterface extends ArrayAccess {}
 interface MyBadInternalInterfaceUsage316 {
     use ArrayAccess;
 }
+
+// Test WeakMap template parameter requirements
+class MyWeakMap316 extends WeakMap {
+    // This should trigger PhanGenericMissingParameters without @extends annotation
+}
+
+/**
+ * @extends WeakMap<\stdClass,int>
+ */
+class MyTypedWeakMap316 extends WeakMap {
+    // This is correct - template parameters specified
+}

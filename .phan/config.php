@@ -519,12 +519,32 @@ return [
         'readline'    => '.phan/internal_stubs/readline.phan_php',
         'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
         'soap'        => '.phan/internal_stubs/soap.phan_php',
+        // SPL stub: Use version-specific stub to handle differences in PHP versions
+        // PHP 8.1-8.3: No typed constants (syntax error), no seek() method on SplObjectStorage
+        // PHP 8.4+: Typed constants OK, seek() method added to SplObjectStorage
+        'spl'         => PHP_VERSION_ID >= 80400
+            ? '.phan/internal_stubs/spl.phan_php'         // PHP 8.4+: typed constants + seek()
+            : '.phan/internal_stubs/spl_php81.phan_php',  // PHP 8.1-8.3: no typed constants, no seek()
+        'standard'    => '.phan/internal_stubs/standard_templates.phan_php',  // template annotations for array functions
         'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
         'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
         'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
         'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
         'tidy'        => '.phan/internal_stubs/tidy.phan_php',
         'xsl'         => '.phan/internal_stubs/xsl.phan_php',
+    ],
+
+    // Extensions that provide template annotations for CLASSES that aren't available via reflection.
+    // These stubs must replace reflection classes to ensure template types are available.
+    // Phan will call flushReflectionClassesForExtension() for these before loading the stub.
+    'autoload_internal_extension_signatures_template_classes' => [
+        'spl',  // SplObjectStorage, SplDoublyLinkedList, SplHeap, WeakMap, etc.
+    ],
+
+    // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
+    // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
+    'autoload_internal_extension_signatures_template_functions' => [
+        'standard',  // array_find, array_filter, array_map, array_reduce, etc.
     ],
 
     // This can be set to a list of extensions to limit Phan to using the reflection information of.

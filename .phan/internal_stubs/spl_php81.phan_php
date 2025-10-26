@@ -1,0 +1,1014 @@
+<?php
+
+/**
+ * Stub file for SPL with template support
+ * Generated base from: tool/make_stubs -e SPL
+ * Template annotations added for generic collections
+ *
+ * @phan-file-suppress PhanRedefinedInheritedInterface, PhanUnreferencedClass, PhanUnreferencedPublicMethod, PhanGenericConstructorTypes, PhanCompatibleTypedClassConstant
+ */
+
+// Use generated stub and add templates where needed
+
+namespace {
+class AppendIterator extends \IteratorIterator {
+
+    // methods
+    public function __construct() {}
+    public function append(\Iterator $iterator) : void {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function current() : mixed {}
+    public function next() : void {}
+    public function getIteratorIndex() : ?int {}
+    public function getArrayIterator() : \ArrayIterator {}
+}
+
+class ArrayIterator implements \SeekableIterator, \Traversable, \Iterator, \ArrayAccess, \Serializable, \Countable {
+
+    // constants
+    const STD_PROP_LIST = 1;
+    const ARRAY_AS_PROPS = 2;
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(array|object $array = [], int $flags = 0) {}
+    public function offsetExists(mixed $key) : bool {}
+    public function offsetGet(mixed $key) : mixed {}
+    public function offsetSet(mixed $key, mixed $value) : void {}
+    public function offsetUnset(mixed $key) : void {}
+    public function append(mixed $value) : void {}
+    public function getArrayCopy() : array {}
+    public function count() : int {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+    public function asort(int $flags = \SORT_REGULAR) : bool {}
+    public function ksort(int $flags = \SORT_REGULAR) : bool {}
+    public function uasort(callable $callback) : bool {}
+    public function uksort(callable $callback) : bool {}
+    public function natsort() : bool {}
+    public function natcasesort() : bool {}
+    public function unserialize(string $data) : void {}
+    public function serialize() : string {}
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
+    public function rewind() : void {}
+    public function current() : mixed {}
+    public function key() : int|null|string {}
+    public function next() : void {}
+    public function valid() : bool {}
+    public function seek(int $offset) : void {}
+    public function __debugInfo() : array {}
+}
+
+class ArrayObject implements \IteratorAggregate, \Traversable, \ArrayAccess, \Serializable, \Countable {
+
+    // constants
+    const STD_PROP_LIST = 1;
+    const ARRAY_AS_PROPS = 2;
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(array|object $array = [], int $flags = 0, string $iteratorClass = 'ArrayIterator') {}
+    public function offsetExists(mixed $key) : bool {}
+    public function offsetGet(mixed $key) : mixed {}
+    public function offsetSet(mixed $key, mixed $value) : void {}
+    public function offsetUnset(mixed $key) : void {}
+    public function append(mixed $value) : void {}
+    public function getArrayCopy() : array {}
+    public function count() : int {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+    public function asort(int $flags = \SORT_REGULAR) : bool {}
+    public function ksort(int $flags = \SORT_REGULAR) : bool {}
+    public function uasort(callable $callback) : bool {}
+    public function uksort(callable $callback) : bool {}
+    public function natsort() : bool {}
+    public function natcasesort() : bool {}
+    public function unserialize(string $data) : void {}
+    public function serialize() : string {}
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
+    public function getIterator() : \Iterator {}
+    public function exchangeArray(array|object $array) : array {}
+    public function setIteratorClass(string $iteratorClass) : void {}
+    public function getIteratorClass() : string {}
+    public function __debugInfo() : array {}
+}
+
+class BadFunctionCallException extends \LogicException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class BadMethodCallException extends \BadFunctionCallException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class CachingIterator extends \IteratorIterator implements \Stringable, \ArrayAccess, \Countable {
+
+    // constants
+    const CALL_TOSTRING = 1;
+    const CATCH_GET_CHILD = 16;
+    const TOSTRING_USE_KEY = 2;
+    const TOSTRING_USE_CURRENT = 4;
+    const TOSTRING_USE_INNER = 8;
+    const FULL_CACHE = 256;
+
+    // methods
+    public function __construct(\Iterator $iterator, int $flags = \CachingIterator::CALL_TOSTRING) {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function next() : void {}
+    public function hasNext() : bool {}
+    public function __toString() : string {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+    public function offsetGet($key) : mixed {}
+    public function offsetSet($key, mixed $value) : void {}
+    public function offsetUnset($key) : void {}
+    public function offsetExists($key) : bool {}
+    public function getCache() : array {}
+    public function count() : int {}
+}
+
+class CallbackFilterIterator extends \FilterIterator {
+
+    // methods
+    public function __construct(\Iterator $iterator, callable $callback) {}
+    public function accept() : bool {}
+}
+
+class DirectoryIterator extends \SplFileInfo implements \SeekableIterator, \Traversable, \Iterator {
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(string $directory) {}
+    public function getFilename() : string {}
+    public function getExtension() : string {}
+    public function getBasename(string $suffix = '') : string {}
+    public function isDot() : bool {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : mixed {}
+    public function current() : mixed {}
+    public function next() : void {}
+    public function seek(int $offset) : void {}
+    public function __toString() : string {}
+}
+
+class DomainException extends \LogicException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class EmptyIterator implements \Iterator, \Traversable {
+
+    // methods
+    public function current() : never {}
+    public function next() : void {}
+    public function key() : never {}
+    public function valid() : bool {}
+    public function rewind() : void {}
+}
+
+class FilesystemIterator extends \DirectoryIterator {
+
+    // constants
+    const CURRENT_MODE_MASK = 240;
+    const CURRENT_AS_PATHNAME = 32;
+    const CURRENT_AS_FILEINFO = 0;
+    const CURRENT_AS_SELF = 16;
+    const KEY_MODE_MASK = 3840;
+    const KEY_AS_PATHNAME = 0;
+    const FOLLOW_SYMLINKS = 16384;
+    const KEY_AS_FILENAME = 256;
+    const NEW_CURRENT_AND_KEY = 256;
+    const OTHER_MODE_MASK = 28672;
+    const SKIP_DOTS = 4096;
+    const UNIX_PATHS = 8192;
+
+    // methods
+    public function __construct(string $directory, int $flags = 4096) {}
+    public function rewind() : void {}
+    public function key() : string {}
+    public function current() : \FilesystemIterator|\SplFileInfo|string {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+}
+
+abstract class FilterIterator extends \IteratorIterator {
+
+    // properties
+    public $name;
+
+    // methods
+    public abstract function accept() : bool;
+    public function __construct(\Iterator $iterator) {}
+    public function rewind() : void {}
+    public function next() : void {}
+}
+
+class GlobIterator extends \FilesystemIterator implements \Countable {
+
+    // constants
+    const CURRENT_MODE_MASK = 240;
+    const CURRENT_AS_PATHNAME = 32;
+    const CURRENT_AS_FILEINFO = 0;
+    const CURRENT_AS_SELF = 16;
+    const KEY_MODE_MASK = 3840;
+    const KEY_AS_PATHNAME = 0;
+    const FOLLOW_SYMLINKS = 16384;
+    const KEY_AS_FILENAME = 256;
+    const NEW_CURRENT_AND_KEY = 256;
+    const OTHER_MODE_MASK = 28672;
+    const SKIP_DOTS = 4096;
+    const UNIX_PATHS = 8192;
+
+    // methods
+    public function __construct(string $pattern, int $flags = 0) {}
+    public function count() : int {}
+}
+
+class InfiniteIterator extends \IteratorIterator {
+
+    // methods
+    public function __construct(\Iterator $iterator) {}
+    public function next() : void {}
+}
+
+class InvalidArgumentException extends \LogicException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class IteratorIterator implements \OuterIterator, \Traversable, \Iterator {
+
+    // methods
+    public function __construct(\Traversable $iterator, ?string $class = null) {}
+    public function getInnerIterator() : ?\Iterator {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : mixed {}
+    public function current() : mixed {}
+    public function next() : void {}
+}
+
+class LengthException extends \LogicException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class LimitIterator extends \IteratorIterator {
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(\Iterator $iterator, int $offset = 0, int $limit = -1) {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function next() : void {}
+    public function seek(int $offset) : int {}
+    public function getPosition() : int {}
+}
+
+class LogicException extends \Exception {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class MultipleIterator implements \Iterator, \Traversable {
+
+    // constants
+    const MIT_NEED_ANY = 0;
+    const MIT_NEED_ALL = 1;
+    const MIT_KEYS_NUMERIC = 0;
+    const MIT_KEYS_ASSOC = 2;
+
+    // methods
+    public function __construct(int $flags = 1) {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+    public function attachIterator(\Iterator $iterator, int|null|string $info = null) : void {}
+    public function detachIterator(\Iterator $iterator) : void {}
+    public function containsIterator(\Iterator $iterator) : bool {}
+    public function countIterators() : int {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : array {}
+    public function current() : array {}
+    public function next() : void {}
+    public function __debugInfo() : array {}
+}
+
+class NoRewindIterator extends \IteratorIterator {
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(\Iterator $iterator) {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : mixed {}
+    public function current() : mixed {}
+    public function next() : void {}
+}
+
+class OutOfBoundsException extends \RuntimeException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class OutOfRangeException extends \LogicException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+interface OuterIterator extends \Iterator, \Traversable {
+
+    // methods
+    function getInnerIterator() : ?\Iterator;
+}
+
+class OverflowException extends \RuntimeException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class ParentIterator extends \RecursiveFilterIterator {
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(\RecursiveIterator $iterator) {}
+    public function accept() : bool {}
+}
+
+class RangeException extends \RuntimeException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class RecursiveArrayIterator extends \ArrayIterator implements \RecursiveIterator {
+
+    // constants
+    const STD_PROP_LIST = 1;
+    const ARRAY_AS_PROPS = 2;
+    const CHILD_ARRAYS_ONLY = 4;
+
+    // properties
+    public $name;
+
+    // methods
+    public function hasChildren() : bool {}
+    public function getChildren() : ?\RecursiveArrayIterator {}
+}
+
+class RecursiveCachingIterator extends \CachingIterator implements \RecursiveIterator {
+
+    // constants
+    const CALL_TOSTRING = 1;
+    const CATCH_GET_CHILD = 16;
+    const TOSTRING_USE_KEY = 2;
+    const TOSTRING_USE_CURRENT = 4;
+    const TOSTRING_USE_INNER = 8;
+    const FULL_CACHE = 256;
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(\Iterator $iterator, int $flags = \RecursiveCachingIterator::CALL_TOSTRING) {}
+    public function hasChildren() : bool {}
+    public function getChildren() : ?\RecursiveCachingIterator {}
+}
+
+class RecursiveCallbackFilterIterator extends \CallbackFilterIterator implements \RecursiveIterator {
+
+    // methods
+    public function __construct(\RecursiveIterator $iterator, callable $callback) {}
+    public function hasChildren() : bool {}
+    public function getChildren() : \RecursiveCallbackFilterIterator {}
+}
+
+class RecursiveDirectoryIterator extends \FilesystemIterator implements \RecursiveIterator {
+
+    // constants
+    const CURRENT_MODE_MASK = 240;
+    const CURRENT_AS_PATHNAME = 32;
+    const CURRENT_AS_FILEINFO = 0;
+    const CURRENT_AS_SELF = 16;
+    const KEY_MODE_MASK = 3840;
+    const KEY_AS_PATHNAME = 0;
+    const FOLLOW_SYMLINKS = 16384;
+    const KEY_AS_FILENAME = 256;
+    const NEW_CURRENT_AND_KEY = 256;
+    const OTHER_MODE_MASK = 28672;
+    const SKIP_DOTS = 4096;
+    const UNIX_PATHS = 8192;
+
+    // properties
+    public $name;
+
+    // methods
+    public function __construct(string $directory, int $flags = 0) {}
+    public function hasChildren(bool $allowLinks = false) : bool {}
+    public function getChildren() : \RecursiveDirectoryIterator {}
+    public function getSubPath() : string {}
+    public function getSubPathname() : string {}
+}
+
+abstract class RecursiveFilterIterator extends \FilterIterator implements \RecursiveIterator {
+
+    // methods
+    public function __construct(\RecursiveIterator $iterator) {}
+    public function hasChildren() : bool {}
+    public function getChildren() : ?\RecursiveFilterIterator {}
+}
+
+interface RecursiveIterator extends \Iterator, \Traversable {
+
+    // methods
+    function hasChildren() : bool;
+    function getChildren() : ?\RecursiveIterator;
+}
+
+class RecursiveIteratorIterator implements \OuterIterator, \Traversable, \Iterator {
+
+    // constants
+    const LEAVES_ONLY = 0;
+    const SELF_FIRST = 1;
+    const CHILD_FIRST = 2;
+    const CATCH_GET_CHILD = 16;
+
+    // methods
+    public function __construct(\Traversable $iterator, int $mode = \RecursiveIteratorIterator::LEAVES_ONLY, int $flags = 0) {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : mixed {}
+    public function current() : mixed {}
+    public function next() : void {}
+    public function getDepth() : int {}
+    public function getSubIterator(?int $level = null) : ?\RecursiveIterator {}
+    public function getInnerIterator() : \RecursiveIterator {}
+    public function beginIteration() : void {}
+    public function endIteration() : void {}
+    public function callHasChildren() : bool {}
+    public function callGetChildren() : ?\RecursiveIterator {}
+    public function beginChildren() : void {}
+    public function endChildren() : void {}
+    public function nextElement() : void {}
+    public function setMaxDepth(int $maxDepth = -1) : void {}
+    public function getMaxDepth() : false|int {}
+}
+
+class RecursiveRegexIterator extends \RegexIterator implements \RecursiveIterator {
+
+    // constants
+    const USE_KEY = 1;
+    const INVERT_MATCH = 2;
+    const MATCH = 0;
+    const GET_MATCH = 1;
+    const ALL_MATCHES = 2;
+    const SPLIT = 3;
+    const REPLACE = 4;
+
+    // properties
+    public $name;
+    public $replacement;
+
+    // methods
+    public function __construct(\RecursiveIterator $iterator, string $pattern, int $mode = \RecursiveRegexIterator::MATCH, int $flags = 0, int $pregFlags = 0) {}
+    public function accept() : bool {}
+    public function hasChildren() : bool {}
+    public function getChildren() : \RecursiveRegexIterator {}
+}
+
+class RecursiveTreeIterator extends \RecursiveIteratorIterator {
+
+    // constants
+    const LEAVES_ONLY = 0;
+    const SELF_FIRST = 1;
+    const CHILD_FIRST = 2;
+    const CATCH_GET_CHILD = 16;
+    const BYPASS_CURRENT = 4;
+    const BYPASS_KEY = 8;
+    const PREFIX_LEFT = 0;
+    const PREFIX_MID_HAS_NEXT = 1;
+    const PREFIX_MID_LAST = 2;
+    const PREFIX_END_HAS_NEXT = 3;
+    const PREFIX_END_LAST = 4;
+    const PREFIX_RIGHT = 5;
+
+    // methods
+    public function __construct($iterator, int $flags = \RecursiveTreeIterator::BYPASS_KEY, int $cachingIteratorFlags = \CachingIterator::CATCH_GET_CHILD, int $mode = \RecursiveTreeIterator::SELF_FIRST) {}
+    public function key() : mixed {}
+    public function current() : mixed {}
+    public function getPrefix() : string {}
+    public function setPostfix(string $postfix) : void {}
+    public function setPrefixPart(int $part, string $value) : void {}
+    public function getEntry() : string {}
+    public function getPostfix() : string {}
+}
+
+class RegexIterator extends \FilterIterator {
+
+    // constants
+    const USE_KEY = 1;
+    const INVERT_MATCH = 2;
+    const MATCH = 0;
+    const GET_MATCH = 1;
+    const ALL_MATCHES = 2;
+    const SPLIT = 3;
+    const REPLACE = 4;
+
+    // properties
+    public $name;
+    public $replacement;
+
+    // methods
+    public function __construct(\Iterator $iterator, string $pattern, int $mode = \RegexIterator::MATCH, int $flags = 0, int $pregFlags = 0) {}
+    public function accept() : bool {}
+    public function getMode() : int {}
+    public function setMode(int $mode) : void {}
+    public function getFlags() : int {}
+    public function setFlags(int $flags) : void {}
+    public function getRegex() : string {}
+    public function getPregFlags() : int {}
+    public function setPregFlags(int $pregFlags) : void {}
+}
+
+class RuntimeException extends \Exception {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+interface SeekableIterator extends \Iterator, \Traversable {
+
+    // methods
+    function seek(int $offset) : void;
+}
+
+class SplDoublyLinkedList implements \Iterator, \Traversable, \Countable, \ArrayAccess, \Serializable {
+
+    // constants
+    const IT_MODE_LIFO = 2;
+    const IT_MODE_FIFO = 0;
+    const IT_MODE_DELETE = 1;
+    const IT_MODE_KEEP = 0;
+
+    // properties
+    public $name;
+
+    // methods
+    public function add(int $index, mixed $value) : void {}
+    public function pop() : mixed {}
+    public function shift() : mixed {}
+    public function push(mixed $value) : void {}
+    public function unshift(mixed $value) : void {}
+    public function top() : mixed {}
+    public function bottom() : mixed {}
+    public function __debugInfo() : array {}
+    public function count() : int {}
+    public function isEmpty() : bool {}
+    public function setIteratorMode(int $mode) : int {}
+    public function getIteratorMode() : int {}
+    public function offsetExists($index) : bool {}
+    public function offsetGet($index) : mixed {}
+    public function offsetSet($index, mixed $value) : void {}
+    public function offsetUnset($index) : void {}
+    public function rewind() : void {}
+    public function current() : mixed {}
+    public function key() : int {}
+    public function prev() : void {}
+    public function next() : void {}
+    public function valid() : bool {}
+    public function unserialize(string $data) : void {}
+    public function serialize() : string {}
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
+}
+
+class SplFileInfo implements \Stringable {
+
+    // methods
+    public function __construct(string $filename) {}
+    public function getPath() : string {}
+    public function getFilename() : string {}
+    public function getExtension() : string {}
+    public function getBasename(string $suffix = '') : string {}
+    public function getPathname() : string {}
+    public function getPerms() : false|int {}
+    public function getInode() : false|int {}
+    public function getSize() : false|int {}
+    public function getOwner() : false|int {}
+    public function getGroup() : false|int {}
+    public function getATime() : false|int {}
+    public function getMTime() : false|int {}
+    public function getCTime() : false|int {}
+    public function getType() : false|string {}
+    public function isWritable() : bool {}
+    public function isReadable() : bool {}
+    public function isExecutable() : bool {}
+    public function isFile() : bool {}
+    public function isDir() : bool {}
+    public function isLink() : bool {}
+    public function getLinkTarget() : false|string {}
+    public function getRealPath() : false|string {}
+    public function getFileInfo(?string $class = null) : \SplFileInfo {}
+    public function getPathInfo(?string $class = null) : ?\SplFileInfo {}
+    public function openFile(string $mode = 'r', bool $useIncludePath = false, $context = null) : \SplFileObject {}
+    public function setFileClass(string $class = 'SplFileObject') : void {}
+    public function setInfoClass(string $class = 'SplFileInfo') : void {}
+    public function __toString() : string {}
+    public function __debugInfo() : array {}
+    final public function _bad_state_ex() : void {}
+}
+
+class SplFileObject extends \SplFileInfo implements \RecursiveIterator, \Traversable, \Iterator, \SeekableIterator {
+
+    // constants
+    const DROP_NEW_LINE = 1;
+    const READ_AHEAD = 2;
+    const SKIP_EMPTY = 4;
+    const READ_CSV = 8;
+
+    // methods
+    public function __construct(string $filename, string $mode = 'r', bool $useIncludePath = false, $context = null) {}
+    public function rewind() : void {}
+    public function eof() : bool {}
+    public function valid() : bool {}
+    public function fgets() : string {}
+    public function fread(int $length) : false|string {}
+    public function fgetcsv(string $separator = ',', string $enclosure = '"', string $escape = '\\') : array|false {}
+    public function fputcsv(array $fields, string $separator = ',', string $enclosure = '"', string $escape = '\\', string $eol = "\n") : false|int {}
+    public function setCsvControl(string $separator = ',', string $enclosure = '"', string $escape = '\\') : void {}
+    public function getCsvControl() : array {}
+    public function flock(int $operation, &$wouldBlock = null) : bool {}
+    public function fflush() : bool {}
+    public function ftell() : false|int {}
+    public function fseek(int $offset, int $whence = \SEEK_SET) : int {}
+    public function fgetc() : false|string {}
+    public function fpassthru() : int {}
+    public function fscanf(string $format, mixed &...$vars) : array|int|null {}
+    public function fwrite(string $data, int $length = 0) : false|int {}
+    public function fstat() : array {}
+    public function ftruncate(int $size) : bool {}
+    public function current() : array|false|string {}
+    public function key() : int {}
+    public function next() : void {}
+    public function setFlags(int $flags) : void {}
+    public function getFlags() : int {}
+    public function setMaxLineLen(int $maxLength) : void {}
+    public function getMaxLineLen() : int {}
+    public function hasChildren() : bool {}
+    public function getChildren() : mixed {}
+    public function seek(int $line) : void {}
+    public function getCurrentLine() : string {}
+    public function __toString() : string {}
+}
+
+class SplFixedArray implements \IteratorAggregate, \Traversable, \ArrayAccess, \Countable, \JsonSerializable {
+
+    // methods
+    public function __construct(int $size = 0) {}
+    public function __wakeup() : void {}
+    public function count() : int {}
+    public function toArray() : array {}
+    public static function fromArray(array $array, bool $preserveKeys = true) : \SplFixedArray {}
+    public function getSize() : int {}
+    public function setSize(int $size) : bool {}
+    public function offsetExists($index) : bool {}
+    public function offsetGet($index) : mixed {}
+    public function offsetSet($index, mixed $value) : void {}
+    public function offsetUnset($index) : void {}
+    public function getIterator() : \Iterator {}
+    public function jsonSerialize() : array {}
+}
+
+abstract class SplHeap implements \Iterator, \Traversable, \Countable {
+
+    // properties
+    public $name;
+
+    // methods
+    public function extract() : mixed {}
+    public function insert(mixed $value) : bool {}
+    public function top() : mixed {}
+    public function count() : int {}
+    public function isEmpty() : bool {}
+    public function rewind() : void {}
+    public function current() : mixed {}
+    public function key() : int {}
+    public function next() : void {}
+    public function valid() : bool {}
+    public function recoverFromCorruption() : bool {}
+    protected abstract function compare(mixed $value1, mixed $value2) : int;
+    public function isCorrupted() : bool {}
+    public function __debugInfo() : array {}
+}
+
+class SplMaxHeap extends \SplHeap {
+
+    // properties
+    public $name;
+
+    // methods
+    protected function compare(mixed $value1, mixed $value2) : int {}
+}
+
+class SplMinHeap extends \SplHeap {
+
+    // properties
+    public $name;
+
+    // methods
+    protected function compare(mixed $value1, mixed $value2) : int {}
+}
+
+/**
+ * @template TObject of object
+ * @template TValue
+ * @implements Iterator<int, TObject>
+ * @implements ArrayAccess<TObject, TValue>
+ */
+class SplObjectStorage implements \Countable, \Traversable, \Iterator, \Serializable, \ArrayAccess {
+
+    // methods
+    /**
+     * @suppress PhanGenericConstructorTypes
+     */
+    public function __construct() {}
+    /**
+     * @param TObject $object
+     * @param TValue $info
+     */
+    public function attach(object $object, mixed $info = null) : void {}
+    /**
+     * @param TObject $object
+     */
+    public function detach(object $object) : void {}
+    /**
+     * @param TObject $object
+     */
+    public function contains(object $object) : bool {}
+    /**
+     * @param SplObjectStorage<TObject, TValue> $storage
+     */
+    public function addAll(\SplObjectStorage $storage) : int {}
+    /**
+     * @param SplObjectStorage<TObject, TValue> $storage
+     */
+    public function removeAll(\SplObjectStorage $storage) : int {}
+    /**
+     * @param SplObjectStorage<TObject, TValue> $storage
+     */
+    public function removeAllExcept(\SplObjectStorage $storage) : int {}
+    /**
+     * @return TValue
+     */
+    public function getInfo() : mixed {}
+    /**
+     * @param TValue $info
+     */
+    public function setInfo(mixed $info) : void {}
+    public function count(int $mode = \COUNT_NORMAL) : int {}
+    public function rewind() : void {}
+    public function valid() : bool {}
+    public function key() : int {}
+    /**
+     * @return TObject
+     */
+    public function current() : object {}
+    public function next() : void {}
+    public function unserialize(string $data) : void {}
+    public function serialize() : string {}
+    /**
+     * @param TObject $object
+     */
+    public function offsetExists($object) : bool {}
+    /**
+     * @param TObject $object
+     * @return TValue
+     */
+    public function offsetGet($object) : mixed {}
+    /**
+     * @param TObject $object
+     * @param TValue $info
+     */
+    public function offsetSet($object, mixed $info = null) : void {}
+    /**
+     * @param TObject $object
+     */
+    public function offsetUnset($object) : void {}
+    public function getHash(object $object) : string {}
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
+    public function __debugInfo() : array {}
+}
+
+interface SplObserver {
+
+    // methods
+    function update(\SplSubject $subject) : void;
+}
+
+class SplPriorityQueue implements \Iterator, \Traversable, \Countable {
+
+    // constants
+    const EXTR_BOTH = 3;
+    const EXTR_PRIORITY = 2;
+    const EXTR_DATA = 1;
+
+    // properties
+    public $name;
+
+    // methods
+    public function compare(mixed $priority1, mixed $priority2) : int {}
+    public function insert(mixed $value, mixed $priority) : bool {}
+    public function setExtractFlags(int $flags) : int {}
+    public function top() : mixed {}
+    public function extract() : mixed {}
+    public function count() : int {}
+    public function isEmpty() : bool {}
+    public function rewind() : void {}
+    public function current() : mixed {}
+    public function key() : int {}
+    public function next() : void {}
+    public function valid() : bool {}
+    public function recoverFromCorruption() : bool {}
+    public function isCorrupted() : bool {}
+    public function getExtractFlags() : int {}
+    public function __debugInfo() : array {}
+}
+
+class SplQueue extends \SplDoublyLinkedList {
+
+    // constants
+    const IT_MODE_LIFO = 2;
+    const IT_MODE_FIFO = 0;
+    const IT_MODE_DELETE = 1;
+    const IT_MODE_KEEP = 0;
+
+    // properties
+    public $name;
+
+    // methods
+    public function enqueue(mixed $value) : void {}
+    public function dequeue() : mixed {}
+}
+
+class SplStack extends \SplDoublyLinkedList {
+
+    // constants
+    const IT_MODE_LIFO = 2;
+    const IT_MODE_FIFO = 0;
+    const IT_MODE_DELETE = 1;
+    const IT_MODE_KEEP = 0;
+
+    // properties
+    public $name;
+}
+
+interface SplSubject {
+
+    // methods
+    function attach(\SplObserver $observer) : void;
+    function detach(\SplObserver $observer) : void;
+    function notify() : void;
+}
+
+class SplTempFileObject extends \SplFileObject {
+
+    // constants
+    const DROP_NEW_LINE = 1;
+    const READ_AHEAD = 2;
+    const SKIP_EMPTY = 4;
+    const READ_CSV = 8;
+
+    // methods
+    public function __construct(int $maxMemory = 2097152) {}
+}
+
+class UnderflowException extends \RuntimeException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+class UnexpectedValueException extends \RuntimeException {
+
+    // properties
+    protected $message;
+    protected $code;
+    protected $file;
+    protected $line;
+}
+
+/**
+ * @template TKey of object
+ * @template TValue
+ * @implements ArrayAccess<TKey, TValue>
+ * @implements IteratorAggregate<TKey, TValue>
+ */
+class WeakMap implements \ArrayAccess, \IteratorAggregate, \Countable {
+
+    // methods
+    /**
+     * @param TKey $object
+     * @return TValue
+     */
+    public function offsetGet(object $object) : mixed {}
+    /**
+     * @param TKey $object
+     * @param TValue $value
+     */
+    public function offsetSet(object $object, mixed $value) : void {}
+    /**
+     * @param TKey $object
+     */
+    public function offsetExists(object $object) : bool {}
+    /**
+     * @param TKey $object
+     */
+    public function offsetUnset(object $object) : void {}
+    public function count() : int {}
+    /**
+     * @return \Iterator<TKey, TValue>
+     */
+    public function getIterator() : \Iterator {}
+}
+
+function class_implements($object_or_class, bool $autoload = true) : array|false {}
+function class_parents($object_or_class, bool $autoload = true) : array|false {}
+function class_uses($object_or_class, bool $autoload = true) : array|false {}
+function iterator_apply(\Traversable $iterator, callable $callback, ?array $args = null) : int {}
+function iterator_count(\Traversable|array $iterator) : int {}
+function iterator_to_array(\Traversable|array $iterator, bool $preserve_keys = true) : array {}
+function spl_autoload(string $class, ?string $file_extensions = null) : void {}
+function spl_autoload_call(string $class) : void {}
+function spl_autoload_extensions(?string $file_extensions = null) : string {}
+function spl_autoload_functions() : array {}
+function spl_autoload_register(?callable $callback = null, bool $throw = true, bool $prepend = false) : bool {}
+function spl_autoload_unregister(callable $callback) : bool {}
+function spl_classes() : array {}
+function spl_object_hash(object $object) : string {}
+function spl_object_id(object $object) : int {}
+}

@@ -941,14 +941,28 @@ class Phan implements IgnoredFilesFilterInterface
      */
     private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base): void
     {
+        // Extensions that provide template annotations for CLASSES that aren't available via reflection.
+        // These stubs must replace reflection classes to ensure template types are available.
+        $extensions_with_template_classes = Config::getValue('autoload_internal_extension_signatures_template_classes');
+
+        // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
+        // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
+        $extensions_with_template_functions = Config::getValue('autoload_internal_extension_signatures_template_functions');
+
         $stubs = Config::getValue('autoload_internal_extension_signatures');
         foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
             $extension_name = (string)$extension_name;
-            // Prefer using reflection info from the running extension over what's in the stub files.
-            // (The originals were already added to the CodeBase)
-            if (\extension_loaded($extension_name)) {
+
+            // For most extensions, prefer reflection over stubs (reflection is always up-to-date).
+            // Only load stubs for extensions not currently loaded, OR for extensions with templates.
+            $needs_stub_for_template_classes = \in_array($extension_name, $extensions_with_template_classes, true);
+            $needs_stub_for_template_functions = \in_array($extension_name, $extensions_with_template_functions, true);
+            $needs_stub_for_templates = $needs_stub_for_template_classes || $needs_stub_for_template_functions;
+
+            if (\extension_loaded($extension_name) && !$needs_stub_for_templates) {
                 continue;
             }
+
             if (!is_string($path_to_extension)) {
                 throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_representation($path_to_extension));
             }
@@ -956,6 +970,20 @@ class Phan implements IgnoredFilesFilterInterface
             if (!is_file($path_to_extension)) {
                 throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a file: value: " . var_representation($path_to_extension));
             }
+
+            // For extensions with template classes, flush reflection classes so stub can replace them.
+            // This allows the stub to provide template annotations not available from reflection.
+            // For extensions with only template functions, we don't flush - stub functions will
+            // automatically replace reflection functions when parsed (via addFunction()).
+            if ($needs_stub_for_template_classes && \extension_loaded($extension_name)) {
+                $code_base->flushReflectionClassesForExtension($extension_name);
+
+                // Special case: WeakMap is in Core extension but included in SPL stub for template support
+                if ($extension_name === 'spl') {
+                    $code_base->flushReflectionClassByName('\\WeakMap');
+                }
+            }
+
             Analysis::parseFile($code_base, $path_to_extension, false, null, true);
         }
     }

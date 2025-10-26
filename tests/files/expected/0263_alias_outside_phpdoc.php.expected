@@ -1,6 +1,6 @@
 %s:4 PhanUndeclaredTypeParameter Parameter $a has undeclared type \boolean
 %s:4 PhanUndeclaredTypeParameter Parameter $b has undeclared type \integer
-%s:4 PhanUndeclaredTypeParameter Parameter $c has undeclared type \callback
+%s:4 PhanUndeclaredTypeParameter Parameter $c has undeclared type \callback%S
 %s:4 PhanUndeclaredTypeParameter Parameter $d has undeclared type \double
 %s:4 PhanUndeclaredTypeParameter Parameter $e has undeclared type \double[]
 %s:4 PhanUndeclaredTypeReturnType Return type of foo263() is undeclared type \boolean
