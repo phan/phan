@@ -243,7 +243,7 @@ Phan will continue using its detailed type annotations,
 but load the constants, classes, functions, and classes (and their Reflection types)
 from these stub files (doubling as valid php files).
 Use a different extension from php to avoid accidentally loading these.
-The `tools/make_stubs` script can be used to generate your own stubs
+The `tool/make_stubs` script can be used to generate your own stubs
 
 (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
 

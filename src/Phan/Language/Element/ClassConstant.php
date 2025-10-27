@@ -247,7 +247,13 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
             // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
-            $string .= StringUtil::varExportPretty(\constant($fqsen)) . ';';
+            $value = \constant($fqsen);
+            // Enum cases cannot be represented with varExportPretty - they should be handled by EnumCase instead
+            if ($value instanceof \UnitEnum) {
+                $string .= "null;  // enum case - should be handled by EnumCase";
+            } else {
+                $string .= StringUtil::varExportPretty($value) . ';';
+            }
         } else {
             $string .= "null;  // could not find";
         }

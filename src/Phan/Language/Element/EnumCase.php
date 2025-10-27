@@ -61,7 +61,7 @@ class EnumCase extends ClassConstant
             $description = (string)MarkupDescription::extractDescriptionFromDocComment($this);
             $string .= MarkupDescription::convertStringToDocComment($description, '    ');
         }
-        $string .= '    enum ' . $this->name;
+        $string .= '    case ' . $this->name;
 
         $value_node = $this->getNodeForValue();
         if ($value_node !== null) {
