@@ -94,8 +94,8 @@ $standard_exception_types = [
  * for working with the phpdoc SVN repo
  */
 return [
-    'arrayiterator' => ['name' => 'string'],
-    'arrayobject' => ['name' => 'string'],
+    'arrayiterator' => [],
+    'arrayobject' => [],
     'ast\metadata' => [
         'flags' => 'list<string>',
         'flagsCombinable' => 'bool',
@@ -147,7 +147,7 @@ return [
         'start' => 'DateTimeInterface',
     ],
     'directory' => ['handle' => 'resource', 'path' => 'string'],
-    'directoryiterator' => ['name' => 'string'],
+    'directoryiterator' => [],
     'domattr' => [
         'name' => 'string',
         'ownerElement' => 'DOMElement',
@@ -252,7 +252,7 @@ return [
         'line' => 'int',
         'message' => 'string',
     ],
-    'filteriterator' => ['name' => 'string'],
+    'filteriterator' => [],
     'libxmlerror' => [
         'code' => 'int',
         'column' => 'int',
@@ -261,7 +261,7 @@ return [
         'line' => 'int',
         'message' => 'string',
     ],
-    'limititerator' => ['name' => 'string'],
+    'limititerator' => [],
     'locale' => ['name' => 'string'],
     'mongoclient' => [
         'connected' => 'bool',
@@ -339,10 +339,10 @@ return [
         'message' => 'string',
         'sqlstate' => 'mixed',
     ],
-    'norewinditerator' => ['name' => 'string'],
+    'norewinditerator' => [],
     'normalizer' => ['name' => 'string'],
     'numberformatter' => ['name' => 'string'],
-    'parentiterator' => ['name' => 'string'],
+    'parentiterator' => [],
     'pdoexception' => ['code' => 'string', 'errorInfo' => 'array'],
     'pdostatement' => ['queryString' => 'string'],
     'php_user_filter' => ['filtername' => 'string', 'params' => 'mixed'],
@@ -352,10 +352,10 @@ return [
         'pos' => 'int',
         'text' => 'string',
     ],
-    'recursivearrayiterator' => ['name' => 'string'],
-    'recursivecachingiterator' => ['name' => 'string'],
-    'recursivedirectoryiterator' => ['name' => 'string'],
-    'recursiveregexiterator' => ['name' => 'string', 'replacement' => 'mixed'], // TODO: is 'replacement' documented
+    'recursivearrayiterator' => [],
+    'recursivecachingiterator' => [],
+    'recursivedirectoryiterator' => [],
+    'recursiveregexiterator' => ['replacement' => 'mixed'], // TODO: is 'replacement' documented
     'reflectionclass' => ['name' => 'string'],
     'reflectionclassconstant' => ['class' => 'string', 'name' => 'string'],
     'reflectionextension' => ['name' => 'string'],
@@ -366,10 +366,8 @@ return [
     'reflectionparameter' => ['name' => 'string'],
     'reflectionproperty' => ['class' => 'string', 'name' => 'string'],
     'reflectionzendextension' => ['name' => 'string'],
-    'regexiterator' => ['name' => 'string', 'replacement' => 'mixed'],
-    'simplexmliterator' => [
-        'name' => 'string',
-    ],
+    'regexiterator' => ['replacement' => 'mixed'],
+    'simplexmliterator' => [],
     'snmp' => [
         'enum_print' => 'bool',
         'exceptions_enabled' => 'int',
@@ -403,13 +401,13 @@ return [
         'parser_mode' => 'int',
         'success' => 'bool',
     ],
-    'spldoublylinkedlist' => ['name' => 'string'],
-    'splheap' => ['name' => 'string'],
-    'splmaxheap' => ['name' => 'string'],
-    'splminheap' => ['name' => 'string'],
-    'splpriorityqueue' => ['name' => 'string'],
-    'splqueue' => ['name' => 'string'],
-    'splstack' => ['name' => 'string'],
+    'spldoublylinkedlist' => [],
+    'splheap' => [],
+    'splmaxheap' => [],
+    'splminheap' => [],
+    'splpriorityqueue' => [],
+    'splqueue' => [],
+    'splstack' => [],
     'streamwrapper' => ['context' => 'resource'],
     'tidy' => ['errorBuffer' => 'string'],
     'tidynode' => [

@@ -51,7 +51,6 @@ use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Suggestion;
 use ReflectionClass;
-use ReflectionClassConstant;
 use ReflectionProperty;
 use RuntimeException;
 
@@ -476,20 +475,39 @@ class Clazz extends AddressableElement
 
             $value_type = Type::fromObject($value);
 
-            $constant = new ClassConstant(
-                $context,
-                $name,
-                $value_type->asRealUnionType(),  // TODO: These can vary based on OS/build flags
-                0,
-                $constant_fqsen
-            );
-            $constant->setNodeForValue($value);
-
             $reflection_constant = method_exists($class, 'getReflectionConstant')
                 ? $class->getReflectionConstant($name)
                 : null;
+
+            // Create EnumCase for enum cases, ClassConstant for regular constants
+            // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.1+
+            if ($reflection_constant instanceof \ReflectionClassConstant && method_exists($reflection_constant, 'isEnumCase') && $reflection_constant->isEnumCase()) {
+                $constant = new EnumCase(
+                    $context,
+                    $name,
+                    $value_type->asRealUnionType(),
+                    0,
+                    $constant_fqsen
+                );
+                // Store the enum case value if it's a backed enum
+                if ($value instanceof \BackedEnum) {
+                    $constant->setEnumCaseValue($value->value);
+                    $constant->setNodeForValue($value->value);
+                }
+                // For unit enums, don't set a node value - they have no backing value
+            } else {
+                $constant = new ClassConstant(
+                    $context,
+                    $name,
+                    $value_type->asRealUnionType(),  // TODO: These can vary based on OS/build flags
+                    0,
+                    $constant_fqsen
+                );
+                $constant->setNodeForValue($value);
+            }
+
             // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
-            if ($reflection_constant instanceof ReflectionClassConstant && method_exists($reflection_constant, 'hasType') && $reflection_constant->hasType()) {
+            if ($reflection_constant instanceof \ReflectionClassConstant && method_exists($reflection_constant, 'hasType') && $reflection_constant->hasType()) {
                 // @phan-suppress-next-line PhanUndeclaredMethod reflection APIs added in PHP 8.3+
                 $declared_type = UnionType::fromReflectionType($reflection_constant->getType())->asNormalizedTypes();
                 $constant->setUnionType(
@@ -3638,6 +3656,21 @@ class Clazz extends AddressableElement
 
         $string .= $this->fqsen->getName();
 
+        // Add backing type for backed enums
+        if ($this->isEnum()) {
+            try {
+                $reflection_class = new \ReflectionEnum((string)$this->fqsen);
+                if ($reflection_class->isBacked()) {
+                    $backing_type = $reflection_class->getBackingType();
+                    if ($backing_type !== null) {
+                        $string .= ': ' . $backing_type->getName();
+                    }
+                }
+            } catch (\Exception) {
+                // If reflection fails, continue without backing type
+            }
+        }
+
         $extend_types = [];
         $implements_types = [];
         $parent_implements_types = [];
@@ -3653,8 +3686,34 @@ class Clazz extends AddressableElement
                 $extend_types = \array_merge($extend_types, $this->interface_fqsen_list);
             } else {
                 $implements_types = $this->interface_fqsen_list;
+
+                // For enums, filter out the built-in UnitEnum/BackedEnum interfaces
+                // but keep user-defined interfaces (e.g., JsonSerializable)
+                if ($this->isEnum()) {
+                    $implements_types = \array_filter($implements_types, static function (FullyQualifiedClassName $fqsen): bool {
+                        $name = $fqsen->__toString();
+                        return $name !== '\\UnitEnum' && $name !== '\\BackedEnum';
+                    });
+                }
+
+                // Remove interfaces that are already implemented by parent class
                 if (count($parent_implements_types) > 0) {
                     $implements_types = \array_diff($implements_types, $parent_implements_types);
+                }
+
+                // Remove interfaces that are already extended by other interfaces in the list
+                // For example, if implementing OuterIterator, don't also list Iterator and Traversable
+                $redundant_interfaces = [];
+                foreach ($implements_types as $interface_fqsen) {
+                    if ($code_base->hasClassWithFQSEN($interface_fqsen)) {
+                        $interface_class = $code_base->getClassByFQSEN($interface_fqsen);
+                        foreach ($interface_class->interface_fqsen_list as $parent_interface_fqsen) {
+                            $redundant_interfaces[] = $parent_interface_fqsen;
+                        }
+                    }
+                }
+                if (count($redundant_interfaces) > 0) {
+                    $implements_types = \array_diff($implements_types, $redundant_interfaces);
                 }
             }
         }

@@ -160,8 +160,16 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
 
         $is_defined = \defined($fqsen);
         if ($is_defined) {
-            $repr = StringUtil::varExportPretty(\constant($fqsen));
-            $comment = '';
+            $value = \constant($fqsen);
+            // Resources (like STDIN, STDOUT, STDERR) cannot be represented in stubs
+            if (\is_resource($value)) {
+                $resource_type = \get_resource_type($value);
+                $repr = 'null';
+                $comment = "  // resource ($resource_type) - cannot be represented in stubs";
+            } else {
+                $repr = StringUtil::varExportPretty($value);
+                $comment = '';
+            }
         } else {
             $repr = 'null';
             $comment = '  // could not find';

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * as the baseline instead of PHP 8.0, which is needed after the PHP 8.1+
  * migration to fix missing function signatures.
  *
- * Usage: php tools/rebuild_signature_map_baseline.php
+ * Usage: php tool/rebuild_signature_map_baseline.php
  */
 
 $root_dir = dirname(__DIR__);
