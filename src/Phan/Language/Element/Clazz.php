@@ -3684,9 +3684,17 @@ class Clazz extends AddressableElement
         if (count($this->interface_fqsen_list) > 0) {
             if ($this->isInterface()) {
                 $extend_types = \array_merge($extend_types, $this->interface_fqsen_list);
-            } elseif (!$this->isEnum()) {
-                // Don't list implements for enums - they always implement UnitEnum/BackedEnum
+            } else {
                 $implements_types = $this->interface_fqsen_list;
+
+                // For enums, filter out the built-in UnitEnum/BackedEnum interfaces
+                // but keep user-defined interfaces (e.g., JsonSerializable)
+                if ($this->isEnum()) {
+                    $implements_types = \array_filter($implements_types, static function (FullyQualifiedClassName $fqsen): bool {
+                        $name = $fqsen->__toString();
+                        return $name !== '\\UnitEnum' && $name !== '\\BackedEnum';
+                    });
+                }
 
                 // Remove interfaces that are already implemented by parent class
                 if (count($parent_implements_types) > 0) {
