@@ -28,14 +28,14 @@ final class PHP84Test extends AbstractPhanFileTestBase
         ],
         'plugin_config' => ['infer_pure_methods' => true],
         'autoload_internal_extension_signatures' => [
-            'bcmath'    => '.phan/internal_stubs/bcmath.phan_php',
-            'intl'      => '.phan/internal_stubs/intl.phan_php',
-            'mysqli'    => '.phan/internal_stubs/mysqli.phan_php',
-            'pdo_pgsql' => '.phan/internal_stubs/pdo_pgsql.phan_php',
-            'pgsql'     => '.phan/internal_stubs/pgsql.phan_php',
-            'soap'      => '.phan/internal_stubs/soap.phan_php',
-            'tidy'      => '.phan/internal_stubs/tidy.phan_php',
-            'xsl'       => '.phan/internal_stubs/xsl.phan_php',
+            'bcmath'    => 'internal/stubs/bcmath.phan_php',
+            'intl'      => 'internal/stubs/intl.phan_php',
+            'mysqli'    => 'internal/stubs/mysqli.phan_php',
+            'pdo_pgsql' => 'internal/stubs/pdo_pgsql.phan_php',
+            'pgsql'     => 'internal/stubs/pgsql.phan_php',
+            'soap'      => 'internal/stubs/soap.phan_php',
+            'tidy'      => 'internal/stubs/tidy.phan_php',
+            'xsl'       => 'internal/stubs/xsl.phan_php',
         ],
     ];
 

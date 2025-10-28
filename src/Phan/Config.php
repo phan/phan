@@ -833,21 +833,29 @@ class Config
         // Use a different extension from php to avoid accidentally loading these.
         // The `tool/make_stubs` script can be used to generate your own stubs
         //
+        // By default, Phan includes bundled stubs with template annotations for improved type inference.
+        // To disable bundled stubs, set this to an empty array: []
         // (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
-        'autoload_internal_extension_signatures' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures' => null,  // null means use bundled stubs (computed at runtime)
 
         // A list of extension names that have template annotations in their stub files for CLASSES.
         // For these extensions, the stub classes will completely replace reflection-based classes.
         // (e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
-        'autoload_internal_extension_signatures_template_classes' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures_template_classes' => null,  // null means use bundled stub templates
 
         // A list of extension names that have template annotations in their stub files for FUNCTIONS.
         // For these extensions, stub functions will be used alongside reflection data.
         // (e.g. `['array']` if array functions had template annotations in stubs)
-        'autoload_internal_extension_signatures_template_functions' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures_template_functions' => null,  // null means use bundled stub templates
 
         // This can be set to a list of extensions to limit Phan to using the reflection information of.
         // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
@@ -1208,6 +1216,58 @@ class Config
     }
 
     /**
+     * Get the default autoload_internal_extension_signatures configuration.
+     * These stubs are bundled with Phan and provide enhanced type information.
+     *
+     * @return array{
+     *     autoload_internal_extension_signatures: array<string,string>,
+     *     autoload_internal_extension_signatures_template_classes: list<string>,
+     *     autoload_internal_extension_signatures_template_functions: list<string>
+     * }
+     */
+    public static function getDefaultInternalStubConfiguration(): array
+    {
+        $phan_dir = \dirname(\dirname(__DIR__)); // Go up from src/Phan/ to root
+        $bundled_stubs_dir = $phan_dir . '/internal/stubs';
+
+        // Determine which SPL stub to use based on PHP version
+        // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
+        // PHP 8.1-8.3 uses a version without these features
+        $spl_stub = \PHP_VERSION_ID >= 80400
+            ? 'spl.phan_php'
+            : 'spl_php81.phan_php';
+
+        return [
+            'autoload_internal_extension_signatures' => [
+                'ast'         => "$bundled_stubs_dir/ast.phan_php",
+                'ctype'       => "$bundled_stubs_dir/ctype.phan_php",
+                'igbinary'    => "$bundled_stubs_dir/igbinary.phan_php",
+                'mbstring'    => "$bundled_stubs_dir/mbstring.phan_php",
+                'pcntl'       => "$bundled_stubs_dir/pcntl.phan_php",
+                'phar'        => "$bundled_stubs_dir/phar.phan_php",
+                'posix'       => "$bundled_stubs_dir/posix.phan_php",
+                'readline'    => "$bundled_stubs_dir/readline.phan_php",
+                'simplexml'   => "$bundled_stubs_dir/simplexml.phan_php",
+                'soap'        => "$bundled_stubs_dir/soap.phan_php",
+                'spl'         => "$bundled_stubs_dir/$spl_stub",
+                'standard'    => "$bundled_stubs_dir/standard_templates.phan_php",
+                'sqlite3'     => "$bundled_stubs_dir/sqlite3.phan_php",
+                'sysvmsg'     => "$bundled_stubs_dir/sysvmsg.phan_php",
+                'sysvsem'     => "$bundled_stubs_dir/sysvsem.phan_php",
+                'sysvshm'     => "$bundled_stubs_dir/sysvshm.phan_php",
+                'tidy'        => "$bundled_stubs_dir/tidy.phan_php",
+                'xsl'         => "$bundled_stubs_dir/xsl.phan_php",
+            ],
+            'autoload_internal_extension_signatures_template_classes' => [
+                'spl',  // SplObjectStorage, WeakMap, etc.
+            ],
+            'autoload_internal_extension_signatures_template_functions' => [
+                'standard',  // array_find, array_filter, array_map, etc.
+            ],
+        ];
+    }
+
+    /**
      * Resets the configuration to the initial state, prior to parsing config files and CLI arguments.
      * @internal - this should only be used in unit tests.
      */
@@ -1552,15 +1612,32 @@ class Config
             }
             return null;
         };
+        /**
+         * @param mixed $value
+         */
+        $is_associative_string_array_or_null = static function (mixed $value): ?string {
+            if (is_null($value)) {
+                return null;
+            }
+            if (!is_array($value)) {
+                return 'Expected null or an associative array mapping strings to strings'  . self::errSuffixGotType($value);
+            }
+            foreach ($value as $i => $element) {
+                if (!is_string($element)) {
+                    return "Expected null or an associative array mapping strings to strings: index $i is '" . gettype($element) . "'";
+                }
+            }
+            return null;
+        };
         $config_checks = [
             'absolute_path_issue_messages' => $is_bool,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
             'analyze_signature_compatibility' => $is_bool,
             'array_casts_as_null' => $is_bool,
-            'autoload_internal_extension_signatures' => $is_associative_string_array,
-            'autoload_internal_extension_signatures_template_classes' => $is_string_list,
-            'autoload_internal_extension_signatures_template_functions' => $is_string_list,
+            'autoload_internal_extension_signatures' => $is_associative_string_array_or_null,
+            'autoload_internal_extension_signatures_template_classes' => $is_string_list_or_null,
+            'autoload_internal_extension_signatures_template_functions' => $is_string_list_or_null,
             'included_extension_subset' => $is_string_list_or_null,
             'incremental_analysis' => static function (mixed $value): bool {
                 return $value === null || \is_bool($value);

@@ -3013,7 +3013,7 @@ EOB
                 \fwrite(
                     STDERR,
                     "No .phan/config.php found. Run 'phan --init' to create one.\n" .
-                    "Analyzing PHP files in current directory with default settings...\n"
+                    "Analyzing PHP files in current directory with default settings (including built-in stubs)...\n"
                 );
             }
             return;

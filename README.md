@@ -18,8 +18,9 @@ The easiest way to use Phan is via Composer.
 composer require phan/phan
 ```
 
-With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
-your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
+With Phan installed, you can start analyzing your code immediately! Phan includes built-in stubs for enhanced type checking of PHP extensions.
+
+For new projects, use `phan --init` to create a `.phan/config.php` file with recommended settings and bundled stubs. You can also [manually create a config file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) if you prefer. Once configured, you can run it via `./vendor/bin/phan`.
 
 Phan 6 requires PHP 8.1+ with the [php-ast](https://github.com/nikic/php-ast) extension (1.1.3+ is required for PHP 8.4+ support) and supports analyzing PHP version 8.1-8.5 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).

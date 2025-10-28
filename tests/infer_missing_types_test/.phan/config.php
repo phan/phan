@@ -130,4 +130,8 @@ return [
     //
     // Disabled by default. This is more useful with `--analyze-twice`.
     'allow_overriding_vague_return_types' => true,
+
+    // Don't load bundled stubs - this test targets PHP 8.1 but may run on PHP 8.4+
+    // Loading PHP 8.4 stubs would cause false positives about typed class constants
+    'autoload_internal_extension_signatures' => [],
 ];

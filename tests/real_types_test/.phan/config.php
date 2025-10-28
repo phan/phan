@@ -140,4 +140,8 @@ return [
     // Even when this is false, Phan will still infer return values and check parameters of internal functions
     // if Phan has the signatures.
     'ignore_undeclared_functions_with_known_signatures' => false,
+
+    // Don't load bundled stubs - this test targets PHP 8.1 but may run on PHP 8.4+
+    // Loading PHP 8.4 stubs would cause false positives about typed class constants
+    'autoload_internal_extension_signatures' => [],
 ];

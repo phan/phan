@@ -245,9 +245,14 @@ from these stub files (doubling as valid php files).
 Use a different extension from php to avoid accidentally loading these.
 The `tool/make_stubs` script can be used to generate your own stubs
 
+By default, Phan includes bundled stubs with template annotations for improved type inference.
+To disable bundled stubs, set this to an empty array: []
 (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
 
-(Default: `[]`)
+NOTE: This default is computed at runtime to support phar/global installs.
+See Config::getDefaultConfiguration() for the actual default computation.
+
+(Default: `null`)
 
 ## cache_polyfill_asts
 
@@ -418,7 +423,7 @@ If this is a list, then Phan will not use the reflection information of extensio
 The extensions loaded for a given php installation can be seen with `php -m` or `get_loaded_extensions(true)`.
 
 Note that this will only prevent Phan from loading reflection information for extensions outside of this set.
-If you want to add stubs, see [`autoload_internal_extension_signatures`](#autoload_internal_extension_signatures).
+If you want to add stubs, see `autoload_internal_extension_signatures`.
 
 If this is used, 'core', 'date', 'pcre', 'reflection', 'spl', and 'standard' will be automatically added.
 
@@ -1042,7 +1047,10 @@ A list of extension names that have template annotations in their stub files for
 For these extensions, the stub classes will completely replace reflection-based classes.
 (e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
 
-(Default: `[]`)
+NOTE: This default is computed at runtime to support phar/global installs.
+See Config::getDefaultConfiguration() for the actual default computation.
+
+(Default: `null`)
 
 ## autoload_internal_extension_signatures_template_functions
 
@@ -1050,7 +1058,10 @@ A list of extension names that have template annotations in their stub files for
 For these extensions, stub functions will be used alongside reflection data.
 (e.g. `['array']` if array functions had template annotations in stubs)
 
-(Default: `[]`)
+NOTE: This default is computed at runtime to support phar/global installs.
+See Config::getDefaultConfiguration() for the actual default computation.
+
+(Default: `null`)
 
 ## max_union_type_set_size
 

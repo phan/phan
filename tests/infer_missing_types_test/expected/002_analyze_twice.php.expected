@@ -9,4 +9,4 @@ src/002_analyze_twice.php:15 PhanPluginUnknownObjectMethodCall Phan could not in
 src/002_analyze_twice.php:18 PhanPluginUnknownMethodReturnType Method \A2::register() has no declared or inferred return type
 src/002_analyze_twice.php:18 PhanUndeclaredTypeParameter Parameter $a has undeclared type \A (Did you mean class \A2 or array or interface \ArrayAccess)
 src/002_analyze_twice.php:18 PhanUnreferencedPublicMethod Possibly zero references to public method \A2::register()
-src/002_analyze_twice.php:19 PhanUndeclaredClassMethod Call to method setX from undeclared class \A (Did you mean class \A2 or interface \ArrayAccess)
+src/002_analyze_twice.php:19 PhanUndeclaredClassMethod Call to method setX from undeclared class \A (Did you mean class \A2)

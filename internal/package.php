@@ -20,7 +20,7 @@ if (!file_exists('build')) {
 $phar = new Phar('build/phan.phar', 0, 'phan.phar');
 
 $iterators = new AppendIterator();
-foreach (['src', 'vendor', '.phan'] as $subdir) {
+foreach (['src', 'vendor', '.phan', 'internal'] as $subdir) {
     $iterators->append(
         new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
@@ -31,11 +31,13 @@ foreach (['src', 'vendor', '.phan'] as $subdir) {
     );
 }
 
-// Include all files with suffix .php, excluding those found in the tests folder.
+// Include all files with suffix .php or .phan_php, excluding those found in the tests folder.
 $iterator = new CallbackFilterIterator(
     $iterators,
     static function (SplFileInfo $file_info): bool {
-        if ($file_info->getExtension() !== 'php') {
+        $extension = $file_info->getExtension();
+        // Include .php files and .phan_php stub files
+        if ($extension !== 'php' && !str_ends_with($file_info->getFilename(), '.phan_php')) {
             return false;
         }
         if (preg_match('@^vendor/symfony/(console|debug)/Tests/@i', str_replace('\\', '/', $file_info->getPathname()))) {

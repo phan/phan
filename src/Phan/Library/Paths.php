@@ -15,6 +15,12 @@ class Paths
      */
     public static function isAbsolutePath(string $path): bool
     {
+        // Check for stream wrappers (e.g., phar://, file://, http://)
+        // Stream wrappers are in the format scheme://path
+        if (\preg_match('/^[a-z][a-z0-9+.-]*:\/\//i', $path)) {
+            return true;
+        }
+
         $first_character = \substr($path, 0, 1);
         // Make sure it's actually relative
         if (\DIRECTORY_SEPARATOR === $first_character || '/' === $first_character) {
