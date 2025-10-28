@@ -24,14 +24,11 @@ class AppendIterator extends \IteratorIterator {
     public function getArrayIterator() : \ArrayIterator {}
 }
 
-class ArrayIterator implements \SeekableIterator, \Traversable, \Iterator, \ArrayAccess, \Serializable, \Countable {
+class ArrayIterator implements \SeekableIterator, \ArrayAccess, \Serializable, \Countable {
 
     // constants
     const STD_PROP_LIST = 1;
     const ARRAY_AS_PROPS = 2;
-
-    // properties
-    public $name;
 
     // methods
     public function __construct(array|object $array = [], int $flags = 0) {}
@@ -44,12 +41,12 @@ class ArrayIterator implements \SeekableIterator, \Traversable, \Iterator, \Arra
     public function count() : int {}
     public function getFlags() : int {}
     public function setFlags(int $flags) : void {}
-    public function asort(int $flags = \SORT_REGULAR) : bool {}
-    public function ksort(int $flags = \SORT_REGULAR) : bool {}
-    public function uasort(callable $callback) : bool {}
-    public function uksort(callable $callback) : bool {}
-    public function natsort() : bool {}
-    public function natcasesort() : bool {}
+    public function asort(int $flags = \SORT_REGULAR) : true {}
+    public function ksort(int $flags = \SORT_REGULAR) : true {}
+    public function uasort(callable $callback) : true {}
+    public function uksort(callable $callback) : true {}
+    public function natsort() : true {}
+    public function natcasesort() : true {}
     public function unserialize(string $data) : void {}
     public function serialize() : string {}
     public function __serialize() : array {}
@@ -63,14 +60,11 @@ class ArrayIterator implements \SeekableIterator, \Traversable, \Iterator, \Arra
     public function __debugInfo() : array {}
 }
 
-class ArrayObject implements \IteratorAggregate, \Traversable, \ArrayAccess, \Serializable, \Countable {
+class ArrayObject implements \IteratorAggregate, \ArrayAccess, \Serializable, \Countable {
 
     // constants
     const STD_PROP_LIST = 1;
     const ARRAY_AS_PROPS = 2;
-
-    // properties
-    public $name;
 
     // methods
     public function __construct(array|object $array = [], int $flags = 0, string $iteratorClass = 'ArrayIterator') {}
@@ -83,12 +77,12 @@ class ArrayObject implements \IteratorAggregate, \Traversable, \ArrayAccess, \Se
     public function count() : int {}
     public function getFlags() : int {}
     public function setFlags(int $flags) : void {}
-    public function asort(int $flags = \SORT_REGULAR) : bool {}
-    public function ksort(int $flags = \SORT_REGULAR) : bool {}
-    public function uasort(callable $callback) : bool {}
-    public function uksort(callable $callback) : bool {}
-    public function natsort() : bool {}
-    public function natcasesort() : bool {}
+    public function asort(int $flags = \SORT_REGULAR) : true {}
+    public function ksort(int $flags = \SORT_REGULAR) : true {}
+    public function uasort(callable $callback) : true {}
+    public function uksort(callable $callback) : true {}
+    public function natsort() : true {}
+    public function natcasesort() : true {}
     public function unserialize(string $data) : void {}
     public function serialize() : string {}
     public function __serialize() : array {}
@@ -152,10 +146,7 @@ class CallbackFilterIterator extends \FilterIterator {
     public function accept() : bool {}
 }
 
-class DirectoryIterator extends \SplFileInfo implements \SeekableIterator, \Traversable, \Iterator {
-
-    // properties
-    public $name;
+class DirectoryIterator extends \SplFileInfo implements \SeekableIterator {
 
     // methods
     public function __construct(string $directory) {}
@@ -168,7 +159,6 @@ class DirectoryIterator extends \SplFileInfo implements \SeekableIterator, \Trav
     public function key() : mixed {}
     public function current() : mixed {}
     public function next() : void {}
-    public function seek(int $offset) : void {}
     public function __toString() : string {}
 }
 
@@ -181,13 +171,13 @@ class DomainException extends \LogicException {
     protected $line;
 }
 
-class EmptyIterator implements \Iterator, \Traversable {
+class EmptyIterator implements \Iterator {
 
     // methods
     public function current() : never {}
     public function next() : void {}
     public function key() : never {}
-    public function valid() : bool {}
+    public function valid() : false {}
     public function rewind() : void {}
 }
 
@@ -217,9 +207,6 @@ class FilesystemIterator extends \DirectoryIterator {
 }
 
 abstract class FilterIterator extends \IteratorIterator {
-
-    // properties
-    public $name;
 
     // methods
     public abstract function accept() : bool;
@@ -265,7 +252,7 @@ class InvalidArgumentException extends \LogicException {
     protected $line;
 }
 
-class IteratorIterator implements \OuterIterator, \Traversable, \Iterator {
+class IteratorIterator implements \OuterIterator {
 
     // methods
     public function __construct(\Traversable $iterator, ?string $class = null) {}
@@ -288,9 +275,6 @@ class LengthException extends \LogicException {
 
 class LimitIterator extends \IteratorIterator {
 
-    // properties
-    public $name;
-
     // methods
     public function __construct(\Iterator $iterator, int $offset = 0, int $limit = -1) {}
     public function rewind() : void {}
@@ -309,7 +293,7 @@ class LogicException extends \Exception {
     protected $line;
 }
 
-class MultipleIterator implements \Iterator, \Traversable {
+class MultipleIterator implements \Iterator {
 
     // constants
     const MIT_NEED_ANY = 0;
@@ -334,9 +318,6 @@ class MultipleIterator implements \Iterator, \Traversable {
 }
 
 class NoRewindIterator extends \IteratorIterator {
-
-    // properties
-    public $name;
 
     // methods
     public function __construct(\Iterator $iterator) {}
@@ -382,9 +363,6 @@ class OverflowException extends \RuntimeException {
 
 class ParentIterator extends \RecursiveFilterIterator {
 
-    // properties
-    public $name;
-
     // methods
     public function __construct(\RecursiveIterator $iterator) {}
     public function accept() : bool {}
@@ -406,9 +384,6 @@ class RecursiveArrayIterator extends \ArrayIterator implements \RecursiveIterato
     const ARRAY_AS_PROPS = 2;
     const CHILD_ARRAYS_ONLY = 4;
 
-    // properties
-    public $name;
-
     // methods
     public function hasChildren() : bool {}
     public function getChildren() : ?\RecursiveArrayIterator {}
@@ -423,9 +398,6 @@ class RecursiveCachingIterator extends \CachingIterator implements \RecursiveIte
     const TOSTRING_USE_CURRENT = 4;
     const TOSTRING_USE_INNER = 8;
     const FULL_CACHE = 256;
-
-    // properties
-    public $name;
 
     // methods
     public function __construct(\Iterator $iterator, int $flags = \RecursiveCachingIterator::CALL_TOSTRING) {}
@@ -457,9 +429,6 @@ class RecursiveDirectoryIterator extends \FilesystemIterator implements \Recursi
     const SKIP_DOTS = 4096;
     const UNIX_PATHS = 8192;
 
-    // properties
-    public $name;
-
     // methods
     public function __construct(string $directory, int $flags = 0) {}
     public function hasChildren(bool $allowLinks = false) : bool {}
@@ -483,7 +452,7 @@ interface RecursiveIterator extends \Iterator, \Traversable {
     function getChildren() : ?\RecursiveIterator;
 }
 
-class RecursiveIteratorIterator implements \OuterIterator, \Traversable, \Iterator {
+class RecursiveIteratorIterator implements \OuterIterator {
 
     // constants
     const LEAVES_ONLY = 0;
@@ -524,7 +493,6 @@ class RecursiveRegexIterator extends \RegexIterator implements \RecursiveIterato
     const REPLACE = 4;
 
     // properties
-    public $name;
     public $replacement;
 
     // methods
@@ -573,7 +541,6 @@ class RegexIterator extends \FilterIterator {
     const REPLACE = 4;
 
     // properties
-    public $name;
     public $replacement;
 
     // methods
@@ -603,16 +570,13 @@ interface SeekableIterator extends \Iterator, \Traversable {
     function seek(int $offset) : void;
 }
 
-class SplDoublyLinkedList implements \Iterator, \Traversable, \Countable, \ArrayAccess, \Serializable {
+class SplDoublyLinkedList implements \Iterator, \Countable, \ArrayAccess, \Serializable {
 
     // constants
     const IT_MODE_LIFO = 2;
     const IT_MODE_FIFO = 0;
     const IT_MODE_DELETE = 1;
     const IT_MODE_KEEP = 0;
-
-    // properties
-    public $name;
 
     // methods
     public function add(int $index, mixed $value) : void {}
@@ -679,7 +643,7 @@ class SplFileInfo implements \Stringable {
     final public function _bad_state_ex() : void {}
 }
 
-class SplFileObject extends \SplFileInfo implements \RecursiveIterator, \Traversable, \Iterator, \SeekableIterator {
+class SplFileObject extends \SplFileInfo implements \RecursiveIterator, \SeekableIterator {
 
     // constants
     const DROP_NEW_LINE = 1;
@@ -715,23 +679,25 @@ class SplFileObject extends \SplFileInfo implements \RecursiveIterator, \Travers
     public function getFlags() : int {}
     public function setMaxLineLen(int $maxLength) : void {}
     public function getMaxLineLen() : int {}
-    public function hasChildren() : bool {}
-    public function getChildren() : mixed {}
+    public function hasChildren() : false {}
+    public function getChildren() : null {}
     public function seek(int $line) : void {}
     public function getCurrentLine() : string {}
     public function __toString() : string {}
 }
 
-class SplFixedArray implements \IteratorAggregate, \Traversable, \ArrayAccess, \Countable, \JsonSerializable {
+class SplFixedArray implements \IteratorAggregate, \ArrayAccess, \Countable, \JsonSerializable {
 
     // methods
     public function __construct(int $size = 0) {}
     public function __wakeup() : void {}
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
     public function count() : int {}
     public function toArray() : array {}
     public static function fromArray(array $array, bool $preserveKeys = true) : \SplFixedArray {}
     public function getSize() : int {}
-    public function setSize(int $size) : bool {}
+    public function setSize(int $size) : true {}
     public function offsetExists($index) : bool {}
     public function offsetGet($index) : mixed {}
     public function offsetSet($index, mixed $value) : void {}
@@ -740,14 +706,11 @@ class SplFixedArray implements \IteratorAggregate, \Traversable, \ArrayAccess, \
     public function jsonSerialize() : array {}
 }
 
-abstract class SplHeap implements \Iterator, \Traversable, \Countable {
-
-    // properties
-    public $name;
+abstract class SplHeap implements \Iterator, \Countable {
 
     // methods
     public function extract() : mixed {}
-    public function insert(mixed $value) : bool {}
+    public function insert(mixed $value) : true {}
     public function top() : mixed {}
     public function count() : int {}
     public function isEmpty() : bool {}
@@ -756,7 +719,7 @@ abstract class SplHeap implements \Iterator, \Traversable, \Countable {
     public function key() : int {}
     public function next() : void {}
     public function valid() : bool {}
-    public function recoverFromCorruption() : bool {}
+    public function recoverFromCorruption() : true {}
     protected abstract function compare(mixed $value1, mixed $value2) : int;
     public function isCorrupted() : bool {}
     public function __debugInfo() : array {}
@@ -764,17 +727,11 @@ abstract class SplHeap implements \Iterator, \Traversable, \Countable {
 
 class SplMaxHeap extends \SplHeap {
 
-    // properties
-    public $name;
-
     // methods
     protected function compare(mixed $value1, mixed $value2) : int {}
 }
 
 class SplMinHeap extends \SplHeap {
-
-    // properties
-    public $name;
 
     // methods
     protected function compare(mixed $value1, mixed $value2) : int {}
@@ -867,19 +824,16 @@ interface SplObserver {
     function update(\SplSubject $subject) : void;
 }
 
-class SplPriorityQueue implements \Iterator, \Traversable, \Countable {
+class SplPriorityQueue implements \Iterator, \Countable {
 
     // constants
     const EXTR_BOTH = 3;
     const EXTR_PRIORITY = 2;
     const EXTR_DATA = 1;
 
-    // properties
-    public $name;
-
     // methods
     public function compare(mixed $priority1, mixed $priority2) : int {}
-    public function insert(mixed $value, mixed $priority) : bool {}
+    public function insert(mixed $value, mixed $priority) : true {}
     public function setExtractFlags(int $flags) : int {}
     public function top() : mixed {}
     public function extract() : mixed {}
@@ -890,7 +844,7 @@ class SplPriorityQueue implements \Iterator, \Traversable, \Countable {
     public function key() : int {}
     public function next() : void {}
     public function valid() : bool {}
-    public function recoverFromCorruption() : bool {}
+    public function recoverFromCorruption() : true {}
     public function isCorrupted() : bool {}
     public function getExtractFlags() : int {}
     public function __debugInfo() : array {}
@@ -904,9 +858,6 @@ class SplQueue extends \SplDoublyLinkedList {
     const IT_MODE_DELETE = 1;
     const IT_MODE_KEEP = 0;
 
-    // properties
-    public $name;
-
     // methods
     public function enqueue(mixed $value) : void {}
     public function dequeue() : mixed {}
@@ -919,9 +870,6 @@ class SplStack extends \SplDoublyLinkedList {
     const IT_MODE_FIFO = 0;
     const IT_MODE_DELETE = 1;
     const IT_MODE_KEEP = 0;
-
-    // properties
-    public $name;
 }
 
 interface SplSubject {
@@ -941,6 +889,9 @@ class SplTempFileObject extends \SplFileObject {
     const READ_CSV = 8;
 
     // methods
+    /**
+     * @suppress PhanGenericConstructorTypes
+     */
     public function __construct(int $maxMemory = 2097152) {}
 }
 
@@ -961,6 +912,22 @@ class UnexpectedValueException extends \RuntimeException {
     protected $file;
     protected $line;
 }
+
+function class_implements($object_or_class, bool $autoload = true) : array|false {}
+function class_parents($object_or_class, bool $autoload = true) : array|false {}
+function class_uses($object_or_class, bool $autoload = true) : array|false {}
+function iterator_apply(\Traversable $iterator, callable $callback, ?array $args = null) : int {}
+function iterator_count(\Traversable|array $iterator) : int {}
+function iterator_to_array(\Traversable|array $iterator, bool $preserve_keys = true) : array {}
+function spl_autoload(string $class, ?string $file_extensions = null) : void {}
+function spl_autoload_call(string $class) : void {}
+function spl_autoload_extensions(?string $file_extensions = null) : string {}
+function spl_autoload_functions() : array {}
+function spl_autoload_register(?callable $callback = null, bool $throw = true, bool $prepend = false) : bool {}
+function spl_autoload_unregister(callable $callback) : bool {}
+function spl_classes() : array {}
+function spl_object_hash(object $object) : string {}
+function spl_object_id(object $object) : int {}
 
 /**
  * @template TKey of object
@@ -995,20 +962,4 @@ class WeakMap implements \ArrayAccess, \IteratorAggregate, \Countable {
      */
     public function getIterator() : \Iterator {}
 }
-
-function class_implements($object_or_class, bool $autoload = true) : array|false {}
-function class_parents($object_or_class, bool $autoload = true) : array|false {}
-function class_uses($object_or_class, bool $autoload = true) : array|false {}
-function iterator_apply(\Traversable $iterator, callable $callback, ?array $args = null) : int {}
-function iterator_count(\Traversable|array $iterator) : int {}
-function iterator_to_array(\Traversable|array $iterator, bool $preserve_keys = true) : array {}
-function spl_autoload(string $class, ?string $file_extensions = null) : void {}
-function spl_autoload_call(string $class) : void {}
-function spl_autoload_extensions(?string $file_extensions = null) : string {}
-function spl_autoload_functions() : array {}
-function spl_autoload_register(?callable $callback = null, bool $throw = true, bool $prepend = false) : bool {}
-function spl_autoload_unregister(callable $callback) : bool {}
-function spl_classes() : array {}
-function spl_object_hash(object $object) : string {}
-function spl_object_id(object $object) : int {}
 }

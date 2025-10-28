@@ -19,7 +19,6 @@ use Phan\Exception\UsageException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Library\StringUtil;
-use TypeError;
 
 use function count;
 use function is_array;
@@ -46,6 +45,9 @@ class Initializer
     {
         Config::setValue('use_polyfill_parser', true);
         $cwd = \getcwd();
+        if ($cwd === false) {
+            throw new UsageException("Unable to determine current working directory", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY);
+        }
 
         $config_path = "$cwd/.phan/config.php";
         if (!isset($opts['init-overwrite'])) {
@@ -89,6 +91,7 @@ class Initializer
                 throw new UsageException("Failed to create directory '$phan_dir'", EXIT_FAILURE, UsageException::PRINT_INIT_ONLY, true);
             }
         }
+
         $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
         \file_put_contents($config_path, $settings_file_contents);
         echo "Successfully initialized '$config_path'\n";
@@ -157,11 +160,32 @@ class Initializer
         if (is_array($setting_value)) {
             if (count($setting_value) > 0) {
                 $source .= "[\n";
-                foreach ($setting_value as $key => $element) {
+                // Check if this is an associative array
+                $is_associative = false;
+                foreach ($setting_value as $key => $_) {
                     if (!is_int($key)) {
-                        throw new TypeError("Expected setting default for $setting_name to have consecutive integer keys");
+                        $is_associative = true;
+                        break;
                     }
-                    $source .= '        ' . StringUtil::varExportPretty($element) . ",\n";
+                }
+
+                if ($is_associative) {
+                    // Handle associative array
+                    foreach ($setting_value as $key => $element) {
+                        $source .= '        ' . StringUtil::varExportPretty($key) . ' => ';
+                        // Special handling for stub configuration with ternary expressions
+                        if ($key === 'spl' && is_string($element) && str_contains($element, 'PHP_VERSION_ID')) {
+                            // This is a ternary expression - output as raw PHP code
+                            $source .= $element . ",\n";
+                        } else {
+                            $source .= StringUtil::varExportPretty($element) . ",\n";
+                        }
+                    }
+                } else {
+                    // Handle simple list array
+                    foreach ($setting_value as $element) {
+                        $source .= '        ' . StringUtil::varExportPretty($element) . ",\n";
+                    }
                 }
                 $source .= "    ],\n";
             } else {
@@ -434,6 +458,50 @@ EOT;
 
         $phan_settings['directory_list'] = \array_unique($phan_directory_list);
         $phan_settings['file_list'] = \array_unique($phan_file_list);
+
+        // Add internal stub configuration
+        // These stubs are bundled with Phan and provide enhanced type information for PHP extensions
+        $phan_settings['autoload_internal_extension_signatures'] = [
+            'ast'         => 'vendor/phan/phan/internal/stubs/ast.phan_php',
+            'ctype'       => 'vendor/phan/phan/internal/stubs/ctype.phan_php',
+            'igbinary'    => 'vendor/phan/phan/internal/stubs/igbinary.phan_php',
+            'mbstring'    => 'vendor/phan/phan/internal/stubs/mbstring.phan_php',
+            'pcntl'       => 'vendor/phan/phan/internal/stubs/pcntl.phan_php',
+            'phar'        => 'vendor/phan/phan/internal/stubs/phar.phan_php',
+            'posix'       => 'vendor/phan/phan/internal/stubs/posix.phan_php',
+            'readline'    => 'vendor/phan/phan/internal/stubs/readline.phan_php',
+            'simplexml'   => 'vendor/phan/phan/internal/stubs/simplexml.phan_php',
+            'soap'        => 'vendor/phan/phan/internal/stubs/soap.phan_php',
+            // SPL stub: Use version-specific stub to handle differences in PHP versions
+            // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
+            // PHP 8.1-8.3 uses a version without these features
+            'spl'         => 'PHP_VERSION_ID >= 80400 ? \'vendor/phan/phan/internal/stubs/spl.phan_php\' : \'vendor/phan/phan/internal/stubs/spl_php81.phan_php\'',
+            'standard'    => 'vendor/phan/phan/internal/stubs/standard_templates.phan_php',
+            'sqlite3'     => 'vendor/phan/phan/internal/stubs/sqlite3.phan_php',
+            'sysvmsg'     => 'vendor/phan/phan/internal/stubs/sysvmsg.phan_php',
+            'sysvsem'     => 'vendor/phan/phan/internal/stubs/sysvsem.phan_php',
+            'sysvshm'     => 'vendor/phan/phan/internal/stubs/sysvshm.phan_php',
+            'tidy'        => 'vendor/phan/phan/internal/stubs/tidy.phan_php',
+            'xsl'         => 'vendor/phan/phan/internal/stubs/xsl.phan_php',
+        ];
+
+        $phan_settings['autoload_internal_extension_signatures_template_classes'] = ['spl'];
+        $phan_settings['autoload_internal_extension_signatures_template_functions'] = ['standard'];
+
+        $comments['autoload_internal_extension_signatures'] = [
+            'Bundled internal extension stubs for enhanced type information.',
+            'These stubs provide template annotations and improved signatures for PHP extensions.',
+            'Loaded from vendor/phan/phan/internal/stubs/ (bundled with Phan).',
+        ];
+        $comments['autoload_internal_extension_signatures_template_classes'] = [
+            'Extensions that provide template annotations for CLASSES.',
+            'For these extensions, stub classes completely replace reflection-based classes.',
+        ];
+        $comments['autoload_internal_extension_signatures_template_functions'] = [
+            'Extensions that provide template annotations for FUNCTIONS.',
+            'For these extensions, stub functions are used alongside reflection data.',
+        ];
+
         return new InitializedSettings($phan_settings, $comments, $level);
     }
 

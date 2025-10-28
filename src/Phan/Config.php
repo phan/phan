@@ -1208,6 +1208,58 @@ class Config
     }
 
     /**
+     * Get the default autoload_internal_extension_signatures configuration.
+     * These stubs are bundled with Phan and provide enhanced type information.
+     *
+     * @return array{
+     *     autoload_internal_extension_signatures: array<string,string>,
+     *     autoload_internal_extension_signatures_template_classes: list<string>,
+     *     autoload_internal_extension_signatures_template_functions: list<string>
+     * }
+     */
+    public static function getDefaultInternalStubConfiguration(): array
+    {
+        $phan_dir = \dirname(\dirname(__DIR__)); // Go up from src/Phan/ to root
+        $bundled_stubs_dir = $phan_dir . '/internal/stubs';
+
+        // Determine which SPL stub to use based on PHP version
+        // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
+        // PHP 8.1-8.3 uses a version without these features
+        $spl_stub = \PHP_VERSION_ID >= 80400
+            ? 'spl.phan_php'
+            : 'spl_php81.phan_php';
+
+        return [
+            'autoload_internal_extension_signatures' => [
+                'ast'         => "$bundled_stubs_dir/ast.phan_php",
+                'ctype'       => "$bundled_stubs_dir/ctype.phan_php",
+                'igbinary'    => "$bundled_stubs_dir/igbinary.phan_php",
+                'mbstring'    => "$bundled_stubs_dir/mbstring.phan_php",
+                'pcntl'       => "$bundled_stubs_dir/pcntl.phan_php",
+                'phar'        => "$bundled_stubs_dir/phar.phan_php",
+                'posix'       => "$bundled_stubs_dir/posix.phan_php",
+                'readline'    => "$bundled_stubs_dir/readline.phan_php",
+                'simplexml'   => "$bundled_stubs_dir/simplexml.phan_php",
+                'soap'        => "$bundled_stubs_dir/soap.phan_php",
+                'spl'         => "$bundled_stubs_dir/$spl_stub",
+                'standard'    => "$bundled_stubs_dir/standard_templates.phan_php",
+                'sqlite3'     => "$bundled_stubs_dir/sqlite3.phan_php",
+                'sysvmsg'     => "$bundled_stubs_dir/sysvmsg.phan_php",
+                'sysvsem'     => "$bundled_stubs_dir/sysvsem.phan_php",
+                'sysvshm'     => "$bundled_stubs_dir/sysvshm.phan_php",
+                'tidy'        => "$bundled_stubs_dir/tidy.phan_php",
+                'xsl'         => "$bundled_stubs_dir/xsl.phan_php",
+            ],
+            'autoload_internal_extension_signatures_template_classes' => [
+                'spl',  // SplObjectStorage, WeakMap, etc.
+            ],
+            'autoload_internal_extension_signatures_template_functions' => [
+                'standard',  // array_find, array_filter, array_map, etc.
+            ],
+        ];
+    }
+
+    /**
      * Resets the configuration to the initial state, prior to parsing config files and CLI arguments.
      * @internal - this should only be used in unit tests.
      */

@@ -509,29 +509,29 @@ return [
     //
     // Also see `include_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
     'autoload_internal_extension_signatures' => [
-        'ast'         => '.phan/internal_stubs/ast.phan_php',
-        'ctype'       => '.phan/internal_stubs/ctype.phan_php',
-        'igbinary'    => '.phan/internal_stubs/igbinary.phan_php',
-        'mbstring'    => '.phan/internal_stubs/mbstring.phan_php',
-        'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
-        'phar'        => '.phan/internal_stubs/phar.phan_php',
-        'posix'       => '.phan/internal_stubs/posix.phan_php',
-        'readline'    => '.phan/internal_stubs/readline.phan_php',
-        'simplexml'   => '.phan/internal_stubs/simplexml.phan_php',
-        'soap'        => '.phan/internal_stubs/soap.phan_php',
+        'ast'         => 'internal/stubs/ast.phan_php',
+        'ctype'       => 'internal/stubs/ctype.phan_php',
+        'igbinary'    => 'internal/stubs/igbinary.phan_php',
+        'mbstring'    => 'internal/stubs/mbstring.phan_php',
+        'pcntl'       => 'internal/stubs/pcntl.phan_php',
+        'phar'        => 'internal/stubs/phar.phan_php',
+        'posix'       => 'internal/stubs/posix.phan_php',
+        'readline'    => 'internal/stubs/readline.phan_php',
+        'simplexml'   => 'internal/stubs/simplexml.phan_php',
+        'soap'        => 'internal/stubs/soap.phan_php',
         // SPL stub: Use version-specific stub to handle differences in PHP versions
         // PHP 8.1-8.3: No typed constants (syntax error), no seek() method on SplObjectStorage
         // PHP 8.4+: Typed constants OK, seek() method added to SplObjectStorage
         'spl'         => PHP_VERSION_ID >= 80400
-            ? '.phan/internal_stubs/spl.phan_php'         // PHP 8.4+: typed constants + seek()
-            : '.phan/internal_stubs/spl_php81.phan_php',  // PHP 8.1-8.3: no typed constants, no seek()
-        'standard'    => '.phan/internal_stubs/standard_templates.phan_php',  // template annotations for array functions
-        'sqlite3'     => '.phan/internal_stubs/sqlite3.phan_php',
-        'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
-        'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
-        'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
-        'tidy'        => '.phan/internal_stubs/tidy.phan_php',
-        'xsl'         => '.phan/internal_stubs/xsl.phan_php',
+            ? 'internal/stubs/spl.phan_php'         // PHP 8.4+: typed constants + seek()
+            : 'internal/stubs/spl_php81.phan_php',  // PHP 8.1-8.3: no typed constants, no seek()
+        'standard'    => 'internal/stubs/standard_templates.phan_php',  // template annotations for array functions
+        'sqlite3'     => 'internal/stubs/sqlite3.phan_php',
+        'sysvmsg'     => 'internal/stubs/sysvmsg.phan_php',
+        'sysvsem'     => 'internal/stubs/sysvsem.phan_php',
+        'sysvshm'     => 'internal/stubs/sysvshm.phan_php',
+        'tidy'        => 'internal/stubs/tidy.phan_php',
+        'xsl'         => 'internal/stubs/xsl.phan_php',
     ],
 
     // Extensions that provide template annotations for CLASSES that aren't available via reflection.

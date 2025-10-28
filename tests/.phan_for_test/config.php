@@ -87,8 +87,8 @@ return [
     // Load SPL stub with template support
     'autoload_internal_extension_signatures' => [
         'spl' => PHP_VERSION_ID >= 80400
-            ? '.phan/internal_stubs/spl.phan_php'
-            : '.phan/internal_stubs/spl_php81.phan_php',
+            ? 'internal/stubs/spl.phan_php'
+            : 'internal/stubs/spl_php81.phan_php',
     ],
 
     // Template extension configuration

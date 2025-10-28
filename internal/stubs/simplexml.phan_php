@@ -22,10 +22,7 @@ class SimpleXMLElement implements \Traversable, \Countable {
     public function count() {}
 }
 
-class SimpleXMLIterator extends \SimpleXMLElement implements \RecursiveIterator, \Iterator {
-
-    // properties
-    public $name;
+class SimpleXMLIterator extends \SimpleXMLElement implements \RecursiveIterator {
 
     // methods
     public function rewind() {}
