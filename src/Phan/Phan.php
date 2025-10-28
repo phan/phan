@@ -944,13 +944,29 @@ class Phan implements IgnoredFilesFilterInterface
         // Extensions that provide template annotations for CLASSES that aren't available via reflection.
         // These stubs must replace reflection classes to ensure template types are available.
         $extensions_with_template_classes = Config::getValue('autoload_internal_extension_signatures_template_classes');
+        // If null (default), use bundled stub template classes
+        if ($extensions_with_template_classes === null) {
+            $default_config = Config::getDefaultInternalStubConfiguration();
+            $extensions_with_template_classes = $default_config['autoload_internal_extension_signatures_template_classes'];
+        }
 
         // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
         // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
         $extensions_with_template_functions = Config::getValue('autoload_internal_extension_signatures_template_functions');
+        // If null (default), use bundled stub template functions
+        if ($extensions_with_template_functions === null) {
+            $default_config = Config::getDefaultInternalStubConfiguration();
+            $extensions_with_template_functions = $default_config['autoload_internal_extension_signatures_template_functions'];
+        }
 
         $stubs = Config::getValue('autoload_internal_extension_signatures');
-        foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
+        // If null (default), use bundled stubs
+        if ($stubs === null) {
+            $default_config = Config::getDefaultInternalStubConfiguration();
+            $stubs = $default_config['autoload_internal_extension_signatures'];
+        }
+
+        foreach ($stubs as $extension_name => $path_to_extension) {
             $extension_name = (string)$extension_name;
 
             // For most extensions, prefer reflection over stubs (reflection is always up-to-date).

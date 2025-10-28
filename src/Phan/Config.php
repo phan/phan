@@ -833,21 +833,29 @@ class Config
         // Use a different extension from php to avoid accidentally loading these.
         // The `tool/make_stubs` script can be used to generate your own stubs
         //
+        // By default, Phan includes bundled stubs with template annotations for improved type inference.
+        // To disable bundled stubs, set this to an empty array: []
         // (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
-        'autoload_internal_extension_signatures' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures' => null,  // null means use bundled stubs (computed at runtime)
 
         // A list of extension names that have template annotations in their stub files for CLASSES.
         // For these extensions, the stub classes will completely replace reflection-based classes.
         // (e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
-        'autoload_internal_extension_signatures_template_classes' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures_template_classes' => null,  // null means use bundled stub templates
 
         // A list of extension names that have template annotations in their stub files for FUNCTIONS.
         // For these extensions, stub functions will be used alongside reflection data.
         // (e.g. `['array']` if array functions had template annotations in stubs)
-        'autoload_internal_extension_signatures_template_functions' => [
-        ],
+        //
+        // NOTE: This default is computed at runtime to support phar/global installs.
+        // See Config::getDefaultConfiguration() for the actual default computation.
+        'autoload_internal_extension_signatures_template_functions' => null,  // null means use bundled stub templates
 
         // This can be set to a list of extensions to limit Phan to using the reflection information of.
         // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
@@ -1604,15 +1612,32 @@ class Config
             }
             return null;
         };
+        /**
+         * @param mixed $value
+         */
+        $is_associative_string_array_or_null = static function (mixed $value): ?string {
+            if (is_null($value)) {
+                return null;
+            }
+            if (!is_array($value)) {
+                return 'Expected null or an associative array mapping strings to strings'  . self::errSuffixGotType($value);
+            }
+            foreach ($value as $i => $element) {
+                if (!is_string($element)) {
+                    return "Expected null or an associative array mapping strings to strings: index $i is '" . gettype($element) . "'";
+                }
+            }
+            return null;
+        };
         $config_checks = [
             'absolute_path_issue_messages' => $is_bool,
             'allow_missing_properties' => $is_bool,
             'analyzed_file_extensions' => $is_string_list,
             'analyze_signature_compatibility' => $is_bool,
             'array_casts_as_null' => $is_bool,
-            'autoload_internal_extension_signatures' => $is_associative_string_array,
-            'autoload_internal_extension_signatures_template_classes' => $is_string_list,
-            'autoload_internal_extension_signatures_template_functions' => $is_string_list,
+            'autoload_internal_extension_signatures' => $is_associative_string_array_or_null,
+            'autoload_internal_extension_signatures_template_classes' => $is_string_list_or_null,
+            'autoload_internal_extension_signatures_template_functions' => $is_string_list_or_null,
             'included_extension_subset' => $is_string_list_or_null,
             'incremental_analysis' => static function (mixed $value): bool {
                 return $value === null || \is_bool($value);

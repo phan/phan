@@ -3016,13 +3016,6 @@ EOB
                     "Analyzing PHP files in current directory with default settings (including built-in stubs)...\n"
                 );
             }
-
-            // Apply default stub configuration when no config file exists
-            // This provides enhanced type information for common PHP extensions
-            $default_stub_config = Config::getDefaultInternalStubConfiguration();
-            foreach ($default_stub_config as $key => $value) {
-                Config::setValue($key, $value);
-            }
             return;
         }
 
