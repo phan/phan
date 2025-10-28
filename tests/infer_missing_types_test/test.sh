@@ -22,10 +22,15 @@ rm -f $ACTUAL_PATH || exit 1
 echo
 echo "Comparing the output:"
 
-# Normalize paths
+# Normalize paths and remove "Did you mean" suggestions (they vary by environment)
 sed -i \
     -e 's/src\\/src\//g' \
+    -e 's/ (Did you mean[^)]*)//g' \
     $ACTUAL_PATH
+
+# Also normalize expected output to remove "Did you mean" for comparison
+EXPECTED_PATH_NORMALIZED=expected/all_output.expected.normalized
+sed 's/ (Did you mean[^)]*)//g' $EXPECTED_PATH > $EXPECTED_PATH_NORMALIZED
 
 if type colordiff >/dev/null; then
     DIFF=colordiff
@@ -33,8 +38,9 @@ else
     DIFF=diff
 fi
 
-$DIFF $EXPECTED_PATH $ACTUAL_PATH
+$DIFF $EXPECTED_PATH_NORMALIZED $ACTUAL_PATH
 EXIT_CODE=$?
+rm -f $EXPECTED_PATH_NORMALIZED
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"
     rm $ACTUAL_PATH
