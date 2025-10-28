@@ -374,7 +374,6 @@ EOT;
             'enable_include_path_checks' => !$is_weak_level,
             'processes' => 1,
             'analyzed_file_extensions' => ['php'],
-            'autoload_internal_extension_signatures' => [],
             'plugins' => $plugins,
         ];
 
@@ -459,48 +458,54 @@ EOT;
         $phan_settings['directory_list'] = \array_unique($phan_directory_list);
         $phan_settings['file_list'] = \array_unique($phan_file_list);
 
-        // Add internal stub configuration
-        // These stubs are bundled with Phan and provide enhanced type information for PHP extensions
-        $phan_settings['autoload_internal_extension_signatures'] = [
-            'ast'         => 'vendor/phan/phan/internal/stubs/ast.phan_php',
-            'ctype'       => 'vendor/phan/phan/internal/stubs/ctype.phan_php',
-            'igbinary'    => 'vendor/phan/phan/internal/stubs/igbinary.phan_php',
-            'mbstring'    => 'vendor/phan/phan/internal/stubs/mbstring.phan_php',
-            'pcntl'       => 'vendor/phan/phan/internal/stubs/pcntl.phan_php',
-            'phar'        => 'vendor/phan/phan/internal/stubs/phar.phan_php',
-            'posix'       => 'vendor/phan/phan/internal/stubs/posix.phan_php',
-            'readline'    => 'vendor/phan/phan/internal/stubs/readline.phan_php',
-            'simplexml'   => 'vendor/phan/phan/internal/stubs/simplexml.phan_php',
-            'soap'        => 'vendor/phan/phan/internal/stubs/soap.phan_php',
-            // SPL stub: Use version-specific stub to handle differences in PHP versions
-            // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
-            // PHP 8.1-8.3 uses a version without these features
-            'spl'         => 'PHP_VERSION_ID >= 80400 ? \'vendor/phan/phan/internal/stubs/spl.phan_php\' : \'vendor/phan/phan/internal/stubs/spl_php81.phan_php\'',
-            'standard'    => 'vendor/phan/phan/internal/stubs/standard_templates.phan_php',
-            'sqlite3'     => 'vendor/phan/phan/internal/stubs/sqlite3.phan_php',
-            'sysvmsg'     => 'vendor/phan/phan/internal/stubs/sysvmsg.phan_php',
-            'sysvsem'     => 'vendor/phan/phan/internal/stubs/sysvsem.phan_php',
-            'sysvshm'     => 'vendor/phan/phan/internal/stubs/sysvshm.phan_php',
-            'tidy'        => 'vendor/phan/phan/internal/stubs/tidy.phan_php',
-            'xsl'         => 'vendor/phan/phan/internal/stubs/xsl.phan_php',
-        ];
+        // Add internal stub configuration only for composer projects
+        // For non-composer projects or global/phar installs, Phan will use the built-in default configuration
+        if ($vendor_path !== null) {
+            // These stubs are bundled with Phan and provide enhanced type information for PHP extensions
+            $phan_settings['autoload_internal_extension_signatures'] = [
+                'ast'         => 'vendor/phan/phan/internal/stubs/ast.phan_php',
+                'ctype'       => 'vendor/phan/phan/internal/stubs/ctype.phan_php',
+                'igbinary'    => 'vendor/phan/phan/internal/stubs/igbinary.phan_php',
+                'mbstring'    => 'vendor/phan/phan/internal/stubs/mbstring.phan_php',
+                'pcntl'       => 'vendor/phan/phan/internal/stubs/pcntl.phan_php',
+                'phar'        => 'vendor/phan/phan/internal/stubs/phar.phan_php',
+                'posix'       => 'vendor/phan/phan/internal/stubs/posix.phan_php',
+                'readline'    => 'vendor/phan/phan/internal/stubs/readline.phan_php',
+                'simplexml'   => 'vendor/phan/phan/internal/stubs/simplexml.phan_php',
+                'soap'        => 'vendor/phan/phan/internal/stubs/soap.phan_php',
+                // SPL stub: Use version-specific stub to handle differences in PHP versions
+                // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
+                // PHP 8.1-8.3 uses a version without these features
+                'spl'         => 'PHP_VERSION_ID >= 80400 ? \'vendor/phan/phan/internal/stubs/spl.phan_php\' : \'vendor/phan/phan/internal/stubs/spl_php81.phan_php\'',
+                'standard'    => 'vendor/phan/phan/internal/stubs/standard_templates.phan_php',
+                'sqlite3'     => 'vendor/phan/phan/internal/stubs/sqlite3.phan_php',
+                'sysvmsg'     => 'vendor/phan/phan/internal/stubs/sysvmsg.phan_php',
+                'sysvsem'     => 'vendor/phan/phan/internal/stubs/sysvsem.phan_php',
+                'sysvshm'     => 'vendor/phan/phan/internal/stubs/sysvshm.phan_php',
+                'tidy'        => 'vendor/phan/phan/internal/stubs/tidy.phan_php',
+                'xsl'         => 'vendor/phan/phan/internal/stubs/xsl.phan_php',
+            ];
 
-        $phan_settings['autoload_internal_extension_signatures_template_classes'] = ['spl'];
-        $phan_settings['autoload_internal_extension_signatures_template_functions'] = ['standard'];
+            $phan_settings['autoload_internal_extension_signatures_template_classes'] = ['spl'];
+            $phan_settings['autoload_internal_extension_signatures_template_functions'] = ['standard'];
 
-        $comments['autoload_internal_extension_signatures'] = [
-            'Bundled internal extension stubs for enhanced type information.',
-            'These stubs provide template annotations and improved signatures for PHP extensions.',
-            'Loaded from vendor/phan/phan/internal/stubs/ (bundled with Phan).',
-        ];
-        $comments['autoload_internal_extension_signatures_template_classes'] = [
-            'Extensions that provide template annotations for CLASSES.',
-            'For these extensions, stub classes completely replace reflection-based classes.',
-        ];
-        $comments['autoload_internal_extension_signatures_template_functions'] = [
-            'Extensions that provide template annotations for FUNCTIONS.',
-            'For these extensions, stub functions are used alongside reflection data.',
-        ];
+            $comments['autoload_internal_extension_signatures'] = [
+                'Bundled internal extension stubs for enhanced type information.',
+                'These stubs provide template annotations and improved signatures for PHP extensions.',
+                'Loaded from vendor/phan/phan/internal/stubs/ (bundled with Phan).',
+            ];
+            $comments['autoload_internal_extension_signatures_template_classes'] = [
+                'Extensions that provide template annotations for CLASSES.',
+                'For these extensions, stub classes completely replace reflection-based classes.',
+            ];
+            $comments['autoload_internal_extension_signatures_template_functions'] = [
+                'Extensions that provide template annotations for FUNCTIONS.',
+                'For these extensions, stub functions are used alongside reflection data.',
+            ];
+        }
+        // Note: When vendor_path is null (non-composer mode), Phan will automatically
+        // use Config::getDefaultInternalStubConfiguration() which provides paths to
+        // bundled stubs that work for phar and global installs.
 
         return new InitializedSettings($phan_settings, $comments, $level);
     }
