@@ -960,10 +960,43 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         $stubs = Config::getValue('autoload_internal_extension_signatures');
-        // If null (default), use bundled stubs
-        if ($stubs === null) {
+        // If null (default), use bundled stubs; if user specified stubs, merge with bundled stubs
+        if ($stubs === null || is_array($stubs)) {
             $default_config = Config::getDefaultInternalStubConfiguration();
-            $stubs = $default_config['autoload_internal_extension_signatures'];
+            $default_stubs = $default_config['autoload_internal_extension_signatures'];
+
+            // Select the appropriate SPL stub based on target PHP version, not runtime version
+            // PHP 8.4+ supports typed constants, earlier versions don't
+            $target_php_version = Config::getValue('target_php_version');
+            if ($target_php_version !== null) {
+                // target_php_version can be string like '8.1' or float/int
+                // Convert to PHP_VERSION_ID format (e.g., 80100 for PHP 8.1.0)
+                $version_parts = explode('.', (string)$target_php_version);
+                $major = (int)($version_parts[0] ?? 0);
+                $minor = (int)($version_parts[1] ?? 0);
+                $target_version_id = ($major * 10000) + ($minor * 100);
+
+                $spl_stub = $target_version_id >= 80400
+                    ? 'spl.phan_php'
+                    : 'spl_php81.phan_php';
+            } else {
+                // If target version not set, use runtime PHP version
+                $spl_stub = \PHP_VERSION_ID >= 80400
+                    ? 'spl.phan_php'
+                    : 'spl_php81.phan_php';
+            }
+
+            // Update the SPL stub path based on target version
+            $phan_dir = \dirname(\dirname(__DIR__));
+            $bundled_stubs_dir = $phan_dir . '/internal/stubs';
+            $default_stubs['spl'] = "$bundled_stubs_dir/$spl_stub";
+
+            // Merge user stubs with bundled stubs (user stubs take precedence)
+            if ($stubs === null) {
+                $stubs = $default_stubs;
+            } else {
+                $stubs += $default_stubs;  // User stubs override defaults
+            }
         }
 
         foreach ($stubs as $extension_name => $path_to_extension) {
