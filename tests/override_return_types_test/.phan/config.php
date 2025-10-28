@@ -140,4 +140,8 @@ return [
     // detect more callsite possibilities. See the [PR description](https://github.com/phan/phan/pull/4874) where
     // this setting was added for more details.
     'override_return_types' => true,
+
+    // Don't load bundled stubs - this test targets PHP 8.1 but may run on PHP 8.4+
+    // Loading PHP 8.4 stubs would cause false positives about typed class constants
+    'autoload_internal_extension_signatures' => [],
 ];
