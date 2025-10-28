@@ -174,7 +174,7 @@ class Initializer
                     foreach ($setting_value as $key => $element) {
                         $source .= '        ' . StringUtil::varExportPretty($key) . ' => ';
                         // Special handling for stub configuration with ternary expressions
-                        if ($key === 'spl' && is_string($element) && str_contains($element, 'PHP_VERSION_ID')) {
+                        if (($key === 'spl' || $key === 'standard') && is_string($element) && str_contains($element, 'PHP_VERSION_ID')) {
                             // This is a ternary expression - output as raw PHP code
                             $source .= $element . ",\n";
                         } else {
@@ -477,7 +477,10 @@ EOT;
                 // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
                 // PHP 8.1-8.3 uses a version without these features
                 'spl'         => 'PHP_VERSION_ID >= 80400 ? \'vendor/phan/phan/internal/stubs/spl.phan_php\' : \'vendor/phan/phan/internal/stubs/spl_php81.phan_php\'',
-                'standard'    => 'vendor/phan/phan/internal/stubs/standard_templates.phan_php',
+                // Standard library stub: Use version-specific stub for function templates
+                // PHP 8.4+ includes array_find(), array_find_key(), array_any(), array_all()
+                // PHP 8.1-8.3 uses a version without these PHP 8.4-only functions
+                'standard'    => 'PHP_VERSION_ID >= 80400 ? \'vendor/phan/phan/internal/stubs/standard_templates.phan_php\' : \'vendor/phan/phan/internal/stubs/standard_templates_php81.phan_php\'',
                 'sqlite3'     => 'vendor/phan/phan/internal/stubs/sqlite3.phan_php',
                 'sysvmsg'     => 'vendor/phan/phan/internal/stubs/sysvmsg.phan_php',
                 'sysvsem'     => 'vendor/phan/phan/internal/stubs/sysvsem.phan_php',
