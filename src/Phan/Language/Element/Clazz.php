@@ -942,9 +942,10 @@ class Clazz extends AddressableElement
         }
         // original_property is the one that the class is using.
         // We added $property after that (so it likely in a base class, or a trait's property added after this property was added)
-        // Private properties are not inherited, so they can have the same name with different static/instance characteristics without conflict
+        // Private properties are not inherited, so if the parent's property is private, it's invisible to the child
+        // and the child can declare any property with the same name without conflict (regardless of static/instance).
         if ($overriding_property->isStatic() != $inherited_property->isStatic() &&
-            !($inherited_property->isPrivate() || $overriding_property->isPrivate())) {
+            !$inherited_property->isPrivate()) {
             Issue::maybeEmit(
                 $code_base,
                 new ElementContext($overriding_property),

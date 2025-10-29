@@ -53,9 +53,29 @@ class Child4 extends Parent4 {
     public $field;  // SHOULD warn: AccessStaticToNonStaticProperty
 }
 
+// Case 6: Public static parent + private instance child SHOULD warn
+class Parent5 {
+    public static $data;
+}
+
+class Child5 extends Parent5 {
+    private $data;  // SHOULD warn: AccessStaticToNonStaticProperty (visibility reduction + static change = fatal)
+}
+
+// Case 7: Private static parent + public instance child should NOT warn (parent private is invisible)
+class Parent6 {
+    private static $info;
+}
+
+class Child6 extends Parent6 {
+    public $info;  // Should NOT warn (parent's private property doesn't conflict)
+}
+
 // Instantiate to trigger analysis
 new ParameterizedHeader();
 new Child1();
 new Child2();
 new Child3();
 new Child4();
+new Child5();
+new Child6();
