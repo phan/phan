@@ -1265,6 +1265,12 @@ class Config
             ? 'spl.phan_php'
             : 'spl_php81.phan_php';
 
+        // Standard library stub: PHP 8.4+ includes array_find(), array_find_key(), array_any(), array_all()
+        // PHP 8.1-8.3 uses a version without these PHP 8.4-only functions
+        $standard_stub = $effective_version >= 80400
+            ? 'standard_templates.phan_php'
+            : 'standard_templates_php81.phan_php';
+
         return [
             'autoload_internal_extension_signatures' => [
                 'ast'         => "$bundled_stubs_dir/ast.phan_php",
@@ -1278,7 +1284,7 @@ class Config
                 'simplexml'   => "$bundled_stubs_dir/simplexml.phan_php",
                 'soap'        => "$bundled_stubs_dir/soap.phan_php",
                 'spl'         => "$bundled_stubs_dir/$spl_stub",
-                'standard'    => "$bundled_stubs_dir/standard_templates.phan_php",
+                'standard'    => "$bundled_stubs_dir/$standard_stub",
                 'sqlite3'     => "$bundled_stubs_dir/sqlite3.phan_php",
                 'sysvmsg'     => "$bundled_stubs_dir/sysvmsg.phan_php",
                 'sysvsem'     => "$bundled_stubs_dir/sysvsem.phan_php",
