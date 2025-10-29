@@ -1136,6 +1136,9 @@ class Method extends ClassElement implements FunctionInterface
                 $reflection = new \ReflectionProperty($comment, 'return_comment');
                 $reflection->setAccessible(true);
                 $old_return_comment = $reflection->getValue($comment);
+                if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
+                    throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
+                }
                 $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
                     $return_type,
                     $old_return_comment->getLineno()
