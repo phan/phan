@@ -38,9 +38,9 @@
         "netresearch/jsonmapper": "^1.6.0|^2.0|^3.0|^4.0|^5.0",
         "phan/tolerant-php-parser": "dev-main",
         "sabre/event": "^5.1.3",
-        "symfony/console": "^6.0",
+        "symfony/console": "^6.0|^7.0",
         "symfony/polyfill-mbstring": "^1.11.0",
-        "symfony/string": "^6.0",
+        "symfony/string": "^6.0|^7.0",
         "tysonandre/var_representation_polyfill": "^0.0.2|^0.1.0"
     },
     "suggest": {
