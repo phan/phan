@@ -130,7 +130,8 @@ if (extension_loaded('ast')) {
         // Seen in php 7.3 with file_cache when ast is initially enabled but later disabled, due to the result of extension_loaded being assumed to be a constant by opcache.
         CLI::printErrorToStderr("extension_loaded('ast') is true, but phpversion('ast') is the empty string. You probably need to clear opcache (opcache.file_cache='" . ini_get('opcache.file_cache') . "')" . PHP_EOL);
     }
-    $phan_output_ast_too_old_and_exit = /** @return never */ static function (string $minimum_ast_version, string $php_version_bound) use ($ast_version): void {
+    // Currently unused, can be used if we reintroduce PHP version-based requirements
+    $phan_output_ast_too_old_and_exit = static function (string $minimum_ast_version, string $php_version_bound) use ($ast_version): never {
         $error_message = sprintf(
             "Phan 6.x requires php-ast %s+ to properly analyze ASTs for php %s+. php-ast %s and php %s is installed." . PHP_EOL,
             $minimum_ast_version,
@@ -144,15 +145,7 @@ if (extension_loaded('ast')) {
         exit(1);
     };
 
-    if (PHP_VERSION_ID >= 80400 && version_compare($ast_version, '1.1.3') < 0) {
-        $phan_output_ast_too_old_and_exit('1.1.3', '8.4');
-    } elseif (PHP_VERSION_ID >= 80300 && version_compare($ast_version, '1.1.1') < 0) {
-        $phan_output_ast_too_old_and_exit('1.1.1', '8.3');
-    } elseif (PHP_VERSION_ID >= 80200 && version_compare($ast_version, '1.1.0') < 0) {
-        $phan_output_ast_too_old_and_exit('1.1.0', '8.2');
-    } elseif (version_compare($ast_version, '1.0.14') < 0) {
-        $phan_output_ast_too_old_and_exit('1.0.14', '8.1');
-    } elseif (version_compare($ast_version, '1.0.0') <= 0) {
+    if (version_compare($ast_version, '1.1.3') < 0) {
         $error_message = sprintf(
             "Phan 6.x requires php-ast %s+ because it depends on AST version %d. php-ast '%s' is installed." . PHP_EOL,
             Config::MINIMUM_AST_EXTENSION_VERSION,
