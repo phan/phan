@@ -71,6 +71,17 @@ class Child6 extends Parent6 {
     public $info;  // Should NOT warn (parent's private property doesn't conflict)
 }
 
+// Case 8: Trait with private static + class with private instance SHOULD warn
+// Trait properties are merged, not inherited, so they must be compatible
+trait TraitWithPrivateStatic {
+    private static $traitProp;
+}
+
+class ClassUsingTrait {
+    use TraitWithPrivateStatic;
+    private $traitProp;  // SHOULD warn: trait properties must be compatible
+}
+
 // Instantiate to trigger analysis
 new ParameterizedHeader();
 new Child1();
@@ -79,3 +90,4 @@ new Child3();
 new Child4();
 new Child5();
 new Child6();
+new ClassUsingTrait();
