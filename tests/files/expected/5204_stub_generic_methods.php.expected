@@ -1,0 +1,5 @@
+%s:20 PhanTypeMismatchArgument Argument 1 ($i) is $value of type string but \expectsInt() takes int defined at %s:19
+%s:32 PhanTypeMismatchArgument Argument 1 ($s) is $info of type int but \expectsString() takes string defined at %s:15
+%s:46 PhanTypeMismatchArgument Argument 1 ($obj) is $current of type \Exception|\Stringable|\Throwable but \expectsStdClass() takes \stdClass defined at %s:45
+%s:62 PhanTypeMismatchArgument Argument 1 ($b) is $result of type null but \expectsBool() takes bool defined at %s:61
+%s:65 PhanTypeMismatchArgument Argument 1 ($s) is $result of type null but \expectsString() takes string defined at %s:15

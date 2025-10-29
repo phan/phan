@@ -169,6 +169,14 @@ class Method extends ClassElement implements FunctionInterface
                     return;
                 }
             }
+            // Also check if the PHPDoc return type has template types
+            // This is important for stub methods where the signature returns mixed
+            // but the PHPDoc has template types like @return TValue
+            if ($this->comment->hasReturnUnionType() &&
+                $this->comment->getReturnType()->hasTemplateTypeRecursive()) {
+                $this->recordHasTemplateType(true);
+                return;
+            }
         }
         $this->recordHasTemplateType(false);
     }
@@ -1114,6 +1122,32 @@ class Method extends ClassElement implements FunctionInterface
                         $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map)
                     );
                 }
+            }
+            // Also map the return type's PHPDoc template types
+            // This is important for stub methods where the signature returns mixed
+            // but the PHPDoc has template types like @return TValue
+            if ($comment->hasReturnUnionType() &&
+                $comment->getReturnType()->hasTemplateTypeRecursive()) {
+                // Get the return comment and update its type with template substitution
+                // We can't use Comment::applyRealReturnOverride here because we need to
+                // substitute template types, not real types
+                $return_type = $comment->getReturnType()->withTemplateParameterTypeMap($template_type_map);
+                // Need to access the return_comment property via reflection since there's no setter
+                $reflection = new \ReflectionProperty($comment, 'return_comment');
+                $old_return_comment = $reflection->getValue($comment);
+                if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
+                    throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
+                }
+                $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
+                    $return_type,
+                    $old_return_comment->getLineno()
+                );
+                $reflection->setValue($comment, $new_return_comment);
+
+                // Also update the method's actual return type to the resolved template type
+                // For stub methods, the signature may be 'mixed' but we now have the concrete type
+                $method->setUnionType($return_type);
+                $method->setPHPDocReturnType($return_type);
             }
             $method->setComment($comment);
         }
