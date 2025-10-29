@@ -1134,7 +1134,6 @@ class Method extends ClassElement implements FunctionInterface
                 $return_type = $comment->getReturnType()->withTemplateParameterTypeMap($template_type_map);
                 // Need to access the return_comment property via reflection since there's no setter
                 $reflection = new \ReflectionProperty($comment, 'return_comment');
-                $reflection->setAccessible(true);
                 $old_return_comment = $reflection->getValue($comment);
                 if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
                     throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
