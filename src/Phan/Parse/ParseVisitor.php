@@ -1141,7 +1141,9 @@ class ParseVisitor extends ScopeVisitor
                 $class->getFQSEN(),
                 $name
             );
-            if (!$real_union_type->isEmpty() && Config::get_closest_target_php_version_id() < 80300) {
+            // Don't warn about typed constants in internal PHP classes - these work fine across PHP versions
+            // even though PHP 8.4's reflection may show them as typed
+            if (!$real_union_type->isEmpty() && Config::get_closest_target_php_version_id() < 80300 && !$class->isPHPInternal()) {
                 $this->emitIssue(
                     Issue::CompatibleTypedClassConstant,
                     $child_node->lineno,
@@ -1472,6 +1474,8 @@ class ParseVisitor extends ScopeVisitor
                     throw new AssertionError("Expecteded variant of Func to be a Func");
                 }
                 $code_base->addFunction($func_variant);
+                // Notify plugins about the stub-loaded function (e.g., for CallableParamPlugin)
+                $code_base->notifyPluginsOnInternalFunctionLoad($func_variant);
             }
         } else {
             $code_base->addFunction($func);

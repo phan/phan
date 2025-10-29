@@ -65,12 +65,12 @@ function array_filter(array $array, ?callable $callback = null, int $mode = 0): 
 /**
  * @template TValue
  * @template TResult
- * @param callable(TValue): TResult $callback
+ * @param callable(TValue): TResult|null $callback
  * @param array<TValue> $array
  * @param array ...$arrays
  * @return array<TResult>
  */
-function array_map(callable $callback, array $array, array ...$arrays): array {}
+function array_map(?callable $callback, array $array, array ...$arrays): array {}
 
 /**
  * @template TValue

@@ -1663,7 +1663,7 @@ class CodeBase
                     $function->inheritRealParameterDefaults();
                 }
                 $this->addFunction($function);
-                $this->updatePluginsOnLazyLoadInternalFunction($function);
+                $this->notifyPluginsOnInternalFunctionLoad($function);
             }
 
             return true;
@@ -1674,7 +1674,7 @@ class CodeBase
                 new \ReflectionFunction($name)
             ) as $function) {
                 $this->addFunction($function);
-                $this->updatePluginsOnLazyLoadInternalFunction($function);
+                $this->notifyPluginsOnInternalFunctionLoad($function);
             }
 
             return true;
@@ -1727,7 +1727,11 @@ class CodeBase
         );
     }
 
-    private function updatePluginsOnLazyLoadInternalFunction(Func $function): void
+    /**
+     * Notify plugins when an internal function is loaded (either from reflection or from stubs).
+     * This allows plugins like CallableParamPlugin to register checkers for the function.
+     */
+    public function notifyPluginsOnInternalFunctionLoad(Func $function): void
     {
         ConfigPluginSet::instance()->handleLazyLoadInternalFunction($this, $function);
     }

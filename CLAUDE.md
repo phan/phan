@@ -283,6 +283,12 @@ cat tests/files/expected/problem_test.php.expected
 - Verify node structure with `./dump_ast.php`
 - Ensure proper parent-child relationships in AST
 
+**Strategy 5: Debug Type Inference**
+- Use `'@phan-debug-var $variable';` inline strings in test files to see inferred types
+- Very useful for debugging template type resolution and generic types
+- See "Debugging Type Inference" section above for detailed examples
+- Test files like `tests/files/src/0985_template_unspecified.php` show extensive usage
+
 #### 5. Type System Issues
 
 When dealing with type-related test failures:
@@ -661,6 +667,93 @@ Use `%s` wildcard pattern for anonymous class names in `.expected` files:
 ```
 
 This allows the test to match any hash suffix on anonymous classes.
+
+---
+
+**Template Type Resolution for Stub-Defined Classes**
+
+When implementing generic type support for stub-defined classes (like `SplObjectStorage`), you need to handle both template detection and substitution for PHPDoc return types.
+
+**Problem Example:**
+```php
+/** @param SplObjectStorage<stdClass,string> $storage */
+function test(SplObjectStorage $storage, stdClass $key) {
+    $value = $storage->offsetGet($key);
+    // Before fix: $value is 'mixed'
+    // After fix: $value is 'string'
+}
+```
+
+**Root Cause:**
+Stub methods have signatures returning `mixed` but PHPDoc with template types like `@return TValue`. Two methods in `Method.php` need to handle PHPDoc return types:
+
+1. **`checkForTemplateTypes()`** - Must check PHPDoc return type for templates:
+```php
+// Add this check in Method::checkForTemplateTypes()
+if ($this->comment->hasReturnUnionType() &&
+    $this->comment->getReturnType()->hasTemplateTypeRecursive()) {
+    $this->recordHasTemplateType(true);
+    return;
+}
+```
+
+2. **`cloneWithTemplateParameterTypeMap()`** - Must substitute templates in PHPDoc return type:
+```php
+// Add this in Method::cloneWithTemplateParameterTypeMap()
+if ($comment->hasReturnUnionType() &&
+    $comment->getReturnType()->hasTemplateTypeRecursive()) {
+    $return_type = $comment->getReturnType()->withTemplateParameterTypeMap($template_type_map);
+
+    // Use reflection to update private return_comment property
+    $reflection = new \ReflectionProperty($comment, 'return_comment');
+    $old_return_comment = $reflection->getValue($comment);
+    if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
+        throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
+    }
+    $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
+        $return_type,
+        $old_return_comment->getLineno()
+    );
+    $reflection->setValue($comment, $new_return_comment);
+
+    // Update method's actual return type
+    $method->setUnionType($return_type);
+    $method->setPHPDocReturnType($return_type);
+}
+```
+
+**Key Implementation Details:**
+- Use `ReflectionProperty::getValue()` without `setAccessible()` (deprecated in PHP 8.5)
+- Add `instanceof` check before using reflected value to help Phan's static analysis
+- Update both the comment's return type and the method's union type
+- This fix improves type inference, which may cause test expectations to change
+
+**Testing Template Changes:**
+When template type changes improve type inference, existing tests may fail because:
+- Expected output had `(real=Type)` annotations that are no longer needed
+- Type inference is now more precise, eliminating the need for "real type" tracking
+
+Example test updates needed:
+```bash
+# Before: \Builder<\stdClass>(real=\Builder)
+# After:  \Builder<\stdClass>
+
+# Before: \Bar(real=\Foo)
+# After:  \Bar
+
+# Update expected files to match improved output
+UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*0910_self_template"
+mv tests/files/expected/0910_self_template.php.expected.new \
+   tests/files/expected/0910_self_template.php.expected
+```
+
+**Reflection and PHP Version Compatibility:**
+- PHP 8.1+: Reflection properties are always accessible, `setAccessible()` has no effect
+- PHP 8.5+: `ReflectionProperty::setAccessible()` is deprecated
+- Solution: Never call `setAccessible()` - it's unnecessary and generates warnings
+- Always add `instanceof` checks after `getValue()` to narrow types for static analysis
+
+---
 
 ## PHP Version-Specific Behavior and Testing
 

@@ -233,8 +233,8 @@ final class CallableParamPlugin extends PluginV3 implements
         // TODO: Get actual statistics on how frequently used these are
         unset($result['\\call_user_func']);
         unset($result['\\call_user_func_array']);
-        unset($result['\\array_map']);
-        unset($result['\\array_filter']);
+        // Note: array_map and array_filter are now loaded from stubs with template annotations,
+        // so they need their callable parameter checks to detect deprecated functions (issue #4858)
         // End of commonly used functions.
 
         return $result;
