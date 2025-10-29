@@ -15,5 +15,11 @@
 /plugins           export-ignore
 /test              export-ignore
 /tests             export-ignore
-/internal/*        export-ignore
-/internal/stubs    export-subst
+# Ignore everyting in /internal but /intenral/stubs
+/internal/lib             export-ignore
+/internal/PHP_CodeSniffer export-ignore
+/internal/*.php           export-ignore
+/internal/*.md            export-ignore
+/internal/*.sh            export-ignore
+/internal/phpcbf          export-ignore
+/internal/phpcs           export-ignore
