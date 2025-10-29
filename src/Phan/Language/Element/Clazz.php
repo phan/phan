@@ -942,7 +942,13 @@ class Clazz extends AddressableElement
         }
         // original_property is the one that the class is using.
         // We added $property after that (so it likely in a base class, or a trait's property added after this property was added)
-        if ($overriding_property->isStatic() != $inherited_property->isStatic()) {
+        // Private properties from parent classes are not inherited, so if the parent class's property is private,
+        // it's invisible to the child and the child can declare any property with the same name without conflict.
+        // However, trait properties are merged into the class, not inherited, so they must remain compatible.
+        $is_private_from_ancestor_class = $inherited_property->isPrivate() &&
+            !$code_base->getClassByFQSEN($inherited_property->getDefiningFQSEN()->getFullyQualifiedClassName())->isTrait();
+        if ($overriding_property->isStatic() != $inherited_property->isStatic() &&
+            !$is_private_from_ancestor_class) {
             Issue::maybeEmit(
                 $code_base,
                 new ElementContext($overriding_property),

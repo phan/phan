@@ -1,0 +1,5 @@
+%s:44 PhanAccessStaticToNonStaticProperty Cannot make static property \Parent3::$prop into the non static property \Child3->prop
+%s:53 PhanAccessStaticToNonStaticProperty Cannot make static property \Parent4::$field into the non static property \Child4->field
+%s:62 PhanAccessStaticToNonStaticProperty Cannot make static property \Parent5::$data into the non static property \Child5->data
+%s:62 PhanPropertyAccessSignatureMismatch Access level to private $data must be compatible with public static $data defined in %s:58
+%s:82 PhanAccessStaticToNonStaticProperty Cannot make static property \TraitWithPrivateStatic::$traitProp into the non static property \ClassUsingTrait->traitProp
