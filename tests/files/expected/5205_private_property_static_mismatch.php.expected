@@ -1,0 +1,2 @@
+%s:44 PhanAccessStaticToNonStaticProperty Cannot make static property \Parent3::$prop into the non static property \Child3->prop
+%s:53 PhanAccessStaticToNonStaticProperty Cannot make static property \Parent4::$field into the non static property \Child4->field
