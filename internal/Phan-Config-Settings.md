@@ -245,12 +245,15 @@ from these stub files (doubling as valid php files).
 Use a different extension from php to avoid accidentally loading these.
 The `tool/make_stubs` script can be used to generate your own stubs
 
-By default, Phan includes bundled stubs with template annotations for improved type inference.
-To disable bundled stubs, set this to an empty array: []
-(e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
+Phan ALWAYS includes bundled stubs (even in -n mode) for template type support.
+User-provided stubs are MERGED with bundled stubs. For the same extension key,
+user values override bundled defaults.
 
-NOTE: This default is computed at runtime to support phar/global installs.
-See Config::getDefaultConfiguration() for the actual default computation.
+Example: ['myext' => '.phan/stubs/myext.phan_php'] adds your stub alongside bundled stubs.
+Example: ['spl' => '.phan/stubs/custom_spl.phan_php'] replaces bundled SPL stub.
+
+NOTE: Bundled stubs are computed at runtime to support phar/global installs.
+See Config::getDefaultInternalStubConfiguration() for bundled stub list.
 
 (Default: `null`)
 
@@ -1045,10 +1048,14 @@ Maximum total number of literal array entries that ASTSimplifier keeps while sum
 
 A list of extension names that have template annotations in their stub files for CLASSES.
 For these extensions, the stub classes will completely replace reflection-based classes.
-(e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
 
-NOTE: This default is computed at runtime to support phar/global installs.
-See Config::getDefaultConfiguration() for the actual default computation.
+Bundled defaults include 'spl' for SplObjectStorage<TKey,TValue>, WeakMap<TKey,TValue>, etc.
+User-provided values are MERGED with bundled defaults (duplicates removed).
+
+Example: ['myext'] adds your extension alongside bundled template extensions.
+
+NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+See Config::getDefaultInternalStubConfiguration() for bundled template list.
 
 (Default: `null`)
 
@@ -1056,10 +1063,14 @@ See Config::getDefaultConfiguration() for the actual default computation.
 
 A list of extension names that have template annotations in their stub files for FUNCTIONS.
 For these extensions, stub functions will be used alongside reflection data.
-(e.g. `['array']` if array functions had template annotations in stubs)
 
-NOTE: This default is computed at runtime to support phar/global installs.
-See Config::getDefaultConfiguration() for the actual default computation.
+Bundled defaults include 'standard' for array_filter<T>, array_map<T>, etc.
+User-provided values are MERGED with bundled defaults (duplicates removed).
+
+Example: ['myext'] adds your extension alongside bundled template extensions.
+
+NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+See Config::getDefaultInternalStubConfiguration() for bundled template list.
 
 (Default: `null`)
 

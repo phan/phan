@@ -502,50 +502,17 @@ return [
     // (e.g. PHP is compiled with `--enable-debug` or when using Xdebug)
     'skip_slow_php_options_warning' => false,
 
-    // You can put paths to internal stubs in this config option.
-    // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
-    // Use a different extension from php to avoid accidentally loading these.
-    // The 'tool/mkstubs' script can be used to generate your own stubs
+    // Phan automatically loads bundled stubs for common extensions with template type support.
+    // See Config::getDefaultInternalStubConfiguration() for the full list.
     //
-    // Also see `include_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
-    'autoload_internal_extension_signatures' => [
-        'ast'         => 'internal/stubs/ast.phan_php',
-        'ctype'       => 'internal/stubs/ctype.phan_php',
-        'igbinary'    => 'internal/stubs/igbinary.phan_php',
-        'mbstring'    => 'internal/stubs/mbstring.phan_php',
-        'pcntl'       => 'internal/stubs/pcntl.phan_php',
-        'phar'        => 'internal/stubs/phar.phan_php',
-        'posix'       => 'internal/stubs/posix.phan_php',
-        'readline'    => 'internal/stubs/readline.phan_php',
-        'simplexml'   => 'internal/stubs/simplexml.phan_php',
-        'soap'        => 'internal/stubs/soap.phan_php',
-        // SPL stub: Use version-specific stub to handle differences in PHP versions
-        // PHP 8.1-8.3: No typed constants (syntax error), no seek() method on SplObjectStorage
-        // PHP 8.4+: Typed constants OK, seek() method added to SplObjectStorage
-        'spl'         => PHP_VERSION_ID >= 80400
-            ? 'internal/stubs/spl.phan_php'         // PHP 8.4+: typed constants + seek()
-            : 'internal/stubs/spl_php81.phan_php',  // PHP 8.1-8.3: no typed constants, no seek()
-        'standard'    => 'internal/stubs/standard_templates.phan_php',  // template annotations for array functions
-        'sqlite3'     => 'internal/stubs/sqlite3.phan_php',
-        'sysvmsg'     => 'internal/stubs/sysvmsg.phan_php',
-        'sysvsem'     => 'internal/stubs/sysvsem.phan_php',
-        'sysvshm'     => 'internal/stubs/sysvshm.phan_php',
-        'tidy'        => 'internal/stubs/tidy.phan_php',
-        'xsl'         => 'internal/stubs/xsl.phan_php',
-    ],
-
-    // Extensions that provide template annotations for CLASSES that aren't available via reflection.
-    // These stubs must replace reflection classes to ensure template types are available.
-    // Phan will call flushReflectionClassesForExtension() for these before loading the stub.
-    'autoload_internal_extension_signatures_template_classes' => [
-        'spl',  // SplObjectStorage, SplDoublyLinkedList, SplHeap, WeakMap, etc.
-    ],
-
-    // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
-    // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
-    'autoload_internal_extension_signatures_template_functions' => [
-        'standard',  // array_find, array_filter, array_map, array_reduce, etc.
-    ],
+    // You can add custom stubs or override bundled stubs by setting these config options:
+    // - 'autoload_internal_extension_signatures' => ['myext' => '.phan/stubs/myext.phan_php']
+    // - 'autoload_internal_extension_signatures_template_classes' => ['myext']
+    // - 'autoload_internal_extension_signatures_template_functions' => ['myext']
+    //
+    // User values are MERGED with bundled defaults. For the same extension key, user values override.
+    //
+    // Also see `included_extension_subset` to configure Phan to analyze a codebase as if a certain extension is not available.
 
     // This can be set to a list of extensions to limit Phan to using the reflection information of.
     // If this is a list, then Phan will not use the reflection information of extensions outside of this list.

@@ -833,29 +833,40 @@ class Config
         // Use a different extension from php to avoid accidentally loading these.
         // The `tool/make_stubs` script can be used to generate your own stubs
         //
-        // By default, Phan includes bundled stubs with template annotations for improved type inference.
-        // To disable bundled stubs, set this to an empty array: []
-        // (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
+        // Phan ALWAYS includes bundled stubs (even in -n mode) for template type support.
+        // User-provided stubs are MERGED with bundled stubs. For the same extension key,
+        // user values override bundled defaults.
         //
-        // NOTE: This default is computed at runtime to support phar/global installs.
-        // See Config::getDefaultConfiguration() for the actual default computation.
-        'autoload_internal_extension_signatures' => null,  // null means use bundled stubs (computed at runtime)
+        // Example: ['myext' => '.phan/stubs/myext.phan_php'] adds your stub alongside bundled stubs.
+        // Example: ['spl' => '.phan/stubs/custom_spl.phan_php'] replaces bundled SPL stub.
+        //
+        // NOTE: Bundled stubs are computed at runtime to support phar/global installs.
+        // See Config::getDefaultInternalStubConfiguration() for bundled stub list.
+        'autoload_internal_extension_signatures' => null,  // null means use only bundled stubs
 
         // A list of extension names that have template annotations in their stub files for CLASSES.
         // For these extensions, the stub classes will completely replace reflection-based classes.
-        // (e.g. `['spl']` when using .phan/internal_stubs/spl.phan_php with template annotations)
         //
-        // NOTE: This default is computed at runtime to support phar/global installs.
-        // See Config::getDefaultConfiguration() for the actual default computation.
-        'autoload_internal_extension_signatures_template_classes' => null,  // null means use bundled stub templates
+        // Bundled defaults include 'spl' for SplObjectStorage<TKey,TValue>, WeakMap<TKey,TValue>, etc.
+        // User-provided values are MERGED with bundled defaults (duplicates removed).
+        //
+        // Example: ['myext'] adds your extension alongside bundled template extensions.
+        //
+        // NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+        // See Config::getDefaultInternalStubConfiguration() for bundled template list.
+        'autoload_internal_extension_signatures_template_classes' => null,  // null means use only bundled template classes
 
         // A list of extension names that have template annotations in their stub files for FUNCTIONS.
         // For these extensions, stub functions will be used alongside reflection data.
-        // (e.g. `['array']` if array functions had template annotations in stubs)
         //
-        // NOTE: This default is computed at runtime to support phar/global installs.
-        // See Config::getDefaultConfiguration() for the actual default computation.
-        'autoload_internal_extension_signatures_template_functions' => null,  // null means use bundled stub templates
+        // Bundled defaults include 'standard' for array_filter<T>, array_map<T>, etc.
+        // User-provided values are MERGED with bundled defaults (duplicates removed).
+        //
+        // Example: ['myext'] adds your extension alongside bundled template extensions.
+        //
+        // NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+        // See Config::getDefaultInternalStubConfiguration() for bundled template list.
+        'autoload_internal_extension_signatures_template_functions' => null,  // null means use only bundled template functions
 
         // This can be set to a list of extensions to limit Phan to using the reflection information of.
         // If this is a list, then Phan will not use the reflection information of extensions outside of this list.
@@ -1230,10 +1241,27 @@ class Config
         $phan_dir = \dirname(\dirname(__DIR__)); // Go up from src/Phan/ to root
         $bundled_stubs_dir = $phan_dir . '/internal/stubs';
 
-        // Determine which SPL stub to use based on PHP version
-        // PHP 8.4+ supports typed constants and SplObjectStorage::seek()
-        // PHP 8.1-8.3 uses a version without these features
-        $spl_stub = \PHP_VERSION_ID >= 80400
+        // Determine which SPL stub to use based on TARGET PHP version and RUNTIME PHP version
+        // We can only use stubs that the runtime PHP can parse, so take the minimum of:
+        // - target_php_version: What version we're analyzing for
+        // - PHP_VERSION_ID: What version we're running on
+        //
+        // spl.phan_php: PHP 8.3+ (typed constants) + PHP 8.4+ (SplObjectStorage::seek())
+        // spl_php81.phan_php: PHP 8.1-8.2 (no typed constants or seek method)
+        //
+        // Examples:
+        // - Running PHP 8.4, targeting 8.2: Use spl_php81.phan_php (8.2-compatible)
+        // - Running PHP 8.1, targeting 8.4: Use spl_php81.phan_php (PHP 8.1 can't parse 8.3+ syntax)
+        // - Running PHP 8.3, targeting 8.3: Use spl.phan_php (8.3-compatible)
+        $target_version = self::getValue('target_php_version');
+        if ($target_version === null || $target_version === 'native') {
+            $target_version_id = \PHP_VERSION_ID;
+        } else {
+            $target_version_id = self::computeClosestTargetPHPVersionId($target_version);
+        }
+        // Use the minimum of target and runtime - can only load stubs the runtime can parse
+        $effective_version = \min($target_version_id, \PHP_VERSION_ID);
+        $spl_stub = $effective_version >= 80300
             ? 'spl.phan_php'
             : 'spl_php81.phan_php';
 
@@ -1283,6 +1311,32 @@ class Config
      */
     public static function setValue(string $name, mixed $value): void
     {
+        // Merge user stub configs with bundled defaults (so stubs are always loaded)
+        if ($value !== null) {
+            if ($name === 'autoload_internal_extension_signatures') {
+                $defaults = self::getDefaultInternalStubConfiguration();
+                // For signatures: merge arrays, user values override defaults for same extension key
+                $value = \array_merge($defaults[$name], $value);
+                self::$configuration[$name] = $value;
+                return;
+            } elseif ($name === 'autoload_internal_extension_signatures_template_classes' ||
+                      $name === 'autoload_internal_extension_signatures_template_functions') {
+                $defaults = self::getDefaultInternalStubConfiguration();
+                // For template lists: merge arrays, remove duplicates
+                $value = \array_values(\array_unique(\array_merge($defaults[$name], $value)));
+                self::$configuration[$name] = $value;
+                return;
+            }
+        }
+
+        // For stub configs with null value, just store it (will use defaults when loading)
+        if ($name === 'autoload_internal_extension_signatures' ||
+            $name === 'autoload_internal_extension_signatures_template_classes' ||
+            $name === 'autoload_internal_extension_signatures_template_functions') {
+            self::$configuration[$name] = $value;
+            return;
+        }
+
         self::$configuration[$name] = $value;
         switch ($name) {
             case 'ignore_undeclared_functions_with_known_signatures':

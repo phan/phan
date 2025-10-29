@@ -1472,6 +1472,8 @@ class ParseVisitor extends ScopeVisitor
                     throw new AssertionError("Expecteded variant of Func to be a Func");
                 }
                 $code_base->addFunction($func_variant);
+                // Notify plugins about the stub-loaded function (e.g., for CallableParamPlugin)
+                $code_base->notifyPluginsOnInternalFunctionLoad($func_variant);
             }
         } else {
             $code_base->addFunction($func);

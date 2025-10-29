@@ -27,15 +27,13 @@ final class PHP84Test extends AbstractPhanFileTestBase
             'AsymmetricVisibilityPlugin',
         ],
         'plugin_config' => ['infer_pure_methods' => true],
+        // Additional stubs beyond bundled defaults (bundled: soap, tidy, xsl, etc.)
         'autoload_internal_extension_signatures' => [
             'bcmath'    => 'internal/stubs/bcmath.phan_php',
             'intl'      => 'internal/stubs/intl.phan_php',
             'mysqli'    => 'internal/stubs/mysqli.phan_php',
             'pdo_pgsql' => 'internal/stubs/pdo_pgsql.phan_php',
             'pgsql'     => 'internal/stubs/pgsql.phan_php',
-            'soap'      => 'internal/stubs/soap.phan_php',
-            'tidy'      => 'internal/stubs/tidy.phan_php',
-            'xsl'       => 'internal/stubs/xsl.phan_php',
         ],
     ];
 

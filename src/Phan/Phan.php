@@ -937,33 +937,38 @@ class Phan implements IgnoredFilesFilterInterface
 
     /**
      * Loads configured stubs for internal PHP extensions.
+     *
+     * Bundled stubs are ALWAYS loaded (even in -n mode) to ensure template type support.
+     * User configs are merged with defaults via Config::setValue().
+     *
      * @throws InvalidArgumentException if the stubs or stub config is invalid
      */
     private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base): void
     {
+        // Get default stub configuration (always needed for fallback and version selection)
+        $default_config = Config::getDefaultInternalStubConfiguration();
+
         // Extensions that provide template annotations for CLASSES that aren't available via reflection.
         // These stubs must replace reflection classes to ensure template types are available.
         $extensions_with_template_classes = Config::getValue('autoload_internal_extension_signatures_template_classes');
-        // If null (default), use bundled stub template classes
+        // If null (e.g., in -n mode), use bundled defaults
         if ($extensions_with_template_classes === null) {
-            $default_config = Config::getDefaultInternalStubConfiguration();
             $extensions_with_template_classes = $default_config['autoload_internal_extension_signatures_template_classes'];
         }
 
         // Extensions that provide template annotations for FUNCTIONS that aren't available via reflection.
         // These stubs should be loaded, but we don't need to flush classes (functions auto-replace).
         $extensions_with_template_functions = Config::getValue('autoload_internal_extension_signatures_template_functions');
-        // If null (default), use bundled stub template functions
+        // If null (e.g., in -n mode), use bundled defaults
         if ($extensions_with_template_functions === null) {
-            $default_config = Config::getDefaultInternalStubConfiguration();
             $extensions_with_template_functions = $default_config['autoload_internal_extension_signatures_template_functions'];
         }
 
         $stubs = Config::getValue('autoload_internal_extension_signatures');
-        // If null (default), use bundled stubs
+        // If null (e.g., in -n mode), use bundled stubs
+        // Note: If user provided a config, setValue() already merged it with defaults
         if ($stubs === null) {
-            $default_config = Config::getDefaultInternalStubConfiguration();
-            $default_stubs = $default_config['autoload_internal_extension_signatures'];
+            $stubs = $default_config['autoload_internal_extension_signatures'];
 
             // Select the appropriate stubs based on runtime PHP version
             // PHP 8.4+ has typed constants in SPL and new array functions in standard
@@ -977,10 +982,8 @@ class Phan implements IgnoredFilesFilterInterface
             // Update the stub paths based on runtime version
             $phan_dir = \dirname(\dirname(__DIR__));
             $bundled_stubs_dir = $phan_dir . '/internal/stubs';
-            $default_stubs['spl'] = "$bundled_stubs_dir/$spl_stub";
-            $default_stubs['standard'] = "$bundled_stubs_dir/$standard_stub";
-
-            $stubs = $default_stubs;
+            $stubs['spl'] = "$bundled_stubs_dir/$spl_stub";
+            $stubs['standard'] = "$bundled_stubs_dir/$standard_stub";
         }
 
         foreach ($stubs as $extension_name => $path_to_extension) {
