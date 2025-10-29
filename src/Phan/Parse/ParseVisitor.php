@@ -1141,7 +1141,9 @@ class ParseVisitor extends ScopeVisitor
                 $class->getFQSEN(),
                 $name
             );
-            if (!$real_union_type->isEmpty() && Config::get_closest_target_php_version_id() < 80300) {
+            // Don't warn about typed constants in internal PHP classes - these work fine across PHP versions
+            // even though PHP 8.4's reflection may show them as typed
+            if (!$real_union_type->isEmpty() && Config::get_closest_target_php_version_id() < 80300 && !$class->isPHPInternal()) {
                 $this->emitIssue(
                     Issue::CompatibleTypedClassConstant,
                     $child_node->lineno,
