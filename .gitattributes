@@ -15,3 +15,5 @@
 /plugins           export-ignore
 /test              export-ignore
 /tests             export-ignore
+/internal/stubs    export-subst
+/internal/*        export-ignore
