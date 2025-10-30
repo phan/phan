@@ -1,2 +1,2 @@
 src/062_test.php:1 PhanNoopStringLiteral Unused result of a string literal "if" near this line
-src/062_test.php:2 PhanSyntaxError syntax error, unexpected token "{" (at column 6)
+src/062_test.php:3 PhanSyntaxError syntax error, unexpected token "}" (at column 1)
