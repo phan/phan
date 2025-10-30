@@ -1,0 +1,5 @@
+%s:39 PhanTypeSuspiciousEcho Suspicious argument $container['field'] of type \stdClass for an echo/print statement
+%s:47 PhanTypeMismatchArgumentReal Argument 1 ($s) is $container['field'] of type \stdClass but \expects_string() takes string defined at %s:46
+%s:56 PhanTypeMismatchDimFetch When fetching an array index from a value of type \StringContainer, found an array index of type \stdClass, but expected the index to be of type string
+%s:65 PhanTypeMismatchDimFetch When fetching an array index from a value of type \StringContainer, found an array index of type 42, but expected the index to be of type string
+%s:101 PhanTypeMismatchArgumentReal Argument 1 ($o) is $value of type string but \expects_object() takes object defined at %s:42

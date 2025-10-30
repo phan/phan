@@ -2065,12 +2065,71 @@ class UnionTypeVisitor extends AnalysisVisitor
                                 return $value_type->asRealUnionType();
                             }
                         }
-                        // No template parameters found
+                        // No template parameters found - try using offsetGet() method signature
+                        if ($class->hasMethodWithName($code_base, 'offsetGet', true)) {
+                            try {
+                                $offset_get_method = $class->getMethodByName($code_base, 'offsetGet');
+
+                                // Get return type from offsetGet()
+                                $return_type = $offset_get_method->getUnionType();
+
+                                // Resolve template types in the return type if present
+                                if ($return_type->hasTemplateTypeRecursive()) {
+                                    foreach ($union_type->getTypeSet() as $type) {
+                                        $template_param_map = $type->getTemplateParameterTypeMap($code_base);
+                                        if (!empty($template_param_map)) {
+                                            $return_type = $return_type->withTemplateParameterTypeMap($template_param_map);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // Validate key type against offsetGet parameter if key is provided
+                                if (!$dim_type->isEmpty()) {
+                                    $param_list = $offset_get_method->getParameterList();
+                                    if (!empty($param_list)) {
+                                        $expected_key_type = $param_list[0]->getUnionType();
+
+                                        // Resolve template types in the expected key type if present
+                                        if ($expected_key_type->hasTemplateTypeRecursive()) {
+                                            foreach ($union_type->getTypeSet() as $type) {
+                                                $template_param_map = $type->getTemplateParameterTypeMap($code_base);
+                                                if (!empty($template_param_map)) {
+                                                    $expected_key_type = $expected_key_type->withTemplateParameterTypeMap($template_param_map);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        // Only check if expected type is not mixed/empty
+                                        if (!$expected_key_type->isEmpty() && !$expected_key_type->hasMixedOrNonEmptyMixedType()) {
+                                            if (!$dim_type->canCastToUnionType($expected_key_type, $code_base)) {
+                                                $this->emitIssue(
+                                                    Issue::TypeMismatchDimFetch,
+                                                    $node->lineno,
+                                                    (string)$union_type,
+                                                    (string)$dim_type,
+                                                    (string)$expected_key_type
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Use return type from offsetGet() instead of mixed
+                                if (!$return_type->isEmpty()) {
+                                    return $return_type;
+                                }
+                            } catch (CodeBaseException) {
+                                // Fall through to mixed fallback if method lookup fails
+                            }
+                        }
+
                         if ($expanded_types->hasType($simple_xml_element_type)) {
                             // SimpleXMLElement has special handling - return empty to avoid false positives
                             return $element_types;
                         }
-                        // For ArrayAccess without templates, use mixed as fallback
+                        // For ArrayAccess without templates or offsetGet signature, use mixed as fallback
                         $element_types = UnionType::fromFullyQualifiedPHPDocString('mixed');
                     }
                 }
