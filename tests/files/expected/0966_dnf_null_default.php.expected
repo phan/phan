@@ -1,0 +1,4 @@
+%s:31 PhanTypeMismatchDefaultIntersection Default value for \InterfaceA&\InterfaceB $prop can't be null because the parameter contains intersection types
+%s:31 PhanTypeMismatchPropertyDefaultReal Default value for \InterfaceA&\InterfaceB $prop can't be null of type null
+%s:39 PhanTypeMismatchDefaultIntersection Default value for (\InterfaceA&\InterfaceB)|string $prop can't be null because the parameter contains intersection types
+%s:39 PhanTypeMismatchPropertyDefaultReal Default value for (\InterfaceA&\InterfaceB)|string $prop can't be null of type null
