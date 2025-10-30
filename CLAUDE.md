@@ -1073,3 +1073,4 @@ grep -oE '\b6[0-9]{3}\b' src/Phan/Issue.php | sort -u | tail -10
 ```
 
 Note: The codebase had duplicate ID 6084 (fixed by reassigning to 6098). New NoDiscard issue uses ID 6099.
+- Use "phan -n" to test quicker when you don't need to test plugins

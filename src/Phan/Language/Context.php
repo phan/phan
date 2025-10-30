@@ -1097,7 +1097,7 @@ class Context extends FileRef
             return null;
         }
         $types = $this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType();
-        if ($types->isEmpty()) {
+        if ($types->isEmpty() || $types->isPossiblyUndefined()) {
             return null;
         }
 
@@ -1123,6 +1123,13 @@ class Context extends FileRef
     /**
      * Set the type of a variable's property in this context after narrowing (e.g., in a conditional)
      * For example, after `if ($param->prop !== null)`, this tracks that `$param->prop` is non-null.
+     *
+     * Property narrowing correctly doesn't leak outside the conditional block where it was established.
+     *
+     * LIMITATION: Narrowing persists after variable reassignment within the same scope:
+     * - if ($x->v !== null) { $x = new Item(); }  // The override for $x->v remains (wrong!)
+     *
+     * TODO:  track reassignments through BranchScope's parent fallback mechanism to try to fix above limitation
      *
      * @param string $variable_name the name of the variable (e.g., 'param')
      * @param string $property_name the name of the property (e.g., 'v')
@@ -1166,7 +1173,7 @@ class Context extends FileRef
             return null;
         }
         $types = $this->scope->getVariableByName($override_var_name)->getUnionType();
-        if ($types->isEmpty()) {
+        if ($types->isEmpty() || $types->isPossiblyUndefined()) {
             return null;
         }
 
