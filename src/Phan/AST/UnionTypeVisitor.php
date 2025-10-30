@@ -2118,7 +2118,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                                 // Use return type from offsetGet() instead of mixed
                                 if (!$return_type->isEmpty()) {
-                                    return $return_type->asRealUnionType();
+                                    return $return_type;
                                 }
                             } catch (CodeBaseException) {
                                 // Fall through to mixed fallback if method lookup fails

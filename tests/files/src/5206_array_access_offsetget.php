@@ -148,3 +148,29 @@ function test_minimal() {
     $value = $container['key'];
     // Should infer as mixed from offsetGet return type
 }
+
+// Test 6: PHPDoc-only return type (no native type hint)
+class PhpDocOnlyContainer implements ArrayAccess {
+    public function offsetExists($offset): bool {
+        return true;
+    }
+
+    /**
+     * PHPDoc-only, no native return type
+     * @return stdClass
+     */
+    public function offsetGet($offset) {
+        return new stdClass();
+    }
+
+    public function offsetSet($offset, $value): void {}
+    public function offsetUnset($offset): void {}
+}
+
+function test_phpdoc_only() {
+    $container = new PhpDocOnlyContainer();
+    // @phan-suppress-next-line PhanUnusedVariable
+    $value = $container['key'];
+    // Should infer as stdClass from PHPDoc, but WITHOUT real type marker
+    // (compare with Test 1 which has native return type)
+}
