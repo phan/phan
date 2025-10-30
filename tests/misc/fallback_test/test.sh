@@ -53,7 +53,8 @@ sed -i \
     -e "/077_invalid_attribute.php:3 PhanSyntaxError/d" \
     -e "s/'o17' (T_STRING), expecting ',' or ')'/'o17' (T_STRING), expecting ')'/g" \
     -e "s@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting function (T_FUNCTION) or const (T_CONST)@src/076_pipe.php:3 PhanSyntaxError syntax error, unexpected '|', expecting variable (T_VARIABLE)@" \
-    $ACTUAL_PATH
+    -e 's/ (at column [0-9]\+)//g' \
+    $ACTUAL_PATH $EXPECTED_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 echo
