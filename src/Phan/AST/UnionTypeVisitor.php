@@ -2983,14 +2983,24 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             if ($expr_node instanceof Node &&
-                    $expr_node->kind === ast\AST_VAR &&
-                    $expr_node->children['name'] === 'this'
+                    $expr_node->kind === ast\AST_VAR
             ) {
-                $override_union_type = $this->context->getThisPropertyIfOverridden($property->getName());
-                if ($override_union_type) {
-                    $this->warnIfPossiblyUndefinedProperty($node, $property->getName(), $override_union_type);
-                    // There was an earlier assignment in scope such as `$this->prop = 2;`
-                    return $override_union_type;
+                $var_name = $expr_node->children['name'];
+                if ($var_name === 'this') {
+                    $override_union_type = $this->context->getThisPropertyIfOverridden($property->getName());
+                    if ($override_union_type) {
+                        $this->warnIfPossiblyUndefinedProperty($node, $property->getName(), $override_union_type);
+                        // There was an earlier assignment in scope such as `$this->prop = 2;`
+                        return $override_union_type;
+                    }
+                } elseif (is_string($var_name)) {
+                    // Check for narrowed parameter/variable property types (e.g., after `if ($param->prop !== null)`)
+                    $override_union_type = $this->context->getVariablePropertyIfOverridden($var_name, $property->getName());
+                    if ($override_union_type) {
+                        $this->warnIfPossiblyUndefinedProperty($node, $property->getName(), $override_union_type);
+                        // There was an earlier type narrowing in scope such as `if ($param->prop !== null)`
+                        return $override_union_type;
+                    }
                 }
             }
 

@@ -461,7 +461,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                             $new_field_types[$field_name] = $value->isDefinitelyUndefined() ? $value : $value->withIsPossiblyUndefined(true);
                         }
                         return ArrayShapeType::fromFieldTypes($new_field_types, $type->isNullable());
-                    });
+                    })->withIsPossiblyUndefined(true);  // Also mark the union type itself as possibly undefined
                     $variable = clone($variable);
                     $variable->setUnionType($type);
                     $scope->addVariable($variable);

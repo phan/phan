@@ -1097,7 +1097,7 @@ class Context extends FileRef
             return null;
         }
         $types = $this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType();
-        if ($types->isEmpty()) {
+        if ($types->isEmpty() || $types->isPossiblyUndefined()) {
             return null;
         }
 
@@ -1107,6 +1107,82 @@ class Context extends FileRef
                 return null;
             }
             $extra = $type->getFieldTypes()[$name] ?? null;
+            if (!$extra || ($extra->isPossiblyUndefined() && !$extra->isDefinitelyUndefined())) {
+                return null;
+            }
+            if ($result) {
+                '@phan-var UnionType $result';
+                $result = $result->withUnionType($extra);
+            } else {
+                $result = $extra;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Set the type of a variable's property in this context after narrowing (e.g., in a conditional)
+     * For example, after `if ($param->prop !== null)`, this tracks that `$param->prop` is non-null.
+     *
+     * Property narrowing correctly doesn't leak outside the conditional block where it was established.
+     *
+     * LIMITATION: Narrowing persists after variable reassignment within the same scope:
+     * - if ($x->v !== null) { $x = new Item(); }  // The override for $x->v remains (wrong!)
+     *
+     * TODO:  track reassignments through BranchScope's parent fallback mechanism to try to fix above limitation
+     *
+     * @param string $variable_name the name of the variable (e.g., 'param')
+     * @param string $property_name the name of the property (e.g., 'v')
+     * @param UnionType $type the narrowed type
+     */
+    public function withVariablePropertySetToTypeByName(string $variable_name, string $property_name, UnionType $type): Context
+    {
+        $override_var_name = "phan\0\$" . $variable_name . "->properties";
+        if ($this->scope->hasVariableWithName($override_var_name)) {
+            $variable = clone($this->scope->getVariableByName($override_var_name));
+            $old_type = $variable->getUnionType();
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $override_type = self::addArrayShapeTypes($override_type, $old_type->getTypeSet());
+
+            $variable->setUnionType($override_type->asPHPDocUnionType());
+        } else {
+            // There is nothing inferred about any type
+
+            $override_type = ArrayShapeType::fromFieldTypes([$property_name => $type], false);
+            $variable = new Variable(
+                $this,
+                $override_var_name,
+                $override_type->asPHPDocUnionType(),
+                0
+            );
+        }
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
+     * Get the type of a variable's property if it was overridden in this context (e.g., narrowed in a conditional)
+     *
+     * @param string $variable_name the name of the variable (e.g., 'param')
+     * @param string $property_name the name of the property (e.g., 'v')
+     * @return ?UnionType the narrowed type, or null if not narrowed
+     */
+    public function getVariablePropertyIfOverridden(string $variable_name, string $property_name): ?UnionType
+    {
+        $override_var_name = "phan\0\$" . $variable_name . "->properties";
+        if (!$this->scope->hasVariableWithName($override_var_name)) {
+            return null;
+        }
+        $types = $this->scope->getVariableByName($override_var_name)->getUnionType();
+        if ($types->isEmpty() || $types->isPossiblyUndefined()) {
+            return null;
+        }
+
+        $result = null;
+        foreach ($types->getTypeSet() as $type) {
+            if (!$type instanceof ArrayShapeType) {
+                return null;
+            }
+            $extra = $type->getFieldTypes()[$property_name] ?? null;
             if (!$extra || ($extra->isPossiblyUndefined() && !$extra->isDefinitelyUndefined())) {
                 return null;
             }

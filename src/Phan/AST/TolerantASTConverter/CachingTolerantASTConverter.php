@@ -53,7 +53,6 @@ final class CachingTolerantASTConverter extends TolerantASTConverter
             $unterminated_comment_diagnostic = $node->unterminatedCommentDiagnostic;
             $new_errors[] = $unterminated_comment_diagnostic;
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument filtered diagnostics guarantee type safety
         $entry = new PhpParserNodeEntry($node, $new_errors);
         self::$php_parser_node_cache[$file_contents] = $entry;
 

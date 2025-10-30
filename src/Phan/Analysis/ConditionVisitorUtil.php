@@ -810,23 +810,56 @@ trait ConditionVisitorUtil
         Closure $filter_union_type_cb,
         bool $suppress_issues
     ): Context {
-        if (!self::isThisVarNode($node->children['expr'])) {
-            return $context;
-        }
         $property_name = $node->children['prop'];
         if (!is_string($property_name)) {
             return $context;
         }
-        return $this->modifyPropertyOfThisSimple(
-            $node,
-            static function (UnionType $type) use ($should_filter_cb, $filter_union_type_cb): UnionType {
-                if (!$should_filter_cb($type)) {
-                    return $type;
-                }
-                return $filter_union_type_cb($type);
-            },
-            $context
-        );
+
+        // Handle $this->prop using the existing optimized path
+        if (self::isThisVarNode($node->children['expr'])) {
+            return $this->modifyPropertyOfThisSimple(
+                $node,
+                static function (UnionType $type) use ($should_filter_cb, $filter_union_type_cb): UnionType {
+                    if (!$should_filter_cb($type)) {
+                        return $type;
+                    }
+                    return $filter_union_type_cb($type);
+                },
+                $context
+            );
+        }
+
+        // Handle $variable->prop (e.g., parameter properties)
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node && $expr->kind === ast\AST_VAR && is_string($expr->children['name']))) {
+            return $context;
+        }
+
+        $variable_name = $expr->children['name'];
+        '@phan-var string $variable_name';  // Already checked above
+        try {
+            // Get the type of the property we're operating on
+            $old_property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+            if (!$should_filter_cb($old_property_type)) {
+                return $context;
+            }
+
+            // Compute the new narrowed type
+            $new_property_type = $filter_union_type_cb($old_property_type);
+            if ($old_property_type->isIdenticalTo($new_property_type)) {
+                return $context;
+            }
+
+            // Store the narrowed type in the context using the same mechanism as $this->property
+            return $context->withVariablePropertySetToTypeByName($variable_name, $property_name, $new_property_type);
+        } catch (IssueException $exception) {
+            if (!$suppress_issues) {
+                Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            }
+        } catch (\Exception) {
+            // Swallow it
+        }
+        return $context;
     }
 
     /**
@@ -1275,8 +1308,17 @@ trait ConditionVisitorUtil
             return $condition->analyzeVar($this, $var_node, $expr_node);
         }
         if ($kind === ast\AST_PROP) {
-            if (self::isThisVarNode($var_node->children['expr']) && is_string($var_node->children['prop'])) {
-                return $condition->analyzeVar($this, $var_node, $expr_node);
+            $expr = $var_node->children['expr'];
+            if (is_string($var_node->children['prop'])) {
+                // Handle $this->prop
+                if (self::isThisVarNode($expr)) {
+                    return $condition->analyzeVar($this, $var_node, $expr_node);
+                }
+                // Handle $variable->prop where $variable is a local variable/parameter
+                // This enables type narrowing for cases like: if (null !== $param->property)
+                if ($expr instanceof Node && $expr->kind === ast\AST_VAR && is_string($expr->children['name'])) {
+                    return $condition->analyzeVar($this, $var_node, $expr_node);
+                }
             }
             return null;
         }
@@ -1590,8 +1632,13 @@ trait ConditionVisitorUtil
                 case ast\AST_DIM:
                     return $this->modifyComplexDimExpression($node, $type_modification_callback, $context, $args);
                 case ast\AST_PROP:
-                    if (self::isThisVarNode($node->children['expr'])) {
+                    $expr = $node->children['expr'];
+                    if (self::isThisVarNode($expr)) {
                         return $this->modifyPropertyOfThis($node, $type_modification_callback, $context, $args);
+                    }
+                    // Handle $variable->prop for type checks like is_int($param->v)
+                    if ($expr instanceof Node && $expr->kind === ast\AST_VAR && is_string($expr->children['name'])) {
+                        return $this->modifyPropertyOfVariable($node, $type_modification_callback, $context, $args);
                     }
                     return $context;
                 case ast\AST_ASSIGN:
@@ -1704,6 +1751,43 @@ trait ConditionVisitorUtil
             return $context;
         }
         return $context->withThisPropertySetToTypeByName($property_name, $new_property_type);
+    }
+
+    /**
+     * Handle type checks like is_int($param->v) and update the context with narrowed property type.
+     * Similar to modifyPropertyOfThis but for any variable, not just $this.
+     *
+     * @param Node $node a node of kind ast\AST_PROP (e.g. the argument of is_array($param->prop_name))
+     * @param Closure(CodeBase,Context,Variable,list<mixed>):void $type_modification_callback
+     * @param Context $context
+     * @param list<mixed> $args
+     */
+    protected function modifyPropertyOfVariable(Node $node, Closure $type_modification_callback, Context $context, array $args): Context
+    {
+        $property_name = $node->children['prop'];
+        if (!is_string($property_name)) {
+            return $context;
+        }
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node && $expr->kind === ast\AST_VAR)) {
+            return $context;
+        }
+        $variable_name = $expr->children['name'];
+        if (!is_string($variable_name)) {
+            return $context;
+        }
+
+        // Get the current type of the property and apply the type modification
+        $old_property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        $property_variable = new Variable($context, "__phan", $old_property_type, 0);
+        $type_modification_callback($this->code_base, $context, $property_variable, $args);
+        $new_property_type = $property_variable->getUnionType();
+        if ($new_property_type->isIdenticalTo($old_property_type)) {
+            return $context;
+        }
+
+        // Store the narrowed property type in the context
+        return $context->withVariablePropertySetToTypeByName($variable_name, $property_name, $new_property_type);
     }
 
     /**
