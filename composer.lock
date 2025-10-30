@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6839fc5434627956d89bc87f34fc50d5",
+    "content-hash": "eca4b8cdf4a276efb8996c021b750e09",
     "packages": [
         {
             "name": "composer/pcre",
@@ -374,26 +374,25 @@
         },
         {
             "name": "phan/tolerant-php-parser",
-            "version": "dev-main",
+            "version": "v0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phan/phan-tolerant.git",
-                "reference": "aceb541776559ff34a1812a1189a3ceae88f3e56"
+                "reference": "199a81a43531cea4872893f10adc3eefcacacea9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/aceb541776559ff34a1812a1189a3ceae88f3e56",
-                "reference": "aceb541776559ff34a1812a1189a3ceae88f3e56",
+                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/199a81a43531cea4872893f10adc3eefcacacea9",
+                "reference": "199a81a43531cea4872893f10adc3eefcacacea9",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2"
+                "php": ">=8.1"
             },
             "require-dev": {
                 "phpstan/phpstan": "^1.8",
-                "phpunit/phpunit": "^8.5.15"
+                "phpunit/phpunit": "^10.0"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -415,9 +414,9 @@
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
             "support": {
                 "issues": "https://github.com/phan/phan-tolerant/issues",
-                "source": "https://github.com/phan/phan-tolerant/tree/main"
+                "source": "https://github.com/phan/phan-tolerant/tree/v0.2.0"
             },
-            "time": "2025-10-23T11:37:07+00:00"
+            "time": "2025-10-29T19:20:13+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -3324,9 +3323,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "phan/tolerant-php-parser": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
