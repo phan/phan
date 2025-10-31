@@ -841,6 +841,41 @@ trait FunctionTrait
         $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
         if ($function instanceof Method) {
             $function->checkForTemplateTypes();
+
+            // Add $this variable to non-static method scopes with proper template parameters
+            if (!$function->isStatic() && $context->isInClassScope()) {
+                $class_fqsen = $context->getClassFQSEN();
+                $class = $code_base->getClassByFQSEN($class_fqsen);
+
+                // Get the class's template parameter types (e.g., T, TKey, TValue)
+                $template_type_map = $class->getTemplateTypeMap();
+
+                if ($template_type_map) {
+                    // Create template parameter type list for the class type
+                    // e.g., for Set<T>, this creates [UnionType(T)]
+                    $template_parameter_type_list = [];
+                    foreach ($template_type_map as $template_type) {
+                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
+                    }
+
+                    // Create the class type with template parameters (e.g., Set<T>)
+                    $class_type = $class_fqsen->asType();
+                    $class_type = \Phan\Language\Type::fromType($class_type, $template_parameter_type_list);
+                    $this_type = $class_type->asRealUnionType();
+                } else {
+                    // No template parameters, just use the class type
+                    $this_type = $class_fqsen->asRealUnionType();
+                }
+
+                // Add the $this variable to the method's scope
+                $this_variable = new Variable(
+                    $context,
+                    'this',
+                    $this_type,
+                    0  // flags
+                );
+                $function->getInternalScope()->addVariable($this_variable);
+            }
         }
         // Special, for libraries which use this for to document variadic param lists.
     }

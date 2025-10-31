@@ -2602,7 +2602,8 @@ class Type implements Stringable
             }
             $template_key_type = $iterator_type->keyTypeOfTraversable();
             if ($template_key_type instanceof UnionType && !$template_key_type->isEmpty()) {
-                return $template_key_type->asRealUnionType();
+                // Don't call asRealUnionType() - preserve template types with their constraints
+                return $template_key_type;
             }
             return $result;
         }
@@ -2728,7 +2729,9 @@ class Type implements Stringable
             }
             $template_value_type = $iterator_type->valueTypeOfTraversable();
             if ($template_value_type instanceof UnionType && !$template_value_type->isEmpty()) {
-                return $template_value_type->asRealUnionType();
+                // Don't call asRealUnionType() - preserve template types with their constraints
+                // This allows T (with constraint "of object") to remain as T instead of becoming mixed
+                return $template_value_type;
             }
             return $result;
         }

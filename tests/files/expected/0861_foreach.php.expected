@@ -1,3 +1,3 @@
-%s:4 PhanParamSignaturePHPDocMismatchReturnType Declaration of real/@method function current() should be compatible with real/@method function current() : object (method returning 'T' cannot override method returning 'object') defined in internal:%d
-%s:7 PhanGenericMissingParameters Class \Set must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:%d (use @extends or @inherit)
+%s:4 PhanParamSignaturePHPDocMismatchReturnType Declaration of real/@method function current() should be compatible with real/@method function current() : object (method returning 'T' cannot override method returning 'object') defined in internal:794
+%s:7 PhanGenericMissingParameters Class \Set must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:747 (use @extends or @inherit)
 %s:16 PhanTypeMismatchReturn Returning $elem of type \ArrayObject but test() is declared to return string

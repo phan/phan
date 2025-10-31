@@ -866,6 +866,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Allow non-empty-array to cast to array.
             // Allow non-empty-list or non-empty-associative-array to cast to non-empty-array. and so on.
             if (!$this instanceof $type) {
+                // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall False positive with fallback parser
                 if (!($type instanceof NonEmptyGenericArrayType && $this->isDefinitelyNonEmptyArray())) {
                     return false;
                 }

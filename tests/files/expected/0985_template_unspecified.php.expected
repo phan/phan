@@ -1,4 +1,4 @@
-%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type static(real=static)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type \Container<T>(real=\Container<T>)
 %s:30 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
 %s:42 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
 %s:53 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)

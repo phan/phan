@@ -194,13 +194,22 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Add $this to the scope of non-static methods
         if (!($node->flags & ast\flags\MODIFIER_STATIC)) {
-            if (!$clazz->getInternalScope()->hasVariableWithName('this')) {
-                throw new AssertionError("Classes must have a \$this variable.");
+            // Check if $this was already added to the method scope with template parameters
+            // (done in FunctionTrait::addParamsToScopeOfFunctionOrMethod for generic classes)
+            if ($method->getInternalScope()->hasVariableWithName('this')) {
+                // Use the method's $this which may have template parameters like Set<T>
+                $context->addScopeVariable(
+                    $method->getInternalScope()->getVariableByName('this')
+                );
+            } else {
+                // Fallback to class scope's $this (type: static)
+                if (!$clazz->getInternalScope()->hasVariableWithName('this')) {
+                    throw new AssertionError("Classes must have a \$this variable.");
+                }
+                $context->addScopeVariable(
+                    $clazz->getInternalScope()->getVariableByName('this')
+                );
             }
-
-            $context->addScopeVariable(
-                $clazz->getInternalScope()->getVariableByName('this')
-            );
         }
 
         // Add each method parameter to the scope. We clone it
