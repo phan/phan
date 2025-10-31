@@ -676,6 +676,31 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         );
     }
 
+    public function visitDim(Node $node): Context
+    {
+        $this->checkVariablesDefined($node);
+        if (Config::getValue('redundant_condition_detection')) {
+            $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
+        }
+        return $this->updateDimExpressionWithConditionalFilter(
+            $node,
+            $this->context,
+            static function (UnionType $type): bool {
+                foreach ($type->getRealTypeSet() as $single_type) {
+                    if ($single_type->isPossiblyFalsey()) {
+                        return true;
+                    }
+                }
+                return $type->containsFalsey() || !$type->hasRealTypeSet();
+            },
+            static function (UnionType $type): UnionType {
+                return $type->nonFalseyClone();
+            },
+            false,
+            false
+        );
+    }
+
     /**
      * @param Node $node
      * A node to parse
