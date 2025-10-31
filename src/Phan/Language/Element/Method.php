@@ -1114,8 +1114,11 @@ class Method extends ClassElement implements FunctionInterface
         // (the final union type may not have been computed yet)
         if ($comment = $method->getComment()) {
             $comment = clone($comment);
+            // Track which parameters had template types so we only update those
+            $params_with_templates = [];
             foreach ($comment->getAndMutateParameters() as &$comment_param) {
                 if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
+                    $params_with_templates[$comment_param->getName()] = true;
                     $comment_param = clone($comment_param);
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     $comment_param->setUnionType(
@@ -1124,15 +1127,18 @@ class Method extends ClassElement implements FunctionInterface
                 }
             }
 
-            // Copy the updated PHPDoc parameter types to the method's actual parameters
-            // This is necessary for stub methods where PHPDoc types may differ from signature types
-            $comment_param_map = $comment->getParameterMap();
-            foreach ($method->getParameterList() as $method_param) {
-                $param_name = $method_param->getName();
-                if (isset($comment_param_map[$param_name])) {
-                    $comment_param_type = $comment_param_map[$param_name]->getUnionType();
-                    if (!$comment_param_type->isEmpty()) {
-                        $method_param->setUnionType($comment_param_type);
+            // Copy the updated PHPDoc parameter types to the method's actual parameters,
+            // but only for parameters that originally had template types.
+            // This preserves native signature types (like ?int) for non-template parameters.
+            if ($params_with_templates) {
+                $comment_param_map = $comment->getParameterMap();
+                foreach ($method->getParameterList() as $method_param) {
+                    $param_name = $method_param->getName();
+                    if (isset($params_with_templates[$param_name]) && isset($comment_param_map[$param_name])) {
+                        $comment_param_type = $comment_param_map[$param_name]->getUnionType();
+                        if (!$comment_param_type->isEmpty()) {
+                            $method_param->setUnionType($comment_param_type);
+                        }
                     }
                 }
             }
