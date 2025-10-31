@@ -1265,6 +1265,43 @@ trait FunctionTrait
             return;
         }
         $this->is_inner_scope_initialized = true;
+
+        // Add $this variable for non-static methods in generic classes
+        // This must run for ALL methods, not just those with docblocks
+        if ($this instanceof Method && !$this->isStatic()) {
+            $context = $this->getContext();
+            if ($context->isInClassScope()) {
+                $class_fqsen = $context->getClassFQSEN();
+                $class = $code_base->getClassByFQSEN($class_fqsen);
+                $template_type_map = $class->getTemplateTypeMap();
+
+                if ($template_type_map) {
+                    // Create template parameter type list for the class type
+                    $template_parameter_type_list = [];
+                    foreach ($template_type_map as $template_type) {
+                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
+                    }
+
+                    // Create static type with template parameters (e.g., static<T>)
+                    // This preserves late-static binding while maintaining template parameter info
+                    $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
+                        false,  // not nullable
+                        $template_parameter_type_list
+                    );
+                    $this_type = $static_type->asRealUnionType();
+
+                    // Add the $this variable to the method's scope
+                    $this_variable = new Variable(
+                        $context,
+                        'this',
+                        $this_type,
+                        0  // flags
+                    );
+                    $this->getInternalScope()->addVariable($this_variable);
+                }
+            }
+        }
+
         $comment = $this->comment;
         // $comment can be null for magic methods from `@method`
         if ($comment !== null) {

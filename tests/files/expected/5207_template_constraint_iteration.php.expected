@@ -1,0 +1,4 @@
+%s:28 PhanUnusedVariableValueOfForeachWithKey Unused definition of variable $element as the value of a foreach loop that included keys
+%s:38 PhanGenericMissingParameters Class \StdClassSet must substitute all 1 template parameters when inheriting \Set (found 0) defined at %s:13 (use @extends or @inherit)
+%s:44 PhanUnusedVariable Unused definition of variable $element
+%s:54 PhanGenericMissingParameters Class \MySet must substitute all 2 template parameters when inheriting \SplObjectStorage (found 0) defined at internal:746 (use @extends or @inherit)

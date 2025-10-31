@@ -145,3 +145,22 @@ $ee0 = $e0->getValue();
 $ff0 = $f0->getValue();
 $gg0 = $g0->getValue();
 '@phan-debug-var $aa0, $bb0, $cc0, $dd0, $ee0, $ff0, $gg0';
+
+// Test late-static binding with templates
+/**
+ * @template T
+ * @extends Container<T>
+ */
+class SpecialContainer extends Container {
+    public function custom(): static {
+        '@phan-debug-var $this';
+        return $this;
+    }
+}
+
+$special = new SpecialContainer(new stdClass);
+'@phan-debug-var $special';
+$special_value = $special->getValue();
+'@phan-debug-var $special_value';
+$special_custom = $special->custom();
+'@phan-debug-var $special_custom';

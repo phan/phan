@@ -417,7 +417,7 @@ There is a fundamental difference between running Phan manually and running it t
 sudo newphp 81  # or 82, 83, 84, 85 depending on the test
 
 # 2. Use PHPUnit's built-in mechanism to generate .expected files
-UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*filename\.php"
+PHAN_DUMP_NEW_TEST_EXPECTATION=1 ./vendor/bin/phpunit --filter="testFiles.*filename\.php"
 
 # 3. This creates a .expected.new file (or .expectedXX.new for version-specific)
 # Example: tests/files/expected/0299_binary_op.php.expected.new
@@ -460,12 +460,12 @@ The test framework uses `getFileForPHPVersion()` to select expected files based 
 
 1. ❌ **Running `./phan` manually to generate expected output**
    - This includes plugin warnings that won't match PHPUnit tests
-   - Always use `UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit` instead
+   - Always use `PHAN_DUMP_NEW_TEST_EXPECTATION=1 ./vendor/bin/phpunit` instead
 
 2. ❌ **Creating .expected files with full paths instead of `%s` placeholders**
    - Manual Phan run outputs: `tests/files/src/file.php:10 PhanIssue...`
    - Correct expected format: `%s:10 PhanIssue...`
-   - The `UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1` mechanism handles this automatically
+   - The `PHAN_DUMP_NEW_TEST_EXPECTATION=1` mechanism handles this automatically
 
 3. ❌ **Forgetting to test on all PHP versions**
    - A change might work on PHP 8.2+ but break on PHP 8.1
@@ -485,7 +485,7 @@ The test framework uses `getFileForPHPVersion()` to select expected files based 
 sudo newphp 81
 
 # Step 2: Run the failing test to generate new expected output
-UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*0299_binary_op\.php"
+PHAN_DUMP_NEW_TEST_EXPECTATION=1 ./vendor/bin/phpunit --filter="testFiles.*0299_binary_op\.php"
 
 # Step 3: Check what was generated
 ls -la tests/files/expected/0299_binary_op.php.expected*
@@ -742,7 +742,7 @@ Example test updates needed:
 # After:  \Bar
 
 # Update expected files to match improved output
-UPDATE_PHAN_TEST_EXPECTED_OUTPUT=1 ./vendor/bin/phpunit --filter="testFiles.*0910_self_template"
+PHAN_DUMP_NEW_TEST_EXPECTATION=1 ./vendor/bin/phpunit --filter="testFiles.*0910_self_template"
 mv tests/files/expected/0910_self_template.php.expected.new \
    tests/files/expected/0910_self_template.php.expected
 ```
