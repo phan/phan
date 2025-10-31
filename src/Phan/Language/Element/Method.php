@@ -1123,6 +1123,20 @@ class Method extends ClassElement implements FunctionInterface
                     );
                 }
             }
+
+            // Copy the updated PHPDoc parameter types to the method's actual parameters
+            // This is necessary for stub methods where PHPDoc types may differ from signature types
+            $comment_param_map = $comment->getParameterMap();
+            foreach ($method->getParameterList() as $method_param) {
+                $param_name = $method_param->getName();
+                if (isset($comment_param_map[$param_name])) {
+                    $comment_param_type = $comment_param_map[$param_name]->getUnionType();
+                    if (!$comment_param_type->isEmpty()) {
+                        $method_param->setUnionType($comment_param_type);
+                    }
+                }
+            }
+
             // Also map the return type's PHPDoc template types
             // This is important for stub methods where the signature returns mixed
             // but the PHPDoc has template types like @return TValue
