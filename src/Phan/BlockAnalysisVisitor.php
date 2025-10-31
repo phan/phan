@@ -1190,14 +1190,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         if (self::isDefinitelyNotObject($union_type)) {
             if (!($node->children['stmts']->children ?? null)) {
-                RedundantCondition::emitInstance(
-                    $node->children['expr'],
-                    $this->code_base,
-                    (clone $this->context)->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
-                    Issue::EmptyForeachBody,
-                    [(string)$union_type],
-                    Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
-                );
+                // Check if the 'as' clause has side effects (assignments to properties/array elements)
+                // If so, don't warn about empty body - the foreach has a purpose
+                if (!self::foreachHasSideEffectsInAsClause($node)) {
+                    RedundantCondition::emitInstance(
+                        $node->children['expr'],
+                        $this->code_base,
+                        (clone $this->context)->withLineNumberStart($node->children['expr']->lineno ?? $node->lineno),
+                        Issue::EmptyForeachBody,
+                        [(string)$union_type],
+                        Closure::fromCallable([self::class, 'isDefinitelyNotObject'])
+                    );
+                }
             }
         }
     }
@@ -1214,6 +1218,72 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
         return true;
+    }
+
+    /**
+     * Check if a foreach loop has side effects in its 'as' clause.
+     * Returns true if the value or key are assigned to properties, array elements, etc.
+     * Array destructuring like [$a, $b] is NOT considered a side effect (assigns to local vars).
+     */
+    private static function foreachHasSideEffectsInAsClause(Node $node): bool
+    {
+        // Check the value assignment
+        $value = $node->children['value'];
+        if (self::assignmentTargetHasSideEffects($value)) {
+            return true;
+        }
+
+        // Check the key assignment (if present)
+        $key = $node->children['key'];
+        if (self::assignmentTargetHasSideEffects($key)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if an assignment target in a foreach has side effects.
+     * Returns true for property/array element assignments, false for simple variables.
+     * For array destructuring, recursively checks if any element has side effects.
+     */
+    private static function assignmentTargetHasSideEffects($target): bool
+    {
+        if (!$target instanceof Node) {
+            return false;
+        }
+
+        switch ($target->kind) {
+            case ast\AST_VAR:
+            case ast\AST_REF:
+                // Simple variable or reference - no external side effects
+                return false;
+
+            case ast\AST_ARRAY:
+            case ast\AST_LIST:
+                // Array destructuring - check if any element has side effects
+                foreach ($target->children as $elem) {
+                    if (!$elem instanceof Node) {
+                        continue;
+                    }
+                    // AST_ARRAY_ELEM has 'value' child with the actual assignment target
+                    $elem_value = $elem->children['value'] ?? null;
+                    if (self::assignmentTargetHasSideEffects($elem_value)) {
+                        return true;
+                    }
+                }
+                return false;
+
+            case ast\AST_PROP:
+            case ast\AST_STATIC_PROP:
+            case ast\AST_DIM:
+                // Property or array element assignment - has side effects
+                return true;
+
+            default:
+                // Other node types - conservatively assume side effects
+                return true;
+        }
     }
 
     /**
