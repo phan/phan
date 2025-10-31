@@ -1,0 +1,2 @@
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $s1 - it has union type \Set<\Class1>(real=\Set)
+%s:23 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($object) is new Class2() of type \Class2 but \Set::offsetSet() takes \Class1
