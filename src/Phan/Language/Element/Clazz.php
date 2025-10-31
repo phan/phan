@@ -1054,6 +1054,8 @@ class Clazz extends AddressableElement
             if ($is_pure && !$comment_method->isStatic()) {
                 $method->setIsPure();
             }
+            // Inherit suppressions from the class doc comment
+            $method->setSuppressIssueSet($this->getSuppressIssueList());
 
             $this->addMethod($code_base, $method, None::instance());
         }
