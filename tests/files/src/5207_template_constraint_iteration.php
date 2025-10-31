@@ -7,16 +7,16 @@
  */
 
 /**
- * @template T of object
- * @extends \SplObjectStorage<T,null>
+ * @template TElement of object
+ * @extends \SplObjectStorage<TElement,null>
  */
 class Set extends \SplObjectStorage {
     /**
-     * @param Closure(T):bool $closure
+     * @param Closure(TElement):bool $closure
      */
     public function filter(Closure $closure): void {
         foreach ($this as $element) {
-            // Should NOT warn - $element is T (constraint: object)
+            // Should NOT warn - $element is TElement (constraint: object)
             $closure($element);
         }
     }
@@ -26,7 +26,7 @@ class Set extends \SplObjectStorage {
      */
     public function testKeys(): void {
         foreach ($this as $key => $element) {
-            // Keys should be int from Iterator<int, T>
+            // Keys should be int from Iterator<int, TElement>
             echo strlen((string)$key);
         }
     }

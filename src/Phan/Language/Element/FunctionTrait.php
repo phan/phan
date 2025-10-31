@@ -841,42 +841,6 @@ trait FunctionTrait
         $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
         if ($function instanceof Method) {
             $function->checkForTemplateTypes();
-
-            // Add $this variable to non-static method scopes with proper template parameters
-            // ONLY for generic classes - non-generic classes use 'static' type from class scope
-            if (!$function->isStatic() && $context->isInClassScope()) {
-                $class_fqsen = $context->getClassFQSEN();
-                $class = $code_base->getClassByFQSEN($class_fqsen);
-
-                // Get the class's template parameter types (e.g., T, TKey, TValue)
-                $template_type_map = $class->getTemplateTypeMap();
-
-                if ($template_type_map) {
-                    // Only add $this for generic classes to preserve template parameters
-                    // Non-generic classes will use 'static' type from PreOrderAnalysisVisitor
-
-                    // Create template parameter type list for the class type
-                    // e.g., for Set<T>, this creates [UnionType(T)]
-                    $template_parameter_type_list = [];
-                    foreach ($template_type_map as $template_type) {
-                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
-                    }
-
-                    // Create the class type with template parameters (e.g., Set<T>)
-                    $class_type = $class_fqsen->asType();
-                    $class_type = \Phan\Language\Type::fromType($class_type, $template_parameter_type_list);
-                    $this_type = $class_type->asRealUnionType();
-
-                    // Add the $this variable to the method's scope
-                    $this_variable = new Variable(
-                        $context,
-                        'this',
-                        $this_type,
-                        0  // flags
-                    );
-                    $function->getInternalScope()->addVariable($this_variable);
-                }
-            }
         }
         // Special, for libraries which use this for to document variadic param lists.
     }
@@ -1301,6 +1265,40 @@ trait FunctionTrait
             return;
         }
         $this->is_inner_scope_initialized = true;
+
+        // Add $this variable for non-static methods in generic classes
+        // This must run for ALL methods, not just those with docblocks
+        if ($this instanceof Method && !$this->isStatic()) {
+            $context = $this->getContext();
+            if ($context->isInClassScope()) {
+                $class_fqsen = $context->getClassFQSEN();
+                $class = $code_base->getClassByFQSEN($class_fqsen);
+                $template_type_map = $class->getTemplateTypeMap();
+
+                if ($template_type_map) {
+                    // Create template parameter type list for the class type
+                    $template_parameter_type_list = [];
+                    foreach ($template_type_map as $template_type) {
+                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
+                    }
+
+                    // Create the class type with template parameters (e.g., Set<T>)
+                    $class_type = $class_fqsen->asType();
+                    $class_type = \Phan\Language\Type::fromType($class_type, $template_parameter_type_list);
+                    $this_type = $class_type->asRealUnionType();
+
+                    // Add the $this variable to the method's scope
+                    $this_variable = new Variable(
+                        $context,
+                        'this',
+                        $this_type,
+                        0  // flags
+                    );
+                    $this->getInternalScope()->addVariable($this_variable);
+                }
+            }
+        }
+
         $comment = $this->comment;
         // $comment can be null for magic methods from `@method`
         if ($comment !== null) {
