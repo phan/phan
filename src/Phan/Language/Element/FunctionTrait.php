@@ -843,6 +843,7 @@ trait FunctionTrait
             $function->checkForTemplateTypes();
 
             // Add $this variable to non-static method scopes with proper template parameters
+            // ONLY for generic classes - non-generic classes use 'static' type from class scope
             if (!$function->isStatic() && $context->isInClassScope()) {
                 $class_fqsen = $context->getClassFQSEN();
                 $class = $code_base->getClassByFQSEN($class_fqsen);
@@ -851,6 +852,9 @@ trait FunctionTrait
                 $template_type_map = $class->getTemplateTypeMap();
 
                 if ($template_type_map) {
+                    // Only add $this for generic classes to preserve template parameters
+                    // Non-generic classes will use 'static' type from PreOrderAnalysisVisitor
+
                     // Create template parameter type list for the class type
                     // e.g., for Set<T>, this creates [UnionType(T)]
                     $template_parameter_type_list = [];
@@ -862,19 +866,16 @@ trait FunctionTrait
                     $class_type = $class_fqsen->asType();
                     $class_type = \Phan\Language\Type::fromType($class_type, $template_parameter_type_list);
                     $this_type = $class_type->asRealUnionType();
-                } else {
-                    // No template parameters, just use the class type
-                    $this_type = $class_fqsen->asRealUnionType();
-                }
 
-                // Add the $this variable to the method's scope
-                $this_variable = new Variable(
-                    $context,
-                    'this',
-                    $this_type,
-                    0  // flags
-                );
-                $function->getInternalScope()->addVariable($this_variable);
+                    // Add the $this variable to the method's scope
+                    $this_variable = new Variable(
+                        $context,
+                        'this',
+                        $this_type,
+                        0  // flags
+                    );
+                    $function->getInternalScope()->addVariable($this_variable);
+                }
             }
         }
         // Special, for libraries which use this for to document variadic param lists.
