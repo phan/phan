@@ -1282,10 +1282,13 @@ trait FunctionTrait
                         $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
                     }
 
-                    // Create the class type with template parameters (e.g., Set<T>)
-                    $class_type = $class_fqsen->asType();
-                    $class_type = \Phan\Language\Type::fromType($class_type, $template_parameter_type_list);
-                    $this_type = $class_type->asRealUnionType();
+                    // Create static type with template parameters (e.g., static<T>)
+                    // This preserves late-static binding while maintaining template parameter info
+                    $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
+                        false,  // not nullable
+                        $template_parameter_type_list
+                    );
+                    $this_type = $static_type->asRealUnionType();
 
                     // Add the $this variable to the method's scope
                     $this_variable = new Variable(

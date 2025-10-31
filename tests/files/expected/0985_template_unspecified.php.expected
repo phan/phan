@@ -1,4 +1,4 @@
-%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type \Container<T>(real=\Container<T>)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type static<T>(real=static<T>)
 %s:30 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
 %s:42 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
 %s:53 PhanDebugAnnotation @phan-debug-var requested for variable $that - it has union type static(real=static)
@@ -49,3 +49,7 @@
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ee0 - it has union type null
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $ff0 - it has union type never
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $gg0 - it has union type mixed
+%s:155 PhanDebugAnnotation @phan-debug-var requested for variable $this - it has union type static<T>(real=static<T>)
+%s:161 PhanDebugAnnotation @phan-debug-var requested for variable $special - it has union type \SpecialContainer<\stdClass>(real=\SpecialContainer<\stdClass>)
+%s:163 PhanDebugAnnotation @phan-debug-var requested for variable $special_value - it has union type \stdClass
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $special_custom - it has union type \SpecialContainer<\stdClass>(real=\SpecialContainer<\stdClass>)
