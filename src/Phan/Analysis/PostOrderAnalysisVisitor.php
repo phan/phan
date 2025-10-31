@@ -3046,8 +3046,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($node->children['class']->kind !== ast\AST_NAME) {
             return;
         }
-        // TODO: check for self/static/<class name of self> and warn about recursion?
-        // TODO: Only allow calls to __construct from other constructors?
+        // Only warn about self::__construct() recursion when called from within a constructor.
+        // Calling self::__construct() from other methods is unusual but valid (e.g., for re-initialization).
+        $is_in_constructor = false;
+        if ($this->context->isInMethodScope()) {
+            $method = $this->context->getFunctionLikeInScope($this->code_base);
+            $is_in_constructor = $method instanceof Method && $method->isNewConstructor();
+        }
+
         $found_ancestor_constructor = false;
         if ($this->context->isInMethodScope()) {
             try {
@@ -3068,22 +3074,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // (other code should check visibility and existence and args of __construct)
 
             if (!$possible_ancestor_type->isEmpty()) {
-                // but forbid 'self::__construct', 'static::__construct'
+                // but forbid 'self::__construct', 'static::__construct' when called from __construct
                 $type = $this->context->getClassFQSEN()->asType();
                 if ($possible_ancestor_type->hasStaticType()) {
-                    $this->emitIssue(
-                        Issue::AccessOwnConstructor,
-                        $node->lineno,
-                        $static_class
-                    );
-                    $found_ancestor_constructor = true;
-                } elseif ($type->asPHPDocUnionType()->canCastToUnionType($possible_ancestor_type, $this->code_base)) {
-                    if ($possible_ancestor_type->hasType($type)) {
+                    if ($is_in_constructor) {
                         $this->emitIssue(
                             Issue::AccessOwnConstructor,
                             $node->lineno,
                             $static_class
                         );
+                    }
+                    $found_ancestor_constructor = true;
+                } elseif ($type->asPHPDocUnionType()->canCastToUnionType($possible_ancestor_type, $this->code_base)) {
+                    if ($possible_ancestor_type->hasType($type)) {
+                        if ($is_in_constructor) {
+                            $this->emitIssue(
+                                Issue::AccessOwnConstructor,
+                                $node->lineno,
+                                $static_class
+                            );
+                        }
                     }
                     $found_ancestor_constructor = true;
                 }
