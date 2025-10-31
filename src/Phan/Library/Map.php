@@ -17,15 +17,6 @@ use SplObjectStorage;
  * @template V
  * @extends SplObjectStorage<K,V>
  * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
- * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType, PhanParamSignatureMismatchInternal
- * TODO: Add a way to indicate in Phan that T is subtype of object for keys K
- *
- * @method void attach(K $object,V $data = null)
- * @method void detach(K $object)
- * @method bool offsetExists(K $object)
- * @method V offsetGet(K $object )
- * @method void offsetSet(K $object,V $data = null)
- * @method void offsetUnset(K $object)
  */
 class Map extends SplObjectStorage
 {
@@ -48,6 +39,7 @@ class Map extends SplObjectStorage
      * We redefine the current value to the current value rather
      * than the current key
      * @return V
+     * @suppress PhanParamSignatureMismatchInternal
      * @suppress PhanParamSignatureRealMismatchReturnTypeInternal - ReturnTypeWillChange attribute handles this.
      */
     #[ReturnTypeWillChange]
