@@ -12,24 +12,7 @@ use TypeError;
  * intersection
  *
  * @template T of object
- * @extends \SplObjectStorage<T,T>
- *
- * TODO: Start tracking that SplObjectStorage<T,T> extends ArrayAccess<T,T>
- *
- * - Afterwards, remove this boilerplate overriding methods of SplObjectStorage<T,T>
- *
- * @phan-file-suppress PhanParamSignaturePHPDocMismatchHasParamType TODO: Add a way to indicate in Phan that T is subtype of object
- * @method void attach(T $object,mixed $data = null)
- * @method void detach(T $object)
- * @method bool offsetExists(T $object)
- * @method bool offsetGet(T $object )
- * @method void offsetSet(T $object,mixed $data = null)
- * @method void offsetUnset(T $object)
- * @phan-suppress-next-line PhanParamSignaturePHPDocMismatchReturnType TODO: Add a way to indicate that T is subtype of object
- * @method T current()
- *
- * @phan-file-suppress PhanParamSignatureMismatchInternal for these comment method overrides
- * TODO: Make suppressions in the class doc comment work for magic methods.
+ * @extends \SplObjectStorage<T,null>
  */
 class Set extends \SplObjectStorage
 {
