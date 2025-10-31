@@ -400,6 +400,30 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 'non-empty-list<string>'
             );
         };
+        /**
+         * @param list<Node|int|float|string> $unused_args
+         */
+        $func_get_args_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $unused_args
+        ): UnionType {
+            if ($context->isInFunctionLikeScope()) {
+                $func = $context->getFunctionLikeInScope($code_base);
+
+                if ($func->getNumberOfRequiredParameters() > 0) {
+                    return UnionType::fromFullyQualifiedPHPDocAndRealString(
+                        'non-empty-list<mixed>',
+                        'non-empty-list<mixed>'
+                    );
+                }
+            }
+            return UnionType::fromFullyQualifiedPHPDocAndRealString(
+                'list<mixed>',
+                'list<mixed>'
+            );
+        };
 
         // TODO: Handle flags of preg_split.
         return [
@@ -425,6 +449,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'bcdiv'                       => $bcdiv_callback,
             'explode'                     => $explode_handler,
             'constant'                    => $constant_handler,
+            'func_get_args'               => $func_get_args_handler,
         ];
     }
 
