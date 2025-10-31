@@ -1058,28 +1058,39 @@ class ParameterTypesAnalyzer
     ): void {
         $context = $method->getContext();
         $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
-        $is_exclusively_narrowed = true;
-        foreach ($phpdoc_param_union_type->getTypeSet() as $phpdoc_type) {
-            // Make sure that the commented type is a narrowed
-            // or equivalent form of the syntax-level declared
-            // return type.
-            if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                $resolved_real_param_type,
-                $context,
-                $code_base
-            )
-            ) {
-                $is_exclusively_narrowed = false;
-                Issue::maybeEmit(
-                    $code_base,
+
+        // Normalize both types to handle cases like ?string|?int vs string|int|null
+        // This prevents false positives when different nullability styles represent the same type
+        $normalized_phpdoc = $phpdoc_param_union_type->asNormalizedTypes();
+        $normalized_real = $resolved_real_param_type->asNormalizedTypes();
+
+        // If the normalized types are equal, they're compatible - skip individual type checks
+        if ($normalized_phpdoc->isEqualTo($normalized_real)) {
+            $is_exclusively_narrowed = true;
+        } else {
+            $is_exclusively_narrowed = true;
+            foreach ($phpdoc_param_union_type->getTypeSet() as $phpdoc_type) {
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                    $resolved_real_param_type,
                     $context,
-                    Issue::TypeMismatchDeclaredParam,
-                    self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
-                    $parameter->getName(),
-                    $method->getName(),
-                    $phpdoc_type->__toString(),
-                    $real_param_type->__toString()
-                );
+                    $code_base
+                )
+                ) {
+                    $is_exclusively_narrowed = false;
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredParam,
+                        self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                        $parameter->getName(),
+                        $method->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_param_type->__toString()
+                    );
+                }
             }
         }
         // TODO: test edge cases of variadic signatures
