@@ -237,17 +237,23 @@ class Parameter extends Variable
     public function handleDefaultValueOfNull(CodeBase $code_base, Context $context): void
     {
         if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
-            foreach ($this->getNonVariadicUnionType()->getRealTypeSet() as $type) {
+            $union_type = $this->getNonVariadicUnionType();
+            $real_union_type = $union_type->getRealUnionType();
+            foreach ($real_union_type->getTypeSet() as $type) {
                 if ($type instanceof IntersectionType) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDefaultIntersection,
-                        $this->default_value->lineno ?? $context->getLineNumberStart(),
-                        $this->getNonVariadicUnionType(),
-                        $this->getName(),
-                        'null'
-                    );
+                    // Only emit error if the real type (not PHPDoc) doesn't already allow null
+                    // (e.g., (TypeA&TypeB)|null is valid with null default)
+                    if (!$real_union_type->containsNullable()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDefaultIntersection,
+                            $this->default_value->lineno ?? $context->getLineNumberStart(),
+                            $union_type,
+                            $this->getName(),
+                            'null'
+                        );
+                    }
                     return;
                 }
             }
