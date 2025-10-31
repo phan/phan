@@ -1,0 +1,3 @@
+%s:18 PhanTypeMismatchGeneratorYieldKey Yield statement has a key null with type void but invalidStringKeyGenerator() is declared to yield keys of type string in \Generator<string,int>
+%s:20 PhanTypeMismatchGeneratorYieldKey Yield statement has a key null with type void but invalidStringKeyGenerator() is declared to yield keys of type string in \Generator<string,int>
+%s:44 PhanTypeMismatchGeneratorYieldKey Yield statement has a key 'str_key' with type 'str_key' but invalidExplicitStringKey() is declared to yield keys of type int in \Generator<int,string>

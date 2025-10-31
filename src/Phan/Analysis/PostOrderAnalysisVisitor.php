@@ -2099,13 +2099,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($type_list_count > 1) {
             $yield_key_node = $node->children['key'];
             if ($yield_key_node === null) {
+                // When yielding without a key, PHP automatically assigns auto-incrementing integer keys.
+                // We use VoidType to represent "no explicit key", but it's compatible with int (and void).
                 $yield_key_type = VoidType::instance(false)->asRealUnionType();
             } else {
                 $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
             }
-            // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $expected_key_type = $template_type_list[0];
-            if (!$yield_key_type->withStaticResolvedInContext($context)->canCastToUnionType($expected_key_type->withStaticResolvedInContext($context), $code_base)) {
+            // Check if the yield key type is compatible with the expected key type.
+            // Special case: VoidType (missing key) is compatible with IntType (PHP auto-increments)
+            // and with VoidType itself (no key expected).
+            $is_compatible = $yield_key_type->withStaticResolvedInContext($context)->canCastToUnionType($expected_key_type->withStaticResolvedInContext($context), $code_base);
+            if (!$is_compatible && $yield_key_node === null) {
+                // Missing key produces int keys in PHP, so void (missing key) is compatible with int
+                $is_compatible = $expected_key_type->hasType(IntType::instance(false));
+            }
+            if (!$is_compatible) {
                 $this->emitIssue(
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
