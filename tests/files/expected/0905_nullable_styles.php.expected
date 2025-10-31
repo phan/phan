@@ -1,0 +1,3 @@
+%s:32 PhanTypeMismatchDeclaredParam Doc-block of $bar in test5 contains phpdoc param type ?string which is incompatible with the param type int declared in the signature
+%s:38 PhanTypeMismatchDeclaredParam Doc-block of $baz in test6 contains phpdoc param type int which is incompatible with the param type ?float declared in the signature
+%s:38 PhanTypeMismatchDeclaredParam Doc-block of $baz in test6 contains phpdoc param type string which is incompatible with the param type ?float declared in the signature
