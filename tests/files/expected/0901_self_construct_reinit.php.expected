@@ -1,0 +1,4 @@
+%s:39 PhanAccessOwnConstructor Accessing own constructor directly via self::__construct
+%s:39 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.
+%s:45 PhanAccessOwnConstructor Accessing own constructor directly via static::__construct
+%s:45 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.
