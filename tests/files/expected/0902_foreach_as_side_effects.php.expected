@@ -1,0 +1,1 @@
+%s:28 PhanEmptyForeachBody Saw a foreach statement with empty body over array of type array{k1:'v1',k2:'v2',k3:'v3'} (iterating has no side effects)
