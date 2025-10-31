@@ -1247,7 +1247,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Returns true for property/array element assignments, false for simple variables.
      * For array destructuring, recursively checks if any element has side effects.
      */
-    private static function assignmentTargetHasSideEffects($target): bool
+    private static function assignmentTargetHasSideEffects(Node|string|int|float|null $target): bool
     {
         if (!$target instanceof Node) {
             return false;
