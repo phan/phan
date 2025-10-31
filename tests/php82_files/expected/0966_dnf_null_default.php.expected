@@ -1,0 +1,7 @@
+%s:8 PhanUnreferencedClass Possibly zero references to interface \InterfaceA
+%s:9 PhanUnreferencedClass Possibly zero references to interface \InterfaceB
+%s:12 PhanUnreferencedFunction Possibly zero references to function \valid_dnf_with_null()
+%s:17 PhanTypeMismatchDefaultIntersection Default value for \InterfaceA&\InterfaceB $param can't be null because the parameter contains intersection types
+%s:17 PhanUnreferencedFunction Possibly zero references to function \invalid_intersection_null()
+%s:22 PhanTypeMismatchDefaultIntersection Default value for (\InterfaceA&\InterfaceB)|string $param can't be null because the parameter contains intersection types
+%s:22 PhanUnreferencedFunction Possibly zero references to function \invalid_union_without_null()
