@@ -238,11 +238,12 @@ class Parameter extends Variable
     {
         if ($this->default_value_type && $this->default_value_type->isType(NullType::instance(false))) {
             $union_type = $this->getNonVariadicUnionType();
-            foreach ($union_type->getRealTypeSet() as $type) {
+            $real_union_type = $union_type->getRealUnionType();
+            foreach ($real_union_type->getTypeSet() as $type) {
                 if ($type instanceof IntersectionType) {
-                    // Only emit error if the union type doesn't already allow null
+                    // Only emit error if the real type (not PHPDoc) doesn't already allow null
                     // (e.g., (TypeA&TypeB)|null is valid with null default)
-                    if (!$union_type->containsNullable()) {
+                    if (!$real_union_type->containsNullable()) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
