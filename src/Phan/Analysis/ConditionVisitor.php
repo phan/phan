@@ -111,6 +111,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     protected function checkVariablesDefined(Node $node): void
     {
+        // Fix for issue #5269: When recursively analyzing stored conditional expressions
+        // (e.g., $var = $x === foo(); if ($var) { ... }), skip variable definition checks.
+        // The variables were already checked when the expression was originally assigned.
+        // Re-checking with the current context can produce false positives for variables
+        // that were defined in a different scope.
+        if (self::$conditional_expr_depth > 0) {
+            return;
+        }
+
         while ($node->kind === ast\AST_UNARY_OP) {
             $node = $node->children['expr'];
             if (!($node instanceof Node)) {

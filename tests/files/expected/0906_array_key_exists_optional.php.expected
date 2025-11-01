@@ -1,0 +1,4 @@
+%s:15 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'value' of $input of array type array{inputko?:int,name?:string,value?:string}
+%s:37 PhanTypeInvalidDimOffset Invalid offset "key" of $arr of array type array{}
+%s:37 PhanTypeSuspiciousEcho Suspicious argument $arr['key'] of type null for an echo/print statement
+%s:49 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'optional' of $mixed of array type array{optional?:string,required:int}
