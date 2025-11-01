@@ -1000,8 +1000,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     // If there are no inferred types, or the only type we saw was 'null',
                     // assume there this can be any possible scalar.
                     // (Excludes `resource`, which is technically a scalar)
-                    //
-                    // FIXME move this to PostOrderAnalysisVisitor so that all expressions can be analyzed, not just variables?
                     $new_type = $default_if_empty;
                 } else {
                     // Add the missing type set before making the non-nullable clone.
