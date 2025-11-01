@@ -598,7 +598,6 @@ final class ArgumentType
                 }
             } else {
                 // Get the parameter associated with this argument
-                // FIXME: Use the real parameter name all the time for named arguments if it exists
                 $parameter = $method->getParameterForCaller($i);
                 $argument_expression = $argument;
             }
@@ -762,7 +761,6 @@ final class ArgumentType
                 }
             } else {
                 // Get the parameter associated with this argument
-                // FIXME: Use the real parameter name all the time for named arguments if it exists
                 $parameter = $method->getParameterForCaller($i);
                 $argument_expression = $argument;
             }
