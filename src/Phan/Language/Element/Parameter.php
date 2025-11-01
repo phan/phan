@@ -807,10 +807,13 @@ class Parameter extends Variable
                 $default_repr = ASTReverter::toShortString($default_value);
             } elseif ($kind === ast\AST_NAME) {
                 $default_repr = (string)$default_value->children['name'];
-            } elseif ($kind === ast\AST_ARRAY) {
-                return '[]';
             } else {
-                return 'unknown';
+                // Use ASTReverter for all other node types (binary ops, unary ops, arrays, casts, etc.)
+                $default_repr = ASTReverter::toShortString($default_value);
+                // Limit the length to keep error messages readable
+                if (strlen($default_repr) >= 50) {
+                    return 'unknown';
+                }
             }
         } else {
             $default_repr = StringUtil::varExportPretty($default_value);
@@ -870,10 +873,13 @@ class Parameter extends Variable
                     $default_repr = ASTReverter::toShortString($default_value);
                 } elseif ($kind === ast\AST_NAME) {
                     $default_repr = (string)$default_value->children['name'];
-                } elseif ($kind === ast\AST_ARRAY) {
-                    $default_repr = '[]';
                 } else {
-                    $default_repr = 'unknown';
+                    // Use ASTReverter for all other node types (binary ops, unary ops, arrays, casts, etc.)
+                    $default_repr = ASTReverter::toShortString($default_value);
+                    // Limit the length to keep error messages readable
+                    if (strlen($default_repr) >= 50) {
+                        $default_repr = 'unknown';
+                    }
                 }
             } else {
                 $default_repr = StringUtil::varExportPretty($default_value);
