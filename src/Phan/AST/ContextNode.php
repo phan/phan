@@ -1767,24 +1767,26 @@ class ContextNode
                 $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $this->context, $class, $property_name, $is_static);
             }
 
-            if ($is_static) {
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredStaticProperty)(
-                        $this->context->getFile(),
-                        $node->lineno,
-                        [ $property_name, (string)$class_fqsen ],
-                        $suggestion
-                    )
-                );
-            } else {
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredProperty)(
-                        $this->context->getFile(),
-                        $node->lineno,
-                        [ "$class_fqsen->$property_name" ],
-                        $suggestion
-                    )
-                );
+            if (!($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF_IN_ISSET_EMPTY)) {
+                if ($is_static) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::UndeclaredStaticProperty)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [ $property_name, (string)$class_fqsen ],
+                            $suggestion
+                        )
+                    );
+                } else {
+                    throw new IssueException(
+                        Issue::fromType(Issue::UndeclaredProperty)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [ "$class_fqsen->$property_name" ],
+                            $suggestion
+                        )
+                    );
+                }
             }
         }
 

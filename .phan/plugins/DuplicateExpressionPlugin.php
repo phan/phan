@@ -436,14 +436,12 @@ class RedundantNodePreAnalysisVisitor extends PluginAwarePreAnalysisVisitor
             // There can't be any duplicates.
             return;
         }
-        // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->is_inside_else)) {
             return;
         }
         $children = self::extractIfElseifChain($node);
         // The checks of visitIf are done in pre-order (parent nodes analyzed before child nodes)
         // so that checked_duplicate_if can be set, to avoid redundant work.
-        // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->checked_duplicate_if)) {
             return;
         }

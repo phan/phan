@@ -39,7 +39,6 @@ class ConstantVariableVisitor extends PluginAwarePostAnalysisVisitor
     /** @override */
     public function visitVar(Node $node): void
     {
-        // @phan-suppress-next-line PhanUndeclaredProperty
         if ($node->flags & PhanAnnotationAdder::FLAG_INITIALIZES || isset($node->is_reference)) {
             return;
         }

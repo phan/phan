@@ -109,7 +109,6 @@ final class VariableGraph
         }
         $node_id = \spl_object_id($node);
         $this->use_node_id_to_var_name[$node_id] = $name;
-        // @phan-suppress-next-line PhanUndeclaredProperty added by ArgumentType analyzer
         if (isset($node->is_reference)) {
             $this->markAsReference($name);
         }

@@ -384,7 +384,6 @@ final class ArgumentType
             return false;
         }
         // Suppress because we intentionally set this dynamic analyzer flag in a plugin.
-        /** @phan-suppress-next-line PhanUndeclaredProperty */
         return !empty($node->__phan_skip_param_too_few_unpack);
     }
 

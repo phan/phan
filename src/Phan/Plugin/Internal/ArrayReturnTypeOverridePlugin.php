@@ -105,7 +105,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     $element_types = $array_type->genericArrayElementTypes(true, $code_base);
                     if (!$element_types->isEmpty()) {
                         // We set __phan_is_nonempty because the return type is computed after the original variable type is changed.
-                        // @phan-suppress-next-line PhanUndeclaredProperty
                         if ($array_type->containsFalsey() && !isset($arg_node->__phan_is_nonempty)) {
                             // This array can be empty, so these helpers can return false/null.
                             return $element_types->withType($default_type);
@@ -381,7 +380,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             foreach ($function_like_list as $mapping_function) {
                 $mapping_node = $mapping_function->getNode();
                 if ($mapping_node instanceof Node) {
-                    /** @phan-suppress-next-line PhanUndeclaredProperty */
                     if (isset($mapping_node->__phan_skip_param_too_few_unpack)) {
                         /** @phan-suppress-next-line PhanUndeclaredProperty */
                         unset($mapping_node->__phan_skip_param_too_few_unpack);

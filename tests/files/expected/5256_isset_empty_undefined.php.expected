@@ -1,0 +1,4 @@
+%s:12 PhanUndeclaredProperty Reference to undeclared property \C->undefined
+%s:15 PhanImpossibleCondition Impossible attempt to cast $undefined_var of type null to isset
+%s:19 PhanTypeSuspiciousEcho Suspicious argument $undefined_var2 of type null= for an echo/print statement
+%s:19 PhanUndeclaredVariable Variable $undefined_var2 is undeclared (Did you mean $undefined_var)
