@@ -28,7 +28,6 @@ trait TolerantASTConverterTrait
      *                                                          This does not convert names to ast\AST_CONST.
      * @throws InvalidArgumentException if Phan doesn't know what $n is
      *
-     * FIXME static will behave differently in php 8.1
      * @suppress PhanAbstractStaticMethodCallInTrait
      */
     protected static function phpParserNonValueNodeToAstNode(\Microsoft\PhpParser\Node|Token $n): \ast\Node|array|bool|float|int|null|string

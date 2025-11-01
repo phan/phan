@@ -38,7 +38,6 @@ final class IntersectionType extends Type
             throw new AssertionError("Too few type_parts in intersection type (" . implode('&', $type_parts) . ')') ;
         }
         // an intersection type is nullable if all type_parts it contains are nullable.
-        // FIXME: Normalize (?A)&B
         $is_nullable = true;
         foreach ($type_parts as $type) {
             if (!$type instanceof Type) {

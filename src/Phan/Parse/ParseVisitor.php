@@ -1066,8 +1066,6 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Resolve the union type of a property's default node.
      * This is being done to resolve the most common cases - e.g. `null`, `false`, and `true`
-     *
-     * FIXME: Handle 2+2, -1 (unary op), etc.
      */
     private function resolveDefaultPropertyNode(Node $node): ?UnionType
     {
