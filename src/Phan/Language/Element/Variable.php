@@ -236,7 +236,9 @@ class Variable extends UnaddressableTypedElement implements TypedElementInterfac
         if (\array_key_exists($name, $is_in_global_scope ? self::_BUILTIN_GLOBAL_TYPES : self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             // More efficient than using context.
             // Note that global constants can be modified by user code
-            return UnionType::fromFullyQualifiedPHPDocString(self::_BUILTIN_GLOBAL_TYPES[$name]);
+            return UnionType::fromFullyQualifiedPHPDocString(
+                ($is_in_global_scope ? self::_BUILTIN_GLOBAL_TYPES : self::_BUILTIN_SUPERGLOBAL_TYPES)[$name]
+            );
         }
 
         if (($is_in_global_scope && \array_key_exists($name, Config::getValue('globals_type_map')))
