@@ -2464,7 +2464,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      *
      * @throws IssueException
      * if the unpack is on an invalid expression
-     * @suppress PhanUndeclaredProperty
      */
     public function visitUnpack(Node $node): UnionType
     {

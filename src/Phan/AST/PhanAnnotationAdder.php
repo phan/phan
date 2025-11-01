@@ -35,6 +35,7 @@ class PhanAnnotationAdder
     public const FLAG_INITIALIZES = 1 << 28;
     public const FLAG_IGNORE_NULLABLE = 1 << 29;
     public const FLAG_IGNORE_UNDEF = 1 << 30;
+    public const FLAG_IGNORE_UNDEF_IN_ISSET_EMPTY = 1 << 27;
 
     public const FLAG_IGNORE_NULLABLE_AND_UNDEF = self::FLAG_IGNORE_UNDEF | self::FLAG_IGNORE_NULLABLE;
 
@@ -157,13 +158,22 @@ class PhanAnnotationAdder
         };
 
         /**
-         * @param Node $node
-         * @return void
+         * Handler for isset() - also marks nodes to suppress undeclared property warnings
          */
-        $ignore_nullable_and_undef_expr_handler = static function (Node $node): void {
+        $isset_handler = static function (Node $node): void {
+            $inner_node = $node->children['var'];
+            if ($inner_node instanceof Node) {
+                self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF | self::FLAG_IGNORE_UNDEF_IN_ISSET_EMPTY);
+            }
+        };
+
+        /**
+         * Handler for empty() - also marks nodes to suppress undeclared property warnings
+         */
+        $empty_handler = static function (Node $node): void {
             $inner_node = $node->children['expr'];
             if ($inner_node instanceof Node) {
-                self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
+                self::markNode($inner_node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF | self::FLAG_IGNORE_UNDEF_IN_ISSET_EMPTY);
             }
         };
         /**
@@ -186,8 +196,8 @@ class PhanAnnotationAdder
             ast\AST_ASSIGN_OP => $assign_op_handler,
             ast\AST_DIM => $dim_handler,
             ast\AST_PROP => $prop_handler,
-            ast\AST_EMPTY => $ignore_nullable_and_undef_expr_handler,
-            ast\AST_ISSET => $ignore_nullable_and_undef_handler,
+            ast\AST_EMPTY => $empty_handler,
+            ast\AST_ISSET => $isset_handler,
             ast\AST_UNSET => $ignore_nullable_and_undef_handler,
             ast\AST_ASSIGN => $initializes_handler,
             ast\AST_ASSIGN_REF => $initializes_handler,

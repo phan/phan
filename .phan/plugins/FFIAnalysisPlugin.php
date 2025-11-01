@@ -121,7 +121,6 @@ class FFIPostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitAssign(Node $node): void
     {
-        // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->is_ffi)) {
             $this->analyzeFFIAssign($node);
         }

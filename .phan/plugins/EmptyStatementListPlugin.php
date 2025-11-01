@@ -78,7 +78,6 @@ final class EmptyStatementListVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitIf(Node $node): void
     {
-        // @phan-suppress-next-line PhanUndeclaredProperty set by ASTSimplifier
         if (isset($node->is_simplified)) {
             $first_child = end($node->children);
             if (!$first_child instanceof Node || $first_child->children['cond'] === null) {

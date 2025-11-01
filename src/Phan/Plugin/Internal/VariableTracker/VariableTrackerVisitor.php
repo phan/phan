@@ -501,9 +501,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->scope;
     }
 
-    /**
-     * @suppress PhanUndeclaredProperty
-     */
     private function analyzePropAssignmentTarget(Node $node): VariableTrackingScope
     {
         // Treat $y in `$x->$y = $z;` as a usage of $y
@@ -539,10 +536,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                     //
                     // TODO: More aggressively warn if there is only a single dimension to $x
                     self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
-                    // @phan-suppress-next-line PhanUndeclaredProperty
                     if (isset($expr->phan_is_assignment_to_real_array)) {
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
-                    // @phan-suppress-next-line PhanUndeclaredProperty
                     } elseif (isset($node->is_unset_target)) {
                         self::$variable_graph->markAsUnset($expr);
                         self::$variable_graph->recordVariableDefinition($name, $expr, $this->scope, null);
@@ -680,9 +675,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $name = $node->children['name'];
         if (\is_string($name)) {
             self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
-            // @phan-suppress-next-line PhanUndeclaredProperty
             if ($node === $this->top_level_statement || isset($node->modified_by_reference)) {
-                // @phan-suppress-next-line PhanUndeclaredProperty
                 if (isset($node->modified_by_reference)) {
                     self::$variable_graph->markAsDisabledWarnings($node);
                 }
@@ -717,7 +710,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                     continue;
                 }
             }
-            // @phan-suppress-next-line PhanUndeclaredProperty set by ArgumentType analyzer
             if (!isset($argument->is_reference)) {
                 continue;
             }
@@ -1226,7 +1218,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     private function checkIsSideEffectFreeLoopNode(Node $node): void
     {
-        // @phan-suppress-next-line PhanUndeclaredProperty
         if (isset($node->has_loop_body_without_side_effects)) {
             $this->side_effect_free_loop_nodes[] = $node;
         }
