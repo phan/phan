@@ -1497,7 +1497,7 @@ trait ConditionVisitorUtil
         $variable_name = (string)$var_name_node;
 
         if (!$context->getScope()->hasVariableWithName($variable_name)) {
-            // FIXME other uses were not sound for $argv outside of global scope.
+            // Handle hardcoded variables: superglobals work in any scope, $argv/$argc only in global scope.
             $is_in_global_scope = $context->isInGlobalScope();
             $new_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($variable_name, $is_in_global_scope);
             if ($new_type) {
