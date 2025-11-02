@@ -76,35 +76,10 @@ function array_first(array $array): mixed {}
  */
 function array_last(array $array): mixed {}
 
-/**
- * @template TKey of array-key
- * @template TValue
- * @param array<TKey, TValue> $array
- * @param callable(TValue, TKey): bool|null $callback
- * @param int $mode
- * @return array<TKey, TValue>
- */
-function array_filter(array $array, ?callable $callback = null, int $mode = 0): array {}
-
-/**
- * @template TValue
- * @template TResult
- * @param callable(TValue): TResult|null $callback
- * @param array<TValue> $array
- * @param array ...$arrays
- * @return array<TResult>
- */
-function array_map(?callable $callback, array $array, array ...$arrays): array {}
-
-/**
- * @template TValue
- * @template TCarry
- * @param array<TValue> $array
- * @param callable(TCarry, TValue): TCarry $callback
- * @param TCarry $initial
- * @return TCarry
- */
-function array_reduce(array $array, callable $callback, mixed $initial = null): mixed {}
+// Note: array_filter, array_map, array_reduce, array_keys, and array_values
+// have been removed from this stub file because they have plugin-based return type
+// overrides in ArrayReturnTypeOverridePlugin which provide more sophisticated
+// type inference. See issue #5276.
 
 /**
  * @template TKey
@@ -113,21 +88,5 @@ function array_reduce(array $array, callable $callback, mixed $initial = null): 
  * @return array<TValue, TKey>
  */
 function array_flip(array $array): array {}
-
-/**
- * @template TKey
- * @template TValue
- * @param array<TKey, TValue> $array
- * @return list<TKey>
- */
-function array_keys(array $array, mixed $filter_value = null, bool $strict = false): array {}
-
-/**
- * @template TKey
- * @template TValue
- * @param array<TKey, TValue> $array
- * @return list<TValue>
- */
-function array_values(array $array): array {}
 
 }
