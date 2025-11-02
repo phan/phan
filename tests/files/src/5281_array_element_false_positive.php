@@ -25,3 +25,15 @@ function test_shape_only() {
         $callable();
     }
 }
+
+// Test case: callable[] union with array shape
+// Should preserve callable element type, not return mixed
+/** @param callable[] $callables */
+function test_callable_array($callables) {
+    $specific = ['class' => new OtherClass];
+    $arr = rand() % 2 ? $callables : $specific;
+    $item = $arr[0];
+    // $item should be callable|OtherClass, not mixed
+    // This verifies that CallableArrayType is not treated as "truly generic"
+    $item();
+}
