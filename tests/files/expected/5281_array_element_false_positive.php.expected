@@ -1,0 +1,3 @@
+%s:23 PhanCoalescingAlwaysNull Using $arr['callable'] of type null as the left hand side of a null coalescing (??) operation. The left hand side may be unnecessary.
+%s:24 PhanImpossibleCondition Impossible attempt to cast $callable of type null to truthy
+%s:38 PhanUndeclaredInvokeInCallable Possible attempt to access missing magic method __invoke of '\OtherClass'

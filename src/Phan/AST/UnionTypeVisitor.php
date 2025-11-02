@@ -49,6 +49,7 @@ use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IntType;
@@ -2372,6 +2373,7 @@ class UnionTypeVisitor extends AnalysisVisitor
          *           but have unknown array shapes in $union_type
          */
         $has_generic_array = false;
+        $has_truly_generic_array = false;  // Fix for #5281: Track plain untyped array (excludes types implementing GenericArrayInterface)
         $has_valid_string_access = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
@@ -2398,6 +2400,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                     // TODO: Could be more precise about check for ArrayAccess
                     $has_generic_array = true;
+                    // Track if this is a plain untyped array (not typed arrays like callable[], int[], etc.)
+                    // GenericArrayInterface is implemented by all typed arrays: GenericArrayType, CallableArrayType, etc.
+                    if ($type instanceof ArrayType && !($type instanceof GenericArrayInterface)) {
+                        $has_truly_generic_array = true;
+                    }
                     continue;
                 }
                 continue;
@@ -2422,6 +2429,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // This is exclusively array shape and non-array types.
                 // Return false to indicate that the offset doesn't exist in any of those array shape types.
                 return false;
+            }
+            // Fix for issue #5281: When we have a truly generic array type (not array<T>)
+            // and the key doesn't exist in any array shapes, return mixed to avoid falling
+            // back to genericArrayElementTypes() which would incorrectly extract types from
+            // unrelated array shape fields.
+            if ($has_truly_generic_array) {
+                return MixedType::instance(false)->asPHPDocUnionType();
             }
             return null;
         }
