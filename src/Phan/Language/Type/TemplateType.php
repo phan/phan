@@ -258,8 +258,14 @@ final class TemplateType extends Type
         if ($bound->isEmpty()) {
             return true;
         }
-        if ($actual->isEmpty() || $actual->hasMixedOrNonEmptyMixedType()) {
+        if ($actual->isEmpty()) {
             return false;
+        }
+        // Allow mixed types to satisfy bounds (consistent with regular type checking).
+        // Mixed could be compatible with any type at runtime, so we don't warn.
+        // This minimizes false positives when type information is unavailable.
+        if ($actual->hasMixedOrNonEmptyMixedType()) {
+            return true;
         }
 
         foreach ($actual->getTypeSet() as $type) {

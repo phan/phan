@@ -1,0 +1,2 @@
+%s:49 PhanUnusedVariable Unused definition of variable $obj3
+%s:52 PhanUnusedVariable Unused definition of variable $obj4
