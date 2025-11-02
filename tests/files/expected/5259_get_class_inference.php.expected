@@ -1,0 +1,6 @@
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $direct - it has union type class-string<\TestClass>(real=string)
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $fromFunc - it has union type class-string<\TestClass>(real=string)
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $union - it has union type class-string<\OtherClass|\TestClass>(real=string)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $fromMixed - it has union type class-string(real=string)
+%s:40 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is $mixed of type null but \get_class() takes object
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $fromGlobals - it has union type class-string(real=string)
