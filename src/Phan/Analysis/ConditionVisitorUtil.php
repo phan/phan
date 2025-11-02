@@ -1641,6 +1641,9 @@ trait ConditionVisitorUtil
                         return $this->modifyPropertyOfVariable($node, $type_modification_callback, $context, $args);
                     }
                     return $context;
+                case ast\AST_STATIC_PROP:
+                    // Handle self::$prop and static::$prop for type checks like is_null(self::$instance)
+                    return $this->modifyStaticPropertyOfSelfOrStatic($node, $type_modification_callback, $context, $args);
                 case ast\AST_ASSIGN:
                 case ast\AST_ASSIGN_REF:
                     $var_node = $node->children['var'];
@@ -1788,6 +1791,37 @@ trait ConditionVisitorUtil
 
         // Store the narrowed property type in the context
         return $context->withVariablePropertySetToTypeByName($variable_name, $property_name, $new_property_type);
+    }
+
+    /**
+     * Handle type checks like is_null(self::$instance) and update the context with narrowed static property type.
+     *
+     * @param Node $node a node of kind ast\AST_STATIC_PROP (e.g. the argument of is_null(self::$instance))
+     * @param Closure(CodeBase,Context,Variable,list<mixed>):void $type_modification_callback
+     *        A closure acting on a Variable instance (not really a variable) to modify its type
+     *
+     *        This is a function such as is_array, is_null, etc.
+     * @param Context $context
+     * @param list<mixed> $args
+     */
+    protected function modifyStaticPropertyOfSelfOrStatic(Node $node, Closure $type_modification_callback, Context $context, array $args): Context
+    {
+        if (!self::isSelfOrStaticClassNode($node->children['class'])) {
+            return $context;
+        }
+        $property_name = $node->children['prop'];
+        if (!is_string($property_name)) {
+            return $context;
+        }
+        // Give the static property a type and compute the new type
+        $old_property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node);
+        $property_variable = new Variable($context, "__phan", $old_property_type, 0);
+        $type_modification_callback($this->code_base, $context, $property_variable, $args);
+        $new_property_type = $property_variable->getUnionType();
+        if ($new_property_type->isIdenticalTo($old_property_type)) {
+            return $context;
+        }
+        return $context->withStaticPropertySetToTypeByName($property_name, $new_property_type);
     }
 
     /**

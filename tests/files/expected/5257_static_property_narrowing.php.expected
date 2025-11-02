@@ -1,0 +1,5 @@
+%s:22 PhanStaticPropIsStaticType Static property \Singleton::$instance is declared to have type null|static, but the only instance is shared among all subclasses (Did you mean \Singleton|null)
+%s:65 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is self::$stringOrNull of type null but \strlen() takes string
+%s:79 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is self::$stringOrNull of type null but \strlen() takes string
+%s:103 PhanUnusedVariable Unused definition of variable $hash
+%s:110 PhanStaticPropIsStaticType Static property \StaticKeywordTest::$instanceStatic is declared to have type null|static, but the only instance is shared among all subclasses (Did you mean \StaticKeywordTest|null)
