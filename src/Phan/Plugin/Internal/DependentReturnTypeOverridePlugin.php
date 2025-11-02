@@ -15,6 +15,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\CallableArrayType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
@@ -425,6 +426,41 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             );
         };
 
+        /**
+         * get_class() return type handler - infers class-string<T> based on argument type
+         * Issue #5275 - Improve type inference for get_class
+         *
+         * @param list<Node|int|float|string> $args
+         */
+        $get_class_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ): UnionType {
+            // get_class() without args is deprecated in PHP 7.2+
+            // Return generic class-string for safety
+            if (count($args) === 0) {
+                return ClassStringType::instance(false)->asPHPDocUnionType();
+            }
+
+            // Get the type of the argument
+            $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+
+            // Extract object types with known FQSENs
+            $object_types = $arg_type->objectTypesWithKnownFQSENs();
+
+            // If no object types or unknown type, return generic class-string
+            if ($object_types->isEmpty()) {
+                return ClassStringType::instance(false)->asPHPDocUnionType();
+            }
+
+            // Create class-string<T> where T is the union of object types
+            // Build the string representation and parse it
+            $type_string = 'class-string<' . $object_types->__toString() . '>';
+            return UnionType::fromFullyQualifiedPHPDocString($type_string);
+        };
+
         // TODO: Handle flags of preg_split.
         return [
             // commonly used functions where the return type depends on a passed in boolean
@@ -450,6 +486,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'explode'                     => $explode_handler,
             'constant'                    => $constant_handler,
             'func_get_args'               => $func_get_args_handler,
+            'get_class'                   => $get_class_handler,
         ];
     }
 
