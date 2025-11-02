@@ -1265,11 +1265,17 @@ class Config
             ? 'spl.phan_php'
             : 'spl_php81.phan_php';
 
-        // Standard library stub: PHP 8.4+ includes array_find(), array_find_key(), array_any(), array_all()
-        // PHP 8.1-8.3 uses a version without these PHP 8.4-only functions
-        $standard_stub = $effective_version >= 80400
-            ? 'standard_templates.phan_php'
-            : 'standard_templates_php81.phan_php';
+        // Standard library stub: Choose based on PHP version
+        // PHP 8.1-8.3: uses standard_templates_php81.phan_php (no 8.4+ functions)
+        // PHP 8.4: uses standard_templates_php84.phan_php (includes array_find, array_any, array_all, array_find_key)
+        // PHP 8.5+: uses standard_templates.phan_php (includes all 8.4 functions, plus array_first, array_last)
+        if ($effective_version >= 80500) {
+            $standard_stub = 'standard_templates.phan_php';
+        } elseif ($effective_version >= 80400) {
+            $standard_stub = 'standard_templates_php84.phan_php';
+        } else {
+            $standard_stub = 'standard_templates_php81.phan_php';
+        }
 
         return [
             'autoload_internal_extension_signatures' => [
