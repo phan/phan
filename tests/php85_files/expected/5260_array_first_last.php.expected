@@ -1,0 +1,16 @@
+%s:14 PhanUnreferencedFunction Possibly zero references to function \testStringArray()
+%s:20 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+%s:26 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+%s:33 PhanUnreferencedFunction Possibly zero references to function \testIntArray()
+%s:52 PhanUnreferencedFunction Possibly zero references to function \testEmptyArray()
+%s:72 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Person->name
+%s:78 PhanUnreferencedFunction Possibly zero references to function \testObjectArray()
+%s:101 PhanUnreferencedFunction Possibly zero references to function \testAssociativeArray()
+%s:124 PhanUnreferencedFunction Possibly zero references to function \testMixedArray()
+%s:140 PhanUnreferencedFunction Possibly zero references to function \testNullHandling()
+%s:146 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+%s:151 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
+%s:158 PhanUnreferencedFunction Possibly zero references to function \testArrayWithNulls()
+%s:172 PhanUnreferencedFunction Possibly zero references to function \testReturnValues()
+%s:182 PhanUnreferencedFunction Possibly zero references to function \testLiteralArrays()
+%s:191 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen

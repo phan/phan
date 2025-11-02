@@ -1,17 +1,16 @@
 <?php
 
 /**
- * Stub file for standard library functions with template support (PHP 8.5+)
+ * Stub file for standard library functions with template support (PHP 8.4) functions with template support
  *
  * This file provides template type annotations for standard library functions
  * that preserve types through transformations. These annotations are not
  * available from PHP reflection.
  *
- * This version is for PHP 8.5+ and includes all functions including array_first and array_last.
- * For PHP 8.4, use standard_templates_php84.phan_php instead.
- * For PHP 8.1-8.3, use standard_templates_php81.phan_php instead.
- *
  * @phan-file-suppress PhanRedefinedFunction
+ *
+ * This version is for PHP 8.4 and excludes functions added in PHP 8.5.
+ * For PHP 8.5+, use standard_templates.phan_php instead.
  */
 
 namespace {
@@ -55,26 +54,6 @@ function array_any(array $array, callable $callback): bool {}
  * @since 8.4
  */
 function array_all(array $array, callable $callback): bool {}
-
-/**
- * Returns the first value of an array (PHP 8.5+).
- *
- * @template TKey
- * @template TValue
- * @param array<TKey, TValue> $array
- * @return TValue|null Returns the first value, or null if the array is empty
- */
-function array_first(array $array): mixed {}
-
-/**
- * Returns the last value of an array (PHP 8.5+).
- *
- * @template TKey
- * @template TValue
- * @param array<TKey, TValue> $array
- * @return TValue|null Returns the last value, or null if the array is empty
- */
-function array_last(array $array): mixed {}
 
 // Note: array_filter, array_map, array_reduce, array_keys, and array_values
 // have been removed from this stub file because they have plugin-based return type
