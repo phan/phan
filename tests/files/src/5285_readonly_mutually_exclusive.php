@@ -156,3 +156,53 @@ class Test11_SwitchFallthrough {
         }
     }
 }
+
+// Test 12: Invalid - if/else inside while loop (SHOULD warn)
+class Test12_IfElseInLoop {
+    private readonly int $prop;
+
+    public function __construct(array $values) {
+        foreach ($values as $value) {
+            if ($value > 0) {
+                $this->prop = 1;  // Should warn: AccessReadOnlyPropertyMultipleTimes
+            } else {
+                $this->prop = 2;
+            }
+        }
+    }
+}
+
+// Test 13: Invalid - switch inside for loop (SHOULD warn)
+class Test13_SwitchInLoop {
+    private readonly string $prop;
+
+    public function __construct(array $items) {
+        for ($i = 0; $i < count($items); $i++) {
+            switch ($items[$i]) {
+                case 'a':
+                    $this->prop = 'alpha';  // Should warn: AccessReadOnlyPropertyMultipleTimes
+                    break;
+                case 'b':
+                    $this->prop = 'beta';
+                    break;
+            }
+        }
+    }
+}
+
+// Test 14: Invalid - nested if in while loop (SHOULD warn)
+class Test14_NestedIfInWhileLoop {
+    private readonly int $prop;
+
+    public function __construct() {
+        $i = 0;
+        while ($i < 10) {
+            if (rand()) {
+                $this->prop = 100;  // Should warn: AccessReadOnlyPropertyMultipleTimes
+            } else {
+                $this->prop = 200;
+            }
+            $i++;
+        }
+    }
+}

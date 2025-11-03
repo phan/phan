@@ -1683,6 +1683,12 @@ class AssignmentVisitor extends AnalysisVisitor
         $node1_ancestors = $assignment1['ancestors'];
         $node2_ancestors = $assignment2['ancestors'];
 
+        // If both assignments share a loop ancestor, they can execute in different iterations
+        // even if they're in mutually exclusive branches within the loop
+        if ($this->shareLoopAncestor($node1_ancestors, $node2_ancestors)) {
+            return false;
+        }
+
         // Check for if/else mutual exclusion
         if ($this->areInSiblingIfElseBranches($node1_ancestors, $node2_ancestors)) {
             return true;
@@ -1693,6 +1699,33 @@ class AssignmentVisitor extends AnalysisVisitor
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Check if two assignments share a common loop ancestor
+     * Loops allow branches to execute in different iterations
+     *
+     * @param list<Node> $ancestors1
+     * @param list<Node> $ancestors2
+     */
+    private function shareLoopAncestor(array $ancestors1, array $ancestors2): bool
+    {
+        foreach ($ancestors1 as $ancestor1) {
+            if (\in_array($ancestor1->kind, [
+                \ast\AST_WHILE,
+                \ast\AST_DO_WHILE,
+                \ast\AST_FOR,
+                \ast\AST_FOREACH,
+            ], true)) {
+                // Check if this loop is also an ancestor of the second assignment
+                foreach ($ancestors2 as $ancestor2) {
+                    if ($ancestor1 === $ancestor2) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
