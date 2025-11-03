@@ -99,8 +99,12 @@ final class ArgumentType
             [$argcount, $is_unpack] = self::getArgCount($code_base, $context, $arglist_children);
         }
 
+        // If the called function/method is from a union type containing mixed or non-empty-mixed,
+        // suppress parameter validation since mixed permits any value and parameters
+        $suppress_param_validation = self::shouldSuppressParamValidationForNode($code_base, $context, $node);
+
         // Make sure we have enough arguments
-        if ($argcount < $method->getNumberOfRequiredParameters()) {
+        if (!$suppress_param_validation && $argcount < $method->getNumberOfRequiredParameters()) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
@@ -140,7 +144,7 @@ final class ArgumentType
 
         // Make sure we don't have too many arguments
         $argcount_for_check = ($is_unpack ? $argcount + 1 : $argcount);
-        if ($argcount_for_check > $method->getNumberOfParameters() && !self::isVarargs($code_base, $method)) {
+        if (!$suppress_param_validation && $argcount_for_check > $method->getNumberOfParameters() && !self::isVarargs($code_base, $method)) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 if ($argcount_for_check <= $alternate_method->getNumberOfParameters()) {
@@ -1891,6 +1895,69 @@ final class ArgumentType
                 }
             }
         }
+        return false;
+    }
+
+    /**
+     * Determines whether to suppress parameter validation (too many/few parameters)
+     * when the called node represents a union type containing mixed.
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param Node $node The call/new expression node
+     * @return bool True if parameter validation should be suppressed
+     */
+    private static function shouldSuppressParamValidationForNode(
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ): bool {
+        // For method/static calls, check the class/object type
+        if ($node->kind === ast\AST_METHOD_CALL || $node->kind === ast\AST_NULLSAFE_METHOD_CALL) {
+            $expr = $node->children['expr'];
+            if ($expr instanceof Node) {
+                try {
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
+                    return $type->hasMixedOrNonEmptyMixedType();
+                } catch (Exception) {
+                    // Ignore errors, don't suppress validation
+                }
+            }
+        } elseif ($node->kind === ast\AST_STATIC_CALL) {
+            // For static calls, check if the class is a string variable with mixed type
+            $class_node = $node->children['class'];
+            if ($class_node instanceof Node && $class_node->kind === ast\AST_VAR) {
+                try {
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_node);
+                    return $type->hasMixedOrNonEmptyMixedType();
+                } catch (Exception) {
+                    // Ignore errors, don't suppress validation
+                }
+            }
+        } elseif ($node->kind === ast\AST_NEW) {
+            // For new expressions, check the class expression type
+            $class_node = $node->children['class'];
+            if ($class_node instanceof Node) {
+                try {
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_node);
+                    return $type->hasMixedOrNonEmptyMixedType();
+                } catch (Exception) {
+                    // Ignore errors, don't suppress validation
+                }
+            }
+        } elseif ($node->kind === ast\AST_CALL) {
+            // For function calls, check if the expression is a variable with mixed type
+            $expr = $node->children['expr'];
+            if ($expr instanceof Node) {
+                try {
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr);
+                    return $type->hasMixedOrNonEmptyMixedType();
+                } catch (Exception) {
+                    // Ignore errors, don't suppress validation
+                }
+            }
+        }
+
         return false;
     }
 }

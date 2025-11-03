@@ -10,7 +10,7 @@
  */
 
 /**
- * @template T of Foo|Bar
+ * @template T of FooTemplate|BarTemplate
  */
 class Processor
 {
@@ -30,21 +30,21 @@ class Processor
     }
 }
 
-class Foo {}
-class Bar {}
-class Baz {}
+class FooTemplate {}
+class BarTemplate {}
+class BazTemplate {}
 
 function consumeProcessor(Processor $processor): void
 {
     $value = $processor->get();
-    if ($value instanceof Foo || $value instanceof Bar) {
+    if ($value instanceof FooTemplate || $value instanceof BarTemplate) {
         return;
     }
 }
 
-consumeProcessor(new Processor(new Foo()));
-consumeProcessor(new Processor(new Bar()));
-consumeProcessor(new Processor(new Baz()));
+consumeProcessor(new Processor(new FooTemplate()));
+consumeProcessor(new Processor(new BarTemplate()));
+consumeProcessor(new Processor(new BazTemplate()));
 
 /**
  * @template-covariant T

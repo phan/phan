@@ -4676,9 +4676,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             return;
         }
 
+        // If the union type contains mixed, suppress individual type warnings
+        // since mixed permits any value
+        $suppress_type_warnings = $node_type->hasMixedOrNonEmptyMixedType();
+
         $has_type = false;
         foreach ($node_type->getTypeSet() as $type) {
-            $func = $type->asFunctionInterfaceOrNull($code_base, $context, $log_error);
+            $func = $type->asFunctionInterfaceOrNull($code_base, $context, $log_error && !$suppress_type_warnings);
             if ($func) {
                 yield $func;
                 $has_type = true;
