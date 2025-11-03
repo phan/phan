@@ -632,22 +632,45 @@ class SuppressionTool
         $indent = $this->getIndentation($lines[$function_line] ?? '');
 
         if ($has_phpdoc) {
-            // Insert @suppress into existing PHPDoc (before the closing */)
+            // Check if it's a single-line PHPDoc comment
             $close_line = $function_line - 1;
-            $close_offset = $cache_entry->getLineOffset($close_line);
-
-            if ($close_offset === null) {
-                return null;
-            }
-
-            // Find position right after last content line in PHPDoc
-            $line_content = $lines[$close_line] ?? '';
-            $insert_offset = $close_offset;
+            $close_line_content = trim($lines[$close_line] ?? '');
+            $is_single_line = preg_match('/^\/\*\*.*\*\/$/', $close_line_content);
 
             $type_list = implode(', ', $types);
-            $suppress_line = "{$indent} * @suppress {$type_list}\n";
 
-            return new FileEdit($insert_offset, $insert_offset, $suppress_line);
+            if ($is_single_line) {
+                // Convert single-line to multi-line and add @suppress
+                // Extract content between /** and */
+                preg_match('/^\/\*\*\s*(.*?)\s*\*\/$/', $close_line_content, $matches);
+                $content = $matches[1] ?? '';
+
+                $close_offset = $cache_entry->getLineOffset($close_line);
+                if ($close_offset === null) {
+                    return null;
+                }
+
+                // Build multi-line replacement
+                $new_phpdoc = "{$indent}/**\n";
+                if (!empty($content)) {
+                    $new_phpdoc .= "{$indent} * {$content}\n";
+                }
+                $new_phpdoc .= "{$indent} * @suppress {$type_list}\n";
+                $new_phpdoc .= "{$indent} */\n";
+
+                // Replace the entire single-line comment
+                $line_end_offset = $close_offset + strlen($lines[$close_line] ?? '');
+                return new FileEdit($close_offset, $line_end_offset, $new_phpdoc);
+            } else {
+                // Multi-line PHPDoc: Insert @suppress before closing */
+                $close_offset = $cache_entry->getLineOffset($close_line);
+                if ($close_offset === null) {
+                    return null;
+                }
+
+                $suppress_line = "{$indent} * @suppress {$type_list}\n";
+                return new FileEdit($close_offset, $close_offset, $suppress_line);
+            }
         } else {
             // Create new PHPDoc block
             $type_list = implode(', ', $types);
