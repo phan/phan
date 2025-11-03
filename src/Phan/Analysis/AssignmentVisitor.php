@@ -1620,7 +1620,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             // Check if these assignments are in mutually exclusive branches
-            if (!$this->areAssignmentsMutuallyExclusive($current_assignment, $other_assignment)) {
+            if (!self::areAssignmentsMutuallyExclusive($current_assignment, $other_assignment)) {
                 // They're not mutually exclusive, so this is a potential error
                 $this->emitIssue(
                     Issue::AccessReadOnlyPropertyMultipleTimes,
@@ -1678,24 +1678,24 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param array{line:int,node:Node,ancestors:list<Node>} $assignment1
      * @param array{line:int,node:Node,ancestors:list<Node>} $assignment2
      */
-    private function areAssignmentsMutuallyExclusive(array $assignment1, array $assignment2): bool
+    private static function areAssignmentsMutuallyExclusive(array $assignment1, array $assignment2): bool
     {
         $node1_ancestors = $assignment1['ancestors'];
         $node2_ancestors = $assignment2['ancestors'];
 
         // If both assignments share a loop ancestor, they can execute in different iterations
         // even if they're in mutually exclusive branches within the loop
-        if ($this->shareLoopAncestor($node1_ancestors, $node2_ancestors)) {
+        if (self::shareLoopAncestor($node1_ancestors, $node2_ancestors)) {
             return false;
         }
 
         // Check for if/else mutual exclusion
-        if ($this->areInSiblingIfElseBranches($node1_ancestors, $node2_ancestors)) {
+        if (self::areInSiblingIfElseBranches($node1_ancestors, $node2_ancestors)) {
             return true;
         }
 
         // Check for switch/case mutual exclusion
-        if ($this->areInDifferentSwitchCases($node1_ancestors, $node2_ancestors)) {
+        if (self::areInDifferentSwitchCases($node1_ancestors, $node2_ancestors)) {
             return true;
         }
 
@@ -1709,7 +1709,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Node> $ancestors1
      * @param list<Node> $ancestors2
      */
-    private function shareLoopAncestor(array $ancestors1, array $ancestors2): bool
+    private static function shareLoopAncestor(array $ancestors1, array $ancestors2): bool
     {
         foreach ($ancestors1 as $ancestor1) {
             if (\in_array($ancestor1->kind, [
@@ -1734,7 +1734,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Node> $ancestors1
      * @param list<Node> $ancestors2
      */
-    private function areInSiblingIfElseBranches(array $ancestors1, array $ancestors2): bool
+    private static function areInSiblingIfElseBranches(array $ancestors1, array $ancestors2): bool
     {
         // Find all AST_IF nodes that contain AST_IF_ELEM ancestors
         $if_elems1 = [];
@@ -1774,7 +1774,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Node> $ancestors1
      * @param list<Node> $ancestors2
      */
-    private function areInDifferentSwitchCases(array $ancestors1, array $ancestors2): bool
+    private static function areInDifferentSwitchCases(array $ancestors1, array $ancestors2): bool
     {
         // Find all SWITCH_LIST nodes that contain SWITCH_CASE ancestors
         $switch_cases1 = [];
@@ -1804,8 +1804,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Same switch statement, different cases
                     // Only consider them mutually exclusive if both cases have unconditional terminators
                     // (break, return, throw) to prevent false negatives on fallthrough cases
-                    if ($this->switchCaseHasUnconditionalTerminator($case1['case']) &&
-                        $this->switchCaseHasUnconditionalTerminator($case2['case'])) {
+                    if (self::switchCaseHasUnconditionalTerminator($case1['case']) &&
+                        self::switchCaseHasUnconditionalTerminator($case2['case'])) {
                         return true;
                     }
                 }
@@ -1819,7 +1819,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * Check if a switch case has an unconditional terminator (break, return, throw)
      * to prevent fallthrough to the next case.
      */
-    private function switchCaseHasUnconditionalTerminator(Node $case_node): bool
+    private static function switchCaseHasUnconditionalTerminator(Node $case_node): bool
     {
         $stmts = $case_node->children['stmts'];
         if (!($stmts instanceof Node)) {
