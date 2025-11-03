@@ -1,9 +1,9 @@
-%s:3 PhanSuspiciousValueComparison Suspicious attempt to compare +1 of type int (value: 1) to 0 of type int (value: 0) with operator '==='
-%s:4 PhanSuspiciousValueComparison Suspicious attempt to compare -1 of type int (value: -1) to 0 of type int (value: 0) with operator '==='
-%s:5 PhanSuspiciousValueComparison Suspicious attempt to compare ~1 of type int (value: -2) to 0 of type int (value: 0) with operator '==='
-%s:6 PhanSuspiciousValueComparison Suspicious attempt to compare ~1.0E+100 of type int (value: -1) to 0 of type int (value: 0) with operator '==='
+%s:3 PhanImpossibleValueComparison Impossible comparison of +1 of type int (value: 1) to 0 of type int (value: 0) with operator '===' (the comparison is always false)
+%s:4 PhanImpossibleValueComparison Impossible comparison of -1 of type int (value: -1) to 0 of type int (value: 0) with operator '===' (the comparison is always false)
+%s:5 PhanImpossibleValueComparison Impossible comparison of ~1 of type int (value: -2) to 0 of type int (value: 0) with operator '===' (the comparison is always false)
+%s:6 PhanImpossibleValueComparison Impossible comparison of ~1.0E+100 of type int (value: -1) to 0 of type int (value: 0) with operator '===' (the comparison is always false)
 %s:6 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is 1.0E+100 (expected number that can fit in an int, or string)
 %s:7 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is float (expected number that can fit in an int, or string)
 %s:8 PhanTypeInvalidUnaryOperandBitwiseNot Invalid operator: unary operand of ~ is float (expected number that can fit in an int, or string)
-%s:15 PhanSuspiciousValueComparison Suspicious attempt to compare ~'1' of type string to 0 of type int (value: 0) with operator '==='
-%s:16 PhanSuspiciousValueComparison Suspicious attempt to compare ~(~'0') of type string to 0 of type int (value: 0) with operator '==='
+%s:15 PhanImpossibleValueComparison Impossible comparison of ~'1' of type string to 0 of type int (value: 0) with operator '===' (the comparison is always false)
+%s:16 PhanImpossibleValueComparison Impossible comparison of ~(~'0') of type string to 0 of type int (value: 0) with operator '===' (the comparison is always false)

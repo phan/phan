@@ -274,6 +274,12 @@ class Issue
     public const SuspiciousValueComparison             = 'PhanSuspiciousValueComparison';
     public const SuspiciousValueComparisonInLoop       = 'PhanSuspiciousValueComparisonInLoop';
     public const SuspiciousValueComparisonInGlobalScope = 'PhanSuspiciousValueComparisonInGlobalScope';
+    public const RedundantValueComparison              = 'PhanRedundantValueComparison';
+    public const RedundantValueComparisonInLoop        = 'PhanRedundantValueComparisonInLoop';
+    public const RedundantValueComparisonInGlobalScope = 'PhanRedundantValueComparisonInGlobalScope';
+    public const ImpossibleValueComparison             = 'PhanImpossibleValueComparison';
+    public const ImpossibleValueComparisonInLoop       = 'PhanImpossibleValueComparisonInLoop';
+    public const ImpossibleValueComparisonInGlobalScope = 'PhanImpossibleValueComparisonInGlobalScope';
     public const SuspiciousLoopDirection               = 'PhanSuspiciousLoopDirection';
     public const SuspiciousWeakTypeComparison          = 'PhanSuspiciousWeakTypeComparison';
     public const SuspiciousWeakTypeComparisonInLoop    = 'PhanSuspiciousWeakTypeComparisonInLoop';
@@ -2857,6 +2863,54 @@ class Issue
                 "Suspicious attempt to compare {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (likely a false positive)",
                 self::REMEDIATION_B,
                 10133
+            ),
+            new Issue(
+                self::RedundantValueComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' (the comparison is always true)",
+                self::REMEDIATION_B,
+                10206
+            ),
+            new Issue(
+                self::RedundantValueComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (the comparison is always true, likely a false positive)",
+                self::REMEDIATION_B,
+                10207
+            ),
+            new Issue(
+                self::RedundantValueComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (the comparison is always true, likely a false positive)",
+                self::REMEDIATION_B,
+                10208
+            ),
+            new Issue(
+                self::ImpossibleValueComparison,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' (the comparison is always false)",
+                self::REMEDIATION_B,
+                10209
+            ),
+            new Issue(
+                self::ImpossibleValueComparisonInLoop,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (the comparison is always false, likely a false positive)",
+                self::REMEDIATION_B,
+                10210
+            ),
+            new Issue(
+                self::ImpossibleValueComparisonInGlobalScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (the comparison is always false, likely a false positive)",
+                self::REMEDIATION_B,
+                10211
             ),
             new Issue(
                 self::SuspiciousLoopDirection,

@@ -1,1 +1,1 @@
-%s:5 PhanSuspiciousValueComparison Suspicious attempt to compare $arr['x'] of type true to null of type null with operator '!=='
+%s:5 PhanRedundantValueComparison Redundant comparison of $arr['x'] of type true to null of type null with operator '!==' (the comparison is always true)

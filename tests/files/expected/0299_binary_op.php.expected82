@@ -6,17 +6,17 @@
 %s:14 PhanTypeMismatchArgumentReal Argument 1 ($x) is ('0' || '1') of type bool but \expect_int_298() takes int defined at %s:4
 %s:15 PhanTypeMismatchArgumentReal Argument 1 ($x) is '01' of type string but \expect_int_298() takes int defined at %s:4
 %s:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 / 2) of type int (value: 2) but \expect_string_298() takes string defined at %s:3
-%s:17 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '=='
+%s:17 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '==' (the comparison is always false)
 %s:17 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 == 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:18 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '==='
+%s:18 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '===' (the comparison is always false)
 %s:18 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 === 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:19 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '!='
+%s:19 PhanRedundantValueComparison Redundant comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '!=' (the comparison is always true)
 %s:19 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 != 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:20 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '!=='
+%s:20 PhanRedundantValueComparison Redundant comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '!==' (the comparison is always true)
 %s:20 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 !== 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:21 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '<'
+%s:21 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '<' (the comparison is always false)
 %s:21 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 < 2) of type bool but \expect_string_298() takes string defined at %s:3
-%s:22 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 2 of type int (value: 2) with operator '<='
+%s:22 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 2 of type int (value: 2) with operator '<=' (the comparison is always false)
 %s:22 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 <= 2) of type bool but \expect_string_298() takes string defined at %s:3
 %s:23 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 * 7) of type int (value: 28) but \expect_string_298() takes string defined at %s:3
 %s:24 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 % 7) of type int but \expect_string_298() takes string defined at %s:3
@@ -31,9 +31,9 @@
 %s:32 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 | 7) of type int (value: 7) but \expect_string_298() takes string defined at %s:3
 %s:33 PhanCoalescingNeverNull Using non-null 4 of type 4 as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
 %s:33 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 ?? 7) of type int (value: 4) but \expect_string_298() takes string defined at %s:3
-%s:34 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 7 of type int (value: 7) with operator '>'
+%s:34 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 7 of type int (value: 7) with operator '>' (the comparison is always false)
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 > 7) of type bool but \expect_string_298() takes string defined at %s:3
-%s:35 PhanSuspiciousValueComparison Suspicious attempt to compare 4 of type int (value: 4) to 7 of type int (value: 7) with operator '>='
+%s:35 PhanImpossibleValueComparison Impossible comparison of 4 of type int (value: 4) to 7 of type int (value: 7) with operator '>=' (the comparison is always false)
 %s:35 PhanTypeMismatchArgumentReal Argument 1 ($x) is (4 >= 7) of type bool but \expect_string_298() takes string defined at %s:3
 %s:39 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($strVar .= 'suffix') of type string but \expect_int_298() takes int defined at %s:4
 %s:40 PhanTypeMismatchArgument Argument 1 ($x) is ($intVar ^= 2) of type int but \expect_string_298() takes string defined at %s:3

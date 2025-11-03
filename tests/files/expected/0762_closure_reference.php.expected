@@ -1,1 +1,1 @@
-%s:14 PhanSuspiciousValueComparison Suspicious attempt to compare $y of type false to 2 of type int (value: 2) with operator '==='
+%s:14 PhanImpossibleValueComparison Impossible comparison of $y of type false to 2 of type int (value: 2) with operator '===' (the comparison is always false)

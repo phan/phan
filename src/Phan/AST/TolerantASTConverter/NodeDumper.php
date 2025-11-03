@@ -144,7 +144,7 @@ class NodeDumper
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
                 \Phan\Library\StringUtil::jsonEncode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
             );
-        } elseif ($ast_node === null) { // @phan-suppress-current-line PhanSuspiciousValueComparison intentional null check
+        } elseif ($ast_node === null) { // @phan-suppress-current-line PhanRedundantValueComparison intentional null check
             return 'null';
         } elseif (\is_scalar($ast_node)) {
             return \var_representation($ast_node);

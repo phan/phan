@@ -1,0 +1,3 @@
+%s:8 PhanRedundantValueComparison Redundant comparison of $letter of type string to 'a' of type string with operator '===' (the comparison is always true)
+%s:17 PhanImpossibleValueComparison Impossible comparison of $letter of type string to 'b' of type string with operator '===' (the comparison is always false)
+%s:26 PhanRedundantValueComparison Redundant comparison of $x of type int (value: 5) to 5 of type int (value: 5) with operator '===' (the comparison is always true)

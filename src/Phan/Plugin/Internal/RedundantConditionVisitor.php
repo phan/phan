@@ -301,7 +301,8 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     return $right;
                 };
 
-                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_args, $context): void {
+                $unique_result = \reset($unique_results);
+                $context->deferCheckToOutermostLoop(static function (Context $context_after_loop) use ($code_base, $node, $left_type_fetcher, $right_type_fetcher, $left, $right, $issue_args, $context, $unique_result): void {
                     // Give up in any of these cases, for the left or right types
                     // 1. We don't know how to fetch the new type after the loop.
                     // 2. We don't know the real value of the new type after the loop.
@@ -314,10 +315,20 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
                     if (!$new_right_type || $new_right_type->isEmpty() || !$right->isEqualTo($new_right_type)) {
                         return;
                     }
+
+                    // Determine the correct issue type based on the comparison result
+                    if ($unique_result === true) {
+                        $base_issue = Issue::RedundantValueComparison;
+                    } elseif ($unique_result === false) {
+                        $base_issue = Issue::ImpossibleValueComparison;
+                    } else {
+                        $base_issue = Issue::SuspiciousValueComparison;
+                    }
+
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, Issue::SuspiciousValueComparison),
+                        RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $context, $base_issue),
                         $node->lineno,
                         ...$issue_args
                     );
@@ -333,10 +344,22 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $issue_context = $issue_context->withoutLoops();
         }
         // Don't emit the loop version of this issue if this is in the outermost loop, but still emit it if this is a loop inside of a different loop.
+
+        // Determine the correct issue type based on the comparison result
+        $unique_result = \reset($unique_results);
+        if ($unique_result === true) {
+            $base_issue = Issue::RedundantValueComparison;
+        } elseif ($unique_result === false) {
+            $base_issue = Issue::ImpossibleValueComparison;
+        } else {
+            // Should not happen since we check scalar values, but fallback to suspicious
+            $base_issue = Issue::SuspiciousValueComparison;
+        }
+
         Issue::maybeEmit(
             $code_base,
             $context,
-            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $issue_context, Issue::SuspiciousValueComparison),
+            RedundantCondition::chooseSpecificImpossibleOrRedundantIssueKind($node, $issue_context, $base_issue),
             $node->lineno,
             ...$issue_args
         );
