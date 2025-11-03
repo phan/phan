@@ -1,0 +1,2 @@
+%s:74 PhanTypeMismatchArgumentReal Argument 1 ($x) is '123' of type string but \expect_int_5284() takes int defined at %s:69
+%s:102 PhanTypeMismatchArgumentReal Argument 1 ($x) is $typed_var of type string but \expect_int_5284() takes int defined at %s:69

@@ -1467,6 +1467,44 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a declare block and analyze its statements
+     *
+     * @param Node $node
+     * An AST node of type AST_DECLARE
+     *
+     * @return Context
+     * The updated context after visiting the node
+     */
+    public function visitDeclare(Node $node): Context
+    {
+        // Start with the current context
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+
+        // Handle strict_types directive
+        $declares = $node->children['declares'];
+        if ($declares instanceof Node) {
+            foreach ($declares->children as $elem) {
+                if ($elem instanceof Node) {
+                    ['name' => $name, 'value' => $value] = $elem->children;
+                    if ('strict_types' === $name && \is_int($value)) {
+                        $context = $context->withStrictTypes($value);
+                    }
+                }
+            }
+        }
+
+        // Analyze the statements inside the declare block
+        // Note: declare blocks do not create a new variable scope in PHP
+        $stmts_node = $node->children['stmts'];
+        if ($stmts_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $stmts_node);
+        }
+
+        return $context;
+    }
+
+    /**
      * @param Node $node
      * An AST node we'd like to analyze the statements for
      *
