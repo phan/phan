@@ -1512,6 +1512,30 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $new_type);
     }
 
+    private function handleStaticPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name): void
+    {
+        if ($this->dim_depth === 0) {
+            $new_type = $this->right_type;
+        } else {
+            // Copied from visitVar
+            $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
+            $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $old_type = $old_type->nonNullableClone();
+            if ($old_type->isEmpty()) {
+                $old_type = ArrayType::instance(false)->asPHPDocUnionType();
+            }
+
+            if ($this->dim_depth > 1) {
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+            } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
+                $new_type = $old_type->withUnionType($right_type);
+            } else {
+                $new_type = ArrayType::combineArrayTypesOverriding($right_type, $old_type, true);
+            }
+        }
+        $this->context = $this->context->withStaticPropertySetToTypeByName($prop_name, $new_type);
+    }
+
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void
     {
         $class_fqsen = $property->getClassFQSEN();
@@ -1851,11 +1875,20 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
+        $class_node = $node->children['class'];
+        // Check if this is a self/static/parent reference for context tracking
+        if ($class_node instanceof Node && $class_node->kind === \ast\AST_NAME) {
+            $name = $class_node->children['name'] ?? null;
+            if (\is_string($name) && \in_array(\strtolower($name), ['self', 'static', 'parent'], true)) {
+                $this->handleStaticPropertyAssignmentInLocalScopeByName($node, $property_name);
+            }
+        }
+
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $node->children['class']
+                $class_node
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
         } catch (\Exception) {
             // If we can't figure out what kind of a class

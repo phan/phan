@@ -1,0 +1,6 @@
+%s:8 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-debug-var self::$instance'
+%s:21 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-debug-var static::$data'
+%s:36 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-debug-var parent::$config'
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type \Cache5283(real=\Cache5283)
+%s:64 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-debug-var self::$primary'
+%s:64 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-debug-var self::$secondary'
