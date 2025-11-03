@@ -1,0 +1,8 @@
+%s:41 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test3_Sequential->prop after initialization
+%s:52 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test4_SameBranch->prop after initialization
+%s:89 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test7_IfAndAfter->prop after initialization
+%s:117 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test9_BeforeAndInIf->prop after initialization
+%s:154 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test11_SwitchFallthrough->prop after initialization
+%s:169 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test12_IfElseInLoop->prop after initialization
+%s:186 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test13_SwitchInLoop->prop after initialization
+%s:203 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \Test14_NestedIfInWhileLoop->prop after initialization

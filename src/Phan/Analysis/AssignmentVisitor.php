@@ -1598,8 +1598,8 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private function checkMultipleReadOnlyPropertyAssignments(Property $property, Node $node, FunctionInterface $method): void
     {
-        // For now, we'll use a simple heuristic: track property assignments in the method's AST
-        // A more comprehensive solution would require data flow analysis across all code paths
+        // Track property assignments in the method's AST and check if multiple assignments
+        // occur on the same execution path (not in mutually exclusive branches)
 
         // Check if we can detect multiple assignments in the method
         $property_name = $property->getName();
@@ -1609,26 +1609,65 @@ class AssignmentVisitor extends AnalysisVisitor
             return;
         }
 
-        // Find all assignment line numbers for this property in the method
-        $assignment_lines = $this->findPropertyAssignmentLines($method_node, $property_name);
+        // Find all assignments for this property in the method
+        $assignments = $this->findPropertyAssignmentLines($method_node, $property_name);
 
-        // Only warn if there are multiple assignments AND this is not the first one
-        if (count($assignment_lines) > 1 && $node->lineno !== min($assignment_lines)) {
-            $this->emitIssue(
-                Issue::AccessReadOnlyPropertyMultipleTimes,
-                $node->lineno,
-                $property->asPropertyFQSENString()
-            );
+        // If there's only one assignment, no problem
+        if (count($assignments) <= 1) {
+            return;
+        }
+
+        // Find the current assignment in the list
+        $current_assignment = null;
+        foreach ($assignments as $assignment) {
+            if ($assignment['line'] === $node->lineno) {
+                $current_assignment = $assignment;
+                break;
+            }
+        }
+
+        if (!$current_assignment) {
+            return;
+        }
+
+        // Check if this assignment conflicts with any earlier assignment
+        // (i.e., they're NOT in mutually exclusive branches)
+        foreach ($assignments as $other_assignment) {
+            // Skip comparing with itself
+            if ($other_assignment['line'] === $current_assignment['line']) {
+                continue;
+            }
+
+            // Only warn about later assignments
+            if ($other_assignment['line'] > $current_assignment['line']) {
+                continue;
+            }
+
+            // Check if these assignments are in mutually exclusive branches
+            if (!self::areAssignmentsMutuallyExclusive($current_assignment, $other_assignment)) {
+                // They're not mutually exclusive, so this is a potential error
+                $this->emitIssue(
+                    Issue::AccessReadOnlyPropertyMultipleTimes,
+                    $node->lineno,
+                    $property->asPropertyFQSENString()
+                );
+                return;
+            }
         }
     }
 
     /**
-     * Find all line numbers where a property is assigned in an AST node tree
-     * @return list<int>
+     * Find all assignments where a property is assigned in an AST node tree
+     * @param list<Node> $ancestors
+     * @return list<array{line:int,node:Node,ancestors:list<Node>}>
      */
-    private function findPropertyAssignmentLines(Node $node, string $property_name): array
+    private function findPropertyAssignmentLines(Node $node, string $property_name, array $ancestors = []): array
     {
-        $lines = [];
+        $assignments = [];
+
+        // Add current node to ancestors for children
+        $current_ancestors = $ancestors;
+        $current_ancestors[] = $node;
 
         // Check if this node is an assignment to the property
         if ($node->kind === \ast\AST_ASSIGN) {
@@ -1642,7 +1681,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $expr_node instanceof Node &&
                     $expr_node->kind === \ast\AST_VAR &&
                     $expr_node->children['name'] === 'this') {
-                    $lines[] = $node->lineno;
+                    $assignments[] = ['line' => $node->lineno, 'node' => $node, 'ancestors' => $ancestors];
                 }
             }
         }
@@ -1650,11 +1689,187 @@ class AssignmentVisitor extends AnalysisVisitor
         // Recursively check child nodes
         foreach ($node->children as $child) {
             if ($child instanceof Node) {
-                $lines = \array_merge($lines, $this->findPropertyAssignmentLines($child, $property_name));
+                $assignments = \array_merge($assignments, $this->findPropertyAssignmentLines($child, $property_name, $current_ancestors));
             }
         }
 
-        return $lines;
+        return $assignments;
+    }
+
+    /**
+     * Check if two assignment nodes are in mutually exclusive code branches
+     *
+     * @param array{line:int,node:Node,ancestors:list<Node>} $assignment1
+     * @param array{line:int,node:Node,ancestors:list<Node>} $assignment2
+     */
+    private static function areAssignmentsMutuallyExclusive(array $assignment1, array $assignment2): bool
+    {
+        $node1_ancestors = $assignment1['ancestors'];
+        $node2_ancestors = $assignment2['ancestors'];
+
+        // If both assignments share a loop ancestor, they can execute in different iterations
+        // even if they're in mutually exclusive branches within the loop
+        if (self::shareLoopAncestor($node1_ancestors, $node2_ancestors)) {
+            return false;
+        }
+
+        // Check for if/else mutual exclusion
+        if (self::areInSiblingIfElseBranches($node1_ancestors, $node2_ancestors)) {
+            return true;
+        }
+
+        // Check for switch/case mutual exclusion
+        if (self::areInDifferentSwitchCases($node1_ancestors, $node2_ancestors)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if two assignments share a common loop ancestor
+     * Loops allow branches to execute in different iterations
+     *
+     * @param list<Node> $ancestors1
+     * @param list<Node> $ancestors2
+     */
+    private static function shareLoopAncestor(array $ancestors1, array $ancestors2): bool
+    {
+        foreach ($ancestors1 as $ancestor1) {
+            if (\in_array($ancestor1->kind, [
+                \ast\AST_WHILE,
+                \ast\AST_DO_WHILE,
+                \ast\AST_FOR,
+                \ast\AST_FOREACH,
+            ], true)) {
+                // Check if this loop is also an ancestor of the second assignment
+                foreach ($ancestors2 as $ancestor2) {
+                    if ($ancestor1 === $ancestor2) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if two assignments are in sibling if/else branches
+     * @param list<Node> $ancestors1
+     * @param list<Node> $ancestors2
+     */
+    private static function areInSiblingIfElseBranches(array $ancestors1, array $ancestors2): bool
+    {
+        // Find all AST_IF nodes that contain AST_IF_ELEM ancestors
+        $if_elems1 = [];
+        for ($i = 0; $i < count($ancestors1) - 1; $i++) {
+            if ($ancestors1[$i]->kind === \ast\AST_IF) {
+                // The next node should be an IF_ELEM
+                if ($ancestors1[$i + 1]->kind === \ast\AST_IF_ELEM) {
+                    $if_elems1[] = ['if' => $ancestors1[$i], 'if_elem' => $ancestors1[$i + 1]];
+                }
+            }
+        }
+
+        $if_elems2 = [];
+        for ($i = 0; $i < count($ancestors2) - 1; $i++) {
+            if ($ancestors2[$i]->kind === \ast\AST_IF) {
+                // The next node should be an IF_ELEM
+                if ($ancestors2[$i + 1]->kind === \ast\AST_IF_ELEM) {
+                    $if_elems2[] = ['if' => $ancestors2[$i], 'if_elem' => $ancestors2[$i + 1]];
+                }
+            }
+        }
+
+        // Check if any IF node is shared but the IF_ELEM is different
+        foreach ($if_elems1 as $elem1) {
+            foreach ($if_elems2 as $elem2) {
+                if ($elem1['if'] === $elem2['if'] && $elem1['if_elem'] !== $elem2['if_elem']) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if two assignments are in different switch cases
+     * @param list<Node> $ancestors1
+     * @param list<Node> $ancestors2
+     */
+    private static function areInDifferentSwitchCases(array $ancestors1, array $ancestors2): bool
+    {
+        // Find all SWITCH_LIST nodes that contain SWITCH_CASE ancestors
+        $switch_cases1 = [];
+        for ($i = 0; $i < count($ancestors1) - 1; $i++) {
+            if ($ancestors1[$i]->kind === \ast\AST_SWITCH_LIST) {
+                // The next node should be a SWITCH_CASE
+                if ($ancestors1[$i + 1]->kind === \ast\AST_SWITCH_CASE) {
+                    $switch_cases1[] = ['list' => $ancestors1[$i], 'case' => $ancestors1[$i + 1]];
+                }
+            }
+        }
+
+        $switch_cases2 = [];
+        for ($i = 0; $i < count($ancestors2) - 1; $i++) {
+            if ($ancestors2[$i]->kind === \ast\AST_SWITCH_LIST) {
+                // The next node should be a SWITCH_CASE
+                if ($ancestors2[$i + 1]->kind === \ast\AST_SWITCH_CASE) {
+                    $switch_cases2[] = ['list' => $ancestors2[$i], 'case' => $ancestors2[$i + 1]];
+                }
+            }
+        }
+
+        // Check if any SWITCH_LIST node is shared but the SWITCH_CASE is different
+        foreach ($switch_cases1 as $case1) {
+            foreach ($switch_cases2 as $case2) {
+                if ($case1['list'] === $case2['list'] && $case1['case'] !== $case2['case']) {
+                    // Same switch statement, different cases
+                    // Only consider them mutually exclusive if both cases have unconditional terminators
+                    // (break, return, throw) to prevent false negatives on fallthrough cases
+                    if (self::switchCaseHasUnconditionalTerminator($case1['case']) &&
+                        self::switchCaseHasUnconditionalTerminator($case2['case'])) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a switch case has an unconditional terminator (break, return, throw)
+     * to prevent fallthrough to the next case.
+     */
+    private static function switchCaseHasUnconditionalTerminator(Node $case_node): bool
+    {
+        $stmts = $case_node->children['stmts'];
+        if (!($stmts instanceof Node)) {
+            // Empty case - will fall through
+            return false;
+        }
+
+        // Get the last statement in the case
+        $last_stmt = null;
+        foreach ($stmts->children as $stmt) {
+            if ($stmt instanceof Node) {
+                $last_stmt = $stmt;
+            }
+        }
+
+        if (!$last_stmt) {
+            return false;
+        }
+
+        // Check if the last statement is a terminator
+        return \in_array($last_stmt->kind, [
+            \ast\AST_BREAK,
+            \ast\AST_RETURN,
+            \ast\AST_THROW,
+            \ast\AST_CONTINUE,  // Less common but also prevents fallthrough in some contexts
+        ], true);
     }
 
     private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node): void
