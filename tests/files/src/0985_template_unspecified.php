@@ -16,7 +16,7 @@ class Container {
     }
 
     /** @return T */
-    function getValueFoo(): Foo {
+    function getValueFoo(): Foo0985 {
         return $this->t;
     }
 
@@ -89,8 +89,8 @@ function newContainerUnparameterized($value = null) {
 }
 
 // Classes for test case below
-class Foo {}
-class Bar extends Foo {}
+class Foo0985 {}
+class Bar0985 extends Foo0985 {}
 
 $a = new Container(new stdClass);
 $b = Container::newTyped(new stdClass);
@@ -110,13 +110,13 @@ $ff = $f->getValue();
 $gg = $g->getValue();
 '@phan-debug-var $aa, $bb, $cc, $dd, $ee, $ff, $gg';
 
-$aC = new Container(new Bar);
-$bC = Container::newTyped(new Bar);
-$cC = Container::newVariadic(new Bar);
-$dC = Container::newUnparameterized(new Bar);
-$eC = newContainerTyped(new Bar);
-$fC = newContainerVariadic(new Bar);
-$gC = newContainerUnparameterized(new Bar);
+$aC = new Container(new Bar0985);
+$bC = Container::newTyped(new Bar0985);
+$cC = Container::newVariadic(new Bar0985);
+$dC = Container::newUnparameterized(new Bar0985);
+$eC = newContainerTyped(new Bar0985);
+$fC = newContainerVariadic(new Bar0985);
+$gC = newContainerUnparameterized(new Bar0985);
 '@phan-debug-var $aC, $bC, $cC, $dC, $eC, $fC, $gC';
 
 $aaC = $aC->getValueFoo();
