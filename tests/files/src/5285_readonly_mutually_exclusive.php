@@ -140,3 +140,19 @@ class Test10_ComplexSwitch {
         }
     }
 }
+
+// Test 11: Invalid - switch case fallthrough (SHOULD warn)
+class Test11_SwitchFallthrough {
+    private readonly int $prop;
+
+    public function __construct(int $value) {
+        switch ($value) {
+            case 1:
+                $this->prop = 100;
+                // No break - falls through!
+            case 2:
+                $this->prop = 200;  // Should warn: AccessReadOnlyPropertyMultipleTimes
+                break;
+        }
+    }
+}

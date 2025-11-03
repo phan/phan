@@ -1769,13 +1769,50 @@ class AssignmentVisitor extends AnalysisVisitor
             foreach ($switch_cases2 as $case2) {
                 if ($case1['list'] === $case2['list'] && $case1['case'] !== $case2['case']) {
                     // Same switch statement, different cases
-                    // Note: This doesn't account for fallthrough, but that's a more complex analysis
-                    return true;
+                    // Only consider them mutually exclusive if both cases have unconditional terminators
+                    // (break, return, throw) to prevent false negatives on fallthrough cases
+                    if ($this->switchCaseHasUnconditionalTerminator($case1['case']) &&
+                        $this->switchCaseHasUnconditionalTerminator($case2['case'])) {
+                        return true;
+                    }
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Check if a switch case has an unconditional terminator (break, return, throw)
+     * to prevent fallthrough to the next case.
+     */
+    private function switchCaseHasUnconditionalTerminator(Node $case_node): bool
+    {
+        $stmts = $case_node->children['stmts'];
+        if (!($stmts instanceof Node)) {
+            // Empty case - will fall through
+            return false;
+        }
+
+        // Get the last statement in the case
+        $last_stmt = null;
+        foreach ($stmts->children as $stmt) {
+            if ($stmt instanceof Node) {
+                $last_stmt = $stmt;
+            }
+        }
+
+        if (!$last_stmt) {
+            return false;
+        }
+
+        // Check if the last statement is a terminator
+        return \in_array($last_stmt->kind, [
+            \ast\AST_BREAK,
+            \ast\AST_RETURN,
+            \ast\AST_THROW,
+            \ast\AST_CONTINUE,  // Less common but also prevents fallthrough in some contexts
+        ], true);
     }
 
     private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node): void
