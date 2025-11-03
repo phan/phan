@@ -2705,6 +2705,20 @@ class UnionTypeVisitor extends AnalysisVisitor
             return NullType::instance(false)->asPHPDocUnionType();
         }
 
+        // Skip undeclared variable errors when recursively analyzing stored conditional expressions.
+        // This prevents false positives when re-analyzing expressions from a different scope
+        // (e.g., when analyzing a nested closure that uses a variable defined in the parent closure).
+        // See issue #5269 for a similar fix in ConditionVisitor::checkVariablesDefined().
+        if (\Phan\Analysis\ConditionVisitor::isInRecursiveConditionalAnalysis()) {
+            if ($variable_name === 'this') {
+                return ObjectType::instance(false)->asRealUnionType();
+            }
+            if (!$this->context->isInGlobalScope()) {
+                return NullType::instance(false)->asRealUnionType();
+            }
+            return UnionType::empty();
+        }
+
         if (!($this->context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
             if (!$this->should_catch_issue_exception) {
                 throw new IssueException(

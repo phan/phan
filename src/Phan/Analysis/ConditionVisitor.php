@@ -85,6 +85,21 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     }
 
     /**
+     * Check if we're currently recursively analyzing a stored conditional expression.
+     *
+     * This is used to suppress false positive undeclared variable errors when
+     * re-analyzing expressions from a different scope (e.g., when analyzing a
+     * nested closure that uses a variable defined in the parent closure).
+     *
+     * @return bool true if currently in recursive conditional analysis
+     * @see issue #5269 for a similar fix for checkVariablesDefined()
+     */
+    public static function isInRecursiveConditionalAnalysis(): bool
+    {
+        return self::$conditional_expr_depth > 0;
+    }
+
+    /**
      * Default visitor for node kinds that do not have
      * an overriding method
      *

@@ -239,7 +239,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each child node and get an
             // updated context for the node
             try {
-                $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+                $updated_context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+
+                // Don't propagate the internal scope of closures, arrow functions, functions, methods,
+                // or classes to subsequent sibling statements. These are "closed contexts" whose internal
+                // state should not leak out. For other statements, propagate the context so that subsequent
+                // statements can see variables defined earlier.
+                if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+                    $context = $updated_context;
+                }
             } catch (IssueException $e) {
                 // This is a fallback - Exceptions should be caught at a deeper level if possible
                 Issue::maybeEmitInstance($this->code_base, $context, $e->getIssueInstance());
@@ -598,7 +606,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             // Step into each child node and get an
             // updated context for the node
-            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+            $updated_context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+
+            // Don't propagate the internal scope of closures, arrow functions, functions, methods,
+            // or classes to subsequent sibling children. These are "closed contexts" whose internal
+            // state should not leak out. For other children, propagate the context so that subsequent
+            // children can see variables defined earlier.
+            if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+                $context = $updated_context;
+            }
         }
 
         return $this->postOrderAnalyze($context, $node);
@@ -1617,9 +1633,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
+            $updated_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
-            $child_context_list[] = $child_context;
+            // Don't propagate the internal scope of closures, arrow functions, functions, methods,
+            // or classes to sibling statements. These are "closed contexts" whose internal state
+            // should not leak out. For other statements, propagate the context so that subsequent
+            // statements can see variables defined earlier.
+            if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+                $child_context = $updated_context;
+            }
+
+            $child_context_list[] = $updated_context;
         }
 
         // For if statements, we need to merge the contexts

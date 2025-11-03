@@ -1510,6 +1510,13 @@ trait ConditionVisitorUtil
                 $context->addScopeVariable($variable);
                 return $variable;
             }
+            // Skip undeclared variable errors when recursively analyzing stored conditional expressions.
+            // This prevents false positives when re-analyzing expressions from a different scope.
+            // See issue #5269 for a similar fix in ConditionVisitor::checkVariablesDefined().
+            if (ConditionVisitor::isInRecursiveConditionalAnalysis()) {
+                // Return null to prevent creating a variable with incorrect scope/type
+                return null;
+            }
             if (!($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                 if ($is_in_global_scope) {
                     if (!Config::getValue('ignore_undeclared_variables_in_global_scope')) {
