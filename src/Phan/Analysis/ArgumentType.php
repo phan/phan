@@ -1602,6 +1602,11 @@ final class ArgumentType
                     }
                 }
             }
+            // Skip argument type mismatch errors when recursively analyzing stored conditional expressions.
+            // This prevents false positives when types are inferred from variables in a different scope.
+            if (\Phan\Analysis\ConditionVisitor::isInRecursiveConditionalAnalysis()) {
+                return;
+            }
             if (\in_array($issue_type, [Issue::TypeMismatchArgumentInternalReal, Issue::TypeMismatchArgumentInternalProbablyReal], true)) {
                 Issue::maybeEmit(
                     $code_base,
