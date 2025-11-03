@@ -2604,6 +2604,28 @@ Impossible attempt to check if {CODE} of type {TYPE} is identical to {CODE} of t
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0865_array_key_int_or_string.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0865_array_key_int_or_string.php#L6).
 
+## PhanImpossibleValueComparison
+
+```
+Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' (the comparison is always false)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0787_impossible_range_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0787_impossible_range_check.php#L4).
+
+## PhanImpossibleValueComparisonInGlobalScope
+
+```
+Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (the comparison is always false, likely a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0708_loop_issue_examples.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0708_loop_issue_examples.php#L31).
+
+## PhanImpossibleValueComparisonInLoop
+
+```
+Impossible comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (the comparison is always false, likely a false positive)
+```
+
 ## PhanIncompatibleRealPropertyType
 
 ```
@@ -2883,6 +2905,30 @@ Redundant attempt to cast {CODE} of type {TYPE} to {TYPE} in a loop body (likely
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0698_loop_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0698_loop_false_positive.php#L13).
+
+## PhanRedundantValueComparison
+
+```
+Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' (the comparison is always true)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0644_unset_false_positive.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0644_unset_false_positive.php#L5).
+
+## PhanRedundantValueComparisonInGlobalScope
+
+```
+Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in the global scope (the comparison is always true, likely a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0526_crash.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0526_crash.php#L2).
+
+## PhanRedundantValueComparisonInLoop
+
+```
+Redundant comparison of {CODE} of type {TYPE} to {CODE} of type {TYPE} with operator '{OPERATOR}' in a loop (the comparison is always true, likely a false positive)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0728_suspicious_value_comparison_in_loop_false_positive.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0728_suspicious_value_comparison_in_loop_false_positive.php#L30).
 
 ## PhanRelativePathUsed
 

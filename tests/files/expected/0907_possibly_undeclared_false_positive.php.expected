@@ -1,4 +1,4 @@
 %s:14 PhanPossiblyUndeclaredVariable Variable $possiblyUndeclared is possibly undeclared
-%s:24 PhanSuspiciousValueComparison Suspicious attempt to compare $n2 of type int (value: 42) to 5 of type int (value: 5) with operator '==='
+%s:24 PhanImpossibleValueComparison Impossible comparison of $n2 of type int (value: 42) to 5 of type int (value: 5) with operator '===' (the comparison is always false)
 %s:27 PhanPossiblyUndeclaredVariable Variable $possiblyUndeclared2 is possibly undeclared
 %s:37 PhanUnusedVariable Unused definition of variable $possiblyUndeclared3
