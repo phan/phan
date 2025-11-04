@@ -34,12 +34,14 @@ class Vim
         'NAMESPACE'     => 'green',
         'OPERATOR'      => 'yellow',
         'PARAMETER'     => 'light_cyan',
+        'POSITION'      => 'magenta',
         'PROPERTY'      => 'light_blue',
         'SCALAR'        => 'red',
         'STRING_LITERAL' => 'red',
         'SUGGESTION'    => 'light_gray',
         'TYPE'          => 'light_blue',
         'TRAIT'         => 'green',
+        'VARIANCE'      => 'magenta',
         'VARIABLE'      => 'light_cyan',
     ];
 }

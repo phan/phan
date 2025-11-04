@@ -34,12 +34,14 @@ class Light
         'NAMESPACE'     => 'green',
         'OPERATOR'      => 'red',
         'PARAMETER'     => 'cyan',
+        'POSITION'      => 'magenta',
         'PROPERTY'      => 'cyan',
         'SCALAR'        => 'magenta',
         'STRING_LITERAL' => 'magenta',
         'SUGGESTION'    => 'dark_gray',
         'TYPE'          => 'dark_gray',
         'TRAIT'         => 'green',
+        'VARIANCE'      => 'magenta',
         'VARIABLE'      => 'cyan',
     ];
 }

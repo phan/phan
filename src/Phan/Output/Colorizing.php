@@ -93,12 +93,14 @@ class Colorizing
         'NAMESPACE'     => 'green',
         'OPERATOR'      => 'red',
         'PARAMETER'     => 'cyan',
+        'POSITION'      => 'light_magenta',
         'PROPERTY'      => 'cyan',
         'SCALAR'        => 'light_magenta',
         'STRING_LITERAL' => 'light_magenta',
         'SUGGESTION'    => 'light_gray',
         'TYPE'          => 'light_gray',
         'TRAIT'         => 'green',
+        'VARIANCE'      => 'light_magenta',
         'VARIABLE'      => 'light_cyan',
     ];
 
@@ -114,18 +116,20 @@ class Colorizing
      *
      * @param string $template
      * @param list<int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @throws \Exception if the number of template parameters doesn't match the template
      */
     public static function colorizeTemplate(
         string $template,
         array $template_parameters
     ): string {
         $i = 0;
-        /** @param list<string> $matches */
+        /** @param list<string> $matches
+         * @throws \Exception
+         */
         return \preg_replace_callback('/(\$?){([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i): string {
             $j = $i++;
             if ($j >= \count($template_parameters)) {
-                \error_log("Missing argument for colorized output ($template), offset $j");
-                return '(MISSING)';
+                throw new \Exception("Missing argument for colorized output ($template), offset $j");
             }
             $arg = $template_parameters[$j];
             if (\is_object($arg)) {
@@ -149,17 +153,17 @@ class Colorizing
      * @param string $template_type (A key of _UNCOLORED_FORMAT_STRING_FOR_TEMPLATE, e.g. "FILE")
      * @param int|string|float|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for Unix terminals.
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public static function colorizeField(string $template_type, FQSEN|Type|UnionType|float|int|string $arg): string
     {
         $fmt_directive = Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$template_type] ?? null;
         if ($fmt_directive === null) {
-            \error_log(\sprintf(
+            throw new \Exception(\sprintf(
                 "Unknown template type '%s'. Known template types: %s",
                 $template_type,
                 \implode(', ', \array_keys(Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
             ));
-            return (string)$arg;
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php
@@ -167,13 +171,11 @@ class Colorizing
         $arg_str = \sprintf($fmt_directive, (string)$arg);
         $color = self::colorForTemplate($template_type);
         if ($color === null || $color === '') {
-            \error_log("No color information for template type $template_type");
-            return $arg_str;
+            throw new \Exception("No color information for template type $template_type");
         }
         $color_code = self::computeColorCode($color);
         if ($color_code === null) {
-            \error_log("Invalid color name ($color) for template type $template_type");
-            return $arg_str;
+            throw new \Exception("Invalid color name ($color) for template type $template_type");
         }
         // TODO: Could extend this to support background colors.
         return self::colorizeTextWithColorCode($color_code, $arg_str);
@@ -261,11 +263,11 @@ class Colorizing
         }
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
             if (!\is_string($color_name) || !\array_key_exists($color_name, self::STYLES)) {
-                \error_log("Invalid color name ($color_name)");
+                \error_log("Invalid color name ($color_name) in color_scheme config");
                 continue;
             }
             if (!\array_key_exists($template_type, Colorizing::DEFAULT_COLOR_FOR_TEMPLATE)) {
-                \error_log("Unknown template_type ($template_type)");
+                \error_log("Unknown template_type ($template_type) in color_scheme config");
                 continue;
             }
             self::$color_scheme[$template_type] = $color_name;

@@ -33,12 +33,14 @@ class EclipseDark
         'NAMESPACE'     => 'light_gray',
         'OPERATOR'      => 'light_gray',
         'PARAMETER'     => 'magenta',
+        'POSITION'      => 'magenta',
         'PROPERTY'      => 'light_blue',
         'SCALAR'        => 'green',
         'STRING_LITERAL' => 'green',
         'SUGGESTION'    => 'light_gray',
         'TYPE'          => 'light_blue',
         'TRAIT'         => 'light_blue',
+        'VARIANCE'      => 'magenta',
         'VARIABLE'      => 'yellow',
     ];
 }

@@ -51,6 +51,7 @@ class IssueInstance
      * @param list<string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      * @param ?Suggestion $suggestion
      * @param int $column
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      * @suppress PhanPluginRemoveDebugAny
      */
     public function __construct(
@@ -125,6 +126,7 @@ class IssueInstance
 
     /**
      * @param list<string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     private static function generateColorizedMessage(
         Issue $issue,

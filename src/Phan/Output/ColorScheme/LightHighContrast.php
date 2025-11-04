@@ -33,12 +33,14 @@ class LightHighContrast
         'NAMESPACE'     => 'dark_gray',
         'OPERATOR'      => 'dark_gray',
         'PARAMETER'     => 'magenta',
+        'POSITION'      => 'magenta',
         'PROPERTY'      => 'blue',
         'SCALAR'        => 'green',
         'STRING_LITERAL' => 'green',
         'SUGGESTION'    => 'dark_gray',
         'TYPE'          => 'blue',
         'TRAIT'         => 'blue',
+        'VARIANCE'      => 'magenta',
         'VARIABLE'      => 'bg_yellow',
     ];
 }

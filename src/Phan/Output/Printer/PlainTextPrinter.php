@@ -25,6 +25,9 @@ class PlainTextPrinter implements IssuePrinterInterface
     /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     protected $output;
 
+    /**
+     * @throws \Exception if template type is unknown or color information is missing/invalid
+     */
     public function print(IssueInstance $instance): void
     {
         $file    = $instance->getDisplayedFile();

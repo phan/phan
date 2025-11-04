@@ -52,6 +52,7 @@ final class VerbosePlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check of output without color codes
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintUncolorizedOutput(): void
     {
@@ -74,6 +75,7 @@ final class VerbosePlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check that the expected color codes are emitted.
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintColorizedOutput(): void
     {
@@ -95,6 +97,9 @@ final class VerbosePlaintextPrinterTest extends TestBase
         $this->assertSame($expected_output, $actual_output);
     }
 
+    /**
+     * @throws \Exception if template type is unknown or color information is missing/invalid
+     */
     private static function generatePhanOutput(IssueInstance ...$instances): string
     {
         $output = new BufferedOutput();
