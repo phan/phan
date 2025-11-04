@@ -34,12 +34,14 @@ class Code
         'NAMESPACE'     => 'light_gray',
         'OPERATOR'      => 'light_gray',
         'PARAMETER'     => 'light_cyan',
+        'POSITION'      => 'magenta',
         'PROPERTY'      => 'light_cyan',
         'SCALAR'        => 'light_green',
         'STRING_LITERAL' => 'red',
         'SUGGESTION'    => 'light_gray',
         'TYPE'          => 'light_blue',
         'TRAIT'         => 'light_green',
+        'VARIANCE'      => 'magenta',
         'VARIABLE'      => 'light_cyan',
     ];
 }

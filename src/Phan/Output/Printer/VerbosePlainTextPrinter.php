@@ -24,6 +24,9 @@ use function trim;
 final class VerbosePlainTextPrinter extends PlainTextPrinter
 {
 
+    /**
+     * @throws \Exception if template type is unknown or color information is missing/invalid
+     */
     public function print(IssueInstance $instance): void
     {
         parent::print($instance);

@@ -36,6 +36,7 @@ final class PlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check of output without color codes
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintUncolorizedOutput(): void
     {
@@ -55,6 +56,7 @@ final class PlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check that the expected color codes are emitted.
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintColorizedOutput(): void
     {
@@ -74,6 +76,9 @@ final class PlaintextPrinterTest extends TestBase
         $this->assertSame($expected_output, $actual_output);
     }
 
+    /**
+     * @throws \Exception if template type is unknown or color information is missing/invalid
+     */
     private static function generatePhanOutput(IssueInstance ...$instances): string
     {
         $output = new BufferedOutput();
@@ -88,6 +93,7 @@ final class PlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check that the expected color codes are emitted.
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintColorizedOutputSchemaEclipseDark(): void
     {
@@ -103,6 +109,7 @@ final class PlaintextPrinterTest extends TestBase
 
     /**
      * Sanity check that the expected color codes are emitted.
+     * @throws \Exception if template type is unknown or color information is missing/invalid
      */
     public function testPrintColorizedOutputSchemaVim(): void
     {
