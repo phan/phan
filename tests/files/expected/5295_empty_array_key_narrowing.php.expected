@@ -1,0 +1,3 @@
+%s:41 PhanUnusedVariable Unused definition of variable $x
+%s:49 PhanSideEffectFreeForeachBody Saw a foreach loop which probably has no side effects
+%s:54 PhanUnusedVariable Unused definition of variable $val

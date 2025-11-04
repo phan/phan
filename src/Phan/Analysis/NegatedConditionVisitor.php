@@ -1056,14 +1056,29 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     )));
                     return $context;
                 }
-                $context = $this->removeFalseyFromVariable($expr_node, $context, true);
 
                 $variable = $context->getScope()->getVariableByName($var_name);
                 $var_node_union_type = $variable->getUnionType();
 
-                if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
+                // For array dimension checks like !empty($var['key']), we need to handle type narrowing carefully.
+                // If the variable has explicit array shape types, we narrow the specific key's type.
+                // If it's just a bare mixed or generic array from foreach, we don't narrow the entire variable
+                // since that would incorrectly affect other array accesses (issue #5295).
+                $hasExplicitArrayShapeTypes = $var_node_union_type->hasTopLevelArrayShapeTypeInstances();
+
+                // Check if the type is ONLY MixedType (not wrapped in null or other types)
+                // MixedType often comes from foreach iteration variables
+                $isBareArrayOrMixed = $var_node_union_type->isType(MixedType::instance(false)) ||
+                                      $var_node_union_type->isType(MixedType::instance(true));
+
+                if ($hasExplicitArrayShapeTypes) {
+                    // Has specific array shape, narrow the specific key
                     $context = $this->withNonFalseyArrayShapeTypes($variable, $parent_node->children['dim'], $context, true);
+                } elseif (!$isBareArrayOrMixed) {
+                    // Not just bare mixed, so it's explicitly typed (e.g., ?array), narrow the variable
+                    $context = $this->removeFalseyFromVariable($expr_node, $context, true);
                 }
+                // If it's just bare mixed/array, don't narrow the variable itself
                 $this->context = $context;
             }
         }
