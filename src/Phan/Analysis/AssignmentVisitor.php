@@ -2052,7 +2052,6 @@ class AssignmentVisitor extends AnalysisVisitor
         // its declared interface type based on assignments, causing methods to be validated
         // incorrectly. Interface-typed properties should only allow methods from the interface,
         // not from potential implementations.
-        // See: https://github.com/phan/phan/issues/5299
         $declared_type = $property->getPHPDocUnionType();
         foreach ($declared_type->getTypeSet() as $type) {
             try {
