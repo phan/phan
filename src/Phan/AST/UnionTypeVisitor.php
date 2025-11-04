@@ -2237,18 +2237,27 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Check if the union type contains any array-like type that would accept arbitrary key access.
      * This is used to avoid false positives when a union contains both shape types and generic arrays.
+     *
+     * An array accepts arbitrary keys if:
+     * - It's a plain `array` type (not a shape or list)
+     * - It's a GenericArrayType with KEY_MIXED (accepts both int and string keys)
+     *
+     * Arrays with restricted key types (e.g., array<int, T> or array<string, T>) do NOT accept arbitrary keys.
      * Note: bare `mixed` is excluded because it could be a scalar or object at runtime.
      */
     private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type, CodeBase $code_base): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
-                // Plain array type or generic array type that accepts arbitrary keys
+            // Plain `array` type without shape or generic parameters (accepts arbitrary keys)
+            if ($type instanceof ArrayType && !($type instanceof ArrayShapeType) && !($type instanceof GenericArrayInterface)) {
                 return true;
             }
-            if ($type->isArrayLike($code_base) && !($type instanceof ArrayShapeType) && !($type instanceof ListType)) {
-                // Other array-like types (e.g., GenericArrayType with mixed values)
-                return true;
+            // GenericArrayType (including NonEmptyGenericArrayType) with mixed key type (accepts arbitrary keys)
+            if ($type instanceof GenericArrayType) {
+                // KEY_MIXED = 3 means it accepts both int and string keys (both int and string keys are allowed)
+                if (($type->getKeyType() ?? GenericArrayType::KEY_MIXED) === GenericArrayType::KEY_MIXED) {
+                    return true;
+                }
             }
         }
         return false;
