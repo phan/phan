@@ -155,7 +155,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param string $var_name The variable name to look for
      * @return bool True if the expression references the variable
      */
-    private static function exprReferencesVariable(Node $node, string $var_name): bool
+    public static function exprReferencesVariable(Node $node, string $var_name): bool
     {
         if ($node->kind === ast\AST_VAR) {
             $name = $node->children['name'];
