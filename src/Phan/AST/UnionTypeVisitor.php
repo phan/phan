@@ -1906,7 +1906,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // 1. strict_array_checking is enabled, OR
                     // 2. There's no generic array type that would accept arbitrary keys in the union
                     $should_warn = Config::get_strict_array_checking() ||
-                        !self::hasGenericArrayAcceptingArbitraryKeys($union_type, $code_base);
+                        !self::hasGenericArrayAcceptingArbitraryKeys($union_type);
 
                     if ($should_warn) {
                         $this->emitIssue(
@@ -2245,7 +2245,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Arrays with restricted key types (e.g., array<int, T> or array<string, T>) do NOT accept arbitrary keys.
      * Note: bare `mixed` is excluded because it could be a scalar or object at runtime.
      */
-    private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type, CodeBase $code_base): bool
+    private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
             // Plain `array` type without shape or generic parameters (accepts arbitrary keys)
@@ -2254,8 +2254,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             // GenericArrayType (including NonEmptyGenericArrayType) with mixed key type (accepts arbitrary keys)
             if ($type instanceof GenericArrayType) {
-                // KEY_MIXED = 3 means it accepts both int and string keys (both int and string keys are allowed)
-                if (($type->getKeyType() ?? GenericArrayType::KEY_MIXED) === GenericArrayType::KEY_MIXED) {
+                // KEY_MIXED = 3 means it accepts both int and string keys
+                if ($type->getKeyType() === GenericArrayType::KEY_MIXED) {
                     return true;
                 }
             }
