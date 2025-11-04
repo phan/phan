@@ -1,0 +1,4 @@
+src/Phan/AST/ASTReverter.php:72 PhanUndeclaredConstant Reference to undeclared constant \VAR_REPRESENTATION_SINGLE_LINE. This would throw an Error.
+src/Phan/AST/ASTReverter.php:107 PhanParamNameIndicatingUnusedInClosure Saw a parameter named $_. If this was used to indicate that a parameter is unused to Phan, consider using @unused-param after a param comment, or suppressing unused parameter warnings, or renaming the parameter if backwards-compatibility for named parameters is not needed.
+src/test.php:13 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type array{y:mixed,x?:null}|non-empty-array<mixed,mixed>(real=array)
+src/test.php:16 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'x' of $var of array type array{y:mixed,x?:null}|non-empty-array<mixed,mixed>

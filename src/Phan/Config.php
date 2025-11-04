@@ -110,6 +110,9 @@ class Config
     /** @var bool replicates Config::getValue('strict_object_checking') */
     private static $strict_object_checking = false;
 
+    /** @var bool replicates Config::getValue('strict_array_checking') */
+    private static $strict_array_checking = false;
+
     /** @var bool replicates Config::getValue('track_references') */
     private static $track_references = false;
 
@@ -420,6 +423,13 @@ class Config
         // If enabled, Phan will warn if **any** type of the object expression for a property access
         // does not contain that property.
         'strict_object_checking' => false,
+
+        // If enabled, Phan will warn about possibly invalid array offsets in unions containing
+        // both array shape types and generic mixed array types.
+        // When disabled (default), Phan is more lenient and only warns if the offset is invalid
+        // across all union members. This avoids false positives when an array can be a generic
+        // mixed array (which accepts any key) or a shape with specific keys.
+        'strict_array_checking' => false,
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
         // even if those return types aren't available in reflection (real types were taken from php 8.4).
@@ -1177,6 +1187,15 @@ class Config
         return self::$strict_object_checking;
     }
 
+    /**
+     * If enabled, Phan will warn about potentially invalid offsets even when some union
+     * members allow them.
+     */
+    public static function get_strict_array_checking(): bool
+    {
+        return self::$strict_array_checking;
+    }
+
     /** If enabled, allow null to cast to any array-like type. */
     public static function get_null_casts_as_array(): bool
     {
@@ -1380,6 +1399,9 @@ class Config
                 break;
             case 'strict_object_checking':
                 self::$strict_object_checking = $value;
+                break;
+            case 'strict_array_checking':
+                self::$strict_array_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':
