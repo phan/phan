@@ -1016,7 +1016,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($expr_node instanceof Node) {
             if ($expr_node->kind === ast\AST_ARRAY) {
                 // e.g. foreach ([1, 2] as $value) has at least one
-                // @phan-suppress-next-line PhanPossiblyUndeclaredProperty - false positive exposed by issue #4854 fix, see visitVar()
                 $has_at_least_one_iteration = \count($expr_node->children) > 0;
             } else {
                 // e.g. look up global constants and class constants.

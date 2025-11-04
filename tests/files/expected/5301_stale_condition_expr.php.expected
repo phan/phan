@@ -1,0 +1,2 @@
+%s:7 PhanRedundantCondition Redundant attempt to cast $data of type \stdClass to object
+%s:21 PhanUnusedVariable Unused definition of variable $casted

@@ -2276,6 +2276,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // as we replace it.
             $variable = clone($variable);
 
+            // Invalidate any stale condition expressions that reference this variable (issue #5301)
+            $this->invalidateStaleConditionExpressions($variable_name);
+
             // If we're assigning to an array element then we don't
             // know what the array structure of the parameter is
             // outside of the scope of this assignment, so we add to
@@ -2657,6 +2660,34 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return UnionType::empty();
+    }
+
+    /**
+     * Invalidate any stored conditional expressions (phan_condition_expr) that reference the given variable.
+     * This is necessary because when a variable is reassigned, any cached condition expressions that
+     * reference it become stale and would cause incorrect type narrowing.
+     * See issue #5301 for details.
+     *
+     * @param string $assigned_var_name The name of the variable that was just assigned
+     */
+    private function invalidateStaleConditionExpressions(string $assigned_var_name): void
+    {
+        $scope = $this->context->getScope();
+        foreach ($scope->getVariableMap() as $var) {
+            // Check if this variable has a cached condition expression
+            if (!isset($var->phan_condition_expr)) {
+                continue;
+            }
+            $expr_node = $var->phan_condition_expr;
+            if (!($expr_node instanceof Node)) {
+                continue;
+            }
+
+            // If the stored expression references the variable being assigned, clear it
+            if (PostOrderAnalysisVisitor::exprReferencesVariable($expr_node, $assigned_var_name)) {
+                unset($var->phan_condition_expr);
+            }
+        }
     }
 
     /**
