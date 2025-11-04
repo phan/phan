@@ -1902,13 +1902,21 @@ class UnionTypeVisitor extends AnalysisVisitor
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
                 if ($element_type->isPossiblyUndefined() && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
-                    $this->emitIssue(
-                        Issue::TypePossiblyInvalidDimOffset,
-                        $node->lineno,
-                        ASTReverter::toShortString($node->children['dim']),
-                        ASTReverter::toShortString($node->children['expr']),
-                        $union_type
-                    );
+                    // Check if we should emit the warning. Only emit if:
+                    // 1. strict_array_checking is enabled, OR
+                    // 2. There's no generic array type that would accept arbitrary keys in the union
+                    $should_warn = Config::get_strict_array_checking() ||
+                        !self::hasGenericArrayAcceptingArbitraryKeys($union_type, $code_base);
+
+                    if ($should_warn) {
+                        $this->emitIssue(
+                            Issue::TypePossiblyInvalidDimOffset,
+                            $node->lineno,
+                            ASTReverter::toShortString($node->children['dim']),
+                            ASTReverter::toShortString($node->children['expr']),
+                            $union_type
+                        );
+                    }
                     if ($treat_undef_as_nullable || Config::getValue('convert_possibly_undefined_offset_to_nullable')) {
                         return $element_type->nullableClone()->withIsPossiblyUndefined(false);
                     }
@@ -2220,6 +2228,29 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof ArrayShapeType || $type instanceof ListType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if the union type contains any generic array type (including plain arrays and arrays with mixed types)
+     * that would accept arbitrary key access. This is used to avoid false positives when a union contains both
+     * shape types and generic arrays.
+     */
+    private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type, CodeBase $code_base): bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof MixedType) {
+                return true;
+            }
+            if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                // Plain array type or generic array type
+                return true;
+            }
+            if ($type->isArrayLike($code_base) && !($type instanceof ArrayShapeType) && !($type instanceof ListType)) {
+                // Other array-like types (e.g., GenericArrayType with mixed values)
                 return true;
             }
         }

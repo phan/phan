@@ -1080,3 +1080,13 @@ Maximum number of distinct types that may be tracked in a union before Phan summ
 array/mixed types to conserve memory.
 
 (Default: `1024`)
+
+## strict_array_checking
+
+If enabled, Phan will warn about possibly invalid array offsets in unions containing
+both array shape types and generic mixed array types.
+When disabled (default), Phan is more lenient and only warns if the offset is invalid
+across all union members. This avoids false positives when an array can be a generic
+mixed array (which accepts any key) or a shape with specific keys.
+
+(Default: `false`)
