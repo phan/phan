@@ -15,6 +15,7 @@ use Phan\Issue;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
@@ -832,8 +833,22 @@ class Context extends FileRef
         }
         $has_suppress_issue = $element->hasSuppressIssue($issue_name);
 
+        // For magic methods from PHPDoc, also check the parent class's suppressions
+        // This allows class-level @suppress annotations to apply to @method tags
+        if (!$has_suppress_issue && $element instanceof Method && $element->isFromPHPDoc()) {
+            try {
+                $class = $element->getClass($code_base);
+                $has_suppress_issue = $class->hasSuppressIssue($issue_name);
+                if ($has_suppress_issue) {
+                    $class->incrementSuppressIssueCount($issue_name);
+                }
+            } catch (Exception) {
+                // If we can't get the class, just use the method's suppression status
+            }
+        }
+
         // Increment the suppression use count
-        if ($has_suppress_issue) {
+        if ($has_suppress_issue && !($element instanceof Method && $element->isFromPHPDoc())) {
             $element->incrementSuppressIssueCount($issue_name);
         }
 
