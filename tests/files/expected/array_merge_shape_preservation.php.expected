@@ -1,0 +1,6 @@
+%s:65 PhanRedundantCondition Redundant attempt to cast true of type true to truthy
+%s:65 PhanTypeInvalidBitwiseBinaryOperator Invalid non-int/non-string operand provided to operator '|' between types array{a:1} and array{b:'string'}
+%s:65 PhanTypeInvalidLeftOperandOfBitwiseOp Invalid operator: left operand of | is array{a:1} (expected int|string)
+%s:65 PhanTypeInvalidRightOperandOfBitwiseOp Invalid operator: right operand of | is array{b:'string'} (expected int|string)
+%s:66 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($arrays) is $data of type int (real type int|string) but \array_merge() takes array
+%s:101 PhanTypeMismatchArgument Argument 1 ($mixed) is [] of type array{} but \test_param_union_with_pure_last() takes array{a:int}|array{b:string} defined at %s:75
