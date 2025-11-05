@@ -12,6 +12,7 @@ use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Config;
 use Phan\Debug;
 use Phan\Tests\TestBase;
+use Phan\Tokenizer\PhpTokenCompat;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -78,7 +79,7 @@ final class ConversionTest extends TestBase
             if (!is_string($contents)) {
                 throw new AssertionError("Failed to read $file");
             }
-            $token_counts[$file] = count(\token_get_all($contents));
+            $token_counts[$file] = count(PhpTokenCompat::tokenize($contents));
         }
         \usort($files, static function (string $path1, string $path2) use ($token_counts): int {
             return $token_counts[$path1] <=> $token_counts[$path2];

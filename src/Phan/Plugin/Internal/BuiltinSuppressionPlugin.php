@@ -19,6 +19,7 @@ use Phan\Phan;
 use Phan\PluginV3;
 use Phan\PluginV3\SuppressionCapability;
 use Phan\Suggestion;
+use Phan\Tokenizer\PhpTokenCompat;
 use PhpToken;
 
 /**
@@ -247,21 +248,23 @@ final class BuiltinSuppressionPlugin extends PluginV3 implements
     private static function yieldSuppressionCommentsOld(
         string $file_contents
     ): Generator {
-        foreach (\token_get_all($file_contents) as $token) {
-            if (!\is_array($token)) {
+        try {
+            $tokens = PhpTokenCompat::tokenize($file_contents);
+        } catch (\Throwable) {
+            // If tokenization fails, return empty
+            return;
+        }
+        foreach ($tokens as $token) {
+            if (!PhpTokenCompat::isTokenKind($token, \T_COMMENT) && !PhpTokenCompat::isTokenKind($token, \T_DOC_COMMENT)) {
                 continue;
             }
-            $kind = $token[0];
-            if ($kind !== \T_COMMENT && $kind !== \T_DOC_COMMENT) {
-                continue;
-            }
-            $comment_text = $token[1];
+            $comment_text = PhpTokenCompat::getTokenText($token);
             if (!str_contains($comment_text, '@phan-')) {
                 continue;
             }
             yield from self::yieldSuppressionCommentsFromTokenContents(
                 $comment_text,
-                $token[2]
+                PhpTokenCompat::getTokenLine($token)
             );
         }
     }

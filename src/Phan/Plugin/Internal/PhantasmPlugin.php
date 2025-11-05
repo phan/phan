@@ -20,6 +20,7 @@ use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
+use Phan\Tokenizer\PhpTokenCompat;
 
 use function dirname;
 use function file_put_contents;
@@ -27,7 +28,6 @@ use function is_dir;
 use function is_object;
 use function is_string;
 use function mkdir;
-use function token_get_all;
 
 use const PHP_INT_MAX;
 use const TOKEN_PARSE;
@@ -127,13 +127,10 @@ final class PhantasmPlugin extends PluginV3 implements
         }
     }
 
-    /**
-     * @suppress PhanPluginUseReturnValueInternalKnown this is called for the error thrown
-     */
     private static function getParseError(string $file_contents): ?string
     {
         try {
-            token_get_all($file_contents, TOKEN_PARSE);
+            PhpTokenCompat::tokenize($file_contents, TOKEN_PARSE);
             return null;
         } catch (Error $e) {
             return $e->getMessage();

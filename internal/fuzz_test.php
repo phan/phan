@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Phan\Tokenizer\PhpTokenCompat;
+
 /**
  * Utilities to fuzz test Phan when tokens are missing
  */
@@ -61,7 +63,7 @@ class FuzzTest
     {
         self::$basename = dirname(realpath(__DIR__));
         $file_contents = self::readFileContents(self::$basename . '/tests/files/src');
-        $tokens_for_files = array_map('token_get_all', $file_contents);
+        $tokens_for_files = array_map(static fn(string $content) => PhpTokenCompat::tokenize($content), $file_contents);
         for ($i = 0; true; $i++) {
             $new_tokens_for_files = [];
             foreach ($tokens_for_files as $path => $tokens) {

@@ -13,7 +13,7 @@ use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
-use Phan\PluginV3\UnloadablePluginException;
+use Phan\Tokenizer\PhpTokenCompat;
 
 /**
  * This plugin checks for accidental whitespace in regular php files.
@@ -77,42 +77,40 @@ class InlineHTMLPlugin extends PluginV3 implements
     ): void {
         $file = $context->getFile();
         if (!isset(self::$file_set_to_analyze[$file])) {
-            // token_get_all is noticeably slow when there are a lot of files, so we check for the existence of echo statements in the parsed AST as a heuristic to avoid calling token_get_all.
+            // Tokenization is noticeably slow when there are a lot of files, so we check for the existence of echo statements in the parsed AST as a heuristic to avoid tokenization.
             return;
         }
         if (!self::shouldCheckFile($file)) {
             return;
         }
         $file_contents = Parser::removeShebang($file_contents);
-        $tokens = token_get_all($file_contents);
+        try {
+            $tokens = PhpTokenCompat::tokenize($file_contents);
+        } catch (\Throwable) {
+            // If tokenization fails, skip analysis
+            return;
+        }
         foreach ($tokens as $i => $token) {
-            if (!is_array($token)) {
-                continue;
-            }
-            if ($token[0] !== T_INLINE_HTML) {
+            if (!PhpTokenCompat::isTokenKind($token, T_INLINE_HTML)) {
                 continue;
             }
             $N = count($tokens);
             $this->warnAboutInlineHTML($code_base, $context, $token, $i, $N);
             if ($i < $N - 1) {
                 // Make sure to always check if the last token is inline HTML
-                $token = $tokens[$N - 1] ?? null;
-                if (!is_array($token)) {
-                    break;
+                $last_token = $tokens[$N - 1] ?? null;
+                if ($last_token !== null && PhpTokenCompat::isTokenKind($last_token, T_INLINE_HTML)) {
+                    $this->warnAboutInlineHTML($code_base, $context, $last_token, $N - 1, $N);
                 }
-                if ($token[0] !== T_INLINE_HTML) {
-                    break;
-                }
-                $this->warnAboutInlineHTML($code_base, $context, $token, $N - 1, $N);
             }
             break;
         }
     }
 
     /**
-     * @param array{0:int,1:string,2:int} $token a token from token_get_all
+     * @param PhpToken $token a token from PhpTokenCompat::tokenize()
      */
-    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, array $token, int $i, int $n): void
+    private function warnAboutInlineHTML(CodeBase $code_base, Context $context, PhpToken $token, int $i, int $n): void
     {
         if ($i === 0) {
             $issue = self::InlineHTMLLeading;
@@ -126,10 +124,10 @@ class InlineHTMLPlugin extends PluginV3 implements
         }
         $this->emitIssue(
             $code_base,
-            (clone $context)->withLineNumberStart($token[2]),
+            (clone $context)->withLineNumberStart(PhpTokenCompat::getTokenLine($token)),
             $issue,
             $message,
-            [StringUtil::jsonEncode(self::truncate($token[1]))]
+            [StringUtil::jsonEncode(self::truncate(PhpTokenCompat::getTokenText($token)))]
         );
     }
 
@@ -172,7 +170,4 @@ class InlineHTMLVisitor extends PluginAwarePostAnalysisVisitor
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which it's defined.
-if (!function_exists('token_get_all')) {
-    throw new UnloadablePluginException("InlineHTMLPlugin requires the tokenizer extension, which is not enabled (this plugin uses token_get_all())");
-}
 return new InlineHTMLPlugin();

@@ -6,6 +6,7 @@ use Phan\CLI;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Library\StringUtil;
+use Phan\Tokenizer\PhpTokenCompat;
 
 // On the off chance that php or an extension ever provides a global function called 'help',
 // check for this so that other utilities will work.
@@ -239,11 +240,14 @@ class PhanPhpShellUtils
 
     /**
      * Convert a token to a string
-     * @param array{0:int,1:string,2:int}|string|false $token
+     * @param \PhpToken|array{0:int,1:string,2:int}|string|bool|mixed $token
      */
-    public static function tokenToString(array|bool|string $token): string
+    public static function tokenToString(mixed $token): string
     {
-        return is_array($token) ? $token[1] : (string)$token;
+        if ($token instanceof \PhpToken) {
+            return $token->text;
+        }
+        return is_array($token) ? (string)($token[1] ?? '') : (string)$token;
     }
 
     /**
@@ -273,24 +277,30 @@ class PhanPhpShellUtils
     /**
      * Generate completions for accessing instance property or methods ($obj->prefix)
      *
-     * @param list<array{0:int,1:string,2:int}|string> $tokens
+     * @param list<\PhpToken|array{0:int,1:string,2:int}|string|mixed> $tokens
      * @return list<string>
      */
     public function generateInstanceObjectCompletions(array $tokens): array
     {
         $i = count($tokens) - 1;
         $this->appendToLogFile("generateInstanceObjectCompletions tokens = " . StringUtil::jsonEncode($tokens) . "\n");
-        while (!is_array($tokens[$i]) || $tokens[$i][0] !== T_OBJECT_OPERATOR) {
-            $i--;
+        while (true) {
             if ($i <= 0) {
                 return [];
             }
+            $token = $tokens[$i];
+            $token_id = $token instanceof \PhpToken ? $token->id : (is_array($token) ? $token[0] : null);
+            if ($token_id === T_OBJECT_OPERATOR) {
+                break;
+            }
+            $i--;
         }
         $instance_element_prefix = self::tokenToString($tokens[$i + 1] ?? '');
         // Not definitely the expression - tolerant-php-parser would be a better way to fetch this.
         $expression = $tokens[$i - 1];
         $expression_str = self::tokenToString($expression);
-        if (is_array($expression) && $expression[0] === T_VARIABLE) {
+        $expr_token_id = $expression instanceof \PhpToken ? $expression->id : (is_array($expression) ? $expression[0] : null);
+        if ($expr_token_id === T_VARIABLE) {
             $var_name = substr($expression_str, 1);
             $global_var = $GLOBALS[$var_name] ?? null;
             if (!is_object($global_var)) {
@@ -353,7 +363,7 @@ class PhanPhpShellUtils
     /**
      * Generate completions for accessing class constants, static properties or methods ($obj::prefix)
      *
-     * @param list<array{0:int,1:string,2:int}|string> $tokens
+     * @param list<\PhpToken|array{0:int,1:string,2:int}|string|mixed> $tokens
      * @param string $completed_text this is the `Foo::prefix` that returned values need to begin with
      * @return list<string>
      */
@@ -361,20 +371,26 @@ class PhanPhpShellUtils
     {
         $i = count($tokens) - 1;
         $this->appendToLogFile("generateStaticObjectCompletions tokens = " . StringUtil::jsonEncode($tokens) . "\n");
-        while (!is_array($tokens[$i]) || $tokens[$i][0] !== T_DOUBLE_COLON) {
-            $i--;
+        while (true) {
             if ($i <= 0) {
                 return [];
             }
+            $token = $tokens[$i];
+            $token_id = $token instanceof \PhpToken ? $token->id : (is_array($token) ? $token[0] : null);
+            if ($token_id === T_DOUBLE_COLON) {
+                break;
+            }
+            $i--;
         }
         $instance_element_prefix = self::tokenToString($tokens[$i + 1] ?? '');
         // Not definitely the expression - tolerant-php-parser would be a better way to fetch this.
         $expression = $tokens[$i - 1];
         $expression_str = self::tokenToString($expression);
-        if (is_array($expression) && $expression[0] === T_STRING) {
+        $expr_token_id = $expression instanceof \PhpToken ? $expression->id : (is_array($expression) ? $expression[0] : null);
+        if ($expr_token_id === T_STRING) {
             // TODO: Check if this snippet is within a namespace block with uses, etc.
             // Or just reuse Phan's real completion abilities.
-            $class_name = $expression[1];
+            $class_name = $expression instanceof \PhpToken ? $expression->text : (is_array($expression) ? $expression[1] : '');
             $pos = strrpos($completed_text, '::');
             if (!is_int($pos)) {
                 return [];
@@ -436,7 +452,15 @@ class PhanPhpShellUtils
         try {
             // TODO: PHP's API only allows us to fetch the most recent line.
             $line_buffer = readline_info('line_buffer');
-            $tokens = (@token_get_all('<' . '?php ' . $line_buffer)) ?: [''];  // Split up to fix vim syntax highlighting.
+            try {
+                $tokens = PhpTokenCompat::tokenize('<' . '?php ' . $line_buffer);
+            } catch (\Throwable) {
+                $tokens = [];
+            }
+            if (empty($tokens)) {
+                // Fallback for tokenization failure
+                $tokens = [[]];
+            }
             $last_token = end($tokens);
             $last_token_str = self::tokenToString($last_token);
             $this->appendToLogFile("text='''$text''' start=$start end=$end line_buffer='''$line_buffer''' last_token_str='''$last_token_str'''\n");
@@ -453,12 +477,19 @@ class PhanPhpShellUtils
                 // TODO: Actually infer types for expressions other than variables
                 return $this->generateInstanceObjectCompletions($tokens) ?: self::NO_AVAILABLE_COMPLETIONS;
             }
-            if ($last_token_str === '\\') {
-                if (is_array($prev_token)) {
-                    $prev_token_kind = $prev_token[0];
+            if ($last_token_str === '\\' && $prev_token !== false) {
+                if ($prev_token instanceof \PhpToken) {
+                    $prev_token_kind = $prev_token->id;
                     // TODO: T_NAME_RELATIVE for namespace\
                     if ($prev_token_kind === T_STRING || in_array($prev_token_kind, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $last_token_str = ltrim($prev_token[1], '\\') . $last_token_str;
+                        $last_token_str = ltrim($prev_token->text, '\\') . $last_token_str;
+                    }
+                } elseif (is_array($prev_token) && isset($prev_token[0], $prev_token[1])) {
+                    $prev_token_kind = $prev_token[0];
+                    $prev_token_text = $prev_token[1];
+                    // TODO: T_NAME_RELATIVE for namespace\
+                    if ($prev_token_kind === T_STRING || in_array($prev_token_kind, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                        $last_token_str = ltrim($prev_token_text, '\\') . $last_token_str;
                     }
                 }
             }

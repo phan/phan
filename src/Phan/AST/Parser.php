@@ -28,6 +28,7 @@ use Phan\Library\FileCacheEntry;
 use Phan\Library\StringUtil;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
+use Phan\Tokenizer\PhpTokenCompat;
 use Throwable;
 
 use function error_clear_last;
@@ -273,9 +274,6 @@ class Parser
         FileCacheEntry $file_cache_entry,
         Error $native_parse_error
     ): int {
-        if (!\function_exists('token_get_all')) {
-            return 0;
-        }
         $message = $native_parse_error->getMessage();
         $prefix = "unexpected (?:token )?('(?:.+)'|\"(?:.+)\")";
         if (!\preg_match("/$prefix \((T_\w+)\)/", $message, $matches)) {
@@ -295,26 +293,25 @@ class Parser
             $token_kind = null;
         }
         $token_str = \substr($matches[1], 1, -1);
-        $tokens = \token_get_all($file_cache_entry->getContents());
+        $tokens = PhpTokenCompat::tokenize($file_cache_entry->getContents());
         $candidates = [];
         $desired_line = $native_parse_error->getLine();
         foreach ($tokens as $i => $token) {
-            if (!\is_array($token)) {
-                if ($token_str === $token) {
-                    $candidates[] = $i;
-                }
-                continue;
-            }
-            $line = $token[2];
+            $token_id = PhpTokenCompat::getTokenId($token);
+            $token_text = PhpTokenCompat::getTokenText($token);
+            $line = PhpTokenCompat::getTokenLine($token);
+
             if ($line < $desired_line) {
                 continue;
             } elseif ($line > $desired_line) {
                 break;
             }
-            if ($token_kind !== $token[0]) {
+            // If we have a token kind, require it to match
+            if ($token_kind !== null && $token_kind !== $token_id) {
                 continue;
             }
-            if ($token_str !== $token[1]) {
+            // Always check that the token text matches the unexpected token from the error message
+            if ($token_str !== $token_text) {
                 continue;
             }
             $candidates[] = $i;
@@ -322,37 +319,34 @@ class Parser
         if (\count($candidates) !== 1) {
             return 0;
         }
-        return self::computeColumnForTokenAtIndex($tokens, $candidates[0], $desired_line);
+        return self::computeColumnForTokenAtIndex($tokens, $candidates[0], $file_cache_entry->getContents());
     }
 
     /**
-     * @param list<array{0:int,1:string,2:int}|string> $tokens
-     * @return int the 1-based line number, or 0 on failure
+     * @param list<\PhpToken> $tokens
+     * @return int the 1-based column number, or 0 on failure
      */
-    private static function computeColumnForTokenAtIndex(array $tokens, int $i, int $desired_line): int
+    private static function computeColumnForTokenAtIndex(array $tokens, int $i, string $file_contents): int
     {
         if ($i <= 0) {
             return 1;
         }
-        $column = 0;
-        for ($j = $i - 1; $j >= 0; $j--) {
-            $token = $tokens[$j];
-            if (!\is_array($token)) {
-                $column += \strlen($token);
-                continue;
+        // PhpToken objects have a 'pos' property with 0-indexed byte offset from start of file
+        if ($i < count($tokens) && $tokens[$i] instanceof \PhpToken) {
+            $token_pos = $tokens[$i]->pos;
+            // Find the last newline before this position
+            $last_newline_pos = \strrpos($file_contents, "\n", $token_pos - \strlen($file_contents));
+            if ($last_newline_pos === false) {
+                // No newline found before this position, so it's on the first line
+                return $token_pos + 1;
+            } else {
+                // Column is the distance from the last newline (1-indexed)
+                return $token_pos - $last_newline_pos;
             }
-            $token_str = $token[1];
-            if ($token[2] >= $desired_line) {
-                $column += \strlen($token_str);
-                continue;
-            }
-            $last_newline = \strrpos($token_str, "\n");
-            if ($last_newline !== false) {
-                $column += \strlen($token_str) - $last_newline;
-            }
-            break;
         }
-        return $column;
+
+        // Fallback for non-PhpToken objects
+        return 0;
     }
 
     /**
