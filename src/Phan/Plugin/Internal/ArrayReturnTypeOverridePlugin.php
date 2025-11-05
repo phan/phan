@@ -445,7 +445,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
 
                 // Check that all array types in first arg are shapes (no union with generic arrays)
                 $first_arg_all_shapes = true;
-                /** @phan-suppress-next-line PhanNonClassMethodCall */
+                /** @phan-suppress-next-line PhanNonClassMethodCall,PhanPluginUnknownObjectMethodCall */
                 foreach ($first_arg_union->getTypeSet() as $type) {
                     if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
                         $first_arg_all_shapes = false;
