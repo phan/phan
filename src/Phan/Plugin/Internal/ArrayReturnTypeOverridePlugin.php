@@ -478,14 +478,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             } elseif (count($array_shapes_per_arg) > 1) {
                 // Multiple arguments, each with exactly one shape: merge them
-                // This is safe if:
-                // 1. Each argument contributes exactly one shape (no union alternatives)
-                // 2. All early arguments are pure shapes, OR the last argument is a pure shape
-                //    (in array_merge semantics, rightmost values win, so a pure last shape's keys are guaranteed)
+                // This is safe if the last argument's array union consists ONLY of shapes,
+                // regardless of what the earlier arguments contain.
+                // In array_merge semantics, rightmost values win, so the last argument's keys are guaranteed.
                 $all_single_shape = true;
                 $shapes_to_merge = [];
                 $is_empty_flags = [];
-                $all_arg_infos_only_shapes = true;
+                $last_arg_index = count($array_shapes_per_arg) - 1;
+                $last_arg_only_shapes = true;  // Assume true until proven otherwise
 
                 foreach ($array_shapes_per_arg as $i => $arg_info) {
                     if (count($arg_info['shapes']) !== 1) {
@@ -493,38 +493,29 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                         break;
                     }
 
-                    // IMPORTANT: Verify the argument's array union consists ONLY of the one shape
-                    // (no ArrayType or GenericArrayType alternatives that could override keys)
-                    $array_union = $arg_info['array_union'];
-                    $only_shapes = true;
-                    foreach ($array_union->getTypeSet() as $type) {
-                        if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
-                            $only_shapes = false;
-                            break;
-                        }
-                    }
-
-                    if (!$only_shapes) {
-                        // Allow non-pure-shape arguments UNLESS this is not the last argument
-                        // (rightmost argument in array_merge wins for all keys)
-                        $is_last_arg = ($i === count($array_shapes_per_arg) - 1);
-                        if (!$is_last_arg) {
-                            $all_single_shape = false;
-                            break;
-                        }
-                        $all_arg_infos_only_shapes = false;
-                    }
-
                     $shapes_to_merge[] = $arg_info['shapes'][0];
                     $is_empty_flags[] = $arg_info['has_empty'];
+
+                    // For the last argument, verify it consists ONLY of shapes
+                    // (no ArrayType or GenericArrayType alternatives that could override keys)
+                    if ($i === $last_arg_index) {
+                        $array_union = $arg_info['array_union'];
+                        foreach ($array_union->getTypeSet() as $type) {
+                            if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                                $last_arg_only_shapes = false;
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                if ($all_single_shape) {
+                // Only merge if all arguments have exactly one shape AND the last one is pure shapes
+                if ($all_single_shape && $last_arg_only_shapes) {
                     $merged_shape = $merge_array_shapes($shapes_to_merge, $is_empty_flags);
                     if ($merged_shape !== null) {
                         // Use the merged shape and also apply integer key as list conversion
                         $types = $merged_shape->withIntegerKeyArraysAsLists();
-                        if ($has_non_array || !$types->hasRealTypeSet() || !$all_arg_infos_only_shapes) {
+                        if ($has_non_array || !$types->hasRealTypeSet()) {
                             $types = $types->withRealTypeSet([ArrayType::instance(true)]);
                         }
                         return $types;
