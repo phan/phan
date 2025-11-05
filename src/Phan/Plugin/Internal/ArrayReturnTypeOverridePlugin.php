@@ -566,10 +566,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     } else {
                         // Not all arguments are pure, but we know the ACTUAL LAST argument IS pure.
                         // In array_merge, the last argument's keys are guaranteed to be in the result.
-                        // Return at least the last argument's shape to preserve those guaranteed keys.
+                        // Merge the last argument's shape with the accumulated types from earlier arguments
+                        // to preserve both the guaranteed keys and any generic array elements.
                         if ($last_shape_info !== null) {
                             $last_shape = $last_shape_info['shapes'][0];
-                            $types = $last_shape->asPHPDocUnionType()->withIntegerKeyArraysAsLists();
+                            $last_shape_union = $last_shape->asPHPDocUnionType();
+                            $types = $types->withUnionType($last_shape_union)->withIntegerKeyArraysAsLists();
                             if ($has_non_array || !$types->hasRealTypeSet()) {
                                 $types = $types->withRealTypeSet([ArrayType::instance(true)]);
                             }
