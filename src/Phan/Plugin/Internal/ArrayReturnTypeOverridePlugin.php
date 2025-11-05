@@ -478,14 +478,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             } elseif (count($array_shapes_per_arg) > 1) {
                 // Multiple arguments, each with exactly one shape: merge them
-                // This is safe only if:
+                // This is safe if:
                 // 1. Each argument contributes exactly one shape (no union alternatives)
-                // 2. Each argument's array union consists ONLY of shapes (no generic/other array variants)
+                // 2. All early arguments are pure shapes, OR the last argument is a pure shape
+                //    (in array_merge semantics, rightmost values win, so a pure last shape's keys are guaranteed)
                 $all_single_shape = true;
                 $shapes_to_merge = [];
                 $is_empty_flags = [];
+                $all_arg_infos_only_shapes = true;
 
-                foreach ($array_shapes_per_arg as $arg_info) {
+                foreach ($array_shapes_per_arg as $i => $arg_info) {
                     if (count($arg_info['shapes']) !== 1) {
                         $all_single_shape = false;
                         break;
@@ -503,8 +505,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     }
 
                     if (!$only_shapes) {
-                        $all_single_shape = false;
-                        break;
+                        // Allow non-pure-shape arguments UNLESS this is not the last argument
+                        // (rightmost argument in array_merge wins for all keys)
+                        $is_last_arg = ($i === count($array_shapes_per_arg) - 1);
+                        if (!$is_last_arg) {
+                            $all_single_shape = false;
+                            break;
+                        }
+                        $all_arg_infos_only_shapes = false;
                     }
 
                     $shapes_to_merge[] = $arg_info['shapes'][0];
@@ -516,7 +524,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     if ($merged_shape !== null) {
                         // Use the merged shape and also apply integer key as list conversion
                         $types = $merged_shape->withIntegerKeyArraysAsLists();
-                        if ($has_non_array || !$types->hasRealTypeSet()) {
+                        if ($has_non_array || !$types->hasRealTypeSet() || !$all_arg_infos_only_shapes) {
                             $types = $types->withRealTypeSet([ArrayType::instance(true)]);
                         }
                         return $types;
