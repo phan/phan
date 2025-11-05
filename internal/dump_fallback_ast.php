@@ -117,7 +117,7 @@ EOB;
     }
 
     if ($as_tokens) {
-        $tokens = token_get_all($expr);
+        $tokens = PhpToken::tokenize($expr);
         if ($add_prefix) {
             unset($tokens[0]);
         }
@@ -131,21 +131,27 @@ EOB;
 
 /**
  * Dump the list of tokens to the console
- * @param array<int, string|array{0:int, 1:string, 2:int}> $tokens
+ * @param array<int, \PhpToken|string|array{0:int, 1:string, 2:int}> $tokens
  */
 function dump_tokens(array $tokens): void
 {
     foreach ($tokens as $token) {
-        if (is_string($token)) {
+        if ($token instanceof \PhpToken) {
+            $kind = $token->id;
+            $text = $token->text;
+        } elseif (is_string($token)) {
             echo $token . PHP_EOL;
             continue;
+        } else {
+            $kind = $token[0];
+            $text = $token[1];
         }
-        $kind = $token[0];
+
         if ($kind === T_WHITESPACE) {
-            echo token_name($kind) . ': ' . var_export($token[1], true) . PHP_EOL;
+            echo token_name($kind) . ': ' . var_export($text, true) . PHP_EOL;
             continue;
         }
-        echo token_name($kind) . ': ' . $token[1] . PHP_EOL;
+        echo token_name($kind) . ': ' . $text . PHP_EOL;
     }
 }
 

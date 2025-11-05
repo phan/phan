@@ -10,7 +10,6 @@ use Phan\Language\Element\Comment\NullComment;
 use Phan\Library\StringUtil;
 use Phan\PluginV3;
 use Phan\PluginV3\AfterAnalyzeFileCapability;
-use Phan\PluginV3\UnloadablePluginException;
 
 /**
  * This plugin checks for the use of phpdoc annotations in non-phpdoc comments
@@ -41,21 +40,23 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
         string $file_contents,
         Node $node
     ): void {
-        $tokens = @token_get_all($file_contents);
+        try {
+            $tokens = PhpToken::tokenize($file_contents);
+        } catch (\Throwable) {
+            // If tokenization fails, skip analysis
+            return;
+        }
         foreach ($tokens as $token) {
-            if (!is_array($token)) {
-                continue;
-            }
-            if ($token[0] !== T_COMMENT) {
+            if (!$token->is(T_COMMENT)) {
                 continue;
             }
             // This is a comment, not T_DOC_COMMENT
-            $comment_string = $token[1];
+            $comment_string = $token->text;
             if (strncmp($comment_string, '/*', 2) !== 0) {
                 if ($comment_string[0] === '#' && substr($comment_string, 1, 1) !== '[') {
                     $this->emitIssue(
                         $code_base,
-                        (clone $context)->withLineNumberStart($token[2]),
+                        (clone $context)->withLineNumberStart($token->line),
                         'PhanPluginPHPDocHashComment',
                         'Saw comment starting with {COMMENT} in {COMMENT} - consider using {COMMENT} instead to avoid confusion with {COMMENT} attributes',
                         ['#', StringUtil::jsonEncode(self::truncate(trim($comment_string))), '//', '#[']
@@ -66,7 +67,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
             if (!str_contains($comment_string, '@')) {
                 continue;
             }
-            $lineno = $token[2];
+            $lineno = $token->line;
 
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             $comment = Comment::fromStringInContext("/**" . $comment_string, $code_base, $context, $lineno, Comment::ON_ANY);
@@ -76,7 +77,7 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
             }
             $this->emitIssue(
                 $code_base,
-                (clone $context)->withLineNumberStart($token[2]),
+                (clone $context)->withLineNumberStart($token->line),
                 'PhanPluginPHPDocInWrongComment',
                 'Saw possible phpdoc annotation in ordinary block comment {COMMENT}. PHPDoc comments should start with "/**" (followed by whitespace), not "/*"',
                 [StringUtil::jsonEncode(self::truncate($comment_string))]
@@ -91,8 +92,5 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
         }
         return $token;
     }
-}
-if (!function_exists('token_get_all')) {
-    throw new UnloadablePluginException("PHPDocInWrongCommentPlugin requires the tokenizer extension, which is not enabled (this plugin uses token_get_all())");
 }
 return new PHPDocInWrongCommentPlugin();
