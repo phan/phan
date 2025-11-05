@@ -20,6 +20,7 @@ use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\BeforeAnalyzeFileCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\SuppressionCapability;
+use Phan\Suggestion;
 
 /**
  * Check for unused (at)suppress annotations.
@@ -33,7 +34,8 @@ class UnusedSuppressionPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability,
-    FinalizeProcessCapability
+    FinalizeProcessCapability,
+    SuppressionCapability
 {
 
     /**
@@ -79,6 +81,11 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         CodeBase $code_base,
         AddressableElement $element
     ): void {
+        // Skip magic methods from PHPDoc - their suppressions may come from the parent class
+        if ($element instanceof Method && $element->isFromPHPDoc()) {
+            return;
+        }
+
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
             $element->getSuppressIssueList();
@@ -321,6 +328,42 @@ class UnusedSuppressionPlugin extends PluginV3 implements
         $file_name = Config::projectPath($file_path);
         $plugin_class = \get_class($plugin);
         $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;
+    }
+
+    /**
+     * This plugin doesn't suppress issues itself - it only tracks suppressions.
+     * Return false to let other plugins handle suppression.
+     * @override
+     * @unused-param $code_base
+     * @unused-param $context
+     * @unused-param $issue_type
+     * @unused-param $lineno
+     * @unused-param $parameters
+     * @unused-param $suggestion
+     */
+    public function shouldSuppressIssue(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        array $parameters,
+        ?Suggestion $suggestion
+    ): bool {
+        return false;
+    }
+
+    /**
+     * This plugin doesn't define suppressions itself.
+     * Return an empty array.
+     * @override
+     * @unused-param $code_base
+     * @unused-param $file_path
+     */
+    public function getIssueSuppressionList(
+        CodeBase $code_base,
+        string $file_path
+    ): array {
+        return [];
     }
 }
 
