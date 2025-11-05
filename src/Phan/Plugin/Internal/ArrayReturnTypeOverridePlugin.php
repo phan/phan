@@ -334,20 +334,159 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
 
         /**
+         * Merges array shapes intelligently, preserving key-to-type mappings when possible.
+         * For array_merge semantics: rightmost array's values win for overlapping keys.
+         * NOTE: If all keys are integers, this will return null to fallback to generic/list handling.
+         *
+         * @param list<ArrayShapeType> $shapes
+         * @param list<bool> $is_empty_array whether each corresponding shape argument is known to be empty
+         * @return ?UnionType The merged shape, or null if merging requires fallback to generic array
+         */
+        $merge_array_shapes = static function (array $shapes, array $is_empty_array): ?UnionType {
+            if (empty($shapes)) {
+                return null;
+            }
+
+            // Start with the first shape's fields
+            $merged_fields = $shapes[0]->getFieldTypes();
+
+            // Merge subsequent shapes, skipping those that are known to be empty
+            for ($i = 1; $i < count($shapes); $i++) {
+                // Skip merging in empty arrays - they don't contribute to the result
+                if ($is_empty_array[$i] ?? false) {
+                    continue;
+                }
+
+                $current_shape = $shapes[$i];
+                $current_fields = $current_shape->getFieldTypes();
+
+                // Merge the field types
+                // Later arrays' values override earlier ones for the same key
+                foreach ($current_fields as $key => $type) {
+                    $merged_fields[$key] = $type;
+                }
+            }
+
+            // If all keys are integers, don't return a shape (let normal list handling take over)
+            $all_int_keys = true;
+            /** @phan-suppress-next-line PhanUnusedVariableValueOfForeachWithKey */
+            foreach ($merged_fields as $key => $_type) {
+                if (!is_int($key)) {
+                    $all_int_keys = false;
+                    break;
+                }
+            }
+
+            // Only return a shape if we have at least one non-integer key
+            if ($all_int_keys) {
+                return null;
+            }
+
+            // Create and return the merged array shape
+            return ArrayShapeType::fromFieldTypes($merged_fields, false)->asPHPDocUnionType();
+        };
+
+        /**
          * @param list<Node|int|string|float> $args
          */
-        $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type): UnionType {
+        $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $merge_array_shapes): UnionType {
             if (!$args) {
                 return NullType::instance(false)->asRealUnionType();
             }
             $has_non_array = false;
+            $array_shapes = [];
+            $is_empty_array = [];
             $types = null;
+            $arg_count = count($args);
+
+            // Collect array types and track if we have array shapes
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
                 $new_types = $passed_array_type->genericArrayTypes();
+
+                $has_shape_in_arg = false;
+                $is_arg_empty = false;
+
+                // Check if this argument is or contains an array shape or generic array
+                foreach ($new_types->getTypeSet() as $type) {
+                    if ($type instanceof ArrayShapeType) {
+                        $array_shapes[] = $type;
+                        $has_shape_in_arg = true;
+                        // Check if it's an empty shape
+                        if (!$type->isNotEmptyArrayShape()) {
+                            $is_arg_empty = true;
+                        }
+                    }
+                }
+
+                // Track whether this argument appears to be empty
+                if ($has_shape_in_arg) {
+                    $is_empty_array[] = $is_arg_empty;
+                }
+
                 $types = $types instanceof UnionType ? $types->withUnionType($new_types) : $new_types;
                 $has_non_array = $has_non_array || (!$passed_array_type->hasRealTypeSet() || !$passed_array_type->asRealUnionType()->nonArrayTypes()->isEmpty());
             }
+
+            // Special case: if we have exactly one array shape in the first argument,
+            // and all other arguments are generic arrays (possibly empty), preserve the shape.
+            // This handles cases like: array_merge(['key' => value], $generic_array)
+            // NOTE: Array shapes with only integer keys will be converted to lists by withIntegerKeyArraysAsLists()
+            if (count($array_shapes) === 1 && $arg_count >= 1) {
+                $first_arg = $args[0];
+                $first_arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $first_arg);
+                $first_arg_generic = $first_arg_type->genericArrayTypes();
+
+                // Check that all array types in first arg are shapes
+                $first_arg_all_shapes = true;
+                foreach ($first_arg_generic->getTypeSet() as $type) {
+                    if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                        $first_arg_all_shapes = false;
+                        break;
+                    }
+                }
+
+                // If the first arg contains only array shapes, preserve that structure
+                // But ONLY if we have non-integer keys (integer keys should become lists)
+                if ($first_arg_all_shapes) {
+                    $shape_only = $array_shapes[0];
+                    // Check if this shape has any non-integer keys
+                    $has_non_int_keys = false;
+                    /** @phan-suppress-next-line PhanUnusedVariableValueOfForeachWithKey */
+                    foreach ($shape_only->getFieldTypes() as $key => $_type) {
+                        if (!is_int($key)) {
+                            $has_non_int_keys = true;
+                            break;
+                        }
+                    }
+
+                    // Only preserve as shape if we have non-integer keys
+                    if ($has_non_int_keys) {
+                        $merged_shape = $shape_only->asPHPDocUnionType();
+                        // Use the shape and also apply integer key as list conversion
+                        $types = $merged_shape->withIntegerKeyArraysAsLists();
+                        if ($has_non_array || !$types->hasRealTypeSet()) {
+                            $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                        }
+                        return $types;
+                    }
+                }
+            }
+
+            // If we have multiple array shapes, try to merge them intelligently
+            if (!empty($array_shapes) && count($array_shapes) > 1) {
+                $merged_shape = $merge_array_shapes($array_shapes, $is_empty_array);
+                if ($merged_shape !== null) {
+                    // Use the merged shape and also apply integer key as list conversion
+                    $types = $merged_shape->withIntegerKeyArraysAsLists();
+                    if ($has_non_array || !$types->hasRealTypeSet()) {
+                        $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                    }
+                    return $types;
+                }
+            }
+
+            // Fall back to the original behavior if we can't merge array shapes
             $types = $types->withFlattenedTopLevelArrayShapeTypeInstances()
                            ->withIntegerKeyArraysAsLists();
             if ($types->isEmpty()) {
