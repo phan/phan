@@ -116,9 +116,61 @@ Performance improvements:
 - Incremental analysis support (see CLI features above)
 - Subdirectory-only mode for faster focused analysis
 
+New features (Tools):
+- Add `tool/add_suppressions.php` to assist in adding `@suppress` or `@phan-suppress` annotations to files
+  - Useful for batch suppressing specific issue types across the codebase
+  - See `tool/SuppressionsToolImplementation.md` for technical details
+
 Bug fixes:
 
 Type Inference & Analysis:
+- Fixed too strict type inference after `!empty()` condition on arrays ([#5295](https://github.com/phan/phan/issues/5295))
+- Fixed union types containing both known objects and mixed being checked too strictly ([#5292](https://github.com/phan/phan/issues/5292))
+- Fixed `PhanAccessReadOnlyPropertyMultipleTimes` failing to account for mutually exclusive branches ([#5285](https://github.com/phan/phan/issues/5285))
+- Fixed `declare` blocks causing Phan to lose track of declared variables ([#5284](https://github.com/phan/phan/issues/5284))
+- Fixed conditionals causing wrong type inference for static properties ([#5283](https://github.com/phan/phan/issues/5283))
+- Fixed too strict `PhanTemplateTypeConstraintViolation` when type can't be resolved ([#5282](https://github.com/phan/phan/issues/5282))
+- Fixed Phan using unrelated array elements when inferring types ([#5281](https://github.com/phan/phan/issues/5281))
+- Fixed array shape type inference for `is_object` and `!is_array` checks with mixed types ([#5277](https://github.com/phan/phan/issues/5277))
+- Fixed static property type narrowing with type-check functions like `is_null()` and `!is_null()` ([#5277](https://github.com/phan/phan/pull/5277))
+- Fixed type accumulation for interface-typed properties ensuring method calls are validated against interface contract ([#5300](https://github.com/phan/phan/issues/5300))
+- Fixed spurious `PhanPossiblyUndeclaredVariable` with function calls and following usage ([#5269](https://github.com/phan/phan/issues/5269))
+- Fixed `PhanTypeMismatchGeneratorYieldKey` false positive when yield has no key ([#5258](https://github.com/phan/phan/issues/5258))
+- Fixed `PhanAccessOwnConstructor` incorrectly warning on valid usage of `self::__construct` ([#5257](https://github.com/phan/phan/issues/5257))
+- Fixed unnecessary array key aliasing in type narrowing when assignment happens in foreach iteration ([#5255](https://github.com/phan/phan/issues/5255))
+- Fixed array unions containing mixed types being checked too strictly for array offsets ([#5299](https://github.com/phan/phan/issues/5299))
+- Fixed condition-based type narrowing using outdated context when variable is modified in conditionals ([#5301](https://github.com/phan/phan/issues/5301))
+- Fixed `isset()` and `empty()` warning on undefined properties (now only warns on direct access and unset) ([#5273](https://github.com/phan/phan/issues/5273))
+- Fixed property type narrowing scope leaking into unrelated code paths ([#5249](https://github.com/phan/phan/issues/5249))
+- Fixed ArrayAccess type checking not validating offsetGet signature ([#5251](https://github.com/phan/phan/issues/5251))
+- Fixed DNF type false positive when using null defaults ([#5252](https://github.com/phan/phan/issues/5252))
+- Fixed `array_combine` signature being too strict for null values ([#5219](https://github.com/phan/phan/issues/5219))
+- Improved type inference for `get_class()` to return more specific class-string types ([#5274](https://github.com/phan/phan/issues/5274))
+- Improved handling of `getIterator()` returning Iterator with explicit generics ([#5108](https://github.com/phan/phan/pull/5108))
+- Improved parameter and property default type representation in error messages ([#5271](https://github.com/phan/phan/pull/5271))
+
+Plugins:
+- Fixed UnusedSuppressionPlugin incorrectly flagging magic method suppressions in class doc comments as unused ([#5304](https://github.com/phan/phan/issues/5304))
+- Added missing ANSI color mappings for terminal output ([#5294](https://github.com/phan/phan/issues/5294))
+- Improved confusing `PhanSuspiciousValueComparison` message when all literal possibilities exhausted ([#5276](https://github.com/phan/phan/issues/5276))
+- Fixed issue message for `PhanCommentAbstractOnInheritance` ([#5265](https://github.com/phan/phan/issues/5265))
+
+Other Fixes:
+- Fixed nested closure scope tracking bug ([#5291](https://github.com/phan/phan/issues/5291))
+- Fixed multiline PHPDoc comment parsing issues ([#5293](https://github.com/phan/phan/issues/5293))
+- Fixed private property static/non-static mismatch detection in traits ([#5247](https://github.com/phan/phan/issues/5247))
+- Fixed internal stubs not being included in releases ([#5244](https://github.com/phan/phan/issues/5244))
+- Fixed nullsafe property access: No more strict object checking false positives with `?->` ([#5112](https://github.com/phan/phan/pull/5112))
+- Fixed trait method multi-level inheritance: Track trait methods through multiple inheritance levels ([#5120](https://github.com/phan/phan/pull/5120))
+- Fixed DNS aliases: Corrected reversed DNS aliases ([#5170](https://github.com/phan/phan/pull/5170))
+- Fixed private final constructor: Don't warn on private final constructors (exempted in PHP 8.0+) ([#5169](https://github.com/phan/phan/pull/5169))
+- Fixed float-to-int in modulo: Detect implicit float-to-int conversion in `%` operator ([#5189](https://github.com/phan/phan/pull/5189))
+- Fixed sibling type compatibility: Assignment visitor type checking now works correctly ([#5168](https://github.com/phan/phan/pull/5168))
+- Fixed dynamic array offset constants: Skip premature constant resolution for `define()` ([#5156](https://github.com/phan/phan/pull/5156))
+- Fixed unary operator type aggregation: Corrected numeric fallback ordering bug ([#5146](https://github.com/phan/phan/pull/5146))
+- Fixed xml_parser_create signature: Corrected incorrect signature ([#5139](https://github.com/phan/phan/pull/5139))
+- Fixed crash with intersection types: No more `EmptyFQSENException` with `--analyze-twice` ([#5086](https://github.com/phan/phan/pull/5086))
+- Fixed class constant regression: Corrected typed constant false positives after [#5128](https://github.com/phan/phan/pull/5128) ([#5133](https://github.com/phan/phan/pull/5133))
 - Fixed intersection types with unknown classes: Proper method resolution when intersection contains both known and unknown classes ([#5190](https://github.com/phan/phan/pull/5190))
 - Fixed template type compatibility: No more false positive `PhanTypeMismatchDeclaredReturn` with template types ([#5181](https://github.com/phan/phan/pull/5181))
 - Fixed readonly property access: No more false positives with `isset()` on readonly properties in `@phan-side-effect-free` classes ([#5180](https://github.com/phan/phan/pull/5180))
@@ -154,19 +206,6 @@ Loop & Control Flow:
 - Fixed possibly infinite loop detection: No more false positives when loop condition uses array count ([#5153](https://github.com/phan/phan/pull/5153))
 - Fixed `!isset()` variable tracking: Possibly-undefined flag preservation now works correctly ([#5172](https://github.com/phan/phan/pull/5172))
 - Fixed redundant condition after `empty()`: Proper static property handling ([#5148](https://github.com/phan/phan/pull/5148))
-
-Other Fixes:
-- Fixed nullsafe property access: No more strict object checking false positives with `?->` ([#5112](https://github.com/phan/phan/pull/5112))
-- Fixed trait method multi-level inheritance: Track trait methods through multiple inheritance levels ([#5120](https://github.com/phan/phan/pull/5120))
-- Fixed DNS aliases: Corrected reversed DNS aliases ([#5170](https://github.com/phan/phan/pull/5170))
-- Fixed private final constructor: Don't warn on private final constructors (exempted in PHP 8.0+) ([#5169](https://github.com/phan/phan/pull/5169))
-- Fixed float-to-int in modulo: Detect implicit float-to-int conversion in `%` operator ([#5189](https://github.com/phan/phan/pull/5189))
-- Fixed sibling type compatibility: Assignment visitor type checking now works correctly ([#5168](https://github.com/phan/phan/pull/5168))
-- Fixed dynamic array offset constants: Skip premature constant resolution for `define()` ([#5156](https://github.com/phan/phan/pull/5156))
-- Fixed unary operator type aggregation: Corrected numeric fallback ordering bug ([#5146](https://github.com/phan/phan/pull/5146))
-- Fixed xml_parser_create signature: Corrected incorrect signature ([#5139](https://github.com/phan/phan/pull/5139))
-- Fixed crash with intersection types: No more `EmptyFQSENException` with `--analyze-twice` ([#5086](https://github.com/phan/phan/pull/5086))
-- Fixed class constant regression: Corrected typed constant false positives after [#5128](https://github.com/phan/phan/pull/5128) ([#5133](https://github.com/phan/phan/pull/5133))
 
 AST Compatibility:
 - Fixed AST version 110/120 compatibility for PHP 8.4
