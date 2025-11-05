@@ -394,6 +394,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return NullType::instance(false)->asRealUnionType();
             }
             $has_non_array = false;
+            /** @var array<int,array{shapes:list<ArrayShapeType>,has_empty:bool,array_union:UnionType}> $array_shapes_per_arg */
             $array_shapes_per_arg = [];  // Track shapes per argument to avoid merging union alternatives
             $types = null;
 
@@ -419,8 +420,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
 
                 // Track shapes from this argument (they may be union alternatives)
+                // Also track the full array union to validate no other array variants exist
                 if (!empty($arg_shapes)) {
-                    $array_shapes_per_arg[] = ['shapes' => $arg_shapes, 'has_empty' => $arg_has_empty];
+                    $array_shapes_per_arg[] = [
+                        'shapes' => $arg_shapes,
+                        'has_empty' => $arg_has_empty,
+                        'array_union' => $new_types  // Full union for validation
+                    ];
                 }
 
                 $types = $types instanceof UnionType ? $types->withUnionType($new_types) : $new_types;
@@ -434,12 +440,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 // First argument has exactly one shape (the first must be $args[0])
                 // This handles cases like: array_merge(['key' => value], ...) where we preserve the shape
                 $shape_only = $array_shapes_per_arg[0]['shapes'][0];
-                $first_arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                $first_arg_generic = $first_arg_type->genericArrayTypes();
+                /** @phan-suppress-next-line PhanTypeInvalidDimOffset */
+                $first_arg_union = $array_shapes_per_arg[0]['array_union'];
 
                 // Check that all array types in first arg are shapes (no union with generic arrays)
                 $first_arg_all_shapes = true;
-                foreach ($first_arg_generic->getTypeSet() as $type) {
+                /** @phan-suppress-next-line PhanNonClassMethodCall */
+                foreach ($first_arg_union->getTypeSet() as $type) {
                     if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
                         $first_arg_all_shapes = false;
                         break;
@@ -471,7 +478,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             } elseif (count($array_shapes_per_arg) > 1) {
                 // Multiple arguments, each with exactly one shape: merge them
-                // This is safe because each argument contributes one shape (no union alternatives)
+                // This is safe only if:
+                // 1. Each argument contributes exactly one shape (no union alternatives)
+                // 2. Each argument's array union consists ONLY of shapes (no generic/other array variants)
                 $all_single_shape = true;
                 $shapes_to_merge = [];
                 $is_empty_flags = [];
@@ -481,6 +490,23 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                         $all_single_shape = false;
                         break;
                     }
+
+                    // IMPORTANT: Verify the argument's array union consists ONLY of the one shape
+                    // (no ArrayType or GenericArrayType alternatives that could override keys)
+                    $array_union = $arg_info['array_union'];
+                    $only_shapes = true;
+                    foreach ($array_union->getTypeSet() as $type) {
+                        if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                            $only_shapes = false;
+                            break;
+                        }
+                    }
+
+                    if (!$only_shapes) {
+                        $all_single_shape = false;
+                        break;
+                    }
+
                     $shapes_to_merge[] = $arg_info['shapes'][0];
                     $is_empty_flags[] = $arg_info['has_empty'];
                 }
