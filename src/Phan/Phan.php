@@ -986,6 +986,11 @@ class Phan implements IgnoredFilesFilterInterface
             $stubs['standard'] = "$bundled_stubs_dir/$standard_stub";
         }
 
+        // Cache loaded stubs to avoid issues, especially in tests (https://github.com/phan/phan/issues/5312)
+        // But do it per-file, to support multiple runs with different configs.
+        static $loaded_stub_paths = [];
+        $stubs = array_diff( $stubs, $loaded_stub_paths );
+
         foreach ($stubs as $extension_name => $path_to_extension) {
             $extension_name = (string)$extension_name;
 
@@ -1021,6 +1026,7 @@ class Phan implements IgnoredFilesFilterInterface
             }
 
             Analysis::parseFile($code_base, $path_to_extension, false, null, true);
+            $loaded_stub_paths[] = $path_to_extension;
         }
     }
 }
