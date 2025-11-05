@@ -480,10 +480,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                             $types = $merged_shape->withIntegerKeyArraysAsLists();
                         } else {
                             // Shape is from a later argument (last argument in array_merge).
-                            // Merge it with the accumulated types from earlier arguments.
-                            // This preserves the generic array type from the first argument
-                            // while adding the guaranteed keys from the last argument.
-                            $types = $types->withUnionType($merged_shape)->withIntegerKeyArraysAsLists();
+                            // Flatten away shapes from earlier non-pure arguments (they're not guaranteed),
+                            // keeping only generic array types, then merge with the guaranteed last shape.
+                            // This preserves generic element access while adding the guaranteed keys.
+                            $flattened_types = $types->withFlattenedTopLevelArrayShapeTypeInstances();
+                            $types = $flattened_types->withUnionType($merged_shape)->withIntegerKeyArraysAsLists();
                         }
 
                         if ($has_non_array || !$types->hasRealTypeSet()) {
@@ -566,12 +567,17 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     } else {
                         // Not all arguments are pure, but we know the ACTUAL LAST argument IS pure.
                         // In array_merge, the last argument's keys are guaranteed to be in the result.
-                        // Merge the last argument's shape with the accumulated types from earlier arguments
-                        // to preserve both the guaranteed keys and any generic array elements.
+                        // However, shapes from non-pure earlier arguments must be removed because they
+                        // may not actually be present (the argument could match its generic alternative).
+                        // We flatten the shapes away and keep only the generic array types, then merge
+                        // with the guaranteed shape from the last argument.
                         if ($last_shape_info !== null) {
                             $last_shape = $last_shape_info['shapes'][0];
                             $last_shape_union = $last_shape->asPHPDocUnionType();
-                            $types = $types->withUnionType($last_shape_union)->withIntegerKeyArraysAsLists();
+                            // Flatten shapes from non-pure arguments, keeping only generic arrays
+                            $flattened_types = $types->withFlattenedTopLevelArrayShapeTypeInstances();
+                            // Merge the flattened types with the guaranteed last shape
+                            $types = $flattened_types->withUnionType($last_shape_union)->withIntegerKeyArraysAsLists();
                             if ($has_non_array || !$types->hasRealTypeSet()) {
                                 $types = $types->withRealTypeSet([ArrayType::instance(true)]);
                             }
