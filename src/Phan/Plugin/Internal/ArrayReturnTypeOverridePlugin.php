@@ -458,9 +458,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
 
                 // Preserve the shape if:
                 // 1. It's from the first argument (arg_index 0), OR
-                // 2. It's from a later argument AND there are multiple arguments to merge
-                //    (meaning it's the last argument in array_merge, guaranteed by the check)
-                if ($shape_arg_all_shapes && ($shape_arg_index === 0 || count($args) > 1)) {
+                // 2. It's from the ACTUAL LAST argument (arg_index == count($args) - 1)
+                //    (shapes from middle arguments are not guaranteed after later arguments override them)
+                if ($shape_arg_all_shapes && ($shape_arg_index === 0 || $shape_arg_index === count($args) - 1)) {
                     // Check if this shape has any non-integer keys
                     $has_non_int_keys = false;
                     /** @phan-suppress-next-line PhanUnusedVariableValueOfForeachWithKey */
@@ -495,20 +495,34 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             } elseif (count($array_shapes_per_arg) > 1) {
                 // Multiple arguments, each with exactly one shape: merge them
                 // In array_merge, the rightmost (last) argument's values always win for string keys.
-                // So if the last argument is a pure shape, its keys are guaranteed in the result,
-                // even if earlier arguments are mixed (shape|generic).
+                // So if the actual last argument passed to array_merge is a pure shape, its keys are guaranteed.
+                // NOTE: $array_shapes_per_arg only contains arguments WITH shapes, so we must verify
+                // that the last shape we collected is actually from the final argument position.
 
-                // First, check if the last argument is pure shapes
-                $last_arg_info = $array_shapes_per_arg[count($array_shapes_per_arg) - 1];
-                $last_is_pure = true;
-                foreach ($last_arg_info['array_union']->getTypeSet() as $type) {
-                    if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
-                        $last_is_pure = false;
+                // Check if there's a shape from the actual last argument (arg_index == count($args) - 1)
+                $last_arg_index = count($args) - 1;
+                $last_arg_is_pure_shape = false;
+                $last_shape_info = null;
+
+                foreach ($array_shapes_per_arg as $arg_info) {
+                    if ($arg_info['arg_index'] === $last_arg_index) {
+                        $last_shape_info = $arg_info;
+                        // Check if this last argument is pure shapes
+                        if (count($arg_info['shapes']) === 1) {
+                            $is_pure = true;
+                            foreach ($arg_info['array_union']->getTypeSet() as $type) {
+                                if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                                    $is_pure = false;
+                                    break;
+                                }
+                            }
+                            $last_arg_is_pure_shape = $is_pure;
+                        }
                         break;
                     }
                 }
 
-                if (!$last_is_pure || count($last_arg_info['shapes']) !== 1) {
+                if (!$last_arg_is_pure_shape) {
                     // Last argument is not a pure single shape, can't preserve shapes from any argument
                     // Fall through to generic handling below
                 } else {
@@ -550,16 +564,17 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                             return $types;
                         }
                     } else {
-                        // Not all arguments are pure, but we know the last argument IS pure
-                        // (from the condition on line 503).
+                        // Not all arguments are pure, but we know the ACTUAL LAST argument IS pure.
                         // In array_merge, the last argument's keys are guaranteed to be in the result.
                         // Return at least the last argument's shape to preserve those guaranteed keys.
-                        $last_shape = $last_arg_info['shapes'][0];
-                        $types = $last_shape->asPHPDocUnionType()->withIntegerKeyArraysAsLists();
-                        if ($has_non_array || !$types->hasRealTypeSet()) {
-                            $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                        if ($last_shape_info !== null) {
+                            $last_shape = $last_shape_info['shapes'][0];
+                            $types = $last_shape->asPHPDocUnionType()->withIntegerKeyArraysAsLists();
+                            if ($has_non_array || !$types->hasRealTypeSet()) {
+                                $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                            }
+                            return $types;
                         }
-                        return $types;
                     }
                 }
             }
