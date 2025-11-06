@@ -1,0 +1,2 @@
+%s:13 PhanGenericConstructorTypes Missing template parameter for type T on constructor for generic class \Test\GenericInstantiationAfterDefault\GenericClass defined at %s:12
+%s:30 PhanUnusedVariable Unused definition of variable $x

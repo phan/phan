@@ -140,7 +140,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Set or get the flag indicating whether we're analyzing a default parameter value
      * @param bool $analyzing Whether we're analyzing a default value
      * @return bool The previous value
-     * @internal
      */
     public static function setAnalyzingDefaultValue(bool $analyzing): bool
     {
@@ -151,8 +150,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Check if we're currently analyzing a default parameter value
-     * @return bool
-     * @internal
      */
     public static function isAnalyzingDefaultValue(): bool
     {

@@ -4483,7 +4483,7 @@ class Clazz extends AddressableElement
     public function getGenericConstructorBuilder(CodeBase $code_base, ?Context $instantiation_context = null, bool $is_default_value = false): array
     {
         return $this->memoize(
-            'template_type_resolvers',
+            'template_type_resolvers_' . ($is_default_value ? 'default' : 'normal'),
             /**
              * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
              */
