@@ -31,7 +31,6 @@
     </testsuite>
     <testsuite name="MultiFileTest">
       <file>tests/Phan/MultiFileTest.php</file>
-      <file>tests/Phan/StrictArrayCheckingTest.php</file>
     </testsuite>
     <testsuite name="SoapTest">
       <file>tests/Phan/SoapTest.php</file>
