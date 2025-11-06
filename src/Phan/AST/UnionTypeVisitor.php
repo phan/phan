@@ -1770,7 +1770,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Get closures to extract template types based on the types of the constructor
             // so that we can figure out what template types we're going to be mapping
-            $template_type_resolvers = $class->getGenericConstructorBuilder($this->code_base);
+            // Pass the instantiation context so that error messages point to the NEW expression
+            $template_type_resolvers = $class->getGenericConstructorBuilder($this->code_base, $this->context);
 
             // And use those closures to infer the (possibly transformed) types
             $template_type_list = [];

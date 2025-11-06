@@ -1,2 +1,0 @@
-internal:%d PhanGenericConstructorTypes Missing template parameter for type TKey on constructor for generic class \WeakMap
-internal:%d PhanGenericConstructorTypes Missing template parameter for type TValue on constructor for generic class \WeakMap

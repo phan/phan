@@ -4480,14 +4480,14 @@ class Clazz extends AddressableElement
     /**
      * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
      */
-    public function getGenericConstructorBuilder(CodeBase $code_base): array
+    public function getGenericConstructorBuilder(CodeBase $code_base, ?Context $instantiation_context = null): array
     {
         return $this->memoize(
             'template_type_resolvers',
             /**
              * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
              */
-            function () use ($code_base): array {
+            function () use ($code_base, $instantiation_context): array {
                 // Get the constructor so that we can figure out what
                 // template types we're going to be mapping
                 $constructor_method =
@@ -4501,8 +4501,16 @@ class Clazz extends AddressableElement
                     );
                     if (!$template_type_resolver) {
                         // PhanTemplateTypeNotDeclaredInFunctionParams can be suppressed both on the class and on __construct()
-                        if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
-                            $warn_context = $constructor_method->getDefiningClassFQSEN() === $this->fqsen ? $constructor_method->getContext() : $this->getContext();
+                        // Don't warn about missing template parameters for internal/built-in classes (e.g., SplObjectStorage, WeakMap)
+                        // where template parameters are optional
+                        if (!$this->isPHPInternal() && !$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
+                            // Use instantiation context if provided (for better error location)
+                            // Otherwise fall back to class/constructor definition context
+                            if ($instantiation_context) {
+                                $warn_context = $instantiation_context;
+                            } else {
+                                $warn_context = $constructor_method->getDefiningClassFQSEN() === $this->fqsen ? $constructor_method->getContext() : $this->getContext();
+                            }
 
                             Issue::maybeEmit(
                                 $code_base,
