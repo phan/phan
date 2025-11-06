@@ -4480,14 +4480,14 @@ class Clazz extends AddressableElement
     /**
      * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
      */
-    public function getGenericConstructorBuilder(CodeBase $code_base, ?Context $instantiation_context = null): array
+    public function getGenericConstructorBuilder(CodeBase $code_base, ?Context $instantiation_context = null, bool $is_default_value = false): array
     {
         return $this->memoize(
             'template_type_resolvers',
             /**
              * @return list<Closure(list<Node|string|int|float|UnionType>, Context):UnionType>
              */
-            function () use ($code_base, $instantiation_context): array {
+            function () use ($code_base, $instantiation_context, $is_default_value): array {
                 // Get the constructor so that we can figure out what
                 // template types we're going to be mapping
                 $constructor_method =
@@ -4501,9 +4501,10 @@ class Clazz extends AddressableElement
                     );
                     if (!$template_type_resolver) {
                         // PhanTemplateTypeNotDeclaredInFunctionParams can be suppressed both on the class and on __construct()
-                        // Don't warn about missing template parameters for internal/built-in classes (e.g., SplObjectStorage, WeakMap)
-                        // where template parameters are optional
-                        if (!$this->isPHPInternal() && !$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
+                        // Don't warn about missing template parameters for:
+                        // 1. Internal/built-in classes (e.g., SplObjectStorage, WeakMap) where template parameters are optional
+                        // 2. Default value expressions in promoted properties - the developer has explicit control and can use @var annotations
+                        if (!$this->isPHPInternal() && !$is_default_value && !$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
                             // Use instantiation context if provided (for better error location)
                             // Otherwise fall back to class/constructor definition context
                             if ($instantiation_context) {

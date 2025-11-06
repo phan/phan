@@ -97,6 +97,14 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @var bool
+     * Set to true when analyzing default parameter values
+     * This is used to suppress certain warnings (e.g., PhanGenericConstructorTypes)
+     * for instantiations in default values where the developer has explicit control
+     */
+    private static $analyzing_default_value = false;
+
+    /**
+     * @var bool
      * Set to true to cause loggable issues to be thrown
      * instead of emitted as issues to the log.
      */
@@ -126,6 +134,29 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $this->should_catch_issue_exception =
             $should_catch_issue_exception;
+    }
+
+    /**
+     * Set or get the flag indicating whether we're analyzing a default parameter value
+     * @param bool $analyzing Whether we're analyzing a default value
+     * @return bool The previous value
+     * @internal
+     */
+    public static function setAnalyzingDefaultValue(bool $analyzing): bool
+    {
+        $previous = self::$analyzing_default_value;
+        self::$analyzing_default_value = $analyzing;
+        return $previous;
+    }
+
+    /**
+     * Check if we're currently analyzing a default parameter value
+     * @return bool
+     * @internal
+     */
+    public static function isAnalyzingDefaultValue(): bool
+    {
+        return self::$analyzing_default_value;
     }
 
     /**
@@ -1771,7 +1802,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // Get closures to extract template types based on the types of the constructor
             // so that we can figure out what template types we're going to be mapping
             // Pass the instantiation context so that error messages point to the NEW expression
-            $template_type_resolvers = $class->getGenericConstructorBuilder($this->code_base, $this->context);
+            $template_type_resolvers = $class->getGenericConstructorBuilder($this->code_base, $this->context, self::isAnalyzingDefaultValue());
 
             // And use those closures to infer the (possibly transformed) types
             $template_type_list = [];

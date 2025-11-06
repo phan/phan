@@ -967,7 +967,8 @@ class ParseVisitor extends ScopeVisitor
                 $this->code_base,
                 new ElementContext($property),
                 //new ElementContext($property),
-                $future_union_type_node
+                $future_union_type_node,
+                true  // Mark as default value analysis
             );
         } else {
             $future_union_type = null;

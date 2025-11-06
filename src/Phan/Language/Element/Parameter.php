@@ -504,7 +504,8 @@ class Parameter extends Variable
                     $parameter->setDefaultValueFutureType(new FutureUnionType(
                         $code_base,
                         (clone $context)->withLineNumberStart($default_node->lineno ?? 0),
-                        $default_node
+                        $default_node,
+                        true  // Mark as default value analysis
                     ));
                 }
             }

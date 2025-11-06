@@ -25,19 +25,25 @@ class FutureUnionType
     /** @var Node|string|int|bool|float the node which we will be fetching the type of. */
     private $node;
 
+    /** @var bool whether this future type is analyzing a default parameter value */
+    private $is_default_value;
+
     /**
      * @param CodeBase $code_base
      * @param Context $context
      * @param Node|string|int|bool|float $node
+     * @param bool $is_default_value whether this is analyzing a default parameter value
      */
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        $node
+        $node,
+        bool $is_default_value = false
     ) {
         $this->code_base = $code_base;
         $this->context = $context;
         $this->node = $node;
+        $this->is_default_value = $is_default_value;
     }
 
     /**
@@ -55,12 +61,24 @@ class FutureUnionType
     public function get(): UnionType
     {
         $this->context->clearCachedUnionTypes();
-        return UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $this->node,
-            false
-        );
+
+        // Temporarily set a flag to indicate we're analyzing a default value
+        if ($this->is_default_value) {
+            $previous = UnionTypeVisitor::setAnalyzingDefaultValue(true);
+        }
+
+        try {
+            return UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $this->node,
+                false
+            );
+        } finally {
+            if ($this->is_default_value) {
+                UnionTypeVisitor::setAnalyzingDefaultValue($previous ?? false);
+            }
+        }
     }
 
     /**
@@ -81,6 +99,15 @@ class FutureUnionType
     public function getContext(): Context
     {
         return $this->context;
+    }
+
+    /**
+     * @return bool whether this future type is analyzing a default parameter value
+     * @internal
+     */
+    public function isDefaultValue(): bool
+    {
+        return $this->is_default_value;
     }
 
     /**
