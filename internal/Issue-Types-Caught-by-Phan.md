@@ -4702,7 +4702,7 @@ This category contains issues related to [Phan's generic type support](https://g
 ## PhanGenericConstructorTypes
 
 ```
-Missing template parameter for type {TYPE} on constructor for generic class {CLASS}
+Missing template parameter for type {TYPE} on constructor for generic class {CLASS} defined at {FILE}:{LINE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0203_generic_errors.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0203_generic_errors.php#L27).
