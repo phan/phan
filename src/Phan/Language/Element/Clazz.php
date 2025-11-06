@@ -4516,7 +4516,7 @@ class Clazz extends AddressableElement
                         $template_type
                     );
                     if (!$template_type_resolver) {
-                        $has_emitted_issue = false;
+                        $emission_state = (object)['emitted' => false];
                         $template_type_resolver = $this->createContextAwareTemplateResolver(
                             $code_base,
                             $template_type,
@@ -4524,9 +4524,9 @@ class Clazz extends AddressableElement
                             $definition_context,
                             $definition_file,
                             $definition_line,
-                            $has_emitted_issue
+                            $emission_state
                         );
-                        if ($should_emit_issue && $instantiation_context === null && !$has_emitted_issue) {
+                        if ($should_emit_issue && $instantiation_context === null && !$emission_state->emitted) {
                             $warn_context = $definition_context;
                             Issue::maybeEmit(
                                 $code_base,
@@ -4538,7 +4538,7 @@ class Clazz extends AddressableElement
                                 $definition_file,
                                 $definition_line
                             );
-                            $has_emitted_issue = true;
+                            $emission_state->emitted = true;
                         }
                     }
                     $template_type_resolvers[] = $template_type_resolver;
@@ -4558,7 +4558,7 @@ class Clazz extends AddressableElement
         Context $definition_context,
         string $definition_file,
         string $definition_line,
-        bool &$has_emitted_issue
+        object $emission_state
     ): Closure {
         $template_name = $template_type->getName();
         $class_fqsen = $this->fqsen;
@@ -4574,7 +4574,7 @@ class Clazz extends AddressableElement
             $class_fqsen,
             $definition_file,
             $definition_line,
-            &$has_emitted_issue,
+            $emission_state,
             $definition_context
         ): UnionType {
             $template_map = self::inferTemplateTypeMapFromContext($code_base, $call_context, $class_fqsen);
@@ -4589,7 +4589,7 @@ class Clazz extends AddressableElement
             if ($cached instanceof UnionType && !$cached->isEmpty()) {
                 return $cached;
             }
-            if ($should_emit_issue && !$has_emitted_issue) {
+            if ($should_emit_issue && !$emission_state->emitted) {
                 $warn_context = $call_context;
                 if ($warn_context->getLineNumberStart() === 0) {
                     $warn_context = $definition_context;
@@ -4604,7 +4604,7 @@ class Clazz extends AddressableElement
                     $definition_file,
                     $definition_line
                 );
-                $has_emitted_issue = true;
+                $emission_state->emitted = true;
             }
             return MixedType::instance(false)->asPHPDocUnionType();
         };
