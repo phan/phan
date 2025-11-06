@@ -394,14 +394,14 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return NullType::instance(false)->asRealUnionType();
             }
             $has_non_array = false;
-            /** @var array<int,array{shapes:list<ArrayShapeType>,has_empty:bool,array_union:UnionType}> $array_shapes_per_arg */
+            /** @var array<int,array{shapes:list<ArrayShapeType>,has_empty:bool,array_union:UnionType,arg_index:int}> $array_shapes_per_arg */
             $array_shapes_per_arg = [];  // Track shapes per argument to avoid merging union alternatives
             $types = null;
 
             // Collect array types and track if we have array shapes
             // We track shapes per argument because union types within an argument are alternatives (OR),
             // not combinations to merge. Only merge shapes from different arguments.
-            foreach ($args as $arg) {
+            foreach ($args as $arg_index => $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
                 $new_types = $passed_array_type->genericArrayTypes();
 
@@ -423,6 +423,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 // Also track the full array union to validate no other array variants exist
                 if (!empty($arg_shapes)) {
                     $array_shapes_per_arg[] = [
+                        'arg_index' => $arg_index,  // Track which argument this came from
                         'shapes' => $arg_shapes,
                         'has_empty' => $arg_has_empty,
                         'array_union' => $new_types  // Full union for validation
@@ -437,24 +438,29 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             // We only merge shapes from different arguments, never from the same argument
             // (which would be union alternatives).
             if (count($array_shapes_per_arg) === 1 && count($array_shapes_per_arg[0]['shapes']) === 1) {
-                // First argument has exactly one shape (the first must be $args[0])
-                // This handles cases like: array_merge(['key' => value], ...) where we preserve the shape
-                $shape_only = $array_shapes_per_arg[0]['shapes'][0];
+                // Single argument with one shape. This could be from the first argument or a later argument.
+                $shape_info = $array_shapes_per_arg[0];
                 /** @phan-suppress-next-line PhanTypeInvalidDimOffset */
-                $first_arg_union = $array_shapes_per_arg[0]['array_union'];
+                $shape_arg_index = $shape_info['arg_index'];
+                $shape_only = $shape_info['shapes'][0];
+                /** @phan-suppress-next-line PhanTypeInvalidDimOffset */
+                $shape_arg_union = $shape_info['array_union'];
 
-                // Check that all array types in first arg are shapes (no union with generic arrays)
-                $first_arg_all_shapes = true;
+                // Check if this argument's union consists only of shapes (no generic alternatives)
+                $shape_arg_all_shapes = true;
                 /** @phan-suppress-next-line PhanNonClassMethodCall,PhanPluginUnknownObjectMethodCall */
-                foreach ($first_arg_union->getTypeSet() as $type) {
+                foreach ($shape_arg_union->getTypeSet() as $type) {
                     if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
-                        $first_arg_all_shapes = false;
+                        $shape_arg_all_shapes = false;
                         break;
                     }
                 }
 
-                // If the first arg contains only shapes (not union with generics), check if we should preserve
-                if ($first_arg_all_shapes) {
+                // Preserve the shape if:
+                // 1. It's from the first argument (arg_index 0), OR
+                // 2. It's from the ACTUAL LAST argument (arg_index == count($args) - 1)
+                //    (shapes from middle arguments are not guaranteed after later arguments override them)
+                if ($shape_arg_all_shapes && ($shape_arg_index === 0 || $shape_arg_index === count($args) - 1)) {
                     // Check if this shape has any non-integer keys
                     $has_non_int_keys = false;
                     /** @phan-suppress-next-line PhanUnusedVariableValueOfForeachWithKey */
@@ -468,8 +474,19 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     // Only preserve as shape if we have non-integer keys
                     if ($has_non_int_keys) {
                         $merged_shape = $shape_only->asPHPDocUnionType();
-                        // Use the shape and also apply integer key as list conversion
-                        $types = $merged_shape->withIntegerKeyArraysAsLists();
+
+                        if ($shape_arg_index === 0) {
+                            // Shape is from the first argument, return it directly
+                            $types = $merged_shape->withIntegerKeyArraysAsLists();
+                        } else {
+                            // Shape is from a later argument (last argument in array_merge).
+                            // Flatten away shapes from earlier non-pure arguments (they're not guaranteed),
+                            // keeping only generic array types, then merge with the guaranteed last shape.
+                            // This preserves generic element access while adding the guaranteed keys.
+                            $flattened_types = $types->withFlattenedTopLevelArrayShapeTypeInstances();
+                            $types = $flattened_types->withUnionType($merged_shape)->withIntegerKeyArraysAsLists();
+                        }
+
                         if ($has_non_array || !$types->hasRealTypeSet()) {
                             $types = $types->withRealTypeSet([ArrayType::instance(true)]);
                         }
@@ -478,48 +495,94 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 }
             } elseif (count($array_shapes_per_arg) > 1) {
                 // Multiple arguments, each with exactly one shape: merge them
-                // This is safe only if:
-                // 1. Each argument contributes exactly one shape (no union alternatives)
-                // 2. Each argument's array union consists ONLY of shapes (no generic/other array variants)
-                $all_single_shape = true;
-                $shapes_to_merge = [];
-                $is_empty_flags = [];
+                // In array_merge, the rightmost (last) argument's values always win for string keys.
+                // So if the actual last argument passed to array_merge is a pure shape, its keys are guaranteed.
+                // NOTE: $array_shapes_per_arg only contains arguments WITH shapes, so we must verify
+                // that the last shape we collected is actually from the final argument position.
+
+                // Check if there's a shape from the actual last argument (arg_index == count($args) - 1)
+                $last_arg_index = count($args) - 1;
+                $last_arg_is_pure_shape = false;
+                $last_shape_info = null;
 
                 foreach ($array_shapes_per_arg as $arg_info) {
-                    if (count($arg_info['shapes']) !== 1) {
-                        $all_single_shape = false;
-                        break;
-                    }
-
-                    // IMPORTANT: Verify the argument's array union consists ONLY of the one shape
-                    // (no ArrayType or GenericArrayType alternatives that could override keys)
-                    $array_union = $arg_info['array_union'];
-                    $only_shapes = true;
-                    foreach ($array_union->getTypeSet() as $type) {
-                        if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
-                            $only_shapes = false;
-                            break;
+                    if ($arg_info['arg_index'] === $last_arg_index) {
+                        $last_shape_info = $arg_info;
+                        // Check if this last argument is pure shapes
+                        if (count($arg_info['shapes']) === 1) {
+                            $is_pure = true;
+                            foreach ($arg_info['array_union']->getTypeSet() as $type) {
+                                if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                                    $is_pure = false;
+                                    break;
+                                }
+                            }
+                            $last_arg_is_pure_shape = $is_pure;
                         }
-                    }
-
-                    if (!$only_shapes) {
-                        $all_single_shape = false;
                         break;
                     }
-
-                    $shapes_to_merge[] = $arg_info['shapes'][0];
-                    $is_empty_flags[] = $arg_info['has_empty'];
                 }
 
-                if ($all_single_shape) {
-                    $merged_shape = $merge_array_shapes($shapes_to_merge, $is_empty_flags);
-                    if ($merged_shape !== null) {
-                        // Use the merged shape and also apply integer key as list conversion
-                        $types = $merged_shape->withIntegerKeyArraysAsLists();
-                        if ($has_non_array || !$types->hasRealTypeSet()) {
-                            $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                if (!$last_arg_is_pure_shape) {
+                    // Last argument is not a pure single shape, can't preserve shapes from any argument
+                    // Fall through to generic handling below
+                } else {
+                    // Last argument is pure with exactly one shape
+                    // Check if ALL arguments are pure (so we can merge all)
+                    $all_single_shape = true;
+                    $all_args_pure_shapes = true;
+                    $shapes_to_merge = [];
+                    $is_empty_flags = [];
+
+                    foreach ($array_shapes_per_arg as $arg_info) {
+                        if (count($arg_info['shapes']) !== 1) {
+                            $all_single_shape = false;
+                            break;
                         }
-                        return $types;
+
+                        $array_union = $arg_info['array_union'];
+                        foreach ($array_union->getTypeSet() as $type) {
+                            if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                                // This argument has non-shape alternatives
+                                $all_args_pure_shapes = false;
+                                break;  // Just break the inner foreach, not both
+                            }
+                        }
+
+                        $shapes_to_merge[] = $arg_info['shapes'][0];
+                        $is_empty_flags[] = $arg_info['has_empty'];
+                    }
+
+                    // If all arguments have exactly one shape AND all are pure shapes, merge them
+                    if ($all_single_shape && $all_args_pure_shapes) {
+                        $merged_shape = $merge_array_shapes($shapes_to_merge, $is_empty_flags);
+                        if ($merged_shape !== null) {
+                            // Use the merged shape and also apply integer key as list conversion
+                            $types = $merged_shape->withIntegerKeyArraysAsLists();
+                            if ($has_non_array || !$types->hasRealTypeSet()) {
+                                $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                            }
+                            return $types;
+                        }
+                    } else {
+                        // Not all arguments are pure, but we know the ACTUAL LAST argument IS pure.
+                        // In array_merge, the last argument's keys are guaranteed to be in the result.
+                        // However, shapes from non-pure earlier arguments must be removed because they
+                        // may not actually be present (the argument could match its generic alternative).
+                        // We flatten the shapes away and keep only the generic array types, then merge
+                        // with the guaranteed shape from the last argument.
+                        if ($last_shape_info !== null) {
+                            $last_shape = $last_shape_info['shapes'][0];
+                            $last_shape_union = $last_shape->asPHPDocUnionType();
+                            // Flatten shapes from non-pure arguments, keeping only generic arrays
+                            $flattened_types = $types->withFlattenedTopLevelArrayShapeTypeInstances();
+                            // Merge the flattened types with the guaranteed last shape
+                            $types = $flattened_types->withUnionType($last_shape_union)->withIntegerKeyArraysAsLists();
+                            if ($has_non_array || !$types->hasRealTypeSet()) {
+                                $types = $types->withRealTypeSet([ArrayType::instance(true)]);
+                            }
+                            return $types;
+                        }
                     }
                 }
             }

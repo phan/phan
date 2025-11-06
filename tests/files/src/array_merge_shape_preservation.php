@@ -48,6 +48,28 @@ function g() {
     h($params['shop_section']);
 }
 
+// Test case 5: Mixed first argument with pure last shape (Etsyweb case)
+// First arg is generic array (from array_map), last arg is pure shape
+function test_mixed_with_pure_last() {
+    $encoded = array_map('json_encode', [
+        'summary_history' => [],
+        'user_input' => 'hello',
+    ]);
+    $result = array_merge($encoded, ['role' => 'user']);
+    // The last argument is pure shape, so 'role' key is guaranteed
+    h($result['role']);  // Should NOT warn - type is string literal 'user'
+}
+
+// Test case 6: Shape union as parameter merged with pure shape
+/**
+ * @param array{a:int}|array{b:string} $mixed
+ */
+function test_param_union_with_pure_last($mixed) {
+    $result = array_merge($mixed, ['status' => 'ok']);
+    // Last argument is pure shape, so 'status' key is guaranteed
+    h($result['status']);  // Should NOT warn - type is string literal
+}
+
 // Helper functions
 function h(?string $arg) {
     echo $arg;
@@ -59,3 +81,8 @@ function h_null(?string $arg) {
 
 f();
 g();
+test_merge_shape_with_generic();
+test_merge_two_shapes();
+test_merge_overlapping_shapes();
+test_mixed_with_pure_last();
+test_param_union_with_pure_last(['a' => 1]);
