@@ -1,1 +1,1 @@
-%s:5 PhanGenericConstructorTypes Missing template parameter for type TModel on constructor for generic class \Foo
+%s:6 PhanGenericConstructorTypes Missing template parameter for type TModel on constructor for generic class \Foo
