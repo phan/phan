@@ -372,19 +372,6 @@ class ASTReverter
             },
             ast\AST_CALL => static function (Node $node): string {
                 $expr = $node->children['expr'];
-                // AST version 120 represents clone as AST_CALL with AST_NAME 'clone'
-                // Format it the same way as AST_CLONE for consistency
-                if ($expr instanceof Node &&
-                    $expr->kind === \ast\AST_NAME &&
-                    $expr->children['name'] === 'clone') {
-                    $args = $node->children['args'];
-                    if ($args instanceof Node && isset($args->children[0])) {
-                        return sprintf(
-                            '(clone(%s))',
-                            self::toShortString($args->children[0])
-                        );
-                    }
-                }
                 return sprintf(
                     '%s%s',
                     self::toShortString($expr),

@@ -265,6 +265,11 @@ PHP;
                 unset($node->children['__declId']);
                 $node->children['__declId'] = $declId;
             }
+            // Normalize clone nodes: AST version 120+ represents clone as AST_CALL
+            // Convert to AST_CLONE for consistency with our normalization
+            if ($kind === ast\AST_CALL && self::isCloneCall($node)) {
+                self::convertCallToClone($node);
+            }
             foreach ($node->children as $c) {
                 self::normalizeOriginalAST($c);
             }
@@ -274,6 +279,35 @@ PHP;
                 self::normalizeOriginalAST($c);
             }
         }
+    }
+
+    /**
+     * Check if an AST_CALL node represents a clone operation.
+     */
+    private static function isCloneCall(ast\Node $node): bool
+    {
+        $expr = $node->children['expr'] ?? null;
+        if (!($expr instanceof ast\Node) || $expr->kind !== ast\AST_NAME) {
+            return false;
+        }
+        return ($expr->children['name'] ?? null) === 'clone';
+    }
+
+    /**
+     * Convert an AST_CALL node representing 'clone' to an AST_CLONE node.
+     */
+    private static function convertCallToClone(ast\Node &$node): void
+    {
+        $args = $node->children['args'] ?? null;
+        $expr = null;
+
+        if ($args instanceof ast\Node && isset($args->children[0])) {
+            $expr = $args->children[0];
+        }
+
+        // Modify the node in-place to convert from AST_CALL to AST_CLONE
+        $node->kind = ast\AST_CLONE;
+        $node->children = ['expr' => $expr];
     }
 
     // TODO: TolerantPHPParser gets more information than PHP-Parser for statement lists,

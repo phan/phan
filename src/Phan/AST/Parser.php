@@ -165,6 +165,9 @@ class Parser
                     $error['message']
                 );
             }
+            // Normalize AST to handle differences between PHP versions
+            // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
+            ASTNormalizer::normalizeCloneNodes($root_node);
             return $root_node;
         } finally {
             $__no_echo_phan_errors = false;
@@ -435,6 +438,9 @@ class Parser
             }
         }
         if (!$errors) {
+            // Normalize AST to handle differences between PHP versions
+            // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
+            ASTNormalizer::normalizeCloneNodes($node);
             return $node;
         }
         $file_position_map = new FilePositionMap($file_contents);
@@ -475,6 +481,9 @@ class Parser
                 }
             }
         }
+        // Normalize AST to handle differences between PHP versions
+        // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
+        ASTNormalizer::normalizeCloneNodes($node);
         return $node;
     }
 

@@ -1046,11 +1046,6 @@ class ContextNode
         }
         if ($expression->kind === ast\AST_NAME) {
             $name = $expression->children['name'];
-            // AST version 120 represents clone as AST_CALL with AST_NAME 'clone'
-            // Don't try to look up 'clone' as a function - it's a language construct
-            if ($name === 'clone') {
-                return [];
-            }
             try {
                 if (!\is_string($name)) {
                     // Impossible?

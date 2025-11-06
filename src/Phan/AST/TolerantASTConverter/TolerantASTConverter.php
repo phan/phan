@@ -877,25 +877,10 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Expression\CloneExpression' => static function (PhpParser\Node\Expression\CloneExpression $n, int $start_line): ast\Node {
                 // AST version 120 represents clone as AST_CALL instead of AST_CLONE
-                if (self::$ast_version_parsing >= 120) {
-                    $args = [];
-                    $expr_node = static::phpParserNodeToAstNode($n->expression);
-                    $args[] = $expr_node;
-                    $modifications = $n->modifications;
-                    if ($modifications instanceof PhpParser\Node) {
-                        $args[] = static::phpParserNodeToAstNode($modifications);
-                    }
-                    $args_line = isset($args[0]) && $args[0] instanceof ast\Node ? $args[0]->lineno : $start_line;
-                    return new ast\Node(
-                        ast\AST_CALL,
-                        0,
-                        [
-                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'clone'], $start_line),
-                            'args' => new ast\Node(ast\AST_ARG_LIST, 0, $args, $args_line),
-                        ],
-                        $start_line
-                    );
-                }
+                // Normalize clone to AST_CLONE for all AST versions.
+                // Even though AST version 120+ represents clone as AST_CALL in php-ast,
+                // we normalize it here to AST_CLONE for consistency and to simplify
+                // downstream visitor logic (no special-casing needed in visitCall methods).
                 return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => static function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line): ast\Node {
