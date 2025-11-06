@@ -544,6 +544,26 @@ class ParseVisitor extends ScopeVisitor
             $parameter_node->children['attributes']
         );
 
+        $property_variable_comment = null;
+        foreach ($property_comment->getVariableList() as $var_comment) {
+            $var_name = $var_comment->getName();
+            if ($var_name === '' || $var_name === '$' . $name || $var_name === $name) {
+                $property_variable_comment = $var_comment;
+                break;
+            }
+        }
+        $parameter_union_type = $parameter->getUnionType();
+        if ($property_variable_comment && !$property_variable_comment->getUnionType()->isEmpty()) {
+            $variable_comment = $property_variable_comment;
+            $parameter->setUnionType(
+                $property_variable_comment->getUnionType()->withRealTypeSet($parameter_union_type->getRealTypeSet())
+            );
+        } elseif ($variable_comment && !$variable_comment->getUnionType()->isEmpty()) {
+            $parameter->setUnionType(
+                $variable_comment->getUnionType()->withRealTypeSet($parameter_union_type->getRealTypeSet())
+            );
+        }
+
         $property = $this->addProperty(
             $class,
             $parameter->getName(),
@@ -584,6 +604,14 @@ class ParseVisitor extends ScopeVisitor
             if (!$property->isStatic() && !$property->isWriteOnly()) {
                 $property->setIsReadOnly(true);
             }
+        }
+        $default_node = $parameter_node->children['default'];
+        if ($default_node instanceof Node) {
+            $parameter->setDefaultValueFutureType(new FutureUnionType(
+                $this->code_base,
+                new ElementContext($property),
+                $default_node
+            ));
         }
     }
 
