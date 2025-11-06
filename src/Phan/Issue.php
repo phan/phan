@@ -5329,7 +5329,7 @@ class Issue
                 self::GenericConstructorTypes,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "Missing template parameter for type {TYPE} on constructor for generic class {CLASS}",
+                "Missing template parameter for type {TYPE} on constructor for generic class {CLASS} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 14004
             ),

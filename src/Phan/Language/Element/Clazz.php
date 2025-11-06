@@ -4518,7 +4518,9 @@ class Clazz extends AddressableElement
                                 Issue::GenericConstructorTypes,
                                 $warn_context->getLineNumberStart(),
                                 $template_type,
-                                $this->fqsen
+                                $this->fqsen,
+                                $this->getFileRef()->getFile(),
+                                (string)$this->getFileRef()->getLineNumberStart()
                             );
                         }
                         /** @param list<\ast\Node|mixed> $unused_arg_list */
