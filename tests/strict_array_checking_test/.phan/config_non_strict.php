@@ -46,5 +46,5 @@ return [
 
     'exclude_analysis_directory_list' => [],
 
-    'strict_array_checking' => true,
+    'strict_array_checking' => false,
 ];

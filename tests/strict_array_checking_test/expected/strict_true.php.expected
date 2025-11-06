@@ -1,0 +1,2 @@
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $var - it has union type array{y:mixed,x?:null}|non-empty-array<mixed,mixed>(real=array)
+%s:16 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'x' of $var of array type array{y:mixed,x?:null}|non-empty-array<mixed,mixed>
