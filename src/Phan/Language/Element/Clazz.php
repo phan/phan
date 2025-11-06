@@ -53,6 +53,7 @@ use Phan\Suggestion;
 use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
+use Throwable;
 
 use function array_key_exists;
 use function array_merge;
@@ -4493,6 +4494,21 @@ class Clazz extends AddressableElement
                 $constructor_method =
                     $this->getMethodByName($code_base, '__construct');
 
+                $class_suppresses_template = $this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams);
+                $constructor_suppresses_template = $constructor_method->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams);
+                $class_suppresses_generic = $this->checkHasSuppressIssueAndIncrementCount(Issue::GenericConstructorTypes);
+                $constructor_suppresses_generic = $constructor_method->checkHasSuppressIssueAndIncrementCount(Issue::GenericConstructorTypes);
+
+                $should_emit_issue = !$this->isPHPInternal()
+                    && !$class_suppresses_template
+                    && !$constructor_suppresses_template
+                    && !$class_suppresses_generic
+                    && !$constructor_suppresses_generic;
+
+                $definition_context = $constructor_method->getDefiningClassFQSEN() === $this->fqsen ? $constructor_method->getContext() : $this->getContext();
+                $definition_file = $this->getFileRef()->getFile();
+                $definition_line = (string)$this->getFileRef()->getLineNumberStart();
+
                 $template_type_resolvers = [];
                 foreach ($this->getTemplateTypeMap() as $template_type) {
                     $template_type_resolver = $constructor_method->getTemplateTypeExtractorClosure(
@@ -4500,18 +4516,18 @@ class Clazz extends AddressableElement
                         $template_type
                     );
                     if (!$template_type_resolver) {
-                        // PhanTemplateTypeNotDeclaredInFunctionParams can be suppressed both on the class and on __construct()
-                        // Don't warn about missing template parameters for internal/built-in classes (e.g., SplObjectStorage, WeakMap)
-                        // where template parameters are optional
-                        if (!$this->isPHPInternal() && !$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
-                            // Use instantiation context if provided (for better error location)
-                            // Otherwise fall back to class/constructor definition context
-                            if ($instantiation_context) {
-                                $warn_context = $instantiation_context;
-                            } else {
-                                $warn_context = $constructor_method->getDefiningClassFQSEN() === $this->fqsen ? $constructor_method->getContext() : $this->getContext();
-                            }
-
+                        $has_emitted_issue = false;
+                        $template_type_resolver = $this->createContextAwareTemplateResolver(
+                            $code_base,
+                            $template_type,
+                            $should_emit_issue,
+                            $definition_context,
+                            $definition_file,
+                            $definition_line,
+                            $has_emitted_issue
+                        );
+                        if ($should_emit_issue && $instantiation_context === null && !$has_emitted_issue) {
+                            $warn_context = $definition_context;
                             Issue::maybeEmit(
                                 $code_base,
                                 $warn_context,
@@ -4519,20 +4535,129 @@ class Clazz extends AddressableElement
                                 $warn_context->getLineNumberStart(),
                                 $template_type,
                                 $this->fqsen,
-                                $this->getFileRef()->getFile(),
-                                (string)$this->getFileRef()->getLineNumberStart()
+                                $definition_file,
+                                $definition_line
                             );
+                            $has_emitted_issue = true;
                         }
-                        /** @param list<\ast\Node|mixed> $unused_arg_list */
-                        $template_type_resolver = static function (array $unused_arg_list, Context $unused_context): UnionType {
-                            return MixedType::instance(false)->asPHPDocUnionType();
-                        };
                     }
                     $template_type_resolvers[] = $template_type_resolver;
                 }
                 return $template_type_resolvers;
             }
         );
+    }
+
+    /**
+     * @return Closure(list<Node|string|int|float|UnionType>, Context):UnionType
+     */
+    private function createContextAwareTemplateResolver(
+        CodeBase $code_base,
+        TemplateType $template_type,
+        bool $should_emit_issue,
+        Context $definition_context,
+        string $definition_file,
+        string $definition_line,
+        bool &$has_emitted_issue
+    ): Closure {
+        $template_name = $template_type->getName();
+        $class_fqsen = $this->fqsen;
+
+        /**
+         * @param list<Node|string|int|float|UnionType> $unused_arg_list
+         */
+        return static function (array $unused_arg_list, Context $call_context) use (
+            $code_base,
+            $template_type,
+            $template_name,
+            $should_emit_issue,
+            $class_fqsen,
+            $definition_file,
+            $definition_line,
+            &$has_emitted_issue,
+            $definition_context
+        ): UnionType {
+            $template_map = self::inferTemplateTypeMapFromContext($code_base, $call_context, $class_fqsen);
+            $resolved_union_type = $template_map[$template_name] ?? null;
+            static $context_template_cache = [];
+            $cache_key = $call_context->getFile() . ':' . $call_context->getLineNumberStart();
+            if ($resolved_union_type instanceof UnionType && !$resolved_union_type->isEmpty()) {
+                $context_template_cache[$cache_key][$template_name] = $resolved_union_type;
+                return $resolved_union_type;
+            }
+            $cached = $context_template_cache[$cache_key][$template_name] ?? null;
+            if ($cached instanceof UnionType && !$cached->isEmpty()) {
+                return $cached;
+            }
+            if ($should_emit_issue && !$has_emitted_issue) {
+                $warn_context = $call_context;
+                if ($warn_context->getLineNumberStart() === 0) {
+                    $warn_context = $definition_context;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $warn_context,
+                    Issue::GenericConstructorTypes,
+                    $warn_context->getLineNumberStart(),
+                    $template_type,
+                    $class_fqsen,
+                    $definition_file,
+                    $definition_line
+                );
+                $has_emitted_issue = true;
+            }
+            return MixedType::instance(false)->asPHPDocUnionType();
+        };
+    }
+
+    /**
+     * @return array<string,UnionType>
+     */
+    private static function inferTemplateTypeMapFromContext(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen): array
+    {
+        try {
+            $element = $context->getElementInScope($code_base);
+        } catch (Throwable) {
+            return [];
+        }
+
+        $union_types = [];
+        if ($element instanceof Property) {
+            $phpdoc_type = $element->getPHPDocUnionType();
+            if (!$phpdoc_type->isEmpty()) {
+                $union_types[] = $phpdoc_type;
+            }
+            $union_types[] = $element->getUnionType();
+        } elseif ($element instanceof Method) {
+            foreach ($element->getParameterList() as $parameter) {
+                if (($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) === 0) {
+                    continue;
+                }
+                $union_types[] = $parameter->getUnionType();
+            }
+        } else {
+            return [];
+        }
+
+        foreach ($union_types as $union_type) {
+            if ($union_type->isEmpty()) {
+                continue;
+            }
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                if ((string)FullyQualifiedClassName::fromType($type) !== (string)$class_fqsen) {
+                    continue;
+                }
+                $map = $type->getTemplateParameterTypeMap($code_base, true);
+                if ($map) {
+                    return $map;
+                }
+            }
+        }
+
+        return [];
     }
 
     /**
