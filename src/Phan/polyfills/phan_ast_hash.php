@@ -7,8 +7,8 @@ use ast\Node;
 /**
  * Polyfill for phan_ast_hash() when the phan_helpers extension is not available.
  *
- * This function generates a 16-byte MD5 hash of an AST node, ignoring line numbers
- * and spacing to detect semantically identical code.
+ * This function generates a 16-byte hash (XXH3-128 when available, otherwise MD5) of an AST node,
+ * ignoring line numbers and spacing to detect semantically identical code.
  *
  * @param Node|string|int|float|null $node
  * @return string 16-byte binary hash
@@ -16,10 +16,14 @@ use ast\Node;
  */
 function phan_ast_hash(Node|string|int|float|null $node): string
 {
+    static $hash_algo = null;
+    if ($hash_algo === null) {
+        $hash_algo = \in_array('xxh128', hash_algos(), true) ? 'xxh128' : 'md5';
+    }
     // Handle non-objects (primitives)
     if (!is_object($node)) {
         if (is_string($node)) {
-            return md5($node, true);
+            return hash($hash_algo, $node, true);
         } elseif (is_int($node)) {
             if (\PHP_INT_SIZE >= 8) {
                 return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
@@ -35,7 +39,11 @@ function phan_ast_hash(Node|string|int|float|null $node): string
     }
 
     // Handle AST nodes
-    $str = 'N' . $node->kind . ':' . ($node->flags & 0x3ffffff);
+    $ctx = hash_init($hash_algo);
+    hash_update($ctx, 'N');
+    hash_update($ctx, (string)$node->kind);
+    hash_update($ctx, ':');
+    hash_update($ctx, (string)($node->flags & 0x3ffffff));
     foreach ($node->children as $key => $child) {
         // Skip keys starting with "phan" (added by PhanAnnotationAdder)
         if (\is_string($key) && \strncmp($key, 'phan', 4) === 0) {
@@ -44,20 +52,20 @@ function phan_ast_hash(Node|string|int|float|null $node): string
 
         // Hash the key
         if (is_string($key)) {
-            $str .= md5($key, true);
+            hash_update($ctx, hash($hash_algo, $key, true));
         } elseif (is_int($key)) {
             if (\PHP_INT_SIZE >= 8) {
-                $str .= "\0\0\0\0\0\0\0\0" . \pack('J', $key);
+                hash_update($ctx, "\0\0\0\0\0\0\0\0" . \pack('J', $key));
             } else {
-                $str .= "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $key);
+                hash_update($ctx, "\0\0\0\0\0\0\0\0\0\0\0\0" . \pack('N', $key));
             }
         } else {
-            $str .= md5((string) $key, true);
+            hash_update($ctx, hash($hash_algo, (string)$key, true));
         }
 
         // Hash the child value (recursive)
-        $str .= phan_ast_hash($child);
+        hash_update($ctx, phan_ast_hash($child));
     }
 
-    return md5($str, true);
+    return hash_final($ctx, true);
 }

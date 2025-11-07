@@ -49,10 +49,11 @@ final class ASTHasherTest extends TestBase
             $this->assertSameBinaryString($expected, ASTHasher::hash($key));
         }
         $this->assertSameBinaryString("\0\0\0\0\0\0\0\2\0\0\0\0\0\0\0\0", ASTHasher::hash(null));
-        $expected1 = hex2bin('3c6e0b8a9c15224a8228b9a98ca1531d');
+        $hash_algo = \in_array('xxh128', \hash_algos(), true) ? 'xxh128' : 'md5';
+        $expected1 = hex2bin(hash($hash_algo, 'key'));
         $this->assertSameBinaryString($expected1, ASTHasher::hash('key'));
 
-        $expected2 = hex2bin('d41d8cd98f00b204e9800998ecf8427e');
+        $expected2 = hex2bin(hash($hash_algo, ''));
         $this->assertSameBinaryString($expected2, ASTHasher::hash(''));
 
         $expected2 = hex2bin('0000000000000001000000000000f83f');
