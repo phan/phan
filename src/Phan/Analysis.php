@@ -139,7 +139,7 @@ class Analysis
         $cache_hash = null;
         $pre_parse_snapshot = null;
         if ($should_cache_stub) {
-            $cache_key = self::normalizeInternalStubPath($real_file_path);
+            $cache_key = self::computeInternalStubCacheKey($real_file_path);
             $cache_hash = self::hashStubContents($file_contents);
             $cached_context = self::tryApplyInternalStubCache($code_base, $cache_key, $cache_hash);
             if ($cached_context instanceof Context) {
@@ -258,6 +258,13 @@ class Analysis
     {
         $real = \realpath($file_path);
         return $real !== false ? $real : $file_path;
+    }
+
+    private static function computeInternalStubCacheKey(string $file_path): string
+    {
+        $normalized_path = self::normalizeInternalStubPath($file_path);
+        $target_version = Config::get_closest_target_php_version_id();
+        return $normalized_path . '|' . $target_version;
     }
 
     private static function hashStubContents(string $contents): string
