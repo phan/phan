@@ -47,6 +47,17 @@ use const STDERR;
 class Analysis
 {
     /**
+     * @var array<string,array{hash:string,node:Node}> caches parsed ASTs for internal stubs to avoid reparsing them for each CodeBase.
+     */
+    private static array $internal_stub_ast_cache = [];
+
+    /** @var int number of times the internal stub cache was used */
+    private static int $internal_stub_ast_cache_hits = 0;
+
+    /** @var int number of times parsing occurred because a cache entry was missing or stale */
+    private static int $internal_stub_ast_cache_misses = 0;
+
+    /**
      * This first pass parses code and looks for the subset
      * of issues that can be found without having to have
      * an understanding of the entire code base.
@@ -115,11 +126,22 @@ class Analysis
 
             return $context;
         }
-        // TODO: Figure out why Phan doesn't suggest combining these catches except in language server mode
-        try {
-            $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (ParseError | CompileError | ParseException) {
-            return $context;
+        $should_use_stub_cache = $is_php_internal_stub && $override_contents === null;
+        $node = null;
+        if ($should_use_stub_cache) {
+            $node = self::getCachedInternalStubNode($real_file_path, $file_contents);
+        }
+
+        if ($node === null) {
+            // TODO: Figure out why Phan doesn't suggest combining these catches except in language server mode
+            try {
+                $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
+            } catch (ParseError | CompileError | ParseException) {
+                return $context;
+            }
+            if ($should_use_stub_cache) {
+                self::storeCachedInternalStubNode($real_file_path, $file_contents, $node);
+            }
         }
 
         if (Config::getValue('dump_ast')) {
@@ -154,6 +176,90 @@ class Analysis
         // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return $context;
+    }
+
+    /**
+     * Clears any cached ASTs for internal stubs. Useful for long-running processes and tests.
+     */
+    public static function clearInternalStubAstCache(): void
+    {
+        self::$internal_stub_ast_cache = [];
+        self::$internal_stub_ast_cache_hits = 0;
+        self::$internal_stub_ast_cache_misses = 0;
+    }
+
+    /**
+     * @return array{hits:int,misses:int} statistics about cached internal stub AST usage.
+     */
+    public static function getInternalStubAstCacheStats(): array
+    {
+        return [
+            'hits' => self::$internal_stub_ast_cache_hits,
+            'misses' => self::$internal_stub_ast_cache_misses,
+        ];
+    }
+
+    private static function getCachedInternalStubNode(string $file_path, string $file_contents): ?Node
+    {
+        $cache_key = self::normalizeInternalStubPath($file_path);
+        $entry = self::$internal_stub_ast_cache[$cache_key] ?? null;
+        if (!$entry) {
+            return null;
+        }
+        if ($entry['hash'] !== self::hashStubContents($file_contents)) {
+            return null;
+        }
+        self::$internal_stub_ast_cache_hits++;
+        return self::deepCloneNode($entry['node']);
+    }
+
+    private static function storeCachedInternalStubNode(string $file_path, string $file_contents, Node $node): void
+    {
+        $cache_key = self::normalizeInternalStubPath($file_path);
+        self::$internal_stub_ast_cache[$cache_key] = [
+            'hash' => self::hashStubContents($file_contents),
+            'node' => self::deepCloneNode($node),
+        ];
+        self::$internal_stub_ast_cache_misses++;
+    }
+
+    private static function normalizeInternalStubPath(string $file_path): string
+    {
+        $real = \realpath($file_path);
+        return $real !== false ? $real : $file_path;
+    }
+
+    private static function hashStubContents(string $contents): string
+    {
+        return \hash('sha256', $contents);
+    }
+
+    private static function deepCloneNode(Node $node): Node
+    {
+        $children = [];
+        foreach ($node->children as $key => $child) {
+            $children[$key] = self::cloneNodeChild($child);
+        }
+        return new Node($node->kind, $node->flags, $children, $node->lineno);
+    }
+
+    /**
+     * @param mixed $child
+     * @return mixed
+     */
+    private static function cloneNodeChild($child)
+    {
+        if ($child instanceof Node) {
+            return self::deepCloneNode($child);
+        }
+        if (\is_array($child)) {
+            $result = [];
+            foreach ($child as $key => $value) {
+                $result[$key] = self::cloneNodeChild($value);
+            }
+            return $result;
+        }
+        return $child;
     }
 
     /**
