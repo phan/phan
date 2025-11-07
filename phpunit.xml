@@ -45,6 +45,7 @@
     <testsuite name="UtilTest">
       <file>tests/Phan/AnalyzerTest.php</file>
       <file>tests/Phan/DebugTest.php</file>
+      <file>tests/Phan/InternalStubCacheTest.php</file>
       <directory>tests/Phan/Analysis</directory>
       <directory>tests/Phan/AST</directory>
       <directory>tests/Phan/Debug</directory>

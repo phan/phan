@@ -1,5 +1,7 @@
 <?php
 
+/** @phan-file-suppress PhanAccessMethodInternal */
+
 declare(strict_types=1);
 
 namespace Phan;
@@ -22,21 +24,27 @@ use Phan\AST\Visitor\Element;
 use Phan\Daemon\Request;
 use Phan\Exception\FQSENException;
 use Phan\Exception\RecursionDepthException;
+use Phan\Internal\InternalStubCacheEntry;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
+use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Library\FileCache;
+use Phan\Library\Map;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
 
 use function count;
+use function spl_object_id;
 use function strlen;
 
 use const STDERR;
@@ -46,6 +54,16 @@ use const STDERR;
  */
 class Analysis
 {
+    /**
+     * @var array<string,InternalStubCacheEntry>
+     */
+    private static array $internal_stub_cache = [];
+
+    /** @var int number of times the internal stub cache handled a request */
+    private static int $internal_stub_cache_hits = 0;
+    /** @var int number of times the internal stub cache missed a request */
+    private static int $internal_stub_cache_misses = 0;
+
     /**
      * This first pass parses code and looks for the subset
      * of issues that can be found without having to have
@@ -70,6 +88,7 @@ class Analysis
      * See autoload_internal_extension_signatures.
      * @param ?Request $request probably a \Phan\Daemon\ParseRequest during language server mode.
      * @throws InvalidArgumentException for invalid stub files
+     * @throws FQSENException if cached class members cannot be collected
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, ?string $override_contents = null, bool $is_php_internal_stub = false, ?Request $request = null): Context
     {
@@ -115,6 +134,20 @@ class Analysis
 
             return $context;
         }
+        $should_cache_stub = $is_php_internal_stub && $override_contents === null && !Config::getValue('dump_ast');
+        $cache_key = null;
+        $cache_hash = null;
+        $pre_parse_snapshot = null;
+        if ($should_cache_stub) {
+            $cache_key = self::computeInternalStubCacheKey($real_file_path);
+            $cache_hash = self::hashStubContents($file_contents);
+            $cached_context = self::tryApplyInternalStubCache($code_base, $cache_key, $cache_hash);
+            if ($cached_context instanceof Context) {
+                return $cached_context;
+            }
+            $pre_parse_snapshot = self::snapshotCodeBaseState($code_base);
+        }
+
         // TODO: Figure out why Phan doesn't suggest combining these catches except in language server mode
         try {
             $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, $suppress_parse_errors);
@@ -153,7 +186,185 @@ class Analysis
         );
         // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
+        if ($should_cache_stub && $cache_key !== null && $cache_hash !== null && $pre_parse_snapshot !== null) {
+            self::storeInternalStubCacheEntry($cache_key, $cache_hash, $code_base, $context, $pre_parse_snapshot);
+        }
         return $context;
+    }
+
+    /**
+     * Clears any cached parse results for internal stubs. Useful for long-running processes and tests.
+     */
+    public static function clearInternalStubCache(): void
+    {
+        self::$internal_stub_cache = [];
+        self::$internal_stub_cache_hits = 0;
+        self::$internal_stub_cache_misses = 0;
+    }
+
+    /**
+     * @return array{hits:int,misses:int} statistics about cached internal stub parse usage.
+     */
+    public static function getInternalStubCacheStats(): array
+    {
+        return [
+            'hits' => self::$internal_stub_cache_hits,
+            'misses' => self::$internal_stub_cache_misses,
+        ];
+    }
+
+    private static function tryApplyInternalStubCache(CodeBase $code_base, string $cache_key, string $hash): ?Context
+    {
+        $entry = self::$internal_stub_cache[$cache_key] ?? null;
+        if (!$entry || !$entry->matchesHash($hash)) {
+            return null;
+        }
+        self::$internal_stub_cache_hits++;
+        return $entry->applyToCodeBase($code_base);
+    }
+
+    /**
+     * @param array<string,array<string,int>> $snapshot
+     * @throws FQSENException if collecting class members fails
+     */
+    private static function storeInternalStubCacheEntry(
+        string $cache_key,
+        string $hash,
+        CodeBase $code_base,
+        Context $context,
+        array $snapshot
+    ): void {
+        $classes = self::collectChangedElements($code_base->getUserDefinedClassMap(), $snapshot['classes'] ?? []);
+        $functions = self::collectChangedElements($code_base->getFunctionMap(), $snapshot['functions'] ?? []);
+        $global_constants = self::collectChangedElements($code_base->getGlobalConstantMap(), $snapshot['global_constants'] ?? []);
+        if (!$classes && !$functions && !$global_constants) {
+            return;
+        }
+        $class_members = self::collectClassMembers($code_base, $classes);
+        $file_level_suppressions = $code_base->getFileLevelSuppressions($context->getFile());
+        self::$internal_stub_cache[$cache_key] = new InternalStubCacheEntry(
+            $hash,
+            clone($context),
+            $classes,
+            $functions,
+            $global_constants,
+            $file_level_suppressions,
+            $class_members
+        );
+        self::$internal_stub_cache_misses++;
+    }
+
+    private static function normalizeInternalStubPath(string $file_path): string
+    {
+        $real = \realpath($file_path);
+        return $real !== false ? $real : $file_path;
+    }
+
+    private static function computeInternalStubCacheKey(string $file_path): string
+    {
+        $normalized_path = self::normalizeInternalStubPath($file_path);
+        $target_version = Config::get_closest_target_php_version_id();
+        return $normalized_path . '|' . $target_version;
+    }
+
+    private static function hashStubContents(string $contents): string
+    {
+        return \hash('sha256', $contents);
+    }
+
+    /**
+     * @return array<string,array<string,int>>
+     */
+    private static function snapshotCodeBaseState(CodeBase $code_base): array
+    {
+        return [
+            'classes' => self::snapshotMapState($code_base->getUserDefinedClassMap()),
+            'functions' => self::snapshotMapState($code_base->getFunctionMap()),
+            'global_constants' => self::snapshotMapState($code_base->getGlobalConstantMap()),
+        ];
+    }
+
+    /**
+     * @return array<string,int>
+     */
+    private static function snapshotMapState(Map $map): array
+    {
+        $result = [];
+        foreach ($map as $fqsen => $element) {
+            $result[(string)$fqsen] = spl_object_id($element);
+        }
+        return $result;
+    }
+
+    /**
+     * @param array<string,int> $previous
+     * @return list<object>
+     */
+    private static function collectChangedElements(Map $map, array $previous): array
+    {
+        $result = [];
+        foreach ($map as $fqsen => $element) {
+            $id = spl_object_id($element);
+            $key = (string)$fqsen;
+            if (($previous[$key] ?? null) !== $id) {
+                $result[] = self::cloneElementForCache($element);
+            }
+        }
+        return $result;
+    }
+
+    private static function cloneElementForCache(object $element): object
+    {
+        return clone $element;
+    }
+
+    /**
+     * @param list<Clazz> $classes
+     * @return array<string,array{methods:list<Method>,properties:list<Property>,constants:list<ClassConstant>}>
+     * @throws FQSENException if class names cannot be parsed while collecting members
+     */
+    private static function collectClassMembers(CodeBase $code_base, array $classes): array
+    {
+        $result = [];
+        foreach ($classes as $class) {
+            if (!$class instanceof Clazz) {
+                continue;
+            }
+            $fqsen = $class->getFQSEN();
+            $result[(string)$fqsen] = [
+                'methods' => self::cloneMethodList($code_base->getMethodMapByFullyQualifiedClassName($fqsen)),
+                'properties' => self::clonePropertyList($code_base->getPropertyMapByFullyQualifiedClassName($fqsen)),
+                'constants' => self::cloneClassConstantList($code_base->getClassConstantMapByFullyQualifiedClassName($fqsen)),
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * @param array<string,Method> $methods
+     * @return list<Method>
+     */
+    private static function cloneMethodList(array $methods): array
+    {
+        return array_map(static fn (Method $method): Method => clone $method, array_values($methods));
+    }
+
+    /**
+     * @param array<string,Property> $properties
+     * @return list<Property>
+     */
+    private static function clonePropertyList(array $properties): array
+    {
+        return array_map(static fn (Property $property): Property => clone $property, array_values($properties));
+    }
+
+    /**
+     * @param array<string,ClassConstant> $constants
+     * @return list<ClassConstant>
+     */
+    private static function cloneClassConstantList(array $constants): array
+    {
+        return array_map(static fn (ClassConstant $constant): ClassConstant => clone $constant, array_values($constants));
     }
 
     /**

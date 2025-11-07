@@ -31,7 +31,7 @@ jobs:
          - PHP_VERSION: '8.2'
          - PHP_VERSION: '8.3'
          - PHP_VERSION: '8.4'
-         - PHP_VERSION: '8.5.0RC1-cli'
+         - PHP_VERSION: '8.5-rc-cli'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -41,4 +41,3 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build and test in docker
         run: bash tests/run_all_tests_dockerized ${{ matrix.PHP_VERSION }} ${{ matrix.DOCKER_ARCHITECTURE }}
-

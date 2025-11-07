@@ -110,6 +110,7 @@ Performance improvements:
   - Optional C extension for 2-3x faster AST hashing and type deduplication
   - Overall analysis speedup: 5-15% for large projects
   - Automatically detected and used when available
+- Internal PHP stub definitions are now cached between CodeBase instances, so repeated test runs and daemon/server reloads reuse the previously parsed classes/functions without reparsing dozens of stub files on every initialization.
 - Conditional visitor optimization ([#5186](https://github.com/phan/phan/pull/5186)):
   - Skip visitor creation for ~60-70% of if statements (those without else/elseif)
   - Reduces memory usage and improves analysis speed
