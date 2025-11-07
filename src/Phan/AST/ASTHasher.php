@@ -27,10 +27,14 @@ class ASTHasher
      */
     public static function hash(Node|float|int|null|string $node): string
     {
+        static $string_hash_algo = null;
+        if ($string_hash_algo === null) {
+            $string_hash_algo = \in_array('xxh128', hash_algos(), true) ? 'xxh128' : 'md5';
+        }
         // Handle primitives with raw representation (not hashed)
         if (!is_object($node)) {
             if (is_string($node)) {
-                return md5($node, true);
+                return hash($string_hash_algo, $node, true);
             } elseif (is_int($node)) {
                 if (\PHP_INT_SIZE >= 8) {
                     return "\0\0\0\0\0\0\0\0" . \pack('J', $node);
