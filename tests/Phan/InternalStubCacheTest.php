@@ -6,18 +6,22 @@ namespace Phan\Tests;
 
 use Phan\Analysis;
 use Phan\CodeBase;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Ensures the internal stub AST cache avoids reparsing identical files.
+ * Ensures the internal stub cache avoids reparsing identical files.
  *
  * @covers \Phan\Analysis
  */
 final class InternalStubCacheTest extends TestCase
 {
+    /**
+     * @throws \Phan\Exception\FQSENException
+     */
     public function testInternalStubCacheHits(): void
     {
-        Analysis::clearInternalStubAstCache();
+        Analysis::clearInternalStubCache();
         $stub_file = \tempnam(\sys_get_temp_dir(), 'phan_stub_cache_');
         if ($stub_file === false) {
             $this->fail('Failed to create a temporary stub file for cache test');
@@ -27,16 +31,19 @@ final class InternalStubCacheTest extends TestCase
         try {
             $first_code_base = new CodeBase([], [], [], [], []);
             Analysis::parseFile($first_code_base, $stub_file, false, null, true);
-            $stats = Analysis::getInternalStubAstCacheStats();
+            $stats = Analysis::getInternalStubCacheStats();
             $this->assertSame(['hits' => 0, 'misses' => 1], $stats, 'First parse should record one miss and zero hits');
+            $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString('\\stub_cache_example');
+            $this->assertTrue($first_code_base->hasFunctionWithFQSEN($function_fqsen));
 
             $second_code_base = new CodeBase([], [], [], [], []);
             Analysis::parseFile($second_code_base, $stub_file, false, null, true);
-            $stats = Analysis::getInternalStubAstCacheStats();
+            $stats = Analysis::getInternalStubCacheStats();
             $this->assertSame(['hits' => 1, 'misses' => 1], $stats, 'Second parse should reuse cached AST');
+            $this->assertTrue($second_code_base->hasFunctionWithFQSEN($function_fqsen));
         } finally {
             @\unlink($stub_file);
-            Analysis::clearInternalStubAstCache();
+            Analysis::clearInternalStubCache();
         }
     }
 }

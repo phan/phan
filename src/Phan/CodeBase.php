@@ -39,6 +39,7 @@ use Phan\Library\StringSuggester;
 use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
 
+use function array_keys;
 use function count;
 use function get_defined_constants;
 use function get_extension_funcs;
@@ -1397,6 +1398,16 @@ class CodeBase
     }
 
     /**
+     * Marks that the given internal function (canonical alternate id) has been fully loaded,
+     * preventing lazy loading from signature maps.
+     */
+    public function markFunctionFullyLoaded(FullyQualifiedFunctionName $fqsen): void
+    {
+        $canonical = $fqsen->withAlternateId(0);
+        unset($this->internal_function_fqsen_set[$canonical]);
+    }
+
+    /**
      * @param ClassConstant $class_constant
      * A class constant to add to the code base
      */
@@ -1823,6 +1834,14 @@ class CodeBase
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getFileLevelSuppressions(string $file): array
+    {
+        return array_keys($this->file_level_suppression_set[$file] ?? []);
     }
 
     /**

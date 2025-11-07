@@ -942,6 +942,7 @@ class Phan implements IgnoredFilesFilterInterface
      * User configs are merged with defaults via Config::setValue().
      *
      * @throws InvalidArgumentException if the stubs or stub config is invalid
+     * @throws \Phan\Exception\FQSENException if parsing cached stubs fails
      */
     private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base): void
     {
