@@ -236,18 +236,27 @@ class Analysis
 
     private static function deepCloneNode(Node $node): Node
     {
-        $children = [];
-        foreach ($node->children as $key => $child) {
-            $children[$key] = self::cloneNodeChild($child);
-        }
-        return new Node($node->kind, $node->flags, $children, $node->lineno);
+        return new Node($node->kind, $node->flags, self::cloneNodeChildren($node->children), $node->lineno);
     }
 
     /**
-     * @param mixed $child
-     * @return mixed
+     * @param array<int|string,mixed> $children
+     * @return array<int|string,mixed>
      */
-    private static function cloneNodeChild($child)
+    private static function cloneNodeChildren(array $children): array
+    {
+        $result = [];
+        foreach ($children as $key => $child) {
+            $result[$key] = self::cloneNodeChild($child);
+        }
+        return $result;
+    }
+
+    /**
+     * @return Node|array<int|string,mixed>|int|string|float|bool|null
+     *     Returns the cloned value for a child entry in an ast\Node.
+     */
+    private static function cloneNodeChild(mixed $child): mixed
     {
         if ($child instanceof Node) {
             return self::deepCloneNode($child);

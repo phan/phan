@@ -9,6 +9,8 @@ use Phan\CodeBase;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * Ensures the internal stub AST cache avoids reparsing identical files.
+ *
  * @covers \Phan\Analysis
  */
 final class InternalStubCacheTest extends TestCase
