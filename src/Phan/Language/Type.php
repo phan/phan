@@ -363,6 +363,8 @@ class Type implements Stringable
      */
     protected static $current_progress_state = null;
 
+    private static $fully_qualified_string_cache = [];
+
     /**
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
@@ -1044,8 +1046,13 @@ class Type implements Stringable
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ): Type {
-        static $type_cache = [];
-        return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
+        self::$fully_qualified_string_cache[$fully_qualified_string] ??= self::fromFullyQualifiedStringInner($fully_qualified_string);
+        return self::$fully_qualified_string_cache[$fully_qualified_string];
+    }
+
+    public static function clearStaticCaches(): void {
+        self::$fully_qualified_string_cache = [];
+        self::$canonical_object_map = [];
     }
 
     /**

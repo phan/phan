@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests;
 
 use Phan\Config;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\Type;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
@@ -68,6 +69,8 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
         parent::tearDown();
 
         Type::clearAllMemoizations();
+        Type::clearStaticCaches();
+        FullyQualifiedGlobalStructuralElement::clearStaticMemoization();
 
         // Force garbage collection to reclaim memory from circular references
         // created by template type instantiations (e.g., SplObjectStorage<T,TInfo>)

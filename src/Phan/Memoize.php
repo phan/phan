@@ -20,6 +20,8 @@ trait Memoize
      */
     protected $memoized_data = [];
 
+    protected static $static_memoized_data = [];
+
     /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
@@ -84,13 +86,11 @@ trait Memoize
      */
     protected static function memoizeStatic(string $key, Closure $fn)
     {
-        static $memoized_data = [];
-
-        if (!\array_key_exists($key, $memoized_data)) {
-            $memoized_data[$key] = $fn();
+        if (!\array_key_exists($key, static::$static_memoized_data)) {
+            static::$static_memoized_data[$key] = $fn();
         }
 
-        return $memoized_data[$key];
+        return static::$static_memoized_data[$key];
     }
 
     /**
@@ -99,5 +99,9 @@ trait Memoize
     protected function memoizeFlushAll(): void
     {
         $this->memoized_data = [];
+    }
+
+    public static function clearStaticMemoization(): void {
+        static::$static_memoized_data = [];
     }
 }
