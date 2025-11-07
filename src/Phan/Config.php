@@ -1284,6 +1284,12 @@ class Config
             ? 'spl.phan_php'
             : 'spl_php81.phan_php';
 
+        // pcntl stub: PHP 8.4 adds new functions/constants/enums, so keep an
+        // older stub for PHP 8.1-8.3
+        $pcntl_stub = $effective_version >= 80400
+            ? 'pcntl_php84.phan_php'
+            : 'pcntl.phan_php';
+
         // Standard library stub: Choose based on PHP version
         // PHP 8.1-8.3: uses standard_templates_php81.phan_php (no 8.4+ functions)
         // PHP 8.4: uses standard_templates_php84.phan_php (includes array_find, array_any, array_all, array_find_key)
@@ -1302,7 +1308,7 @@ class Config
                 'ctype'       => "$bundled_stubs_dir/ctype.phan_php",
                 'igbinary'    => "$bundled_stubs_dir/igbinary.phan_php",
                 'mbstring'    => "$bundled_stubs_dir/mbstring.phan_php",
-                'pcntl'       => "$bundled_stubs_dir/pcntl.phan_php",
+                'pcntl'       => "$bundled_stubs_dir/$pcntl_stub",
                 'phar'        => "$bundled_stubs_dir/phar.phan_php",
                 'posix'       => "$bundled_stubs_dir/posix.phan_php",
                 'readline'    => "$bundled_stubs_dir/readline.phan_php",
