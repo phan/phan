@@ -81,14 +81,20 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
         $class_key = static::class;
         $fqcn_id = \spl_object_id($fully_qualified_class_name);
-        $per_name_cache = &self::$instance_cache[$class_key][$fqcn_id][$name];
-        $per_name_cache ??= [];
-        return $per_name_cache[$alternate_id]
-            ?? ($per_name_cache[$alternate_id] = new static(
+        $class_cache = self::$instance_cache[$class_key] ?? [];
+        $fqcn_cache = $class_cache[$fqcn_id] ?? [];
+        $name_cache = $fqcn_cache[$name] ?? [];
+        if (!isset($name_cache[$alternate_id])) {
+            $name_cache[$alternate_id] = new static(
                 $fully_qualified_class_name,
                 $name,
                 $alternate_id
-            ));
+            );
+            $fqcn_cache[$name] = $name_cache;
+            $class_cache[$fqcn_id] = $fqcn_cache;
+            self::$instance_cache[$class_key] = $class_cache;
+        }
+        return $name_cache[$alternate_id];
     }
 
     /**
