@@ -18,6 +18,11 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     use \Phan\Memoize;
 
     /**
+     * @var array<string,array<int,array<string,array<int,FullyQualifiedClassElement>>>>
+     */
+    private static array $instance_cache = [];
+
+    /**
      * @var FullyQualifiedClassName
      * A fully qualified class name for the class in
      * which this element exists
@@ -74,15 +79,14 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     ) : FullyQualifiedClassElement|static {
         $name = static::canonicalName($name);
 
-        static $cache = [];
         $class_key = static::class;
         $fqcn_id = \spl_object_id($fully_qualified_class_name);
-        return $cache[$class_key][$fqcn_id][$name][$alternate_id]
-            ?? ($cache[$class_key][$fqcn_id][$name][$alternate_id] = new static(
+        return self::$instance_cache[$class_key][$fqcn_id][$name][$alternate_id]
+            ??= new static(
                 $fully_qualified_class_name,
                 $name,
                 $alternate_id
-            ));
+            );
     }
 
     /**
