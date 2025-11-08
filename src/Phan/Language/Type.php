@@ -365,8 +365,8 @@ class Type implements Stringable
     protected static $current_progress_state = null;
 
     /**
-     * @var ?WeakMap<Type,WeakMap<Context,Type>>
-     * Cache mapping each Type with template parameters to its per-context static resolution results.
+     * @var ?WeakMap<Type,WeakMap<Scope,Type>>
+     * Cache mapping each Type with template parameters to its per-scope static resolution results.
      */
     private static $cached_static_resolution_map = null;
 
@@ -3569,17 +3569,19 @@ class Type implements Stringable
             return $this;
         }
         $type_cache_map = self::$cached_static_resolution_map ??= new WeakMap();
+        /** @var \Phan\Language\Scope $scope */
+        $scope = $context->getScope();
         // @phan-suppress-next-line PhanRedundantCondition WeakMap::offsetExists() isn't analyzable yet
         if (!isset($type_cache_map[$this])) {
             $type_cache_map[$this] = new WeakMap();
         }
         $per_type_cache = $type_cache_map[$this];
         // @phan-suppress-next-line PhanRedundantCondition WeakMap::offsetExists() isn't analyzable yet
-        if (isset($per_type_cache[$context])) {
-            return $per_type_cache[$context];
+        if (isset($per_type_cache[$scope])) {
+            return $per_type_cache[$scope];
         }
         $resolved = $this->withStaticResolvedInContextTemplate($context);
-        $per_type_cache[$context] = $resolved;
+        $per_type_cache[$scope] = $resolved;
         return $resolved;
     }
 

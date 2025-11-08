@@ -142,12 +142,14 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $namespace_key = \strtolower($namespace);
         $name_key = static::canonicalLookupKey($name);
         $class_key = static::class;
-        return self::$instance_cache[$class_key][$namespace_key][$name_key][$alternate_id]
-            ??= new static(
+        $per_name_cache = &self::$instance_cache[$class_key][$namespace_key][$name_key];
+        $per_name_cache ??= [];
+        return $per_name_cache[$alternate_id]
+            ?? ($per_name_cache[$alternate_id] = new static(
                 $namespace,
                 $name,
                 $alternate_id
-            );
+            ));
     }
 
     /**
