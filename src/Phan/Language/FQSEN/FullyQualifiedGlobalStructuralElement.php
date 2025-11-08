@@ -91,6 +91,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @return static
      *
      * @throws FQSENException on invalid/empty FQSEN
+     * @suppress PhanTypeInstantiateAbstractStatic subclasses only invoke this to instantiate themselves
      */
     public static function make(
         string $namespace,
@@ -134,19 +135,16 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             throw new InvalidFQSENException("Invalid namespaced name", \rtrim($namespace, '\\') . '\\' . $name);
         }
 
-        // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case-sensitive.
-        $key = static::class . '|' .
-            static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
-
-        $fqsen = self::memoizeStatic($key, static function () use ($namespace, $name, $alternate_id): FullyQualifiedGlobalStructuralElement {
-            return new static(
+        $namespace_key = \strtolower($namespace);
+        $name_key = static::canonicalLookupKey($name);
+        static $cache = [];
+        $class_key = static::class;
+        return $cache[$class_key][$namespace_key][$name_key][$alternate_id]
+            ?? ($cache[$class_key][$namespace_key][$name_key][$alternate_id] = new static(
                 $namespace,
                 $name,
                 $alternate_id
-            );
-        });
-
-        return $fqsen;
+            ));
     }
 
     /**

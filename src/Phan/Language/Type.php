@@ -81,6 +81,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
 use Stringable;
+use WeakMap;
 
 use function count;
 use function explode;
@@ -362,6 +363,12 @@ class Type implements Stringable
      * TODO: Look into WeakMap and garbage collection
      */
     protected static $current_progress_state = null;
+
+    /**
+     * @var ?WeakMap<Type,WeakMap<Context,Type>>
+     * Cache mapping each Type with template parameters to its per-context static resolution results.
+     */
+    private static $cached_static_resolution_map = null;
 
     /**
      * @param string $namespace
@@ -3558,10 +3565,22 @@ class Type implements Stringable
     public function withStaticResolvedInContext(
         Context $context
     ): Type {
-        if ($this->template_parameter_type_list) {
-            return $this->withStaticResolvedInContextTemplate($context);
+        if (!$this->template_parameter_type_list) {
+            return $this;
         }
-        return $this;
+        $type_cache_map = self::$cached_static_resolution_map ??= new WeakMap();
+        // @phan-suppress-next-line PhanRedundantCondition WeakMap::offsetExists() isn't analyzable yet
+        if (!isset($type_cache_map[$this])) {
+            $type_cache_map[$this] = new WeakMap();
+        }
+        $per_type_cache = $type_cache_map[$this];
+        // @phan-suppress-next-line PhanRedundantCondition WeakMap::offsetExists() isn't analyzable yet
+        if (isset($per_type_cache[$context])) {
+            return $per_type_cache[$context];
+        }
+        $resolved = $this->withStaticResolvedInContextTemplate($context);
+        $per_type_cache[$context] = $resolved;
+        return $resolved;
     }
 
     private function withStaticResolvedInContextTemplate(
