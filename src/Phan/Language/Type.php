@@ -3610,15 +3610,20 @@ class Type implements Stringable
     public function asFQSENString(): string
     {
         $namespace = $this->namespace;
-        if (!$namespace) {
-            return $this->name;
+        $name = $this->name;
+        if ($namespace) {
+            if ($preferred = FullyQualifiedClassName::lookupPreferredName($namespace, $name)) {
+                $name = $preferred;
+            }
+        } else {
+            return $name;
         }
 
         if ('\\' === $namespace) {
-            return '\\' . $this->name;
+            return '\\' . $name;
         }
 
-        return "{$namespace}\\{$this->name}";
+        return "{$namespace}\\{$name}";
     }
 
     /**

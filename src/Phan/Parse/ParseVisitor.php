@@ -130,6 +130,8 @@ class ParseVisitor extends ScopeVisitor
             $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
         }
 
+        $class_fqsen->setPreferredName($class_name);
+
         if ($alternate_id > 0) {
             Daemon::debugf("Using an alternate for %s: %d\n", $class_fqsen, $alternate_id);
         }

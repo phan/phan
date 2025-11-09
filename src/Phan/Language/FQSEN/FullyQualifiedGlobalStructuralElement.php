@@ -22,6 +22,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     use \Phan\Memoize;
 
     /**
+     * @var array<string,string> maps canonicalized FQSEN keys to their preferred display name
+     */
+    private static array $preferred_name_map = [];
+
+    /**
      * @var string
      * The namespace in this elements scope
      * @readonly
@@ -473,8 +478,53 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     {
         return $this->as_string ?? $this->as_string = static::toString(
             $this->namespace,
-            $this->name,
+            $this->getPreferredName(),
             $this->getAlternateId()
         );
+    }
+
+    protected static function preferredNameKey(string $namespace, string $name, int $alternate_id): string
+    {
+        return static::class . '|' . static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
+    }
+
+    private function getPreferredName(): string
+    {
+        $key = static::preferredNameKey($this->namespace, $this->name, $this->getAlternateId());
+        return self::$preferred_name_map[$key] ?? static::canonicalName($this->name);
+    }
+
+    /**
+     * Record the preferred display name for this FQSEN (e.g. to preserve the case used in the declaration).
+     */
+    public function setPreferredName(string $preferred_name): void
+    {
+        $key = static::preferredNameKey($this->namespace, $this->name, $this->getAlternateId());
+        if ($preferred_name === '') {
+            unset(self::$preferred_name_map[$key]);
+        } else {
+            self::$preferred_name_map[$key] = $preferred_name;
+        }
+        $this->as_string = null;
+    }
+
+    /**
+     * Clear all preferred display names (used between independent analyses/tests).
+     */
+    public static function clearPreferredNameMap(): void
+    {
+        self::$preferred_name_map = [];
+    }
+
+    /**
+     * Look up the preferred display name for the given structural element, if any.
+     */
+    public static function lookupPreferredName(
+        string $namespace,
+        string $name,
+        int $alternate_id = 0
+    ): ?string {
+        $key = static::preferredNameKey($namespace, $name, $alternate_id);
+        return self::$preferred_name_map[$key] ?? null;
     }
 }
