@@ -250,9 +250,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($var_node->kind === ast\AST_VAR &&
             $expr_node instanceof Node &&
             self::exprHasTypeNarrowingPotential($expr_node) &&
-            $right_type->hasTypeMatchingCallback(static function (Type $type): bool {
-                return $type->getName() === 'bool' || $type->getName() === 'true' || $type->getName() === 'false';
-            })) {
+            $right_type->isExclusivelyBoolTypes()) {
             // Get the variable name
             $var_name = $var_node->children['name'];
             if (\is_string($var_name) && !self::exprReferencesVariable($expr_node, $var_name)) {
