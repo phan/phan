@@ -59,6 +59,16 @@ final class Builder
     public $inherited_type;
     /** @var list<Type> the list of (at)implements annotations with template parameters */
     public $implemented_types = [];
+
+    /** @var array<string,string> */
+    private const TAG_ALIAS_MAP = [
+        'psalm-template' => 'template',
+        'psalm-template-covariant' => 'template-covariant',
+        'psalm-template-contravariant' => 'template-contravariant',
+        'psalm-param' => 'param',
+        'psalm-return' => 'return',
+        'psalm-var' => 'var',
+    ];
     /** @var list<Type> the list of (at)use annotations with template parameters for traits */
     public $used_trait_types = [];
     // TODO: Warn about multiple (at)returns
@@ -119,7 +129,7 @@ final class Builder
 
     /** @internal */
     public const PARAM_COMMENT_REGEX =
-        '/@(?:phan-)?(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
+        '/@(?:phan-|psalm-)?(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
     /** @internal */
     public const UNUSED_PARAM_COMMENT_REGEX =
@@ -226,9 +236,9 @@ final class Builder
     }
 
     /** @internal */
-    public const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
     /** @internal */
-    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
@@ -414,9 +424,10 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
+            $type = self::TAG_ALIAS_MAP[$type] ?? $type;
 
             switch ($type) {
                 case 'param':
@@ -1257,7 +1268,7 @@ final class Builder
         string $line
     ): ?array {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
-        if (\preg_match('/@(?:phan-)?template(?:-(?P<variance>co|contra)variant)?\s+(?P<identifier>' . self::WORD_REGEX . ')(?:\s+of\s+(?P<constraint>' . UnionType::union_type_regex . '))?/i', $line, $match)) {
+        if (\preg_match('/@(?:phan-|psalm-)?template(?:-(?P<variance>co|contra)variant)?\s+(?P<identifier>' . self::WORD_REGEX . ')(?:\s+of\s+(?P<constraint>' . UnionType::union_type_regex . '))?/i', $line, $match)) {
             $constraint = $match['constraint'] ?? null;
             $variance = TemplateType::VARIANCE_INVARIANT;
             $variance_keyword = strtolower($match['variance'] ?? '');
