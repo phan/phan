@@ -287,6 +287,16 @@ final class TemplateType extends Type
                 continue;
             }
 
+            if ($type instanceof ClassStringType) {
+                $class_union_type = $type->getClassUnionType();
+                if (!$class_union_type->isEmpty()) {
+                    if (!self::unionTypeSatisfiesBound($code_base, $class_union_type, $bound, $seen_template_names)) {
+                        return false;
+                    }
+                    continue;
+                }
+            }
+
             if (!$type->asPHPDocUnionType()->canCastToUnionType($bound, $code_base)) {
                 return false;
             }

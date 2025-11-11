@@ -1,0 +1,2 @@
+%s:10 PhanTypeMismatchArgumentProbablyReal Argument 1 ($value) is 'not an int' of type string but \takes_int() takes int (no real type) defined at %s:6 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:23 PhanTemplateTypeConstraintViolation Template type T of \require_countable() must be compatible with \Countable, but \stdClass was provided in call to \require_countable()
