@@ -2686,6 +2686,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
             $union_type = $variable->getUnionType();
             if ($union_type->isPossiblyUndefined()) {
+                if (\Phan\Analysis\ConditionVisitor::isInRecursiveConditionalAnalysis()) {
+                    return $union_type->withIsPossiblyUndefined(false);
+                }
                 if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF) {
                     if ($this->context->isInGlobalScope()) {
                         $union_type = $union_type->eraseRealTypeSet();
