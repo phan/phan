@@ -911,10 +911,61 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         if ($dim_type !== null && !\is_object($dim_value)) {
-            // TODO: This is probably why Phan has bugs with multi-dimensional assignment adding new union types instead of combining with existing ones.
-            $right_type = ArrayShapeType::fromFieldTypes([
-                $dim_value => $this->right_type,
-            ], false)->asRealUnionType();
+            // Check the base expression's type to decide between ArrayShapeType and generic array
+            // Fix for issue #4926: Don't create restrictive array shapes for mixed/unknown types
+            $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node,
+                false
+            );
+
+            // Check if we should use array shape or generic array
+            // Fix for issue #4926: For mixed/unknown base types, use mixed element type
+            // to avoid false positives when accessing different fields
+            $has_mixed_type = !$expr_union_type->isEmpty() && $expr_union_type->hasMixedOrNonEmptyMixedType();
+
+            // Check if the base comes from an external mixed/generic array source
+            // vs. being a new structure we're creating (like GLOBALS['a'])
+            $use_generic_for_mixed = false;
+            if ($has_mixed_type) {
+                // Find the root variable to check if it's from an external source
+                $root_node = $expr_node;
+                while ($root_node instanceof Node && $root_node->kind === \ast\AST_DIM) {
+                    $root_node = $root_node->children['expr'];
+                }
+                if ($root_node instanceof Node && $root_node->kind === \ast\AST_VAR) {
+                    $root_var_name = (new ContextNode($this->code_base, $this->context, $root_node))->getVariableName();
+                    // Hardcoded variables like $GLOBALS should use array shapes
+                    if (!Variable::isHardcodedVariableInScopeWithName($root_var_name, $this->context->isInGlobalScope())) {
+                        $root_type = UnionTypeVisitor::unionTypeFromNode(
+                            $this->code_base,
+                            $this->context,
+                            $root_node,
+                            false
+                        );
+                        // Use generic array if root has generic/mixed array types (external source)
+                        // Use array shape if root is undefined/empty (creating new structure)
+                        $use_generic_for_mixed = !$root_type->isEmpty() &&
+                            ($root_type->hasGenericArray() || $root_type->hasMixedOrNonEmptyMixedType());
+                    }
+                }
+            }
+
+            if (!$has_mixed_type || !$use_generic_for_mixed) {
+                // Base is not mixed OR we're creating a new structure → create array shape
+                $right_type = ArrayShapeType::fromFieldTypes([
+                    $dim_value => $this->right_type,
+                ], false)->asRealUnionType();
+            } else {
+                // Base is mixed from external source (json_decode, etc.) → use generic array
+                // This prevents false positives when the same array is accessed with different keys
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
+                $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asRealUnionType();
+                if (!$right_type->hasRealTypeSet()) {
+                    $right_type = $right_type->withRealTypeSet(UnionType::typeSetFromString('non-empty-array'));
+                }
+            }
         } else {
             // Make the right type a generic (i.e. int -> int[])
             if ($dim_node !== null) {

@@ -2339,8 +2339,39 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         if ($resulting_element_type === false) {
+            // Fix for issue #4926: Don't emit error if some array shapes in the union don't have the key
+            // Check if ANY type (including PHPDoc types) could have the key
+            $could_have_key_phpdoc = false;
+            $could_have_key_real = self::couldRealTypesHaveKey($union_type->getRealTypeSet(), $dim_value);
+
+            // Also check PHPDoc types - resolveArrayShapeElementTypesForOffset returns false
+            // when it loops through PHPDoc types and finds none with the key, but there might
+            // be generic arrays in the real types
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    if (isset($type->getFieldTypes()[$dim_value])) {
+                        $could_have_key_phpdoc = true;
+                        break;
+                    }
+                } elseif ($type instanceof ListType) {
+                    // ListType can only have integer keys >= 0
+                    $filtered = \is_int($dim_value) ? $dim_value : \filter_var($dim_value, \FILTER_VALIDATE_INT);
+                    if (\is_int($filtered) && $filtered >= 0) {
+                        $could_have_key_phpdoc = true;
+                        break;
+                    }
+                } elseif (!($type instanceof ArrayType) || $type instanceof GenericArrayType) {
+                    // Non-array-shape types (generic arrays, etc.) could have any key
+                    $could_have_key_phpdoc = true;
+                    break;
+                }
+            }
+
+            $could_have_key = $could_have_key_phpdoc || $could_have_key_real;
+
             // XXX not sure what to do here. For now, just return null and only warn in cases where requested to.
-            if ($check_invalid_dim) {
+            if ($check_invalid_dim && !$could_have_key) {
+                // Only emit error if NO type in the union could possibly have this key
                 $exception = new IssueException(
                     Issue::fromType(Issue::TypeInvalidDimOffset)(
                         $this->context->getFile(),
@@ -2356,7 +2387,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             // $union_type is exclusively array shape types, but those don't contain the field $dim_value.
             // It's undefined (which becomes null)
-            if (self::couldRealTypesHaveKey($union_type->getRealTypeSet(), $dim_value)) {
+            if ($could_have_key) {
                 return NullType::instance(false)->asPHPDocUnionType();
             }
             return NullType::instance(false)->asRealUnionType();
@@ -2427,10 +2458,24 @@ class UnionTypeVisitor extends AnalysisVisitor
                             $resulting_element_type = StringType::instance(false)->asPHPDocUnionType();
                         }
                     }
-                } elseif ($type->isArrayLike($code_base) || $type->isObject() || $type instanceof MixedType) {
-                    if ($type instanceof ListType && (!\is_numeric($dim_value) || $dim_value < 0)) {
-                        continue;
+                } elseif ($type instanceof ListType) {
+                    // Fix for issue #4926: Extract element type from ListType
+                    $filtered = \is_int($dim_value) ? $dim_value : \filter_var($dim_value, \FILTER_VALIDATE_INT);
+                    if (\is_int($filtered) && $filtered >= 0) {
+                        // Valid int index for list - extract element type
+                        // ListType extends GenericArrayType which has genericArrayElementType() method
+                        $element_type = $type->genericArrayElementType();
+                        $element_union_type = $element_type->asPHPDocUnionType();
+                        if (!$element_union_type->isEmpty()) {
+                            if ($resulting_element_type instanceof UnionType) {
+                                $resulting_element_type = $resulting_element_type->withUnionType($element_union_type);
+                            } else {
+                                $resulting_element_type = $element_union_type;
+                            }
+                        }
                     }
+                    continue;
+                } elseif ($type->isArrayLike($code_base) || $type->isObject() || $type instanceof MixedType) {
                     if ($is_computing_real_type_set) {
                         // Avoid false positives for real type checking.
                         // TODO: Improve handling for GenericArrayType, strings, etc.
