@@ -294,6 +294,9 @@ final class TemplateType extends Type
                         continue;
                     }
                     // Fall through to the generic check below if the class-string itself may still match.
+                } elseif (self::boundAcceptsAnyObject($bound)) {
+                    // A bare class-string is compatible with a constraint of plain "object" (or nullable object).
+                    continue;
                 }
             }
 
@@ -303,6 +306,26 @@ final class TemplateType extends Type
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if the bound is effectively "object" (optionally nullable),
+     * meaning any object-like class-string should be accepted.
+     */
+    private static function boundAcceptsAnyObject(UnionType $bound): bool
+    {
+        $has_object = false;
+        foreach ($bound->getTypeSet() as $type) {
+            if ($type instanceof ObjectType) {
+                $has_object = true;
+                continue;
+            }
+            if ($type instanceof NullType) {
+                continue;
+            }
+            return false;
+        }
+        return $has_object;
     }
 
     /**
