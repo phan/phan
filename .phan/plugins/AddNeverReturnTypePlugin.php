@@ -75,7 +75,7 @@ final class NeverReturnPlugin extends PluginV3 implements
         }
 
         // This modifies the nodes in place, check this last
-        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
+        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list, $code_base, $method->getContext())) {
             return;
         }
         self::emitIssue(
@@ -110,7 +110,7 @@ final class NeverReturnPlugin extends PluginV3 implements
             return;
         }
         // This modifies the nodes in place, check this last
-        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list)) {
+        if (!BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_list, $code_base, $function->getContext())) {
             return;
         }
         self::emitIssue(

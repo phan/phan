@@ -1,0 +1,3 @@
+src/316_never_return_try.php:3 PhanUnreferencedClass Possibly zero references to class \PluginNeverReturnTry
+src/316_never_return_try.php:5 PhanUnreferencedPublicMethod Possibly zero references to public method \PluginNeverReturnTry::run()
+src/316_never_return_try.php:14 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
