@@ -3004,7 +3004,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class_name = $class_node->children['name'] ?? null;
             if (\is_string($class_name)) {
                 $class_name_lower = \strtolower($class_name);
-                if (\in_array($class_name_lower, ['self', 'static'], true)) {
+                if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
                     $modifications = $method->getStaticPropertyModifications();
                     if ($modifications) {
                         $should_apply = true;
