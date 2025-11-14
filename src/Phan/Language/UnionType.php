@@ -5494,7 +5494,7 @@ class UnionType implements Serializable, Stringable
                 }
             }
         }
-        return $result;
+        return \array_values($result);
     }
 
     /**
@@ -5543,7 +5543,7 @@ class UnionType implements Serializable, Stringable
         if ($empty_array_shape_type && !$has_other_array_type) {
             $result[] = ArrayType::instance($empty_array_shape_type->isNullable());
         }
-        return $result;
+        return \array_values($result);
     }
 
     /**
@@ -5602,7 +5602,7 @@ class UnionType implements Serializable, Stringable
                 }
             }
         }
-        return $result;
+        return \array_values($result);
     }
 
     /**
