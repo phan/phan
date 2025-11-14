@@ -5399,7 +5399,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($defining_class->__toString() === $target_class->__toString()) {
             return true;
         }
-        return $is_late_static && $defining_class->__toString() === $calling_class->__toString();
+        if ($is_late_static) {
+            $defining_type = $defining_class->asType();
+            return $calling_class->asType()->isSubtypeOf($defining_type, $this->code_base);
+        }
+        return false;
     }
 
 
