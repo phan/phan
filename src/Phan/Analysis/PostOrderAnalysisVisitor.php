@@ -3020,8 +3020,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 }
                                 $overrides_to_clear = [];
                                 $updates = [];
-                                foreach ($property_modifications as $property_name => $property_type) {
-                                    if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen)) {
+                                foreach ($property_modifications as $property_name => $property_info) {
+                                    /** @var array{type:UnionType,is_late_static:bool} $property_info */
+                                    $property_type = $property_info['type'];
+                                    $is_late_static = $property_info['is_late_static'];
+                                    if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen, $calling_class, $is_late_static)) {
                                         continue;
                                     }
                                     $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
@@ -5370,21 +5373,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $calling_type->isSubtypeOf($target_type, $this->code_base);
     }
 
-    private function doesStaticOverrideMatchTargetClass(string $property_name, FullyQualifiedClassName $target_class): bool
+    private function doesStaticOverrideMatchTargetClass(string $property_name, FullyQualifiedClassName $target_class, FullyQualifiedClassName $calling_class, bool $is_late_static): bool
     {
-        $calling_class_fqsen = $this->context->getClassFQSENOrNull();
-        if ($calling_class_fqsen === null) {
+        if (!$this->code_base->hasClassWithFQSEN($calling_class)) {
             return false;
         }
-        if (!$this->code_base->hasClassWithFQSEN($calling_class_fqsen)) {
-            return false;
-        }
-        $calling_class = $this->code_base->getClassByFQSEN($calling_class_fqsen);
-        if (!$calling_class->hasPropertyWithName($this->code_base, $property_name)) {
+        $calling_class_instance = $this->code_base->getClassByFQSEN($calling_class);
+        if (!$calling_class_instance->hasPropertyWithName($this->code_base, $property_name)) {
             return false;
         }
         try {
-            $property = $calling_class->getPropertyByNameInContext(
+            $property = $calling_class_instance->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
                 $this->context,
@@ -5396,7 +5395,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return false;
         }
         $defining_class = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-        return $defining_class->__toString() === $target_class->__toString();
+        if ($defining_class->__toString() === $target_class->__toString()) {
+            return true;
+        }
+        return $is_late_static && $defining_class->__toString() === $calling_class->__toString();
     }
 
 

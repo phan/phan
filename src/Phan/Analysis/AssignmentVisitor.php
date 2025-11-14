@@ -1538,15 +1538,19 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($this->context->isInFunctionLikeScope()) {
             $function_like = $this->context->getFunctionLikeInScope($this->code_base);
             if ($function_like instanceof Method) {
-                $target_class = $this->getStaticPropertyAssignmentClassFQSEN($node);
-                if ($target_class) {
-                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type);
+                $target = $this->getStaticPropertyAssignmentTarget($node);
+                if ($target) {
+                    [$target_class, $is_late_static] = $target;
+                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
                 }
             }
         }
     }
 
-    private function getStaticPropertyAssignmentClassFQSEN(Node $node): ?FullyQualifiedClassName
+    /**
+     * @return array{0:FullyQualifiedClassName,1:bool}|null
+     */
+    private function getStaticPropertyAssignmentTarget(Node $node): ?array
     {
         $class_node = $node->children['class'] ?? null;
         if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
@@ -1561,8 +1565,11 @@ class AssignmentVisitor extends AnalysisVisitor
             return null;
         }
         $normalized = \strtolower($name);
-        if ($normalized === 'self' || $normalized === 'static') {
-            return $context_class_fqsen;
+        if ($normalized === 'self') {
+            return [$context_class_fqsen, false];
+        }
+        if ($normalized === 'static') {
+            return [$context_class_fqsen, true];
         }
         if ($normalized === 'parent') {
             try {
@@ -1573,7 +1580,7 @@ class AssignmentVisitor extends AnalysisVisitor
             if (!$clazz->hasParentType()) {
                 return null;
             }
-            return $clazz->getParentClassFQSEN();
+            return [$clazz->getParentClassFQSEN(), false];
         }
         return null;
     }
