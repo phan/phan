@@ -214,6 +214,20 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         $get_first_array_arg_assoc = $make_get_first_array_arg(true);
         // Same as $get_first_array_arg_assoc, but will convert types such as non-empty-array to non-empty-assocative-array instead of just associative-array
         $get_first_array_arg_assoc_same_size = $make_get_first_array_arg(false);
+        /** @param list<Node|int|float|string> $args */
+        $array_unique_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($probably_real_assoc_array): UnionType {
+            if (\count($args) >= 1) {
+                $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
+                if (!$element_types->isEmpty()) {
+                    $result = $element_types->withFlattenedTopLevelArrayShapeTypeInstances()
+                                            ->withAssociativeArrays(false)
+                                            ->withPossiblyEmptyArrays()
+                                            ->withRealTypeSet($probably_real_assoc_array->getRealTypeSet());
+                    return $result;
+                }
+            }
+            return $probably_real_assoc_array;
+        };
         /**
          * @param list<Node|int|float|string> $args
          */
@@ -1073,7 +1087,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             'array_uintersect'          => $get_first_array_arg_assoc,
             'array_uintersect_assoc'    => $get_first_array_arg_assoc,
             'array_uintersect_uassoc'   => $get_first_array_arg_assoc,
-            'array_unique'              => $get_first_array_arg_assoc_same_size,
+            'array_unique'              => $array_unique_callback,
             'array_values'              => $array_values_callback,
             'array_chunk'               => $array_chunk_callback,
             'iterator_to_array'         => $iterator_to_array_callback,

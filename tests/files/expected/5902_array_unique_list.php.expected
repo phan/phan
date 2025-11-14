@@ -1,0 +1,2 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type list<int>(real=array)
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type associative-array<int,int>(real=?associative-array<mixed,mixed>)
