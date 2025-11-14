@@ -15,6 +15,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
 use Phan\Language\FileRef;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
@@ -74,6 +75,9 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var array<string,UnionType> map of static property names to the union types assigned within this method.
+     */
+    /**
+     * @var array<string,array{class:FullyQualifiedClassName,properties:array<string,UnionType>}>
      */
     private $static_property_set_types = [];
 
@@ -1223,22 +1227,30 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * Record that this method assigns the given union type to a static property.
      */
-    public function recordStaticPropertyModification(string $property_name, UnionType $union_type): void
+    public function recordStaticPropertyModification(FullyQualifiedClassName $class_fqsen, string $property_name, UnionType $union_type): void
     {
         if ($union_type->isEmpty()) {
             return;
         }
-        if (isset($this->static_property_set_types[$property_name])) {
-            $this->static_property_set_types[$property_name] = $this->static_property_set_types[$property_name]->withUnionType($union_type);
+        $class_key = $class_fqsen->__toString();
+        if (!isset($this->static_property_set_types[$class_key])) {
+            $this->static_property_set_types[$class_key] = [
+                'class' => $class_fqsen,
+                'properties' => [],
+            ];
+        }
+        $property_map = &$this->static_property_set_types[$class_key]['properties'];
+        if (isset($property_map[$property_name])) {
+            $property_map[$property_name] = $property_map[$property_name]->withUnionType($union_type);
             return;
         }
-        $this->static_property_set_types[$property_name] = $union_type;
+        $property_map[$property_name] = $union_type;
     }
 
     /**
      * Returns the union types that were inferred for static properties modified within this method.
      *
-     * @return array<string,UnionType>
+     * @return array<string,array{class:FullyQualifiedClassName,properties:array<string,UnionType>}>
      */
     public function getStaticPropertyModifications(): array
     {

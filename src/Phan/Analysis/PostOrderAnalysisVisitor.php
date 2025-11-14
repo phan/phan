@@ -3005,40 +3005,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (\is_string($class_name)) {
                 $class_name_lower = \strtolower($class_name);
                 if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
-                    $modifications = $method->getStaticPropertyModifications();
-                    if ($modifications) {
-                        $should_apply = true;
+                    $modifications_by_class = $method->getStaticPropertyModifications();
+                    if ($modifications_by_class) {
                         $calling_class = $this->context->getClassFQSENOrNull();
-                        if ($calling_class === null) {
-                            $should_apply = false;
-                        } else {
-                            $defining_class_fqsen = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
-                            $defining_class_type = $defining_class_fqsen->asType();
-                            $calling_class_type = $calling_class->asType();
-                            $defining_is_trait = false;
-                            if ($this->code_base->hasClassWithFQSEN($defining_class_fqsen)) {
-                                $defining_class = $this->code_base->getClassByFQSEN($defining_class_fqsen);
-                                $defining_is_trait = $defining_class->isTrait();
-                            }
-                            if (!$defining_is_trait && !$calling_class_type->isSubtypeOf($defining_class_type, $this->code_base)) {
-                                $should_apply = false;
-                            }
-                        }
-                        if ($should_apply) {
-                            $overrides_to_clear = [];
-                            $updates = [];
-                            foreach ($modifications as $property_name => $property_type) {
-                                $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
-                                if ($old_override === null) {
+                        if ($calling_class) {
+                            foreach ($modifications_by_class as $entry) {
+                                $target_class_fqsen = $entry['class'];
+                                $property_modifications = $entry['properties'];
+                                if (!$property_modifications) {
                                     continue;
                                 }
-                                $overrides_to_clear[] = $property_name;
-                                $updates[$property_name] = $old_override->withUnionType($property_type);
-                            }
-                            if ($overrides_to_clear) {
-                                $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
-                                foreach ($updates as $property_name => $property_type) {
-                                    $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
+                                if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
+                                    continue;
+                                }
+                                $overrides_to_clear = [];
+                                $updates = [];
+                                foreach ($property_modifications as $property_name => $property_type) {
+                                    if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen)) {
+                                        continue;
+                                    }
+                                    $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
+                                    if ($old_override === null) {
+                                        continue;
+                                    }
+                                    $overrides_to_clear[] = $property_name;
+                                    $updates[$property_name] = $old_override->withUnionType($property_type);
+                                }
+                                if ($overrides_to_clear) {
+                                    $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
+                                    foreach ($updates as $property_name => $property_type) {
+                                        $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
+                                    }
                                 }
                             }
                         }
@@ -5353,6 +5350,53 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Otherwise, 'stmts' would always be a Node due to preconditions.
         $stmts_node = $node->children['stmts'];
         return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node);
+    }
+
+    private function canApplyStaticPropertyOverride(FullyQualifiedClassName $calling_class, FullyQualifiedClassName $target_class): bool
+    {
+        if ($calling_class->__toString() === $target_class->__toString()) {
+            return true;
+        }
+        $is_trait = false;
+        if ($this->code_base->hasClassWithFQSEN($target_class)) {
+            $class = $this->code_base->getClassByFQSEN($target_class);
+            $is_trait = $class->isTrait();
+        }
+        if ($is_trait) {
+            return true;
+        }
+        $calling_type = $calling_class->asType();
+        $target_type = $target_class->asType();
+        return $calling_type->isSubtypeOf($target_type, $this->code_base);
+    }
+
+    private function doesStaticOverrideMatchTargetClass(string $property_name, FullyQualifiedClassName $target_class): bool
+    {
+        $calling_class_fqsen = $this->context->getClassFQSENOrNull();
+        if ($calling_class_fqsen === null) {
+            return false;
+        }
+        if (!$this->code_base->hasClassWithFQSEN($calling_class_fqsen)) {
+            return false;
+        }
+        $calling_class = $this->code_base->getClassByFQSEN($calling_class_fqsen);
+        if (!$calling_class->hasPropertyWithName($this->code_base, $property_name)) {
+            return false;
+        }
+        try {
+            $property = $calling_class->getPropertyByNameInContext(
+                $this->code_base,
+                $property_name,
+                $this->context,
+                true,
+                null,
+                true
+            );
+        } catch (IssueException | CodeBaseException) {
+            return false;
+        }
+        $defining_class = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        return $defining_class->__toString() === $target_class->__toString();
     }
 
 

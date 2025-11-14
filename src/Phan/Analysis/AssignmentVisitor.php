@@ -1538,9 +1538,44 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($this->context->isInFunctionLikeScope()) {
             $function_like = $this->context->getFunctionLikeInScope($this->code_base);
             if ($function_like instanceof Method) {
-                $function_like->recordStaticPropertyModification($prop_name, $new_type);
+                $target_class = $this->getStaticPropertyAssignmentClassFQSEN($node);
+                if ($target_class) {
+                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type);
+                }
             }
         }
+    }
+
+    private function getStaticPropertyAssignmentClassFQSEN(Node $node): ?FullyQualifiedClassName
+    {
+        $class_node = $node->children['class'] ?? null;
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            return null;
+        }
+        $name = $class_node->children['name'] ?? null;
+        if (!\is_string($name)) {
+            return null;
+        }
+        $context_class_fqsen = $this->context->getClassFQSENOrNull();
+        if (!$context_class_fqsen) {
+            return null;
+        }
+        $normalized = \strtolower($name);
+        if ($normalized === 'self' || $normalized === 'static') {
+            return $context_class_fqsen;
+        }
+        if ($normalized === 'parent') {
+            try {
+                $clazz = $this->context->getClassInScope($this->code_base);
+            } catch (CodeBaseException) {
+                return null;
+            }
+            if (!$clazz->hasParentType()) {
+                return null;
+            }
+            return $clazz->getParentClassFQSEN();
+        }
+        return null;
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void
