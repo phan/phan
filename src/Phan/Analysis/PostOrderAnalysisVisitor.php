@@ -3008,15 +3008,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $modifications = $method->getStaticPropertyModifications();
                     if ($modifications) {
                         $should_apply = true;
-                        if ($class_name_lower === 'self') {
-                            $calling_class = $this->context->getClassFQSENOrNull();
-                            if ($calling_class === null) {
+                        $calling_class = $this->context->getClassFQSENOrNull();
+                        if ($calling_class === null) {
+                            $should_apply = false;
+                        } else {
+                            $defining_class = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+                            if ($calling_class->__toString() !== $defining_class->__toString()) {
                                 $should_apply = false;
-                            } else {
-                                $defining_class = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
-                                if ($calling_class->__toString() !== $defining_class->__toString()) {
-                                    $should_apply = false;
-                                }
                             }
                         }
                         if ($should_apply) {
