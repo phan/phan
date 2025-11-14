@@ -1566,7 +1566,12 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $normalized = \strtolower($name);
         if ($normalized === 'self') {
-            return [$context_class_fqsen, false];
+            $is_trait = false;
+            if ($this->code_base->hasClassWithFQSEN($context_class_fqsen)) {
+                $class = $this->code_base->getClassByFQSEN($context_class_fqsen);
+                $is_trait = $class->isTrait();
+            }
+            return [$context_class_fqsen, $is_trait];
         }
         if ($normalized === 'static') {
             return [$context_class_fqsen, true];
