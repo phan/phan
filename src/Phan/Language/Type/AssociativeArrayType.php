@@ -85,6 +85,23 @@ class AssociativeArrayType extends GenericArrayType
         return true;
     }
 
+    /**
+     * Associative arrays preserve original keys, so they can't be assumed to satisfy the requirements of list<...>
+     * @param array<int,Type> $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
+    {
+        foreach ($target_type_set as $i => $target_type) {
+            if ($target_type instanceof ListType) {
+                unset($target_type_set[$i]);
+            }
+        }
+        if (!$target_type_set) {
+            return false;
+        }
+        return parent::canCastToAnyTypeInSet($target_type_set, $code_base);
+    }
+
     public function asNonFalseyType(): Type
     {
         return NonEmptyAssociativeArrayType::fromElementType(

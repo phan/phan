@@ -317,10 +317,6 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         $element_union_types = null;
         foreach ($target_type_set as $target_type) {
             if ($target_type instanceof GenericArrayType) {
-                if ($target_type instanceof ListType && !($this instanceof ListType)) {
-                    // Associative arrays and other generic arrays can't be assumed to satisfy list<...>
-                    continue;
-                }
                 if ((($this->key_type ?: self::KEY_MIXED) & ($target_type->key_type ?: self::KEY_MIXED)) === 0) {
                     continue;
                 }

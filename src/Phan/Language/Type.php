@@ -3944,10 +3944,7 @@ class Type implements Stringable
             }
             throw new InvalidArgumentException("Unmatched \"'\" of $part in " . \implode(',', $results));
         }
-        if ($N !== count($results)) {
-            return \array_values($results);
-        }
-        return $results;
+        return \array_values($results);
     }
 
     /**
