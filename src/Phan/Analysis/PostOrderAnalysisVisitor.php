@@ -3032,7 +3032,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                         continue;
                                     }
                                     $overrides_to_clear[] = $property_name;
-                                    $updates[$property_name] = $old_override->withUnionType($property_type);
+                                    $updates[$property_name] = $property_type;
                                 }
                                 if ($overrides_to_clear) {
                                     $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
