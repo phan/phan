@@ -1338,13 +1338,34 @@ class Context extends FileRef
     }
 
     /**
-     * Returns a clone of this context without any overrides for static property types.
+     * Returns a clone of this context without overrides for the provided static property names.
+     * If no property names are provided, removes all static property overrides.
+     *
+     * @param list<string>|null $property_names
      */
-    public function withoutStaticPropertyOverrides(): Context
+    public function withoutStaticPropertyOverrides(?array $property_names = null): Context
     {
         if (!$this->scope->hasVariableWithName(self::VAR_NAME_STATIC_PROPERTIES)) {
             return $this;
         }
-        return $this->withScope($this->scope->withUnsetVariable(self::VAR_NAME_STATIC_PROPERTIES));
+        if ($property_names === null) {
+            return $this->withScope($this->scope->withUnsetVariable(self::VAR_NAME_STATIC_PROPERTIES));
+        }
+        if (!$property_names) {
+            return $this;
+        }
+        $variable = clone($this->scope->getVariableByName(self::VAR_NAME_STATIC_PROPERTIES));
+        $type = $variable->getUnionType();
+        foreach ($property_names as $property_name) {
+            $type = $type->withoutArrayShapeField($property_name);
+        }
+        if ($type->isEmpty()) {
+            return $this->withScope($this->scope->withUnsetVariable(self::VAR_NAME_STATIC_PROPERTIES));
+        }
+
+        $variable->setUnionType($type);
+        $new_scope = clone($this->scope);
+        $new_scope->addVariable($variable);
+        return $this->withScope($new_scope);
     }
 }
