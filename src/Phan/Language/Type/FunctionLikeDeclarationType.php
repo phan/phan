@@ -1045,7 +1045,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
                 static function (UnionType $union_type, Context $context) use ($code_base, $i, $param_closure): UnionType {
                     $result = UnionType::empty();
                     foreach ($union_type->getTypeSet() as $type) {
-                        $func = $type->asFunctionInterfaceOrNull($code_base, $context);
+                        $func = $type->asFunctionInterfaceOrNull($code_base, $context, false);
                         if (!$func) {
                             continue;
                         }
@@ -1077,7 +1077,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return static function (UnionType $union_type, Context $context) use ($code_base, $return_closure): UnionType {
             $result = UnionType::empty();
             foreach ($union_type->getTypeSet() as $type) {
-                $func = $type->asFunctionInterfaceOrNull($code_base, $context);
+                $func = $type->asFunctionInterfaceOrNull($code_base, $context, false);
                 if ($func) {
                     $result = $result->withUnionType($return_closure($func->getUnionType(), $context));
                 }
