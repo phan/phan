@@ -73,6 +73,11 @@ class Method extends ClassElement implements FunctionInterface
     private $overridden_methods_cache = null;
 
     /**
+     * @var array<string,UnionType> map of static property names to the union types assigned within this method.
+     */
+    private $static_property_set_types = [];
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -1215,4 +1220,28 @@ class Method extends ClassElement implements FunctionInterface
         $this->inherited_throws_union_type = $type;
     }
 
+    /**
+     * Record that this method assigns the given union type to a static property.
+     */
+    public function recordStaticPropertyModification(string $property_name, UnionType $union_type): void
+    {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        if (isset($this->static_property_set_types[$property_name])) {
+            $this->static_property_set_types[$property_name] = $this->static_property_set_types[$property_name]->withUnionType($union_type);
+            return;
+        }
+        $this->static_property_set_types[$property_name] = $union_type;
+    }
+
+    /**
+     * Returns the union types that were inferred for static properties modified within this method.
+     *
+     * @return array<string,UnionType>
+     */
+    public function getStaticPropertyModifications(): array
+    {
+        return $this->static_property_set_types;
+    }
 }

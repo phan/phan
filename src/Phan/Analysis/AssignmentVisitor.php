@@ -1535,6 +1535,12 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $this->context = $this->context->withStaticPropertySetToTypeByName($prop_name, $new_type);
+        if ($this->context->isInFunctionLikeScope()) {
+            $function_like = $this->context->getFunctionLikeInScope($this->code_base);
+            if ($function_like instanceof Method) {
+                $function_like->recordStaticPropertyModification($prop_name, $new_type);
+            }
+        }
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void

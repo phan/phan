@@ -1336,4 +1336,15 @@ class Context extends FileRef
         }
         return $result;
     }
+
+    /**
+     * Returns a clone of this context without any overrides for static property types.
+     */
+    public function withoutStaticPropertyOverrides(): Context
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_STATIC_PROPERTIES)) {
+            return $this;
+        }
+        return $this->withScope($this->scope->withUnsetVariable(self::VAR_NAME_STATIC_PROPERTIES));
+    }
 }

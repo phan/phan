@@ -2999,6 +2999,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // this is, don't worry about it
             return $this->context;
         }
+
+        if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+            $class_name = $class_node->children['name'] ?? null;
+            if (\is_string($class_name)) {
+                $class_name_lower = \strtolower($class_name);
+                if (\in_array($class_name_lower, ['self', 'static'], true)) {
+                    $this->context = $this->context->withoutStaticPropertyOverrides();
+                    foreach ($method->getStaticPropertyModifications() as $property_name => $property_type) {
+                        $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
+                    }
+                }
+            }
+        }
         return $this->context;
     }
 
