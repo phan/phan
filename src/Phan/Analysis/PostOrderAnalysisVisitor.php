@@ -5380,9 +5380,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return false;
         }
         $calling_class_instance = $this->code_base->getClassByFQSEN($calling_class);
-        if (!$calling_class_instance->hasPropertyWithName($this->code_base, $property_name)) {
-            return false;
-        }
         try {
             $property = $calling_class_instance->getPropertyByNameInContext(
                 $this->code_base,
