@@ -3012,8 +3012,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         if ($calling_class === null) {
                             $should_apply = false;
                         } else {
-                            $defining_class = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
-                            if ($calling_class->__toString() !== $defining_class->__toString()) {
+                            $defining_class_fqsen = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+                            $defining_class_type = $defining_class_fqsen->asType();
+                            $calling_class_type = $calling_class->asType();
+                            $defining_is_trait = false;
+                            if ($this->code_base->hasClassWithFQSEN($defining_class_fqsen)) {
+                                $defining_class = $this->code_base->getClassByFQSEN($defining_class_fqsen);
+                                $defining_is_trait = $defining_class->isTrait();
+                            }
+                            if (!$defining_is_trait && !$calling_class_type->isSubtypeOf($defining_class_type, $this->code_base)) {
                                 $should_apply = false;
                             }
                         }
