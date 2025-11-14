@@ -72,7 +72,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
 
         if (self::returnTypeOfFunctionLikeAllowsNull($method)) {
             // This has at least one return statement with an expression
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
                 if ($method->getUnionType()->isEmpty() && $method->hasReturn()) {
                     if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnMethod')) {
                         self::emitIssue(
@@ -103,7 +103,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
                 );
             }
         }
-        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
             if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnMethod')) {
                 self::emitIssue(
                     $code_base,
@@ -138,7 +138,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         if (self::returnTypeOfFunctionLikeAllowsNull($function)) {
             if ($function->getUnionType()->isEmpty() && $function->hasReturn()) {
                 // This has at least one return statement with an expression
-                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
                     if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnFunction')) {
                         self::emitIssue(
                             $code_base,
@@ -168,7 +168,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
                 );
             }
         }
-        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
+        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
             if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnFunction')) {
                 self::emitIssue(
                     $code_base,
