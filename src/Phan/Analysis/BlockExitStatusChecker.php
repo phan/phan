@@ -803,7 +803,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $method_name = $method;
         }
         if ($var_name === 'this') {
-            $class_fqsen = $this->context->getClassFQSEN();
+            $class_fqsen = $this->context->getClassFQSENOrNull();
+            if ($class_fqsen === null) {
+                return self::STATUS_PROCEED;
+            }
         } else {
             // TODO not yet handled
             return self::STATUS_PROCEED;
