@@ -2999,6 +2999,54 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // this is, don't worry about it
             return $this->context;
         }
+
+        if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+            $class_name = $class_node->children['name'] ?? null;
+            if (\is_string($class_name)) {
+                $class_name_lower = \strtolower($class_name);
+                if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
+                    $modifications_by_class = $method->getStaticPropertyModifications();
+                    if ($modifications_by_class) {
+                        $calling_class = $this->context->getClassFQSENOrNull();
+                        if ($calling_class) {
+                            foreach ($modifications_by_class as $entry) {
+                                $target_class_fqsen = $entry['class'];
+                                $property_modifications = $entry['properties'];
+                                if (!$property_modifications) {
+                                    continue;
+                                }
+                                if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
+                                    continue;
+                                }
+                                $overrides_to_clear = [];
+                                $updates = [];
+                                foreach ($property_modifications as $property_name => $property_info) {
+                                    /** @var array{type:UnionType,is_late_static:bool} $property_info */
+                                    $property_type = $property_info['type'];
+                                    $is_late_static = $property_info['is_late_static'];
+                                    if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen, $calling_class, $is_late_static)) {
+                                        continue;
+                                    }
+                                    $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
+                                    if ($old_override !== null) {
+                                        $overrides_to_clear[] = $property_name;
+                                    }
+                                    $updates[$property_name] = $old_override ? $old_override->withUnionType($property_type) : $property_type;
+                                }
+                                if ($overrides_to_clear) {
+                                    $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
+                                }
+                                if ($updates) {
+                                    foreach ($updates as $property_name => $property_type) {
+                                        $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return $this->context;
     }
 
@@ -5306,6 +5354,53 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Otherwise, 'stmts' would always be a Node due to preconditions.
         $stmts_node = $node->children['stmts'];
         return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node);
+    }
+
+    private function canApplyStaticPropertyOverride(FullyQualifiedClassName $calling_class, FullyQualifiedClassName $target_class): bool
+    {
+        if ($calling_class->__toString() === $target_class->__toString()) {
+            return true;
+        }
+        $is_trait = false;
+        if ($this->code_base->hasClassWithFQSEN($target_class)) {
+            $class = $this->code_base->getClassByFQSEN($target_class);
+            $is_trait = $class->isTrait();
+        }
+        if ($is_trait) {
+            return true;
+        }
+        $calling_type = $calling_class->asType();
+        $target_type = $target_class->asType();
+        return $calling_type->isSubtypeOf($target_type, $this->code_base);
+    }
+
+    private function doesStaticOverrideMatchTargetClass(string $property_name, FullyQualifiedClassName $target_class, FullyQualifiedClassName $calling_class, bool $is_late_static): bool
+    {
+        if (!$this->code_base->hasClassWithFQSEN($calling_class)) {
+            return false;
+        }
+        $calling_class_instance = $this->code_base->getClassByFQSEN($calling_class);
+        try {
+            $property = $calling_class_instance->getPropertyByNameInContext(
+                $this->code_base,
+                $property_name,
+                $this->context,
+                true,
+                null,
+                true
+            );
+        } catch (IssueException | CodeBaseException) {
+            return false;
+        }
+        $defining_class = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if ($defining_class->__toString() === $target_class->__toString()) {
+            return true;
+        }
+        if ($is_late_static) {
+            $defining_type = $defining_class->asType();
+            return $calling_class->asType()->isSubtypeOf($defining_type, $this->code_base);
+        }
+        return false;
     }
 
 

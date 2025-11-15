@@ -15,6 +15,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\ElementContext;
 use Phan\Language\FileRef;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
@@ -71,6 +72,14 @@ class Method extends ClassElement implements FunctionInterface
      * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
      */
     private $overridden_methods_cache = null;
+
+    /**
+     * @var array<string,UnionType> map of static property names to the union types assigned within this method.
+     */
+    /**
+     * @var array<string,array{class:FullyQualifiedClassName,properties:array<string,array{type:UnionType,is_late_static:bool}>}>
+     */
+    private $static_property_set_types = [];
 
     /**
      * @param Context $context
@@ -1215,4 +1224,47 @@ class Method extends ClassElement implements FunctionInterface
         $this->inherited_throws_union_type = $type;
     }
 
+    /**
+     * Record that this method assigns the given union type to a static property.
+     */
+    public function recordStaticPropertyModification(FullyQualifiedClassName $class_fqsen, string $property_name, UnionType $union_type, bool $is_late_static): void
+    {
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        $class_key = $class_fqsen->__toString();
+        if (!isset($this->static_property_set_types[$class_key])) {
+            $this->static_property_set_types[$class_key] = [
+                'class' => $class_fqsen,
+                'properties' => [],
+            ];
+        }
+        $property_map = &$this->static_property_set_types[$class_key]['properties'];
+        if (isset($property_map[$property_name])) {
+            $entry = $property_map[$property_name];
+            $entry_type = $entry['type'] ?? null;
+            if ($entry_type !== null) {
+                $entry['type'] = $entry_type->withUnionType($union_type);
+            } else {
+                $entry['type'] = $union_type;
+            }
+            $entry['is_late_static'] = $entry['is_late_static'] || $is_late_static;
+            $property_map[$property_name] = $entry;
+            return;
+        }
+        $property_map[$property_name] = [
+            'type' => $union_type,
+            'is_late_static' => $is_late_static,
+        ];
+    }
+
+    /**
+     * Returns the metadata for static properties modified within this method.
+     *
+     * @return array<string,array{class:FullyQualifiedClassName,properties:array<string,array{type:UnionType,is_late_static:bool}>}>
+     */
+    public function getStaticPropertyModifications(): array
+    {
+        return $this->static_property_set_types;
+    }
 }

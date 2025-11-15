@@ -1535,6 +1535,59 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $this->context = $this->context->withStaticPropertySetToTypeByName($prop_name, $new_type);
+        if ($this->context->isInFunctionLikeScope()) {
+            $function_like = $this->context->getFunctionLikeInScope($this->code_base);
+            if ($function_like instanceof Method) {
+                $target = $this->getStaticPropertyAssignmentTarget($node);
+                if ($target) {
+                    [$target_class, $is_late_static] = $target;
+                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
+                }
+            }
+        }
+    }
+
+    /**
+     * @return array{0:FullyQualifiedClassName,1:bool}|null
+     */
+    private function getStaticPropertyAssignmentTarget(Node $node): ?array
+    {
+        $class_node = $node->children['class'] ?? null;
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            return null;
+        }
+        $name = $class_node->children['name'] ?? null;
+        if (!\is_string($name)) {
+            return null;
+        }
+        $context_class_fqsen = $this->context->getClassFQSENOrNull();
+        if (!$context_class_fqsen) {
+            return null;
+        }
+        $normalized = \strtolower($name);
+        if ($normalized === 'self') {
+            $is_trait = false;
+            if ($this->code_base->hasClassWithFQSEN($context_class_fqsen)) {
+                $class = $this->code_base->getClassByFQSEN($context_class_fqsen);
+                $is_trait = $class->isTrait();
+            }
+            return [$context_class_fqsen, $is_trait];
+        }
+        if ($normalized === 'static') {
+            return [$context_class_fqsen, true];
+        }
+        if ($normalized === 'parent') {
+            try {
+                $clazz = $this->context->getClassInScope($this->code_base);
+            } catch (CodeBaseException) {
+                return null;
+            }
+            if (!$clazz->hasParentType()) {
+                return null;
+            }
+            return [$clazz->getParentClassFQSEN(), false];
+        }
+        return null;
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void
