@@ -321,9 +321,10 @@ class ParameterTypesAnalyzer
             if (!$overridden_class->isInterface()) {
                 if ($overridden_class->isTrait()) {
                     // trait overrides should not suppress checking the actual parent class
-                } elseif ($processed_class_override) {
-                    continue;
-                } else {
+                } elseif (!$overridden_method->isAbstract()) {
+                    if ($processed_class_override) {
+                        continue;
+                    }
                     $processed_class_override = true;
                 }
             }
