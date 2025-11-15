@@ -52,11 +52,11 @@ final class UnionTypeTest extends TestBase
     protected function setUp(): void
     {
         // Deliberately not calling parent::setUp()
+        global $internal_class_name_list;
+        global $internal_interface_name_list;
+        global $internal_trait_name_list;
+        global $internal_function_name_list;
         if (self::$code_base === null) {
-            $internal_class_name_list = \get_declared_classes();
-            $internal_interface_name_list = \get_declared_interfaces();
-            $internal_trait_name_list = \get_declared_traits();
-            $internal_function_name_list = \get_defined_functions()['internal'];
             self::$code_base = new CodeBase(
                 $internal_class_name_list,
                 $internal_interface_name_list,
