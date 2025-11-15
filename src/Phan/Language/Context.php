@@ -470,11 +470,6 @@ class Context extends FileRef
     public function withoutLoops(): Context
     {
         $context = clone($this);
-        foreach ($context->loop_nodes as $loop_node) {
-            if ($loop_node instanceof Node) {
-                self::clearLoopDimWritesForLoop($loop_node);
-            }
-        }
         $context->loop_nodes = [];
         return $context;
     }
