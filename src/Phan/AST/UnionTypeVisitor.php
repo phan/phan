@@ -2310,6 +2310,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
             if (!$has_non_empty_array) {
+                if ($this->shouldTreatArrayShapeOffsetAsPossiblyInitializedByLoop($node)) {
+                    $has_non_empty_array = true;
+                }
+            }
+            if (!$has_non_empty_array) {
                 $exception = new IssueException(
                     Issue::fromType(Issue::TypeInvalidDimOffset)(
                         $this->context->getFile(),
@@ -2339,6 +2344,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         if ($resulting_element_type === false) {
+            if ($this->shouldTreatArrayShapeOffsetAsPossiblyInitializedByLoop($node)) {
+                return MixedType::instance(false)->asPHPDocUnionType();
+            }
             // XXX not sure what to do here. For now, just return null and only warn in cases where requested to.
             if ($check_invalid_dim) {
                 $exception = new IssueException(
@@ -2367,6 +2375,31 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         return $resulting_element_type;
+    }
+
+    /**
+     * Heuristic: inside loops, allow accessing offsets that might have been added in previous iterations.
+     */
+    private function shouldTreatArrayShapeOffsetAsPossiblyInitializedByLoop(Node $node): bool
+    {
+        if (!$this->context->isInLoop()) {
+            return false;
+        }
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node) || $expr_node->kind !== ast\AST_VAR) {
+            return false;
+        }
+        try {
+            $variable_name = (new ContextNode($this->code_base, $this->context, $expr_node))->getVariableName();
+        } catch (IssueException|NodeException) {
+            return false;
+        }
+        foreach (\array_reverse($this->context->getLoopNodeList()) as $loop_node) {
+            if ($this->context->doesLoopRecordDimWrite($loop_node, $variable_name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

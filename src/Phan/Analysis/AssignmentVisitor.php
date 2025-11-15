@@ -866,13 +866,14 @@ class AssignmentVisitor extends AnalysisVisitor
             );
             return $this->context;
         }
+        $loop_assignment_var_name = null;
         if ($expr_node->kind === \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
             ))->getVariableName();
-
+            $loop_assignment_var_name = $variable_name;
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 if ($variable_name === 'GLOBALS') {
                     return $this->analyzeSuperglobalDim($node, $variable_name);
@@ -958,6 +959,11 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->suppress_dim_property_mismatch,
             $this->is_conditional_check  // Propagate the flag for nested dimensions
         ))->__invoke($expr_node);
+
+        if (!$this->is_conditional_check && $loop_assignment_var_name !== null && $this->context->isInLoop()) {
+            $loop_node = $this->context->getInnermostLoopNode();
+            $this->context->markLoopDimWrite($loop_node, $loop_assignment_var_name);
+        }
 
         return $context;
     }

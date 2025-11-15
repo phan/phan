@@ -1,0 +1,2 @@
+%s:19 PhanUnusedVariable Unused definition of variable $arr
+%s:21 PhanTypeInvalidDimOffset Invalid offset "key" of $arr of array type array{}
