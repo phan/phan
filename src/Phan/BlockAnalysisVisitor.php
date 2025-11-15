@@ -2240,7 +2240,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno
         );
         $context = $this->preOrderAnalyze($context, $node);
-        $original_context = $context;
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
