@@ -2236,10 +2236,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitIf(Node $node): Context
     {
-        $context = $this->context->withLineNumberStart(
-            $node->lineno
+        $context = $this->preOrderAnalyze(
+            $this->context->withLineNumberStart($node->lineno),
+            $node
         );
-        $context = $this->preOrderAnalyze($context, $node);
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
