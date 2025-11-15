@@ -961,8 +961,11 @@ class AssignmentVisitor extends AnalysisVisitor
         ))->__invoke($expr_node);
 
         if (!$this->is_conditional_check && $loop_assignment_var_name !== null && $this->context->isInLoop()) {
-            $loop_node = $this->context->getInnermostLoopNode();
-            $this->context->markLoopDimWrite($loop_node, $loop_assignment_var_name);
+            foreach ($this->context->getLoopNodeList() as $loop_node) {
+                if ($loop_node instanceof Node) {
+                    $this->context->markLoopDimWrite($loop_node, $loop_assignment_var_name);
+                }
+            }
         }
 
         return $context;
