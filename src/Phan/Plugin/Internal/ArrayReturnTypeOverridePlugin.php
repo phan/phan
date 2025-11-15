@@ -376,9 +376,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return null;
             }
 
+            /** @var array<string|int,UnionType> $merged_fields */
             $merged_fields = [];
             foreach (array_keys($field_keys) as $key) {
-                $merged_type = null;
+                $merged_type = UnionType::empty();
+                $has_merged_type = false;
                 $is_required = false;
 
                 // Traverse shapes from the last argument to the first so that we can
@@ -391,13 +393,15 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     if (!isset($current_fields[$key])) {
                         continue;
                     }
+                    /** @var UnionType $field_union */
                     $field_union = $current_fields[$key];
                     $field_required = !$field_union->isPossiblyUndefined();
                     $field_union = $field_union->withIsPossiblyUndefined(false);
 
-                    if ($merged_type === null) {
+                    if (!$has_merged_type) {
                         $merged_type = $field_union;
                         $is_required = $field_required;
+                        $has_merged_type = true;
                         continue;
                     }
 
@@ -411,14 +415,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                     $is_required = $is_required || $field_required;
                 }
 
-                if ($merged_type === null) {
+                if (!$has_merged_type) {
                     continue;
                 }
 
-                if (!$is_required) {
-                    $merged_type = $merged_type->withIsPossiblyUndefined(true);
-                }
-                $merged_fields[$key] = $merged_type;
+                $merged_fields[$key] = $is_required ? $merged_type : $merged_type->withIsPossiblyUndefined(true);
             }
 
             if (!$merged_fields) {
