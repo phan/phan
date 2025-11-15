@@ -760,6 +760,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         } else {
             $always_iterates_at_least_once = true;
         }
+        $this->removeLiteralTypesOfLoopCounters($context, $node);
         $original_context = $context;
 
         $stmts_node = $node->children['stmts'];
@@ -988,6 +989,107 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Heuristic: Loops such as for ($i = 0; ...; ++$i) may execute multiple times, so
+     * loop counters should not keep literal real types across iterations.
+     *
+     * @param Node $node a node of kind ast\AST_FOR
+     */
+    private function removeLiteralTypesOfLoopCounters(Context $context, Node $node): void
+    {
+        $loop_expr = $node->children['loop'] ?? null;
+        if (!($loop_expr instanceof Node)) {
+            return;
+        }
+        $var_names = $this->collectLoopCounterVariableNames($loop_expr);
+        if (!$var_names) {
+            return;
+        }
+        $scope = $context->getScope();
+        foreach ($var_names as $var_name => $_) {
+            if (!$scope->hasVariableWithName($var_name)) {
+                continue;
+            }
+            $variable = clone $scope->getVariableByName($var_name);
+            $new_type = $variable->getUnionType()->asNonLiteralType();
+            if ($new_type->isEqualTo($variable->getUnionType())) {
+                continue;
+            }
+            $variable->setUnionType($new_type);
+            $context->addScopeVariable($variable);
+        }
+    }
+
+    /**
+     * @param Node|string|int|float|null $loop_expr
+     * @return array<string,bool>
+     */
+    private function collectLoopCounterVariableNames(Node|float|int|null|string $loop_expr): array
+    {
+        if (!($loop_expr instanceof Node)) {
+            return [];
+        }
+        switch ($loop_expr->kind) {
+            case ast\AST_EXPR_LIST:
+                $result = [];
+                foreach ($loop_expr->children as $child_node) {
+                    $result += $this->collectLoopCounterVariableNames($child_node);
+                }
+                return $result;
+            case ast\AST_ASSIGN:
+            case ast\AST_ASSIGN_OP:
+                $var_names = $this->extractLoopVarName($loop_expr->children['var']);
+                $result = [];
+                foreach ($var_names as $var_name) {
+                    $result[$var_name] = true;
+                }
+                $expr = $loop_expr->children['expr'] ?? null;
+                if ($expr instanceof Node) {
+                    $result += $this->collectLoopCounterVariableNames($expr);
+                }
+                return $result;
+            case ast\AST_PRE_INC:
+            case ast\AST_POST_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_DEC:
+                $result = [];
+                foreach ($this->extractLoopVarName($loop_expr->children['var']) as $var_name) {
+                    $result[$var_name] = true;
+                }
+                return $result;
+        }
+
+        return [];
+    }
+
+    /**
+     * @param Node|string|int|float|null $node
+     * @return list<string>
+     */
+    private function extractLoopVarName(Node|float|int|null|string $node): array
+    {
+        if (!($node instanceof Node)) {
+            return [];
+        }
+        if ($node->kind === ast\AST_VAR) {
+            $name = $node->children['name'];
+            if (\is_string($name) && $name !== 'this' && $name !== '_') {
+                return [$name];
+            }
+            return [];
+        }
+        if ($node->kind === ast\AST_ARRAY) {
+            $result = [];
+            foreach ($node->children as $child) {
+                if ($child instanceof Node) {
+                    $result = \array_merge($result, $this->extractLoopVarName($child));
+                }
+            }
+            return $result;
+        }
+        return [];
     }
 
     /**
