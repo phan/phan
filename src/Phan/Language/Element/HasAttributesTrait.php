@@ -84,4 +84,19 @@ trait HasAttributesTrait
         }
         return false;
     }
+
+    /**
+     * Check if this element has a #[ReturnTypeWillChange] attribute (PHP 8.1+)
+     * This attribute is frequently polyfilled, so version checks are not necessary.
+     */
+    public function hasReturnTypeWillChangeAttribute(): bool
+    {
+        foreach ($this->attribute_list as $attribute) {
+            $fqsen = $attribute->getFQSEN();
+            if ($fqsen->__toString() === '\\ReturnTypeWillChange') {
+                return true;
+            }
+        }
+        return false;
+    }
 }
