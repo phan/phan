@@ -391,7 +391,12 @@ class Context extends FileRef
         $context = clone($this);
 
         while ($context->loop_nodes) {
-            if (\array_pop($context->loop_nodes) === $node) {
+            $popped_node = \array_pop($context->loop_nodes);
+            if (!($popped_node instanceof Node)) {
+                continue;
+            }
+            self::clearLoopDimWritesForLoop($popped_node);
+            if ($popped_node === $node) {
                 if (\count($context->loop_nodes) === 0) {
                     // @phan-suppress-next-line PhanUndeclaredProperty
                     foreach ($node->phan_deferred_checks ?? [] as $cb) {
@@ -465,8 +470,19 @@ class Context extends FileRef
     public function withoutLoops(): Context
     {
         $context = clone($this);
+        foreach ($context->loop_nodes as $loop_node) {
+            if ($loop_node instanceof Node) {
+                self::clearLoopDimWritesForLoop($loop_node);
+            }
+        }
         $context->loop_nodes = [];
         return $context;
+    }
+
+    private static function clearLoopDimWritesForLoop(Node $loop_node): void
+    {
+        $loop_id = \spl_object_id($loop_node);
+        unset(self::$loop_dim_written_map[$loop_id]);
     }
 
     /**
