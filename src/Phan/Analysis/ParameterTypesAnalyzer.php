@@ -319,10 +319,13 @@ class ParameterTypesAnalyzer
         foreach ($overridden_method_list as $overridden_method) {
             $overridden_class = $overridden_method->getClass($code_base);
             if (!$overridden_class->isInterface()) {
-                if ($processed_class_override) {
+                if ($overridden_class->isTrait()) {
+                    // trait overrides should not suppress checking the actual parent class
+                } elseif ($processed_class_override) {
                     continue;
+                } else {
+                    $processed_class_override = true;
                 }
-                $processed_class_override = true;
             }
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
         }
