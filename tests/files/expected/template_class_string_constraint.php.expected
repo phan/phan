@@ -1,0 +1,1 @@
+%s:20 PhanTemplateTypeConstraintViolation Template type T of \newObject() must be compatible with \TestClass, but \OtherClass was provided in call to \newObject()
