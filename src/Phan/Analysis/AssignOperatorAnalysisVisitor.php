@@ -24,6 +24,8 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralFloatType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ScalarType;
@@ -632,10 +634,17 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $this->warnForInvalidOperandsOfModOp($node);
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node): UnionType {
             $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-            if (!$this->context->isInLoop()) {
-                if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
-                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
-                }
+            if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+                $result = BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
+                return $result->asMappedUnionType(static function (Type $type): Type {
+                    if ($type instanceof LiteralIntType) {
+                        return $type;
+                    }
+                    if ($type instanceof LiteralFloatType) {
+                        return LiteralIntType::instanceForValue((int)$type->getValue(), false);
+                    }
+                    return IntType::instance(false);
+                });
             }
             // TODO: Check if both sides can cast to int and warn if they can't.
             return IntType::instance(false)->asRealUnionType();

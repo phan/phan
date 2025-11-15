@@ -1,0 +1,4 @@
+%s:3 PhanDebugAnnotation @phan-debug-var requested for variable $a1 - it has union type int(real=int)
+%s:3 PhanUnusedVariable Unused definition of variable $a1 (Did you mean $a)
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:5 PhanUnusedVariable Unused definition of variable $a

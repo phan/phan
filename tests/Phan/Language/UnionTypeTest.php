@@ -56,7 +56,6 @@ final class UnionTypeTest extends TestBase
         global $internal_interface_name_list;
         global $internal_trait_name_list;
         global $internal_function_name_list;
-
         if (self::$code_base === null) {
             self::$code_base = new CodeBase(
                 $internal_class_name_list,
@@ -144,7 +143,7 @@ final class UnionTypeTest extends TestBase
         $this->assertUnionTypeStringEqual('$x=2; $x *= 3; $x', '6');
         $this->assertUnionTypeStringEqual('$x=2; $x **= 3; $x', '8');
         $this->assertUnionTypeStringEqual('$x=4; $x **= 3.5; $x', '128.0');
-        $this->assertUnionTypeStringEqual('$x=5; $x %= 3; $x', '2');  // This casts to float
+        $this->assertUnionTypeStringEqual('$x=5; $x %= 3; $x', '2');
         $this->assertUnionTypeStringEqual('$x=21.2; $x %= 3.5; $x', '0');
         $this->assertUnionTypeStringEqual('$x=23.2; $x %= 3.5; $x', '2');
         $this->assertUnionTypeStringEqual('$x=5;    $x ^= 3;    $x', '6');
