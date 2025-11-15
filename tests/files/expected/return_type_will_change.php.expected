@@ -1,0 +1,1 @@
+%s:11 PhanParamSignatureRealMismatchReturnTypeInternal Declaration of function key() should be compatible with internal function key() : int|null|string (method where the return type in the real signature is '(none)' cannot override method where the return type in the real signature is 'int|null|string')

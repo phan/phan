@@ -847,18 +847,29 @@ class ParameterTypesAnalyzer
                 }
                 if (!$is_exception_to_rule) {
                     $is_possibly_compatible = false;
-
-                    self::emitSignatureRealMismatchIssue(
-                        $code_base,
-                        $method,
-                        $overridden_method,
-                        Issue::ParamSignatureRealMismatchReturnType,
-                        Issue::ParamSignatureRealMismatchReturnTypeInternal,
-                        Issue::ParamSignaturePHPDocMismatchReturnType,
-                        null,
-                        (string)$return_union_type,
-                        (string)$overridden_return_union_type
-                    );
+                    if ($overridden_method->isPHPInternal() && $method->hasReturnTypeWillChangeAttribute()) {
+                        // PHP tolerates this mismatch when the attribute is present, so suppress the internal issue.
+                    } else {
+                        $method_return_repr = (string)$return_union_type;
+                        if ($method_return_repr === '') {
+                            $method_return_repr = '(none)';
+                        }
+                        $overridden_return_repr = (string)$overridden_return_union_type;
+                        if ($overridden_return_repr === '') {
+                            $overridden_return_repr = '(none)';
+                        }
+                        self::emitSignatureRealMismatchIssue(
+                            $code_base,
+                            $method,
+                            $overridden_method,
+                            Issue::ParamSignatureRealMismatchReturnType,
+                            Issue::ParamSignatureRealMismatchReturnTypeInternal,
+                            Issue::ParamSignaturePHPDocMismatchReturnType,
+                            null,
+                            $method_return_repr,
+                            $overridden_return_repr
+                        );
+                    }
                 }
             }
         }
