@@ -33,6 +33,7 @@ use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV3\PreAnalyzeNodeCapability;
 use Phan\PluginV3\ReturnTypeOverrideCapability;
 
+use function array_keys;
 use function count;
 use function is_string;
 use function strcasecmp;
@@ -361,24 +362,68 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 return null;
             }
 
-            // Start with the first shape's fields
-            $merged_fields = $shapes[0]->getFieldTypes();
+            $field_keys = [];
+            foreach ($shapes as $shape_index => $shape) {
+                if ($is_empty_array[$shape_index] ?? false) {
+                    continue;
+                }
+                foreach (array_keys($shape->getFieldTypes()) as $key) {
+                    $field_keys[$key] = true;
+                }
+            }
 
-            // Merge subsequent shapes, skipping those that are known to be empty
-            for ($i = 1; $i < count($shapes); $i++) {
-                // Skip merging in empty arrays - they don't contribute to the result
-                if ($is_empty_array[$i] ?? false) {
+            if (!$field_keys) {
+                return null;
+            }
+
+            /** @var array<string|int,UnionType> $merged_fields */
+            $merged_fields = [];
+            foreach (array_keys($field_keys) as $key) {
+                $merged_type = UnionType::empty();
+                $has_merged_type = false;
+                $is_required = false;
+
+                // Traverse shapes from the last argument to the first so that we can
+                // emulate array_merge semantics where later arguments override earlier ones.
+                for ($i = count($shapes) - 1; $i >= 0; $i--) {
+                    if ($is_empty_array[$i] ?? false) {
+                        continue;
+                    }
+                    $current_fields = $shapes[$i]->getFieldTypes();
+                    if (!isset($current_fields[$key])) {
+                        continue;
+                    }
+                    /** @var UnionType $field_union */
+                    $field_union = $current_fields[$key];
+                    $field_required = !$field_union->isPossiblyUndefined();
+                    $field_union = $field_union->withIsPossiblyUndefined(false);
+
+                    if (!$has_merged_type) {
+                        $merged_type = $field_union;
+                        $is_required = $field_required;
+                        $has_merged_type = true;
+                        continue;
+                    }
+
+                    if ($is_required) {
+                        // Later shapes already guarantee the presence of this key, so earlier shapes
+                        // cannot affect the runtime value.
+                        continue;
+                    }
+
+                    $merged_type = $merged_type->withUnionType($field_union);
+                    $is_required = $is_required || $field_required;
+                }
+
+                if (!$has_merged_type) {
                     continue;
                 }
 
-                $current_shape = $shapes[$i];
-                $current_fields = $current_shape->getFieldTypes();
+                $merged_fields[$key] = $is_required ? $merged_type : $merged_type->withIsPossiblyUndefined(true);
+            }
 
-                // Merge the field types
-                // Later arrays' values override earlier ones for the same key
-                foreach ($current_fields as $key => $type) {
-                    $merged_fields[$key] = $type;
-                }
+            if (!$merged_fields) {
+                return null;
             }
 
             // If all keys are integers, don't return a shape (let normal list handling take over)

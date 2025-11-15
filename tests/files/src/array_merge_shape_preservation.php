@@ -70,6 +70,15 @@ function test_param_union_with_pure_last($mixed) {
     h($result['status']);  // Should NOT warn - type is string literal
 }
 
+// Test case 7: First argument guarantees a key while later arguments may or may not override it
+/**
+ * @param array{x?:string} $maybe
+ */
+function test_first_argument_shape_is_preserved(array $maybe) {
+    $result = array_merge(['x' => 'foo'], $maybe);
+    h($result['x']);  // Should NOT warn - key 'x' is guaranteed present
+}
+
 // Helper functions
 function h(?string $arg) {
     echo $arg;
@@ -86,3 +95,4 @@ test_merge_two_shapes();
 test_merge_overlapping_shapes();
 test_mixed_with_pure_last();
 test_param_union_with_pure_last(['a' => 1]);
+test_first_argument_shape_is_preserved([]);
