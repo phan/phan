@@ -85,6 +85,14 @@ final class ClassStringType extends StringType
         // @phan-suppress-next-line PhanUnusedClosureParameter - Context parameter required for parent signature compatibility
         return static function (UnionType $type, \Phan\Language\Context $_context): UnionType {
             $result = UnionType::empty();
+            foreach ($type->getTypeSet() as $inner_type) {
+                if ($inner_type instanceof ClassStringType) {
+                    $result = $result->withUnionType($inner_type->getClassUnionType());
+                }
+            }
+            if (!$result->isEmpty()) {
+                return $result;
+            }
             foreach ($type->asStringScalarValues() as $string) {
                 // Convert string arguments to the classes they represent
                 try {
