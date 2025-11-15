@@ -1,0 +1,1 @@
+%s:9 PhanParamSignatureMismatch Declaration of function foo() : string should be compatible with function foo() : array defined in %s:4

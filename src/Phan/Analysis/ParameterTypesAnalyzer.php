@@ -315,7 +315,15 @@ class ParameterTypesAnalyzer
             );
             return;
         }
+        $checked_class_override = false;
         foreach ($overridden_method_list as $overridden_method) {
+            $overridden_class = $overridden_method->getClass($code_base);
+            if (!$overridden_class->isInterface()) {
+                if ($checked_class_override) {
+                    continue;
+                }
+                $checked_class_override = true;
+            }
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
         }
     }
