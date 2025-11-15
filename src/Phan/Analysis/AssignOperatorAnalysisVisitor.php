@@ -632,10 +632,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $this->warnForInvalidOperandsOfModOp($node);
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node): UnionType {
             $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-            if (!$this->context->isInLoop()) {
-                if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
-                    return BinaryOperatorFlagVisitor::computeIntOrFloatOperationResult($node, $left, $right);
-                }
+            if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+                return IntType::instance(false)->asPHPDocUnionType();
             }
             // TODO: Check if both sides can cast to int and warn if they can't.
             return IntType::instance(false)->asRealUnionType();
