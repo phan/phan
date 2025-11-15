@@ -633,7 +633,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node): UnionType {
             $right = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
             if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
-                return IntType::instance(false)->asPHPDocUnionType();
+                return IntType::instance(false)->asRealUnionType();
             }
             // TODO: Check if both sides can cast to int and warn if they can't.
             return IntType::instance(false)->asRealUnionType();
