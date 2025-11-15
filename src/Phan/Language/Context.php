@@ -90,6 +90,13 @@ class Context extends FileRef
     protected $loop_nodes = [];
 
     /**
+     * @var array<int,array<string,bool>>
+     * Tracks per-loop metadata such as which array variables have been written to via dimension assignment.
+     * Keyed by spl_object_id($loop_node).
+     */
+    private static $loop_dim_written_map = [];
+
+    /**
      * @var Scope
      * The current scope in this context
      */
@@ -384,7 +391,12 @@ class Context extends FileRef
         $context = clone($this);
 
         while ($context->loop_nodes) {
-            if (\array_pop($context->loop_nodes) === $node) {
+            $popped_node = \array_pop($context->loop_nodes);
+            if (!($popped_node instanceof Node)) {
+                continue;
+            }
+            self::clearLoopDimWritesForLoop($popped_node);
+            if ($popped_node === $node) {
                 if (\count($context->loop_nodes) === 0) {
                     // @phan-suppress-next-line PhanUndeclaredProperty
                     foreach ($node->phan_deferred_checks ?? [] as $cb) {
@@ -428,11 +440,44 @@ class Context extends FileRef
         return \end($this->loop_nodes);
     }
 
+    /**
+     * @return list<Node>
+     * Returns the list of loop nodes entered for this context, ordered from outermost to innermost.
+     */
+    public function getLoopNodeList(): array
+    {
+        return $this->loop_nodes;
+    }
+
+    /**
+     * Records that the given array variable had a dimension written within the specified loop.
+     */
+    public function markLoopDimWrite(Node $loop_node, string $variable_name): void
+    {
+        $loop_id = \spl_object_id($loop_node);
+        self::$loop_dim_written_map[$loop_id][$variable_name] = true;
+    }
+
+    /**
+     * Returns true if the loop node recorded a dimension write for the given variable.
+     */
+    public function doesLoopRecordDimWrite(Node $loop_node, string $variable_name): bool
+    {
+        $loop_id = \spl_object_id($loop_node);
+        return isset(self::$loop_dim_written_map[$loop_id][$variable_name]);
+    }
+
     public function withoutLoops(): Context
     {
         $context = clone($this);
         $context->loop_nodes = [];
         return $context;
+    }
+
+    private static function clearLoopDimWritesForLoop(Node $loop_node): void
+    {
+        $loop_id = \spl_object_id($loop_node);
+        unset(self::$loop_dim_written_map[$loop_id]);
     }
 
     /**
