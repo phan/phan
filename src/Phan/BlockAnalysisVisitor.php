@@ -2239,8 +2239,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $this->context->withLineNumberStart(
             $node->lineno
         );
-
         $context = $this->preOrderAnalyze($context, $node);
+        $original_context = $context;
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -2642,6 +2642,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
 
         $context = $this->preOrderAnalyze($context, $node);
+        $original_context_for_try = $context;
 
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
@@ -2675,6 +2676,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             [$try_context],
             $this->code_base
         ))->mergeTryContext($node);
+        $catch_base_context = (new ContextMergeVisitor(
+            $original_context_for_try,
+            [$try_context],
+            $this->code_base
+        ))->combineScopeList([
+            $original_context_for_try->getScope(),
+            $try_context->getScope(),
+        ]);
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -2691,8 +2700,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             // The conditions need to communicate to the outer
             // scope for things like assigning variables.
-            $catch_context = $context->withScope(
-                new BranchScope($context->getScope())
+            $catch_context = $catch_base_context->withScope(
+                new BranchScope($catch_base_context->getScope())
             );
 
             $catch_context->withLineNumberStart(
