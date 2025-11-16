@@ -480,10 +480,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $element_type = $get_fallback_element_type();
             }
 
-            if (!($element_type instanceof UnionType)) {
-                // This should not happen, but handle it safely
-                $element_type = $get_fallback_element_type();
-            }
+            '@phan-var UnionType $element_type';
             $this->analyzeValueNodeOfShapedArray($element_type, $child_node->children['value']);
         }
 
