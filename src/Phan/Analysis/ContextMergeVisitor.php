@@ -398,15 +398,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 return true;
             };
 
-        // Get the intersection of all types for all versions of
-        // the variable from every side of the branch
-        $union_type =
-            static function (string $variable_name) use ($scope_list): UnionType {
-                $previous_type = null;
-                $type_list = [];
+        /** @param list<Scope> $scopes */
+        $compute_union_type = static function (string $variable_name, array $scopes): UnionType {
+            $previous_type = null;
+            $type_list = [];
                 // Get a list of all variables with the given name from
                 // each scope
-                foreach ($scope_list as $scope) {
+                foreach ($scopes as $scope) {
                     $variable = $scope->getVariableByNameOrNull($variable_name);
                     if (\is_null($variable)) {
                         continue;
@@ -443,6 +441,16 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 return $result;
             };
 
+        $union_type = static function (string $variable_name) use ($scope_list, $compute_union_type): UnionType {
+            return $compute_union_type($variable_name, $scope_list);
+        };
+        $parent_scope = $this->context->getScope();
+        $union_type_with_parent = static function (string $variable_name) use ($scope_list, $compute_union_type, $parent_scope): UnionType {
+            $extended_scope_list = $scope_list;
+            $extended_scope_list[] = $parent_scope;
+            return $compute_union_type($variable_name, $extended_scope_list);
+        };
+
         // Clone the incoming scope so we can modify it
         // with the outgoing merged scope
         $scope = clone($this->context->getScope());
@@ -452,7 +460,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
                 if ($name === Context::VAR_NAME_THIS_PROPERTIES) {
-                    $type = $union_type($name)->asNormalizedTypes()->asMappedUnionType(static function (Type $type): Type {
+                    $type = $union_type_with_parent($name)->asNormalizedTypes()->asMappedUnionType(static function (Type $type): Type {
                         if (!$type instanceof ArrayShapeType) {
                             return $type;
                         }
@@ -461,7 +469,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
                             $new_field_types[$field_name] = $value->isDefinitelyUndefined() ? $value : $value->withIsPossiblyUndefined(true);
                         }
                         return ArrayShapeType::fromFieldTypes($new_field_types, $type->isNullable());
-                    })->withIsPossiblyUndefined(true);  // Also mark the union type itself as possibly undefined
+                    });
+                    $existing_override = $this->context->getScope()->getVariableByNameOrNull($name);
+                    if ($existing_override) {
+                        $type = $type->withUnionType($existing_override->getUnionType());
+                    }
+                    $type = $type->withIsPossiblyUndefined(true);  // Also mark the union type itself as possibly undefined
                     $variable = clone($variable);
                     $variable->setUnionType($type);
                     $scope->addVariable($variable);

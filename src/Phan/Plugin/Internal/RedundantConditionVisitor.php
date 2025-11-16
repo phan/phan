@@ -13,12 +13,14 @@ use Exception;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\RedundantCondition;
 use Phan\AST\ASTReverter;
+use Phan\AST\ContextNode;
 use Phan\AST\InferValue;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\UnionType;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 
@@ -356,6 +358,10 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $base_issue = Issue::SuspiciousValueComparison;
         }
 
+        if ($this->shouldSkipComparisonDueToMutableThisProperty($left_node, $right) ||
+            $this->shouldSkipComparisonDueToMutableThisProperty($right_node, $left)) {
+            return true;
+        }
         Issue::maybeEmit(
             $code_base,
             $context,
@@ -364,6 +370,36 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             ...$issue_args
         );
         return true;
+    }
+
+    private function shouldSkipComparisonDueToMutableThisProperty(Node|float|int|string|null $expr_node, UnionType $other_side_type): bool
+    {
+        if (!($expr_node instanceof Node) || $expr_node->kind !== \ast\AST_PROP) {
+            return false;
+        }
+        $prop_expr = $expr_node->children['expr'];
+        if (!($prop_expr instanceof Node) || $prop_expr->kind !== \ast\AST_VAR || $prop_expr->children['name'] !== 'this') {
+            return false;
+        }
+        $property_name = $expr_node->children['prop'];
+        if (!\is_string($property_name)) {
+            return false;
+        }
+        try {
+            $property = (new ContextNode($this->code_base, $this->context, $expr_node))->getProperty(false);
+        } catch (\Exception) {
+            return false;
+        }
+        $declared_type = $property->getUnionType();
+        if ($declared_type->isEmpty() || $other_side_type->isEmpty()) {
+            return false;
+        }
+        foreach ($declared_type->getTypeSet() as $type) {
+            if (!$type instanceof LiteralTypeInterface) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
