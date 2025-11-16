@@ -259,7 +259,10 @@ final class TemplateType extends Type
             return true;
         }
         if ($actual->isEmpty()) {
-            return false;
+            // The actual type couldn't be inferred (e.g. untyped argument),
+            // so don't treat it as a violation. Other checks (e.g. PossiblyUndeclaredVariable)
+            // already cover cases where a value may be undefined.
+            return true;
         }
         // Allow mixed types to satisfy bounds (consistent with regular type checking).
         // Mixed could be compatible with any type at runtime, so we don't warn.

@@ -1366,8 +1366,7 @@ final class ArgumentType
             if ($argument_fragment === null) {
                 $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type);
                 if ($extractor) {
-                    $fragment = $extractor($argument_union_type, $context);
-                    $argument_fragment = $fragment->isEmpty() ? $argument_union_type : $fragment;
+                    $argument_fragment = $extractor($argument_union_type, $context);
                 } else {
                     $argument_fragment = $argument_union_type;
                 }
