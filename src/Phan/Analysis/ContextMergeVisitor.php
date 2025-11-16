@@ -483,7 +483,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     continue;
                 }
                 $variable = clone($variable);
-                $variable->setUnionType($union_type($name)->nullableClone()->withIsPossiblyUndefined(true));
+                $variable->setUnionType($union_type($name)->withIsPossiblyUndefined(true));
                 if (ConfigPluginSet::$mergeVariableInfoClosure) {
                     // @phan-suppress-next-line PhanTypePossiblyInvalidCallable
                     (ConfigPluginSet::$mergeVariableInfoClosure)($variable, $scope_list, false);
