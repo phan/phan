@@ -4944,6 +4944,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         if (\count($argument_list_node->children) === 0) {
+            if ($method instanceof Method && !$method->isStatic()) {
+                // Instance methods might guard recursion using shared state.
+                // Defer the decision to VariableTrackerVisitor so that it can check if $this was modified.
+                // @phan-suppress-next-line PhanUndeclaredProperty
+                $node->check_infinite_recursion = [[], $method->getNameForIssue(), true];
+                return;
+            }
             $this->emitIssue(
                 Issue::PossibleInfiniteRecursionSameParams,
                 $node->lineno,
