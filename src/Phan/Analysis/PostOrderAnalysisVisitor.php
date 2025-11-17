@@ -2666,9 +2666,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $handled = $callback_node instanceof Node ? $this->applyStaticPropertyModificationsForMethodCallableNode($callback_node) : null;
         if ($handled !== null) {
-            if (!$handled) {
-                $this->context = $this->context->withoutStaticPropertyOverrides();
-            }
             return;
         }
         $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext(
@@ -3092,6 +3089,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function applyStaticPropertyModificationsFromMethod(Method $method): bool
     {
         $modifications_by_class = $method->getStaticPropertyModifications();
+        if (!$modifications_by_class && $method->hasNode()) {
+            // Analyze the method now to discover assignments before the usual analysis order would run it.
+            $method->analyze($method->getContext(), $this->code_base);
+            $modifications_by_class = $method->getStaticPropertyModifications();
+        }
         if (!$modifications_by_class) {
             return false;
         }
