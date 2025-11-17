@@ -77,6 +77,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private $parent_node_list;
 
+    /** @var array<string,bool> tracks which methods were checked for static property modifications on-demand */
+    private $checked_methods_for_static_property_modifications = [];
+
     /**
      * @param CodeBase $code_base
      * A code base needs to be passed in because we require
@@ -2680,6 +2683,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         foreach ($function_like_list as $function_like) {
             if ($function_like instanceof Method) {
+                $this->ensureStaticPropertyModificationsComputed($function_like);
                 $this->applyStaticPropertyModificationsFromMethod($function_like);
             }
         }
@@ -3080,6 +3084,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $applied = false;
         foreach ($method_list as $method) {
             if ($method instanceof Method) {
+                $this->ensureStaticPropertyModificationsComputed($method);
                 $applied = $this->applyStaticPropertyModificationsFromMethod($method) || $applied;
             }
         }
@@ -3089,11 +3094,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function applyStaticPropertyModificationsFromMethod(Method $method): bool
     {
         $modifications_by_class = $method->getStaticPropertyModifications();
-        if (!$modifications_by_class && $method->hasNode()) {
-            // Analyze the method now to discover assignments before the usual analysis order would run it.
-            $method->analyze($method->getContext(), $this->code_base);
-            $modifications_by_class = $method->getStaticPropertyModifications();
-        }
         if (!$modifications_by_class) {
             return false;
         }
@@ -3137,6 +3137,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
         return $applied;
+    }
+
+    private function ensureStaticPropertyModificationsComputed(Method $method): void
+    {
+        $key = (string)$method->getFQSEN();
+        if (isset($this->checked_methods_for_static_property_modifications[$key])) {
+            return;
+        }
+        $this->checked_methods_for_static_property_modifications[$key] = true;
+        if (!$method->hasNode()) {
+            return;
+        }
+        if ($method->getStaticPropertyModifications()) {
+            return;
+        }
+        $method->analyze($method->getContext(), $this->code_base);
     }
 
     private function canCallInstanceMethodFromContext(Method $method, string $static_class): bool
