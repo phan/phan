@@ -2678,6 +2678,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             false
         );
         if (!$function_like_list) {
+            $this->context = $this->context->withoutStaticPropertyOverrides();
             return;
         }
         foreach ($function_like_list as $function_like) {
