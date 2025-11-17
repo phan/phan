@@ -2681,11 +2681,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->context = $this->context->withoutStaticPropertyOverrides();
             return;
         }
+        $found_method = false;
         foreach ($function_like_list as $function_like) {
             if ($function_like instanceof Method) {
                 $this->ensureStaticPropertyModificationsComputed($function_like);
-                $this->applyStaticPropertyModificationsFromMethod($function_like);
+                $found_method = $this->applyStaticPropertyModificationsFromMethod($function_like) || $found_method;
             }
+        }
+        if (!$found_method) {
+            $this->context = $this->context->withoutStaticPropertyOverrides();
         }
     }
 
