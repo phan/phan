@@ -19,6 +19,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
@@ -2134,6 +2135,9 @@ class CodeBase
     {
         $suggestion_set = [];
         foreach (clone($this->fqsen_global_constant_map) as $fqsen => $_) {
+            if ($this->isDeprecatedConstantSuggestion($fqsen)) {
+                continue;
+            }
             $namespace = $fqsen->getNamespace();
             $name = $fqsen->getName();
             $suggestion_set[strtolower($namespace)][$name] = $name;
@@ -2350,7 +2354,9 @@ class CodeBase
     {
         $map = $this->getConstantLookupMapForName();
         $results = $map[strtolower($name)] ?? [];
-        return \array_values($results);
+        return \array_values(\array_filter($results, function (FullyQualifiedGlobalConstantName $fqsen): bool {
+            return !$this->isDeprecatedConstantSuggestion($fqsen);
+        }));
     }
 
     /**
@@ -2362,6 +2368,24 @@ class CodeBase
     private function getConstantLookupMapForName(): array
     {
         return $this->constant_lookup_map_for_name ?? ($this->constant_lookup_map_for_name = $this->computeConstantLookupMapForName());
+    }
+
+    private function isDeprecatedConstantSuggestion(FullyQualifiedGlobalConstantName $fqsen): bool
+    {
+        try {
+            if ($this->getGlobalConstantByFQSEN($fqsen)->isDeprecated()) {
+                return true;
+            }
+        } catch (Exception) {
+            // ignore missing constant info
+        }
+        $key = \strtolower(\ltrim((string)$fqsen, '\\'));
+        /** @phan-suppress-next-line PhanAccessMethodInternal */
+        $description_map = MarkupDescription::loadConstantDescriptionMap();
+        if (isset($description_map[$key]) && \stripos($description_map[$key], 'deprecated') !== false) {
+            return true;
+        }
+        return false;
     }
 
     /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps constant name to namespace to constant */

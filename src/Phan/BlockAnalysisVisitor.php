@@ -47,6 +47,7 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\RedundantConditionVisitor;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
+use WeakMap;
 
 use function array_map;
 use function count;
@@ -79,6 +80,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     private $parent_node_list = [];
 
+    /** @var WeakMap<Node,bool>|null */
+    private static $skip_method_nodes = null;
+
     /**
      * @param CodeBase $code_base
      * The code base within which we're operating
@@ -99,6 +103,29 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($parent_node) {
             $this->parent_node_list[] = $parent_node;
         }
+    }
+
+    /**
+     * Marks that the given method node has already been analyzed elsewhere in this pass.
+     */
+    public static function markMethodNodeAsAlreadyAnalyzed(Node $node): void
+    {
+        if (self::$skip_method_nodes === null) {
+            self::$skip_method_nodes = new WeakMap();
+        }
+        self::$skip_method_nodes[$node] = true;
+    }
+
+    private static function shouldSkipMethodNode(Node $node): bool
+    {
+        if (self::$skip_method_nodes === null) {
+            return false;
+        }
+        if (!self::$skip_method_nodes->offsetExists($node)) {
+            return false;
+        }
+        unset(self::$skip_method_nodes[$node]);
+        return true;
     }
 
     // No-ops for frequent node types
@@ -3358,6 +3385,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Node $node): Context
     {
+        if (self::shouldSkipMethodNode($node)) {
+            return $this->context;
+        }
         // Make a copy of the internal context so that we don't
         // leak any changes within the method to the
         // outer scope
