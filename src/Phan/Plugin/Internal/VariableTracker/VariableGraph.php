@@ -138,6 +138,14 @@ final class VariableGraph
     }
 
     /**
+     * Returns true if the variable was modified in place within this scope.
+     */
+    public function hasVariableModification(string $name): bool
+    {
+        return !empty($this->modification_node_ids[$name]) || isset($this->const_expr_declarations[$name][-1]);
+    }
+
+    /**
      * @param associative-array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      */
     public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable): void

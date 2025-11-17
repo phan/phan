@@ -191,11 +191,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array{0:non-empty-list<string>,1:string} $check_infinite_recursion an array of 1 or more argument names to check for redefinition, and a name of the method
+     * @param array{0:list<string>,1:string,2?:bool} $check_infinite_recursion an array of argument names to check for redefinition, the method name, and optionally a flag indicating that shared state changes should be considered
      */
     private function handleInfiniteRecursion(Node $node, array $check_infinite_recursion): void
     {
         [$arg_names, $method_name] = $check_infinite_recursion;
+        $allows_shared_state_guard = $check_infinite_recursion[2] ?? false;
         foreach ($arg_names as $arg_name) {
             if (
                 \count(self::$variable_graph->def_lines[$arg_name] ?? []) !== 1 ||
@@ -203,6 +204,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             ) {
                 return;
             }
+        }
+        if ($allows_shared_state_guard && self::$variable_graph->hasVariableModification('this')) {
+            return;
         }
         $this->emitIssue(
             Issue::PossibleInfiniteRecursionSameParams,
