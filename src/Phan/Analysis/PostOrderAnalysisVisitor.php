@@ -3127,10 +3127,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     continue;
                 }
                 $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
-                if ($old_override !== null) {
-                    $overrides_to_clear[] = $property_name;
+                if ($old_override === null) {
+                    // Don't narrow the property type solely based on registering an error handler,
+                    // which may never execute.
+                    continue;
                 }
-                $updates[$property_name] = $old_override ? $old_override->withUnionType($property_type) : $property_type;
+                $overrides_to_clear[] = $property_name;
+                $updates[$property_name] = $old_override->withUnionType($property_type);
             }
             if ($overrides_to_clear) {
                 $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
