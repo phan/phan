@@ -2687,7 +2687,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($function_like instanceof Method) {
                 $resolved_method = true;
                 $this->ensureStaticPropertyModificationsComputed($function_like);
-                $applied_modifications = $this->applyStaticPropertyModificationsFromMethod($function_like) || $applied_modifications;
+                $applied_modifications = $this->applyStaticPropertyModificationsFromMethod($function_like, false) || $applied_modifications;
             }
         }
         if (!$resolved_method) {
@@ -3097,7 +3097,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $applied;
     }
 
-    private function applyStaticPropertyModificationsFromMethod(Method $method): bool
+    private function applyStaticPropertyModificationsFromMethod(Method $method, bool $may_create_override = true): bool
     {
         $modifications_by_class = $method->getStaticPropertyModifications();
         if (!$modifications_by_class) {
@@ -3128,8 +3128,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
                 $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
                 if ($old_override === null) {
-                    // Don't narrow the property type solely based on registering an error handler,
-                    // which may never execute.
+                    if (!$may_create_override) {
+                        continue;
+                    }
+                    $updates[$property_name] = $property_type;
                     continue;
                 }
                 $overrides_to_clear[] = $property_name;
