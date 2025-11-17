@@ -78,7 +78,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private $parent_node_list;
 
     /** @var array<string,bool> tracks which methods were checked for static property modifications on-demand */
-    private $checked_methods_for_static_property_modifications = [];
+    private static $checked_methods_for_static_property_modifications = [];
 
     /**
      * @param CodeBase $code_base
@@ -3151,10 +3151,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function ensureStaticPropertyModificationsComputed(Method $method): void
     {
         $key = (string)$method->getFQSEN();
-        if (isset($this->checked_methods_for_static_property_modifications[$key])) {
+        if (isset(self::$checked_methods_for_static_property_modifications[$key])) {
             return;
         }
-        $this->checked_methods_for_static_property_modifications[$key] = true;
+        self::$checked_methods_for_static_property_modifications[$key] = true;
         if (!$method->hasNode()) {
             return;
         }
