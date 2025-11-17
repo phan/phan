@@ -3157,6 +3157,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         $method->analyze($method->getContext(), $this->code_base);
+        $node = $method->getNode();
+        if ($node instanceof Node) {
+            BlockAnalysisVisitor::markMethodNodeAsAlreadyAnalyzed($node);
+        }
     }
 
     private function canCallInstanceMethodFromContext(Method $method, string $static_class): bool
