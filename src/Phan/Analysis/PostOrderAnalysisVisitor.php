@@ -2621,6 +2621,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // ignore it.
         }
 
+        $this->analyzeSpecialFunctionCall($node);
+
         return $this->context;
     }
 
@@ -2638,6 +2640,51 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->code_base,
             $context
         ))->__invoke($args_first_child);
+    }
+
+    private function analyzeSpecialFunctionCall(Node $node): void
+    {
+        $function_name = ConditionVisitor::getFunctionName($node);
+        if (!\is_string($function_name)) {
+            return;
+        }
+        $function_name = \strtolower(\ltrim($function_name, '\\'));
+        if ($function_name === 'set_error_handler') {
+            $this->analyzeSetErrorHandlerCall($node);
+        }
+    }
+
+    private function analyzeSetErrorHandlerCall(Node $node): void
+    {
+        $args_node = $node->children['args'];
+        if (!$args_node instanceof Node) {
+            return;
+        }
+        $callback_node = $args_node->children[0] ?? null;
+        if (!($callback_node instanceof Node || \is_string($callback_node))) {
+            return;
+        }
+        $handled = $callback_node instanceof Node ? $this->applyStaticPropertyModificationsForMethodCallableNode($callback_node) : null;
+        if ($handled !== null) {
+            if (!$handled) {
+                $this->context = $this->context->withoutStaticPropertyOverrides();
+            }
+            return;
+        }
+        $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext(
+            $this->code_base,
+            $this->context,
+            $callback_node,
+            false
+        );
+        if (!$function_like_list) {
+            return;
+        }
+        foreach ($function_like_list as $function_like) {
+            if ($function_like instanceof Method) {
+                $this->applyStaticPropertyModificationsFromMethod($function_like);
+            }
+        }
     }
 
     /**
@@ -3005,49 +3052,88 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (\is_string($class_name)) {
                 $class_name_lower = \strtolower($class_name);
                 if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
-                    $modifications_by_class = $method->getStaticPropertyModifications();
-                    if ($modifications_by_class) {
-                        $calling_class = $this->context->getClassFQSENOrNull();
-                        if ($calling_class) {
-                            foreach ($modifications_by_class as $entry) {
-                                $target_class_fqsen = $entry['class'];
-                                $property_modifications = $entry['properties'];
-                                if (!$property_modifications) {
-                                    continue;
-                                }
-                                if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
-                                    continue;
-                                }
-                                $overrides_to_clear = [];
-                                $updates = [];
-                                foreach ($property_modifications as $property_name => $property_info) {
-                                    /** @var array{type:UnionType,is_late_static:bool} $property_info */
-                                    $property_type = $property_info['type'];
-                                    $is_late_static = $property_info['is_late_static'];
-                                    if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen, $calling_class, $is_late_static)) {
-                                        continue;
-                                    }
-                                    $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
-                                    if ($old_override !== null) {
-                                        $overrides_to_clear[] = $property_name;
-                                    }
-                                    $updates[$property_name] = $old_override ? $old_override->withUnionType($property_type) : $property_type;
-                                }
-                                if ($overrides_to_clear) {
-                                    $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
-                                }
-                                if ($updates) {
-                                    foreach ($updates as $property_name => $property_type) {
-                                        $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    $this->applyStaticPropertyModificationsFromMethod($method);
                 }
             }
         }
         return $this->context;
+    }
+
+    private function applyStaticPropertyModificationsForMethodCallableNode(Node $callback_node): ?bool
+    {
+        $kind = $callback_node->kind;
+        if ($kind !== ast\AST_METHOD_CALL && $kind !== ast\AST_STATIC_CALL && $kind !== ast\AST_NULLSAFE_METHOD_CALL) {
+            return null;
+        }
+        $method_name = $callback_node->children['method'] ?? null;
+        if ($method_name === null) {
+            return null;
+        }
+        $is_static = $kind !== ast\AST_METHOD_CALL && $kind !== ast\AST_NULLSAFE_METHOD_CALL;
+        try {
+            $context_node = new ContextNode($this->code_base, $this->context, $callback_node);
+            $method_list = $context_node->getMethodList($method_name, $is_static, true);
+        } catch (IssueException|CodeBaseException|NodeException) {
+            return null;
+        }
+        if (!$method_list) {
+            return null;
+        }
+        $applied = false;
+        foreach ($method_list as $method) {
+            if ($method instanceof Method) {
+                $applied = $this->applyStaticPropertyModificationsFromMethod($method) || $applied;
+            }
+        }
+        return $applied;
+    }
+
+    private function applyStaticPropertyModificationsFromMethod(Method $method): bool
+    {
+        $modifications_by_class = $method->getStaticPropertyModifications();
+        if (!$modifications_by_class) {
+            return false;
+        }
+        $calling_class = $this->context->getClassFQSENOrNull();
+        if (!$calling_class) {
+            return false;
+        }
+        $applied = false;
+        foreach ($modifications_by_class as $entry) {
+            $target_class_fqsen = $entry['class'];
+            $property_modifications = $entry['properties'];
+            if (!$property_modifications) {
+                continue;
+            }
+            if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
+                continue;
+            }
+            $overrides_to_clear = [];
+            $updates = [];
+            foreach ($property_modifications as $property_name => $property_info) {
+                /** @var array{type:UnionType,is_late_static:bool} $property_info */
+                $property_type = $property_info['type'];
+                $is_late_static = $property_info['is_late_static'];
+                if (!$this->doesStaticOverrideMatchTargetClass($property_name, $target_class_fqsen, $calling_class, $is_late_static)) {
+                    continue;
+                }
+                $old_override = $this->context->getStaticPropertyIfOverridden($property_name);
+                if ($old_override !== null) {
+                    $overrides_to_clear[] = $property_name;
+                }
+                $updates[$property_name] = $old_override ? $old_override->withUnionType($property_type) : $property_type;
+            }
+            if ($overrides_to_clear) {
+                $this->context = $this->context->withoutStaticPropertyOverrides($overrides_to_clear);
+            }
+            if ($updates) {
+                foreach ($updates as $property_name => $property_type) {
+                    $this->context = $this->context->withStaticPropertySetToTypeByName($property_name, $property_type);
+                }
+                $applied = true;
+            }
+        }
+        return $applied;
     }
 
     private function canCallInstanceMethodFromContext(Method $method, string $static_class): bool
