@@ -1023,13 +1023,13 @@ class ParameterTypesAnalyzer
         ?int $lineno,
         int|string ...$args
     ): void {
-        if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
-            if ($method->isFromPHPDoc() && $overridden_method->isPHPInternal()) {
-                $overridden_class = $overridden_method->getClass($code_base);
-                if ($overridden_class->isInterface() && self::hasNonInterfaceAncestorOverride($code_base, $method)) {
-                    return;
-                }
+        if ($method->isFromPHPDoc() && $overridden_method->isPHPInternal()) {
+            $overridden_class = $overridden_method->getClass($code_base);
+            if ($overridden_class->isInterface() && self::hasNonInterfaceAncestorOverride($code_base, $method)) {
+                return;
             }
+        }
+        if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -1043,12 +1043,6 @@ class ParameterTypesAnalyzer
                 ])
             );
         } elseif ($overridden_method->isPHPInternal()) {
-            if ($method->isFromPHPDoc()) {
-                $overridden_class = $overridden_method->getClass($code_base);
-                if ($overridden_class->isInterface() && self::hasNonInterfaceAncestorOverride($code_base, $method)) {
-                    return;
-                }
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
