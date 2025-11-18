@@ -131,6 +131,9 @@ class ClassInheritanceAnalyzer
         return true;
     }
 
+    /**
+     * @param array<string,bool> $visited
+     */
     private static function enforceTraitRequirements(
         CodeBase $code_base,
         Clazz $using_class,
