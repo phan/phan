@@ -1010,6 +1010,9 @@ class ParameterTypesAnalyzer
         int|string ...$args
     ): void {
         if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
+            if ($method->getDefiningFQSEN() !== $overridden_method->getDefiningFQSEN()) {
+                return;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
