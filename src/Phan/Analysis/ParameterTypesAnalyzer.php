@@ -56,6 +56,20 @@ class ParameterTypesAnalyzer
         }
     }
 
+    private static function hasNonInterfaceAncestorOverride(CodeBase $code_base, Method $method): bool
+    {
+        try {
+            foreach ($method->getOverriddenMethods($code_base) as $overridden_method) {
+                if (!$overridden_method->getClass($code_base)->isInterface()) {
+                    return true;
+                }
+            }
+        } catch (CodeBaseException) {
+            // Ignore - fallback to false
+        }
+        return false;
+    }
+
     /**
      * @see analyzeParameterTypes
      */
@@ -1010,6 +1024,12 @@ class ParameterTypesAnalyzer
         int|string ...$args
     ): void {
         if ($method->isFromPHPDoc() || $overridden_method->isFromPHPDoc()) {
+            if ($method->isFromPHPDoc() && $overridden_method->isPHPInternal()) {
+                $overridden_class = $overridden_method->getClass($code_base);
+                if ($overridden_class->isInterface() && self::hasNonInterfaceAncestorOverride($code_base, $method)) {
+                    return;
+                }
+            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
