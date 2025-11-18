@@ -13,6 +13,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\EnumCase;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\FloatType;
@@ -130,6 +131,9 @@ class ClassConstantTypesAnalyzer
         foreach ($clazz->getConstantMap($code_base) as $constant) {
             // Only check constants defined in this class
             if (!($constant->hasDefiningFQSEN() && $constant->getDefiningFQSEN() === $constant->getFQSEN())) {
+                continue;
+            }
+            if ($constant instanceof EnumCase) {
                 continue;
             }
 
