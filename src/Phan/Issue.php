@@ -88,6 +88,8 @@ class Issue
     public const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
     public const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
     public const UndeclaredTrait           = 'PhanUndeclaredTrait';
+    public const TraitRequireExtendsMissing = 'PhanTraitRequireExtendsMissing';
+    public const TraitRequireImplementsMissing = 'PhanTraitRequireImplementsMissing';
     public const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
     public const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
     public const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
@@ -1393,6 +1395,22 @@ class Issue
                 "Trait alias {METHOD} has an ambiguous source method {METHOD} with more than one possible source trait. Possibilities: {TRAIT}",
                 self::REMEDIATION_B,
                 11026
+            ),
+            new Issue(
+                self::TraitRequireExtendsMissing,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Trait {TRAIT} requires using class {CLASS} to extend {TYPE}",
+                self::REMEDIATION_B,
+                11090
+            ),
+            new Issue(
+                self::TraitRequireImplementsMissing,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Trait {TRAIT} requires using class {CLASS} to implement {TYPE}",
+                self::REMEDIATION_B,
+                11091
             ),
             new Issue(
                 self::UndeclaredVariableDim,

@@ -64,6 +64,7 @@ class ClassInheritanceAnalyzer
             }
         }
 
+        $visited_trait_requirements = [];
         foreach ($clazz->getTraitFQSENList() as $fqsen) {
             $class_exists = self::fqsenExistsForClass(
                 $fqsen,
@@ -72,11 +73,21 @@ class ClassInheritanceAnalyzer
                 Issue::UndeclaredTrait
             );
             if ($class_exists) {
+                $trait = $code_base->getClassByFQSEN($fqsen);
                 self::testClassAccess(
                     $clazz,
-                    $code_base->getClassByFQSEN($fqsen),
+                    $trait,
                     $code_base
                 );
+                if (!$clazz->isTrait()) {
+                    self::enforceTraitRequirements(
+                        $code_base,
+                        $clazz,
+                        $trait,
+                        $clazz->getLinenoOfAncestorReference($fqsen),
+                        $visited_trait_requirements
+                    );
+                }
             }
         }
     }
@@ -119,6 +130,66 @@ class ClassInheritanceAnalyzer
         }
 
         return true;
+    }
+
+    /**
+     * @param array<string,bool> $visited
+     */
+    private static function enforceTraitRequirements(
+        CodeBase $code_base,
+        Clazz $using_class,
+        Clazz $trait,
+        int $lineno,
+        array &$visited
+    ): void {
+        $trait_key = (string)$trait->getFQSEN();
+        if (isset($visited[$trait_key])) {
+            return;
+        }
+        $visited[$trait_key] = true;
+        $required_extends = $trait->getRequiredExtendsFQSENList();
+        $required_implements = $trait->getRequiredImplementsFQSENList();
+        $expanded_types = $using_class->getFQSEN()->asType()->asExpandedTypes($code_base);
+        foreach ($required_extends as $required_fqsen) {
+            if ($expanded_types->hasType($required_fqsen->asType())) {
+                continue;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $using_class->getInternalContext(),
+                Issue::TraitRequireExtendsMissing,
+                $lineno,
+                (string)$trait->getFQSEN(),
+                (string)$using_class->getFQSEN(),
+                (string)$required_fqsen
+            );
+        }
+        foreach ($required_implements as $required_fqsen) {
+            if ($expanded_types->hasType($required_fqsen->asType())) {
+                continue;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $using_class->getInternalContext(),
+                Issue::TraitRequireImplementsMissing,
+                $lineno,
+                (string)$trait->getFQSEN(),
+                (string)$using_class->getFQSEN(),
+                (string)$required_fqsen
+            );
+        }
+        foreach ($trait->getTraitFQSENList() as $nested_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($nested_fqsen)) {
+                continue;
+            }
+            self::enforceTraitRequirements(
+                $code_base,
+                $using_class,
+                $code_base->getClassByFQSEN($nested_fqsen),
+                $lineno,
+                $visited
+            );
+        }
     }
 
     /**

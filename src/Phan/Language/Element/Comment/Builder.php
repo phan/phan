@@ -68,6 +68,8 @@ final class Builder
         'psalm-param' => 'param',
         'psalm-return' => 'return',
         'psalm-var' => 'var',
+        'psalm-require-extends' => 'require-extends',
+        'psalm-require-implements' => 'require-implements',
     ];
     /** @var list<Type> the list of (at)use annotations with template parameters for traits */
     public $used_trait_types = [];
@@ -92,6 +94,12 @@ final class Builder
     public $throw_union_type;
     /** @var array<string,Assertion> assertions about each parameter */
     public $param_assertion_map = [];
+
+    /** @var list<Type> */
+    private $required_extends_types = [];
+
+    /** @var list<Type> */
+    private $required_implements_types = [];
 
     /** @var bool did we add template types already */
     protected $did_add_template_types;
@@ -368,6 +376,8 @@ final class Builder
             $this->inherited_type instanceof None &&
             !$this->implemented_types &&
             !$this->used_trait_types &&
+            !$this->required_extends_types &&
+            !$this->required_implements_types &&
             !$this->suppress_issue_set &&
             !$this->magic_property_list &&
             !$this->magic_method_list &&
@@ -388,6 +398,8 @@ final class Builder
             $this->inherited_type,
             $this->implemented_types,
             $this->used_trait_types,
+            $this->required_extends_types,
+            $this->required_implements_types,
             $this->return_comment,
             $this->suppress_issue_set,
             $this->magic_property_list,
@@ -424,7 +436,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -453,6 +465,12 @@ final class Builder
                     break;
                 case 'use':
                     $this->maybeParseUse($i, $line);
+                    break;
+                case 'require-extends':
+                    $this->maybeParseRequireExtends($i, $line);
+                    break;
+                case 'require-implements':
+                    $this->maybeParseRequireImplements($i, $line);
                     break;
                 case 'return':
                     $this->maybeParseReturn($i, $line);
@@ -778,6 +796,28 @@ final class Builder
         }
     }
 
+    private function maybeParseRequireExtends(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@require-extends', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        $type = $this->requireFromCommentLine($line, 'require-extends');
+        if ($type !== null) {
+            $this->required_extends_types[] = $type;
+        }
+    }
+
+    private function maybeParseRequireImplements(int $i, string $line): void
+    {
+        if (!$this->checkCompatible('@require-implements', [Comment::ON_CLASS], $i)) {
+            return;
+        }
+        $type = $this->requireFromCommentLine($line, 'require-implements');
+        if ($type !== null) {
+            $this->required_implements_types[] = $type;
+        }
+    }
+
     private function maybeParsePhanUse(int $i, string $line): void
     {
         if (!$this->checkCompatible('@phan-use', [Comment::ON_CLASS], $i)) {
@@ -818,6 +858,21 @@ final class Builder
         $param_name = $match[17];
 
         return new Assertion($union_type, $param_name, $assertion_type);
+    }
+
+    private function requireFromCommentLine(string $line, string $tag): ?Type
+    {
+        $pattern = '/@(?:psalm-)?' . \preg_quote($tag, '/') . '\s+(' . Type::type_regex . ')/';
+        if (\preg_match($pattern, $line, $match)) {
+            $type_string = $match[1];
+            return Type::fromStringInContext(
+                $type_string,
+                $this->context,
+                Type::FROM_PHPDOC,
+                $this->code_base
+            );
+        }
+        return null;
     }
 
     private function maybeParsePhanAssert(int $i, string $line): void

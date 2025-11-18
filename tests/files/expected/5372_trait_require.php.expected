@@ -1,0 +1,3 @@
+%s:47 PhanTraitRequireExtendsMissing Trait \NS5372\RequiresBase requires using class \NS5372\InvalidChild to extend \NS5372\BaseClass
+%s:52 PhanTraitRequireExtendsMissing Trait \NS5372\RequiresBase requires using class \NS5372\IndirectInvalidChild to extend \NS5372\BaseClass
+%s:57 PhanTraitRequireImplementsMissing Trait \NS5372\RequiresInterface requires using class \NS5372\InvalidImplementation to implement \NS5372\FooInterface
