@@ -64,6 +64,7 @@ class ClassInheritanceAnalyzer
             }
         }
 
+        $visited_trait_requirements = [];
         foreach ($clazz->getTraitFQSENList() as $fqsen) {
             $class_exists = self::fqsenExistsForClass(
                 $fqsen,
@@ -84,7 +85,7 @@ class ClassInheritanceAnalyzer
                         $clazz,
                         $trait,
                         $clazz->getLinenoOfAncestorReference($fqsen),
-                        []
+                        $visited_trait_requirements
                     );
                 }
             }
@@ -139,7 +140,7 @@ class ClassInheritanceAnalyzer
         Clazz $using_class,
         Clazz $trait,
         int $lineno,
-        array $visited
+        array &$visited
     ): void {
         $trait_key = (string)$trait->getFQSEN();
         if (isset($visited[$trait_key])) {
