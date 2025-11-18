@@ -78,12 +78,15 @@ class ClassInheritanceAnalyzer
                     $trait,
                     $code_base
                 );
-                self::enforceTraitRequirements(
-                    $code_base,
-                    $clazz,
-                    $trait,
-                    $clazz->getLinenoOfAncestorReference($fqsen)
-                );
+                if (!$clazz->isTrait()) {
+                    self::enforceTraitRequirements(
+                        $code_base,
+                        $clazz,
+                        $trait,
+                        $clazz->getLinenoOfAncestorReference($fqsen),
+                        []
+                    );
+                }
             }
         }
     }
@@ -132,13 +135,16 @@ class ClassInheritanceAnalyzer
         CodeBase $code_base,
         Clazz $using_class,
         Clazz $trait,
-        int $lineno
+        int $lineno,
+        array $visited
     ): void {
-        $required_extends = $trait->getRequiredExtendsFQSENList();
-        $required_implements = $trait->getRequiredImplementsFQSENList();
-        if (!$required_extends && !$required_implements) {
+        $trait_key = (string)$trait->getFQSEN();
+        if (isset($visited[$trait_key])) {
             return;
         }
+        $visited[$trait_key] = true;
+        $required_extends = $trait->getRequiredExtendsFQSENList();
+        $required_implements = $trait->getRequiredImplementsFQSENList();
         $expanded_types = $using_class->getFQSEN()->asType()->asExpandedTypes($code_base);
         foreach ($required_extends as $required_fqsen) {
             if ($expanded_types->hasType($required_fqsen->asType())) {
@@ -166,6 +172,18 @@ class ClassInheritanceAnalyzer
                 (string)$trait->getFQSEN(),
                 (string)$using_class->getFQSEN(),
                 (string)$required_fqsen
+            );
+        }
+        foreach ($trait->getTraitFQSENList() as $nested_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($nested_fqsen)) {
+                continue;
+            }
+            self::enforceTraitRequirements(
+                $code_base,
+                $using_class,
+                $code_base->getClassByFQSEN($nested_fqsen),
+                $lineno,
+                $visited
             );
         }
     }

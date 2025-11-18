@@ -14,6 +14,11 @@ trait RequiresBase
     public function mustExtendBase(): void {}
 }
 
+trait RequiresBaseViaTrait
+{
+    use RequiresBase;
+}
+
 /**
  * @psalm-require-implements FooInterface
  */
@@ -32,9 +37,19 @@ class ValidImplementation implements FooInterface
     use RequiresInterface;
 }
 
+class IndirectValidChild extends BaseClass
+{
+    use RequiresBaseViaTrait;
+}
+
 class InvalidChild
 {
     use RequiresBase;
+}
+
+class IndirectInvalidChild
+{
+    use RequiresBaseViaTrait;
 }
 
 class InvalidImplementation
