@@ -136,6 +136,18 @@ class Clazz extends AddressableElement
     private $trait_fqsen_lineno = [];
 
     /**
+     * @var list<FullyQualifiedClassName>
+     * Trait requirements specifying that the consuming class must extend the given classes.
+     */
+    private $required_extends_fqsen_list = [];
+
+    /**
+     * @var list<FullyQualifiedClassName>
+     * Trait requirements specifying that the consuming class must implement the given interfaces.
+     */
+    private $required_implements_fqsen_list = [];
+
+    /**
      * @var array<string,TraitAdaptations>
      * Maps lowercase fqsen of a method to the trait names which are hidden
      * and the trait aliasing info
@@ -821,6 +833,32 @@ class Clazz extends AddressableElement
     {
         $type = $this->trait_type_map[(string)$fqsen] ?? null;
         return $type !== null ? new Some($type) : None::instance();
+    }
+
+    public function addRequiredExtendsFQSEN(FullyQualifiedClassName $fqsen): void
+    {
+        $this->required_extends_fqsen_list[] = $fqsen;
+    }
+
+    public function addRequiredImplementsFQSEN(FullyQualifiedClassName $fqsen): void
+    {
+        $this->required_implements_fqsen_list[] = $fqsen;
+    }
+
+    /**
+     * @return list<FullyQualifiedClassName>
+     */
+    public function getRequiredExtendsFQSENList(): array
+    {
+        return $this->required_extends_fqsen_list;
+    }
+
+    /**
+     * @return list<FullyQualifiedClassName>
+     */
+    public function getRequiredImplementsFQSENList(): array
+    {
+        return $this->required_implements_fqsen_list;
     }
 
     /**

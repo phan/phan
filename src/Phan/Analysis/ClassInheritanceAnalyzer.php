@@ -72,10 +72,17 @@ class ClassInheritanceAnalyzer
                 Issue::UndeclaredTrait
             );
             if ($class_exists) {
+                $trait = $code_base->getClassByFQSEN($fqsen);
                 self::testClassAccess(
                     $clazz,
-                    $code_base->getClassByFQSEN($fqsen),
+                    $trait,
                     $code_base
+                );
+                self::enforceTraitRequirements(
+                    $code_base,
+                    $clazz,
+                    $trait,
+                    $clazz->getLinenoOfAncestorReference($fqsen)
                 );
             }
         }
@@ -119,6 +126,48 @@ class ClassInheritanceAnalyzer
         }
 
         return true;
+    }
+
+    private static function enforceTraitRequirements(
+        CodeBase $code_base,
+        Clazz $using_class,
+        Clazz $trait,
+        int $lineno
+    ): void {
+        $required_extends = $trait->getRequiredExtendsFQSENList();
+        $required_implements = $trait->getRequiredImplementsFQSENList();
+        if (!$required_extends && !$required_implements) {
+            return;
+        }
+        $expanded_types = $using_class->getFQSEN()->asType()->asExpandedTypes($code_base);
+        foreach ($required_extends as $required_fqsen) {
+            if ($expanded_types->hasType($required_fqsen->asType())) {
+                continue;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $using_class->getInternalContext(),
+                Issue::TraitRequireExtendsMissing,
+                $lineno,
+                (string)$trait->getFQSEN(),
+                (string)$using_class->getFQSEN(),
+                (string)$required_fqsen
+            );
+        }
+        foreach ($required_implements as $required_fqsen) {
+            if ($expanded_types->hasType($required_fqsen->asType())) {
+                continue;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $using_class->getInternalContext(),
+                Issue::TraitRequireImplementsMissing,
+                $lineno,
+                (string)$trait->getFQSEN(),
+                (string)$using_class->getFQSEN(),
+                (string)$required_fqsen
+            );
+        }
     }
 
     /**

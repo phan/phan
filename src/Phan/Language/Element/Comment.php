@@ -134,6 +134,18 @@ class Comment
     protected $used_trait_types = [];
 
     /**
+     * @var list<Type>
+     * Trait requirements declaring that the consuming class must extend the given class.
+     */
+    protected $required_extends_types = [];
+
+    /**
+     * @var list<Type>
+     * Trait requirements declaring that the consuming class must implement the given interface.
+     */
+    protected $required_implements_types = [];
+
+    /**
      * @var ReturnComment|null
      * the representation of an (at)return directive
      */
@@ -208,6 +220,12 @@ class Comment
      * @param list<Type> $used_trait_types
      * A list of used trait types with template parameters
      *
+     * @param list<Type> $required_extends_types
+     * Trait requirements declaring that consuming classes must extend each type
+     *
+     * @param list<Type> $required_implements_types
+     * Trait requirements declaring that consuming classes must implement each type
+     *
      * @param ?ReturnComment $return_comment
      *
      * @param array<string,int> $suppress_issue_set
@@ -237,6 +255,8 @@ class Comment
         Option $inherited_type,
         array $implemented_types,
         array $used_trait_types,
+        array $required_extends_types,
+        array $required_implements_types,
         $return_comment,
         array $suppress_issue_set,
         array $magic_property_list,
@@ -255,6 +275,8 @@ class Comment
         $this->inherited_type = $inherited_type;
         $this->implemented_types = $implemented_types;
         $this->used_trait_types = $used_trait_types;
+        $this->required_extends_types = $required_extends_types;
+        $this->required_implements_types = $required_implements_types;
         $this->return_comment = $return_comment;
         $this->suppress_issue_set = $suppress_issue_set;
         $this->closure_scope = $closure_scope;
@@ -700,6 +722,24 @@ class Comment
     public function getUsedTraitTypes(): array
     {
         return $this->used_trait_types;
+    }
+
+    /**
+     * @return list<Type>
+     * A list of class types that a trait requires the using class to extend.
+     */
+    public function getRequiredExtendsTypes(): array
+    {
+        return $this->required_extends_types;
+    }
+
+    /**
+     * @return list<Type>
+     * A list of interface types that a trait requires the using class to implement.
+     */
+    public function getRequiredImplementsTypes(): array
+    {
+        return $this->required_implements_types;
     }
 
     /**

@@ -148,6 +148,7 @@ Type Inference & Analysis:
 - Fixed `array_combine` signature being too strict for null values ([#5219](https://github.com/phan/phan/issues/5219))
 - Improved type inference for `get_class()` to return more specific class-string types ([#5274](https://github.com/phan/phan/issues/5274))
 - Improved handling of `getIterator()` returning Iterator with explicit generics ([#5108](https://github.com/phan/phan/pull/5108))
+- Traits can now declare `@require-extends` / `@require-implements` (and their Psalm aliases) to ensure consuming classes satisfy those requirements
 - Fixed `PhanPossiblyInfiniteRecursionSameParams` false positive for instance methods that guard recursion with property state ([#5371](https://github.com/phan/phan/issues/5371))
 - Improved parameter and property default type representation in error messages ([#5271](https://github.com/phan/phan/pull/5271))
 

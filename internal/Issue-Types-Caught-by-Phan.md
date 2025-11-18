@@ -4323,6 +4323,26 @@ This issue will be emitted from the following code
 trait T { function f() { return parent::f(); } }
 ```
 
+## PhanTraitRequireExtendsMissing
+
+This happens when a trait annotated with `@require-extends` (or `@psalm-require-extends`) is used by a class that does not extend the required class.
+
+```
+Trait {TRAIT} requires using class {CLASS} to extend {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5372_trait_require.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5372_trait_require.php#L37).
+
+## PhanTraitRequireImplementsMissing
+
+This happens when a trait annotated with `@require-implements` (or `@psalm-require-implements`) is used by a class that does not implement the required interface.
+
+```
+Trait {TRAIT} requires using class {CLASS} to implement {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5372_trait_require.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5372_trait_require.php#L42).
+
 ## PhanUndeclaredAliasedMethodOfTrait
 
 ```

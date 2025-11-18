@@ -295,6 +295,20 @@ class ParseVisitor extends ScopeVisitor
                 $trait_fqsen = FullyQualifiedClassName::fromType($used_trait_type);
                 $class->setTraitType($trait_fqsen, $used_trait_type);
             }
+
+            foreach ($comment->getRequiredExtendsTypes() as $required_type) {
+                if (!$required_type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $class->addRequiredExtendsFQSEN(FullyQualifiedClassName::fromType($required_type));
+            }
+
+            foreach ($comment->getRequiredImplementsTypes() as $required_type) {
+                if (!$required_type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $class->addRequiredImplementsFQSEN(FullyQualifiedClassName::fromType($required_type));
+            }
         } finally {
             $class->setDidFinishParsing(true);
         }
