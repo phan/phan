@@ -2687,7 +2687,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($function_like instanceof Method) {
                 $resolved_method = true;
                 $this->ensureStaticPropertyModificationsComputed($function_like);
-                $applied_modifications = $this->applyStaticPropertyModificationsFromMethod($function_like, false) || $applied_modifications;
+                $applied_modifications = $this->applyStaticPropertyModificationsFromMethod($function_like) || $applied_modifications;
             }
         }
         if (!$resolved_method) {
@@ -3069,6 +3069,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     private function applyStaticPropertyModificationsForMethodCallableNode(Node $callback_node): ?bool
     {
+        if ($callback_node->kind === ast\AST_CALLABLE_CONVERT) {
+            $expr = $callback_node->children['expr'] ?? null;
+            if ($expr instanceof Node) {
+                return $this->applyStaticPropertyModificationsForMethodCallableNode($expr);
+            }
+            return null;
+        }
         $kind = $callback_node->kind;
         if ($kind !== ast\AST_METHOD_CALL && $kind !== ast\AST_STATIC_CALL && $kind !== ast\AST_NULLSAFE_METHOD_CALL) {
             return null;

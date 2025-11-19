@@ -303,10 +303,42 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             return $this->updateTargetDimWithType($node, $get_type);
         } elseif ($kind === ast\AST_PROP) {
             return $this->updateTargetPropWithType($node, $get_type);
+        } elseif ($kind === ast\AST_STATIC_PROP) {
+            return $this->updateTargetStaticPropWithType($node, $get_type);
         }
         // TODO: Could check types of other expressions, such as properties
         // TODO: Could check for `@property-read` (invalid to pass to assignment operator), etc.
         return $this->context;
+    }
+
+    /**
+     * @param Node $assign_op_node a node of kind ast\AST_ASSIGN_OP with ast\AST_STATIC_PROP as the left hand side
+     * @param Closure(UnionType):UnionType $get_type
+     */
+    private function updateTargetStaticPropWithType(Node $assign_op_node, Closure $get_type): Context
+    {
+        $node = $assign_op_node->children['var'];
+        if (!($node instanceof Node)) {
+            return $this->context;
+        }
+        try {
+            $old_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node,
+                false
+            );
+        } catch (\Exception) {
+            return $this->context;
+        }
+
+        $new_type = $get_type($old_type);
+        return (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $node,
+            $new_type
+        ))->visitStaticProp($node);
     }
 
     /**
