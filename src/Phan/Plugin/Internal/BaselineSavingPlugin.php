@@ -29,8 +29,8 @@ final class BaselineSavingPlugin extends PluginV3 implements
     private $baseline_path;
 
     /**
-     * Maps project file paths to a set of issue types emitted in that file.
-     * @var array<string,array<string, true>>
+     * Maps project file paths to map of issue type => map of symbols to true.
+     * @var array<string,array<string,array<string,true>>>
      */
     private $suppressions_by_file = [];
 
@@ -69,7 +69,11 @@ final class BaselineSavingPlugin extends PluginV3 implements
         // Would prefer to use formatSortableKey, but this doesn't provide the IssueInstance, and plugins have issues that can't be fetched with Issue::fromType.
         $hash = \sha1($issue_instance->__toString());
         $issue_type = $issue_instance->getIssue()->getType();
-        $this->suppressions_by_file[$file_path][$issue_type] = true;
+        $symbol = $issue_instance->getBaselineSymbol();
+        if (!isset($this->suppressions_by_file[$file_path][$issue_type])) {
+            $this->suppressions_by_file[$file_path][$issue_type] = [];
+        }
+        $this->suppressions_by_file[$file_path][$issue_type][$symbol] = true;
         $this->suppressions_by_type[$issue_type][$hash] = true;
         return false;
     }
@@ -181,12 +185,17 @@ EOT;
         $result .= "    // Currently, file_suppressions and directory_suppressions are the only supported suppressions\n";
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
-        foreach ($this->suppressions_by_file as $file_name => $type_set) {
-            $types = \array_map('strval', \array_keys($type_set));
-            \usort($types, 'strcmp');
-            $result .= "        '$file_name' => [" . \implode(', ', \array_map(static function (string $type): string {
-                    return "'" . $type . "'";
-            }, $types)) . "],\n";
+        foreach ($this->suppressions_by_file as $file_name => $type_map) {
+            \ksort($type_map, \SORT_STRING);
+            $entries = [];
+            foreach ($type_map as $type_name => $symbols) {
+                $symbol_list = \array_keys($symbols);
+                \sort($symbol_list);
+                $entries[] = "            '$type_name' => [" . \implode(', ', \array_map(static function (string $symbol): string {
+                    return "'" . \addslashes($symbol) . "'";
+                }, $symbol_list)) . "]";
+            }
+            $result .= "        '$file_name' => [\n" . \implode(",\n", $entries) . "\n        ],\n";
         }
         $result .= "    ],\n";
         $result .= "    // 'directory_suppressions' => ['src/directory_name' => ['PhanIssueName1', 'PhanIssueName2']] can be manually added if needed.\n";

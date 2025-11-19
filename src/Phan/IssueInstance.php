@@ -44,6 +44,9 @@ class IssueInstance
     /** @var list<string|int|float> $template_parameters If this is non-null, this contains the arguments emitted for this instance of the issue. */
     private $template_parameters;
 
+    /** @var string summary of the scope this issue originated in, for baselines */
+    private $baseline_symbol;
+
     /**
      * @param Issue $issue
      * @param string $file
@@ -67,6 +70,7 @@ class IssueInstance
         $this->line = $line;
         $this->column = $column;
         $this->suggestion = $suggestion;
+        $this->baseline_symbol = $file;
 
         if ($issue->getExpectedArgumentCount() !== \count($template_parameters)) {
             CLI::printWarningToStderr(
@@ -216,6 +220,16 @@ class IssueInstance
     public function getMessage(): string
     {
         return $this->message;
+    }
+
+    public function setBaselineSymbol(string $symbol): void
+    {
+        $this->baseline_symbol = $symbol;
+    }
+
+    public function getBaselineSymbol(): string
+    {
+        return $this->baseline_symbol;
     }
 
     public function getMessageAndMaybeSuggestion(): string
