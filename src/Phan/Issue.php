@@ -6121,14 +6121,29 @@ class Issue
             return;
         }
 
-        Issue::emitWithParameters(
-            $issue_type,
+        $issue = self::fromType($issue_type);
+        $normalized_parameters = \array_map(
+            /**
+             * @return mixed
+             */
+            static function (mixed $param): mixed {
+                if (\is_bool($param)) {
+                    return $param ? 'true' : 'false';
+                }
+                return $param;
+            },
+            $parameters
+        );
+        $issue_instance = new IssueInstance(
+            $issue,
             $context->getFile(),
             $lineno,
-            $parameters,
+            $normalized_parameters,
             $suggestion,
             $column
         );
+        $issue_instance->setBaselineSymbol($context->getFileScopeSummaryForBaseline());
+        self::emitInstance($issue_instance);
     }
 
     /**
