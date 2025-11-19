@@ -132,15 +132,15 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         $result = [];
         foreach ($file_suppressions as $file => $entries) {
             $issue_map = [];
-            if (\array_values($entries) === $entries) {
-                foreach ($entries as $issue_type) {
-                    $issue_map[(string)$issue_type]['*'] = true;
-                }
-            } else {
-                foreach ($entries as $issue_type => $symbols) {
-                    if (\is_array($symbols)) {
+            foreach ($entries as $key => $value) {
+                if (\is_int($key)) {
+                    $issue_type = (string)$value;
+                    $issue_map[$issue_type]['*'] = true;
+                } else {
+                    $issue_type = (string)$key;
+                    if (\is_array($value)) {
                         $symbol_map = [];
-                        foreach ($symbols as $symbol) {
+                        foreach ($value as $symbol) {
                             $symbol_map[(string)$symbol] = true;
                         }
                         if (!$symbol_map) {
@@ -149,7 +149,11 @@ final class BaselineLoadingPlugin extends PluginV3 implements
                     } else {
                         $symbol_map = ['*' => true];
                     }
-                    $issue_map[(string)$issue_type] = $symbol_map;
+                    if (isset($issue_map[$issue_type])) {
+                        $issue_map[$issue_type] += $symbol_map;
+                    } else {
+                        $issue_map[$issue_type] = $symbol_map;
+                    }
                 }
             }
             $result[$file] = $issue_map;
