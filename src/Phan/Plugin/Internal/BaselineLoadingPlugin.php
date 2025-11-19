@@ -75,13 +75,9 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      */
     public function shouldSuppressIssue(string $issue_type, string $file, string $symbol): bool
     {
+        $normalized_symbol = self::normalizeSymbol($symbol);
         $issue_map = $this->file_suppressions[$file][$issue_type] ?? null;
-        if ($issue_map && isset($issue_map[$symbol])) {
-            return true;
-        }
-
-        // Fallback: allow wildcard '*' to suppress issue type in entire file
-        if ($issue_map && isset($issue_map['*'])) {
+        if ($issue_map && (isset($issue_map[$normalized_symbol]) || isset($issue_map['*']))) {
             return true;
         }
 
@@ -90,7 +86,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
         // Check normalized path to suppress file paths with backslashes on Windows
         $issue_map = $this->file_suppressions[$normalized_file][$issue_type] ?? null;
-        if ($issue_map && (isset($issue_map[$symbol]) || isset($issue_map['*']))) {
+        if ($issue_map && (isset($issue_map[$normalized_symbol]) || isset($issue_map['*']))) {
             return true;
         }
 
@@ -142,9 +138,9 @@ final class BaselineLoadingPlugin extends PluginV3 implements
                         $symbol_map = [];
                         foreach ($value as $symbol_key => $symbol_value) {
                             if (\is_string($symbol_key)) {
-                                $symbol_map[$symbol_key] = true;
+                                $symbol_map[self::normalizeSymbol($symbol_key)] = true;
                             } else {
-                                $symbol_map[(string)$symbol_value] = true;
+                                $symbol_map[self::normalizeSymbol((string)$symbol_value)] = true;
                             }
                         }
                         if (!$symbol_map) {
@@ -201,5 +197,12 @@ final class BaselineLoadingPlugin extends PluginV3 implements
             return '';
         }
         return $path;
+    }
+
+    private static function normalizeSymbol(string $symbol): string
+    {
+        $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
+        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\\\closure', $symbol) ?? $symbol;
+        return $symbol;
     }
 }

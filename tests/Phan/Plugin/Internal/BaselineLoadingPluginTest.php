@@ -40,5 +40,7 @@ final class BaselineLoadingPluginTest extends TestBase
 
         $assertShouldSuppressIssueEquals(true, 'lib/symbol.php', 'PhanTypeMismatchArgument', 'Foo::bar');
         $assertShouldSuppressIssueEquals(false, 'lib/symbol.php', 'PhanTypeMismatchArgument', 'Other::baz');
+        $assertShouldSuppressIssueEquals(true, 'lib/closure.php', 'PhanTypeMismatchArgument', '\closure_deadbeef');
+        $assertShouldSuppressIssueEquals(true, 'lib/anon.php', 'PhanTypeMismatchArgument', '\anonymous_class_beefcafe::foo');
     }
 }
