@@ -12,7 +12,6 @@
 return [
     // # Issue statistics:
     // PhanTypeMismatchArgumentInternal : 1 occurrence
-    // Currently, file_suppressions and directory_suppressions are the only supported suppressions
     'file_suppressions' => [
         '.phan/plugins/DuplicateExpressionPlugin.php' => ['PhanTypeMismatchArgumentInternal'],
     ],
