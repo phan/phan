@@ -781,14 +781,21 @@ class Context extends FileRef
     public function getFileScopeSummaryForBaseline(): string
     {
         if ($this->scope->isInFunctionLikeScope()) {
-            $fqsen = $this->scope->getFunctionLikeFQSEN();
-            return (string)$fqsen;
+            $fqsen = (string)$this->scope->getFunctionLikeFQSEN();
+            return self::normalizeBaselineSymbol($fqsen);
         }
         if ($this->scope->isInClassScope()) {
-            $class_fqsen = $this->scope->getClassFQSEN();
-            return (string)$class_fqsen;
+            $class_fqsen = (string)$this->scope->getClassFQSEN();
+            return self::normalizeBaselineSymbol($class_fqsen);
         }
         return FileRef::getProjectRelativePathForPath($this->file);
+    }
+
+    private static function normalizeBaselineSymbol(string $symbol): string
+    {
+        $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
+        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\\\closure', $symbol) ?? $symbol;
+        return $symbol;
     }
 
     /**

@@ -3,6 +3,8 @@ return [
     'file_suppressions' => [
         'src/test.php' => ['PhanUndeclaredMethod' => ['*']],
         'lib/symbol.php' => ['PhanTypeMismatchArgument' => ['Foo::bar']],
+        'lib/closure.php' => ['PhanTypeMismatchArgument' => ['\closure']],
+        'lib/anon.php' => ['PhanTypeMismatchArgument' => ['\anonymous_class::foo']],
     ],
     'directory_suppressions' => [
         'src/' => ['PhanUnreferencedUseNormal'],
