@@ -788,7 +788,7 @@ class Context extends FileRef
             $class_fqsen = $this->scope->getClassFQSEN();
             return (string)$class_fqsen;
         }
-        return $this->getFile();
+        return $this->file;
     }
 
     /**
