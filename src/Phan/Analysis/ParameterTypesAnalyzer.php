@@ -332,6 +332,11 @@ class ParameterTypesAnalyzer
         $processed_class_override = false;
         foreach ($overridden_method_list as $overridden_method) {
             $overridden_class = $overridden_method->getClass($code_base);
+            if ($method->isFromPHPDoc() && $overridden_method->isPHPInternal() && $overridden_class->isInterface()) {
+                if (self::hasNonInterfaceAncestorOverride($code_base, $method)) {
+                    continue;
+                }
+            }
             if (!$overridden_class->isInterface()) {
                 if ($overridden_class->isTrait()) {
                     // trait overrides should not suppress checking the actual parent class
