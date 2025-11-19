@@ -776,6 +776,22 @@ class Context extends FileRef
     }
 
     /**
+     * @return string a summary of the current symbol scope to use in baselines (class/method/function)
+     */
+    public function getFileScopeSummaryForBaseline(): string
+    {
+        if ($this->scope->isInFunctionLikeScope()) {
+            $fqsen = $this->scope->getFunctionLikeFQSEN();
+            return (string)$fqsen;
+        }
+        if ($this->scope->isInClassScope()) {
+            $class_fqsen = $this->scope->getClassFQSEN();
+            return (string)$class_fqsen;
+        }
+        return $this->getFile();
+    }
+
+    /**
      * @param CodeBase $code_base
      * The code base from which to retrieve a class constant in scope
      *

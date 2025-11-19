@@ -6044,7 +6044,7 @@ class Issue
         )) {
             return;
         }
-
+        $issue_instance->setBaselineSymbol($context->getFileScopeSummaryForBaseline());
         self::emitInstance($issue_instance);
     }
 

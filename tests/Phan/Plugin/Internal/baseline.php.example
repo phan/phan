@@ -1,7 +1,8 @@
 <?php
 return [
     'file_suppressions' => [
-        'src/test.php' => ['PhanUndeclaredMethod'],
+        'src/test.php' => ['PhanUndeclaredMethod' => ['*']],
+        'lib/symbol.php' => ['PhanTypeMismatchArgument' => ['Foo::bar']],
     ],
     'directory_suppressions' => [
         'src/' => ['PhanUnreferencedUseNormal'],

@@ -15,9 +15,9 @@ final class BaselineLoadingPluginTest extends TestBase
     public function testShouldSuppressIssue(): void
     {
         $plugin = new BaselineLoadingPlugin(__DIR__ . '/baseline.php.example');
-        $assertShouldSuppressIssueEquals = function (bool $expected, string $file, string $issue_type) use ($plugin): void {
+        $assertShouldSuppressIssueEquals = function (bool $expected, string $file, string $issue_type, string $symbol = '*') use ($plugin): void {
             // @phan-suppress-next-line PhanAccessMethodInternal
-            $this->assertSame($expected, $plugin->shouldSuppressIssueTypeInFile($issue_type, $file));
+            $this->assertSame($expected, $plugin->shouldSuppressIssue($issue_type, $file, $symbol));
         };
         $assertShouldSuppressIssueEquals(false, 'src/test.php.php', 'PhanUndeclaredMethod');
         $assertShouldSuppressIssueEquals(true, 'src/test.php', 'PhanUndeclaredMethod');
@@ -37,5 +37,8 @@ final class BaselineLoadingPluginTest extends TestBase
         $assertShouldSuppressIssueEquals(true, 'lib/test.php', 'PhanUndeclaredProperty');
         $assertShouldSuppressIssueEquals(true, 'index.php', 'PhanUndeclaredProperty');
         $assertShouldSuppressIssueEquals(false, '../Other/test.php', 'PhanUndeclaredProperty');
+
+        $assertShouldSuppressIssueEquals(true, 'lib/symbol.php', 'PhanTypeMismatchArgument', 'Foo::bar');
+        $assertShouldSuppressIssueEquals(false, 'lib/symbol.php', 'PhanTypeMismatchArgument', 'Other::baz');
     }
 }

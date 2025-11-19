@@ -19,8 +19,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
     SubscribeEmitIssueCapability
 {
     /**
-     * @var array<string,list<string>>
-     * Maps relative file paths to a list of issue kinds that are suppressed everywhere in the file by the baseline.
+     * @var array<string,array<string,array<string,true>>>
+     * Maps relative file paths to a map of issue kinds to symbol names suppressed in that file.
      */
     private $file_suppressions = [];
 
@@ -45,7 +45,7 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         }
 
         // file_suppressions and directory suppressions are currently the only way to suppress issues in a baseline. Other ways may be added later.
-        $this->file_suppressions = $baseline['file_suppressions'] ?? [];
+        $this->file_suppressions = self::normalizeFileSuppressions($baseline['file_suppressions'] ?? []);
         $this->directory_suppressions = self::normalizeDirectorySuppressions($baseline['directory_suppressions'] ?? []);
     }
 
@@ -62,9 +62,10 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      */
     public function onEmitIssue(IssueInstance $issue_instance): bool
     {
-        return $this->shouldSuppressIssueTypeInFile(
+        return $this->shouldSuppressIssue(
             $issue_instance->getIssue()->getType(),
-            $issue_instance->getFile()
+            $issue_instance->getFile(),
+            $issue_instance->getBaselineSymbol()
         );
     }
 
@@ -72,10 +73,15 @@ final class BaselineLoadingPlugin extends PluginV3 implements
      * Check if the given issue type should be suppressed in the given file path.
      * @internal - used for testing
      */
-    public function shouldSuppressIssueTypeInFile(string $issue_type, string $file): bool
+    public function shouldSuppressIssue(string $issue_type, string $file, string $symbol): bool
     {
-        $suppressed_by_file = \in_array($issue_type, $this->file_suppressions[$file] ?? [], true);
-        if ($suppressed_by_file) {
+        $issue_map = $this->file_suppressions[$file][$issue_type] ?? null;
+        if ($issue_map && isset($issue_map[$symbol])) {
+            return true;
+        }
+
+        // Fallback: allow wildcard '*' to suppress issue type in entire file
+        if ($issue_map && isset($issue_map['*'])) {
             return true;
         }
 
@@ -83,8 +89,8 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         $normalized_file = self::normalizeDirectoryPathString($file);
 
         // Check normalized path to suppress file paths with backslashes on Windows
-        $suppressed_by_normalized_file = \in_array($issue_type, $this->file_suppressions[$normalized_file] ?? [], true);
-        if ($suppressed_by_normalized_file) {
+        $issue_map = $this->file_suppressions[$normalized_file][$issue_type] ?? null;
+        if ($issue_map && (isset($issue_map[$symbol]) || isset($issue_map['*']))) {
             return true;
         }
 
@@ -115,6 +121,40 @@ final class BaselineLoadingPlugin extends PluginV3 implements
         }
 
         return false;
+    }
+
+    /**
+     * @param array<string,mixed> $file_suppressions
+     * @return array<string,array<string,array<string,true>>>
+     */
+    private static function normalizeFileSuppressions(array $file_suppressions): array
+    {
+        $result = [];
+        foreach ($file_suppressions as $file => $entries) {
+            $issue_map = [];
+            if (\array_values($entries) === $entries) {
+                foreach ($entries as $issue_type) {
+                    $issue_map[(string)$issue_type]['*'] = true;
+                }
+            } else {
+                foreach ($entries as $issue_type => $symbols) {
+                    if (\is_array($symbols)) {
+                        $symbol_map = [];
+                        foreach ($symbols as $symbol) {
+                            $symbol_map[(string)$symbol] = true;
+                        }
+                        if (!$symbol_map) {
+                            $symbol_map['*'] = true;
+                        }
+                    } else {
+                        $symbol_map = ['*' => true];
+                    }
+                    $issue_map[(string)$issue_type] = $symbol_map;
+                }
+            }
+            $result[$file] = $issue_map;
+        }
+        return $result;
     }
 
     /**
