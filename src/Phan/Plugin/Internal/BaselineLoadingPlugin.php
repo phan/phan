@@ -140,8 +140,12 @@ final class BaselineLoadingPlugin extends PluginV3 implements
                     $issue_type = (string)$key;
                     if (\is_array($value)) {
                         $symbol_map = [];
-                        foreach ($value as $symbol) {
-                            $symbol_map[(string)$symbol] = true;
+                        foreach ($value as $symbol_key => $symbol_value) {
+                            if (\is_string($symbol_key)) {
+                                $symbol_map[$symbol_key] = true;
+                            } else {
+                                $symbol_map[(string)$symbol_value] = true;
+                            }
                         }
                         if (!$symbol_map) {
                             $symbol_map['*'] = true;
