@@ -794,7 +794,7 @@ class Context extends FileRef
     private static function normalizeBaselineSymbol(string $symbol): string
     {
         $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
-        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\\\closure', $symbol) ?? $symbol;
+        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\closure', $symbol) ?? $symbol;
         return $symbol;
     }
 
