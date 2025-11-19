@@ -186,6 +186,7 @@ EOT;
         $result .= "    'file_suppressions' => [\n";
         \uksort($this->suppressions_by_file, 'strcmp');
         foreach ($this->suppressions_by_file as $file_name => $type_map) {
+            \ksort($type_map, \SORT_STRING);
             $entries = [];
             foreach ($type_map as $type_name => $symbols) {
                 $symbol_list = \array_keys($symbols);
