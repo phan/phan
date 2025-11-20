@@ -150,7 +150,11 @@ Type Inference & Analysis:
 - Improved handling of `getIterator()` returning Iterator with explicit generics ([#5108](https://github.com/phan/phan/pull/5108))
 - Traits can now declare `@require-extends` / `@require-implements` (and their Psalm aliases) to ensure consuming classes satisfy those requirements
 - Fixed `PhanPossiblyInfiniteRecursionSameParams` false positive for instance methods that guard recursion with property state ([#5371](https://github.com/phan/phan/issues/5371))
+- Fixed `PhanTypeMismatchDeclaredConstant` false positives for enum cases whose values are strings/ints (#5378)
 - Improved parameter and property default type representation in error messages ([#5271](https://github.com/phan/phan/pull/5271))
+
+Tooling:
+- Baselines generated with `--save-baseline` now store suppressions per symbol (class/method/function) instead of line numbers and normalize anonymous class/closure names, so suppressions remain stable when code moves or hashes change (#5381/#5383)
 
 Plugins:
 - Fixed UnusedSuppressionPlugin incorrectly flagging magic method suppressions in class doc comments as unused ([#5304](https://github.com/phan/phan/issues/5304))
