@@ -1,7 +1,7 @@
-Phan NEWS
+## Phan NEWS
 
-TBD, Phan 6.0.0-dev
------------------------
+Nov 20 2025, Phan 6.0.0-beta
+----------------------------
 Breaking changes:
 - Requires PHP 8.1+ to run and minimum target version is now PHP 8.1
 - Requires php-ast 1.1.3+ for PHP 8.4+ analysis (AST version 110/120 support)
