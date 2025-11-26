@@ -312,12 +312,29 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
             return;
         }
 
-        // Check if the condition type contains bool-related types
+        // For simple parameter variables, use the declared type for checking exhaustiveness
+        // instead of the potentially narrowed type. This avoids issues where match-arm analysis
+        // narrows the type, making it look like control flow narrowing.
+        // Note: This may give false positives for cases like `if ($b) { match($b) { true => ... } }`
+        // where control flow guarantees only one value. Users can suppress in such cases.
+        $check_type = $cond_type;  // Default to using the analyzed type
+        if ($cond_node instanceof Node && $cond_node->kind === \ast\AST_VAR) {
+            $var_name = $cond_node->children['name'] ?? null;
+            if (is_string($var_name)) {
+                $declared_type = $this->getDeclaredVariableType($var_name);
+                if ($declared_type !== null) {
+                    // Use the declared type for exhaustiveness checking
+                    $check_type = $declared_type;
+                }
+            }
+        }
+
+        // Check if the condition type (or declared type) contains bool-related types
         $has_bool_type = false;
         $has_true_type = false;
         $has_false_type = false;
 
-        foreach ($cond_type->getTypeSet() as $type) {
+        foreach ($check_type->getTypeSet() as $type) {
             if ($type instanceof BoolType && !($type instanceof TrueType) && !($type instanceof FalseType)) {
                 $has_bool_type = true;
             } elseif ($type instanceof TrueType) {
@@ -334,10 +351,9 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
 
         $missing = [];
 
-        // Use Phan's type narrowing to detect what's missing:
-        // - If type is `true` (narrowed), it means only `true` was in arms -> `false` is missing
-        // - If type is `false` (narrowed), it means only `false` was in arms -> `true` is missing
-        // - If type is `bool`, check what's covered
+        // Check exhaustiveness based on the declared/checked type.
+        // For full bool type, both true and false must be covered.
+        // For literal types (true or false), only that value needs to be covered.
 
         if ($has_bool_type) {
             // Full bool type - check what's explicitly covered
@@ -348,13 +364,17 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
                 $missing[] = 'false';
             }
         } elseif ($has_true_type && !$has_false_type) {
-            // Type narrowed to `true` - means only `true` is covered, `false` is missing
-            $missing[] = 'false';
+            // Declared as literal `true` - only true needs to be covered
+            if (!isset($arm_info['covered_bool_values']['true'])) {
+                $missing[] = 'true';
+            }
         } elseif ($has_false_type && !$has_true_type) {
-            // Type narrowed to `false` - means only `false` is covered, `true` is missing
-            $missing[] = 'true';
+            // Declared as literal `false` - only false needs to be covered
+            if (!isset($arm_info['covered_bool_values']['false'])) {
+                $missing[] = 'false';
+            }
         }
-        // If both $has_true_type and $has_false_type, then both are covered
+        // If both $has_true_type and $has_false_type, then both need to be checked
 
         if (!empty($missing)) {
             $this->emitPluginIssue(
@@ -560,6 +580,42 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
         }
 
         return $cases;
+    }
+
+    /**
+     * Get the declared type of a variable from its definition (e.g., function parameter).
+     *
+     * This returns the original declared type before any control flow narrowing.
+     *
+     * @return ?UnionType the declared type, or null if not found
+     */
+    private function getDeclaredVariableType(string $var_name): ?UnionType
+    {
+        // Check if we're in a function/method scope
+        if (!$this->context->isInFunctionLikeScope()) {
+            return null;
+        }
+
+        try {
+            $function = $this->context->getFunctionLikeInScope($this->code_base);
+        } catch (\Exception) {
+            return null;
+        }
+
+        // Check if the variable is a parameter
+        foreach ($function->getParameterList() as $parameter) {
+            if ($parameter->getName() === $var_name) {
+                // Get the declared type from the parameter
+                $param_type = $parameter->getUnionType();
+                // Try to get the real (declared) type if available
+                if ($param_type->hasRealTypeSet()) {
+                    return $param_type->getRealUnionType();
+                }
+                return $param_type;
+            }
+        }
+
+        return null;
     }
 }
 
