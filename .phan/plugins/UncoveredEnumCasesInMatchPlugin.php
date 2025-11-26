@@ -376,8 +376,15 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
             if (!isset($arm_info['covered_bool_values']['false'])) {
                 $missing[] = 'false';
             }
+        } elseif ($has_true_type && $has_false_type) {
+            // Both literal types present (e.g., PHPDoc @param true|false) - both need to be covered
+            if (!isset($arm_info['covered_bool_values']['true'])) {
+                $missing[] = 'true';
+            }
+            if (!isset($arm_info['covered_bool_values']['false'])) {
+                $missing[] = 'false';
+            }
         }
-        // If both $has_true_type and $has_false_type, then both need to be checked
 
         if (!empty($missing)) {
             $this->emitPluginIssue(

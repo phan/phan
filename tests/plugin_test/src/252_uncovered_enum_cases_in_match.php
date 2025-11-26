@@ -279,3 +279,42 @@ function testMixed1(mixed $m): string
         1 => 'one',
     };
 }
+
+// ============================================
+// PHPDoc true|false literal type tests
+// (These have both TrueType and FalseType in the union)
+// ============================================
+
+/**
+ * Test 28: PHPDoc true|false missing false - should warn
+ * @param true|false $b
+ */
+function testTrueFalseUnion1($b): string
+{
+    return match ($b) {
+        true => 'yes',
+    };
+}
+
+/**
+ * Test 29: PHPDoc true|false missing true - should warn
+ * @param true|false $b
+ */
+function testTrueFalseUnion2($b): string
+{
+    return match ($b) {
+        false => 'no',
+    };
+}
+
+/**
+ * Test 30: PHPDoc true|false all covered - should NOT warn
+ * @param true|false $b
+ */
+function testTrueFalseUnion3($b): string
+{
+    return match ($b) {
+        true => 'yes',
+        false => 'no',
+    };
+}
