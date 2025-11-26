@@ -42,4 +42,4 @@ src/252_uncovered_enum_cases_in_match.php:257 PhanUnreferencedFunction Possibly 
 src/252_uncovered_enum_cases_in_match.php:266 PhanUnreferencedFunction Possibly zero references to function \testFloat1()
 src/252_uncovered_enum_cases_in_match.php:268 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with float condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
 src/252_uncovered_enum_cases_in_match.php:275 PhanUnreferencedFunction Possibly zero references to function \testMixed1()
-src/252_uncovered_enum_cases_in_match.php:277 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with string|int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:277 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with mixed condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.

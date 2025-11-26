@@ -102,7 +102,9 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
         $this->checkBoolExhaustiveness($node, $cond_node, $cond_type, $arm_info);
 
         // Check non-finite types need default
-        $this->checkNonFiniteTypeNeedsDefault($node, $cond_type, $arm_info);
+        // Use the real (declared) type if available, since the inferred type may be narrowed
+        $real_cond_type = $cond_type->hasRealTypeSet() ? $cond_type->getRealUnionType() : $cond_type;
+        $this->checkNonFiniteTypeNeedsDefault($node, $real_cond_type, $arm_info);
     }
 
     /**
@@ -385,10 +387,9 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
             return;
         }
 
-        // If there are bool values covered, the bool check will handle it
-        if (!empty($arm_info['covered_bool_values'])) {
-            return;
-        }
+        // Note: We intentionally do NOT return early when bool values are covered.
+        // For composite types like bool|string, even if true/false are covered,
+        // we still need to check if other types (like string) are non-finite.
 
         // Check if any type in the union is non-finite
         $non_finite_types = [];
@@ -413,8 +414,18 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
                 }
             }
             // These types are non-finite
-            if (in_array($name, ['string', 'int', 'float', 'array', 'object', 'mixed', 'iterable', 'callable', 'resource'], true)) {
+            // Check both exact matches and refined types (e.g., non-zero-int, non-empty-string)
+            $base_non_finite = ['string', 'int', 'float', 'array', 'object', 'mixed', 'iterable', 'callable', 'resource'];
+            if (in_array($name, $base_non_finite, true)) {
                 $non_finite_types[] = $name;
+            } else {
+                // Check for refined types like non-zero-int, non-empty-string, etc.
+                foreach ($base_non_finite as $base_type) {
+                    if (str_contains($name, $base_type)) {
+                        $non_finite_types[] = $base_type;
+                        break;
+                    }
+                }
             }
         }
 
