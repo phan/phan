@@ -104,7 +104,7 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
         // Check non-finite types need default
         // Use the real (declared) type if available, since the inferred type may be narrowed
         $real_cond_type = $cond_type->hasRealTypeSet() ? $cond_type->getRealUnionType() : $cond_type;
-        $this->checkNonFiniteTypeNeedsDefault($node, $real_cond_type, $arm_info);
+        $this->checkNonFiniteTypeNeedsDefault($node, $real_cond_type);
     }
 
     /**
@@ -395,24 +395,13 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
 
     /**
      * Check if non-finite types (string, int, float, etc.) need a default arm
-     *
-     * @param array{has_default: bool, has_any_arm: bool, all_arms_constant: bool, covered_enum_cases: array<string, true>, covered_bool_values: array<string, true>, has_literal_arms: bool} $arm_info
      */
-    private function checkNonFiniteTypeNeedsDefault(Node $node, UnionType $cond_type, array $arm_info): void
+    private function checkNonFiniteTypeNeedsDefault(Node $node, UnionType $cond_type): void
     {
-        // If there's no literal arms, skip (enum-only checks are handled separately)
-        if (!$arm_info['has_literal_arms']) {
-            return;
-        }
-
-        // If there are enum cases covered, the enum check will handle it
-        if (!empty($arm_info['covered_enum_cases'])) {
-            return;
-        }
-
-        // Note: We intentionally do NOT return early when bool values are covered.
-        // For composite types like bool|string, even if true/false are covered,
+        // Note: We intentionally do NOT return early based on has_literal_arms or covered_enum_cases.
+        // For composite types like Suit|string, even if all enum cases are covered,
         // we still need to check if other types (like string) are non-finite.
+        // Similarly for bool|string - even if true/false are covered, string is non-finite.
 
         // Check if any type in the union is non-finite
         $non_finite_types = [];

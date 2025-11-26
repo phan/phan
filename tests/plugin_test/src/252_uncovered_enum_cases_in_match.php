@@ -76,8 +76,8 @@ function testMatchEnum5(Suit|Game $var): string
     };
 }
 
-// Test 6: Union with non-enum types - should NOT warn
-// (because not all arms are enum cases)
+// Test 6: Union with non-enum types - should warn about non-finite types needing default
+// (string|int|array are non-finite and need a default arm)
 function testMatchEnum6(Suit|string|int|array $suit): string
 {
     return match ($suit) {
@@ -158,7 +158,7 @@ function testMatchEnum14(int $x): string
     };
 }
 
-// Test 15: Mixed types but some arms are not enum cases - should NOT warn
+// Test 15: Mixed types with int - should warn about int needing default
 function testMatchEnum15(Suit|int $var): string
 {
     return match ($var) {
