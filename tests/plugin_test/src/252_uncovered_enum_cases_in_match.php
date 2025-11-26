@@ -167,3 +167,115 @@ function testMatchEnum15(Suit|int $var): string
         2 => 'two',
     };
 }
+
+// ============================================
+// Bool exhaustiveness tests
+// ============================================
+
+// Test 16: Bool missing false - should warn
+function testBool1(bool $b): string
+{
+    return match ($b) {
+        true => 'yes',
+    };
+}
+
+// Test 17: Bool missing true - should warn
+function testBool2(bool $b): string
+{
+    return match ($b) {
+        false => 'no',
+    };
+}
+
+// Test 18: Bool all cases covered - should NOT warn
+function testBool3(bool $b): string
+{
+    return match ($b) {
+        true => 'yes',
+        false => 'no',
+    };
+}
+
+// Test 19: Bool with default - should NOT warn
+function testBool4(bool $b): string
+{
+    return match ($b) {
+        true => 'yes',
+        default => 'other',
+    };
+}
+
+// Test 20: Nullable bool - only checks true/false, not null - should warn
+function testBool5(?bool $b): string
+{
+    return match ($b) {
+        true => 'yes',
+    };
+}
+
+// Test 21: Variable arm condition - should NOT warn (false positive prevention)
+function testBoolVarArm(bool $a, bool $b): string
+{
+    return match ($a) {
+        $b => 'equal',
+    };
+}
+
+// ============================================
+// Non-finite type tests (need default)
+// ============================================
+
+// Test 22: String without default - should warn
+function testString1(string $s): string
+{
+    return match ($s) {
+        'a' => 'A',
+        'b' => 'B',
+    };
+}
+
+// Test 23: String with default - should NOT warn
+function testString2(string $s): string
+{
+    return match ($s) {
+        'a' => 'A',
+        default => 'other',
+    };
+}
+
+// Test 24: Int without default - should warn
+function testInt1(int $i): string
+{
+    return match ($i) {
+        1 => 'one',
+        2 => 'two',
+    };
+}
+
+// Test 25: Int with default - should NOT warn
+function testInt2(int $i): string
+{
+    return match ($i) {
+        1 => 'one',
+        default => 'other',
+    };
+}
+
+// Test 26: Float without default - should warn
+function testFloat1(float $f): string
+{
+    return match ($f) {
+        1.0 => 'one',
+        2.0 => 'two',
+    };
+}
+
+// Test 27: Mixed type - should warn (needs default)
+function testMixed1(mixed $m): string
+{
+    return match ($m) {
+        'a' => 'A',
+        1 => 'one',
+    };
+}
