@@ -300,8 +300,11 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
      */
     private function checkBoolExhaustiveness(Node $node, Node|string|int|float $cond_node, UnionType $cond_type, array $arm_info): void
     {
-        // If there are no bool literals in the arms, don't warn (might be using other comparison)
-        if (empty($arm_info['covered_bool_values'])) {
+        // If there are no bool literals in the arms and there ARE variable arms,
+        // skip the check (variable arms like `$b => ...` could match the bool).
+        // But if there are only non-bool literal arms (like `1 => ...`), we should warn
+        // because those will never match a bool value due to strict identity comparison.
+        if (empty($arm_info['covered_bool_values']) && !$arm_info['all_arms_constant']) {
             return;
         }
 
