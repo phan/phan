@@ -50,3 +50,9 @@ src/252_uncovered_enum_cases_in_match.php:294 PhanPluginNonExhaustiveBoolMatch M
 src/252_uncovered_enum_cases_in_match.php:303 PhanUnreferencedFunction Possibly zero references to function \testTrueFalseUnion2()
 src/252_uncovered_enum_cases_in_match.php:305 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: true. Either add the missing cases or add a default arm.
 src/252_uncovered_enum_cases_in_match.php:314 PhanUnreferencedFunction Possibly zero references to function \testTrueFalseUnion3()
+src/252_uncovered_enum_cases_in_match.php:328 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool1()
+src/252_uncovered_enum_cases_in_match.php:330 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: true. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:336 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool2()
+src/252_uncovered_enum_cases_in_match.php:338 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: false. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:344 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool3()
+src/252_uncovered_enum_cases_in_match.php:352 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool4()

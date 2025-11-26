@@ -318,3 +318,40 @@ function testTrueFalseUnion3($b): string
         false => 'no',
     };
 }
+
+// ============================================
+// Literal bool condition tests
+// (match(true) or match(false) as the condition)
+// ============================================
+
+// Test 31: match(true) with only false arm - should warn (missing true)
+function testLiteralBool1(): string
+{
+    return match (true) {
+        false => 'no',
+    };
+}
+
+// Test 32: match(false) with only true arm - should warn (missing false)
+function testLiteralBool2(): string
+{
+    return match (false) {
+        true => 'yes',
+    };
+}
+
+// Test 33: match(true) with true arm - should NOT warn (exhaustive)
+function testLiteralBool3(): string
+{
+    return match (true) {
+        true => 'yes',
+    };
+}
+
+// Test 34: match(false) with false arm - should NOT warn (exhaustive)
+function testLiteralBool4(): string
+{
+    return match (false) {
+        false => 'no',
+    };
+}

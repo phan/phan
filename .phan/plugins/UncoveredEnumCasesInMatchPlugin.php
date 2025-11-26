@@ -309,9 +309,24 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
         }
 
         // If the condition itself is a literal boolean (e.g., match(true) or match(false)),
-        // don't warn - the match can only ever receive that literal value and cannot throw
-        // UnhandledMatchError for the opposite boolean.
-        if (self::getBoolLiteralFromExpression($cond_node) !== null) {
+        // only that specific value needs to be covered. For example:
+        // - match(true) { true => 'yes' } is exhaustive
+        // - match(true) { false => 'no' } will throw UnhandledMatchError
+        $literal_bool = self::getBoolLiteralFromExpression($cond_node);
+        if ($literal_bool !== null) {
+            // Check if the literal value is covered
+            if (!isset($arm_info['covered_bool_values'][$literal_bool])) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    (clone $this->context)->withLineNumberStart($node->lineno),
+                    'PhanPluginNonExhaustiveBoolMatch',
+                    'Match expression with bool condition does not cover all cases - missing: {STRING_LITERAL}. Either add the missing cases or add a default arm.',
+                    [$literal_bool],
+                    \Phan\Issue::SEVERITY_NORMAL,
+                    \Phan\Issue::REMEDIATION_A,
+                    15091
+                );
+            }
             return;
         }
 
