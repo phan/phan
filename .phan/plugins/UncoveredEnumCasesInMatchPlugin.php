@@ -205,11 +205,25 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
             $node->kind === \ast\AST_METHOD_CALL ||
             $node->kind === \ast\AST_STATIC_CALL ||
             $node->kind === \ast\AST_PROP ||
-            $node->kind === \ast\AST_STATIC_PROP) {
+            $node->kind === \ast\AST_STATIC_PROP ||
+            $node->kind === \ast\AST_CLOSURE ||
+            $node->kind === \ast\AST_ARROW_FUNC) {
             return false;
         }
 
-        // For other node types, assume constant for now
+        // For compound expressions (binary ops, unary ops, ternary, etc.),
+        // recursively check all children - if any child is non-constant,
+        // the whole expression is non-constant
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                if (!self::isConstantExpression($child)) {
+                    return false;
+                }
+            }
+            // Scalar children (int, string, float, null) are constant
+        }
+
+        // All children are constant (or scalars), so this expression is constant
         return true;
     }
 

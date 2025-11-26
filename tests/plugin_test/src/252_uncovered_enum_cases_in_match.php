@@ -394,3 +394,40 @@ function testObjectMatch4(DateTime|string $val): string
         'hello' => 'greeting',
     };
 }
+
+// ============================================
+// Non-constant arm expression tests
+// (Arms containing variables should not trigger exhaustiveness warnings)
+// ============================================
+
+// Test 39: Variable in binary expression - should NOT warn (not constant arm)
+function testNonConstantArm1(bool $b): string
+{
+    return match ($b) {
+        $b && true => 'ok',
+    };
+}
+
+// Test 40: Variable in arithmetic - should NOT warn
+function testNonConstantArm2(int $x): string
+{
+    return match ($x) {
+        $x + 0 => 'same',
+    };
+}
+
+// Test 41: Function call in arm - should NOT warn (not constant)
+function testNonConstantArm3(int $x): string
+{
+    return match ($x) {
+        rand(0, 10) => 'random',
+    };
+}
+
+// Test 42: Constant binary expression (no variables) - SHOULD warn
+function testConstantArm1(int $x): string
+{
+    return match ($x) {
+        1 + 2 => 'three',
+    };
+}

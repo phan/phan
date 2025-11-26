@@ -63,3 +63,8 @@ src/252_uncovered_enum_cases_in_match.php:375 PhanPluginNonExhaustiveMatchNeedsD
 src/252_uncovered_enum_cases_in_match.php:381 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch3()
 src/252_uncovered_enum_cases_in_match.php:390 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch4()
 src/252_uncovered_enum_cases_in_match.php:392 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with \DateTime|string condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:404 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm1()
+src/252_uncovered_enum_cases_in_match.php:412 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm2()
+src/252_uncovered_enum_cases_in_match.php:420 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm3()
+src/252_uncovered_enum_cases_in_match.php:428 PhanUnreferencedFunction Possibly zero references to function \testConstantArm1()
+src/252_uncovered_enum_cases_in_match.php:430 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
