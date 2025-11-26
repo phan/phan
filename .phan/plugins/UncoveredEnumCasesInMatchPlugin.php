@@ -437,14 +437,18 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
             if ($type instanceof BoolType || $type instanceof TrueType || $type instanceof FalseType) {
                 continue;
             }
-            // Skip enum types (handled by enum check)
+            // Check object types - enums are handled separately, but non-enum objects are non-finite
             if ($type->isObjectWithKnownFQSEN()) {
                 $fqsen = $type->asFQSEN();
                 if ($fqsen instanceof FullyQualifiedClassName && $this->code_base->hasClassWithFQSEN($fqsen)) {
                     $class = $this->code_base->getClassByFQSEN($fqsen);
                     if ($class->isEnum()) {
+                        // Skip enum types (handled by enum check)
                         continue;
                     }
+                    // Non-enum object types are non-finite (can have infinite instances)
+                    $non_finite_types[] = $fqsen->__toString();
+                    continue;
                 }
             }
             // These types are non-finite

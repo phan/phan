@@ -355,3 +355,42 @@ function testLiteralBool4(): string
         false => 'no',
     };
 }
+
+// ============================================
+// Non-enum object type tests
+// (Objects are non-finite, need default arm)
+// ============================================
+
+// Test 35: Match on DateTime without default - should warn
+function testObjectMatch1(DateTime $dt): string
+{
+    return match ($dt) {
+        new DateTime('2020-01-01') => 'new year',
+    };
+}
+
+// Test 36: Match on stdClass without default - should warn
+function testObjectMatch2(stdClass $obj): string
+{
+    return match ($obj) {
+        new stdClass() => 'empty',
+    };
+}
+
+// Test 37: Match on DateTime with default - should NOT warn
+function testObjectMatch3(DateTime $dt): string
+{
+    return match ($dt) {
+        new DateTime('2020-01-01') => 'new year',
+        default => 'other date',
+    };
+}
+
+// Test 38: Match on union of object and string - should warn for both
+function testObjectMatch4(DateTime|string $val): string
+{
+    return match ($val) {
+        new DateTime('2020-01-01') => 'new year',
+        'hello' => 'greeting',
+    };
+}
