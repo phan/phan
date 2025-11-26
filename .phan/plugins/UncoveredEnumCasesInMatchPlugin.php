@@ -98,8 +98,8 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
         // Check enum exhaustiveness
         $this->checkEnumExhaustiveness($node, $cond_type, $arm_info);
 
-        // Check bool exhaustiveness
-        $this->checkBoolExhaustiveness($node, $cond_type, $arm_info);
+        // Check bool exhaustiveness (pass cond_node to detect literal booleans)
+        $this->checkBoolExhaustiveness($node, $cond_node, $cond_type, $arm_info);
 
         // Check non-finite types need default
         $this->checkNonFiniteTypeNeedsDefault($node, $cond_type, $arm_info);
@@ -296,10 +296,17 @@ final class UncoveredEnumCasesInMatchVisitor extends PluginAwarePostAnalysisVisi
      *
      * @param array{has_default: bool, has_any_arm: bool, all_arms_constant: bool, covered_enum_cases: array<string, true>, covered_bool_values: array<string, true>, has_literal_arms: bool} $arm_info
      */
-    private function checkBoolExhaustiveness(Node $node, UnionType $cond_type, array $arm_info): void
+    private function checkBoolExhaustiveness(Node $node, Node|string|int|float $cond_node, UnionType $cond_type, array $arm_info): void
     {
         // If there are no bool literals in the arms, don't warn (might be using other comparison)
         if (empty($arm_info['covered_bool_values'])) {
+            return;
+        }
+
+        // If the condition itself is a literal boolean (e.g., match(true) or match(false)),
+        // don't warn - the match can only ever receive that literal value and cannot throw
+        // UnhandledMatchError for the opposite boolean.
+        if (self::getBoolLiteralFromExpression($cond_node) !== null) {
             return;
         }
 
