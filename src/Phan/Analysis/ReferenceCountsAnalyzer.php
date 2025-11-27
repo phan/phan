@@ -294,8 +294,9 @@ class ReferenceCountsAnalyzer
         CodeBase $code_base,
         Property $class_property
     ): void {
-        // Only process real properties (not magic/dynamic properties)
-        if ($class_property->isFromPHPDoc() || $class_property->isDynamicProperty()) {
+        // Only process real instance properties (not magic/dynamic/static properties)
+        // @property annotations only apply to instance properties accessed via $this->prop
+        if ($class_property->isFromPHPDoc() || $class_property->isDynamicProperty() || $class_property->isStatic()) {
             return;
         }
 
