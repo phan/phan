@@ -2277,17 +2277,29 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($arm_cond_node !== null) {
             // Handle multiple conditions in a match arm (e.g., `is_null($i), is_a($i, Foo::class) => ...`)
             // which are represented as AST_EXPR_LIST containing multiple child conditions.
-            // Each condition needs to be analyzed individually for proper type narrowing. (Issue #5398)
-            if ($arm_cond_node instanceof Node && $arm_cond_node->kind === ast\AST_EXPR_LIST) {
-                $individual_conditions = $arm_cond_node->children;
-            } else {
-                $individual_conditions = [$arm_cond_node];
-            }
+            // Each condition needs to be analyzed individually for proper analysis. (Issue #5398)
+            $has_multiple_conditions = $arm_cond_node instanceof Node &&
+                $arm_cond_node->kind === ast\AST_EXPR_LIST &&
+                \count($arm_cond_node->children) > 1;
 
-            // Analyze each condition in the list
-            foreach ($individual_conditions as $single_cond) {
-                if ($single_cond instanceof Node) {
-                    $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $single_cond);
+            if ($has_multiple_conditions) {
+                // For multiple conditions in a match arm (OR semantics), analyze each condition
+                // with a CLONE of the original context. We don't want type narrowing from one
+                // condition to affect the analysis of another condition, since they're alternatives.
+                // Clear the union type cache to prevent cached types from one condition affecting another.
+                // (Issue #5398)
+                foreach ($arm_cond_node->children as $single_cond) {
+                    if ($single_cond instanceof Node) {
+                        // Clone context and clear cache for each condition to prevent cross-contamination
+                        $cloned_context = $child_context->withClonedScope();
+                        $cloned_context->clearCachedUnionTypes();
+                        $this->analyzeAndGetUpdatedContext($cloned_context, $arm_node, $single_cond);
+                    }
+                }
+            } else {
+                // Single condition - analyze the wrapper node (original behavior)
+                if ($arm_cond_node instanceof Node) {
+                    $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
                 }
             }
 
@@ -2303,17 +2315,37 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // Add the variable type from the **conditions of the** above arms,
                 // if it was possible for it to fall through
                 // TODO: Also support match(get_class($variable))
-                // Apply type narrowing for each condition individually (Issue #5398)
-                foreach ($individual_conditions as $single_cond) {
-                    $child_context = $match_variable_condition($child_context, $single_cond);
+                if ($has_multiple_conditions) {
+                    // For multiple conditions in a match arm (OR semantics), each condition should be
+                    // analyzed with a CLONE of the original context. The results should be merged
+                    // because any one of the conditions could match. (Issue #5398)
+                    $condition_contexts = [$child_context];  // Include original for merge
+                    foreach ($arm_cond_node->children as $single_cond) {
+                        // Clone context for each condition to prevent type narrowing from one
+                        // condition affecting the analysis of another condition
+                        $cloned_child_context = $child_context->withClonedScope();
+                        $cloned_child_context->clearCachedUnionTypes();
+                        $condition_contexts[] = $match_variable_condition($cloned_child_context, $single_cond);
+                    }
+                    // Merge all condition contexts - since any one of them could be true,
+                    // the resulting type should be the union of all possibilities
+                    $child_context = (new ContextMergeVisitor($child_context, $condition_contexts, $this->code_base))->combineChildContextList();
+                } else {
+                    // Single condition - pass the original node (original behavior)
+                    $child_context = $match_variable_condition($child_context, $arm_cond_node);
                 }
             }
             if ($match_variable_negated_condition) {
                 // Add the variable types that were ruled out by the above case statements, if it was possible for it to fall through.
                 // TODO: Also support match(get_class($variable))
-                // Apply negated type narrowing for each condition individually (Issue #5398)
-                foreach ($individual_conditions as $single_cond) {
-                    $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $single_cond);
+                if ($has_multiple_conditions) {
+                    // Apply negated type narrowing for each condition individually (Issue #5398)
+                    foreach ($arm_cond_node->children as $single_cond) {
+                        $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $single_cond);
+                    }
+                } else {
+                    // Single condition - pass the original node (original behavior)
+                    $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $arm_cond_node);
                 }
             }
         }
