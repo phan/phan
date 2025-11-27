@@ -27,6 +27,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type\NullType;
 use TypeError;
 
 /**
@@ -461,7 +462,10 @@ class ReferenceCountsAnalyzer
         // as pseudo-constants is a common pattern (fixes #5390).
         if (Config::getValue('dead_code_detection_prefer_false_negative')) {
             if (Config::get_closest_minimum_target_php_version_id() < 80200) {
-                if ($property->getDefaultType() !== null) {
+                $default_type = $property->getDefaultType();
+                // Check that the property has an actual initializer value, not just a declaration.
+                // Properties without initializers have a default_type of NullType (see ParseVisitor line 894).
+                if ($default_type !== null && !$default_type->isType(NullType::instance(false))) {
                     $class_fqsen = $property->getClassFQSEN();
                     if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                         $class = $code_base->getClassByFQSEN($class_fqsen);

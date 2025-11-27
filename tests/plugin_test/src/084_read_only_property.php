@@ -27,3 +27,22 @@ class UsesTraitWithPseudoConstant84 {
 }
 
 (new UsesTraitWithPseudoConstant84())->getConst();
+
+/**
+ * Test that trait properties WITHOUT initializers still trigger warnings.
+ * Only initialized properties should be exempt from read-only warnings.
+ */
+trait TraitWithUninitializedProperty84 {
+    /** @var int */
+    private $uninitializedProp;
+
+    public function getUninit(): int {
+        return $this->uninitializedProp;
+    }
+}
+
+class UsesTraitWithUninitializedProperty84 {
+    use TraitWithUninitializedProperty84;
+}
+
+(new UsesTraitWithUninitializedProperty84())->getUninit();
