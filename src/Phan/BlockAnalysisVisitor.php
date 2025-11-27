@@ -2275,9 +2275,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
         ['expr' => $arm_expr_node, 'cond' => $arm_cond_node] = $arm_node->children;
         if ($arm_cond_node !== null) {
-            if ($arm_cond_node instanceof Node) {
-                $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
+            // Handle multiple conditions in a match arm (e.g., `is_null($i), is_a($i, Foo::class) => ...`)
+            // which are represented as AST_EXPR_LIST containing multiple child conditions.
+            // Each condition needs to be analyzed individually for proper type narrowing. (Issue #5398)
+            if ($arm_cond_node instanceof Node && $arm_cond_node->kind === ast\AST_EXPR_LIST) {
+                $individual_conditions = $arm_cond_node->children;
+            } else {
+                $individual_conditions = [$arm_cond_node];
             }
+
+            // Analyze each condition in the list
+            foreach ($individual_conditions as $single_cond) {
+                if ($single_cond instanceof Node) {
+                    $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $single_cond);
+                }
+            }
+
             if ($cond_type) {
                 (new RedundantConditionVisitor($this->code_base, $child_context))->checkImpossibleMatchArm($match_cond_node, $cond_type, $arm_node);
             }
@@ -2290,12 +2303,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // Add the variable type from the **conditions of the** above arms,
                 // if it was possible for it to fall through
                 // TODO: Also support match(get_class($variable))
-                $child_context = $match_variable_condition($child_context, $arm_cond_node);
+                // Apply type narrowing for each condition individually (Issue #5398)
+                foreach ($individual_conditions as $single_cond) {
+                    $child_context = $match_variable_condition($child_context, $single_cond);
+                }
             }
             if ($match_variable_negated_condition) {
                 // Add the variable types that were ruled out by the above case statements, if it was possible for it to fall through.
                 // TODO: Also support match(get_class($variable))
-                $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $arm_cond_node);
+                // Apply negated type narrowing for each condition individually (Issue #5398)
+                foreach ($individual_conditions as $single_cond) {
+                    $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $single_cond);
+                }
             }
         }
 
