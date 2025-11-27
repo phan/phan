@@ -5778,7 +5778,7 @@ class Issue
             }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();
-            $expected_category_for_type_id_bitpos = (int)\floor($error_type_id / 1000);
+            $expected_category_for_type_id_bitpos = intdiv($error_type_id, 1000);
             $expected_category_for_type_id = 1 << $expected_category_for_type_id_bitpos;
             if ($category !== $expected_category_for_type_id) {
                 throw new AssertionError(\sprintf(

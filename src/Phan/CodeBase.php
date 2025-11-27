@@ -2209,7 +2209,7 @@ class CodeBase
 
     private static function phpVersionIdToString(int $php_version_id): string
     {
-        return \sprintf('%d.%d', (int)($php_version_id / 10000), (int)($php_version_id / 100) % 100);
+        return \sprintf('%d.%d', intdiv($php_version_id, 10000), intdiv($php_version_id, 100) % 100);
     }
 
     /**
@@ -2226,7 +2226,7 @@ class CodeBase
             return [];
         }
         $target_php_version_config = Config::get_closest_target_php_version_id();
-        $target_php_version = (int)\floor(\min($target_php_version_config, \PHP_VERSION_ID) / 100) * 100;
+        $target_php_version = intdiv(\min($target_php_version_config, \PHP_VERSION_ID), 100) * 100;
         $targets = [80100, 80200, 80300, 80400];
         $function_name_lower = strtolower($function_name);
         foreach ($targets as $i => $target) {
