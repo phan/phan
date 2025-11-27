@@ -2283,19 +2283,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 \count($arm_cond_node->children) > 1;
 
             if ($has_multiple_conditions) {
-                // For multiple conditions in a match arm (OR semantics), analyze each condition
-                // with a CLONE of the original context. We don't want type narrowing from one
-                // condition to affect the analysis of another condition, since they're alternatives.
-                // Clear the union type cache to prevent cached types from one condition affecting another.
+                // For multiple conditions in a match arm (e.g., `($x = foo()), $x > 0 => ...`),
+                // we need to analyze them sequentially to propagate side effects (variable assignments),
+                // but avoid type narrowing cross-contamination for the type inference in $match_variable_condition.
                 // (Issue #5398)
-                foreach ($arm_cond_node->children as $single_cond) {
-                    if ($single_cond instanceof Node) {
-                        // Clone context and clear cache for each condition to prevent cross-contamination
-                        $cloned_context = $child_context->withClonedScope();
-                        $cloned_context->clearCachedUnionTypes();
-                        $this->analyzeAndGetUpdatedContext($cloned_context, $arm_node, $single_cond);
-                    }
-                }
+                //
+                // Analyze the AST_EXPR_LIST wrapper node which processes conditions sequentially,
+                // preserving side effects like variable assignments between conditions.
+                $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
             } else {
                 // Single condition - analyze the wrapper node (original behavior)
                 if ($arm_cond_node instanceof Node) {
