@@ -6,6 +6,7 @@ src/252_uncovered_enum_cases_in_match.php:55 PhanUnreferencedFunction Possibly z
 src/252_uncovered_enum_cases_in_match.php:57 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit|\Game condition does not cover all cases - missing: Poker, Solitaire, Blackjack. Either add the missing cases or add a default arm to handle them.
 src/252_uncovered_enum_cases_in_match.php:66 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum5()
 src/252_uncovered_enum_cases_in_match.php:81 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum6()
+src/252_uncovered_enum_cases_in_match.php:83 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with string|int|array condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
 src/252_uncovered_enum_cases_in_match.php:83 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit condition does not cover all cases - missing: Clubs. Either add the missing cases or add a default arm to handle them.
 src/252_uncovered_enum_cases_in_match.php:91 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum7()
 src/252_uncovered_enum_cases_in_match.php:101 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum8()
@@ -21,4 +22,49 @@ src/252_uncovered_enum_cases_in_match.php:140 PhanNoopMatchExpression The result
 src/252_uncovered_enum_cases_in_match.php:145 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum13()
 src/252_uncovered_enum_cases_in_match.php:147 PhanNoopMatchArms This match expression only has the default arm in match ($suit) { default => 'Any suit' }
 src/252_uncovered_enum_cases_in_match.php:153 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum14()
+src/252_uncovered_enum_cases_in_match.php:155 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
 src/252_uncovered_enum_cases_in_match.php:162 PhanUnreferencedFunction Possibly zero references to function \testMatchEnum15()
+src/252_uncovered_enum_cases_in_match.php:164 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:164 PhanPluginUncoveredEnumCasesInMatch Match expression with \Suit condition does not cover all cases - missing: Spades, Diamonds, Clubs. Either add the missing cases or add a default arm to handle them.
+src/252_uncovered_enum_cases_in_match.php:176 PhanUnreferencedFunction Possibly zero references to function \testBool1()
+src/252_uncovered_enum_cases_in_match.php:178 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: false. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:184 PhanUnreferencedFunction Possibly zero references to function \testBool2()
+src/252_uncovered_enum_cases_in_match.php:186 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: true. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:192 PhanUnreferencedFunction Possibly zero references to function \testBool3()
+src/252_uncovered_enum_cases_in_match.php:201 PhanUnreferencedFunction Possibly zero references to function \testBool4()
+src/252_uncovered_enum_cases_in_match.php:210 PhanUnreferencedFunction Possibly zero references to function \testBool5()
+src/252_uncovered_enum_cases_in_match.php:212 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: false. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:218 PhanUnreferencedFunction Possibly zero references to function \testBoolVarArm()
+src/252_uncovered_enum_cases_in_match.php:230 PhanUnreferencedFunction Possibly zero references to function \testString1()
+src/252_uncovered_enum_cases_in_match.php:232 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with string condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:239 PhanUnreferencedFunction Possibly zero references to function \testString2()
+src/252_uncovered_enum_cases_in_match.php:248 PhanUnreferencedFunction Possibly zero references to function \testInt1()
+src/252_uncovered_enum_cases_in_match.php:250 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:257 PhanUnreferencedFunction Possibly zero references to function \testInt2()
+src/252_uncovered_enum_cases_in_match.php:266 PhanUnreferencedFunction Possibly zero references to function \testFloat1()
+src/252_uncovered_enum_cases_in_match.php:268 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with float condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:275 PhanUnreferencedFunction Possibly zero references to function \testMixed1()
+src/252_uncovered_enum_cases_in_match.php:277 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with mixed condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:292 PhanUnreferencedFunction Possibly zero references to function \testTrueFalseUnion1()
+src/252_uncovered_enum_cases_in_match.php:294 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: false. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:303 PhanUnreferencedFunction Possibly zero references to function \testTrueFalseUnion2()
+src/252_uncovered_enum_cases_in_match.php:305 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: true. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:314 PhanUnreferencedFunction Possibly zero references to function \testTrueFalseUnion3()
+src/252_uncovered_enum_cases_in_match.php:328 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool1()
+src/252_uncovered_enum_cases_in_match.php:330 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: true. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:336 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool2()
+src/252_uncovered_enum_cases_in_match.php:338 PhanPluginNonExhaustiveBoolMatch Match expression with bool condition does not cover all cases - missing: false. Either add the missing cases or add a default arm.
+src/252_uncovered_enum_cases_in_match.php:344 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool3()
+src/252_uncovered_enum_cases_in_match.php:352 PhanUnreferencedFunction Possibly zero references to function \testLiteralBool4()
+src/252_uncovered_enum_cases_in_match.php:365 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch1()
+src/252_uncovered_enum_cases_in_match.php:367 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with \DateTime condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:373 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch2()
+src/252_uncovered_enum_cases_in_match.php:375 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with \stdClass condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:381 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch3()
+src/252_uncovered_enum_cases_in_match.php:390 PhanUnreferencedFunction Possibly zero references to function \testObjectMatch4()
+src/252_uncovered_enum_cases_in_match.php:392 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with \DateTime|string condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
+src/252_uncovered_enum_cases_in_match.php:404 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm1()
+src/252_uncovered_enum_cases_in_match.php:412 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm2()
+src/252_uncovered_enum_cases_in_match.php:420 PhanUnreferencedFunction Possibly zero references to function \testNonConstantArm3()
+src/252_uncovered_enum_cases_in_match.php:428 PhanUnreferencedFunction Possibly zero references to function \testConstantArm1()
+src/252_uncovered_enum_cases_in_match.php:430 PhanPluginNonExhaustiveMatchNeedsDefault Match expression with int condition is non-exhaustive and has no default arm. Add a default arm to handle unexpected values.
