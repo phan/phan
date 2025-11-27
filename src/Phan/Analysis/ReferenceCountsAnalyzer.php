@@ -461,7 +461,7 @@ class ReferenceCountsAnalyzer
         // Traits cannot have constants before PHP 8.2, so using initialized properties
         // as pseudo-constants is a common pattern (fixes #5390).
         if (Config::getValue('dead_code_detection_prefer_false_negative')) {
-            if (Config::get_closest_minimum_target_php_version_id() < 80200) {
+            if (Config::get_closest_target_php_version_id() < 80200) {
                 $default_type = $property->getDefaultType();
                 // Check that the property has an actual initializer value, not just a declaration.
                 // Properties without initializers have a default_type of NullType with real type set
