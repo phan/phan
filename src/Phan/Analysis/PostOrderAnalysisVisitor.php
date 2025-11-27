@@ -4366,9 +4366,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             $kind = $argument->kind;
-            if ($kind === ast\AST_CLOSURE) {
+            if ($kind === ast\AST_CLOSURE || $kind === ast\AST_ARROW_FUNC) {
                 if (Config::get_track_references()) {
                     $this->trackReferenceToClosure($argument);
+                }
+            } elseif ($kind === ast\AST_ARRAY) {
+                // When dead_code_detection_prefer_false_negative is true (default),
+                // mark closures inside arrays passed as function arguments as referenced
+                // to avoid false positives (fixes #5389)
+                if (Config::get_track_references() && Config::getValue('dead_code_detection_prefer_false_negative')) {
+                    $this->trackReferencesToClosuresInArray($argument);
                 }
             }
 
@@ -4673,6 +4680,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->addReference($inner_context);
         } catch (Exception) {
             // Swallow it
+        }
+    }
+
+    /**
+     * Recursively find and track references to closures inside an array node.
+     * This prevents false positive PhanUnreferencedClosure warnings for closures
+     * passed inside arrays to function arguments.
+     */
+    private function trackReferencesToClosuresInArray(Node $array_node): void
+    {
+        foreach ($array_node->children as $child) {
+            if (!$child instanceof Node) {
+                continue;
+            }
+            // Handle AST_ARRAY_ELEM nodes
+            if ($child->kind === ast\AST_ARRAY_ELEM) {
+                $value = $child->children['value'];
+                if ($value instanceof Node) {
+                    if ($value->kind === ast\AST_CLOSURE || $value->kind === ast\AST_ARROW_FUNC) {
+                        $this->trackReferenceToClosure($value);
+                    } elseif ($value->kind === ast\AST_ARRAY) {
+                        // Recursively handle nested arrays
+                        $this->trackReferencesToClosuresInArray($value);
+                    }
+                }
+            }
         }
     }
 
