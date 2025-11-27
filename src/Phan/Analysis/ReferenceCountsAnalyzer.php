@@ -455,6 +455,23 @@ class ReferenceCountsAnalyzer
             // Handle annotations such as property-read and phan-read-only.
             return;
         }
+        // When dead_code_detection_prefer_false_negative is true (default),
+        // skip warnings for initialized properties in traits when targeting PHP < 8.2.
+        // Traits cannot have constants before PHP 8.2, so using initialized properties
+        // as pseudo-constants is a common pattern (fixes #5390).
+        if (Config::getValue('dead_code_detection_prefer_false_negative')) {
+            if (Config::get_closest_minimum_target_php_version_id() < 80200) {
+                if ($property->getDefaultType() !== null) {
+                    $class_fqsen = $property->getClassFQSEN();
+                    if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                        $class = $code_base->getClassByFQSEN($class_fqsen);
+                        if ($class->isTrait()) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
         if ($property->isFromPHPDoc()) {
             $issue_type = Issue::ReadOnlyPHPDocProperty;
         } elseif ($property->isPrivate()) {
