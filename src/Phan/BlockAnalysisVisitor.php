@@ -2319,7 +2319,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     // For multiple conditions in a match arm (OR semantics), each condition should be
                     // analyzed with a CLONE of the original context. The results should be merged
                     // because any one of the conditions could match. (Issue #5398)
-                    $condition_contexts = [$child_context];  // Include original for merge
+                    // Do NOT include the original $child_context in the merge - only include the
+                    // narrowed contexts from each condition. Including the original would undo
+                    // the type narrowing since combineChildContextList() unions all types together.
+                    $condition_contexts = [];
                     foreach ($arm_cond_node->children as $single_cond) {
                         // Clone context for each condition to prevent type narrowing from one
                         // condition affecting the analysis of another condition
@@ -2328,8 +2331,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                         $condition_contexts[] = $match_variable_condition($cloned_child_context, $single_cond);
                     }
                     // Merge all condition contexts - since any one of them could be true,
-                    // the resulting type should be the union of all possibilities
-                    $child_context = (new ContextMergeVisitor($child_context, $condition_contexts, $this->code_base))->combineChildContextList();
+                    // the resulting type should be the union of what each condition proves
+                    // (e.g., is_null($i), is_string($i) => body sees null|string, not null|string|int)
+                    if (\count($condition_contexts) >= 2) {
+                        $child_context = (new ContextMergeVisitor($child_context, $condition_contexts, $this->code_base))->combineChildContextList();
+                    } elseif (\count($condition_contexts) === 1) {
+                        $child_context = $condition_contexts[0];
+                    }
                 } else {
                     // Single condition - pass the original node (original behavior)
                     $child_context = $match_variable_condition($child_context, $arm_cond_node);
