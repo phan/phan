@@ -135,7 +135,7 @@ class StringSuggester
      */
     private function computeSimilarLengthStrings(int $strlen): array
     {
-        $max_levenshtein_distance = (int)(1 + $strlen / 6);
+        $max_levenshtein_distance = 1 + intdiv($strlen, 6);
         $results = [];
 
         foreach ($this->strings as $name_lower => $name) {
