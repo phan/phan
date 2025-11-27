@@ -27,6 +27,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type\NullType;
 use TypeError;
 
 /**
@@ -454,6 +455,30 @@ class ReferenceCountsAnalyzer
         if ($property->isReadOnly()) {
             // Handle annotations such as property-read and phan-read-only.
             return;
+        }
+        // When dead_code_detection_prefer_false_negative is true (default),
+        // skip warnings for initialized properties in traits when targeting PHP < 8.2.
+        // Traits cannot have constants before PHP 8.2, so using initialized properties
+        // as pseudo-constants is a common pattern (fixes #5390).
+        if (Config::getValue('dead_code_detection_prefer_false_negative')) {
+            if (Config::get_closest_target_php_version_id() < 80200) {
+                $default_type = $property->getDefaultType();
+                // Check that the property has an actual initializer value, not just a declaration.
+                // Properties without initializers have a default_type of NullType with real type set
+                // (see ParseVisitor line 894). Properties initialized to literal `null` also have
+                // NullType but WITHOUT real type set (erased in resolveDefaultPropertyNode).
+                $is_uninitialized = $default_type === null ||
+                    ($default_type->isType(NullType::instance(false)) && $default_type->hasRealTypeSet());
+                if (!$is_uninitialized) {
+                    $class_fqsen = $property->getClassFQSEN();
+                    if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                        $class = $code_base->getClassByFQSEN($class_fqsen);
+                        if ($class->isTrait()) {
+                            return;
+                        }
+                    }
+                }
+            }
         }
         if ($property->isFromPHPDoc()) {
             $issue_type = Issue::ReadOnlyPHPDocProperty;
