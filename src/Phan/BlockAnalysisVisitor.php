@@ -2275,9 +2275,29 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
         ['expr' => $arm_expr_node, 'cond' => $arm_cond_node] = $arm_node->children;
         if ($arm_cond_node !== null) {
-            if ($arm_cond_node instanceof Node) {
+            // Handle multiple conditions in a match arm (e.g., `is_null($i), is_a($i, Foo::class) => ...`)
+            // which are represented as AST_EXPR_LIST containing multiple child conditions.
+            // Each condition needs to be analyzed individually for proper analysis. (Issue #5398)
+            $has_multiple_conditions = $arm_cond_node instanceof Node &&
+                $arm_cond_node->kind === ast\AST_EXPR_LIST &&
+                \count($arm_cond_node->children) > 1;
+
+            if ($has_multiple_conditions) {
+                // For multiple conditions in a match arm (e.g., `($x = foo()), $x > 0 => ...`),
+                // we need to analyze them sequentially to propagate side effects (variable assignments),
+                // but avoid type narrowing cross-contamination for the type inference in $match_variable_condition.
+                // (Issue #5398)
+                //
+                // Analyze the AST_EXPR_LIST wrapper node which processes conditions sequentially,
+                // preserving side effects like variable assignments between conditions.
                 $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
+            } else {
+                // Single condition - analyze the wrapper node (original behavior)
+                if ($arm_cond_node instanceof Node) {
+                    $child_context = $this->analyzeAndGetUpdatedContext($child_context, $arm_node, $arm_cond_node);
+                }
             }
+
             if ($cond_type) {
                 (new RedundantConditionVisitor($this->code_base, $child_context))->checkImpossibleMatchArm($match_cond_node, $cond_type, $arm_node);
             }
@@ -2290,12 +2310,46 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // Add the variable type from the **conditions of the** above arms,
                 // if it was possible for it to fall through
                 // TODO: Also support match(get_class($variable))
-                $child_context = $match_variable_condition($child_context, $arm_cond_node);
+                if ($has_multiple_conditions) {
+                    // For multiple conditions in a match arm (OR semantics), each condition should be
+                    // analyzed with a CLONE of the original context. The results should be merged
+                    // because any one of the conditions could match. (Issue #5398)
+                    // Do NOT include the original $child_context in the merge - only include the
+                    // narrowed contexts from each condition. Including the original would undo
+                    // the type narrowing since combineChildContextList() unions all types together.
+                    $condition_contexts = [];
+                    foreach ($arm_cond_node->children as $single_cond) {
+                        // Clone context for each condition to prevent type narrowing from one
+                        // condition affecting the analysis of another condition
+                        $cloned_child_context = $child_context->withClonedScope();
+                        $cloned_child_context->clearCachedUnionTypes();
+                        $condition_contexts[] = $match_variable_condition($cloned_child_context, $single_cond);
+                    }
+                    // Merge all condition contexts - since any one of them could be true,
+                    // the resulting type should be the union of what each condition proves
+                    // (e.g., is_null($i), is_string($i) => body sees null|string, not null|string|int)
+                    if (\count($condition_contexts) >= 2) {
+                        $child_context = (new ContextMergeVisitor($child_context, $condition_contexts, $this->code_base))->combineChildContextList();
+                    } elseif (\count($condition_contexts) === 1) {
+                        $child_context = $condition_contexts[0];
+                    }
+                } else {
+                    // Single condition - pass the original node (original behavior)
+                    $child_context = $match_variable_condition($child_context, $arm_cond_node);
+                }
             }
             if ($match_variable_negated_condition) {
                 // Add the variable types that were ruled out by the above case statements, if it was possible for it to fall through.
                 // TODO: Also support match(get_class($variable))
-                $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $arm_cond_node);
+                if ($has_multiple_conditions) {
+                    // Apply negated type narrowing for each condition individually (Issue #5398)
+                    foreach ($arm_cond_node->children as $single_cond) {
+                        $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $single_cond);
+                    }
+                } else {
+                    // Single condition - pass the original node (original behavior)
+                    $fallthrough_context = $match_variable_negated_condition($fallthrough_context, $arm_cond_node);
+                }
             }
         }
 

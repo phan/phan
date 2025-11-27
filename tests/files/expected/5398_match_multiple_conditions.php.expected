@@ -1,0 +1,1 @@
+%s:19 PhanTypeMismatchArgumentNullableInternal Argument 1 ($object_or_class) is $i of type ?\stdClass|?int but \is_a() takes object|string (expected type to be non-nullable)
