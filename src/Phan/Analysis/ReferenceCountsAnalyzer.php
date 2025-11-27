@@ -464,8 +464,12 @@ class ReferenceCountsAnalyzer
             if (Config::get_closest_minimum_target_php_version_id() < 80200) {
                 $default_type = $property->getDefaultType();
                 // Check that the property has an actual initializer value, not just a declaration.
-                // Properties without initializers have a default_type of NullType (see ParseVisitor line 894).
-                if ($default_type !== null && !$default_type->isType(NullType::instance(false))) {
+                // Properties without initializers have a default_type of NullType with real type set
+                // (see ParseVisitor line 894). Properties initialized to literal `null` also have
+                // NullType but WITHOUT real type set (erased in resolveDefaultPropertyNode).
+                $is_uninitialized = $default_type === null ||
+                    ($default_type->isType(NullType::instance(false)) && $default_type->hasRealTypeSet());
+                if (!$is_uninitialized) {
                     $class_fqsen = $property->getClassFQSEN();
                     if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                         $class = $code_base->getClassByFQSEN($class_fqsen);

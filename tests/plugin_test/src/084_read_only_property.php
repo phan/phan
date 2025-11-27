@@ -46,3 +46,21 @@ class UsesTraitWithUninitializedProperty84 {
 }
 
 (new UsesTraitWithUninitializedProperty84())->getUninit();
+
+/**
+ * Test that trait properties initialized to null are also exempt.
+ * The null literal is a valid initializer for pseudo-constants.
+ */
+trait TraitWithNullInitializer84 {
+    private static $NULL_CONST = null;
+
+    public function getNullConst(): ?int {
+        return self::$NULL_CONST;
+    }
+}
+
+class UsesTraitWithNullInitializer84 {
+    use TraitWithNullInitializer84;
+}
+
+(new UsesTraitWithNullInitializer84())->getNullConst();
