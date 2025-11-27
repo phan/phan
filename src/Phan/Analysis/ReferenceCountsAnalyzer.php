@@ -274,11 +274,66 @@ class ReferenceCountsAnalyzer
                 if ($element->isDynamicProperty()) {
                     continue;
                 }
+                // Copy references from trait magic properties with same name (Issue #5391)
+                self::copyReferencesFromTraitMagicProperties($code_base, $element);
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
                 // E.g. a __get() method that is implemented as `return $this->"_$name"`.
                 // (at)phan-file-suppress is an easy enough workaround, though
             }
             yield $element;
+        }
+    }
+
+    /**
+     * For classes that use traits, copy references from the trait's magic properties
+     * (defined via @property) to the class's real properties with the same name.
+     * This handles the case where a trait method accesses $this->prop and the class
+     * defines its own property with the same name. (Issue #5391)
+     */
+    private static function copyReferencesFromTraitMagicProperties(
+        CodeBase $code_base,
+        Property $class_property
+    ): void {
+        // Only process real properties (not magic/dynamic properties)
+        if ($class_property->isFromPHPDoc() || $class_property->isDynamicProperty()) {
+            return;
+        }
+
+        $class_fqsen = $class_property->getClassFQSEN();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return;
+        }
+
+        $clazz = $code_base->getClassByFQSEN($class_fqsen);
+        $property_name = $class_property->getName();
+
+        // Iterate through traits used by this class
+        foreach ($clazz->getTraitFQSENList() as $trait_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                continue;
+            }
+
+            // Check if the trait has a magic property with the same name
+            $trait_property_fqsen = FullyQualifiedPropertyName::make(
+                $trait_fqsen,
+                $property_name
+            );
+
+            if (!$code_base->hasPropertyWithFQSEN($trait_property_fqsen)) {
+                continue;
+            }
+
+            $trait_property = $code_base->getPropertyByFQSEN($trait_property_fqsen);
+
+            // Only copy from magic properties (those defined via @property)
+            if (!$trait_property->isFromPHPDoc()) {
+                continue;
+            }
+
+            // Copy references from the trait's magic property to the class's real property
+            if ($trait_property->getReferenceCount($code_base) > 0) {
+                $class_property->copyReferencesFrom($trait_property);
+            }
         }
     }
 
