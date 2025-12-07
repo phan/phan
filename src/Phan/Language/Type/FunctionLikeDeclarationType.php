@@ -175,9 +175,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         if ($this->required_param_count > $type->required_param_count) {
             return false;
         }
-        if ($this->getNumberOfParameters() < $type->getNumberOfParameters()) {
-            return false;
-        }
         if ($this->returns_reference !== $type->returns_reference) {
             return false;
         }
@@ -213,9 +210,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
         }
         if ($this->required_param_count > $type->required_param_count) {
-            return false;
-        }
-        if ($this->getNumberOfParameters() < $type->getNumberOfParameters()) {
             return false;
         }
         if ($this->returns_reference !== $type->returns_reference) {
