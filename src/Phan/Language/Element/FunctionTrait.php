@@ -2054,7 +2054,6 @@ trait FunctionTrait
             }
             $new_closure = $this->createClosureForAssertion($code_base, $assertion, $i);
             if ($new_closure) {
-                // @phan-suppress-next-line PhanTypeMismatchArgument
                 $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($new_closure, $closure);
             }
         }

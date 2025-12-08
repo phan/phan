@@ -80,3 +80,18 @@ expects_void_variadic(function(string ...$args) { var_export($args); });
 expects_void_variadic(function(int ...$args) { var_export($args); });  // should warn
 expects_void_variadic(function(...$args) { var_export($args); });
 expects_void_variadic(function(string $arg) { var_export($arg); });  // should warn
+
+/**
+ * Test case for issue #5402: Closure with fewer parameters than expected callable
+ * This is valid in PHP - extra arguments are simply ignored.
+ * @param Closure(string, int):mixed $fn
+ */
+function expects_two_params(Closure $fn) {
+    $fn('item', 0);
+}
+
+expects_two_params(function(string $item) { echo $item; });  // valid - fewer params is OK
+expects_two_params(function(string $item, int $key) { echo $item, $key; });  // valid - exact params
+expects_two_params(function(string $item, int $key = 0) { echo $item, $key; });  // valid
+expects_two_params(function() { echo "no params"; });  // valid - no required params
+expects_two_params(function(string $item, int $key, bool $extra) { echo $item; });  // should warn - requires 3 params
