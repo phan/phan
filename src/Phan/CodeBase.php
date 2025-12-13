@@ -588,7 +588,7 @@ class CodeBase
                 }
             }
         } finally {
-            // Don't need to track these any more *afteR* loading everything.
+            // Don't need to track these any more *after* loading everything.
             // hasFunctionWithFQSEN calls hasInternalFunctionWithFQSEN,
             // which will only load the function if it was in internal_function_fqsen_set
             $this->internal_function_fqsen_set = new Set();
