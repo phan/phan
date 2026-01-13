@@ -209,16 +209,23 @@ class AttributeAnalyzer
                     // the error for userland attributes though, see
                     // php/php-src#18466
                     $shouldEmit = true;
-                    if ($class->isPHPInternal()) {
-                        if ($element instanceof Property
-                            && ($element->getPhanFlags() & Flags::IS_PROMOTED_PROPERTY)
+                    $isPromoted = false;
+                    if ($element instanceof Property
+                        && ($element->getPhanFlags() & Flags::IS_PROMOTED_PROPERTY)
+                    ) {
+                        $isPromoted = true;
+                        if ($class->isPHPInternal()
                             && ($actual_flag === Attribute::TARGET_PROPERTY)
                             && ($expected_flags & Attribute::TARGET_PARAMETER)
                         ) {
                             $shouldEmit = false;
                         }
-                        if ($element instanceof Parameter
-                            && ($element->getFlags() & Parameter::PARAM_MODIFIER_FLAGS)
+                    }
+                    if ($element instanceof Parameter
+                        && ($element->getFlags() & Parameter::PARAM_MODIFIER_FLAGS)
+                    ) {
+                        $isPromoted = true;
+                        if ($class->isPHPInternal()
                             && ($actual_flag === Attribute::TARGET_PARAMETER)
                             && ($expected_flags & Attribute::TARGET_PROPERTY)
                         ) {
@@ -226,18 +233,32 @@ class AttributeAnalyzer
                         }
                     }
                     if ($shouldEmit) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $declaration->getContext(),
-                            Issue::AttributeWrongTarget,
-                            $attribute_lineno,
-                            $fqsen,
-                            $class->getContext()->getFile(),
-                            $class->getContext()->getLineNumberStart(),
-                            self::getTargetNames($expected_flags),
-                            $element,
-                            self::getTargetNames($actual_flag)
-                        );
+                        if ($isPromoted) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $declaration->getContext(),
+                                Issue::AttributeWrongTargetPromotedProperty,
+                                $attribute_lineno,
+                                $fqsen,
+                                $class->getContext()->getFile(),
+                                $class->getContext()->getLineNumberStart(),
+                                self::getTargetNames($expected_flags),
+                                $element
+                            );
+                        } else {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $declaration->getContext(),
+                                Issue::AttributeWrongTarget,
+                                $attribute_lineno,
+                                $fqsen,
+                                $class->getContext()->getFile(),
+                                $class->getContext()->getLineNumberStart(),
+                                self::getTargetNames($expected_flags),
+                                $element,
+                                self::getTargetNames($actual_flag)
+                            );
+                        }
                     }
                 }
                 // TODO: Pass this to the method call analyzer?

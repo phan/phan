@@ -306,6 +306,7 @@ class Issue
     public const AttributeNonAttribute = 'PhanAttributeNonAttribute';
     public const AttributeNonRepeatable = 'PhanAttributeNonRepeatable';
     public const AttributeWrongTarget = 'PhanAttributeWrongTarget';
+    public const AttributeWrongTargetPromotedProperty = 'PhanAttributeWrongTargetPromotedProperty';
     public const TypeUnexpectedEnumCaseType = 'PhanTypeUnexpectedEnumCaseType';
     public const InstanceMethodWithNoEnumCases = 'PhanInstanceMethodWithNoEnumCases';
     public const EnumCannotHaveProperties = 'PhanEnumCannotHaveProperties';
@@ -3105,6 +3106,14 @@ class Issue
                 'Saw use of attribute {CLASS} declared at {FILE}:{LINE} which supports being declared on {DETAILS} but it was declared on {CODE} which requires an attribute declared to support {DETAILS}',
                 self::REMEDIATION_B,
                 10173
+            ),
+            new Issue(
+                self::AttributeWrongTargetPromotedProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Attribute {CLASS} declared at {FILE}:{LINE} supports {DETAILS} but was used on constructor promoted property {CODE}. Promoted properties require attributes to support both \Attribute::TARGET_PARAMETER and \Attribute::TARGET_PROPERTY for full compatibility',
+                self::REMEDIATION_B,
+                10177
             ),
             new Issue(
                 self::TypeUnexpectedEnumCaseType,
