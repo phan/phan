@@ -1585,8 +1585,9 @@ class CodeBase
         if ($class_fqsen_class_map_map->offsetExists($fqsen)) {
             return $class_fqsen_class_map_map->offsetGet($fqsen);
         }
-        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap());
-        return $class_fqsen_class_map_map->offsetGet($fqsen);
+        $map = new ClassMap();
+        $class_fqsen_class_map_map->offsetSet($fqsen, $map);
+        return $map;
     }
 
     /**

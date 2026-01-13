@@ -84,6 +84,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     private static $skip_method_nodes = null;
 
     /**
+     * AST node kinds that create closed scopes whose internal state should not leak out.
+     * Used for O(1) lookup instead of in_array().
+     * @var array<int,true>
+     */
+    private const CLOSED_SCOPE_KINDS = [
+        \ast\AST_CLOSURE => true,
+        \ast\AST_ARROW_FUNC => true,
+        \ast\AST_FUNC_DECL => true,
+        \ast\AST_METHOD => true,
+        \ast\AST_CLASS => true,
+    ];
+
+    /**
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
@@ -272,7 +285,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // or classes to subsequent sibling statements. These are "closed contexts" whose internal
                 // state should not leak out. For other statements, propagate the context so that subsequent
                 // statements can see variables defined earlier.
-                if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+                if (!isset(self::CLOSED_SCOPE_KINDS[$child_node->kind])) {
                     $context = $updated_context;
                 }
             } catch (IssueException $e) {
@@ -639,7 +652,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // or classes to subsequent sibling children. These are "closed contexts" whose internal
             // state should not leak out. For other children, propagate the context so that subsequent
             // children can see variables defined earlier.
-            if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+            if (!isset(self::CLOSED_SCOPE_KINDS[$child_node->kind])) {
                 $context = $updated_context;
             }
         }
@@ -1767,7 +1780,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // or classes to sibling statements. These are "closed contexts" whose internal state
             // should not leak out. For other statements, propagate the context so that subsequent
             // statements can see variables defined earlier.
-            if (!\in_array($child_node->kind, [\ast\AST_CLOSURE, \ast\AST_ARROW_FUNC, \ast\AST_FUNC_DECL, \ast\AST_METHOD, \ast\AST_CLASS], true)) {
+            if (!isset(self::CLOSED_SCOPE_KINDS[$child_node->kind])) {
                 $child_context = $updated_context;
             }
 

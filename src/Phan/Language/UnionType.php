@@ -1425,8 +1425,13 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }
+        // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
+        $other_set_ids = [];
+        foreach ($other_type_set as $type) {
+            $other_set_ids[\spl_object_id($type)] = true;
+        }
         foreach ($type_set as $type) {
-            if (!\in_array($type, $other_type_set, true)) {
+            if (!isset($other_set_ids[\spl_object_id($type)])) {
                 return false;
             }
         }
@@ -1451,8 +1456,13 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }
+        // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
+        $other_set_ids = [];
+        foreach ($other_type_set as $type) {
+            $other_set_ids[\spl_object_id($type)] = true;
+        }
         foreach ($type_set as $type) {
-            if (!\in_array($type, $other_type_set, true)) {
+            if (!isset($other_set_ids[\spl_object_id($type)])) {
                 return false;
             }
         }
@@ -1461,8 +1471,13 @@ class UnionType implements Serializable, Stringable
         if (\count($real_type_set) !== \count($other_real_type_set)) {
             return false;
         }
+        // Also optimize the real type set comparison
+        $other_real_set_ids = [];
+        foreach ($other_real_type_set as $type) {
+            $other_real_set_ids[\spl_object_id($type)] = true;
+        }
         foreach ($real_type_set as $type) {
-            if (!\in_array($type, $other_real_type_set, true)) {
+            if (!isset($other_real_set_ids[\spl_object_id($type)])) {
                 return false;
             }
         }
