@@ -1101,6 +1101,14 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @override
+     */
+    public function withArrayShapeFieldsRequiredForCount(int $expected_count): UnionType
+    {
+        return $this;  // empty
+    }
+
+    /**
      * @param Closure(UnionType):UnionType $closure
      * @override
      */

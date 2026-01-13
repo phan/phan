@@ -119,6 +119,42 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Returns the count of optional (possibly undefined) fields.
+     */
+    public function getOptionalFieldCount(): int
+    {
+        $count = 0;
+        foreach ($this->field_types as $field_type) {
+            if ($field_type->isPossiblyUndefined()) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * Returns a new ArrayShapeType with all optional fields made required.
+     * Useful when count() assertions prove all fields must be present.
+     */
+    public function withAllFieldsRequired(): ArrayShapeType
+    {
+        $new_field_types = [];
+        $changed = false;
+        foreach ($this->field_types as $key => $field_type) {
+            if ($field_type->isPossiblyUndefined()) {
+                $new_field_types[$key] = $field_type->withIsPossiblyUndefined(false);
+                $changed = true;
+            } else {
+                $new_field_types[$key] = $field_type;
+            }
+        }
+        if (!$changed) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+    }
+
+    /**
      * Returns an immutable array shape type instance without $field_key.
      */
     public function withoutField(bool|float|int|string $field_key): ArrayShapeType
