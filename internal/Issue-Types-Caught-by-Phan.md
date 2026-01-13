@@ -2453,6 +2453,14 @@ Saw use of attribute {CLASS} declared at {FILE}:{LINE} which supports being decl
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php82_files/expected/007_userland_attributes_promoted.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php82_files/src/007_userland_attributes_promoted.php#L11).
 
+## PhanAttributeWrongTargetPromotedProperty
+
+```
+Attribute {CLASS} declared at {FILE}:{LINE} supports {DETAILS} but was used on constructor promoted property {CODE}. Promoted properties require attributes to support both \Attribute::TARGET_PARAMETER and \Attribute::TARGET_PROPERTY for full compatibility
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php82_files/expected/007_userland_attributes_promoted.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php82_files/src/007_userland_attributes_promoted.php#L11).
+
 ## PhanCoalescingAlwaysNull
 
 ```
