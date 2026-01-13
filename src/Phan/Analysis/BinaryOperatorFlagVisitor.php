@@ -897,7 +897,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if (\array_is_list($common_left_fields) && \array_is_list($possible_right_fields)) {
             foreach (\array_merge($left->getRealTypeSet(), $right->getRealTypeSet()) as $type) {
                 if ($type instanceof ArrayShapeType) {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!$type->canCastToList()) {
                         return;
                     }

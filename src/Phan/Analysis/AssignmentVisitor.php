@@ -2631,7 +2631,6 @@ class AssignmentVisitor extends AnalysisVisitor
                         if ($other_type instanceof ListType) {
                             return true;
                         }
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         if ($other_type instanceof ArrayShapeType && $other_type->canCastToList()) {
                             return true;
                         }
@@ -2650,7 +2649,6 @@ class AssignmentVisitor extends AnalysisVisitor
                         if ($other_type instanceof AssociativeArrayType) {
                             return true;
                         }
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         if ($other_type instanceof ArrayShapeType && $other_type->canCastToList()) {
                             return true;
                         }
