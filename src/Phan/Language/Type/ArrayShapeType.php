@@ -155,6 +155,36 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Returns a new ArrayShapeType with the first $n fields made required.
+     * Only valid for list-like shapes (sequential integer keys from 0).
+     * Useful when count() assertions on lists prove the first N elements exist.
+     *
+     * @param int $n The number of fields to make required (from key 0)
+     */
+    public function withFirstNFieldsRequired(int $n): ArrayShapeType
+    {
+        if ($n <= 0) {
+            return $this;
+        }
+        $new_field_types = [];
+        $changed = false;
+        $i = 0;
+        foreach ($this->field_types as $key => $field_type) {
+            if ($i < $n && $field_type->isPossiblyUndefined()) {
+                $new_field_types[$key] = $field_type->withIsPossiblyUndefined(false);
+                $changed = true;
+            } else {
+                $new_field_types[$key] = $field_type;
+            }
+            $i++;
+        }
+        if (!$changed) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+    }
+
+    /**
      * Returns an immutable array shape type instance without $field_key.
      */
     public function withoutField(bool|float|int|string $field_key): ArrayShapeType
@@ -467,8 +497,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
-     * True if this can cast to a list type, based on the keys
-     * @internal
+     * True if this can cast to a list type, based on the keys.
+     * A list has sequential integer keys starting at 0, with optional keys only at the end.
      */
     public function canCastToList(): bool
     {

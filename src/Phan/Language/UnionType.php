@@ -5384,14 +5384,17 @@ class UnionType implements Serializable, Stringable
 
     /**
      * When count($x) == $expected_count is asserted, narrow array shapes
-     * where the total field count equals $expected_count by making all
-     * optional fields required.
+     * by making optional fields required based on the count.
      *
      * This only narrows "closed" array shapes where the real type is also
-     * an ArrayShapeType with the same structure. PHPDoc array shapes with
-     * a generic real type (like `array`) are "open" and may have additional
-     * keys not declared in the shape, so count assertions cannot prove
-     * which specific keys are present.
+     * an ArrayShapeType. PHPDoc array shapes with a generic real type
+     * (like `array`) are "open" and may have additional keys not declared
+     * in the shape, so count assertions cannot prove which specific keys
+     * are present.
+     *
+     * For list-like shapes (sequential integer keys from 0), if the expected
+     * count is less than the total field count, the first N fields are made
+     * required since lists must have contiguous keys.
      *
      * @param int $expected_count The count value being asserted
      * @return UnionType The narrowed type
@@ -5403,35 +5406,43 @@ class UnionType implements Serializable, Stringable
         }
 
         // Check if real types confirm the shape is "closed"
-        // Only narrow if ALL real types are ArrayShapeTypes with matching field counts
+        // Only narrow if ALL real types are ArrayShapeTypes
         $real_type_set = $this->getRealTypeSet();
         if (\count($real_type_set) === 0) {
             // No real type info - be conservative and don't narrow
             return $this;
         }
 
+        $all_lists = true;
         foreach ($real_type_set as $real_type) {
             if (!($real_type instanceof ArrayShapeType)) {
                 // Real type is generic array - shape is "open", don't narrow
                 return $this;
             }
-            $real_field_count = \count($real_type->getFieldTypes());
-            if ($real_field_count !== $expected_count) {
-                // Real type has different field count - don't narrow
-                return $this;
+            if (!$real_type->canCastToList()) {
+                $all_lists = false;
             }
         }
 
         // Real types confirm closed shape - safe to narrow PHPDoc types
         return $this->asMappedUnionType(
-            static function (Type $type) use ($expected_count): Type {
+            static function (Type $type) use ($expected_count, $all_lists): Type {
                 if (!($type instanceof ArrayShapeType)) {
                     return $type;
                 }
                 $field_count = \count($type->getFieldTypes());
+
+                // Case 1: Exact match - make all optional fields required
                 if ($field_count === $expected_count && $type->getOptionalFieldCount() > 0) {
                     return $type->withAllFieldsRequired();
                 }
+
+                // Case 2: List with more fields than expected count
+                // Make the first N fields required (lists have contiguous keys from 0)
+                if ($all_lists && $field_count > $expected_count && $type->canCastToList()) {
+                    return $type->withFirstNFieldsRequired($expected_count);
+                }
+
                 return $type;
             }
         );
