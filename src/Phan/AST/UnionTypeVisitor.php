@@ -2515,12 +2515,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return null;
             }
             if ($resulting_element_type->hasRealTypeSet()) {
+                // Preserve the isPossiblyUndefined status when creating the new UnionType
+                // (UnionType::of creates a plain UnionType, which loses AnnotatedUnionType's isPossiblyUndefined flag)
+                $was_possibly_undefined = $resulting_element_type->isPossiblyUndefined();
                 $resulting_element_type = UnionType::of(
                     $resulting_element_type->getTypeSet(),
                     \array_map(static function (Type $type): Type {
                         return $type->withIsNullable(true);
                     }, $resulting_element_type->getRealTypeSet())
                 );
+                if ($was_possibly_undefined) {
+                    $resulting_element_type = $resulting_element_type->withIsPossiblyUndefined(true);
+                }
             }
         }
         if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
