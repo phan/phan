@@ -613,6 +613,8 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
         $property->setAttributeList($parameter->getAttributeList());
+        // Ensure the IS_PROMOTED_PROPERTY flag is set even when merging with an existing @property PHPDoc
+        $property->setPhanFlags($property->getPhanFlags() | Flags::IS_PROMOTED_PROPERTY);
         // Get a comment on the property declaration
         $property->setHasWriteReference(); // Assigned from within constructor
         $property->addReference($context); // Assigned from within constructor
