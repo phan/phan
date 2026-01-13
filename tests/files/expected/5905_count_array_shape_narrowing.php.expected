@@ -1,0 +1,7 @@
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{0?:'a',1?:'b'}(real=array)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{0:'a',1:'b'}(real=non-empty-array<mixed,mixed>)
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{a:int,b?:string}(real=array)
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{a:int,b:string}(real=non-empty-array<mixed,mixed>)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array{0:'a',1:'b'}(real=non-empty-array<mixed,mixed>)
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0?:'a',1?:'b'}(real=array{0?:'a',1?:'b'})
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0:'a',1:'b'}(real=array{0:'a',1:'b'})

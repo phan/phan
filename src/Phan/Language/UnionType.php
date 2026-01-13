@@ -5383,6 +5383,33 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * When count($x) == $expected_count is asserted, narrow array shapes
+     * where the total field count equals $expected_count by making all
+     * optional fields required.
+     *
+     * @param int $expected_count The count value being asserted
+     * @return UnionType The narrowed type
+     */
+    public function withArrayShapeFieldsRequiredForCount(int $expected_count): UnionType
+    {
+        if ($expected_count < 0) {
+            return $this;
+        }
+        return $this->asMappedUnionType(
+            static function (Type $type) use ($expected_count): Type {
+                if (!($type instanceof ArrayShapeType)) {
+                    return $type;
+                }
+                $field_count = \count($type->getFieldTypes());
+                if ($field_count === $expected_count && $type->getOptionalFieldCount() > 0) {
+                    return $type->withAllFieldsRequired();
+                }
+                return $type;
+            }
+        );
+    }
+
+    /**
      * @return bool true if at least one of the types in this type set is `mixed` or `?mixed`
      *              Returns true for `non-null-mixed` and `non-empty-mixed` as well.
      * @deprecated this function was added before `non-null-mixed`

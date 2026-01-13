@@ -172,6 +172,9 @@ final class EmptyUnionTypeTest extends TestBase
                 if ($param->getName() === 'key_type') {
                     return [GenericArrayType::KEY_INT, GenericArrayType::KEY_STRING, GenericArrayType::KEY_MIXED];
                 }
+                if ($param->getName() === 'expected_count') {
+                    return [0, 1, 2];
+                }
                 break;
             case CodeBase::class:
                 return [new CodeBase([], [], [], [], [])];
