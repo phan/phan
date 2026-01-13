@@ -5387,6 +5387,12 @@ class UnionType implements Serializable, Stringable
      * where the total field count equals $expected_count by making all
      * optional fields required.
      *
+     * This only narrows "closed" array shapes where the real type is also
+     * an ArrayShapeType with the same structure. PHPDoc array shapes with
+     * a generic real type (like `array`) are "open" and may have additional
+     * keys not declared in the shape, so count assertions cannot prove
+     * which specific keys are present.
+     *
      * @param int $expected_count The count value being asserted
      * @return UnionType The narrowed type
      */
@@ -5395,6 +5401,28 @@ class UnionType implements Serializable, Stringable
         if ($expected_count < 0) {
             return $this;
         }
+
+        // Check if real types confirm the shape is "closed"
+        // Only narrow if ALL real types are ArrayShapeTypes with matching field counts
+        $real_type_set = $this->getRealTypeSet();
+        if (\count($real_type_set) === 0) {
+            // No real type info - be conservative and don't narrow
+            return $this;
+        }
+
+        foreach ($real_type_set as $real_type) {
+            if (!($real_type instanceof ArrayShapeType)) {
+                // Real type is generic array - shape is "open", don't narrow
+                return $this;
+            }
+            $real_field_count = \count($real_type->getFieldTypes());
+            if ($real_field_count !== $expected_count) {
+                // Real type has different field count - don't narrow
+                return $this;
+            }
+        }
+
+        // Real types confirm closed shape - safe to narrow PHPDoc types
         return $this->asMappedUnionType(
             static function (Type $type) use ($expected_count): Type {
                 if (!($type instanceof ArrayShapeType)) {
