@@ -546,9 +546,9 @@ class Analysis
         CLI::progress('method', 0.0, null);
         foreach ($method_set as $method) {
             if ($show_progress) {
-                // I suspect that method analysis is hydrating some of the classes,
-                // adding even more inherited methods to the end of the set.
-                // This recalculation is needed so that the progress bar is accurate.
+                // Method analysis can trigger class hydration which adds
+                // inherited methods to the end of the set. This recalculation
+                // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
             $analyze_function_or_method($method);
