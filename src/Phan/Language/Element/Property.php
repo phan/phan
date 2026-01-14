@@ -643,16 +643,30 @@ class Property extends ClassElement
      */
     public function cloneWithTemplateParameterTypeMap(array $template_type_map): self
     {
-        $property = clone($this);
-
+        // Early exit: if no template types to substitute, just clone
         if (!$template_type_map) {
-            return $property;
+            return clone($this);
         }
 
-        if (
-            !$property->hasUnresolvedFutureUnionType()
-            && $property->getUnionType()->hasTemplateTypeRecursive()
-        ) {
+        // Check if this property actually has any template types that need substitution
+        $has_template_types = false;
+        if (!$this->hasUnresolvedFutureUnionType() &&
+            $this->getUnionType()->hasTemplateTypeRecursive()) {
+            $has_template_types = true;
+        }
+        if (!$has_template_types && $this->getPHPDocUnionType()->hasTemplateTypeRecursive()) {
+            $has_template_types = true;
+        }
+
+        // If no template types found, just clone
+        if (!$has_template_types) {
+            return clone($this);
+        }
+
+        $property = clone($this);
+
+        if (!$property->hasUnresolvedFutureUnionType() &&
+            $property->getUnionType()->hasTemplateTypeRecursive()) {
             $property->setUnionType(
                 $property->getUnionType()->withTemplateParameterTypeMap($template_type_map)
             );

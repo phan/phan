@@ -22,8 +22,6 @@ use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 
-use function count;
-
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
@@ -158,27 +156,40 @@ final class CallableParamPlugin extends PluginV3 implements
      */
     private static function generateClosureForFunctionInterface(FunctionInterface $function): ?Closure
     {
+        $parameter_list = $function->getParameterList();
+        // Quick exit for functions with no parameters - very common for getters, etc.
+        if (!$parameter_list) {
+            return null;
+        }
+
         $params = [];
-        foreach ($function->getParameterList() as $i => $param) {
-            $params[$i] = 0;
+        foreach ($parameter_list as $i => $param) {
+            $union_type = $param->getUnionType();
+            // Skip empty types early
+            if ($union_type->isEmpty()) {
+                continue;
+            }
+            $flags = 0;
             // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
             // Explicitly require at least one type to be `callable`
-            if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
                 // TODO: More specific closure for CallableDeclarationType
                 // TODO: Use `Type::isCallable`? It might be slower though.
                 return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
-                $params[$i] |= self::PARAM_HAS_CALLABLE;
+                $flags |= self::PARAM_HAS_CALLABLE;
             }
-            if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
                 return $type instanceof ClassStringType;
             })) {
-                $params[$i] |= self::PARAM_HAS_CLASSSTRING;
+                $flags |= self::PARAM_HAS_CLASSSTRING;
+            }
+            if ($flags) {
+                $params[$i] = $flags;
             }
         }
 
-        $params = array_filter($params);
-        if (count($params) === 0) {
+        if (!$params) {
             return null;
         }
         // Generate a de-duplicated closure.

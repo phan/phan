@@ -74,11 +74,19 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     ) : FullyQualifiedClassElement|static {
         $name = static::canonicalName($name);
 
-        $key = $fully_qualified_class_name->__toString() . '::' . $name . ',' . $alternate_id .
-               '|' . static::class;
+        // Use spl_object_id for cache lookup since FullyQualifiedClassName objects
+        // are deduplicated via memoization and persist for the process lifetime.
+        $class_id = \spl_object_id($fully_qualified_class_name);
 
         static $cache = [];
-        return $cache[$key] ?? ($cache[$key] = new static(
+        // Two-level cache: by class object ID, then by element key
+        if (!isset($cache[$class_id])) {
+            $cache[$class_id] = [];
+        }
+
+        $key = $name . ',' . $alternate_id . '|' . static::class;
+
+        return $cache[$class_id][$key] ?? ($cache[$class_id][$key] = new static(
             $fully_qualified_class_name,
             $name,
             $alternate_id

@@ -1096,9 +1096,44 @@ class Method extends ClassElement implements FunctionInterface
         $method = clone($this);
 
         // Clone the parameter list, so that modifying the parameters won't modify the others.
+        // Parameters are mutated in place during analysis, so this is required.
         $method->cloneParameterList();
 
+        // Early exit: if no template types to substitute, return clone
         if (!$template_type_map) {
+            return $method;
+        }
+
+        // Check if this method actually has any template types that need substitution
+        $has_template_types = $this->getUnionType()->hasTemplateTypeRecursive();
+
+        if (!$has_template_types) {
+            foreach ($this->parameter_list as $parameter) {
+                if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                    $has_template_types = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$has_template_types && ($comment = $this->comment)) {
+            if ($comment->hasReturnUnionType() &&
+                $comment->getReturnType()->hasTemplateTypeRecursive()) {
+                $has_template_types = true;
+            }
+            if (!$has_template_types) {
+                // Check named parameters (getParameterMap) since getParameterList only has unnamed leftovers
+                foreach ($comment->getParameterMap() as $param) {
+                    if ($param->getUnionType()->hasTemplateTypeRecursive()) {
+                        $has_template_types = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If no template types found, return clone without doing substitution
+        if (!$has_template_types) {
             return $method;
         }
 
