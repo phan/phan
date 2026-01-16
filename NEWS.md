@@ -1,5 +1,29 @@
 ## Phan NEWS
 
+Jan 16 2026, Phan 6.0.0
+-----------------------
+
+Bug fixes:
+- Fixed crash when analyzing implicit float-to-int conversion in modulo operator ([#5392](https://github.com/phan/phan/issues/5392))
+- Fixed `PhanUnreferencedClosure` being emitted too aggressively for closure function parameters ([#5389](https://github.com/phan/phan/issues/5389))
+- Fixed false positives for readonly properties in traits when targeting PHP < 8.2 ([#5390](https://github.com/phan/phan/issues/5390))
+- Fixed detection of property usages from trait methods ([#5391](https://github.com/phan/phan/issues/5391))
+- Fixed `match` expression type narrowing when multiple conditional expressions are used ([#5398](https://github.com/phan/phan/issues/5398))
+- Fixed `PhanTypeMismatchArgumentSuperType` false positives on closure parameters ([#5402](https://github.com/phan/phan/issues/5402))
+- Fixed array shape narrowing with `count()` - only narrow closed array shapes with optional keys ([#5406](https://github.com/phan/phan/issues/5406))
+- Improved distinction between list-like array shapes and general array shapes ([#5407](https://github.com/phan/phan/issues/5407))
+- Fixed "Possibly invalid offset" only appearing for some accesses in a foreach loop ([#5409](https://github.com/phan/phan/issues/5409))
+- Fixed `IS_PROMOTED_PROPERTY` flag detection for constructor property promotion ([#5411](https://github.com/phan/phan/issues/5411), [#5416](https://github.com/phan/phan/pull/5416))
+- Fixed non-exhaustive `match` detection with literal bool edge cases ([#5388](https://github.com/phan/phan/issues/5388))
+
+Improvements:
+- Performance optimizations for template type substitution and FQSEN caching ([#5417](https://github.com/phan/phan/pull/5417), [#5418](https://github.com/phan/phan/pull/5418))
+  - Early-exit checks in `Method::cloneWithTemplateParameterTypeMap` to avoid unnecessary cloning
+  - Optimized `CallableParamPlugin` for functions with no parameters
+  - Two-level cache for `FullyQualifiedClassElement::make` using object IDs
+- Allow Symfony 8.0 compatibility ([#5401](https://github.com/phan/phan/pull/5401))
+- Fixed `composer-patches` package location for PHP 8.5 compatibility ([#5387](https://github.com/phan/phan/pull/5387))
+
 Nov 20 2025, Phan 6.0.0-beta
 ----------------------------
 Breaking changes:
