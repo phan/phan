@@ -121,6 +121,27 @@ final class ValueOfType extends \Phan\Language\Type implements MultiType
      */
     public function isPossiblyObject(): bool
     {
+        $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
+        // If we have unresolved templates, we don't know - assume possibly object
+        if ($inner_union->hasTemplateTypeRecursive()) {
+            return true;
+        }
+        // Otherwise, check if resolved types could produce objects
+        foreach ($inner_union->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                if ($type->genericArrayElementUnionType()->hasPossiblyObjectTypes()) {
+                    return true;
+                }
+            } elseif ($type instanceof GenericArrayInterface) {
+                if ($type->genericArrayElementUnionType()->hasPossiblyObjectTypes()) {
+                    return true;
+                }
+            } elseif ($type instanceof GenericIterableType) {
+                if ($type->getElementUnionType()->hasPossiblyObjectTypes()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
