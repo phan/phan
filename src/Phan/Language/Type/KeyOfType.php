@@ -64,22 +64,17 @@ final class KeyOfType extends \Phan\Language\Type implements MultiType
                 return true;
             }
             if ($type instanceof ArrayShapeType) {
-                // Array shapes have literal keys, check if any field type keys have templates
-                // For array shapes, keys are literals (string/int), not types with templates
+                // Array shapes have literal keys (string/int), not types with templates
                 // So we don't need to check further - array shape keys are always resolved
                 continue;
+            } elseif ($type instanceof GenericArrayTemplateKeyType) {
+                // GenericArrayTemplateKeyType stores template key types
+                // Its hasTemplateTypeRecursive() returns true, meaning keys have templates
+                return true;
             } elseif ($type instanceof GenericArrayInterface) {
-                $key_type = $type->getKeyType();
-                // KEY_INT and KEY_STRING are resolved, KEY_MIXED could be template-dependent
-                if ($key_type === GenericArrayType::KEY_MIXED) {
-                    // Check if the original type has template in key position
-                    // For generic arrays like array<T, V>, check if T is a template
-                    if ($type instanceof GenericArrayType) {
-                        // GenericArrayType doesn't store key type as UnionType, just key_type constant
-                        // So we can't check for templates directly - assume resolved
-                        continue;
-                    }
-                }
+                // Regular GenericArrayType with KEY_INT/KEY_STRING/KEY_MIXED
+                // These are resolved key types, not template-dependent
+                continue;
             } elseif ($type instanceof GenericIterableType) {
                 if ($type->getKeyUnionType()->hasTemplateTypeRecursive()) {
                     return true;
