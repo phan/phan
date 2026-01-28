@@ -803,13 +803,20 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                 $cache[$i] = $argument_type;
                 return $argument_type;
             };
+            // Type transformer for ternary branch analysis: extract element types from array types
+            // This is needed so that when analyzing ternary expressions like ($a ? [1,2] : [3,4]),
+            // we check the element types of each branch against the callback parameter type,
+            // not the array types themselves. See https://github.com/phan/phan/issues/5424
+            $element_type_transformer = static fn(UnionType $type): UnionType => $type->genericArrayElementTypes(true, $code_base);
+
             foreach ($function_like_list as $mapping_function) {
                 ArgumentType::analyzeForCallback(
                     $mapping_function,
                     $arguments,
                     $context,
                     $code_base,
-                    $get_argument_type_for_array_map
+                    $get_argument_type_for_array_map,
+                    $element_type_transformer
                 );
             }
             if (Config::get_track_references()) {

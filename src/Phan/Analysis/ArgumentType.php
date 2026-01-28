@@ -455,13 +455,17 @@ final class ArgumentType
      *
      * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      * Fetches the types of individual arguments.
+     *
+     * @param ?Closure(UnionType):UnionType $type_transformer Optional transformer to apply to types
+     *        when analyzing ternary branches. For array_map, this should extract element types.
      */
     public static function analyzeForCallback(
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
         CodeBase $code_base,
-        Closure $get_argument_type
+        Closure $get_argument_type,
+        ?Closure $type_transformer = null
     ): void {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -527,7 +531,8 @@ final class ArgumentType
             $method,
             $arg_nodes,
             $context,
-            $get_argument_type
+            $get_argument_type,
+            $type_transformer
         );
     }
 
@@ -545,13 +550,16 @@ final class ArgumentType
      * The context in which we see the call
      *
      * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param ?Closure(UnionType):UnionType $type_transformer Optional transformer to apply to types
+     *        when analyzing ternary branches.
      */
     private static function analyzeParameterListForCallback(
         CodeBase $code_base,
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
-        Closure $get_argument_type
+        Closure $get_argument_type,
+        ?Closure $type_transformer = null
     ): void {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
@@ -659,7 +667,8 @@ final class ArgumentType
                 $lineno,
                 $i,
                 $argument,
-                new ast\Node(ast\AST_ARG_LIST, 0, $arg_nodes, $lineno)
+                new ast\Node(ast\AST_ARG_LIST, 0, $arg_nodes, $lineno),
+                $type_transformer
             );
             if ($parameter->isPassByReference()) {
                 if ($argument instanceof Node) {
@@ -1133,8 +1142,10 @@ final class ArgumentType
      * @param int $i the index of the parameter.
      * @param Node|string|int|float|null $argument_node
      * @param ?Node $node the node of the call TODO: Default
+     * @param ?Closure(UnionType):UnionType $type_transformer Optional transformer to apply to types
+     *        (e.g., for array_map callback analysis, this extracts element types from array types)
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, Node|float|int|string|null $argument_node, ?Node $node): void
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i, Node|float|int|string|null $argument_node, ?Node $node, ?Closure $type_transformer = null): void
     {
         // Special handling for ternary expressions: check each branch individually
         // to catch type mismatches that would be hidden by union type merging.
@@ -1146,7 +1157,7 @@ final class ArgumentType
             $cond_truthiness = UnionTypeVisitor::checkCondUnconditionalTruthiness($cond_node);
             if ($cond_truthiness === null) {
                 // Condition is not constant, analyze branches individually
-                self::analyzeConditionalArgumentBranches($code_base, $context, $method, $argument_node, $lineno, $i, $node);
+                self::analyzeConditionalArgumentBranches($code_base, $context, $method, $argument_node, $lineno, $i, $node, $type_transformer);
                 return;  // Skip normal analysis to avoid duplicate warnings
             }
         }
@@ -1396,6 +1407,8 @@ final class ArgumentType
      * @param Node $conditional_node A node of kind AST_CONDITIONAL
      * @param int $i Parameter index
      * @param ?Node $call_node The call node
+     * @param ?Closure(UnionType):UnionType $type_transformer Optional transformer to apply to types
+     *        (e.g., for array_map callback analysis, this extracts element types from array types)
      */
     private static function analyzeConditionalArgumentBranches(
         CodeBase $code_base,
@@ -1404,7 +1417,8 @@ final class ArgumentType
         Node $conditional_node,
         int $lineno,
         int $i,
-        ?Node $call_node
+        ?Node $call_node,
+        ?Closure $type_transformer = null
     ): void {
         $cond_node = $conditional_node->children['cond'];
         $true_node = $conditional_node->children['true'] ?? $cond_node;  // Handle shorthand ?: syntax
@@ -1430,18 +1444,29 @@ final class ArgumentType
                 $true_type = $true_type->nonFalseyClone();
             }
 
+            // Apply type transformer if provided (e.g., extract element types for array_map)
+            if ($type_transformer !== null) {
+                $true_type = $type_transformer($true_type);
+            }
+
             if (!$true_type->isEmpty()) {
                 // Recursively analyze this branch as if it were the argument
-                self::analyzeParameter($code_base, $true_context, $method, $true_type, $true_node->lineno ?? $lineno, $i, $true_node, $call_node);
+                self::analyzeParameter($code_base, $true_context, $method, $true_type, $true_node->lineno ?? $lineno, $i, $true_node, $call_node, $type_transformer);
             }
         }
 
         // Analyze the false branch with the narrowed context
         if ($false_node !== null) {
             $false_type = UnionTypeVisitor::unionTypeFromNode($code_base, $false_context, $false_node, false);
+
+            // Apply type transformer if provided (e.g., extract element types for array_map)
+            if ($type_transformer !== null) {
+                $false_type = $type_transformer($false_type);
+            }
+
             if (!$false_type->isEmpty()) {
                 // Recursively analyze this branch as if it were the argument
-                self::analyzeParameter($code_base, $false_context, $method, $false_type, $false_node->lineno ?? $lineno, $i, $false_node, $call_node);
+                self::analyzeParameter($code_base, $false_context, $method, $false_type, $false_node->lineno ?? $lineno, $i, $false_node, $call_node, $type_transformer);
             }
         }
     }
