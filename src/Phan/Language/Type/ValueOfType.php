@@ -140,6 +140,9 @@ final class ValueOfType extends \Phan\Language\Type implements MultiType
                 if ($type->getElementUnionType()->hasPossiblyObjectTypes()) {
                     return true;
                 }
+            } elseif ($type instanceof IterableType || $type instanceof ArrayType || $type instanceof MixedType) {
+                // Plain array/iterable/mixed without element type info - values could be objects
+                return true;
             }
         }
         return false;
