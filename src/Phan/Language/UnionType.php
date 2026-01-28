@@ -5440,27 +5440,66 @@ class UnionType implements Serializable, Stringable
         }
 
         // Real types confirm closed shape - safe to narrow PHPDoc types
-        return $this->asMappedUnionType(
-            static function (Type $type) use ($expected_count, $all_lists): Type {
+        // Build new type sets, filtering out shapes that can't have the expected count
+        // Apply the same logic to both PHPDoc types and real types
+        /**
+         * @param list<Type> $type_set
+         * @return list<Type>
+         */
+        $filter_and_narrow = static function (array $type_set, bool $all_lists, int $expected_count): array {
+            $new_type_set = [];
+            foreach ($type_set as $type) {
                 if (!($type instanceof ArrayShapeType)) {
-                    return $type;
+                    $new_type_set[] = $type;
+                    continue;
                 }
-                $field_count = \count($type->getFieldTypes());
 
-                // Case 1: Exact match - make all optional fields required
-                if ($field_count === $expected_count && $type->getOptionalFieldCount() > 0) {
-                    return $type->withAllFieldsRequired();
+                $field_count = \count($type->getFieldTypes());
+                $optional_count = $type->getOptionalFieldCount();
+                $required_count = $field_count - $optional_count;
+
+                // Check if this shape can possibly have the expected count
+                // Possible count range is [required_count, field_count]
+                if ($expected_count < $required_count || $expected_count > $field_count) {
+                    // This shape cannot have the expected count - filter it out
+                    continue;
+                }
+
+                // Case 1: Exact match with total fields - make all optional fields required
+                if ($field_count === $expected_count && $optional_count > 0) {
+                    $new_type_set[] = $type->withAllFieldsRequired();
+                    continue;
                 }
 
                 // Case 2: List with more fields than expected count
                 // Make the first N fields required (lists have contiguous keys from 0)
                 if ($all_lists && $field_count > $expected_count && $type->canCastToList()) {
-                    return $type->withFirstNFieldsRequired($expected_count);
+                    $new_type_set[] = $type->withFirstNFieldsRequired($expected_count);
+                    continue;
                 }
 
-                return $type;
+                $new_type_set[] = $type;
             }
-        );
+            return $new_type_set;
+        };
+
+        $new_type_set = $filter_and_narrow($this->type_set, $all_lists, $expected_count);
+        $new_real_type_set = $filter_and_narrow($this->real_type_set, $all_lists, $expected_count);
+
+        if ($new_type_set === $this->type_set && $new_real_type_set === $this->real_type_set) {
+            return $this;
+        }
+
+        // If all real types were filtered out, the count assertion is impossible
+        // according to the concrete types - return empty union.
+        // Real types are authoritative for what's actually possible at runtime.
+        if (\count($new_real_type_set) === 0) {
+            return self::empty();
+        }
+
+        // If PHPDoc types are empty but real types exist, UnionType::of will
+        // use the real types appropriately
+        return UnionType::of($new_type_set, $new_real_type_set);
     }
 
     /**
