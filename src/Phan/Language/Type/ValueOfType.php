@@ -41,12 +41,41 @@ final class ValueOfType extends \Phan\Language\Type implements MultiType
      */
     public function asIndividualTypeInstances(): array
     {
-        // Don't expand if inner type contains unresolved template types
+        // Don't expand if VALUE types contain unresolved template types
+        // (Key types having templates is fine - we only care about values)
         $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
-        if ($inner_union->hasTemplateTypeRecursive()) {
+        if (self::hasTemplateInValuePosition($inner_union)) {
             return [$this];
         }
         return $this->resolved_type_set ?? ($this->resolved_type_set = $this->computeResolvedTypeSet());
+    }
+
+    /**
+     * Check if any value/element types in the union have template types.
+     * This ignores template types in key positions.
+     */
+    private static function hasTemplateInValuePosition(UnionType $union): bool
+    {
+        foreach ($union->getTypeSet() as $type) {
+            if ($type instanceof TemplateType) {
+                // The array type itself is a template - can't resolve values
+                return true;
+            }
+            if ($type instanceof ArrayShapeType) {
+                if ($type->genericArrayElementUnionType()->hasTemplateTypeRecursive()) {
+                    return true;
+                }
+            } elseif ($type instanceof GenericArrayInterface) {
+                if ($type->genericArrayElementUnionType()->hasTemplateTypeRecursive()) {
+                    return true;
+                }
+            } elseif ($type instanceof GenericIterableType) {
+                if ($type->getElementUnionType()->hasTemplateTypeRecursive()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -74,10 +103,10 @@ final class ValueOfType extends \Phan\Language\Type implements MultiType
 
     public function asPHPDocUnionType(): UnionType
     {
-        // If inner type contains unresolved template types, don't expand
+        // If VALUE types contain unresolved template types, don't expand
         // Create UnionType directly to avoid infinite recursion via UnionType::of
         $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
-        if ($inner_union->hasTemplateTypeRecursive()) {
+        if (self::hasTemplateInValuePosition($inner_union)) {
             return new UnionType([$this], true);
         }
         return UnionType::of($this->asIndividualTypeInstances());
@@ -122,8 +151,8 @@ final class ValueOfType extends \Phan\Language\Type implements MultiType
     public function isPossiblyObject(): bool
     {
         $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
-        // If we have unresolved templates, we don't know - assume possibly object
-        if ($inner_union->hasTemplateTypeRecursive()) {
+        // If VALUE types have unresolved templates, we don't know - assume possibly object
+        if (self::hasTemplateInValuePosition($inner_union)) {
             return true;
         }
         // Otherwise, check if resolved types could produce objects

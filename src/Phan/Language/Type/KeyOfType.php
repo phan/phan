@@ -43,12 +43,50 @@ final class KeyOfType extends \Phan\Language\Type implements MultiType
      */
     public function asIndividualTypeInstances(): array
     {
-        // Don't expand if inner type contains unresolved template types
+        // Don't expand if KEY types contain unresolved template types
+        // (Value types having templates is fine - we only care about keys)
         $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
-        if ($inner_union->hasTemplateTypeRecursive()) {
+        if (self::hasTemplateInKeyPosition($inner_union)) {
             return [$this];
         }
         return $this->resolved_type_set ?? ($this->resolved_type_set = $this->computeResolvedTypeSet());
+    }
+
+    /**
+     * Check if any key types in the union have template types.
+     * This ignores template types in value positions.
+     */
+    private static function hasTemplateInKeyPosition(UnionType $union): bool
+    {
+        foreach ($union->getTypeSet() as $type) {
+            if ($type instanceof TemplateType) {
+                // The array type itself is a template - can't resolve keys
+                return true;
+            }
+            if ($type instanceof ArrayShapeType) {
+                // Array shapes have literal keys, check if any field type keys have templates
+                // For array shapes, keys are literals (string/int), not types with templates
+                // So we don't need to check further - array shape keys are always resolved
+                continue;
+            } elseif ($type instanceof GenericArrayInterface) {
+                $key_type = $type->getKeyType();
+                // KEY_INT and KEY_STRING are resolved, KEY_MIXED could be template-dependent
+                if ($key_type === GenericArrayType::KEY_MIXED) {
+                    // Check if the original type has template in key position
+                    // For generic arrays like array<T, V>, check if T is a template
+                    if ($type instanceof GenericArrayType) {
+                        // GenericArrayType doesn't store key type as UnionType, just key_type constant
+                        // So we can't check for templates directly - assume resolved
+                        continue;
+                    }
+                }
+            } elseif ($type instanceof GenericIterableType) {
+                if ($type->getKeyUnionType()->hasTemplateTypeRecursive()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -76,10 +114,10 @@ final class KeyOfType extends \Phan\Language\Type implements MultiType
 
     public function asPHPDocUnionType(): UnionType
     {
-        // If inner type contains unresolved template types, don't expand
+        // If KEY types contain unresolved template types, don't expand
         // Create UnionType directly to avoid infinite recursion via UnionType::of
         $inner_union = $this->template_parameter_type_list[0] ?? UnionType::empty();
-        if ($inner_union->hasTemplateTypeRecursive()) {
+        if (self::hasTemplateInKeyPosition($inner_union)) {
             return new UnionType([$this], true);
         }
         return UnionType::of($this->asIndividualTypeInstances());
