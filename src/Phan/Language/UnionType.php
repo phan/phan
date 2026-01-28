@@ -5490,7 +5490,7 @@ class UnionType implements Serializable, Stringable
             return $this;
         }
 
-        if (\count($new_type_set) === 0) {
+        if (\count($new_type_set) === 0 && \count($new_real_type_set) === 0) {
             // All types were filtered out - return empty union
             // This shouldn't normally happen with valid code
             return self::empty();
