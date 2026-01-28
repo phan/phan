@@ -311,6 +311,18 @@ trait ConditionVisitorUtil
                 return;
             }
             $node->did_check_redundant_condition = true;
+            // Skip redundant condition checks for static properties accessed via self/static/parent
+            // These can change between requests and the check is a reasonable defensive pattern
+            // See https://github.com/phan/phan/issues/4839 and https://github.com/phan/phan/issues/5423
+            if ($node->kind === ast\AST_STATIC_PROP) {
+                $class_node = $node->children['class'] ?? null;
+                if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+                    $name = $class_node->children['name'] ?? null;
+                    if (\is_string($name) && \in_array(\strtolower($name), ['self', 'static', 'parent'], true)) {
+                        return;
+                    }
+                }
+            }
         } elseif ($is_negated) {
             return;
         }
