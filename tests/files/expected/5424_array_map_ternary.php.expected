@@ -1,0 +1,3 @@
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is [123] of type int (value: 123) but \trim() takes string
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 ($string) is [456] of type int (value: 456) but \trim() takes string
+%s:42 PhanTypeMismatchArgumentInternal Argument 1 ($string) is [123] of type int (value: 123) but \trim() takes string
