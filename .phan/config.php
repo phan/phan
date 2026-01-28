@@ -473,7 +473,7 @@ return [
         'vendor/psr/log',  // subdirectory depends on dependency version
         'vendor/sabre/event/lib',
         'vendor/symfony/console',
-        'vendor/tysonandre/var_representation_polyfill/src',
+        'vendor/phan/var_representation_polyfill/src',
         '.phan/plugins',
         '.phan/stubs',
     ],
