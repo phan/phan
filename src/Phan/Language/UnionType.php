@@ -5490,12 +5490,15 @@ class UnionType implements Serializable, Stringable
             return $this;
         }
 
-        if (\count($new_type_set) === 0 && \count($new_real_type_set) === 0) {
-            // All types were filtered out - return empty union
-            // This shouldn't normally happen with valid code
+        // If all real types were filtered out, the count assertion is impossible
+        // according to the concrete types - return empty union.
+        // Real types are authoritative for what's actually possible at runtime.
+        if (\count($new_real_type_set) === 0) {
             return self::empty();
         }
 
+        // If PHPDoc types are empty but real types exist, UnionType::of will
+        // use the real types appropriately
         return UnionType::of($new_type_set, $new_real_type_set);
     }
 
