@@ -1,0 +1,4 @@
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type 1|2|3
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type 'bar'|'qux'
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type 'bar'|'foo'|null
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int
