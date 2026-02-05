@@ -14,7 +14,6 @@
  * @return value-of<T>
  */
 function getValue5421(array $arr, $key) {
-    // @phan-suppress-next-line PhanTypeArraySuspicious
     return $arr[$key];
 }
 
