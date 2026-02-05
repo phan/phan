@@ -160,6 +160,53 @@ final class TemplateType extends Type
         return $this->variance === self::VARIANCE_CONTRAVARIANT;
     }
 
+    /**
+     * @override
+     * Returns true if this template type's bound is array-like.
+     * If no bound is declared, we conservatively return true since the template
+     * could be instantiated with an array-like type.
+     */
+    public function isArrayLike(CodeBase $code_base): bool
+    {
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true; // Conservative: unknown template could be array-like
+        }
+        return $this->bound_union_type->hasArrayLike($code_base);
+    }
+
+    /**
+     * @override
+     * Returns true if this template type's bound is iterable.
+     * If no bound is declared, we conservatively return true since the template
+     * could be instantiated with an iterable type.
+     */
+    public function isIterable(CodeBase $code_base): bool
+    {
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true;
+        }
+        return $this->bound_union_type->hasIterable($code_base);
+    }
+
+    /**
+     * @override
+     * Returns true if this template type's bound is an array or ArrayAccess subtype.
+     * If no bound is declared, we conservatively return true since the template
+     * could be instantiated with such a type.
+     */
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base): bool
+    {
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true;
+        }
+        foreach ($this->bound_union_type->getTypeSet() as $type) {
+            if ($type->isArrayOrArrayAccessSubType($code_base)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function isObject(): bool
     {
         // Return true because we don't know, it may or may not be an object.
@@ -426,9 +473,21 @@ final class TemplateType extends Type
         return true;
     }
 
+    /**
+     * @override
+     * Returns true if this template type could be nullable.
+     * If the template has a non-nullable bound, it can't be null.
+     * If unbounded, we conservatively return true.
+     */
     public function isNullable(): bool
     {
-        return true;
+        if ($this->is_nullable) {
+            return true;
+        }
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return true; // Conservative: unknown template could be null
+        }
+        return $this->bound_union_type->containsNullable();
     }
 
     public function isNullableLabeled(): bool
