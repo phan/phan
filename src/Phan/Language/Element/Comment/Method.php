@@ -38,6 +38,12 @@ class Method
     private $is_static;
 
     /**
+     * @var bool
+     * Whether or not this method returns by reference
+     */
+    private $is_returns_ref;
+
+    /**
      * @var int
      * The line of this method
      */
@@ -56,6 +62,9 @@ class Method
      * @param bool $is_static
      * Whether this method is static
      *
+     * @param bool $is_returns_ref
+     * Whether this method returns by reference
+     *
      * @param int $line
      * The line of this method
      */
@@ -64,12 +73,14 @@ class Method
         UnionType $type,
         array $parameters,
         bool $is_static,
+        bool $is_returns_ref,
         int $line
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->parameters = $parameters;
         $this->is_static = $is_static;
+        $this->is_returns_ref = $is_returns_ref;
         $this->line = $line;
     }
 
@@ -106,6 +117,15 @@ class Method
     public function isStatic(): bool
     {
         return $this->is_static;
+    }
+
+    /**
+     * @return bool
+     * Whether or not this method returns by reference
+     */
+    public function returnsRef(): bool
+    {
+        return $this->is_returns_ref;
     }
 
     /**
@@ -154,7 +174,9 @@ class Method
         } else {
             $string = 'function ';
         }
-        // Magic methods can't be by ref?
+        if ($this->is_returns_ref) {
+            $string .= '&';
+        }
         $string .= $this->name;
 
         $string .= '(' . \implode(', ', $this->parameters) . ')';

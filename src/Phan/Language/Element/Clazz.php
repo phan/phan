@@ -1064,6 +1064,9 @@ class Clazz extends AddressableElement
             if ($comment_method->isStatic()) {
                 $flags |= \ast\flags\MODIFIER_STATIC;
             }
+            if ($comment_method->returnsRef()) {
+                $flags |= \ast\flags\FUNC_RETURNS_REF;
+            }
             $method_name = $comment_method->getName();
             if ($this->hasMethodWithName($code_base, $method_name, true)) {
                 // No point, and this would hurt inference accuracy.

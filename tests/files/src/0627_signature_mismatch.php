@@ -12,6 +12,8 @@ abstract class Base {
     public function notVariadic($x) {}
     public function returnsInt() : int { return 2;}
     public function hasParameters($x) {}
+    public function &returnsByRef(): int { $x = 0; return $x; }
+    public function doesNotReturnByRef(): int { return 0; }
 }
 
 // This is an example of the signature mismatches Phan can detect
@@ -25,6 +27,27 @@ abstract class Base {
  * @method notVariadic(...$x)
  * @method string returnsInt()
  * @method hasParameters()
+ * @method int returnsByRef()
+ * @method int &doesNotReturnByRef()
  */
 class Mismatched extends Base {
+}
+
+// This tests the fix for GitHub issue #5430 - @method should support return by reference
+abstract class BaseWithReturnByRef {
+    public function &returnsRef(): int { $x = 0; return $x; }
+}
+
+/**
+ * Without & - should produce signature mismatch error
+ * @method int returnsRef()
+ */
+class MismatchedReturnByRef extends BaseWithReturnByRef {
+}
+
+/**
+ * With & - should NOT produce signature mismatch error (issue #5430 fix)
+ * @method int &returnsRef()
+ */
+class MatchedReturnByRef extends BaseWithReturnByRef {
 }
