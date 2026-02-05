@@ -1527,12 +1527,13 @@ final class Builder
         // > TODO: forbid in trait?
         // TODO: finish writing the regex.
         // Syntax:
-        //    @method [return type] [name]([[type] [parameter]<, ...>]) [<description>]
+        //    @method [return type] [&][name]([[type] [parameter]<, ...>]) [<description>]
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (\preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+(&)?' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[1] === 'static';
+            $is_returns_ref = ($match[22] ?? '') === '&';
             $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
                 $return_union_type =
@@ -1553,9 +1554,9 @@ final class Builder
                     $return_union_type = VoidType::instance(false)->asPHPDocUnionType();
                 }
             }
-            $method_name = $match[22];
+            $method_name = $match[23];
 
-            $arg_list = \trim($match[23]);
+            $arg_list = \trim($match[24]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -1580,6 +1581,7 @@ final class Builder
                 $return_union_type,
                 $comment_params,
                 $is_static,
+                $is_returns_ref,
                 $this->guessActualLineLocation($comment_line_offset)
             );
         } else {
