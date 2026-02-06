@@ -1435,7 +1435,7 @@ class UnionType implements Serializable, Stringable
                 return false;
             }
         }
-        return !$union_type->isPossiblyUndefined();
+        return !$this->isPossiblyUndefined() && !$union_type->isPossiblyUndefined();
     }
 
     /**
@@ -1481,7 +1481,7 @@ class UnionType implements Serializable, Stringable
                 return false;
             }
         }
-        return !$union_type->isPossiblyUndefined();
+        return !$this->isPossiblyUndefined() && !$union_type->isPossiblyUndefined();
     }
 
     /**
@@ -1604,12 +1604,7 @@ class UnionType implements Serializable, Stringable
      */
     public function containsNonMixedNullable(): bool
     {
-        foreach ($this->type_set as $type) {
-            if ($type->isNullableLabeled()) {
-                return true;
-            }
-        }
-        return false;
+        return $this->containsNullableLabeled();
     }
 
     /**
