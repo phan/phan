@@ -3074,6 +3074,14 @@ An example would be
 if ([1, 2] == 'string') {}
 ```
 
+## PhanTypeComparisonObjectOrdering
+
+```
+Using ordering comparison operator with an object of type {TYPE} and a non-object of type {TYPE} will throw a TypeError in PHP 8.0+
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0718_suspicious_comparisons.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0718_suspicious_comparisons.php#L9).
+
 ## PhanTypeComparisonToArray
 
 

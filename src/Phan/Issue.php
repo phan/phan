@@ -128,6 +128,7 @@ class Issue
     public const TypeModifyImmutableObjectProperty            = 'PhanTypeModifyImmutableObjectProperty';
     public const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     public const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
+    public const TypeComparisonObjectOrdering = 'PhanTypeComparisonObjectOrdering';
     public const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     public const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     public const TypeInstantiateAbstractStatic = 'PhanTypeInstantiateAbstractStatic';
@@ -1968,6 +1969,14 @@ class Issue
                 "array to {TYPE} comparison",
                 self::REMEDIATION_B,
                 10011
+            ),
+            new Issue(
+                self::TypeComparisonObjectOrdering,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Using ordering comparison operator with an object of type {TYPE} and a non-object of type {TYPE} will throw a TypeError in PHP 8.0+",
+                self::REMEDIATION_B,
+                10212
             ),
             new Issue(
                 self::TypeConversionFromArray,
