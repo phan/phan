@@ -295,7 +295,10 @@ class Clazz extends AddressableElement
         } elseif ($class->isTrait()) {
             $flags = \ast\flags\CLASS_TRAIT;
         }
-        // FIXME readonly flag
+        // @phan-suppress-next-line PhanUndeclaredMethod reflection API added in PHP 8.2
+        if (method_exists($class, 'isReadonly') && $class->isReadonly()) {
+            $flags |= \ast\flags\CLASS_READONLY;
+        }
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
