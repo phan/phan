@@ -1,3 +1,4 @@
 %s:7 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $values[0] of type int but \strlen() takes string
+%s:12 PhanTypeComparisonObjectOrdering Using ordering comparison operator with an object of type \stdClass and a non-object of type int will throw a TypeError in PHP 8.0+
 %s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $values[0] of type \stdClass but \strlen() takes string
 %s:18 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $values[0] of type int but \strlen() takes string

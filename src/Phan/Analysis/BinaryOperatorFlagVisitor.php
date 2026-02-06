@@ -157,7 +157,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * Analyzes the `<=>` operator.
      *
-     * @param Node $node @phan-unused-param
+     * @param Node $node
      * A node to check types on
      *
      * @return UnionType
@@ -165,7 +165,39 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinarySpaceship(Node $node): UnionType
     {
-        // TODO: Any sanity checks should go here.
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['left'],
+            $this->should_catch_issue_exception
+        );
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['right'],
+            $this->should_catch_issue_exception
+        );
+
+        // Check for object ordering comparison (TypeError in PHP 8.0+)
+        $left_is_object = $left->isObject();
+        $right_is_object = $right->isObject();
+        if ($left_is_object && !$right_is_object && !$right->isEmpty() && !$right->hasMixedOrNonEmptyMixedType()) {
+            $this->emitIssue(
+                Issue::TypeComparisonObjectOrdering,
+                $node->lineno,
+                (string)$left->asNonLiteralType(),
+                (string)$right->asNonLiteralType()
+            );
+        } elseif ($right_is_object && !$left_is_object && !$left->isEmpty() && !$left->hasMixedOrNonEmptyMixedType()) {
+            $this->emitIssue(
+                Issue::TypeComparisonObjectOrdering,
+                $node->lineno,
+                (string)$right->asNonLiteralType(),
+                (string)$left->asNonLiteralType()
+            );
+        }
 
         // <=> returns -1, 0, or 1
         return UnionType::fromFullyQualifiedRealString('-1|0|1');
@@ -587,6 +619,33 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $node->lineno,
                 (string)$left->asNonLiteralType()
             );
+        }
+
+        // Check for object ordering comparison (TypeError in PHP 8.0+)
+        // Only applies to ordering operators, not equality operators
+        if (\in_array($node->flags, [
+            \ast\flags\BINARY_IS_SMALLER,
+            \ast\flags\BINARY_IS_SMALLER_OR_EQUAL,
+            \ast\flags\BINARY_IS_GREATER,
+            \ast\flags\BINARY_IS_GREATER_OR_EQUAL,
+        ], true)) {
+            $left_is_object = $left->isObject();
+            $right_is_object = $right->isObject();
+            if ($left_is_object && !$right_is_object && !$right->isEmpty() && !$right->hasMixedOrNonEmptyMixedType()) {
+                $this->emitIssue(
+                    Issue::TypeComparisonObjectOrdering,
+                    $node->lineno,
+                    (string)$left->asNonLiteralType(),
+                    (string)$right->asNonLiteralType()
+                );
+            } elseif ($right_is_object && !$left_is_object && !$left->isEmpty() && !$left->hasMixedOrNonEmptyMixedType()) {
+                $this->emitIssue(
+                    Issue::TypeComparisonObjectOrdering,
+                    $node->lineno,
+                    (string)$right->asNonLiteralType(),
+                    (string)$left->asNonLiteralType()
+                );
+            }
         }
 
         return BoolType::instance(false)->asRealUnionType();
