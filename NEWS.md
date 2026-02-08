@@ -1,7 +1,21 @@
 ## Phan NEWS
 
-Phan 6.0.1-dev
+Feb 7 2026, Phan 6.0.1
 --------------
+New features:
+- Allow a `&` before the method name in `@method` annotations, to declare that the method returns by reference ([#5430](https://github.com/phan/phan/issues/5430))
+- New `PhanTypeComparisonObjectOrdering` issue type to detect when ordering operators (`<`, `<=`, `>`, `>=`, `<=>`) are used to compare an object with a non-object value, which throws TypeError in PHP 8.0+
+
+Bug fixes:
+- Fixed analysis of `array_map` with ternary expression as array argument ([#5424](https://github.com/phan/phan/issues/5424))
+- Skip redundant/impossible condition detection on static properties ([#5423](https://github.com/phan/phan/issues/5423))
+- Fixed `value-of<T>` and `key-of<T>` not evaluating to the expected types ([#5421](https://github.com/phan/phan/issues/5421))
+- Fixed more inconsistencies in type inference for `if` statement vs `?:` ternary expression ([#5408](https://github.com/phan/phan/issues/5408))
+- Fixed templated subtypes of `array` not being treated as array-like ([#5433](https://github.com/phan/phan/issues/5433))
+- Treat readonly classes as such when read from Reflection ([#5436](https://github.com/phan/phan/pull/5436))
+
+Miscellaneous:
+- Replace TysonAndre/var_representation_polyfill with the phan/ fork for PHP 8.5 support ([#5420](https://github.com/phan/phan/issues/5420))
 
 Jan 16 2026, Phan 6.0.0
 -----------------------
