@@ -2535,9 +2535,22 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if (!$is_computing_real_type_set) {
             $resulting_real_element_type = self::resolveArrayShapeElementTypesForOffset($union_type->getRealUnionType(), $dim_value, true, $code_base);
-            return $resulting_element_type->withRealTypeSet(
-                \is_object($resulting_real_element_type) ? $resulting_real_element_type->getRealTypeSet() : []
-            );
+            $real_type_set = \is_object($resulting_real_element_type) ? $resulting_real_element_type->getRealTypeSet() : [];
+            if (!$real_type_set) {
+                // When the real type resolution couldn't determine the element type (e.g., because
+                // the real type is mixed), ensure the result doesn't retain a stale real type set
+                // from the PHPDoc resolution. AnnotatedUnionType::eraseRealTypeSetRecursively()
+                // preserves real types, so we must explicitly create a new UnionType without them.
+                // This prevents false PhanRedundantValueComparison warnings when accessing array
+                // offsets on a union with both array shapes and generic/mixed arrays (issue #5422).
+                $is_possibly_undefined = $resulting_element_type->isPossiblyUndefined();
+                $resulting_element_type = UnionType::of($resulting_element_type->getTypeSet());
+                if ($is_possibly_undefined) {
+                    $resulting_element_type = $resulting_element_type->withIsPossiblyUndefined(true);
+                }
+                return $resulting_element_type;
+            }
+            return $resulting_element_type->withRealTypeSet($real_type_set);
         }
         return $resulting_element_type;
     }
