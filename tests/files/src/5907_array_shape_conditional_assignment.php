@@ -53,7 +53,7 @@ function test5907_simplified($arr) {
 }
 
 /**
- * Case 4: Declared shape param - conditional field IS redundant
+ * Case 4: Declared shape param - comparison is NOT redundant
  * @param array{foo:'a'|'b'} $arr
  */
 function test5907_declaredShape($arr) {
