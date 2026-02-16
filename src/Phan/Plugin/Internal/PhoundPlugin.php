@@ -786,37 +786,39 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             throw new Exception("Failed to flatten trait relationships");
         }
 
+        // Propagate interfaces down the class hierarchy: if a parent class
+        // implements an interface, all child classes should too.
         $flatten_class_interfaces = "
-            WITH RECURSIVE ancestor_descendant(class, interface) AS (
+            WITH RECURSIVE inherited(class, interface) AS (
                 SELECT class, interface
                 FROM class_interfaces
                 UNION ALL
-                SELECT ci.class, ad.interface
-                FROM class_interfaces ci
-                JOIN ancestor_descendant ad
-                ON ci.interface = ad.class
+                SELECT cr.child, ih.interface
+                FROM class_relationships cr
+                JOIN inherited ih
+                ON cr.parent = ih.class
             )
             INSERT OR IGNORE INTO class_interfaces (class, interface)
-            SELECT class, interface FROM ancestor_descendant
-            WHERE class != interface;
+            SELECT class, interface FROM inherited;
         ";
         if (!self::$db->exec($flatten_class_interfaces)) {
             throw new Exception("Failed to flatten class interfaces");
         }
 
+        // Propagate traits down the class hierarchy: if a parent class
+        // uses a trait, all child classes should too.
         $flatten_class_traits = "
-            WITH RECURSIVE ancestor_descendant(class, trait) AS (
+            WITH RECURSIVE inherited(class, trait) AS (
                 SELECT class, trait
                 FROM class_traits
                 UNION ALL
-                SELECT ct.class, ad.trait
-                FROM class_traits ct
-                JOIN ancestor_descendant ad
-                ON ct.trait = ad.class
+                SELECT cr.child, ih.trait
+                FROM class_relationships cr
+                JOIN inherited ih
+                ON cr.parent = ih.class
             )
             INSERT OR IGNORE INTO class_traits (class, trait)
-            SELECT class, trait FROM ancestor_descendant
-            WHERE class != trait;
+            SELECT class, trait FROM inherited;
         ";
         if (!self::$db->exec($flatten_class_traits)) {
             throw new Exception("Failed to flatten class traits");

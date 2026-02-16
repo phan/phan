@@ -45,13 +45,18 @@
 <-----------> Class Interfaces <----------->
 \Car|\MotorizedInterface
 \Car|\PersonalVehicleInterface
+\Car|\VehicleInterface
 \MotorBoat|\MotorizedInterface
 \MotorBoat|\SailableInterface
 \MotorBoat|\VehicleInterface
 \SailBoat|\SailableInterface
 \SailBoat|\VehicleInterface
 \Taxi|\CommercialVehicleInterface
+\Taxi|\MotorizedInterface
+\Taxi|\PersonalVehicleInterface
+\Taxi|\VehicleInterface
 \Vehicle|\VehicleInterface
+\anonymous_class_3022f2ed|\VehicleInterface
 <-----------> Class Relationships <----------->
 \Animal|\Cat
 \Animal|\Dog
@@ -64,9 +69,14 @@
 \Vehicle|\anonymous_class_3022f2ed
 <-----------> Class Traits <----------->
 \Car|\MotorizedTrait
+\Car|\VehicleOperationTrait
 \MotorBoat|\MotorizedTrait
 \MotorBoat|\SailingTrait
+\MotorBoat|\VehicleOperationTrait
 \SailBoat|\SailingTrait
+\SailBoat|\VehicleOperationTrait
+\Taxi|\MotorizedTrait
+\Taxi|\VehicleOperationTrait
 \Vehicle|\VehicleOperationTrait
 \anonymous_class_3022f2ed|\MotorizedTrait
 \anonymous_class_3022f2ed|\VehicleOperationTrait
