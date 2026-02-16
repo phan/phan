@@ -33,39 +33,38 @@ use Phan\Config;
  * 4) Search for callsites of the \Foo::BANG constant:
  *     select * from callsites where element = '\Foo::BANG' and type = 'const' order by callsite
  *
- * 5) Using Common Table Expressions and the class hierarchy tables, we can find all classes implementing any interface:
- *     WITH RECURSIVE
- *       sub_interfaces (name) AS (
- *         SELECT '\My_Interface'
- *         UNION ALL
- *         SELECT ir.child
- *         FROM interface_relationships ir
- *         JOIN sub_interfaces si ON ir.parent = si.name
- *       ),
- *       direct_implementers (class_name) AS (
- *         SELECT DISTINCT ci.class
- *         FROM class_interfaces ci
- *         JOIN sub_interfaces si ON ci.interface = si.name
- *       ),
- *       all_implementing_classes (class_name) AS (
- *         SELECT class_name FROM direct_implementers
- *         UNION ALL
- *         SELECT cr.child
- *         FROM class_relationships cr
- *         JOIN all_implementing_classes aic ON cr.parent = aic.class_name
- *       )
+ * Relationship tables are pre-flattened at finalization time using recursive CTEs, so
+ * transitive relationships are materialized directly. This means queries don't need
+ * recursive CTEs -- simple JOINs suffice:
+ *
+ * 5) Find all classes implementing a given interface (including via sub-interfaces
+ *    and class inheritance):
  *     SELECT DISTINCT c.name, c.filepath
  *     FROM classes c
- *     JOIN all_implementing_classes aic ON c.name = aic.class_name
+ *     JOIN class_interfaces ci ON c.name = ci.class
+ *     WHERE ci.interface = '\My_Interface'
  *     ORDER BY c.name;
  *
- * 6) Find similar relationships between traits, like all classes using a trait,
- *    all traits using a trait.
+ * 6) Find all classes extending from a base class (direct and transitive):
+ *     SELECT DISTINCT c.name, c.filepath
+ *     FROM classes c
+ *     JOIN class_relationships cr ON c.name = cr.child
+ *     WHERE cr.parent = '\My_Base_Class'
+ *     ORDER BY c.name;
  *
- * 7) Find all classes extending from a base or abstract class, considering the full hierarchy
+ * 7) Find all classes using a given trait (direct and transitive):
+ *     SELECT DISTINCT c.name, c.filepath
+ *     FROM classes c
+ *     JOIN class_traits ct ON c.name = ct.class
+ *     WHERE ct.trait = '\My_Trait'
+ *     ORDER BY c.name;
  *
- * 8) Combine the results of these queries to find all classes implementing an interface
- *    through the use of a specific trait, a useful migration and refactoring seam.
+ * 8) Find all traits that use a given trait:
+ *     SELECT DISTINCT t.name, t.filepath
+ *     FROM traits t
+ *     JOIN trait_traits tt ON t.name = tt.trait
+ *     WHERE tt.uses_trait = '\My_Trait'
+ *     ORDER BY t.name;
  */
 final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 {
