@@ -14,7 +14,7 @@ use Phan\Config;
 /**
  * Populates a sqlite database with callsites of class elements, as well as class, trait, and interface
  * hierarchies. Class elements include methods, static methods, properties, static properties,
- * and constants. Class heirarchies include classes and their parent-child relationships, interfaces, and traits.
+ * and constants. Class hierarchies include classes and their parent-child relationships, interfaces, and traits.
  *
  * The database can be queried to find callsites of a given class element as well as class, trait,
  * and interface hierarchy.
@@ -33,7 +33,7 @@ use Phan\Config;
  * 4) Search for callsites of the \Foo::BANG constant:
  *     select * from callsites where element = '\Foo::BANG' and type = 'const' order by callsite
  *
- * 5) Using Common Table Expressions and the class hierarchy tables, we can find all clases implementing any interface:
+ * 5) Using Common Table Expressions and the class hierarchy tables, we can find all classes implementing any interface:
  *     WITH RECURSIVE
  *       sub_interfaces (name) AS (
  *         SELECT '\My_Interface'
@@ -64,8 +64,8 @@ use Phan\Config;
  *
  * 7) Find all classes extending from a base or abstract class, considering the full hierarchy
  *
- * 7) Combine the results of these queries to find all classes implementinng an interface
- *    through the use of a specific trait, a useful mmigration and refactoring seam.
+ * 8) Combine the results of these queries to find all classes implementing an interface
+ *    through the use of a specific trait, a useful migration and refactoring seam.
  */
 final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 {
@@ -256,7 +256,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Creates a prepaired statement for inserting
+     * Creates a prepared statement for inserting
      * @param string    $table_name from self::TABLES
      * @param int       $bulk_insert_size the number of rows to insert
      * @throws Exception on preparation failure
@@ -473,8 +473,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Processes a class to obtain its name, filepath, relationships, interfaces, and traits.
-     * @param Clazz     $clazz the class AST node to evaluate
-     * @param string    $filepath The absolute filepath to the file containing the class
+     * @param Clazz     $clazz the Phan class model to evaluate
+     * @param string    $filepath the project-relative path to the file containing the class
      * @throws Exception
      */
     private static function handleClass(Clazz $clazz, string $filepath): void {
@@ -530,9 +530,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Processes an interface to obtain its name, filepath, relationships, and implemented interfaces.
-     * @param Clazz     $clazz the interface AST node to evaluate
-     * @param string    $filepath The absolute filepath to the file containing the interface
+     * Processes an interface to obtain its name, filepath, relationships, and extended interfaces.
+     * @param Clazz     $clazz the Phan class model representing the interface
+     * @param string    $filepath the project-relative path to the file containing the interface
      * @throws Exception
      */
     private static function handleInterface(Clazz $clazz, string $filepath): void {
@@ -569,8 +569,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Processes a trait to obtain its name, filepath, and used traits.
-     * @param Clazz     $clazz the trait AST node to evaluate
-     * @param string    $filepath The absolute filepath to the file containing the trait
+     * @param Clazz     $clazz the Phan class model representing the trait
+     * @param string    $filepath the project-relative path to the file containing the trait
      * @throws Exception
      */
     private static function handleTrait(Clazz $clazz, string $filepath): void {
