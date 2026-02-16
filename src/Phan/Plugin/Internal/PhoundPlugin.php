@@ -139,10 +139,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'trait TEXT',
                 'uses_trait TEXT',
             ],
-            'relationships' => [
-                'FOREIGN KEY(trait) REFERENCES traits(name)',
-                'FOREIGN KEY(uses_trait) REFERENCES traits(name)',
-            ],
             'constraints' => [
                 'unique (trait, uses_trait)',
             ]
@@ -151,10 +147,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             'columns' => [
                 'parent TEXT',
                 'child TEXT',
-            ],
-            'relationships' => [
-                'FOREIGN KEY(parent) REFERENCES interfaces(name)',
-                'FOREIGN KEY(child) REFERENCES interfaces(name)',
             ],
             'constraints' => [
                 'unique (parent, child)',
@@ -165,10 +157,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'parent TEXT',
                 'child TEXT',
             ],
-            'relationships' => [
-                'FOREIGN KEY(parent) REFERENCES classes(name)',
-                'FOREIGN KEY(child) REFERENCES classes(name)',
-            ],
             'constraints' => [
                 'unique (parent, child)',
             ]
@@ -178,10 +166,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'class TEXT',
                 'interface TEXT',
             ],
-            'relationships' => [
-                'FOREIGN KEY(class) REFERENCES classes(name)',
-                'FOREIGN KEY(interface) REFERENCES interfaces(name)',
-            ],
             'constraints' => [
                 'unique (class, interface)',
             ]
@@ -190,10 +174,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             'columns' => [
                 'class TEXT',
                 'trait TEXT',
-            ],
-            'relationships' => [
-                'FOREIGN KEY(class) REFERENCES classes(name)',
-                'FOREIGN KEY(trait) REFERENCES traits(name)',
             ],
             'constraints' => [
                 'unique (class, trait)',
@@ -219,8 +199,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
         self::$db = new SQLite3($db_path);
 
-        // cleanup the db in reverse for foreign key constraints
-        foreach (array_keys(array_reverse(self::TABLES)) as $table) {
+        foreach (array_keys(self::TABLES) as $table) {
             if (!self::$db->exec("DROP TABLE IF EXISTS $table")) {
                 throw new Exception();
             }
@@ -231,18 +210,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             throw new Exception();
         }
 
-        // must be on before creation of FK tables
-        if (!self::$db->exec("PRAGMA foreign_keys = ON")) {
-            throw new Exception();
-        }
-
         // build tables in natural order
         foreach (self::TABLES as $table => $table_meta) {
             $table_stmt = implode(', ', $table_meta['columns']);
-
-            if (isset($table_meta['relationships'])) {
-                $table_stmt .= ', ' . implode(', ', $table_meta['relationships']);
-            }
 
             if (isset($table_meta['constraints'])) {
                 $table_stmt .= ', ' . implode(', ', $table_meta['constraints']);
