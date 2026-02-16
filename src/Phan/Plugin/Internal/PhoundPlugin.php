@@ -201,13 +201,13 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         foreach (array_keys(self::TABLES) as $table) {
             if (!self::$db->exec("DROP TABLE IF EXISTS $table")) {
-                throw new Exception();
+                throw new Exception("Failed to drop table: $table");
             }
         }
 
         // must be set before table creation to take effect
         if (!self::$db->exec("PRAGMA page_size = 4096")) {
-            throw new Exception();
+            throw new Exception("Failed to set PRAGMA page_size");
         }
 
         // build tables in natural order
@@ -219,19 +219,19 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             }
 
             if (!self::$db->exec("create table $table($table_stmt)")) {
-                throw new Exception();
+                throw new Exception("Failed to create table: $table");
             }
         }
 
         if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
-            throw new Exception();
+            throw new Exception("Failed to create index on callsites");
         }
 
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
-            throw new Exception();
+            throw new Exception("Failed to set PRAGMA synchronous");
         }
         if (!self::$db->exec("PRAGMA journal_mode = OFF")) {
-            throw new Exception();
+            throw new Exception("Failed to set PRAGMA journal_mode");
         }
         self::$callsites_prepared_insert  = $this->createCallsitesBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
         self::$classes_prepared_insert    = $this->createHierarchyBulkInsertPreparedStmt("classes", self::BULK_INSERT_SIZE);
@@ -250,7 +250,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $bulk_insert_sql = rtrim($bulk_insert_sql, ', ');
         $stmt = self::$db->prepare($bulk_insert_sql);
         if ($stmt === false) {
-            throw new Exception();
+            throw new Exception("Failed to prepare callsites bulk insert statement");
         }
         return $stmt;
     }
@@ -275,7 +275,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $bulk_insert_sql .= str_repeat("(?, ?), ", $bulk_insert_size);
         $bulk_insert_sql = rtrim($bulk_insert_sql, ', ');
         if (!$stmt = self::$db->prepare($bulk_insert_sql)) {
-            throw new Exception();
+            throw new Exception("Failed to prepare bulk insert statement for: $table_name");
         }
         return $stmt;
     }
@@ -623,15 +623,15 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      */
     private static function execStatement(SQLite3Stmt $stmt): void {
         if (!$stmt->execute()) {
-            throw new Exception();
+            throw new Exception("Failed to execute prepared statement");
         }
 
         if (!$stmt->reset()) {
-            throw new Exception();
+            throw new Exception("Failed to reset prepared statement");
         }
 
         if (!$stmt->clear()) {
-            throw new Exception();
+            throw new Exception("Failed to clear prepared statement bindings");
         }
     }
 
