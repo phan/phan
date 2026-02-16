@@ -48,6 +48,7 @@
 \anonymous_class_3022f2ed|src/003_phound_hierarchy.php
 <-----------> Class Interfaces <----------->
 \Car|\MotorizedInterface
+\Car|\OperationalInterface
 \Car|\PersonalVehicleInterface
 \Car|\VehicleInterface
 \DeepHierarchy\Child|\DeepHierarchy\I1
@@ -56,18 +57,24 @@
 \DeepHierarchy\Grandchild|\DeepHierarchy\I2
 \DeepHierarchy\GreatGrandchild|\DeepHierarchy\I1
 \DeepHierarchy\GreatGrandchild|\DeepHierarchy\I2
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\I3
 \DeepHierarchy\GreatGrandchild|\DeepHierarchy\I4
 \DeepHierarchy\Root|\DeepHierarchy\I1
 \MotorBoat|\MotorizedInterface
+\MotorBoat|\OperationalInterface
 \MotorBoat|\SailableInterface
 \MotorBoat|\VehicleInterface
+\SailBoat|\OperationalInterface
 \SailBoat|\SailableInterface
 \SailBoat|\VehicleInterface
 \Taxi|\CommercialVehicleInterface
 \Taxi|\MotorizedInterface
+\Taxi|\OperationalInterface
 \Taxi|\PersonalVehicleInterface
 \Taxi|\VehicleInterface
+\Vehicle|\OperationalInterface
 \Vehicle|\VehicleInterface
+\anonymous_class_3022f2ed|\OperationalInterface
 \anonymous_class_3022f2ed|\VehicleInterface
 <-----------> Class Relationships <----------->
 \Animal|\Cat

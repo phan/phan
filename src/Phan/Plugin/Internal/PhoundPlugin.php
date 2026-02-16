@@ -771,6 +771,21 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             throw new Exception("Failed to flatten class interfaces");
         }
 
+        // Propagate ancestor interfaces into class_interfaces: if a class
+        // implements an interface, it also implements all ancestor interfaces.
+        // interface_relationships is already fully flattened, so a single
+        // join covers all transitive ancestors without recursion.
+        $propagate_interface_ancestors = "
+            INSERT OR IGNORE INTO class_interfaces (class, interface)
+            SELECT ci.class, ir.parent
+            FROM class_interfaces ci
+            JOIN interface_relationships ir
+            ON ci.interface = ir.child;
+        ";
+        if (!self::$db->exec($propagate_interface_ancestors)) {
+            throw new Exception("Failed to propagate interface ancestors into class interfaces");
+        }
+
         // Propagate traits down the class hierarchy: if a parent class
         // uses a trait, all child classes should too.
         $flatten_class_traits = "
