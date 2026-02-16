@@ -112,6 +112,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'element TEXT NOT NULL',
                 'type TEXT NOT NULL',
                 'callsite TEXT NOT NULL',
+            ],
+            'constraints' => [
                 'PRIMARY KEY (element, type, callsite)',
             ]
         ],
