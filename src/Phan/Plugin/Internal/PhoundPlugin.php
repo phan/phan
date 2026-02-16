@@ -226,6 +226,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
 
+        // must be set before table creation to take effect
+        if (!self::$db->exec("PRAGMA page_size = 4096")) {
+            throw new Exception();
+        }
+
         // must be on before creation of FK tables
         if (!self::$db->exec("PRAGMA foreign_keys = ON")) {
             throw new Exception();
@@ -258,10 +263,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec("PRAGMA journal_mode = OFF")) {
             throw new Exception();
         }
-        if (!self::$db->exec("PRAGMA page_size = 4096")) {
-            throw new Exception();
-        }
-
         self::$callsites_prepared_insert  = $this->createCallsitesBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
         self::$classes_prepared_insert    = $this->createHierarchyBulkInsertPreparedStmt("classes", self::BULK_INSERT_SIZE);
         self::$interfaces_prepared_insert = $this->createHierarchyBulkInsertPreparedStmt("interfaces", self::BULK_INSERT_SIZE);
