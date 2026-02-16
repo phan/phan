@@ -86,14 +86,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     private static $traits_prepared_insert;
     /** @var SQLite3Stmt */
     private static $class_relationships_prepared_insert;
-    /** @var SQLite3Stmt */
-    private static $interface_relationships_prepared_insert;
-    /** @var SQLite3Stmt */
-    private static $class_interfaces_prepared_insert;
-    /** @var SQLite3Stmt */
-    private static $class_traits_prepared_insert;
-    /** @var SQLite3Stmt */
-    private static $trait_traits_prepared_insert;
 
     /** @var list<array{string,string,string}> */
     private static $callsites = [];
@@ -247,10 +239,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         self::$interfaces_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("interfaces", self::BULK_INSERT_SIZE);
         self::$traits_prepared_insert     = self::createHierarchyBulkInsertPreparedStmt("traits", self::BULK_INSERT_SIZE);
         self::$class_relationships_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_relationships", self::BULK_INSERT_SIZE);
-        self::$interface_relationships_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("interface_relationships", self::BULK_INSERT_SIZE);
-        self::$class_interfaces_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_interfaces", self::BULK_INSERT_SIZE);
-        self::$class_traits_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_traits", self::BULK_INSERT_SIZE);
-        self::$trait_traits_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("trait_traits", self::BULK_INSERT_SIZE);
     }
 
     /**
@@ -518,7 +506,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
         // store
         if (count(self::$class_interfaces) >= self::BULK_INSERT_SIZE) {
-            self::doHierarchyBulkWrite(self::$class_interfaces, self::$class_interfaces_prepared_insert);
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_interfaces",
+                count(self::$class_interfaces)
+            );
+            self::doHierarchyBulkWrite(self::$class_interfaces, $stmt);
             self::$class_interfaces = [];
         }
 
@@ -529,7 +521,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
         // store
         if (count(self::$class_traits) >= self::BULK_INSERT_SIZE) {
-            self::doHierarchyBulkWrite(self::$class_traits, self::$class_traits_prepared_insert);
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_traits",
+                count(self::$class_traits)
+            );
+            self::doHierarchyBulkWrite(self::$class_traits, $stmt);
             self::$class_traits = [];
         }
     }
@@ -561,7 +557,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         // store
         if (count(self::$interface_relationships) >= self::BULK_INSERT_SIZE) {
-            self::doHierarchyBulkWrite(self::$interface_relationships, self::$interface_relationships_prepared_insert);
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "interface_relationships",
+                count(self::$interface_relationships)
+            );
+            self::doHierarchyBulkWrite(self::$interface_relationships, $stmt);
             self::$interface_relationships = [];
         }
     }
@@ -589,7 +589,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
         // store
         if (count(self::$trait_traits) >= self::BULK_INSERT_SIZE) {
-            self::doHierarchyBulkWrite(self::$trait_traits, self::$trait_traits_prepared_insert);
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "trait_traits",
+                count(self::$trait_traits)
+            );
+            self::doHierarchyBulkWrite(self::$trait_traits, $stmt);
             self::$trait_traits = [];
         }
     }
