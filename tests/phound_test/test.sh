@@ -8,7 +8,7 @@ fi
 
 EXPECTED_PATH=expected/all_output.expected
 if [ ! -d expected  ]; then
-    echo "Error: must run this script from tests/override_return_types folder" 1>&2
+    echo "Error: must run this script from tests/phound_test folder"
     exit 1
 fi
 echo "Generating test cases"
@@ -38,15 +38,40 @@ fi
 #   for example, 'foo.php:10' might otherwise appear ahead of 'foo.php:9' when treated as a string.
 #
 # Together, these order by clauses ensure the output is ordered by file and line number.
-ACTUAL=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type' \
-    | sed -e 's/src\\/src\//g')
+CALLSITES=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type')
+CLASSES=$(sqlite3 ~/phound.db 'SELECT * FROM classes ORDER BY filepath, name')
+CLASS_INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM class_interfaces ORDER BY class, interface')
+CLASS_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM class_relationships ORDER BY parent, child')
+CLASS_TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM class_traits ORDER BY class, trait')
+INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM interfaces ORDER BY filepath, name')
+INTERFACE_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM interface_relationships ORDER BY parent, child')
+TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM traits ORDER BY filepath, name')
+TRAIT_TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM trait_traits ORDER BY trait, uses_trait')
 
+ACTUAL="<-----------> Callsites <----------->
+$CALLSITES
+<-----------> Classes <----------->
+$CLASSES
+<-----------> Class Interfaces <----------->
+$CLASS_INTERFACES
+<-----------> Class Relationships <----------->
+$CLASS_RELATIONSHIPS
+<-----------> Class Traits <----------->
+$CLASS_TRAITS
+<-----------> Interfaces <----------->
+$INTERFACES
+<-----------> Interface Relationships <----------->
+$INTERFACE_RELATIONSHIPS
+<-----------> Traits <----------->
+$TRAITS
+<-----------> Trait Traits <----------->
+$TRAIT_TRAITS"
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
 echo "$ACTUAL"
 echo "Comparing the output:"
 
-if type colordiff >/dev/null; then
+if type colordiff >/dev/null 2>&1; then
     DIFF="colordiff"
 else
     DIFF="diff"

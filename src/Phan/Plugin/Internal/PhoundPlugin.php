@@ -5,15 +5,19 @@ declare(strict_types=1);
 use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Element\ClassElement;
 use Phan\Config;
 
 /**
- * Populates a sqlite database with callsites of class elements. Class elements include
- * methods, static methods, properties, static properties, and constants. The database
- * can be queried to find callsites of a given class element.
+ * Populates a sqlite database with callsites of class elements, as well as class, trait, and interface
+ * hierarchies. Class elements include methods, static methods, properties, static properties,
+ * and constants. Class heirarchies include classes and their parent-child relationships, interfaces, and traits.
+ *
+ * The database can be queried to find callsites of a given class element as well as class, trait,
+ * and interface hierarchy.
  *
  * Examples:
  *
@@ -28,24 +32,174 @@ use Phan\Config;
  *
  * 4) Search for callsites of the \Foo::BANG constant:
  *     select * from callsites where element = '\Foo::BANG' and type = 'const' order by callsite
+ *
+ * 5) Using Common Table Expressions and the class hierarchy tables, we can find all clases implementing any interface:
+ *     WITH RECURSIVE
+ *       sub_interfaces (name) AS (
+ *         SELECT '\My_Interface'
+ *         UNION ALL
+ *         SELECT ir.child
+ *         FROM interface_relationships ir
+ *         JOIN sub_interfaces si ON ir.parent = si.name
+ *       ),
+ *       direct_implementers (class_name) AS (
+ *         SELECT DISTINCT ci.class
+ *         FROM class_interfaces ci
+ *         JOIN sub_interfaces si ON ci.interface = si.name
+ *       ),
+ *       all_implementing_classes (class_name) AS (
+ *         SELECT class_name FROM direct_implementers
+ *         UNION ALL
+ *         SELECT cr.child
+ *         FROM class_relationships cr
+ *         JOIN all_implementing_classes aic ON cr.parent = aic.class_name
+ *       )
+ *     SELECT DISTINCT c.name, c.filepath
+ *     FROM classes c
+ *     JOIN all_implementing_classes aic ON c.name = aic.class_name
+ *     ORDER BY c.name;
+ *
+ * 6) Find similar relationships between traits, like all classes using a trait,
+ *    all traits using a trait.
+ *
+ * 7) Find all classes extending from a base or abstract class, considering the full hierarchy
+ *
+ * 7) Combine the results of these queries to find all classes implementinng an interface
+ *    through the use of a specific trait, a useful mmigration and refactoring seam.
  */
 final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 {
-
-    private const NUM_DB_COLS = 3; // element, type, callsite
-
     // Avoid `SQLite3::prepare(): Unable to prepare statement: 1, too many SQL variables`
     // See #9: https://www.sqlite.org/limits.html
-    private const BULK_INSERT_SIZE = 999 / self::NUM_DB_COLS;
+    // Calculated by table with the most columns (callsites): element, type, callsite / 999 = 333
+    // 999 is the max variables until SQLite version 3.32.0, which increased max to 32766
+    private const BULK_INSERT_SIZE = 333;
 
     /** @var SQLite3 */
     private static $db;
-
     /** @var SQLite3Stmt */
-    private static $prepared_insert;
+    private static $callsites_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $classes_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $interfaces_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $traits_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $class_relationships_prepared_insert;
 
     /** @var list<array{string,string,string}> */
     private static $callsites = [];
+    /** @var list<array{string,string}> */
+    private static $classes = [];
+    /** @var list<array{string,string}> */
+    private static $interfaces = [];
+    /** @var list<array{string,string}> */
+    private static $traits = [];
+    /** @var list<array{string,string}> */
+    private static $trait_traits = [];
+    /** @var list<array{string,string}> */
+    private static $interface_relationships = [];
+    /** @var list<array{string,string}> */
+    private static $class_relationships = [];
+    /** @var list<array{string,string}> */
+    private static $class_interfaces = [];
+    /** @var list<array{string,string}> */
+    private static $class_traits = [];
+
+    private const TABLES = [
+        'callsites' => [
+            'columns' => [
+                'element TEXT NOT NULL',
+                'type TEXT NOT NULL',
+                'callsite TEXT NOT NULL',
+                'PRIMARY KEY (element, type, callsite)',
+            ]
+        ],
+        'classes' => [
+            'columns' => [
+                'name TEXT NOT NULL PRIMARY KEY',
+                'filepath TEXT NOT NULL',
+            ]
+        ],
+        'interfaces' => [
+            'columns' => [
+                'name TEXT NOT NULL PRIMARY KEY',
+                'filepath TEXT NOT NULL',
+            ]
+        ],
+        'traits' => [
+            'columns' => [
+                'name TEXT NOT NULL PRIMARY KEY',
+                'filepath TEXT NOT NULL',
+            ]
+        ],
+        'trait_traits' => [
+            'columns' => [
+                'trait TEXT',
+                'uses_trait TEXT',
+            ],
+            'relationships' => [
+                'FOREIGN KEY(trait) REFERENCES traits(name)',
+                'FOREIGN KEY(uses_trait) REFERENCES traits(name)',
+            ],
+            'constraints' => [
+                'unique (trait, uses_trait)',
+            ]
+        ],
+        'interface_relationships' => [
+            'columns' => [
+                'parent TEXT',
+                'child TEXT',
+            ],
+            'relationships' => [
+                'FOREIGN KEY(parent) REFERENCES interfaces(name)',
+                'FOREIGN KEY(child) REFERENCES interfaces(name)',
+            ],
+            'constraints' => [
+                'unique (parent, child)',
+            ]
+        ],
+        'class_relationships' => [
+            'columns' => [
+                'parent TEXT',
+                'child TEXT',
+            ],
+            'relationships' => [
+                'FOREIGN KEY(parent) REFERENCES classes(name)',
+                'FOREIGN KEY(child) REFERENCES classes(name)',
+            ],
+            'constraints' => [
+                'unique (parent, child)',
+            ]
+        ],
+        'class_interfaces' => [
+            'columns' => [
+                'class TEXT',
+                'interface TEXT',
+            ],
+            'relationships' => [
+                'FOREIGN KEY(class) REFERENCES classes(name)',
+                'FOREIGN KEY(interface) REFERENCES interfaces(name)',
+            ],
+            'constraints' => [
+                'unique (class, interface)',
+            ]
+        ],
+        'class_traits' => [
+            'columns' => [
+                'class TEXT',
+                'trait TEXT',
+            ],
+            'relationships' => [
+                'FOREIGN KEY(class) REFERENCES classes(name)',
+                'FOREIGN KEY(trait) REFERENCES traits(name)',
+            ],
+            'constraints' => [
+                'unique (class, trait)',
+            ]
+        ],
+    ];
 
     /**
      * @param CodeBase $code_base
@@ -65,21 +219,33 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
         self::$db = new SQLite3($db_path);
 
-        if (!self::$db->exec('DROP TABLE IF EXISTS callsites')) {
+        // cleanup the db in reverse for foreign key constraints
+        foreach (array_keys(array_reverse(self::TABLES)) as $table) {
+            if (!self::$db->exec("DROP TABLE IF EXISTS $table")) {
+                throw new Exception();
+            }
+        }
+
+        // must be on before creation of FK tables
+        if (!self::$db->exec("PRAGMA foreign_keys = ON")) {
             throw new Exception();
         }
 
-        if (!self::$db->exec(
-            <<<'EOD'
-            create table callsites(
-                element TEXT NOT NULL,
-                type TEXT NOT NULL,
-                callsite TEXT NOT NULL,
-                PRIMARY KEY (element, type, callsite)
-            )
-EOD
-        )) {
-            throw new Exception();
+        // build tables in natural order
+        foreach (self::TABLES as $table => $table_meta) {
+            $table_stmt = implode(', ', $table_meta['columns']);
+
+            if (isset($table_meta['relationships'])) {
+                $table_stmt .= ', ' . implode(', ', $table_meta['relationships']);
+            }
+
+            if (isset($table_meta['constraints'])) {
+                $table_stmt .= ', ' . implode(', ', $table_meta['constraints']);
+            }
+
+            if (!self::$db->exec("create table $table($table_stmt)")) {
+                throw new Exception();
+            }
         }
 
         if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
@@ -96,19 +262,48 @@ EOD
             throw new Exception();
         }
 
-        self::$prepared_insert = $this->createBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
+        self::$callsites_prepared_insert  = $this->createCallsitesBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
+        self::$classes_prepared_insert    = $this->createHierarchyBulkInsertPreparedStmt("classes", self::BULK_INSERT_SIZE);
+        self::$interfaces_prepared_insert = $this->createHierarchyBulkInsertPreparedStmt("interfaces", self::BULK_INSERT_SIZE);
+        self::$traits_prepared_insert     = $this->createHierarchyBulkInsertPreparedStmt("traits", self::BULK_INSERT_SIZE);
+        self::$class_relationships_prepared_insert = $this->createHierarchyBulkInsertPreparedStmt("class_relationships", self::BULK_INSERT_SIZE);
     }
 
     /**
      * @param  int    $bulk_insert_size
      * @throws Exception
      */
-    private static function createBulkInsertPreparedStatement(int $bulk_insert_size): SQLite3Stmt {
+    private static function createCallsitesBulkInsertPreparedStatement(int $bulk_insert_size): SQLite3Stmt {
         $bulk_insert_sql = "INSERT OR IGNORE INTO callsites ('element', 'type', 'callsite') VALUES ";
         $bulk_insert_sql .= str_repeat("(?, ?, ?), ", $bulk_insert_size);
         $bulk_insert_sql = rtrim($bulk_insert_sql, ', ');
         $stmt = self::$db->prepare($bulk_insert_sql);
         if ($stmt === false) {
+            throw new Exception();
+        }
+        return $stmt;
+    }
+
+    /**
+     * Creates a prepaired statement for inserting
+     * @param string    $table_name from self::TABLES
+     * @param int       $bulk_insert_size the number of rows to insert
+     * @throws Exception on preparation failure
+     */
+    private static function createHierarchyBulkInsertPreparedStmt(
+        string $table_name,
+        int $bulk_insert_size
+    ): SQLite3Stmt {
+        $table_meta = self::TABLES[$table_name];
+        $col_names = [];
+        foreach ($table_meta['columns'] as $column) {
+            $col_names[] = "'" . explode(' ', $column)[0] . "'";
+        }
+        $insert_columns = implode(', ', $col_names);
+        $bulk_insert_sql = "INSERT or IGNORE INTO $table_name ($insert_columns) VALUES ";
+        $bulk_insert_sql .= str_repeat("(?, ?), ", $bulk_insert_size);
+        $bulk_insert_sql = rtrim($bulk_insert_sql, ', ');
+        if (!$stmt = self::$db->prepare($bulk_insert_sql)) {
             throw new Exception();
         }
         return $stmt;
@@ -248,7 +443,7 @@ EOD
             self::$callsites[] = [$element_name, $type, $callsite];
 
             if (count(self::$callsites) >= self::BULK_INSERT_SIZE) {
-                self::doBulkWrite(self::$prepared_insert);
+                self::doCallsitesBulkWrite(self::$callsites_prepared_insert);
             }
         }
     }
@@ -257,7 +452,7 @@ EOD
      * @param  SQLite3Stmt $stmt
      * @throws Exception
      */
-    private static function doBulkWrite(SQLite3Stmt $stmt): void {
+    private static function doCallsitesBulkWrite(SQLite3Stmt $stmt): void {
         sort(self::$callsites);
         $bind_index = 1;
         foreach (self::$callsites as $callsite) {
@@ -268,7 +463,194 @@ EOD
             $stmt->bindValue($bind_index, $callsite[2], SQLITE3_TEXT);
             $bind_index++;
         }
+        self::execStatement($stmt);
+        self::$callsites = [];
+    }
 
+    /**
+     * Called when visiting classes, interfaces, and traits, including anonymous
+     * versions of the same. Phan generates FQSENs consistently for anonymous classes
+     * using file modification time, i.e. if a file contains anonymous_class_83cba571,
+     * it will always contain anonymous_class_83cba571 unless/until that file is modified.
+     * @param Node  $node - the class AST node to evaluate
+     * @throws Exception
+     */
+    public function visitClass(Node $node): void {
+        if (
+            !$this->context->isInClassScope() ||
+            !($node->kind  === \ast\AST_CLASS)
+        ) {
+            return;
+        }
+
+        $clazz = $this->context->getClassInScope($this->code_base);
+        $filepath = $this->context->getProjectRelativePath();
+
+        if ($clazz->isClass()) {
+            self::handleClass($clazz, $filepath);
+
+        } else if ($clazz->isInterface()) {
+            self::handleInterface($clazz, $filepath);
+
+        } else if ($clazz->isTrait()) {
+            self::handleTrait($clazz, $filepath);
+
+        } else {
+            throw new Exception("Unknown class type: $clazz");
+        }
+    }
+
+    /**
+     * Processes a class to obtain its name, filepath, relationships, interfaces, and traits.
+     * @param Clazz     $clazz the class AST node to evaluate
+     * @param string    $filepath The absolute filepath to the file containing the class
+     * @throws Exception
+     */
+    private static function handleClass(Clazz $clazz, string $filepath): void {
+        // collect basic info
+        $name = $clazz->getFQSEN()->__toString();
+        self::$classes[] = [$name, $filepath];
+        // store
+        if (count(self::$classes) >= self::BULK_INSERT_SIZE) {
+            self::doHierarchyBulkWrite(self::$classes, self::$classes_prepared_insert);
+            self::$classes = [];
+        }
+
+        // collect parent class
+        if ($clazz->hasParentType()) {
+            $parent_name = $clazz->getParentClassFQSEN()->__toString();
+            self::$class_relationships[] = [$parent_name, $name];
+        }
+        // store
+        if (count(self::$class_relationships) >= self::BULK_INSERT_SIZE) {
+            self::doHierarchyBulkWrite(self::$class_relationships, self::$class_relationships_prepared_insert);
+            self::$class_relationships = [];
+        }
+
+        // collect implemented interfaces
+        $impl_interfaces = $clazz->getInterfaceFQSENList();
+        foreach ($impl_interfaces as $iface) {
+            self::$class_interfaces[] = [$name, $iface->__toString()];
+        }
+        // store
+        if (count(self::$class_interfaces) >= self::BULK_INSERT_SIZE) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_interfaces",
+                count(self::$class_interfaces)
+            );
+            self::doHierarchyBulkWrite(self::$class_interfaces, $stmt);
+            self::$class_interfaces = [];
+        }
+
+        // collect used traits
+        $used_traits = $clazz->getTraitFQSENList();
+        foreach ($used_traits as $trait) {
+            self::$class_traits[] = [$name, $trait->__toString()];
+        }
+        // store
+        if (count(self::$class_traits) >= self::BULK_INSERT_SIZE) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_traits",
+                count(self::$class_traits)
+            );
+            self::doHierarchyBulkWrite(self::$class_traits, $stmt);
+            self::$class_traits = [];
+        }
+    }
+
+    /**
+     * Processes an interface to obtain its name, filepath, relationships, and implemented interfaces.
+     * @param Clazz     $clazz the interface AST node to evaluate
+     * @param string    $filepath The absolute filepath to the file containing the interface
+     * @throws Exception
+     */
+    private static function handleInterface(Clazz $clazz, string $filepath): void {
+        // collect basic info
+        $name = $clazz->getFQSEN()->__toString();
+        self::$interfaces[] = [$name, $filepath];
+        // store
+        if (count(self::$interfaces) >= self::BULK_INSERT_SIZE) {
+            self::doHierarchyBulkWrite(self::$interfaces, self::$interfaces_prepared_insert);
+            self::$interfaces = [];
+        }
+
+        // collect extensions of other interfaces
+        $parent_ifaces = $clazz->getInterfaceFQSENList();
+        if (count($parent_ifaces) > 0) {
+            foreach ($parent_ifaces as $iface) {
+                self::$interface_relationships[] = [
+                    $iface->__toString(),
+                    $name
+                ];
+            }
+        }
+
+        // store
+        if (count(self::$interface_relationships) >= self::BULK_INSERT_SIZE) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "interface_relationships",
+                count(self::$interface_relationships)
+            );
+            self::doHierarchyBulkWrite(self::$interface_relationships, $stmt);
+            self::$interface_relationships = [];
+        }
+    }
+
+    /**
+     * Processes a trait to obtain its name, filepath, and used traits.
+     * @param Clazz     $clazz the trait AST node to evaluate
+     * @param string    $filepath The absolute filepath to the file containing the trait
+     * @throws Exception
+     */
+    private static function handleTrait(Clazz $clazz, string $filepath): void {
+        // collect basic info
+        $name = $clazz->getFQSEN()->__toString();
+        self::$traits[] = [$name, $filepath];
+        // store
+        if (count(self::$traits) >= self::BULK_INSERT_SIZE) {
+            self::doHierarchyBulkWrite(self::$traits, self::$traits_prepared_insert);
+            self::$traits = [];
+        }
+
+        // collect usages of other traits
+        $uses_traits = $clazz->getTraitFQSENList();
+        foreach ($uses_traits as $trait) {
+            self::$trait_traits[] = [$name, $trait->__toString()];
+        }
+        // store
+        if (count(self::$trait_traits) >= self::BULK_INSERT_SIZE) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "trait_traits",
+                count(self::$trait_traits)
+            );
+            self::doHierarchyBulkWrite(self::$trait_traits, $stmt);
+            self::$trait_traits = [];
+        }
+    }
+
+    /**
+     * Bind any 2 values to a row for both tables and relationship tables, just because they have the same
+     * # of columns. if base tables diverge in # of columns from relationship tables, this breaks.
+     * @param list<array{string,string}> $nodes
+     * @param SQLite3Stmt $stmt
+     * @throws Exception
+     */
+    private static function doHierarchyBulkWrite(array $nodes, SQLite3Stmt $stmt): void {
+        $bind_index = 1;
+        foreach ($nodes as $node) {
+            $stmt->bindValue($bind_index, $node[0], SQLITE3_TEXT);
+            $bind_index++;
+            $stmt->bindValue($bind_index, $node[1], SQLITE3_TEXT);
+            $bind_index++;
+        }
+        self::execStatement($stmt);
+    }
+
+    /**
+     * @param SQLite3Stmt $stmt
+     * @throws Exception
+     */
+    private static function execStatement(SQLite3Stmt $stmt): void {
         if (!$stmt->execute()) {
             throw new Exception();
         }
@@ -280,8 +662,6 @@ EOD
         if (!$stmt->clear()) {
             throw new Exception();
         }
-
-        self::$callsites = [];
     }
 
     /**
@@ -289,12 +669,158 @@ EOD
      * @throws Exception
      */
     public static function finalizeProcess(): void {
-        if (count(self::$callsites) <= 0) {
-            return;
+        if (count(self::$callsites) >= 0) {
+            $stmt = self::createCallsitesBulkInsertPreparedStatement(count(self::$callsites));
+            self::doCallsitesBulkWrite($stmt);
+        }
+        if (count(self::$classes) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "classes",
+                count(self::$classes)
+            );
+            self::doHierarchyBulkWrite(self::$classes, $stmt);
+        }
+        if (count(self::$interfaces) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "interfaces",
+                count(self::$interfaces)
+            );
+            self::doHierarchyBulkWrite(self::$interfaces, $stmt);
+        }
+        if (count(self::$traits) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "traits",
+                count(self::$traits)
+            );
+            self::doHierarchyBulkWrite(self::$traits, $stmt);
+        }
+        if (count(self::$class_relationships) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_relationships",
+                count(self::$class_relationships)
+            );
+            self::doHierarchyBulkWrite(self::$class_relationships, $stmt);
+        }
+        if (count(self::$class_interfaces) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_interfaces",
+                count(self::$class_interfaces)
+            );
+            self::doHierarchyBulkWrite(self::$class_interfaces, $stmt);
+        }
+        if (count(self::$class_traits) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "class_traits",
+                count(self::$class_traits)
+            );
+            self::doHierarchyBulkWrite(self::$class_traits, $stmt);
+        }
+        if (count(self::$interface_relationships) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "interface_relationships",
+                count(self::$interface_relationships)
+            );
+            self::doHierarchyBulkWrite(self::$interface_relationships, $stmt);
+        }
+        if (count(self::$trait_traits) > 0) {
+            $stmt = self::createHierarchyBulkInsertPreparedStmt(
+                "trait_traits",
+                count(self::$trait_traits)
+            );
+            self::doHierarchyBulkWrite(self::$trait_traits, $stmt);
         }
 
-        $stmt = self::createBulkInsertPreparedStatement(count(self::$callsites));
-        self::doBulkWrite($stmt);
+        // To simplify the queries so that they don't need to use recursive CTEs,
+        // flatten all relationship tables with recursive CTEs ahead of time.
+        $flatten_class_relationships = "
+            WITH RECURSIVE ancestor_descendant(parent, child) AS (
+                SELECT parent, child
+                FROM class_relationships
+                UNION ALL
+                SELECT cr.parent, ad.child
+                FROM class_relationships cr
+                JOIN ancestor_descendant ad
+                ON cr.child = ad.parent
+            )
+            INSERT OR IGNORE INTO class_relationships (parent, child)
+            SELECT parent, child FROM ancestor_descendant
+            WHERE parent != child;
+        ";
+        if (!self::$db->exec($flatten_class_relationships)) {
+            throw new Exception("Failed to flatten class relationships");
+        }
+
+        $flatten_interface_relationships = "
+            WITH RECURSIVE ancestor_descendant(parent, child) AS (
+                SELECT parent, child
+                FROM interface_relationships
+                UNION ALL
+                SELECT ir.parent, ad.child
+                FROM interface_relationships ir
+                JOIN ancestor_descendant ad
+                ON ir.child = ad.parent
+            )
+            INSERT OR IGNORE INTO interface_relationships (parent, child)
+            SELECT parent, child FROM ancestor_descendant
+            WHERE parent != child;
+        ";
+        if (!self::$db->exec($flatten_interface_relationships)) {
+            throw new Exception("Failed to flatten interface relationships");
+        }
+
+        $flatten_trait_relationships = "
+            WITH RECURSIVE ancestor_descendant(trait, uses_trait) AS (
+                SELECT trait, uses_trait
+                FROM trait_traits
+                UNION ALL
+                SELECT tt.trait, ad.uses_trait
+                FROM trait_traits tt
+                JOIN ancestor_descendant ad
+                ON tt.uses_trait = ad.trait
+            )
+            INSERT OR IGNORE INTO trait_traits (trait, uses_trait)
+            SELECT trait, uses_trait FROM ancestor_descendant
+            WHERE trait != uses_trait;
+        ";
+        if (!self::$db->exec($flatten_trait_relationships)) {
+            throw new Exception("Failed to flatten trait relationships");
+        }
+
+        $flatten_class_interfaces = "
+            WITH RECURSIVE ancestor_descendant(class, interface) AS (
+                SELECT class, interface
+                FROM class_interfaces
+                UNION ALL
+                SELECT ci.class, ad.interface
+                FROM class_interfaces ci
+                JOIN ancestor_descendant ad
+                ON ci.interface = ad.class
+            )
+            INSERT OR IGNORE INTO class_interfaces (class, interface)
+            SELECT class, interface FROM ancestor_descendant
+            WHERE class != interface;
+        ";
+        if (!self::$db->exec($flatten_class_interfaces)) {
+            throw new Exception("Failed to flatten class interfaces");
+        }
+
+        $flatten_class_traits = "
+            WITH RECURSIVE ancestor_descendant(class, trait) AS (
+                SELECT class, trait
+                FROM class_traits
+                UNION ALL
+                SELECT ct.class, ad.trait
+                FROM class_traits ct
+                JOIN ancestor_descendant ad
+                ON ct.trait = ad.class
+            )
+            INSERT OR IGNORE INTO class_traits (class, trait)
+            SELECT class, trait FROM ancestor_descendant
+            WHERE class != trait;
+        ";
+        if (!self::$db->exec($flatten_class_traits)) {
+            throw new Exception("Failed to flatten class traits");
+        }
     }
 
 }

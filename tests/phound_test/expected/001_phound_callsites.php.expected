@@ -1,3 +1,4 @@
+<-----------> Callsites <----------->
 \A::foo|const|src/001_phound_callsites.php:10
 \A::foo|prop|src/001_phound_callsites.php:11
 \A::fooz|prop|src/001_phound_callsites.php:12
