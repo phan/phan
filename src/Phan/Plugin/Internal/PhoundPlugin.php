@@ -552,13 +552,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         // collect extensions of other interfaces
         $parent_ifaces = $clazz->getInterfaceFQSENList();
-        if (count($parent_ifaces) > 0) {
-            foreach ($parent_ifaces as $iface) {
-                self::$interface_relationships[] = [
-                    $iface->__toString(),
-                    $name
-                ];
-            }
+        foreach ($parent_ifaces as $iface) {
+            self::$interface_relationships[] = [
+                $iface->__toString(),
+                $name
+            ];
         }
 
         // store
