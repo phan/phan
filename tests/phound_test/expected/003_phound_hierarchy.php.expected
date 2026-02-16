@@ -37,6 +37,10 @@
 \PhoundOverrideReturnTypesTest|src/002_phound_override_return_types.php
 \Vegetable|src/002_phound_override_return_types.php
 \Car|src/003_phound_hierarchy.php
+\DeepHierarchy\Child|src/003_phound_hierarchy.php
+\DeepHierarchy\Grandchild|src/003_phound_hierarchy.php
+\DeepHierarchy\GreatGrandchild|src/003_phound_hierarchy.php
+\DeepHierarchy\Root|src/003_phound_hierarchy.php
 \MotorBoat|src/003_phound_hierarchy.php
 \SailBoat|src/003_phound_hierarchy.php
 \Taxi|src/003_phound_hierarchy.php
@@ -46,6 +50,14 @@
 \Car|\MotorizedInterface
 \Car|\PersonalVehicleInterface
 \Car|\VehicleInterface
+\DeepHierarchy\Child|\DeepHierarchy\I1
+\DeepHierarchy\Child|\DeepHierarchy\I2
+\DeepHierarchy\Grandchild|\DeepHierarchy\I1
+\DeepHierarchy\Grandchild|\DeepHierarchy\I2
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\I1
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\I2
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\I4
+\DeepHierarchy\Root|\DeepHierarchy\I1
 \MotorBoat|\MotorizedInterface
 \MotorBoat|\SailableInterface
 \MotorBoat|\VehicleInterface
@@ -61,6 +73,12 @@
 \Animal|\Cat
 \Animal|\Dog
 \Car|\Taxi
+\DeepHierarchy\Child|\DeepHierarchy\Grandchild
+\DeepHierarchy\Child|\DeepHierarchy\GreatGrandchild
+\DeepHierarchy\Grandchild|\DeepHierarchy\GreatGrandchild
+\DeepHierarchy\Root|\DeepHierarchy\Child
+\DeepHierarchy\Root|\DeepHierarchy\Grandchild
+\DeepHierarchy\Root|\DeepHierarchy\GreatGrandchild
 \TestConstructor|\TestConstructor2
 \Vehicle|\Car
 \Vehicle|\MotorBoat
@@ -70,6 +88,10 @@
 <-----------> Class Traits <----------->
 \Car|\MotorizedTrait
 \Car|\VehicleOperationTrait
+\DeepHierarchy\Child|\DeepHierarchy\T3
+\DeepHierarchy\Grandchild|\DeepHierarchy\T3
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\T3
+\DeepHierarchy\Root|\DeepHierarchy\T3
 \MotorBoat|\MotorizedTrait
 \MotorBoat|\SailingTrait
 \MotorBoat|\VehicleOperationTrait
@@ -82,12 +104,22 @@
 \anonymous_class_3022f2ed|\VehicleOperationTrait
 <-----------> Interfaces <----------->
 \CommercialVehicleInterface|src/003_phound_hierarchy.php
+\DeepHierarchy\I1|src/003_phound_hierarchy.php
+\DeepHierarchy\I2|src/003_phound_hierarchy.php
+\DeepHierarchy\I3|src/003_phound_hierarchy.php
+\DeepHierarchy\I4|src/003_phound_hierarchy.php
 \MotorizedInterface|src/003_phound_hierarchy.php
 \OperationalInterface|src/003_phound_hierarchy.php
 \PersonalVehicleInterface|src/003_phound_hierarchy.php
 \SailableInterface|src/003_phound_hierarchy.php
 \VehicleInterface|src/003_phound_hierarchy.php
 <-----------> Interface Relationships <----------->
+\DeepHierarchy\I1|\DeepHierarchy\I2
+\DeepHierarchy\I1|\DeepHierarchy\I3
+\DeepHierarchy\I1|\DeepHierarchy\I4
+\DeepHierarchy\I2|\DeepHierarchy\I3
+\DeepHierarchy\I2|\DeepHierarchy\I4
+\DeepHierarchy\I3|\DeepHierarchy\I4
 \MotorizedInterface|\CommercialVehicleInterface
 \OperationalInterface|\CommercialVehicleInterface
 \OperationalInterface|\MotorizedInterface
@@ -99,10 +131,16 @@
 \VehicleInterface|\PersonalVehicleInterface
 \VehicleInterface|\SailableInterface
 <-----------> Traits <----------->
+\DeepHierarchy\T1|src/003_phound_hierarchy.php
+\DeepHierarchy\T2|src/003_phound_hierarchy.php
+\DeepHierarchy\T3|src/003_phound_hierarchy.php
 \MotorizedTrait|src/003_phound_hierarchy.php
 \MovableTrait|src/003_phound_hierarchy.php
 \SailingTrait|src/003_phound_hierarchy.php
 \VehicleOperationTrait|src/003_phound_hierarchy.php
 <-----------> Trait Traits <----------->
+\DeepHierarchy\T2|\DeepHierarchy\T1
+\DeepHierarchy\T3|\DeepHierarchy\T1
+\DeepHierarchy\T3|\DeepHierarchy\T2
 \MotorizedTrait|\MovableTrait
 \SailingTrait|\MovableTrait

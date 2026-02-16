@@ -183,3 +183,80 @@ $anonymousVehicle = new class('mystery') extends Vehicle {
         echo "Some mysterious sound\n";
     }
 };
+
+// =====================================================================
+// Deep hierarchy tests: 4-level class chain, 4-level interface chain,
+// 3-level trait chain, and namespaced entities.
+// Validates that transitive flattening works beyond 2 levels.
+// =====================================================================
+
+namespace DeepHierarchy;
+
+// 4-level interface chain: I1 -> I2 -> I3 -> I4
+interface I1 {
+    public function i1Method(): void;
+}
+
+interface I2 extends I1 {
+    public function i2Method(): void;
+}
+
+interface I3 extends I2 {
+    public function i3Method(): void;
+}
+
+interface I4 extends I3 {
+    public function i4Method(): void;
+}
+
+// 3-level trait chain: T1 <- T2 <- T3
+trait T1 {
+    protected int $t1Prop = 1;
+    public function t1Method(): void {
+        echo "t1\n";
+    }
+}
+
+trait T2 {
+    use T1;
+    protected int $t2Prop = 2;
+    public function t2Method(): void {
+        echo "t2\n";
+    }
+}
+
+trait T3 {
+    use T2;
+    protected int $t3Prop = 3;
+    public function t3Method(): void {
+        echo "t3\n";
+    }
+}
+
+// 4-level class chain: Root -> Child -> Grandchild -> GreatGrandchild
+// Root implements I1 and uses T3.
+class Root implements I1 {
+    use T3;
+    public function i1Method(): void {
+        echo "root\n";
+    }
+}
+
+class Child extends Root implements I2 {
+    public function i2Method(): void {
+        echo "child\n";
+    }
+}
+
+class Grandchild extends Child {
+    // inherits everything, adds nothing new
+}
+
+class GreatGrandchild extends Grandchild implements I4 {
+    public function i3Method(): void {
+        echo "ggc i3\n";
+    }
+    public function i4Method(): void {
+        echo "ggc i4\n";
+    }
+}
