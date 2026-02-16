@@ -808,6 +808,21 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec($flatten_class_traits)) {
             throw new Exception("Failed to flatten class traits");
         }
+
+        // Propagate ancestor traits into class_traits: if a class uses a
+        // trait, it also uses all traits that trait transitively depends on.
+        // trait_traits is already fully flattened, so a single join covers
+        // all transitive ancestors without recursion.
+        $propagate_trait_ancestors = "
+            INSERT OR IGNORE INTO class_traits (class, trait)
+            SELECT ct.class, tt.uses_trait
+            FROM class_traits ct
+            JOIN trait_traits tt
+            ON ct.trait = tt.trait;
+        ";
+        if (!self::$db->exec($propagate_trait_ancestors)) {
+            throw new Exception("Failed to propagate trait ancestors into class traits");
+        }
     }
 
 }

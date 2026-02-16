@@ -94,20 +94,33 @@
 \Vehicle|\anonymous_class_3022f2ed
 <-----------> Class Traits <----------->
 \Car|\MotorizedTrait
+\Car|\MovableTrait
 \Car|\VehicleOperationTrait
+\DeepHierarchy\Child|\DeepHierarchy\T1
+\DeepHierarchy\Child|\DeepHierarchy\T2
 \DeepHierarchy\Child|\DeepHierarchy\T3
+\DeepHierarchy\Grandchild|\DeepHierarchy\T1
+\DeepHierarchy\Grandchild|\DeepHierarchy\T2
 \DeepHierarchy\Grandchild|\DeepHierarchy\T3
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\T1
+\DeepHierarchy\GreatGrandchild|\DeepHierarchy\T2
 \DeepHierarchy\GreatGrandchild|\DeepHierarchy\T3
+\DeepHierarchy\Root|\DeepHierarchy\T1
+\DeepHierarchy\Root|\DeepHierarchy\T2
 \DeepHierarchy\Root|\DeepHierarchy\T3
 \MotorBoat|\MotorizedTrait
+\MotorBoat|\MovableTrait
 \MotorBoat|\SailingTrait
 \MotorBoat|\VehicleOperationTrait
+\SailBoat|\MovableTrait
 \SailBoat|\SailingTrait
 \SailBoat|\VehicleOperationTrait
 \Taxi|\MotorizedTrait
+\Taxi|\MovableTrait
 \Taxi|\VehicleOperationTrait
 \Vehicle|\VehicleOperationTrait
 \anonymous_class_3022f2ed|\MotorizedTrait
+\anonymous_class_3022f2ed|\MovableTrait
 \anonymous_class_3022f2ed|\VehicleOperationTrait
 <-----------> Interfaces <----------->
 \CommercialVehicleInterface|src/003_phound_hierarchy.php
