@@ -669,7 +669,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      * @throws Exception
      */
     public static function finalizeProcess(): void {
-        if (count(self::$callsites) >= 0) {
+        if (count(self::$callsites) > 0) {
             $stmt = self::createCallsitesBulkInsertPreparedStatement(count(self::$callsites));
             self::doCallsitesBulkWrite($stmt);
         }
