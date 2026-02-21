@@ -15,7 +15,6 @@
  * The fix ensures 'a' is not falsely marked as possibly-undefined
  * after the second ternary accesses 'b'.
  * @suppress PhanPluginDuplicateConditionalTernaryDuplication
- * @suppress PhanTypePossiblyInvalidDimOffset
  */
 function test5908_globals_ternary() {
     $arr = $GLOBALS['x'];
@@ -30,7 +29,6 @@ function test5908_globals_ternary() {
  * This is the key regression test: without the fix, accessing $arr['a']
  * after the second ternary would falsely warn about possibly-invalid offset.
  * @suppress PhanPluginDuplicateConditionalTernaryDuplication
- * @suppress PhanTypePossiblyInvalidDimOffset
  */
 function test5908_no_false_positive_on_established_field() {
     $arr = $GLOBALS['x'];
@@ -45,7 +43,6 @@ function test5908_no_false_positive_on_established_field() {
 
 /**
  * Case 3: If-else equivalent of the ternary pattern
- * @suppress PhanTypePossiblyInvalidDimOffset
  */
 function test5908_if_else() {
     $arr = $GLOBALS['x'];
@@ -69,7 +66,6 @@ function test5908_if_else() {
 /**
  * Case 4: Three consecutive dim accesses
  * Earlier fields should remain valid after later conditionals
- * @suppress PhanTypePossiblyInvalidDimOffset
  */
 function test5908_three_fields() {
     $arr = $GLOBALS['x'];
@@ -86,7 +82,6 @@ function test5908_three_fields() {
 /**
  * Case 5: Mixed-typed parameter with conditional dim access
  * @param mixed $arr
- * @suppress PhanTypePossiblyInvalidDimOffset
  */
 function test5908_mixed_param($arr) {
     $a = $arr['a'] ? $arr['a'] : [];
