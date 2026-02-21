@@ -2358,6 +2358,32 @@ class AssignmentVisitor extends AnalysisVisitor
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1) {
                     $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type);
+                } elseif ($this->is_conditional_check && !$right_type->isEmpty() && !$right_type->hasTopLevelNonArrayShapeTypeInstances() && $old_variable_union_type->hasPossiblyObjectTypes() && $old_variable_union_type->hasArrayShapeTypeInstances()) {
+                    // When a conditional check adds a new array shape field, merge it into
+                    // existing shapes rather than adding as a separate union member.
+                    // This prevents hasPossiblyObjectTypes() (true for mixed) from causing
+                    // shapes to be separated. (fixes #5444)
+                    $combined = ArrayType::combineArrayTypesOverriding($right_type, $old_variable_union_type, false);
+                    // combineArrayTypesOverriding drops non-array types (e.g. mixed), re-add them
+                    $non_array_types = $old_variable_union_type->nonArrayTypes();
+                    $phpdoc_types = \array_merge($combined->getTypeSet(), $non_array_types->getTypeSet());
+                    // Merge real type sets following the same pattern as withUnionType
+                    $old_real = $old_variable_union_type->getRealTypeSet();
+                    $new_real = $right_type->getRealTypeSet();
+                    if ($old_real && $new_real) {
+                        $real_types = $old_real;
+                        foreach ($new_real as $type) {
+                            foreach ($old_real as $existing) {
+                                if ($existing === $type) {
+                                    continue 2;
+                                }
+                            }
+                            $real_types[] = $type;
+                        }
+                    } else {
+                        $real_types = [];
+                    }
+                    $new_union_type = UnionType::of($phpdoc_types, $real_types);
                 } elseif ($old_variable_union_type->isEmpty() || $old_variable_union_type->hasPossiblyObjectTypes() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                     $new_union_type = $old_variable_union_type->withUnionType(
                         $right_type
