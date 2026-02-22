@@ -27,6 +27,16 @@ class MyArrayAccess5909 implements \ArrayAccess {
     public function offsetUnset(mixed $offset): void {
         unset($this->data[$offset]);
     }
+
+    // Should NOT warn - $this[$key] uses ArrayAccess via offsetExists()
+    public function getOrDefault(string $key): string {
+        return $this[$key] ?? 'default';
+    }
+
+    // Should NOT warn - $this[$key] isset check calls offsetExists()
+    public function has(string $key): bool {
+        return isset($this[$key]);
+    }
 }
 
 function test_isset_array_access(MyArrayAccess5909 $obj, string $key): void {
@@ -52,8 +62,3 @@ function test_isset_in_loop(MyArrayAccess5909 $obj): void {
     }
 }
 
-function test_isset_on_this(MyArrayAccess5909 $obj, string $key): void {
-    // Should NOT warn - $this[$key] uses ArrayAccess
-    $val = $obj[$key] ?? 'fallback';
-    echo $val;
-}

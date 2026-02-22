@@ -204,7 +204,7 @@ class RedundantCondition
             }
             // isset() on ArrayAccess calls offsetExists() which can return false,
             // regardless of offsetGet()'s return type. (fixes #5441)
-            if ($expr_type->hasArrayAccess($code_base)) {
+            if ($expr_type->withStaticResolvedInContext($context)->hasArrayAccess($code_base)) {
                 return true;
             }
         }
