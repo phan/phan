@@ -197,9 +197,16 @@ class RedundantCondition
             return false;
         }
         if ($node->kind === ast\AST_DIM) {
+            $expr_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr'], false);
             // Surprisingly, $str[$invalidOffset] is the empty string instead of null, and isset($str[$invalid]) is false.
-            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr'], false)
-                ->canCastToUnionType(StringType::instance(true)->asPHPDocUnionType(), $code_base);
+            if ($expr_type->canCastToUnionType(StringType::instance(true)->asPHPDocUnionType(), $code_base)) {
+                return true;
+            }
+            // isset() on ArrayAccess calls offsetExists() which can return false,
+            // regardless of offsetGet()'s return type. (fixes #5441)
+            if ($expr_type->hasArrayAccess($code_base)) {
+                return true;
+            }
         }
         return false;
     }
