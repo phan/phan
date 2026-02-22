@@ -3585,6 +3585,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                             $class_fqsen = $class->getFQSEN();
                             $static_type_for_this_call = $expression_type->findTypeMatchingCallback(
                                 function (Type $type) use ($class_fqsen): bool {
+                                    if (!$type->isObject()) {
+                                        return false;
+                                    }
                                     // Check if this type is the class itself or a subclass
                                     if ($type->asFQSEN() === $class_fqsen) {
                                         return true;
