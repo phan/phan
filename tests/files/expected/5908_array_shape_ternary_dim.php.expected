@@ -1,0 +1,5 @@
+%s:23 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $arr of array type array{b?:non-empty-mixed,a:non-empty-mixed}|mixed|non-empty-mixed
+%s:37 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $arr of array type array{b?:non-empty-mixed,a:non-empty-mixed}|mixed|non-empty-mixed
+%s:74 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $arr of array type array{b?:non-empty-mixed,a:non-empty-mixed}|mixed|non-empty-mixed
+%s:78 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $arr of array type array{b?:non-empty-mixed,a:non-empty-mixed}|mixed|non-empty-mixed
+%s:88 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $arr of array type array{b?:non-empty-mixed,a:non-empty-mixed}|mixed|non-empty-mixed
