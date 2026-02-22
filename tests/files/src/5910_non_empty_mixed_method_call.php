@@ -20,19 +20,12 @@ class Fluent5910 {
 }
 
 /**
- * @param non-empty-array<Fluent5910> $items
- */
-function test_non_empty_mixed_method_call(array $items): void {
-    foreach ($items as $item) {
-        echo $item->doSomething()->getValue();
-    }
-}
-
-/**
- * @param non-empty-mixed $val
+ * Exercise the crash: non-empty-mixed must appear before the class type
+ * in the union so that findTypeMatchingCallback iterates over it first
+ * when resolving the static return type.
+ *
+ * @param non-empty-mixed|Fluent5910 $val
  */
 function test_method_on_non_empty_mixed($val): void {
-    if ($val instanceof Fluent5910) {
-        echo $val->doSomething()->getValue();
-    }
+    echo $val->doSomething()->getValue();
 }
