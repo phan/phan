@@ -2236,19 +2236,23 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Check if the union type contains any array-like type that would accept arbitrary key access.
+     * Check if the union type contains any type that would accept arbitrary key access.
      * This is used to avoid false positives when a union contains both shape types and generic arrays.
      *
-     * An array accepts arbitrary keys if:
+     * A type accepts arbitrary keys if:
+     * - It's `mixed` (could be any array with any keys)
      * - It's a plain `array` type (not a shape or list)
      * - It's a GenericArrayType with KEY_MIXED (accepts both int and string keys)
      *
      * Arrays with restricted key types (e.g., array<int, T> or array<string, T>) do NOT accept arbitrary keys.
-     * Note: bare `mixed` is excluded because it could be a scalar or object at runtime.
      */
     private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
+            // mixed can be anything including an array with any keys
+            if ($type instanceof MixedType) {
+                return true;
+            }
             // Plain `array` type without shape or generic parameters (accepts arbitrary keys)
             if ($type instanceof ArrayType && !($type instanceof ArrayShapeType) && !($type instanceof GenericArrayInterface)) {
                 return true;

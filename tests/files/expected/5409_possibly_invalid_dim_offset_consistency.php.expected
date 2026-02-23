@@ -1,10 +1,2 @@
 %s:11 PhanUndeclaredGlobalVariable Global variable $rows is undeclared
-%s:24 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'key1' of $row of array type array{key1?:non-empty-mixed,key2?:non-empty-mixed}|mixed|non-empty-mixed
-%s:26 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'key2' of $row of array type array{key1?:non-empty-mixed,key2?:non-empty-mixed}|mixed|non-empty-mixed
 %s:36 PhanUndeclaredGlobalVariable Global variable $data is undeclared
-%s:45 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'a' of $item of array type array{a?:non-empty-mixed,b?:non-empty-mixed,c?:non-empty-mixed}|mixed|non-empty-mixed
-%s:46 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $item of array type array{a?:non-empty-mixed,b?:non-empty-mixed,c?:non-empty-mixed}|mixed|non-empty-mixed
-%s:47 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'c' of $item of array type array{a?:non-empty-mixed,b?:non-empty-mixed,c?:non-empty-mixed}|mixed|non-empty-mixed
-%s:56 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'x' of $arr of array type array{x?:int,y?:int,z?:int}|mixed
-%s:57 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'y' of $arr of array type array{x?:int,y?:int,z?:int}|mixed
-%s:58 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'z' of $arr of array type array{x?:int,y?:int,z?:int}|mixed
