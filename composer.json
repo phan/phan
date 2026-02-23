@@ -31,14 +31,14 @@
         "ext-tokenizer": "*",
         "composer/semver": "^1.4|^2.0|^3.0",
         "composer/xdebug-handler": "^2.0|^3.0",
-        "felixfbecker/advanced-json-rpc": "^3.0.4",
+        "danog/advanced-json-rpc": "^3.0.4",
         "netresearch/jsonmapper": "^1.6.0|^2.0|^3.0|^4.0|^5.0",
         "phan/tolerant-php-parser": "v0.2.0",
-        "sabre/event": "^5.1.3",
+        "phan/var_representation_polyfill": "^0.1.4",
+        "sabre/event": "^5.1.3|^6.0",
         "symfony/console": "^6.0|^7.0|^8.0",
         "symfony/polyfill-mbstring": "^1.11.0",
-        "symfony/string": "^6.0|^7.0|^8.0",
-        "phan/var_representation_polyfill": "^0.1.4"
+        "symfony/string": "^6.0|^7.0|^8.0"
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.1.3+ is needed.",
