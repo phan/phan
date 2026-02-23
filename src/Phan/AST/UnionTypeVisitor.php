@@ -2249,6 +2249,10 @@ class UnionTypeVisitor extends AnalysisVisitor
     private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
+            // mixed can be anything including an array with any keys
+            if ($type instanceof MixedType) {
+                return true;
+            }
             // Plain `array` type without shape or generic parameters (accepts arbitrary keys)
             if ($type instanceof ArrayType && !($type instanceof ArrayShapeType) && !($type instanceof GenericArrayInterface)) {
                 return true;
