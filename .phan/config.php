@@ -462,7 +462,7 @@ return [
         'tests/Phan',
         'vendor/composer/semver/src',
         'vendor/composer/xdebug-handler/src',
-        'vendor/felixfbecker/advanced-json-rpc/lib',
+        'vendor/danog/advanced-json-rpc/lib',
         'vendor/phan/tolerant-php-parser/src',
         'vendor/netresearch/jsonmapper/src',
         'vendor/phpdocumentor/reflection-docblock/src',
