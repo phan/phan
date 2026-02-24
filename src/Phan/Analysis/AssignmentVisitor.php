@@ -1552,7 +1552,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // Strip nullability for the check — nullable-to-non-null mismatches are
             // already reported via analyzePropAssignment, and we want ?Foo to be
             // recognized as compatible with a non-null Foo declared type.
-            return $single_type->withIsNullable(false)->asPHPDocUnionType()->canCastToUnionType($declared_type, $code_base);
+            return $single_type->withIsNullable(false)->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($declared_type, $code_base);
         });
         if ($narrowed->isEmpty()) {
             return $type;
@@ -1567,9 +1567,9 @@ class AssignmentVisitor extends AnalysisVisitor
 
     private function handleStaticPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name): void
     {
+        $target = $this->getStaticPropertyAssignmentTarget($node);
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
-            $target = $this->getStaticPropertyAssignmentTarget($node);
             $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name, $target[0] ?? null);
         } else {
             // Copied from visitVar
@@ -1589,14 +1589,11 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $this->context = $this->context->withStaticPropertySetToTypeByName($prop_name, $new_type);
-        if ($this->context->isInFunctionLikeScope()) {
+        if ($target && $this->context->isInFunctionLikeScope()) {
             $function_like = $this->context->getFunctionLikeInScope($this->code_base);
             if ($function_like instanceof Method) {
-                $target = $this->getStaticPropertyAssignmentTarget($node);
-                if ($target) {
-                    [$target_class, $is_late_static] = $target;
-                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
-                }
+                [$target_class, $is_late_static] = $target;
+                $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
             }
         }
     }
