@@ -1549,10 +1549,18 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $code_base = $this->code_base;
         $narrowed = $type->makeFromFilter(static function (Type $single_type) use ($declared_type, $code_base): bool {
-            return $single_type->asPHPDocUnionType()->canCastToUnionType($declared_type, $code_base);
+            // Strip nullability for the check — nullable-to-non-null mismatches are
+            // already reported via analyzePropAssignment, and we want ?Foo to be
+            // recognized as compatible with a non-null Foo declared type.
+            return $single_type->withIsNullable(false)->asPHPDocUnionType()->canCastToUnionType($declared_type, $code_base);
         });
         if ($narrowed->isEmpty()) {
             return $type;
+        }
+        // If the declared type is non-null, strip nullability from the result.
+        // If the assignment succeeded at runtime, the property holds a non-null value.
+        if (!$declared_type->containsNullableOrUndefined()) {
+            $narrowed = $narrowed->nonNullableClone();
         }
         return $narrowed;
     }
