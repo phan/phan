@@ -1522,12 +1522,16 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Narrows a union type to only include types compatible with the declared property type.
+     * Only narrows based on native (runtime-enforced) property types, not PHPDoc annotations.
      * If the filter produces an empty result (complete type mismatch), returns the original type unchanged
      * since Phan reports the mismatch elsewhere via analyzePropAssignment.
+     *
+     * @param ?FullyQualifiedClassName $target_class_fqsen The class owning the property (for static properties
+     *        this may differ from the current class, e.g. parent::$prop). Falls back to the current class context.
      */
-    private function narrowTypeToDeclaredPropertyType(UnionType $type, string $prop_name): UnionType
+    private function narrowTypeToDeclaredPropertyType(UnionType $type, string $prop_name, ?FullyQualifiedClassName $target_class_fqsen = null): UnionType
     {
-        $class_fqsen = $this->context->getClassFQSENOrNull();
+        $class_fqsen = $target_class_fqsen ?? $this->context->getClassFQSENOrNull();
         if ($class_fqsen === null) {
             return $type;
         }
@@ -1540,9 +1544,6 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $property = $clazz->getPropertyByName($this->code_base, $prop_name);
         $declared_type = $property->getRealUnionType();
-        if ($declared_type->isEmpty()) {
-            $declared_type = $property->getPHPDocUnionType();
-        }
         if ($declared_type->isEmpty()) {
             return $type;
         }
@@ -1560,7 +1561,8 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
-            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name);
+            $target = $this->getStaticPropertyAssignmentTarget($node);
+            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name, $target[0] ?? null);
         } else {
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);

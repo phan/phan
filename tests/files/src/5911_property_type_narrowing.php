@@ -60,7 +60,7 @@ class WrongMethodProcessor5911 {
     function process(): string {
         $config = Config5911::create();
         $this->writer = $config->handler;
-        // readLines() does NOT exist on Writer5911 - this SHOULD warn
+        // After narrowing, $this->writer is typed as Writer5911 (the declared type)
         return $this->writer->readLines();
     }
 }
