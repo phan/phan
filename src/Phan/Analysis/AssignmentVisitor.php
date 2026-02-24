@@ -1499,6 +1499,7 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
+            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name);
         } else {
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
@@ -1519,10 +1520,47 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $new_type);
     }
 
+    /**
+     * Narrows a union type to only include types compatible with the declared property type.
+     * If the filter produces an empty result (complete type mismatch), returns the original type unchanged
+     * since Phan reports the mismatch elsewhere via analyzePropAssignment.
+     */
+    private function narrowTypeToDeclaredPropertyType(UnionType $type, string $prop_name): UnionType
+    {
+        $class_fqsen = $this->context->getClassFQSENOrNull();
+        if ($class_fqsen === null) {
+            return $type;
+        }
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $type;
+        }
+        $clazz = $this->code_base->getClassByFQSEN($class_fqsen);
+        if (!$clazz->hasPropertyWithName($this->code_base, $prop_name)) {
+            return $type;
+        }
+        $property = $clazz->getPropertyByName($this->code_base, $prop_name);
+        $declared_type = $property->getRealUnionType();
+        if ($declared_type->isEmpty()) {
+            $declared_type = $property->getPHPDocUnionType();
+        }
+        if ($declared_type->isEmpty()) {
+            return $type;
+        }
+        $code_base = $this->code_base;
+        $narrowed = $type->makeFromFilter(static function (Type $single_type) use ($declared_type, $code_base): bool {
+            return $single_type->asPHPDocUnionType()->canCastToUnionType($declared_type, $code_base);
+        });
+        if ($narrowed->isEmpty()) {
+            return $type;
+        }
+        return $narrowed;
+    }
+
     private function handleStaticPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name): void
     {
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
+            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name);
         } else {
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
