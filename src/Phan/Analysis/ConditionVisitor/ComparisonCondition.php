@@ -95,7 +95,7 @@ class ComparisonCondition implements BinaryCondition
         if ($this->flags === ast\flags\BINARY_IS_SMALLER) {
             return $value > 0 && $value <= 1;
         } elseif ($this->flags === ast\flags\BINARY_IS_SMALLER_OR_EQUAL) {
-            // @phan-suppress-next-line PhanPluginComparisonNotStrictForScalar, PhanSuspiciousTruthyString
+            // @phan-suppress-next-line PhanPluginComparisonNotStrictForScalar
             return $value == 0 && $value <= 0;
         }
         return false;

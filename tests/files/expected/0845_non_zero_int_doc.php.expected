@@ -7,4 +7,4 @@
 %s:31 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 0 of type int (value: 0) but \expect_non_zero_int() takes non-zero-int (real type int) defined at %s:5 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:34 PhanTypeMismatchArgumentReal Argument 1 ($x) is null of type null but \expect_non_zero_int() takes non-zero-int (real type int) defined at %s:5
 %s:36 PhanTypeMismatchArgumentProbablyReal Argument 1 ($x) is 0 of type int (value: 0) but \expect_nullable_non_zero_int() takes ?non-zero-int (real type ?int) defined at %s:21 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:45 PhanImpossibleCondition Impossible attempt to cast $x of type non-zero-int to falsey
+%s:45 PhanImpossibleCondition Impossible attempt to cast $x of type positive-int to falsey

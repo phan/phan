@@ -160,7 +160,6 @@ final class EmptyUnionTypeTest extends TestBase
     {
         $type = $param->getType();
         $type_name = Type::stringFromReflectionType($type);
-        // @phan-suppress-next-line PhanSuspiciousTruthyString emitted because of comparison to ''
         switch ($type_name) {
             case 'bool':
                 return [false, true];
