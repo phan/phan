@@ -1,0 +1,2 @@
+%s:62 PhanPossiblyNullTypeMismatchProperty Assigning $config->handler of type ?\Reader5911|?\Writer5911|\CsvReader5911 to property but \WrongMethodProcessor5911->writer is \Writer5911 (null is incompatible)
+%s:64 PhanUndeclaredMethod Call to undeclared method \Writer5911::readLines

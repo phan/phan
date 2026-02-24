@@ -1499,6 +1499,7 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
+            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name);
         } else {
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
@@ -1519,10 +1520,57 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context = $this->context->withThisPropertySetToTypeByName($prop_name, $new_type);
     }
 
+    /**
+     * Narrows a union type to only include types compatible with the declared property type.
+     * Only narrows based on native (runtime-enforced) property types, not PHPDoc annotations.
+     * If the filter produces an empty result (complete type mismatch), returns the original type unchanged
+     * since Phan reports the mismatch elsewhere via analyzePropAssignment.
+     *
+     * @param ?FullyQualifiedClassName $target_class_fqsen The class owning the property (for static properties
+     *        this may differ from the current class, e.g. parent::$prop). Falls back to the current class context.
+     */
+    private function narrowTypeToDeclaredPropertyType(UnionType $type, string $prop_name, ?FullyQualifiedClassName $target_class_fqsen = null): UnionType
+    {
+        $class_fqsen = $target_class_fqsen ?? $this->context->getClassFQSENOrNull();
+        if ($class_fqsen === null) {
+            return $type;
+        }
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $type;
+        }
+        $clazz = $this->code_base->getClassByFQSEN($class_fqsen);
+        if (!$clazz->hasPropertyWithName($this->code_base, $prop_name)) {
+            return $type;
+        }
+        $property = $clazz->getPropertyByName($this->code_base, $prop_name);
+        $declared_type = $property->getRealUnionType();
+        if ($declared_type->isEmpty()) {
+            return $type;
+        }
+        $code_base = $this->code_base;
+        $narrowed = $type->makeFromFilter(static function (Type $single_type) use ($declared_type, $code_base): bool {
+            // Strip nullability for the check — nullable-to-non-null mismatches are
+            // already reported via analyzePropAssignment, and we want ?Foo to be
+            // recognized as compatible with a non-null Foo declared type.
+            return $single_type->withIsNullable(false)->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($declared_type, $code_base);
+        });
+        if ($narrowed->isEmpty()) {
+            return $type;
+        }
+        // If the declared type is non-null, strip nullability from the result.
+        // If the assignment succeeded at runtime, the property holds a non-null value.
+        if (!$declared_type->containsNullableOrUndefined()) {
+            $narrowed = $narrowed->nonNullableClone();
+        }
+        return $narrowed;
+    }
+
     private function handleStaticPropertyAssignmentInLocalScopeByName(Node $node, string $prop_name): void
     {
+        $target = $this->getStaticPropertyAssignmentTarget($node);
         if ($this->dim_depth === 0) {
             $new_type = $this->right_type;
+            $new_type = $this->narrowTypeToDeclaredPropertyType($new_type, $prop_name, $target[0] ?? null);
         } else {
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
@@ -1541,14 +1589,11 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $this->context = $this->context->withStaticPropertySetToTypeByName($prop_name, $new_type);
-        if ($this->context->isInFunctionLikeScope()) {
+        if ($target && $this->context->isInFunctionLikeScope()) {
             $function_like = $this->context->getFunctionLikeInScope($this->code_base);
             if ($function_like instanceof Method) {
-                $target = $this->getStaticPropertyAssignmentTarget($node);
-                if ($target) {
-                    [$target_class, $is_late_static] = $target;
-                    $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
-                }
+                [$target_class, $is_late_static] = $target;
+                $function_like->recordStaticPropertyModification($target_class, $prop_name, $new_type, $is_late_static);
             }
         }
     }
