@@ -38,6 +38,7 @@ use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NonZeroIntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
@@ -531,19 +532,39 @@ trait ConditionVisitorUtil
                 return $type instanceof LiteralTypeInterface && $type->getValue() == $value;
             };
         }
+
+        // Special case: non-zero integers and non-empty strings have their own types, so check them separately.
+        if ($value === 0) {
+            $nonfalsey_cb = static fn ( Type $t ): bool => get_class($t) === IntType::class;
+            $nonfalsey_type_class = NonZeroIntType::class;
+        } elseif ($value === '') {
+            $nonfalsey_cb = static fn ( Type $t ): bool => get_class($t) === StringType::class;
+            $nonfalsey_type_class = NonEmptyStringType::class;
+        } else {
+            $nonfalsey_cb = null;
+            $nonfalsey_type_class = null;
+        }
+        // TODO: handle int-range
+
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            static function (UnionType $union_type) use ($cb): bool {
-                return $union_type->hasPhpdocOrRealTypeMatchingCallback($cb);
+            static function (UnionType $union_type) use ($cb, $nonfalsey_cb): bool {
+                return $union_type->hasPhpdocOrRealTypeMatchingCallback($cb) ||
+                    ($nonfalsey_cb && $union_type->hasPhpdocOrRealTypeMatchingCallback($nonfalsey_cb));
             },
-            function (UnionType $union_type) use ($cb, $var_node, $context): UnionType {
+            function (UnionType $union_type) use ($cb, $var_node, $context, $nonfalsey_cb, $nonfalsey_type_class): UnionType {
                 $has_nullable = false;
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($cb($type)) {
                         $union_type = $union_type->withoutType($type);
                         $has_nullable = $has_nullable || $type->isNullable();
                     }
+                }
+                if ($nonfalsey_cb && $nonfalsey_type_class) {
+                    $union_type = $union_type->asMappedUnionType(
+                        static fn ( Type $t ): Type => $nonfalsey_cb($t) ? $nonfalsey_type_class::instance($t->isNullable()) : $t
+                    );
                 }
                 if ($has_nullable) {
                     if ($union_type->isEmpty()) {
@@ -565,6 +586,11 @@ trait ConditionVisitorUtil
                         $fallback = $fallback->withoutType($type);
                         $has_nullable = $has_nullable || $type->isNullable();
                     }
+                }
+                if ($nonfalsey_cb && $nonfalsey_type_class) {
+                    $fallback = $fallback->asMappedUnionType(
+                        static fn ( Type $t ): Type => $nonfalsey_cb($t) ? $nonfalsey_type_class::instance($t->isNullable()) : $t
+                    );
                 }
                 if ($has_nullable) {
                     if ($fallback->isEmpty()) {
@@ -1145,15 +1171,22 @@ trait ConditionVisitorUtil
                 })) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!Type::performComparison(0, $expr_value, $flags)) {
-                        // E.g. $x > 0 will convert int to non-zero-int
-                        $union_type = $union_type->asMappedUnionType(static function (Type $type): Type {
+                        // E.g. $x > 0 will convert int to positive-int
+                        if ($flags === ast\flags\BINARY_IS_GREATER || $flags === ast\flags\BINARY_IS_GREATER_OR_EQUAL) {
+                            $new_int_type_class = Type\PositiveIntType::class;
+                        } else {
+                            $new_int_type_class = Type\NegativeIntType::class;
+                        }
+                        $union_type = $union_type->asMappedUnionType(static function (Type $type) use ($new_int_type_class): Type {
                             if (\get_class($type) === IntType::class) {
-                                return NonZeroIntType::instance($type->isNullable());
+                                return $new_int_type_class::instance($type->isNullable());
                             }
                             return $type;
                         });
                     }
                 }
+                // TODO: handle int-range
+                // TODO: `$x > ''` should infer non-empty string
                 $variable->setUnionType($union_type);
 
                 // Overwrite the variable with its new type in this
@@ -1235,18 +1268,20 @@ trait ConditionVisitorUtil
                         return $this->removeEmptyArrayFromVariable($var_node, $context);
                     }
                 }
+                if ($expr == false) {
+                    if ($expr == null) {
+                        // Note, this needs to be done before removing literal types, so we don't emit spurious issues
+                        // if all falsey types are literal and have already been removed.
+                        $context =  $this->removeFalseyFromVariable($var_node, $context, true);
+                    } else {
+                        $context =  $this->removeFalseFromVariable( $var_node, $context );
+                    }
+                } elseif ($expr == true) {  // e.g. 1, "1", -1
+                    $context =  $this->removeTrueFromVariable($var_node, $context);
+                }
                 // Remove all of the types which are loosely equal
                 if (is_int($expr) || is_string($expr)) {
                     $context = $this->removeLiteralScalarFromVariable($var_node, $context, $expr, false);
-                }
-
-                if ($expr == false) {
-                    if ($expr == null) {
-                        return $this->removeFalseyFromVariable($var_node, $context, false);
-                    }
-                    return $this->removeFalseFromVariable($var_node, $context);
-                } elseif ($expr == true) {  // e.g. 1, "1", -1
-                    return $this->removeTrueFromVariable($var_node, $context);
                 }
             } catch (\Exception) {
                 // Swallow it (E.g. IssueException for undefined variable)
