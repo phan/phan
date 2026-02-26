@@ -141,7 +141,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'uses_trait TEXT',
             ],
             'constraints' => [
-                'unique (trait, uses_trait)',
+                'PRIMARY KEY (trait, uses_trait)',
             ]
         ],
         'interface_relationships' => [
@@ -150,7 +150,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'child TEXT',
             ],
             'constraints' => [
-                'unique (parent, child)',
+                'PRIMARY KEY (parent, child)',
             ]
         ],
         'class_relationships' => [
@@ -159,7 +159,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'child TEXT',
             ],
             'constraints' => [
-                'unique (parent, child)',
+                'PRIMARY KEY (parent, child)',
             ]
         ],
         'class_interfaces' => [
@@ -168,7 +168,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'interface TEXT',
             ],
             'constraints' => [
-                'unique (class, interface)',
+                'PRIMARY KEY (class, interface)',
             ]
         ],
         'class_traits' => [
@@ -177,7 +177,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'trait TEXT',
             ],
             'constraints' => [
-                'unique (class, trait)',
+                'PRIMARY KEY (class, trait)',
             ]
         ],
     ];
