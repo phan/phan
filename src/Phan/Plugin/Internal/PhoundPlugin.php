@@ -39,28 +39,28 @@ use Phan\Config;
  *
  * 5) Find all classes implementing a given interface (including via sub-interfaces
  *    and class inheritance):
- *     SELECT DISTINCT c.name, c.filepath
+ *     SELECT c.name, c.filepath
  *     FROM classes c
  *     JOIN class_interfaces ci ON c.name = ci.class
  *     WHERE ci.interface = '\My_Interface'
  *     ORDER BY c.name;
  *
  * 6) Find all classes extending from a base class (direct and transitive):
- *     SELECT DISTINCT c.name, c.filepath
+ *     SELECT c.name, c.filepath
  *     FROM classes c
  *     JOIN class_relationships cr ON c.name = cr.child
  *     WHERE cr.parent = '\My_Base_Class'
  *     ORDER BY c.name;
  *
  * 7) Find all classes using a given trait (direct and transitive):
- *     SELECT DISTINCT c.name, c.filepath
+ *     SELECT c.name, c.filepath
  *     FROM classes c
  *     JOIN class_traits ct ON c.name = ct.class
  *     WHERE ct.trait = '\My_Trait'
  *     ORDER BY c.name;
  *
  * 8) Find all traits that use a given trait:
- *     SELECT DISTINCT t.name, t.filepath
+ *     SELECT t.name, t.filepath
  *     FROM traits t
  *     JOIN trait_traits tt ON t.name = tt.trait
  *     WHERE tt.uses_trait = '\My_Trait'
