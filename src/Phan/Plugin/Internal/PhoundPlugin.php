@@ -12,12 +12,12 @@ use Phan\Language\Element\ClassElement;
 use Phan\Config;
 
 /**
- * Populates a sqlite database with callsites of class elements, as well as class, trait, and interface
- * hierarchies. Class elements include methods, static methods, properties, static properties,
- * and constants. Class hierarchies include classes and their parent-child relationships, interfaces, and traits.
+ * Populates a SQLite3 database (version >= 3.32.0 required) with callsites of class elements, as well as class,
+ * trait, and interface hierarchies. Class elements include methods, static methods, properties, static properties,
+ * and constants. Class hierarchies include classes, interfaces, traits, and their associated relationships.
  *
  * The database can be queried to find callsites of a given class element as well as class, trait,
- * and interface hierarchy.
+ * and interface relationships, including transitive relationships of all three.
  *
  * Examples:
  *
@@ -37,8 +37,7 @@ use Phan\Config;
  * transitive relationships are materialized directly. This means queries don't need
  * recursive CTEs -- simple JOINs suffice:
  *
- * 5) Find all classes implementing a given interface (including via sub-interfaces
- *    and class inheritance):
+ * 5) Find all classes implementing a given interface (including via sub-interfaces and class inheritance):
  *     SELECT c.name, c.filepath
  *     FROM classes c
  *     JOIN class_interfaces ci ON c.name = ci.class
@@ -69,10 +68,13 @@ use Phan\Config;
 final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 {
     // Avoid `SQLite3::prepare(): Unable to prepare statement: 1, too many SQL variables`
-    // See #9: https://www.sqlite.org/limits.html
-    // Calculated by table with the most columns (callsites): element, type, callsite / 999 = 333
-    // 999 is the max variables until SQLite version 3.32.0, which increased max to 32766
-    private const BULK_INSERT_SIZE = 333;
+    // See: https://sqlite.org/limits.html#max_variable_number
+    // SQLite version 3.32.0 required - which increased max variables from 999 to 32766
+    private const MAX_SQLITE_VARIABLES = 32766;
+    // callsites has three columns (element, type, callsite)
+    private const CALLSITES_BULK_INSERT_SIZE = intval(self::MAX_SQLITE_VARIABLES / 3);
+    // hierarchy tables have 2 columns (parent, child), (class, interface), (class, trait)
+    private const HIERARCHY_BULK_INSERT_SIZE = intval(self::MAX_SQLITE_VARIABLES / 2);
 
     /** @var SQLite3 */
     private static $db;
@@ -85,7 +87,15 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     /** @var SQLite3Stmt */
     private static $traits_prepared_insert;
     /** @var SQLite3Stmt */
+    private static $trait_traits_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $interface_relationships_prepared_insert;
+    /** @var SQLite3Stmt */
     private static $class_relationships_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $class_interfaces_prepared_insert;
+    /** @var SQLite3Stmt */
+    private static $class_traits_prepared_insert;
 
     /** @var list<array{string,string,string}> */
     private static $callsites = [];
@@ -234,11 +244,15 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec("PRAGMA journal_mode = OFF")) {
             throw new Exception("Failed to set PRAGMA journal_mode");
         }
-        self::$callsites_prepared_insert  = self::createCallsitesBulkInsertPreparedStatement(self::BULK_INSERT_SIZE);
-        self::$classes_prepared_insert    = self::createHierarchyBulkInsertPreparedStmt("classes", self::BULK_INSERT_SIZE);
-        self::$interfaces_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("interfaces", self::BULK_INSERT_SIZE);
-        self::$traits_prepared_insert     = self::createHierarchyBulkInsertPreparedStmt("traits", self::BULK_INSERT_SIZE);
-        self::$class_relationships_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_relationships", self::BULK_INSERT_SIZE);
+        self::$callsites_prepared_insert  = self::createCallsitesBulkInsertPreparedStatement(self::CALLSITES_BULK_INSERT_SIZE);
+        self::$classes_prepared_insert    = self::createHierarchyBulkInsertPreparedStmt("classes", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$interfaces_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("interfaces", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$traits_prepared_insert     = self::createHierarchyBulkInsertPreparedStmt("traits", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$trait_traits_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("trait_traits", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$interface_relationships_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("interface_relationships", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$class_relationships_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_relationships", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$class_interfaces_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_interfaces", self::HIERARCHY_BULK_INSERT_SIZE);
+        self::$class_traits_prepared_insert = self::createHierarchyBulkInsertPreparedStmt("class_traits", self::HIERARCHY_BULK_INSERT_SIZE);
     }
 
     /**
@@ -257,7 +271,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Creates a prepared statement for inserting
+     * Creates a prepared statement for inserting into hierarchy tables, which always have two columns
      * @param string    $table_name from self::TABLES
      * @param int       $bulk_insert_size the number of rows to insert
      * @throws Exception on preparation failure
@@ -414,7 +428,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             $callsite = $this->context->__toString();
             self::$callsites[] = [$element_name, $type, $callsite];
 
-            if (count(self::$callsites) >= self::BULK_INSERT_SIZE) {
+            if (count(self::$callsites) === self::CALLSITES_BULK_INSERT_SIZE) {
                 self::doCallsitesBulkWrite(self::$callsites_prepared_insert);
             }
         }
@@ -483,7 +497,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $name = $clazz->getFQSEN()->__toString();
         self::$classes[] = [$name, $filepath];
         // store
-        if (count(self::$classes) >= self::BULK_INSERT_SIZE) {
+        if (count(self::$classes) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$classes, self::$classes_prepared_insert);
             self::$classes = [];
         }
@@ -494,7 +508,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             self::$class_relationships[] = [$parent_name, $name];
         }
         // store
-        if (count(self::$class_relationships) >= self::BULK_INSERT_SIZE) {
+        if (count(self::$class_relationships) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$class_relationships, self::$class_relationships_prepared_insert);
             self::$class_relationships = [];
         }
@@ -503,30 +517,22 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $impl_interfaces = $clazz->getInterfaceFQSENList();
         foreach ($impl_interfaces as $iface) {
             self::$class_interfaces[] = [$name, $iface->__toString()];
-        }
-        // store
-        if (count(self::$class_interfaces) >= self::BULK_INSERT_SIZE) {
-            $stmt = self::createHierarchyBulkInsertPreparedStmt(
-                "class_interfaces",
-                count(self::$class_interfaces)
-            );
-            self::doHierarchyBulkWrite(self::$class_interfaces, $stmt);
-            self::$class_interfaces = [];
+            // store
+            if (count(self::$class_interfaces) === self::HIERARCHY_BULK_INSERT_SIZE) {
+                self::doHierarchyBulkWrite(self::$class_interfaces, self::$class_interfaces_prepared_insert);
+                self::$class_interfaces = [];
+            }
         }
 
         // collect used traits
         $used_traits = $clazz->getTraitFQSENList();
         foreach ($used_traits as $trait) {
             self::$class_traits[] = [$name, $trait->__toString()];
-        }
-        // store
-        if (count(self::$class_traits) >= self::BULK_INSERT_SIZE) {
-            $stmt = self::createHierarchyBulkInsertPreparedStmt(
-                "class_traits",
-                count(self::$class_traits)
-            );
-            self::doHierarchyBulkWrite(self::$class_traits, $stmt);
-            self::$class_traits = [];
+            // store
+            if (count(self::$class_traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
+                self::doHierarchyBulkWrite(self::$class_traits, self::$class_traits_prepared_insert);
+                self::$class_traits = [];
+            }
         }
     }
 
@@ -541,7 +547,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $name = $clazz->getFQSEN()->__toString();
         self::$interfaces[] = [$name, $filepath];
         // store
-        if (count(self::$interfaces) >= self::BULK_INSERT_SIZE) {
+        if (count(self::$interfaces) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$interfaces, self::$interfaces_prepared_insert);
             self::$interfaces = [];
         }
@@ -549,20 +555,12 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         // collect extensions of other interfaces
         $parent_ifaces = $clazz->getInterfaceFQSENList();
         foreach ($parent_ifaces as $iface) {
-            self::$interface_relationships[] = [
-                $iface->__toString(),
-                $name
-            ];
-        }
-
-        // store
-        if (count(self::$interface_relationships) >= self::BULK_INSERT_SIZE) {
-            $stmt = self::createHierarchyBulkInsertPreparedStmt(
-                "interface_relationships",
-                count(self::$interface_relationships)
-            );
-            self::doHierarchyBulkWrite(self::$interface_relationships, $stmt);
-            self::$interface_relationships = [];
+            self::$interface_relationships[] = [$iface->__toString(), $name]; // (parent, child)
+            // store
+            if (count(self::$interface_relationships) === self::HIERARCHY_BULK_INSERT_SIZE) {
+                self::doHierarchyBulkWrite(self::$interface_relationships, self::$interface_relationships_prepared_insert);
+                self::$interface_relationships = [];
+            }
         }
     }
 
@@ -577,7 +575,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $name = $clazz->getFQSEN()->__toString();
         self::$traits[] = [$name, $filepath];
         // store
-        if (count(self::$traits) >= self::BULK_INSERT_SIZE) {
+        if (count(self::$traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$traits, self::$traits_prepared_insert);
             self::$traits = [];
         }
@@ -586,15 +584,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         $uses_traits = $clazz->getTraitFQSENList();
         foreach ($uses_traits as $trait) {
             self::$trait_traits[] = [$name, $trait->__toString()];
-        }
-        // store
-        if (count(self::$trait_traits) >= self::BULK_INSERT_SIZE) {
-            $stmt = self::createHierarchyBulkInsertPreparedStmt(
-                "trait_traits",
-                count(self::$trait_traits)
-            );
-            self::doHierarchyBulkWrite(self::$trait_traits, $stmt);
-            self::$trait_traits = [];
+            // store
+            if (count(self::$trait_traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
+                self::doHierarchyBulkWrite(self::$trait_traits, self::$trait_traits_prepared_insert);
+                self::$trait_traits = [];
+            }
         }
     }
 
@@ -606,6 +600,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      * @throws Exception
      */
     private static function doHierarchyBulkWrite(array $nodes, SQLite3Stmt $stmt): void {
+        sort($nodes);
         $bind_index = 1;
         foreach ($nodes as $node) {
             $stmt->bindValue($bind_index, $node[0], SQLITE3_TEXT);
