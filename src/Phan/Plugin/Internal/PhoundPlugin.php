@@ -72,9 +72,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     // SQLite version 3.32.0 required - which increased max variables from 999 to 32766
     private const MAX_SQLITE_VARIABLES = 32766;
     // callsites has three columns (element, type, callsite)
-    private const CALLSITES_BULK_INSERT_SIZE = intval(self::MAX_SQLITE_VARIABLES / 3);
+    private const CALLSITES_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 3;
     // hierarchy tables have 2 columns (parent, child), (class, interface), (class, trait)
-    private const HIERARCHY_BULK_INSERT_SIZE = intval(self::MAX_SQLITE_VARIABLES / 2);
+    private const HIERARCHY_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 2;
 
     /** @var SQLite3 */
     private static $db;
