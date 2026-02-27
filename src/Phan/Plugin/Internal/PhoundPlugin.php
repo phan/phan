@@ -753,18 +753,14 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         // Propagate interfaces down the class hierarchy: if a parent class
         // implements an interface, all child classes should too.
+        // class_relationships is already fully flattened, so a single
+        // join covers all transitive descendants without recursion.
         $flatten_class_interfaces = "
-            WITH RECURSIVE inherited(class, interface) AS (
-                SELECT class, interface
-                FROM class_interfaces
-                UNION ALL
-                SELECT cr.child, ih.interface
-                FROM class_relationships cr
-                JOIN inherited ih
-                ON cr.parent = ih.class
-            )
             INSERT OR IGNORE INTO class_interfaces (class, interface)
-            SELECT class, interface FROM inherited;
+            SELECT cr.child, ci.interface
+            FROM class_interfaces ci
+            JOIN class_relationships cr
+            ON cr.parent = ci.class;
         ";
         if (!self::$db->exec($flatten_class_interfaces)) {
             throw new Exception("Failed to flatten class interfaces");
@@ -787,18 +783,14 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         // Propagate traits down the class hierarchy: if a parent class
         // uses a trait, all child classes should too.
+        // class_relationships is already fully flattened, so a single
+        // join covers all transitive descendants without recursion.
         $flatten_class_traits = "
-            WITH RECURSIVE inherited(class, trait) AS (
-                SELECT class, trait
-                FROM class_traits
-                UNION ALL
-                SELECT cr.child, ih.trait
-                FROM class_relationships cr
-                JOIN inherited ih
-                ON cr.parent = ih.class
-            )
             INSERT OR IGNORE INTO class_traits (class, trait)
-            SELECT class, trait FROM inherited;
+            SELECT cr.child, ct.trait
+            FROM class_traits ct
+            JOIN class_relationships cr
+            ON cr.parent = ct.class;
         ";
         if (!self::$db->exec($flatten_class_traits)) {
             throw new Exception("Failed to flatten class traits");
