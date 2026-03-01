@@ -455,10 +455,14 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 return ClassStringType::instance(false)->asPHPDocUnionType();
             }
 
-            // Create class-string<T> where T is the union of object types
-            // Build the string representation and parse it
-            $type_string = 'class-string<' . $object_types->__toString() . '>';
-            return UnionType::fromFullyQualifiedPHPDocString($type_string);
+            // Create class-string<T> where T is the union of object types.
+            // Erase template parameters since get_class() returns a runtime
+            // class name, not a parameterized type (e.g. class-string<Foo>
+            // not class-string<Foo<T>>). This also avoids crashes when
+            // template type names like T can't be parsed as standalone types.
+            $erased_union = $object_types->eraseTemplatesRecursive();
+            $class_string_type = Type::fromType(ClassStringType::instance(false), [$erased_union]);
+            return $class_string_type->asPHPDocUnionType();
         };
 
         // TODO: Handle flags of preg_split.

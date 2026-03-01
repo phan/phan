@@ -1,0 +1,4 @@
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type class-string<static>(real=string)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type class-string<static>(real=string)
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type class-string<static>(real=string)
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type class-string<static>(real=string)
