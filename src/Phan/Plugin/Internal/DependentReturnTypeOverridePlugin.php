@@ -460,11 +460,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             // class name, not a parameterized type (e.g. class-string<Foo>
             // not class-string<Foo<T>>). This also avoids crashes when
             // template type names like T can't be parsed as standalone types.
-            $erased_types = [];
-            foreach ($object_types->getTypeSet() as $type) {
-                $erased_types[] = $type->eraseTemplatesRecursive();
-            }
-            $erased_union = UnionType::of($erased_types, []);
+            $erased_union = $object_types->eraseTemplatesRecursive();
             $class_string_type = Type::fromType(ClassStringType::instance(false), [$erased_union]);
             return $class_string_type->asPHPDocUnionType();
         };
