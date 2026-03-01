@@ -1905,9 +1905,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($element_type->isPossiblyUndefined() && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                     // Check if we should emit the warning. Only emit if:
                     // 1. strict_array_checking is enabled, OR
-                    // 2. There's no generic array type that would accept arbitrary keys in the union
+                    // 2. There's no generic array type in the union that would accept the accessed key
+                    $dim_node = $node->children['dim'];
+                    $dim_value_for_check = \is_scalar($dim_node) ? $dim_node : null;
                     $should_warn = Config::get_strict_array_checking() ||
-                        !self::hasGenericArrayAcceptingArbitraryKeys($union_type);
+                        !self::hasGenericArrayAcceptingArbitraryKeys($union_type, $dim_value_for_check);
 
                     if ($should_warn) {
                         $this->emitIssue(
@@ -2236,18 +2238,38 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Check if the union type contains any type that would accept arbitrary key access.
+     * Check if the union type contains any type that would accept the given key access.
      * This is used to avoid false positives when a union contains both shape types and generic arrays.
      *
-     * A type accepts arbitrary keys if:
+     * A type accepts the key if:
      * - It's `mixed` (could be any array with any keys)
      * - It's a plain `array` type (not a shape or list)
-     * - It's a GenericArrayType with KEY_MIXED (accepts both int and string keys)
+     * - It's a GenericArrayType whose key type is compatible with the dim value
+     *   (e.g. array<string,mixed> accepts any string key, array<int,mixed> accepts any int key)
      *
-     * Arrays with restricted key types (e.g., array<int, T> or array<string, T>) do NOT accept arbitrary keys.
+     * When the dim value is unknown/unresolved (i.e. $dim_value === null, including non-scalar
+     * expressions and omitted dims), only KEY_MIXED arrays are considered compatible, preserving
+     * the conservative behavior of not suppressing warnings for restricted key types.
+     *
+     * @param UnionType $union_type The array-like union type being checked.
+     * @param bool|float|int|string|null $dim_value The resolved scalar key, or null if the key
+     *                                               expression is non-scalar or otherwise unknown.
      */
-    private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type): bool
+    private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type, bool|float|int|string|null $dim_value = null): bool
     {
+        // Determine which key types are compatible with the dim value being accessed.
+        // In PHP, bool and float array keys are cast to int, and numeric string
+        // keys (e.g. '0', '123') are also cast to int.
+        if (\is_string($dim_value) && \filter_var($dim_value, \FILTER_VALIDATE_INT) !== false) {
+            $key_mask = GenericArrayType::KEY_INT;
+        } elseif (\is_string($dim_value)) {
+            $key_mask = GenericArrayType::KEY_STRING;
+        } elseif (\is_int($dim_value) || \is_bool($dim_value) || \is_float($dim_value)) {
+            $key_mask = GenericArrayType::KEY_INT;
+        } else {
+            $key_mask = GenericArrayType::KEY_MIXED;
+        }
+
         foreach ($union_type->getTypeSet() as $type) {
             // mixed can be anything including an array with any keys
             if ($type instanceof MixedType) {
@@ -2257,10 +2279,16 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($type instanceof ArrayType && !($type instanceof ArrayShapeType) && !($type instanceof GenericArrayInterface)) {
                 return true;
             }
-            // GenericArrayType (including NonEmptyGenericArrayType) with mixed key type (accepts arbitrary keys)
+            // GenericArrayType (including NonEmptyGenericArrayType) whose key type is compatible
+            // with the dim value being accessed (e.g. array<string,mixed> accepts any string key)
             if ($type instanceof GenericArrayType) {
-                // KEY_MIXED = 3 means it accepts both int and string keys
-                if ($type->getKeyType() === GenericArrayType::KEY_MIXED) {
+                if ($key_mask === GenericArrayType::KEY_MIXED) {
+                    // For unknown dim values, only suppress for KEY_MIXED arrays
+                    // (i.e. arrays that truly accept both int and string keys)
+                    if ($type->getKeyType() === GenericArrayType::KEY_MIXED) {
+                        return true;
+                    }
+                } elseif (($type->getKeyType() & $key_mask) !== 0) {
                     return true;
                 }
             }
