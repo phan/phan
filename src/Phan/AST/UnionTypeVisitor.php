@@ -1905,7 +1905,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($element_type->isPossiblyUndefined() && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                     // Check if we should emit the warning. Only emit if:
                     // 1. strict_array_checking is enabled, OR
-                    // 2. There's no generic array type that would accept arbitrary keys in the union
+                    // 2. There's no generic array type in the union that would accept the accessed key
                     $dim_node = $node->children['dim'];
                     $dim_value_for_check = \is_scalar($dim_node) ? $dim_node : null;
                     $should_warn = Config::get_strict_array_checking() ||
@@ -2247,14 +2247,22 @@ class UnionTypeVisitor extends AnalysisVisitor
      * - It's a GenericArrayType whose key type is compatible with the dim value
      *   (e.g. array<string,mixed> accepts any string key, array<int,mixed> accepts any int key)
      *
-     * When the dim value is unknown (null), only KEY_MIXED arrays are considered compatible,
-     * preserving the conservative behavior of not suppressing warnings for restricted key types.
+     * When the dim value is unknown/unresolved (i.e. $dim_value === null, including non-scalar
+     * expressions and omitted dims), only KEY_MIXED arrays are considered compatible, preserving
+     * the conservative behavior of not suppressing warnings for restricted key types.
+     *
+     * @param UnionType $union_type The array-like union type being checked.
+     * @param bool|float|int|string|null $dim_value The resolved scalar key, or null if the key
+     *                                               expression is non-scalar or otherwise unknown.
      */
     private static function hasGenericArrayAcceptingArbitraryKeys(UnionType $union_type, bool|float|int|string|null $dim_value = null): bool
     {
         // Determine which key types are compatible with the dim value being accessed.
-        // In PHP, bool and float array keys are cast to int.
-        if (\is_string($dim_value)) {
+        // In PHP, bool and float array keys are cast to int, and numeric string
+        // keys (e.g. '0', '123') are also cast to int.
+        if (\is_string($dim_value) && \filter_var($dim_value, \FILTER_VALIDATE_INT) !== false) {
+            $key_mask = GenericArrayType::KEY_INT;
+        } elseif (\is_string($dim_value)) {
             $key_mask = GenericArrayType::KEY_STRING;
         } elseif (\is_int($dim_value) || \is_bool($dim_value) || \is_float($dim_value)) {
             $key_mask = GenericArrayType::KEY_INT;
