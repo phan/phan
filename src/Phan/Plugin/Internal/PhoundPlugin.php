@@ -192,7 +192,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'signatures' => [
             'columns' => [
-                'fqsen TEXT NOT NULL PRIMARY KEY',
+                'fqsen TEXT NOT NULL',
                 'kind TEXT NOT NULL',
                 'class_fqsen TEXT',
                 'name TEXT NOT NULL',
@@ -202,6 +202,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'filepath TEXT NOT NULL',
                 'lineno INTEGER NOT NULL',
                 'docblock TEXT',
+            ],
+            'constraints' => [
+                'PRIMARY KEY (fqsen, kind)',
             ],
         ],
         'parameters' => [
@@ -926,7 +929,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                     }
                     $fqsen = $prop->getFQSEN()->__toString();
                     $file_ref = $prop->getFileRef();
-                    self::insertSignature($sig_stmt, $fqsen, 'property', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
+                    self::insertSignature($sig_stmt, $fqsen, 'prop', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
                 }
 
                 // Constants (including inherited and trait-provided)
@@ -936,7 +939,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                     }
                     $fqsen = $const->getFQSEN()->__toString();
                     $file_ref = $const->getFileRef();
-                    self::insertSignature($sig_stmt, $fqsen, 'constant', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
+                    self::insertSignature($sig_stmt, $fqsen, 'const', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
                 }
             }
 
