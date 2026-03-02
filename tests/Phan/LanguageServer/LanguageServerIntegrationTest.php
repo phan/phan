@@ -1765,7 +1765,7 @@ EOT;
                 ],
             ],
             'severity' => LanguageServer::diagnosticSeverityFromPhanSeverity($issue->getSeverity()),
-            'code' => null, // Deliberately leaving out $issue->getTypeId()
+            'code' => $issue->getType(),
             'source' => 'Phan',
             'message' => $expected_message,
         ];

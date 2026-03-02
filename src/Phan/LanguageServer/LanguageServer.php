@@ -863,7 +863,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,begin_column?:int,end:int}}} $issue
+     * @param array{type:string,check_name:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,begin_column?:int,end:int}}} $issue
      * @return null[]|string[]|Diagnostic[] - On success, returns [string $uri, Diagnostic $diagnostic]
      */
     private static function generateDiagnostic(array $issue): array
@@ -871,7 +871,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if ($issue['type'] !== 'issue') {
             return [null, null];
         }
-        //$check_name = $issue['check_name'];
+        $check_name = $issue['check_name'];
         $description = $issue['description'];
         if (Config::getValue('language_server_hide_category_of_issues')) {
             // See JSONPrinter.php for how $description is built
@@ -894,8 +894,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
         $range = new Range(new Position($start_line - 1, \max($column - 1, 0)), new Position($start_line, 0));
         $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
-        // TODO: copy issue code in 'json' format
-        return [$issue_uri, new Diagnostic($description, $range, null, $diagnostic_severity, 'Phan')];
+        return [$issue_uri, new Diagnostic($description, $range, $check_name, $diagnostic_severity, 'Phan')];
     }
 
     /**

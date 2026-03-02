@@ -190,6 +190,35 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'PRIMARY KEY (class, trait)',
             ]
         ],
+        'signatures' => [
+            'columns' => [
+                'fqsen TEXT NOT NULL PRIMARY KEY',
+                'kind TEXT NOT NULL',
+                'class_fqsen TEXT',
+                'name TEXT NOT NULL',
+                'type TEXT NOT NULL',
+                'is_static INTEGER NOT NULL DEFAULT 0',
+                'visibility TEXT',
+                'filepath TEXT NOT NULL',
+                'lineno INTEGER NOT NULL',
+                'docblock TEXT',
+            ],
+        ],
+        'parameters' => [
+            'columns' => [
+                'fqsen TEXT NOT NULL',
+                'idx INTEGER NOT NULL',
+                'name TEXT NOT NULL',
+                'type TEXT NOT NULL',
+                'is_variadic INTEGER NOT NULL DEFAULT 0',
+                'is_reference INTEGER NOT NULL DEFAULT 0',
+                'is_optional INTEGER NOT NULL DEFAULT 0',
+                'default_repr TEXT',
+            ],
+            'constraints' => [
+                'PRIMARY KEY (fqsen, idx)',
+            ],
+        ],
     ];
 
     /**
@@ -236,6 +265,12 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
             throw new Exception("Failed to create index on callsites");
+        }
+        if (!self::$db->exec('CREATE INDEX signatures_name ON signatures (name)')) {
+            throw new Exception("Failed to create index signatures_name");
+        }
+        if (!self::$db->exec('CREATE INDEX signatures_class ON signatures (class_fqsen)')) {
+            throw new Exception("Failed to create index signatures_class");
         }
 
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
@@ -630,10 +665,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Finish pending bulk writes.
+     * Finish pending bulk writes and write signature data.
      * @throws Exception
      */
-    public static function finalizeProcess(): void {
+    public static function finalizeProcess(CodeBase $code_base): void {
         if (count(self::$callsites) > 0) {
             $stmt = self::createCallsitesBulkInsertPreparedStatement(count(self::$callsites));
             self::doCallsitesBulkWrite($stmt);
@@ -810,6 +845,146 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec($propagate_trait_ancestors)) {
             throw new Exception("Failed to propagate trait ancestors into class traits");
         }
+
+        self::writeSignatures($code_base);
+    }
+
+    /**
+     * Write function/method signatures and parameters to the database.
+     * @throws Exception
+     */
+    private static function writeSignatures(CodeBase $code_base): void
+    {
+        $sig_stmt = self::$db->prepare(
+            "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno, docblock) " .
+            "VALUES (:fqsen, :kind, :class_fqsen, :name, :type, :is_static, :visibility, :filepath, :lineno, :docblock)"
+        );
+        if ($sig_stmt === false) {
+            throw new Exception("Failed to prepare signatures insert statement");
+        }
+
+        $param_stmt = self::$db->prepare(
+            "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) " .
+            "VALUES (:fqsen, :idx, :name, :type, :is_variadic, :is_reference, :is_optional, :default_repr)"
+        );
+        if ($param_stmt === false) {
+            throw new Exception("Failed to prepare parameters insert statement");
+        }
+
+        // Standalone functions
+        foreach ($code_base->getFunctionMap() as $func) {
+            if ($func->isPHPInternal()) {
+                continue;
+            }
+            $fqsen = $func->getFQSEN()->__toString();
+            $file_ref = $func->getFileRef();
+            self::insertSignature($sig_stmt, $fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $func->getDocComment());
+            self::insertParameters($param_stmt, $fqsen, $func->getParameterList());
+        }
+
+        // Class methods, properties, constants
+        foreach ($code_base->getUserDefinedClassMap() as $clazz) {
+            if ($clazz->isPHPInternal()) {
+                continue;
+            }
+            $class_fqsen = $clazz->getFQSEN();
+            $class_fqsen_str = $class_fqsen->__toString();
+
+            // Methods
+            foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
+                if ($method->isPHPInternal()) {
+                    continue;
+                }
+                // Skip inherited methods
+                $defining_class = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($defining_class->__toString() !== $class_fqsen_str) {
+                    continue;
+                }
+                $fqsen = $method->getFQSEN()->__toString();
+                $file_ref = $method->getFileRef();
+                self::insertSignature($sig_stmt, $fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $method->getDocComment());
+                self::insertParameters($param_stmt, $fqsen, $method->getParameterList());
+            }
+
+            // Properties
+            foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
+                if ($prop->isPHPInternal()) {
+                    continue;
+                }
+                $defining_class = $prop->getDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($defining_class->__toString() !== $class_fqsen_str) {
+                    continue;
+                }
+                $fqsen = $prop->getFQSEN()->__toString();
+                $file_ref = $prop->getFileRef();
+                self::insertSignature($sig_stmt, $fqsen, 'property', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
+            }
+
+            // Constants
+            foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
+                if ($const->isPHPInternal()) {
+                    continue;
+                }
+                $defining_class = $const->getDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($defining_class->__toString() !== $class_fqsen_str) {
+                    continue;
+                }
+                $fqsen = $const->getFQSEN()->__toString();
+                $file_ref = $const->getFileRef();
+                self::insertSignature($sig_stmt, $fqsen, 'constant', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function insertSignature(
+        SQLite3Stmt $stmt,
+        string $fqsen,
+        string $kind,
+        ?string $class_fqsen,
+        string $name,
+        string $type,
+        int $is_static,
+        ?string $visibility,
+        string $filepath,
+        int $lineno,
+        ?string $docblock
+    ): void {
+        $stmt->bindValue(':fqsen', $fqsen, SQLITE3_TEXT);
+        $stmt->bindValue(':kind', $kind, SQLITE3_TEXT);
+        $stmt->bindValue(':class_fqsen', $class_fqsen, $class_fqsen !== null ? SQLITE3_TEXT : SQLITE3_NULL);
+        $stmt->bindValue(':name', $name, SQLITE3_TEXT);
+        $stmt->bindValue(':type', $type, SQLITE3_TEXT);
+        $stmt->bindValue(':is_static', $is_static, SQLITE3_INTEGER);
+        $stmt->bindValue(':visibility', $visibility, $visibility !== null ? SQLITE3_TEXT : SQLITE3_NULL);
+        $stmt->bindValue(':filepath', $filepath, SQLITE3_TEXT);
+        $stmt->bindValue(':lineno', $lineno, SQLITE3_INTEGER);
+        $stmt->bindValue(':docblock', $docblock, $docblock !== null ? SQLITE3_TEXT : SQLITE3_NULL);
+        self::execStatement($stmt);
+    }
+
+    /**
+     * @param SQLite3Stmt $stmt
+     * @param string $fqsen
+     * @param list<\Phan\Language\Element\Parameter> $parameters
+     * @throws Exception
+     */
+    private static function insertParameters(SQLite3Stmt $stmt, string $fqsen, array $parameters): void
+    {
+        foreach ($parameters as $idx => $param) {
+            $stmt->bindValue(':fqsen', $fqsen, SQLITE3_TEXT);
+            $stmt->bindValue(':idx', $idx, SQLITE3_INTEGER);
+            $stmt->bindValue(':name', $param->getName(), SQLITE3_TEXT);
+            $stmt->bindValue(':type', $param->getUnionType()->__toString(), SQLITE3_TEXT);
+            $stmt->bindValue(':is_variadic', $param->isVariadic() ? 1 : 0, SQLITE3_INTEGER);
+            $stmt->bindValue(':is_reference', $param->isPassByReference() ? 1 : 0, SQLITE3_INTEGER);
+            $stmt->bindValue(':is_optional', $param->isOptional() ? 1 : 0, SQLITE3_INTEGER);
+            $default = $param->isOptional() && !$param->isVariadic() ? var_export($param->getDefaultValue(), true) : null;
+            $stmt->bindValue(':default_repr', $default, $default !== null ? SQLITE3_TEXT : SQLITE3_NULL);
+            self::execStatement($stmt);
+        }
     }
 
 }
@@ -972,12 +1147,11 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      * Some plugins using this, such as UnusedSuppressionPlugin,
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
-     * @unused-param $code_base
      * @throws Exception
      */
     public function finalizeProcess(CodeBase $code_base): void
     {
-        PhoundVisitor::finalizeProcess();
+        PhoundVisitor::finalizeProcess($code_base);
     }
 
 }

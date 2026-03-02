@@ -25,3 +25,6 @@ phpspy.*
 errors.txt
 .DS_Store
 .phpunit.cache/
+.phan/phound.sqlite
+tool/phan-mcp/phan-mcp
+tool/phan-mcp/.goroot/

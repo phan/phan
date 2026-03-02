@@ -59,13 +59,13 @@ class Diagnostic
     /**
      * @param  string $message  The diagnostic's message
      * @param  Range  $range    The range at which the message applies
-     * @param  int    $code     The diagnostic's code
+     * @param  int|string $code  The diagnostic's code
      * @param  int    $severity DiagnosticSeverity
      * @param  string $source   A human-readable string describing the source of this diagnostic
      * @suppress PhanPossiblyNullTypeMismatchProperty
      * @suppress PhanTypeMismatchDeclaredParamNullable
      */
-    public function __construct(?string $message = null, ?Range $range = null, ?int $code = null, ?int $severity = null, ?string $source = null)
+    public function __construct(?string $message = null, ?Range $range = null, string|int|null $code = null, ?int $severity = null, ?string $source = null)
     {
         $this->message = $message;
         $this->range = $range;
