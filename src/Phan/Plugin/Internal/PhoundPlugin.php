@@ -262,6 +262,18 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 throw new Exception("Failed to create table: $table");
             }
         }
+        if (!self::$db->exec('CREATE INDEX class_interfaces_interface ON class_interfaces (interface)')) {
+            throw new Exception("Failed to create index class_interfaces_interface");
+        }
+        if (!self::$db->exec('CREATE INDEX class_relationships_child ON class_relationships (child)')) {
+            throw new Exception("Failed to create index class_relationships_child");
+        }
+        if (!self::$db->exec('CREATE INDEX interface_relationships_child ON interface_relationships (child)')) {
+            throw new Exception("Failed to create index interface_relationships_child");
+        }
+        if (!self::$db->exec('CREATE INDEX signatures_filepath ON signatures (filepath)')) {
+            throw new Exception("Failed to create index signatures_filepath");
+        }
 
         if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
             throw new Exception("Failed to create index on callsites");
@@ -852,7 +864,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Write function/method signatures and parameters to the database.
-     * Includes inherited/trait members so FQSENs in callsites always have a matching signature row.
+     * Includes inherited/trait members so FQSENs for user-defined elements in callsites generally have a matching signature row.
      * @throws Exception
      */
     private static function writeSignatures(CodeBase $code_base): void
@@ -873,60 +885,69 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             throw new Exception("Failed to prepare parameters insert statement");
         }
 
-        self::$db->exec('BEGIN');
-
-        // Standalone functions
-        foreach ($code_base->getFunctionMap() as $func) {
-            if ($func->isPHPInternal()) {
-                continue;
-            }
-            $fqsen = $func->getFQSEN()->__toString();
-            $file_ref = $func->getFileRef();
-            self::insertSignature($sig_stmt, $fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $func->getDocComment());
-            self::insertParameters($param_stmt, $fqsen, $func->getParameterList());
+        if (!self::$db->exec('BEGIN')) {
+            throw new Exception("Failed to begin transaction for signatures");
         }
 
-        // Class methods, properties, constants — includes inherited/trait members
-        foreach ($code_base->getUserDefinedClassMap() as $clazz) {
-            if ($clazz->isPHPInternal()) {
-                continue;
-            }
-            $class_fqsen = $clazz->getFQSEN();
-            $class_fqsen_str = $class_fqsen->__toString();
-
-            // Methods (including inherited and trait-provided)
-            foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
-                if ($method->isPHPInternal()) {
+        try {
+            // Standalone functions
+            foreach ($code_base->getFunctionMap() as $func) {
+                if ($func->isPHPInternal()) {
                     continue;
                 }
-                $fqsen = $method->getFQSEN()->__toString();
-                $file_ref = $method->getFileRef();
-                self::insertSignature($sig_stmt, $fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $method->getDocComment());
-                self::insertParameters($param_stmt, $fqsen, $method->getParameterList());
+                $fqsen = $func->getFQSEN()->__toString();
+                $file_ref = $func->getFileRef();
+                self::insertSignature($sig_stmt, $fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $func->getDocComment());
+                self::insertParameters($param_stmt, $fqsen, $func->getParameterList());
             }
 
-            // Properties (including inherited and trait-provided)
-            foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
-                if ($prop->isPHPInternal()) {
+            // Class methods, properties, constants — includes inherited/trait members
+            foreach ($code_base->getUserDefinedClassMap() as $clazz) {
+                if ($clazz->isPHPInternal()) {
                     continue;
                 }
-                $fqsen = $prop->getFQSEN()->__toString();
-                $file_ref = $prop->getFileRef();
-                self::insertSignature($sig_stmt, $fqsen, 'property', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
+                $class_fqsen = $clazz->getFQSEN();
+                $class_fqsen_str = $class_fqsen->__toString();
+
+                // Methods (including inherited and trait-provided)
+                foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
+                    if ($method->isPHPInternal()) {
+                        continue;
+                    }
+                    $fqsen = $method->getFQSEN()->__toString();
+                    $file_ref = $method->getFileRef();
+                    self::insertSignature($sig_stmt, $fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $method->getDocComment());
+                    self::insertParameters($param_stmt, $fqsen, $method->getParameterList());
+                }
+
+                // Properties (including inherited and trait-provided)
+                foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
+                    if ($prop->isPHPInternal()) {
+                        continue;
+                    }
+                    $fqsen = $prop->getFQSEN()->__toString();
+                    $file_ref = $prop->getFileRef();
+                    self::insertSignature($sig_stmt, $fqsen, 'property', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
+                }
+
+                // Constants (including inherited and trait-provided)
+                foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
+                    if ($const->isPHPInternal()) {
+                        continue;
+                    }
+                    $fqsen = $const->getFQSEN()->__toString();
+                    $file_ref = $const->getFileRef();
+                    self::insertSignature($sig_stmt, $fqsen, 'constant', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
+                }
             }
 
-            // Constants (including inherited and trait-provided)
-            foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
-                if ($const->isPHPInternal()) {
-                    continue;
-                }
-                $fqsen = $const->getFQSEN()->__toString();
-                $file_ref = $const->getFileRef();
-                self::insertSignature($sig_stmt, $fqsen, 'constant', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
+            if (!self::$db->exec('COMMIT')) {
+                throw new Exception("Failed to commit signatures transaction");
             }
+        } catch (\Throwable $e) {
+            self::$db->exec('ROLLBACK');
+            throw $e;
         }
-
-        self::$db->exec('COMMIT');
     }
 
     /**
