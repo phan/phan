@@ -851,6 +851,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * Write function/method signatures and parameters to the database.
+     * Includes inherited/trait members so FQSENs in callsites always have a matching signature row.
      * @throws Exception
      */
     private static function writeSignatures(CodeBase $code_base): void
@@ -871,6 +872,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             throw new Exception("Failed to prepare parameters insert statement");
         }
 
+        self::$db->exec('BEGIN');
+
         // Standalone functions
         foreach ($code_base->getFunctionMap() as $func) {
             if ($func->isPHPInternal()) {
@@ -882,7 +885,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             self::insertParameters($param_stmt, $fqsen, $func->getParameterList());
         }
 
-        // Class methods, properties, constants
+        // Class methods, properties, constants — includes inherited/trait members
         foreach ($code_base->getUserDefinedClassMap() as $clazz) {
             if ($clazz->isPHPInternal()) {
                 continue;
@@ -890,14 +893,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             $class_fqsen = $clazz->getFQSEN();
             $class_fqsen_str = $class_fqsen->__toString();
 
-            // Methods
+            // Methods (including inherited and trait-provided)
             foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
                 if ($method->isPHPInternal()) {
-                    continue;
-                }
-                // Skip inherited methods
-                $defining_class = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
-                if ($defining_class->__toString() !== $class_fqsen_str) {
                     continue;
                 }
                 $fqsen = $method->getFQSEN()->__toString();
@@ -906,13 +904,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 self::insertParameters($param_stmt, $fqsen, $method->getParameterList());
             }
 
-            // Properties
+            // Properties (including inherited and trait-provided)
             foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
                 if ($prop->isPHPInternal()) {
-                    continue;
-                }
-                $defining_class = $prop->getDefiningFQSEN()->getFullyQualifiedClassName();
-                if ($defining_class->__toString() !== $class_fqsen_str) {
                     continue;
                 }
                 $fqsen = $prop->getFQSEN()->__toString();
@@ -920,13 +914,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 self::insertSignature($sig_stmt, $fqsen, 'property', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
             }
 
-            // Constants
+            // Constants (including inherited and trait-provided)
             foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
                 if ($const->isPHPInternal()) {
-                    continue;
-                }
-                $defining_class = $const->getDefiningFQSEN()->getFullyQualifiedClassName();
-                if ($defining_class->__toString() !== $class_fqsen_str) {
                     continue;
                 }
                 $fqsen = $const->getFQSEN()->__toString();
@@ -934,6 +924,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 self::insertSignature($sig_stmt, $fqsen, 'constant', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
             }
         }
+
+        self::$db->exec('COMMIT');
     }
 
     /**
@@ -981,7 +973,18 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             $stmt->bindValue(':is_variadic', $param->isVariadic() ? 1 : 0, SQLITE3_INTEGER);
             $stmt->bindValue(':is_reference', $param->isPassByReference() ? 1 : 0, SQLITE3_INTEGER);
             $stmt->bindValue(':is_optional', $param->isOptional() ? 1 : 0, SQLITE3_INTEGER);
-            $default = $param->isOptional() && !$param->isVariadic() ? var_export($param->getDefaultValue(), true) : null;
+            $default = null;
+            if ($param->hasDefaultValue() && !$param->isVariadic()) {
+                $default_value = $param->getDefaultValue();
+                if ($default_value instanceof \ast\Node) {
+                    $default = \Phan\AST\ASTReverter::toShortString($default_value);
+                    if (\strlen($default) >= 50) {
+                        $default = '...';
+                    }
+                } else {
+                    $default = \Phan\Library\StringUtil::varExportPretty($default_value);
+                }
+            }
             $stmt->bindValue(':default_repr', $default, $default !== null ? SQLITE3_TEXT : SQLITE3_NULL);
             self::execStatement($stmt);
         }
