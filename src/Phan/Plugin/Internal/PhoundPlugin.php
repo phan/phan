@@ -456,7 +456,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node  $node - the class AST node to evaluate
      * @throws Exception
      */
-    public function visitClass(Node $node): void {
+    public function visitClass(Node $node): void { // @phan-suppress-current-line PhanUnusedPublicFinalMethodParameter
         $clazz = $this->context->getClassInScope($this->code_base);
         $filepath = $this->context->getProjectRelativePath();
 
