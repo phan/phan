@@ -203,7 +203,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	b.WriteString("\n")
 
 	// Parents (classes this extends)
-	parents := s.queryColumn("SELECT parent FROM class_relationships WHERE child = ? ORDER BY parent", class)
+	parents, err := s.queryColumn("SELECT parent FROM class_relationships WHERE child = ? ORDER BY parent", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(parents) > 0 {
 		b.WriteString("\nExtends:\n")
 		for _, p := range parents {
@@ -214,7 +217,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	// Children (classes that extend this)
-	children := s.queryColumn("SELECT child FROM class_relationships WHERE parent = ? ORDER BY child", class)
+	children, err := s.queryColumn("SELECT child FROM class_relationships WHERE parent = ? ORDER BY child", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(children) > 0 {
 		b.WriteString("\nExtended by:\n")
 		for _, c := range children {
@@ -225,7 +231,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	// Interfaces
-	ifaces := s.queryColumn("SELECT interface FROM class_interfaces WHERE class = ? ORDER BY interface", class)
+	ifaces, err := s.queryColumn("SELECT interface FROM class_interfaces WHERE class = ? ORDER BY interface", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(ifaces) > 0 {
 		b.WriteString("\nImplements:\n")
 		for _, i := range ifaces {
@@ -236,7 +245,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	// Sub-interfaces (for interfaces)
-	subIfaces := s.queryColumn("SELECT child FROM interface_relationships WHERE parent = ? ORDER BY child", class)
+	subIfaces, err := s.queryColumn("SELECT child FROM interface_relationships WHERE parent = ? ORDER BY child", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(subIfaces) > 0 {
 		b.WriteString("\nSub-interfaces:\n")
 		for _, i := range subIfaces {
@@ -247,7 +259,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	// Parent interfaces (for interfaces)
-	parentIfaces := s.queryColumn("SELECT parent FROM interface_relationships WHERE child = ? ORDER BY parent", class)
+	parentIfaces, err := s.queryColumn("SELECT parent FROM interface_relationships WHERE child = ? ORDER BY parent", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(parentIfaces) > 0 {
 		b.WriteString("\nExtends interfaces:\n")
 		for _, i := range parentIfaces {
@@ -258,7 +273,10 @@ func (s *Server) handleHierarchy(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	// Traits
-	traits := s.queryColumn("SELECT trait FROM class_traits WHERE class = ? ORDER BY trait", class)
+	traits, err := s.queryColumn("SELECT trait FROM class_traits WHERE class = ? ORDER BY trait", class)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	if len(traits) > 0 {
 		b.WriteString("\nUses traits:\n")
 		for _, t := range traits {
@@ -287,19 +305,25 @@ func (s *Server) handleImplementations(raw json.RawMessage) *ToolsCallResult {
 	var results []string
 
 	// Check class_interfaces (classes implementing this interface)
-	rows1 := s.queryTwoColumns(
+	rows1, err := s.queryTwoColumns(
 		"SELECT ci.class, c.filepath FROM class_interfaces ci LEFT JOIN classes c ON ci.class = c.name WHERE ci.interface = ? ORDER BY ci.class",
 		symbol,
 	)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	for _, r := range rows1 {
 		results = append(results, fmt.Sprintf("%s  (%s)", r[0], r[1]))
 	}
 
 	// Check class_relationships (classes extending this class)
-	rows2 := s.queryTwoColumns(
+	rows2, err := s.queryTwoColumns(
 		"SELECT cr.child, c.filepath FROM class_relationships cr LEFT JOIN classes c ON cr.child = c.name WHERE cr.parent = ? ORDER BY cr.child",
 		symbol,
 	)
+	if err != nil {
+		return errorResult("Query error: " + err.Error())
+	}
 	for _, r := range rows2 {
 		results = append(results, fmt.Sprintf("%s  (%s)", r[0], r[1]))
 	}
@@ -384,13 +408,6 @@ func (s *Server) handleUnused(raw json.RawMessage) *ToolsCallResult {
 		args.Limit = 100
 	}
 
-	// Map signatures kind to callsites type
-	kindToCallsiteType := map[string]string{
-		"method":   "method",
-		"property": "prop",
-		"constant": "const",
-	}
-
 	// Magic methods and other names that are implicitly called
 	magicNames := map[string]bool{
 		"__construct": true, "__destruct": true, "__call": true,
@@ -418,7 +435,6 @@ func (s *Server) handleUnused(raw json.RawMessage) *ToolsCallResult {
 		WHERE c.element IS NULL
 	`
 	var queryArgs []any
-	_ = kindToCallsiteType // used conceptually in the CASE above
 
 	if args.File != "" {
 		query += " AND s.filepath = ?"
@@ -463,7 +479,7 @@ func (s *Server) handleUnused(raw json.RawMessage) *ToolsCallResult {
 
 		// Filter out PHPUnit test methods (public methods starting with "test")
 		if kind == "method" && visibility.Valid && visibility.String == "public" &&
-			len(name) > 4 && name[:4] == "test" {
+			strings.HasPrefix(name, "test") {
 			continue
 		}
 
@@ -558,10 +574,10 @@ func (s *Server) handleFileSymbols(raw json.RawMessage) *ToolsCallResult {
 }
 
 // Helper to query a single column
-func (s *Server) queryColumn(query string, arg string) []string {
+func (s *Server) queryColumn(query string, arg string) ([]string, error) {
 	rows, err := s.db.Query(query, arg)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -573,14 +589,14 @@ func (s *Server) queryColumn(query string, arg string) []string {
 		}
 		results = append(results, val)
 	}
-	return results
+	return results, nil
 }
 
 // Helper to query two columns (second column may be NULL from LEFT JOINs)
-func (s *Server) queryTwoColumns(query string, arg string) [][2]string {
+func (s *Server) queryTwoColumns(query string, arg string) ([][2]string, error) {
 	rows, err := s.db.Query(query, arg)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -597,7 +613,7 @@ func (s *Server) queryTwoColumns(query string, arg string) [][2]string {
 		}
 		results = append(results, [2]string{a, bStr})
 	}
-	return results
+	return results, nil
 }
 
 // normalizeFQSEN ensures the symbol starts with a backslash

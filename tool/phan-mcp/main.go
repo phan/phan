@@ -107,9 +107,14 @@ func (s *Server) handle(req *Request) {
 		writeResponse(req.ID, map[string]any{})
 
 	case "tools/list":
-		writeResponse(req.ID, ToolsListResult{Tools: toolDefs})
+		if req.ID != nil {
+			writeResponse(req.ID, ToolsListResult{Tools: toolDefs})
+		}
 
 	case "tools/call":
+		if req.ID == nil {
+			return // notifications don't get responses
+		}
 		var params ToolsCallParams
 		if err := json.Unmarshal(req.Params, &params); err != nil {
 			writeError(req.ID, -32602, "Invalid params: "+err.Error())
@@ -132,7 +137,12 @@ func writeResponse(id *json.RawMessage, result any) {
 		ID:      id,
 		Result:  result,
 	}
-	data, _ := json.Marshal(resp)
+	data, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "marshal error: %v\n", err)
+		writeError(id, -32603, "Internal error: failed to marshal response")
+		return
+	}
 	fmt.Fprintf(os.Stdout, "%s\n", data)
 }
 
@@ -142,6 +152,10 @@ func writeError(id *json.RawMessage, code int, message string) {
 		ID:      id,
 		Error:   &RPCError{Code: code, Message: message},
 	}
-	data, _ := json.Marshal(resp)
+	data, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "marshal error: %v\n", err)
+		return
+	}
 	fmt.Fprintf(os.Stdout, "%s\n", data)
 }
