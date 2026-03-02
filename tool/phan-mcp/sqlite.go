@@ -9,7 +9,7 @@ import (
 
 func (s *Server) handleReferences(raw json.RawMessage) *ToolsCallResult {
 	if s.db == nil {
-		return errorResult("SQLite database not available. Build it with: ./phan --plugin src/Phan/Plugin/Internal/PhoundPlugin.php")
+		return errorResult("SQLite database not available. Build it with: ./phan --plugin src/Phan/Plugin/Internal/PhoundPlugin.php and ensure plugin_config.phound_sqlite_path is set")
 	}
 
 	var args struct {
@@ -576,7 +576,7 @@ func (s *Server) queryColumn(query string, arg string) []string {
 	return results
 }
 
-// Helper to query two columns
+// Helper to query two columns (second column may be NULL from LEFT JOINs)
 func (s *Server) queryTwoColumns(query string, arg string) [][2]string {
 	rows, err := s.db.Query(query, arg)
 	if err != nil {
@@ -586,11 +586,16 @@ func (s *Server) queryTwoColumns(query string, arg string) [][2]string {
 
 	var results [][2]string
 	for rows.Next() {
-		var a, b string
+		var a string
+		var b sql.NullString
 		if err := rows.Scan(&a, &b); err != nil {
 			continue
 		}
-		results = append(results, [2]string{a, b})
+		bStr := ""
+		if b.Valid {
+			bStr = b.String
+		}
+		results = append(results, [2]string{a, bStr})
 	}
 	return results
 }

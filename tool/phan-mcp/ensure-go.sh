@@ -173,12 +173,16 @@ info "Downloading $DL_URL ..."
 mkdir -p "$GOROOT_CACHE"
 TARBALL_PATH="$GOROOT_CACHE/$TARBALL"
 
-# Serialize concurrent download/install operations with flock.
+# Serialize concurrent download/install operations with flock when available.
 LOCKFILE="$GOROOT_CACHE/.lock"
-lock_fd=9
-eval "exec $lock_fd>\"$LOCKFILE\""
-if ! flock -w 300 $lock_fd; then
-    die "timed out waiting for lock on $LOCKFILE"
+if command -v flock >/dev/null 2>&1; then
+    lock_fd=9
+    eval "exec $lock_fd>\"$LOCKFILE\""
+    if ! flock -w 300 $lock_fd; then
+        die "timed out waiting for lock on $LOCKFILE"
+    fi
+else
+    info "flock not found; continuing without install lock (concurrent runs may race)."
 fi
 # Re-check cached Go under lock — another process may have installed it.
 if [ -x "$CACHED_GO" ]; then

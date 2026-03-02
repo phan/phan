@@ -40,9 +40,13 @@ func main() {
 			s.db = db
 			defer db.Close()
 			var sigCount, callCount int
-			s.db.QueryRow("SELECT count(*) FROM signatures").Scan(&sigCount)
-			s.db.QueryRow("SELECT count(*) FROM callsites").Scan(&callCount)
-			fmt.Fprintf(os.Stderr, "SQLite: %s (%d signatures, %d callsites)\n", *dbPath, sigCount, callCount)
+			if err := s.db.QueryRow("SELECT count(*) FROM signatures").Scan(&sigCount); err != nil {
+				fmt.Fprintf(os.Stderr, "SQLite: FAILED to read signatures from %s: %v\n", *dbPath, err)
+			} else if err := s.db.QueryRow("SELECT count(*) FROM callsites").Scan(&callCount); err != nil {
+				fmt.Fprintf(os.Stderr, "SQLite: FAILED to read callsites from %s: %v\n", *dbPath, err)
+			} else {
+				fmt.Fprintf(os.Stderr, "SQLite: %s (%d signatures, %d callsites)\n", *dbPath, sigCount, callCount)
+			}
 		}
 	} else {
 		fmt.Fprintf(os.Stderr, "SQLite: not configured (use --db <path>)\n")

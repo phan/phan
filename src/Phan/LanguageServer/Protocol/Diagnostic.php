@@ -59,7 +59,7 @@ class Diagnostic
     /**
      * @param  string $message  The diagnostic's message
      * @param  Range  $range    The range at which the message applies
-     * @param  int|string $code  The diagnostic's code
+     * @param  int|string|null $code  The diagnostic's code
      * @param  int    $severity DiagnosticSeverity
      * @param  string $source   A human-readable string describing the source of this diagnostic
      * @suppress PhanPossiblyNullTypeMismatchProperty

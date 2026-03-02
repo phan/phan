@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func (s *Server) handleAnalyze(raw json.RawMessage) *ToolsCallResult {
@@ -47,6 +48,11 @@ func (s *Server) handleTypeAt(raw json.RawMessage) *ToolsCallResult {
 	}
 	if err := json.Unmarshal(raw, &args); err != nil {
 		return errorResult("Invalid arguments: " + err.Error())
+	}
+
+	// Validate variable name to prevent PHP injection
+	if !regexp.MustCompile(`^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$`).MatchString(args.Variable) {
+		return errorResult(fmt.Sprintf("Invalid variable name: %q", args.Variable))
 	}
 
 	// Read file from disk
@@ -128,11 +134,15 @@ func (s *Server) callDaemon(file string, contents *string) (string, error) {
 		return "", fmt.Errorf("failed to encode request: %w", err)
 	}
 
-	conn, err := net.Dial("tcp", s.daemonAddr)
+	conn, err := net.DialTimeout("tcp", s.daemonAddr, 10*time.Second)
 	if err != nil {
 		return "", fmt.Errorf("failed to connect to Phan daemon at %s: %w", s.daemonAddr, err)
 	}
 	defer conn.Close()
+
+	// Set a generous deadline for the full request-response cycle.
+	// Analysis of large files can take time.
+	conn.SetDeadline(time.Now().Add(5 * time.Minute))
 
 	if _, err := conn.Write(reqBytes); err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)

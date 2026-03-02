@@ -272,6 +272,18 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec('CREATE INDEX signatures_class ON signatures (class_fqsen)')) {
             throw new Exception("Failed to create index signatures_class");
         }
+        if (!self::$db->exec('CREATE INDEX class_interfaces_interface ON class_interfaces (interface)')) {
+            throw new Exception("Failed to create index class_interfaces_interface");
+        }
+        if (!self::$db->exec('CREATE INDEX class_relationships_child ON class_relationships (child)')) {
+            throw new Exception("Failed to create index class_relationships_child");
+        }
+        if (!self::$db->exec('CREATE INDEX interface_relationships_child ON interface_relationships (child)')) {
+            throw new Exception("Failed to create index interface_relationships_child");
+        }
+        if (!self::$db->exec('CREATE INDEX signatures_filepath ON signatures (filepath)')) {
+            throw new Exception("Failed to create index signatures_filepath");
+        }
 
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
             throw new Exception("Failed to set PRAGMA synchronous");
