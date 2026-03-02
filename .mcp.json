@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "phan": {
+      "command": "./tool/phan-mcp/phan-mcp",
+      "args": ["--db", ".phan/phound.sqlite", "--daemon", "127.0.0.1:4846"]
+    }
+  }
+}
