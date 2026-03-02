@@ -126,6 +126,9 @@
 \DeepHierarchy\T3::t2Prop	property	\DeepHierarchy\T3	t2Prop	int	0	protected	src/003_phound_hierarchy.php	222
 \DeepHierarchy\T3::t3Method	method	\DeepHierarchy\T3	t3Method	void	0	public	src/003_phound_hierarchy.php	231
 \DeepHierarchy\T3::t3Prop	property	\DeepHierarchy\T3	t3Prop	int	0	protected	src/003_phound_hierarchy.php	230
+\DefaultParams::class	constant	\DefaultParams	class	'DefaultParams'	0	public	src/001_phound_callsites.php	104
+\DefaultParams::method_with_defaults	method	\DefaultParams	method_with_defaults		0	public	src/001_phound_callsites.php	105
+\DefaultParams::static_with_expr	method	\DefaultParams	static_with_expr		1	public	src/001_phound_callsites.php	106
 \Dog::__construct	method	\Dog	__construct	\Dog	0	public	src/002_phound_override_return_types.php	9
 \Dog::class	constant	\Dog	class	'Dog'	0	public	src/002_phound_override_return_types.php	9
 \Dog::shedFur	method	\Dog	shedFur		0	public	src/002_phound_override_return_types.php	10
@@ -275,6 +278,7 @@
 \anonymous_class_3022f2ed::toggleClutch	method	\anonymous_class_3022f2ed	toggleClutch	void	0	public	src/003_phound_hierarchy.php	73
 \anonymous_class_3022f2ed::toggleMotor	method	\anonymous_class_3022f2ed	toggleMotor	void	0	public	src/003_phound_hierarchy.php	70
 \anonymous_class_3022f2ed::type	property	\anonymous_class_3022f2ed	type	string	0	protected	src/003_phound_hierarchy.php	181
+\func_with_defaults	function		func_with_defaults	void	0		src/001_phound_callsites.php	103
 \yo	function		yo	void	0		src/001_phound_callsites.php	64
 <-----------> Parameters <----------->
 \Car::__construct	0	model	string	0	0	0	
@@ -286,6 +290,10 @@
 \CommercialVehicleInterface::move	0	distance	int	0	0	0	
 \CommercialVehicleInterface::setSpeed	0	speed	int	0	0	0	
 \CommercialVehicleInterface::transport	0	cargo	mixed	0	1	0	
+\DefaultParams::method_with_defaults	0	count	int	0	0	1	0
+\DefaultParams::method_with_defaults	1	flag	bool	0	0	1	true
+\DefaultParams::method_with_defaults	2	sep	string	0	0	1	','
+\DefaultParams::static_with_expr	0	mode	int	0	0	1	(1 + 2)
 \MotorBoat::__construct	0	type	string	0	0	0	
 \MotorBoat::drive	0	distance	int	0	0	0	
 \MotorBoat::move	0	distance	int	0	0	0	
@@ -327,3 +335,7 @@
 \anonymous_class_3022f2ed::drive	0	distance	int	0	0	0	
 \anonymous_class_3022f2ed::move	0	distance	int	0	0	0	
 \anonymous_class_3022f2ed::setSpeed	0	speed	int	0	0	0	
+\func_with_defaults	0	x	int	0	0	1	42
+\func_with_defaults	1	name	string	0	0	1	'hello'
+\func_with_defaults	2	items	?array	0	0	1	null
+\func_with_defaults	3	rate	float	0	0	1	3.14
