@@ -266,13 +266,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
             throw new Exception("Failed to create index on callsites");
         }
-        if (!self::$db->exec('CREATE INDEX signatures_name ON signatures (name)')) {
-            throw new Exception("Failed to create index signatures_name");
-        }
-        if (!self::$db->exec('CREATE INDEX signatures_class ON signatures (class_fqsen)')) {
-            throw new Exception("Failed to create index signatures_class");
-        }
-
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
             throw new Exception("Failed to set PRAGMA synchronous");
         }
@@ -847,6 +840,14 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         self::writeSignatures($code_base);
+
+        // Create indexes after bulk loading for better performance
+        if (!self::$db->exec('CREATE INDEX signatures_name ON signatures (name)')) {
+            throw new Exception("Failed to create index signatures_name");
+        }
+        if (!self::$db->exec('CREATE INDEX signatures_class ON signatures (class_fqsen)')) {
+            throw new Exception("Failed to create index signatures_class");
+        }
     }
 
     /**
