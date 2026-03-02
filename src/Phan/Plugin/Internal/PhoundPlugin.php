@@ -147,8 +147,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'trait_traits' => [
             'columns' => [
-                'trait TEXT',
-                'uses_trait TEXT',
+                'trait TEXT NOT NULL',
+                'uses_trait TEXT NOT NULL',
             ],
             'constraints' => [
                 'PRIMARY KEY (trait, uses_trait)',
@@ -156,8 +156,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'interface_relationships' => [
             'columns' => [
-                'parent TEXT',
-                'child TEXT',
+                'parent TEXT NOT NULL',
+                'child TEXT NOT NULL',
             ],
             'constraints' => [
                 'PRIMARY KEY (parent, child)',
@@ -165,8 +165,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'class_relationships' => [
             'columns' => [
-                'parent TEXT',
-                'child TEXT',
+                'parent TEXT NOT NULL',
+                'child TEXT NOT NULL',
             ],
             'constraints' => [
                 'PRIMARY KEY (parent, child)',
@@ -174,8 +174,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'class_interfaces' => [
             'columns' => [
-                'class TEXT',
-                'interface TEXT',
+                'class TEXT NOT NULL',
+                'interface TEXT NOT NULL',
             ],
             'constraints' => [
                 'PRIMARY KEY (class, interface)',
@@ -183,8 +183,8 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         ],
         'class_traits' => [
             'columns' => [
-                'class TEXT',
-                'trait TEXT',
+                'class TEXT NOT NULL',
+                'trait TEXT NOT NULL',
             ],
             'constraints' => [
                 'PRIMARY KEY (class, trait)',
@@ -214,11 +214,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             if (!self::$db->exec("DROP TABLE IF EXISTS $table")) {
                 throw new Exception("Failed to drop table: $table");
             }
-        }
-
-        // must be set before table creation to take effect
-        if (!self::$db->exec("PRAGMA page_size = 4096")) {
-            throw new Exception("Failed to set PRAGMA page_size");
         }
 
         // build tables in natural order
@@ -462,23 +457,16 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      * @throws Exception
      */
     public function visitClass(Node $node): void {
-        if (
-            !$this->context->isInClassScope() ||
-            !($node->kind  === \ast\AST_CLASS)
-        ) {
-            return;
-        }
-
         $clazz = $this->context->getClassInScope($this->code_base);
         $filepath = $this->context->getProjectRelativePath();
 
         if ($clazz->isClass()) {
             self::handleClass($clazz, $filepath);
 
-        } else if ($clazz->isInterface()) {
+        } elseif ($clazz->isInterface()) {
             self::handleInterface($clazz, $filepath);
 
-        } else if ($clazz->isTrait()) {
+        } elseif ($clazz->isTrait()) {
             self::handleTrait($clazz, $filepath);
 
         } else {
@@ -499,7 +487,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         // store
         if (count(self::$classes) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$classes, self::$classes_prepared_insert);
-            self::$classes = [];
         }
 
         // collect parent class
@@ -510,7 +497,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         // store
         if (count(self::$class_relationships) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$class_relationships, self::$class_relationships_prepared_insert);
-            self::$class_relationships = [];
         }
 
         // collect implemented interfaces
@@ -520,7 +506,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             // store
             if (count(self::$class_interfaces) === self::HIERARCHY_BULK_INSERT_SIZE) {
                 self::doHierarchyBulkWrite(self::$class_interfaces, self::$class_interfaces_prepared_insert);
-                self::$class_interfaces = [];
             }
         }
 
@@ -531,7 +516,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             // store
             if (count(self::$class_traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
                 self::doHierarchyBulkWrite(self::$class_traits, self::$class_traits_prepared_insert);
-                self::$class_traits = [];
             }
         }
     }
@@ -549,7 +533,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         // store
         if (count(self::$interfaces) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$interfaces, self::$interfaces_prepared_insert);
-            self::$interfaces = [];
         }
 
         // collect extensions of other interfaces
@@ -559,7 +542,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             // store
             if (count(self::$interface_relationships) === self::HIERARCHY_BULK_INSERT_SIZE) {
                 self::doHierarchyBulkWrite(self::$interface_relationships, self::$interface_relationships_prepared_insert);
-                self::$interface_relationships = [];
             }
         }
     }
@@ -577,7 +559,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         // store
         if (count(self::$traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
             self::doHierarchyBulkWrite(self::$traits, self::$traits_prepared_insert);
-            self::$traits = [];
         }
 
         // collect usages of other traits
@@ -587,7 +568,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             // store
             if (count(self::$trait_traits) === self::HIERARCHY_BULK_INSERT_SIZE) {
                 self::doHierarchyBulkWrite(self::$trait_traits, self::$trait_traits_prepared_insert);
-                self::$trait_traits = [];
             }
         }
     }
@@ -595,11 +575,11 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Bind any 2 values to a row for both tables and relationship tables, just because they have the same
      * # of columns. if base tables diverge in # of columns from relationship tables, this breaks.
-     * @param list<array{string,string}> $nodes
+     * @param list<array{string,string}> &$nodes - cleared after inserting successfully
      * @param SQLite3Stmt $stmt
      * @throws Exception
      */
-    private static function doHierarchyBulkWrite(array $nodes, SQLite3Stmt $stmt): void {
+    private static function doHierarchyBulkWrite(array &$nodes, SQLite3Stmt $stmt): void {
         sort($nodes);
         $bind_index = 1;
         foreach ($nodes as $node) {
@@ -609,6 +589,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             $bind_index++;
         }
         self::execStatement($stmt);
+        $nodes = [];
     }
 
     /**
@@ -701,7 +682,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             WITH RECURSIVE ancestor_descendant(parent, child) AS (
                 SELECT parent, child
                 FROM class_relationships
-                UNION ALL
+                UNION
                 SELECT cr.parent, ad.child
                 FROM class_relationships cr
                 JOIN ancestor_descendant ad
@@ -719,7 +700,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             WITH RECURSIVE ancestor_descendant(parent, child) AS (
                 SELECT parent, child
                 FROM interface_relationships
-                UNION ALL
+                UNION
                 SELECT ir.parent, ad.child
                 FROM interface_relationships ir
                 JOIN ancestor_descendant ad
@@ -737,7 +718,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             WITH RECURSIVE ancestor_descendant(trait, uses_trait) AS (
                 SELECT trait, uses_trait
                 FROM trait_traits
-                UNION ALL
+                UNION
                 SELECT tt.trait, ad.uses_trait
                 FROM trait_traits tt
                 JOIN ancestor_descendant ad
