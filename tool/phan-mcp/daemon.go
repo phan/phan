@@ -16,8 +16,8 @@ func (s *Server) handleAnalyze(raw json.RawMessage) *ToolsCallResult {
 	}
 
 	var args struct {
-		File     string `json:"file"`
-		Contents string `json:"contents"`
+		File     string  `json:"file"`
+		Contents *string `json:"contents"`
 	}
 	if err := json.Unmarshal(raw, &args); err != nil {
 		return errorResult("Invalid arguments: " + err.Error())
@@ -67,7 +67,8 @@ func (s *Server) handleTypeAt(raw json.RawMessage) *ToolsCallResult {
 	modified = append(modified, debugStmt)
 	modified = append(modified, lines[args.Line-1:]...)
 
-	resp, err := s.callDaemon(args.File, strings.Join(modified, "\n"))
+	modifiedContents := strings.Join(modified, "\n")
+	resp, err := s.callDaemon(args.File, &modifiedContents)
 	if err != nil {
 		return errorResult(err.Error())
 	}
@@ -108,16 +109,17 @@ func extractDebugType(resp string, variable string) string {
 }
 
 // callDaemon sends an analyze_files request to the Phan daemon and returns the raw response.
-func (s *Server) callDaemon(file string, contents string) (string, error) {
+// contents is a pointer: nil means use on-disk file, non-nil means use the provided string (even if empty).
+func (s *Server) callDaemon(file string, contents *string) (string, error) {
 	req := map[string]any{
 		"method": "analyze_files",
 		"files":  []string{file},
 		"format": "json",
 	}
 
-	if contents != "" {
+	if contents != nil {
 		req["temporary_file_mapping_contents"] = map[string]string{
-			file: contents,
+			file: *contents,
 		}
 	}
 

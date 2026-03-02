@@ -416,7 +416,6 @@ func (s *Server) handleUnused(raw json.RawMessage) *ToolsCallResult {
 			END
 		)
 		WHERE c.element IS NULL
-		  AND s.kind != 'function'
 	`
 	var queryArgs []any
 	_ = kindToCallsiteType // used conceptually in the CASE above
@@ -433,6 +432,10 @@ func (s *Server) handleUnused(raw json.RawMessage) *ToolsCallResult {
 	if args.Kind != "" {
 		query += " AND s.kind = ?"
 		queryArgs = append(queryArgs, args.Kind)
+	} else {
+		// Standalone functions aren't tracked in callsites, so they'd all appear unused.
+		// Exclude them unless the user explicitly asks for kind=function.
+		query += " AND s.kind != 'function'"
 	}
 
 	query += " ORDER BY s.filepath, s.lineno LIMIT ?"

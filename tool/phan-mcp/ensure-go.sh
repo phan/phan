@@ -194,7 +194,14 @@ download "$DL_URL" "$TARBALL_PATH"
 
 # Verify checksum
 if [ -n "$GO_SHA256" ]; then
-    ACTUAL_SHA256="$(sha256sum "$TARBALL_PATH" | cut -d' ' -f1)"
+    if command -v sha256sum >/dev/null 2>&1; then
+        ACTUAL_SHA256="$(sha256sum "$TARBALL_PATH" | cut -d' ' -f1)"
+    elif command -v shasum >/dev/null 2>&1; then
+        ACTUAL_SHA256="$(shasum -a 256 "$TARBALL_PATH" | cut -d' ' -f1)"
+    else
+        rm -f "$TARBALL_PATH"
+        die "neither sha256sum nor shasum found"
+    fi
     if [ "$ACTUAL_SHA256" != "$GO_SHA256" ]; then
         rm -f "$TARBALL_PATH"
         die "SHA256 mismatch: expected $GO_SHA256, got $ACTUAL_SHA256"
