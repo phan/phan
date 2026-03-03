@@ -451,7 +451,7 @@ echo "$REQUEST" | nc 127.0.0.1 4846 | jq '.issues[] | select(.check_name == "Pha
 ./phan -n file1.php file2.php
 
 # Analyze with the test config
-./phan -n -k tests/.phan_for_test/config.php file1.php file2.php
+./phan -k tests/.phan_for_test/config.php file1.php file2.php
 
 # Self-analysis
 ./phan
