@@ -287,6 +287,8 @@ sqlite3 .phan/phound.sqlite "SELECT c.name, c.filepath FROM classes c LEFT JOIN 
 
 The daemon keeps your entire codebase loaded in memory and can analyze individual files on demand in milliseconds.
 
+**Requires the `pcntl` extension** (used to fork worker processes for each request). This means the daemon is not available on Windows.
+
 ### Starting the Daemon
 
 ```bash
