@@ -201,7 +201,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'visibility TEXT',
                 'filepath TEXT NOT NULL',
                 'lineno INTEGER NOT NULL',
-                'docblock TEXT',
             ],
             'constraints' => [
                 'PRIMARY KEY (fqsen, kind)',
@@ -265,18 +264,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 throw new Exception("Failed to create table: $table");
             }
         }
-        if (!self::$db->exec('CREATE INDEX class_interfaces_interface ON class_interfaces (interface)')) {
-            throw new Exception("Failed to create index class_interfaces_interface");
-        }
-        if (!self::$db->exec('CREATE INDEX class_relationships_child ON class_relationships (child)')) {
-            throw new Exception("Failed to create index class_relationships_child");
-        }
-        if (!self::$db->exec('CREATE INDEX interface_relationships_child ON interface_relationships (child)')) {
-            throw new Exception("Failed to create index interface_relationships_child");
-        }
-        if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
-            throw new Exception("Failed to create index on callsites");
-        }
+        // Indexes are created after bulk loading in finalizeProcess for better performance
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
             throw new Exception("Failed to set PRAGMA synchronous");
         }
@@ -852,96 +840,101 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         self::writeSignatures($code_base);
 
-        // Create indexes after bulk loading for better performance
-        if (!self::$db->exec('CREATE INDEX signatures_name ON signatures (name)')) {
-            throw new Exception("Failed to create index signatures_name");
-        }
-        if (!self::$db->exec('CREATE INDEX signatures_class ON signatures (class_fqsen)')) {
-            throw new Exception("Failed to create index signatures_class");
-        }
-        if (!self::$db->exec('CREATE INDEX signatures_filepath ON signatures (filepath)')) {
-            throw new Exception("Failed to create index signatures_filepath");
+        // Create all indexes after bulk loading for better performance
+        $indexes = [
+            'CREATE INDEX IF NOT EXISTS element_and_callsite ON callsites (element, callsite)',
+            'CREATE INDEX IF NOT EXISTS class_interfaces_interface ON class_interfaces (interface)',
+            'CREATE INDEX IF NOT EXISTS class_relationships_child ON class_relationships (child)',
+            'CREATE INDEX IF NOT EXISTS interface_relationships_child ON interface_relationships (child)',
+            'CREATE INDEX IF NOT EXISTS signatures_name ON signatures (name)',
+            'CREATE INDEX IF NOT EXISTS signatures_class ON signatures (class_fqsen)',
+            'CREATE INDEX IF NOT EXISTS signatures_filepath ON signatures (filepath)',
+        ];
+        foreach ($indexes as $index_sql) {
+            if (!self::$db->exec($index_sql)) {
+                throw new Exception("Failed to create index: $index_sql");
+            }
         }
     }
 
     /**
      * Write function/method signatures and parameters to the database.
+     * Collects all rows first, sorts by PK, then bulk-inserts for performance.
      * Includes inherited/trait members so FQSENs for user-defined elements in callsites generally have a matching signature row.
      * @throws Exception
      */
     private static function writeSignatures(CodeBase $code_base): void
     {
-        $sig_stmt = self::$db->prepare(
-            "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno, docblock) " .
-            "VALUES (:fqsen, :kind, :class_fqsen, :name, :type, :is_static, :visibility, :filepath, :lineno, :docblock)"
-        );
-        if ($sig_stmt === false) {
-            throw new Exception("Failed to prepare signatures insert statement");
+        /** @var list<array{string,string,?string,string,string,int,?string,string,int}> */
+        $sig_rows = [];
+        /** @var list<array{string,int,string,string,int,int,int,?string}> */
+        $param_rows = [];
+
+        // Standalone functions
+        foreach ($code_base->getFunctionMap() as $func) {
+            if ($func->isPHPInternal()) {
+                continue;
+            }
+            $fqsen = $func->getFQSEN()->__toString();
+            $file_ref = $func->getFileRef();
+            $sig_rows[] = [$fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            self::collectParameters($param_rows, $fqsen, $func->getParameterList());
         }
 
-        $param_stmt = self::$db->prepare(
-            "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) " .
-            "VALUES (:fqsen, :idx, :name, :type, :is_variadic, :is_reference, :is_optional, :default_repr)"
-        );
-        if ($param_stmt === false) {
-            throw new Exception("Failed to prepare parameters insert statement");
+        // Class methods, properties, constants — includes inherited/trait members
+        foreach ($code_base->getUserDefinedClassMap() as $clazz) {
+            if ($clazz->isPHPInternal()) {
+                continue;
+            }
+            $class_fqsen = $clazz->getFQSEN();
+            $class_fqsen_str = $class_fqsen->__toString();
+
+            foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
+                if ($method->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $method->getFQSEN()->__toString();
+                $file_ref = $method->getFileRef();
+                $sig_rows[] = [$fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+                self::collectParameters($param_rows, $fqsen, $method->getParameterList());
+            }
+
+            foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
+                if ($prop->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $prop->getFQSEN()->__toString();
+                $file_ref = $prop->getFileRef();
+                $sig_rows[] = [$fqsen, 'prop', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            }
+
+            foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
+                if ($const->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $const->getFQSEN()->__toString();
+                $file_ref = $const->getFileRef();
+                $sig_rows[] = [$fqsen, 'const', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            }
         }
+
+        // Sort by PK (fqsen, kind) for optimal insert performance
+        \usort($sig_rows, static function (array $a, array $b): int {
+            return $a[0] <=> $b[0] ?: $a[1] <=> $b[1];
+        });
+
+        // Sort by PK (fqsen, idx) for optimal insert performance
+        \usort($param_rows, static function (array $a, array $b): int {
+            return $a[0] <=> $b[0] ?: $a[1] <=> $b[1];
+        });
 
         if (!self::$db->exec('BEGIN')) {
             throw new Exception("Failed to begin transaction for signatures");
         }
 
         try {
-            // Standalone functions
-            foreach ($code_base->getFunctionMap() as $func) {
-                if ($func->isPHPInternal()) {
-                    continue;
-                }
-                $fqsen = $func->getFQSEN()->__toString();
-                $file_ref = $func->getFileRef();
-                self::insertSignature($sig_stmt, $fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $func->getDocComment());
-                self::insertParameters($param_stmt, $fqsen, $func->getParameterList());
-            }
-
-            // Class methods, properties, constants — includes inherited/trait members
-            foreach ($code_base->getUserDefinedClassMap() as $clazz) {
-                if ($clazz->isPHPInternal()) {
-                    continue;
-                }
-                $class_fqsen = $clazz->getFQSEN();
-                $class_fqsen_str = $class_fqsen->__toString();
-
-                // Methods (including inherited and trait-provided)
-                foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
-                    if ($method->isPHPInternal()) {
-                        continue;
-                    }
-                    $fqsen = $method->getFQSEN()->__toString();
-                    $file_ref = $method->getFileRef();
-                    self::insertSignature($sig_stmt, $fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $method->getDocComment());
-                    self::insertParameters($param_stmt, $fqsen, $method->getParameterList());
-                }
-
-                // Properties (including inherited and trait-provided)
-                foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
-                    if ($prop->isPHPInternal()) {
-                        continue;
-                    }
-                    $fqsen = $prop->getFQSEN()->__toString();
-                    $file_ref = $prop->getFileRef();
-                    self::insertSignature($sig_stmt, $fqsen, 'prop', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $prop->getDocComment());
-                }
-
-                // Constants (including inherited and trait-provided)
-                foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
-                    if ($const->isPHPInternal()) {
-                        continue;
-                    }
-                    $fqsen = $const->getFQSEN()->__toString();
-                    $file_ref = $const->getFileRef();
-                    self::insertSignature($sig_stmt, $fqsen, 'const', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart(), $const->getDocComment());
-                }
-            }
+            self::bulkInsertSignatures($sig_rows);
+            self::bulkInsertParameters($param_rows);
 
             if (!self::$db->exec('COMMIT')) {
                 throw new Exception("Failed to commit signatures transaction");
@@ -952,65 +945,115 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    private const SIGNATURES_BULK_INSERT_SIZE = 50;
+    private const PARAMETERS_BULK_INSERT_SIZE = 50;
+
     /**
+     * @param list<array{string,string,?string,string,string,int,?string,string,int}> $rows
      * @throws Exception
      */
-    private static function insertSignature(
-        SQLite3Stmt $stmt,
-        string $fqsen,
-        string $kind,
-        ?string $class_fqsen,
-        string $name,
-        string $type,
-        int $is_static,
-        ?string $visibility,
-        string $filepath,
-        int $lineno,
-        ?string $docblock
-    ): void {
-        $stmt->bindValue(':fqsen', $fqsen, SQLITE3_TEXT);
-        $stmt->bindValue(':kind', $kind, SQLITE3_TEXT);
-        $stmt->bindValue(':class_fqsen', $class_fqsen, $class_fqsen !== null ? SQLITE3_TEXT : SQLITE3_NULL);
-        $stmt->bindValue(':name', $name, SQLITE3_TEXT);
-        $stmt->bindValue(':type', $type, SQLITE3_TEXT);
-        $stmt->bindValue(':is_static', $is_static, SQLITE3_INTEGER);
-        $stmt->bindValue(':visibility', $visibility, $visibility !== null ? SQLITE3_TEXT : SQLITE3_NULL);
-        $stmt->bindValue(':filepath', $filepath, SQLITE3_TEXT);
-        $stmt->bindValue(':lineno', $lineno, SQLITE3_INTEGER);
-        $stmt->bindValue(':docblock', $docblock, $docblock !== null ? SQLITE3_TEXT : SQLITE3_NULL);
-        self::execStatement($stmt);
+    private static function bulkInsertSignatures(array $rows): void
+    {
+        $total = count($rows);
+        $batch_size = self::SIGNATURES_BULK_INSERT_SIZE;
+        $offset = 0;
+
+        while ($offset < $total) {
+            $chunk_size = min($batch_size, $total - $offset);
+            $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?, ?), ', $chunk_size);
+            $sql = "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno) VALUES " .
+                rtrim($placeholders, ', ');
+            $stmt = self::$db->prepare($sql);
+            if ($stmt === false) {
+                throw new Exception("Failed to prepare signatures bulk insert statement");
+            }
+
+            $bind_index = 1;
+            for ($i = $offset; $i < $offset + $chunk_size; $i++) {
+                $row = $rows[$i];
+                $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
+                $stmt->bindValue($bind_index++, $row[1], SQLITE3_TEXT); // kind
+                $stmt->bindValue($bind_index++, $row[2], $row[2] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // class_fqsen
+                $stmt->bindValue($bind_index++, $row[3], SQLITE3_TEXT); // name
+                $stmt->bindValue($bind_index++, $row[4], SQLITE3_TEXT); // type
+                $stmt->bindValue($bind_index++, $row[5], SQLITE3_INTEGER); // is_static
+                $stmt->bindValue($bind_index++, $row[6], $row[6] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // visibility
+                $stmt->bindValue($bind_index++, $row[7], SQLITE3_TEXT); // filepath
+                $stmt->bindValue($bind_index++, $row[8], SQLITE3_INTEGER); // lineno
+            }
+            self::execStatement($stmt);
+            $offset += $chunk_size;
+        }
     }
 
     /**
-     * @param SQLite3Stmt $stmt
-     * @param string $fqsen
-     * @param list<\Phan\Language\Element\Parameter> $parameters
+     * @param list<array{string,int,string,string,int,int,int,?string}> $rows
      * @throws Exception
      */
-    private static function insertParameters(SQLite3Stmt $stmt, string $fqsen, array $parameters): void
+    private static function bulkInsertParameters(array $rows): void
+    {
+        $total = count($rows);
+        $batch_size = self::PARAMETERS_BULK_INSERT_SIZE;
+        $offset = 0;
+
+        while ($offset < $total) {
+            $chunk_size = min($batch_size, $total - $offset);
+            $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?), ', $chunk_size);
+            $sql = "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) VALUES " .
+                rtrim($placeholders, ', ');
+            $stmt = self::$db->prepare($sql);
+            if ($stmt === false) {
+                throw new Exception("Failed to prepare parameters bulk insert statement");
+            }
+
+            $bind_index = 1;
+            for ($i = $offset; $i < $offset + $chunk_size; $i++) {
+                $row = $rows[$i];
+                $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
+                $stmt->bindValue($bind_index++, $row[1], SQLITE3_INTEGER); // idx
+                $stmt->bindValue($bind_index++, $row[2], SQLITE3_TEXT); // name
+                $stmt->bindValue($bind_index++, $row[3], SQLITE3_TEXT); // type
+                $stmt->bindValue($bind_index++, $row[4], SQLITE3_INTEGER); // is_variadic
+                $stmt->bindValue($bind_index++, $row[5], SQLITE3_INTEGER); // is_reference
+                $stmt->bindValue($bind_index++, $row[6], SQLITE3_INTEGER); // is_optional
+                $stmt->bindValue($bind_index++, $row[7], $row[7] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // default_repr
+            }
+            self::execStatement($stmt);
+            $offset += $chunk_size;
+        }
+    }
+
+    /**
+     * Collect parameter data into rows array for bulk insertion.
+     * @param list<array{string,int,string,string,int,int,int,?string}> &$rows
+     * @param string $fqsen
+     * @param list<\Phan\Language\Element\Parameter> $parameters
+     */
+    private static function collectParameters(array &$rows, string $fqsen, array $parameters): void
     {
         foreach ($parameters as $idx => $param) {
-            $stmt->bindValue(':fqsen', $fqsen, SQLITE3_TEXT);
-            $stmt->bindValue(':idx', $idx, SQLITE3_INTEGER);
-            $stmt->bindValue(':name', $param->getName(), SQLITE3_TEXT);
-            $stmt->bindValue(':type', $param->getUnionType()->__toString(), SQLITE3_TEXT);
-            $stmt->bindValue(':is_variadic', $param->isVariadic() ? 1 : 0, SQLITE3_INTEGER);
-            $stmt->bindValue(':is_reference', $param->isPassByReference() ? 1 : 0, SQLITE3_INTEGER);
-            $stmt->bindValue(':is_optional', $param->isOptional() ? 1 : 0, SQLITE3_INTEGER);
             $default = null;
             if ($param->hasDefaultValue() && !$param->isVariadic()) {
                 $default_value = $param->getDefaultValue();
                 if ($default_value instanceof \ast\Node) {
                     $default = \Phan\AST\ASTReverter::toShortString($default_value);
-                    if (\strlen($default) >= 50) {
-                        $default = '...';
+                    if (\strlen($default) > 50) {
+                        $default = \substr($default, 0, 47) . '...';
                     }
                 } else {
                     $default = \Phan\Library\StringUtil::varExportPretty($default_value);
                 }
             }
-            $stmt->bindValue(':default_repr', $default, $default !== null ? SQLITE3_TEXT : SQLITE3_NULL);
-            self::execStatement($stmt);
+            $rows[] = [
+                $fqsen,
+                $idx,
+                $param->getName(),
+                $param->getUnionType()->__toString(),
+                $param->isVariadic() ? 1 : 0,
+                $param->isPassByReference() ? 1 : 0,
+                $param->isOptional() ? 1 : 0,
+                $default,
+            ];
         }
     }
 

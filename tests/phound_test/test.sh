@@ -47,7 +47,7 @@ INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM interfaces ORDER BY filepath, na
 INTERFACE_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM interface_relationships ORDER BY parent, child')
 TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM traits ORDER BY filepath, name')
 TRAIT_TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM trait_traits ORDER BY trait, uses_trait')
-SIGNATURES=$(sqlite3 -separator $'\t' ~/phound.db 'SELECT fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno FROM signatures ORDER BY fqsen')
+SIGNATURES=$(sqlite3 -separator $'\t' ~/phound.db 'SELECT fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno FROM signatures ORDER BY fqsen, kind')
 PARAMETERS=$(sqlite3 -separator $'\t' ~/phound.db 'SELECT fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr FROM parameters ORDER BY fqsen, idx')
 
 ACTUAL="<-----------> Callsites <----------->
