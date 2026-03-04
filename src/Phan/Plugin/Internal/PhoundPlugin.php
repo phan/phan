@@ -940,8 +940,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private const SIGNATURES_BULK_INSERT_SIZE = 50;
-    private const PARAMETERS_BULK_INSERT_SIZE = 50;
+    // signatures has 9 columns: floor(32766 / 9) = 3640
+    private const SIGNATURES_BULK_INSERT_SIZE = 3640;
+    // parameters has 8 columns: floor(32766 / 8) = 4095
+    private const PARAMETERS_BULK_INSERT_SIZE = 4095;
 
     /**
      * @param list<array{string,string,?string,string,string,int,?string,string,int}> $rows
@@ -950,17 +952,17 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     private static function bulkInsertSignatures(array $rows): void
     {
         $total = count($rows);
+        if ($total === 0) {
+            return;
+        }
         $batch_size = self::SIGNATURES_BULK_INSERT_SIZE;
         $offset = 0;
+        $stmt = self::prepareSignaturesBulkInsert($batch_size);
 
         while ($offset < $total) {
             $chunk_size = min($batch_size, $total - $offset);
-            $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?, ?), ', $chunk_size);
-            $sql = "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno) VALUES " .
-                rtrim($placeholders, ', ');
-            $stmt = self::$db->prepare($sql);
-            if ($stmt === false) {
-                throw new Exception("Failed to prepare signatures bulk insert statement");
+            if ($chunk_size < $batch_size) {
+                $stmt = self::prepareSignaturesBulkInsert($chunk_size);
             }
 
             $bind_index = 1;
@@ -982,23 +984,38 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @throws Exception
+     */
+    private static function prepareSignaturesBulkInsert(int $count): SQLite3Stmt
+    {
+        $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?, ?), ', $count);
+        $sql = "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno) VALUES " .
+            rtrim($placeholders, ', ');
+        $stmt = self::$db->prepare($sql);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare signatures bulk insert statement");
+        }
+        return $stmt;
+    }
+
+    /**
      * @param list<array{string,int,string,string,int,int,int,?string}> $rows
      * @throws Exception
      */
     private static function bulkInsertParameters(array $rows): void
     {
         $total = count($rows);
+        if ($total === 0) {
+            return;
+        }
         $batch_size = self::PARAMETERS_BULK_INSERT_SIZE;
         $offset = 0;
+        $stmt = self::prepareParametersBulkInsert($batch_size);
 
         while ($offset < $total) {
             $chunk_size = min($batch_size, $total - $offset);
-            $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?), ', $chunk_size);
-            $sql = "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) VALUES " .
-                rtrim($placeholders, ', ');
-            $stmt = self::$db->prepare($sql);
-            if ($stmt === false) {
-                throw new Exception("Failed to prepare parameters bulk insert statement");
+            if ($chunk_size < $batch_size) {
+                $stmt = self::prepareParametersBulkInsert($chunk_size);
             }
 
             $bind_index = 1;
@@ -1016,6 +1033,21 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             self::execStatement($stmt);
             $offset += $chunk_size;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function prepareParametersBulkInsert(int $count): SQLite3Stmt
+    {
+        $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?), ', $count);
+        $sql = "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) VALUES " .
+            rtrim($placeholders, ', ');
+        $stmt = self::$db->prepare($sql);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare parameters bulk insert statement");
+        }
+        return $stmt;
     }
 
     /**
