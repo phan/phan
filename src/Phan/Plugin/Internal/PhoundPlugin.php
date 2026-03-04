@@ -918,15 +918,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
 
-        // Sort by PK (fqsen, kind) for optimal insert performance
-        \usort($sig_rows, static function (array $a, array $b): int {
-            return $a[0] <=> $b[0] ?: $a[1] <=> $b[1];
-        });
-
-        // Sort by PK (fqsen, idx) for optimal insert performance
-        \usort($param_rows, static function (array $a, array $b): int {
-            return $a[0] <=> $b[0] ?: $a[1] <=> $b[1];
-        });
+        // Sort by PK (fqsen, kind) and (fqsen, idx) for optimal insert performance.
+        // sort() compares arrays element-by-element, so element [0] (fqsen) then [1] (kind/idx).
+        sort($sig_rows);
+        sort($param_rows);
 
         if (!self::$db->exec('BEGIN')) {
             throw new Exception("Failed to begin transaction for signatures");
