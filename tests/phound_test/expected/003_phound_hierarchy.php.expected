@@ -29,6 +29,7 @@
 \A|src/001_phound_callsites.php
 \B|src/001_phound_callsites.php
 \C|src/001_phound_callsites.php
+\DefaultParams|src/001_phound_callsites.php
 \TestConstructor|src/001_phound_callsites.php
 \TestConstructor2|src/001_phound_callsites.php
 \Animal|src/002_phound_override_return_types.php

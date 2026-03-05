@@ -98,3 +98,13 @@ $b_or_c = $a->getBOrC();
 $method_name = (random_int(0, 10) < 5) ? 'methodOnlyDefinedInB' : 'methodDefinedNowhere';
 $b_or_c->$method_name();
 echo $b_or_c->prop_only_public_in_b;
+
+// Test parameter defaults for signature coverage
+function func_with_defaults(int $x = 42, string $name = 'hello', ?array $items = null, float $rate = 3.14) {}
+function func_with_variadic(string $first, string ...$rest) {}
+function func_with_variadic_and_default(int $count = 10, string ...$items) {}
+class DefaultParams {
+    public function method_with_defaults(int $count = 0, bool $flag = true, string $sep = ',') {}
+    public static function static_with_expr(int $mode = 1 + 2) {}
+    public function method_with_variadic(string $format, mixed ...$args) {}
+}

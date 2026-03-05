@@ -190,6 +190,37 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 'PRIMARY KEY (class, trait)',
             ]
         ],
+        'signatures' => [
+            'columns' => [
+                'fqsen TEXT NOT NULL',
+                'kind TEXT NOT NULL',
+                'class_fqsen TEXT',
+                'name TEXT NOT NULL',
+                'type TEXT NOT NULL',
+                'is_static INTEGER NOT NULL DEFAULT 0',
+                'visibility TEXT',
+                'filepath TEXT NOT NULL',
+                'lineno INTEGER NOT NULL',
+            ],
+            'constraints' => [
+                'PRIMARY KEY (fqsen, kind)',
+            ],
+        ],
+        'parameters' => [
+            'columns' => [
+                'fqsen TEXT NOT NULL',
+                'idx INTEGER NOT NULL',
+                'name TEXT NOT NULL',
+                'type TEXT NOT NULL',
+                'is_variadic INTEGER NOT NULL DEFAULT 0',
+                'is_reference INTEGER NOT NULL DEFAULT 0',
+                'is_optional INTEGER NOT NULL DEFAULT 0',
+                'default_repr TEXT',
+            ],
+            'constraints' => [
+                'PRIMARY KEY (fqsen, idx)',
+            ],
+        ],
     ];
 
     /**
@@ -228,11 +259,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 throw new Exception("Failed to create table: $table");
             }
         }
-
-        if (!self::$db->exec('CREATE INDEX element_and_callsite ON callsites (element, callsite)')) {
-            throw new Exception("Failed to create index on callsites");
-        }
-
+        // Indexes are created after bulk loading in finalizeProcess for better performance
         if (!self::$db->exec("PRAGMA synchronous = OFF")) {
             throw new Exception("Failed to set PRAGMA synchronous");
         }
@@ -611,10 +638,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Finish pending bulk writes.
+     * Finish pending bulk writes and write signature data.
      * @throws Exception
      */
-    public static function finalizeProcess(): void {
+    public static function finalizeProcess(CodeBase $code_base): void {
         if (count(self::$callsites) > 0) {
             $stmt = self::createCallsitesBulkInsertPreparedStatement(count(self::$callsites));
             self::doCallsitesBulkWrite($stmt);
@@ -791,6 +818,256 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if (!self::$db->exec($propagate_trait_ancestors)) {
             throw new Exception("Failed to propagate trait ancestors into class traits");
         }
+
+        self::writeSignatures($code_base);
+
+        // Create all indexes after bulk loading for better performance
+        $indexes = [
+            'CREATE INDEX IF NOT EXISTS element_and_callsite ON callsites (element, callsite)',
+            'CREATE INDEX IF NOT EXISTS class_interfaces_interface ON class_interfaces (interface)',
+            'CREATE INDEX IF NOT EXISTS class_relationships_child ON class_relationships (child)',
+            'CREATE INDEX IF NOT EXISTS interface_relationships_child ON interface_relationships (child)',
+            'CREATE INDEX IF NOT EXISTS signatures_name ON signatures (name)',
+            'CREATE INDEX IF NOT EXISTS signatures_class ON signatures (class_fqsen)',
+            'CREATE INDEX IF NOT EXISTS signatures_filepath ON signatures (filepath)',
+        ];
+        foreach ($indexes as $index_sql) {
+            if (!self::$db->exec($index_sql)) {
+                throw new Exception("Failed to create index: $index_sql");
+            }
+        }
+    }
+
+    /**
+     * Write function/method signatures and parameters to the database.
+     * Collects all rows first, sorts by PK, then bulk-inserts for performance.
+     * Includes inherited/trait members so FQSENs for user-defined elements in callsites generally have a matching signature row.
+     * @throws Exception
+     */
+    private static function writeSignatures(CodeBase $code_base): void
+    {
+        /** @var list<array{string,string,?string,string,string,int,?string,string,int}> */
+        $sig_rows = [];
+        /** @var list<array{string,int,string,string,int,int,int,?string}> */
+        $param_rows = [];
+
+        // Standalone functions
+        foreach ($code_base->getFunctionMap() as $func) {
+            if ($func->isPHPInternal()) {
+                continue;
+            }
+            $fqsen = $func->getFQSEN()->__toString();
+            $file_ref = $func->getFileRef();
+            $sig_rows[] = [$fqsen, 'function', null, $func->getName(), $func->getUnionType()->__toString(), $func->isStatic() ? 1 : 0, null, $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            self::collectParameters($param_rows, $fqsen, $func->getParameterList());
+        }
+
+        // Class methods, properties, constants — includes inherited/trait members
+        foreach ($code_base->getUserDefinedClassMap() as $clazz) {
+            if ($clazz->isPHPInternal()) {
+                continue;
+            }
+            $class_fqsen = $clazz->getFQSEN();
+            $class_fqsen_str = $class_fqsen->__toString();
+
+            foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
+                if ($method->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $method->getFQSEN()->__toString();
+                $file_ref = $method->getFileRef();
+                $sig_rows[] = [$fqsen, 'method', $class_fqsen_str, $method->getName(), $method->getUnionType()->__toString(), $method->isStatic() ? 1 : 0, $method->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+                self::collectParameters($param_rows, $fqsen, $method->getParameterList());
+            }
+
+            foreach ($code_base->getPropertyMapByFullyQualifiedClassName($class_fqsen) as $prop) {
+                if ($prop->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $prop->getFQSEN()->__toString();
+                $file_ref = $prop->getFileRef();
+                $sig_rows[] = [$fqsen, 'prop', $class_fqsen_str, $prop->getName(), $prop->getUnionType()->__toString(), $prop->isStatic() ? 1 : 0, $prop->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            }
+
+            foreach ($code_base->getClassConstantMapByFullyQualifiedClassName($class_fqsen) as $const) {
+                if ($const->isPHPInternal()) {
+                    continue;
+                }
+                $fqsen = $const->getFQSEN()->__toString();
+                $file_ref = $const->getFileRef();
+                $sig_rows[] = [$fqsen, 'const', $class_fqsen_str, $const->getName(), $const->getUnionType()->__toString(), 0, $const->getVisibilityName(), $file_ref->getProjectRelativePath(), $file_ref->getLineNumberStart()];
+            }
+        }
+
+        // Sort by PK (fqsen, kind) and (fqsen, idx) for optimal insert performance.
+        // sort() compares arrays element-by-element, so element [0] (fqsen) then [1] (kind/idx).
+        sort($sig_rows);
+        sort($param_rows);
+
+        if (!self::$db->exec('BEGIN')) {
+            throw new Exception("Failed to begin transaction for signatures");
+        }
+
+        try {
+            self::bulkInsertSignatures($sig_rows);
+            self::bulkInsertParameters($param_rows);
+
+            if (!self::$db->exec('COMMIT')) {
+                throw new Exception("Failed to commit signatures transaction");
+            }
+        } catch (\Throwable $e) {
+            self::$db->exec('ROLLBACK');
+            throw $e;
+        }
+    }
+
+    // signatures has 9 columns
+    private const SIGNATURES_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 9;
+    // parameters has 8 columns
+    private const PARAMETERS_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 8;
+
+    /**
+     * @param list<array{string,string,?string,string,string,int,?string,string,int}> $rows
+     * @throws Exception
+     */
+    private static function bulkInsertSignatures(array $rows): void
+    {
+        $total = count($rows);
+        if ($total === 0) {
+            return;
+        }
+        $batch_size = (int) min(self::SIGNATURES_BULK_INSERT_SIZE, $total);
+        $offset = 0;
+        $stmt = self::prepareSignaturesBulkInsert($batch_size);
+
+        while ($offset < $total) {
+            $remaining = $total - $offset;
+            if ($remaining < $batch_size) {
+                $stmt = self::prepareSignaturesBulkInsert($remaining);
+                $batch_size = $remaining;
+            }
+
+            $bind_index = 1;
+            for ($i = $offset; $i < $offset + $batch_size; $i++) {
+                $row = $rows[$i];
+                $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
+                $stmt->bindValue($bind_index++, $row[1], SQLITE3_TEXT); // kind
+                $stmt->bindValue($bind_index++, $row[2], $row[2] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // class_fqsen
+                $stmt->bindValue($bind_index++, $row[3], SQLITE3_TEXT); // name
+                $stmt->bindValue($bind_index++, $row[4], SQLITE3_TEXT); // type
+                $stmt->bindValue($bind_index++, $row[5], SQLITE3_INTEGER); // is_static
+                $stmt->bindValue($bind_index++, $row[6], $row[6] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // visibility
+                $stmt->bindValue($bind_index++, $row[7], SQLITE3_TEXT); // filepath
+                $stmt->bindValue($bind_index++, $row[8], SQLITE3_INTEGER); // lineno
+            }
+            self::execStatement($stmt);
+            $offset += $batch_size;
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function prepareSignaturesBulkInsert(int $count): SQLite3Stmt
+    {
+        $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?, ?), ', $count);
+        $sql = "INSERT OR IGNORE INTO signatures (fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno) VALUES " .
+            rtrim($placeholders, ', ');
+        $stmt = self::$db->prepare($sql);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare signatures bulk insert statement");
+        }
+        return $stmt;
+    }
+
+    /**
+     * @param list<array{string,int,string,string,int,int,int,?string}> $rows
+     * @throws Exception
+     */
+    private static function bulkInsertParameters(array $rows): void
+    {
+        $total = count($rows);
+        if ($total === 0) {
+            return;
+        }
+        $batch_size = (int) min(self::PARAMETERS_BULK_INSERT_SIZE, $total);
+        $offset = 0;
+        $stmt = self::prepareParametersBulkInsert($batch_size);
+
+        while ($offset < $total) {
+            $remaining = $total - $offset;
+            if ($remaining < $batch_size) {
+                $stmt = self::prepareParametersBulkInsert($remaining);
+                $batch_size = $remaining;
+            }
+
+            $bind_index = 1;
+            for ($i = $offset; $i < $offset + $batch_size; $i++) {
+                $row = $rows[$i];
+                $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
+                $stmt->bindValue($bind_index++, $row[1], SQLITE3_INTEGER); // idx
+                $stmt->bindValue($bind_index++, $row[2], SQLITE3_TEXT); // name
+                $stmt->bindValue($bind_index++, $row[3], SQLITE3_TEXT); // type
+                $stmt->bindValue($bind_index++, $row[4], SQLITE3_INTEGER); // is_variadic
+                $stmt->bindValue($bind_index++, $row[5], SQLITE3_INTEGER); // is_reference
+                $stmt->bindValue($bind_index++, $row[6], SQLITE3_INTEGER); // is_optional
+                $stmt->bindValue($bind_index++, $row[7], $row[7] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // default_repr
+            }
+            self::execStatement($stmt);
+            $offset += $batch_size;
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private static function prepareParametersBulkInsert(int $count): SQLite3Stmt
+    {
+        $placeholders = str_repeat('(?, ?, ?, ?, ?, ?, ?, ?), ', $count);
+        $sql = "INSERT OR IGNORE INTO parameters (fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr) VALUES " .
+            rtrim($placeholders, ', ');
+        $stmt = self::$db->prepare($sql);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare parameters bulk insert statement");
+        }
+        return $stmt;
+    }
+
+    /**
+     * Collect parameter data into rows array for bulk insertion.
+     * @param list<array{string,int,string,string,int,int,int,?string}> &$rows
+     * @param string $fqsen
+     * @param list<\Phan\Language\Element\Parameter> $parameters
+     */
+    private static function collectParameters(array &$rows, string $fqsen, array $parameters): void
+    {
+        foreach ($parameters as $idx => $param) {
+            $default = null;
+            if ($param->hasDefaultValue() && !$param->isVariadic()) {
+                $default_value = $param->getDefaultValue();
+                if ($default_value instanceof \ast\Node) {
+                    $default = \Phan\AST\ASTReverter::toShortString($default_value);
+                    if (\strlen($default) > 50) {
+                        $default = \substr($default, 0, 47) . '...';
+                    }
+                } else {
+                    $default = \Phan\Library\StringUtil::varExportPretty($default_value);
+                    if (\strlen($default) > 50) {
+                        $default = \substr($default, 0, 47) . '...';
+                    }
+                }
+            }
+            $rows[] = [
+                $fqsen,
+                $idx,
+                $param->getName(),
+                $param->getUnionType()->__toString(),
+                $param->isVariadic() ? 1 : 0,
+                $param->isPassByReference() ? 1 : 0,
+                $param->isOptional() ? 1 : 0,
+                $default,
+            ];
+        }
     }
 
 }
@@ -953,12 +1230,11 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      * Some plugins using this, such as UnusedSuppressionPlugin,
      * will not work as expected with more than one process.
      * If possible, write plugins to emit issues immediately.
-     * @unused-param $code_base
      * @throws Exception
      */
     public function finalizeProcess(CodeBase $code_base): void
     {
-        PhoundVisitor::finalizeProcess();
+        PhoundVisitor::finalizeProcess($code_base);
     }
 
 }
