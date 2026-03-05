@@ -1,5 +1,28 @@
 ## Phan NEWS
 
+Mar 5 2026, Phan 6.0.2
+--------------
+New features:
+- Add class, interface, and trait hierarchy tables to PhoundPlugin's SQLite database ([#5443](https://github.com/phan/phan/pull/5443), [#5460](https://github.com/phan/phan/pull/5460))
+- Add function/method signatures and parameter tables to PhoundPlugin's SQLite database ([#5458](https://github.com/phan/phan/pull/5458))
+- Improve type narrowing for comparisons with `0` and `''` — infer `positive-int`/`negative-int` for ordering comparisons, and `non-zero-int`/`non-empty-string` for inequality comparisons ([#5452](https://github.com/phan/phan/issues/5452))
+- Add `Phan-Agents.md` guidance document for coding agents ([#5461](https://github.com/phan/phan/pull/5461))
+
+Bug fixes:
+- Fixed false `PhanRedundantValueComparison` when real type resolution returns no types ([#5422](https://github.com/phan/phan/issues/5422))
+- Fixed false `PhanPossiblyUndeclaredMethod`/`PhanPossiblyNonClassMethodCall` from wider union type assignments to typed properties ([#5440](https://github.com/phan/phan/issues/5440))
+- Fixed false `PhanRedundantCondition`/`PhanCoalescingNeverNull` for `isset()` and `??` on `ArrayAccess` objects ([#5441](https://github.com/phan/phan/issues/5441))
+- Fixed `InvalidFQSENException` crash on method calls on `non-empty-mixed` typed variables ([#5442](https://github.com/phan/phan/issues/5442))
+- Fixed false `PhanTypePossiblyInvalidDimOffset` warnings when accessing keys on `mixed`-typed variables with inferred array shapes ([#5444](https://github.com/phan/phan/issues/5444))
+- Fixed false `PhanTypePossiblyInvalidDimOffset` when `array<string,mixed>` or `array<int,mixed>` is in the union type ([#5455](https://github.com/phan/phan/issues/5455))
+- Fixed `get_class()` return type to erase template parameters from `class-string<>` ([#5454](https://github.com/phan/phan/issues/5454))
+- Fixed false `PhanUnreferencedUseNormal` when class references (`A::class`, `A::CONST`) appear in large arrays subject to literal array summarization ([#5462](https://github.com/phan/phan/issues/5462))
+- Fixed nullsafe method call type inference losing nullability when it comes from PHPDoc annotations ([#5463](https://github.com/phan/phan/issues/5463))
+- Fixed Xdebug restart handler for PHP 8.4+ where `proc_open` no longer passes file descriptors ([#5464](https://github.com/phan/phan/pull/5464))
+
+Miscellaneous:
+- Replace `felixfbecker/advanced-json-rpc` with `danog/advanced-json-rpc`, allow `sabre/event` 6.0 ([#5450](https://github.com/phan/phan/pull/5450))
+
 Feb 7 2026, Phan 6.0.1
 --------------
 New features:
