@@ -72,7 +72,7 @@ class Restarter extends XdebugHandler
      * @param list<string> $command
      * @override
      */
-    protected function restart($command): void
+    protected function restart($command): never
     {
         // @phan-suppress-next-line PhanSuspiciousTruthyString
         if ($this->required && $this->tmpIni) {
@@ -87,6 +87,34 @@ class Restarter extends XdebugHandler
             file_put_contents($this->tmpIni, $content);
         }
 
-        parent::restart($command);
+        // Reimplement process launching instead of calling parent::restart()
+        // because XdebugHandler::doRestart() uses proc_open($cmd, [], $pipes)
+        // which does not pass file descriptors to the child process on PHP 8.4+,
+        // resulting in STDERR being invalid (errno=9 EBADF) in the restarted process.
+        $displayCmd = \sprintf('[%s]', implode(', ', $command));
+        // @phan-suppress-next-line PhanPluginRemoveDebugCall
+        \fprintf(\STDERR, "[debug] Running: %s" . \PHP_EOL, $displayCmd);
+
+        $process = \proc_open($command, [
+            0 => \STDIN,
+            1 => \STDOUT,
+            2 => \STDERR,
+        ], $pipes);
+
+        if (\is_resource($process)) {
+            $exitCode = \proc_close($process);
+        }
+
+        if (!isset($exitCode)) {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
+            \fwrite(\STDERR, "[debug] Unable to restart process" . \PHP_EOL);
+            $exitCode = -1;
+        } else {
+            // @phan-suppress-next-line PhanPluginRemoveDebugCall
+            \fprintf(\STDERR, "[debug] Restarted process exited %d" . \PHP_EOL, $exitCode);
+        }
+
+        @\unlink((string) $this->tmpIni);
+        exit($exitCode);
     }
 }
