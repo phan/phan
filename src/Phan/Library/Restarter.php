@@ -72,7 +72,7 @@ class Restarter extends XdebugHandler
      * @param list<string> $command
      * @override
      */
-    protected function restart($command): void
+    protected function restart($command): never
     {
         // @phan-suppress-next-line PhanSuspiciousTruthyString
         if ($this->required && $this->tmpIni) {
@@ -107,7 +107,7 @@ class Restarter extends XdebugHandler
 
         if (!isset($exitCode)) {
             // @phan-suppress-next-line PhanPluginRemoveDebugCall
-            \fprintf(\STDERR, "[debug] Unable to restart process" . \PHP_EOL);
+            \fwrite(\STDERR, "[debug] Unable to restart process" . \PHP_EOL);
             $exitCode = -1;
         } else {
             // @phan-suppress-next-line PhanPluginRemoveDebugCall
