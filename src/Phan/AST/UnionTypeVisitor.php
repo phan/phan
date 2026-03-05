@@ -3497,7 +3497,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node->children['expr'],
             $this->should_catch_issue_exception
-        )->getRealUnionType();
+        );
         $result = $this->visitMethodCall($node);
         if ($result->isEmpty()) {
             return $result->nullableClone();
