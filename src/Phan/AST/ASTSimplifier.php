@@ -461,7 +461,37 @@ class ASTSimplifier
         if (!self::isExpressionWithoutSideEffects($element->children['key'] ?? null)) {
             return true;
         }
-        return !self::isExpressionWithoutSideEffects($element->children['value'] ?? null);
+        if (!self::isExpressionWithoutSideEffects($element->children['value'] ?? null)) {
+            return true;
+        }
+        // Preserve elements containing class name references (e.g. A::class, A::CONST)
+        // to avoid false PhanUnreferencedUseNormal warnings when arrays are trimmed.
+        return self::expressionHasClassReference($element->children['key'] ?? null)
+            || self::expressionHasClassReference($element->children['value'] ?? null);
+    }
+
+    /**
+     * Check if an expression contains a class name or class constant reference
+     * that needs to be preserved for use-tracking purposes.
+     * @param Node|string|float|int|null $node
+     */
+    private static function expressionHasClassReference(Node|float|int|string|null $node): bool
+    {
+        if (!($node instanceof Node)) {
+            return false;
+        }
+        switch ($node->kind) {
+            case ast\AST_CLASS_NAME:
+            case ast\AST_CLASS_CONST:
+                return true;
+            case ast\AST_UNARY_OP:
+                return self::expressionHasClassReference($node->children['expr']);
+            case ast\AST_BINARY_OP:
+                return self::expressionHasClassReference($node->children['left'])
+                    || self::expressionHasClassReference($node->children['right']);
+            default:
+                return false;
+        }
     }
 
     private static function arrayHasPossibleSideEffects(Node $array_node): bool
