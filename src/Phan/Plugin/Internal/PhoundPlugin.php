@@ -940,10 +940,10 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    // signatures has 9 columns: floor(32766 / 9) = 3640
-    private const SIGNATURES_BULK_INSERT_SIZE = 3640;
-    // parameters has 8 columns: floor(32766 / 8) = 4095
-    private const PARAMETERS_BULK_INSERT_SIZE = 4095;
+    // signatures has 9 columns
+    private const SIGNATURES_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 9;
+    // parameters has 8 columns
+    private const PARAMETERS_BULK_INSERT_SIZE = self::MAX_SQLITE_VARIABLES / 8;
 
     /**
      * @param list<array{string,string,?string,string,string,int,?string,string,int}> $rows
@@ -955,18 +955,19 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if ($total === 0) {
             return;
         }
-        $batch_size = self::SIGNATURES_BULK_INSERT_SIZE;
+        $batch_size = (int) min(self::SIGNATURES_BULK_INSERT_SIZE, $total);
         $offset = 0;
         $stmt = self::prepareSignaturesBulkInsert($batch_size);
 
         while ($offset < $total) {
-            $chunk_size = min($batch_size, $total - $offset);
-            if ($chunk_size < $batch_size) {
-                $stmt = self::prepareSignaturesBulkInsert($chunk_size);
+            $remaining = $total - $offset;
+            if ($remaining < $batch_size) {
+                $stmt = self::prepareSignaturesBulkInsert($remaining);
+                $batch_size = $remaining;
             }
 
             $bind_index = 1;
-            for ($i = $offset; $i < $offset + $chunk_size; $i++) {
+            for ($i = $offset; $i < $offset + $batch_size; $i++) {
                 $row = $rows[$i];
                 $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
                 $stmt->bindValue($bind_index++, $row[1], SQLITE3_TEXT); // kind
@@ -979,7 +980,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $stmt->bindValue($bind_index++, $row[8], SQLITE3_INTEGER); // lineno
             }
             self::execStatement($stmt);
-            $offset += $chunk_size;
+            $offset += $batch_size;
         }
     }
 
@@ -1008,18 +1009,19 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
         if ($total === 0) {
             return;
         }
-        $batch_size = self::PARAMETERS_BULK_INSERT_SIZE;
+        $batch_size = (int) min(self::PARAMETERS_BULK_INSERT_SIZE, $total);
         $offset = 0;
         $stmt = self::prepareParametersBulkInsert($batch_size);
 
         while ($offset < $total) {
-            $chunk_size = min($batch_size, $total - $offset);
-            if ($chunk_size < $batch_size) {
-                $stmt = self::prepareParametersBulkInsert($chunk_size);
+            $remaining = $total - $offset;
+            if ($remaining < $batch_size) {
+                $stmt = self::prepareParametersBulkInsert($remaining);
+                $batch_size = $remaining;
             }
 
             $bind_index = 1;
-            for ($i = $offset; $i < $offset + $chunk_size; $i++) {
+            for ($i = $offset; $i < $offset + $batch_size; $i++) {
                 $row = $rows[$i];
                 $stmt->bindValue($bind_index++, $row[0], SQLITE3_TEXT); // fqsen
                 $stmt->bindValue($bind_index++, $row[1], SQLITE3_INTEGER); // idx
@@ -1031,7 +1033,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 $stmt->bindValue($bind_index++, $row[7], $row[7] !== null ? SQLITE3_TEXT : SQLITE3_NULL); // default_repr
             }
             self::execStatement($stmt);
-            $offset += $chunk_size;
+            $offset += $batch_size;
         }
     }
 
@@ -1069,6 +1071,9 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                     }
                 } else {
                     $default = \Phan\Library\StringUtil::varExportPretty($default_value);
+                    if (\strlen($default) > 50) {
+                        $default = \substr($default, 0, 47) . '...';
+                    }
                 }
             }
             $rows[] = [
