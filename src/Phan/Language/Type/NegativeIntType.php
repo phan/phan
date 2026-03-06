@@ -42,7 +42,7 @@ final class NegativeIntType extends IntType
             $upper = $type->getUpperBound();
             return $upper === null || $upper < 0;
         }
-        if ($type instanceof NonZeroIntType || $type instanceof IntType) {
+        if ($type instanceof NonZeroIntType || $type instanceof IntType || $type instanceof FloatType) {
             return true;
         }
         return parent::canCastToNonNullableType($type, $code_base);
@@ -58,7 +58,7 @@ final class NegativeIntType extends IntType
             $upper = $type->getUpperBound();
             return $upper === null || $upper < 0;
         }
-        if ($type instanceof NonZeroIntType || $type instanceof IntType) {
+        if ($type instanceof NonZeroIntType || $type instanceof IntType || $type instanceof FloatType) {
             return true;
         }
         return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);

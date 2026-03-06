@@ -1,0 +1,2 @@
+%s:24 PhanTypeMismatchArgument Argument 1 ($x) is $b of type positive-int but \takesString() takes string defined at %s:7
+%s:28 PhanTypeMismatchArgument Argument 1 ($x) is $c of type negative-int but \takesString() takes string defined at %s:7
