@@ -12581,7 +12581,7 @@ return [
 'enchant_dict_store_replacement' => ['void', 'dictionary'=>'EnchantDictionary', 'misspelled'=>'string', 'correct'=>'string'],
 'enchant_dict_suggest' => ['array', 'dictionary'=>'EnchantDictionary', 'word'=>'string'],
 'end' => ['mixed|false', '&r_array'=>'array|object'],
-'enum_exists' => ['bool'],
+'enum_exists' => ['bool', 'enum'=>'string', 'autoload='=>'bool'],
 'error_clear_last' => ['void'],
 'error_get_last' => ['?array{type:int,message:string,file:string,line:int}'],
 'error_log' => ['bool', 'message'=>'string', 'message_type='=>'int', 'destination='=>'string', 'additional_headers='=>'string'],
