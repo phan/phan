@@ -1,5 +1,10 @@
 ## Phan NEWS
 
+Phan 6.0.3-dev
+--------------
+Bug fixes:
+- Fix false positive `PhanTypeMismatchArgument` when passing `positive-int` or `negative-int` to a `float` parameter ([#5467](https://github.com/phan/phan/issues/5467))
+
 Mar 5 2026, Phan 6.0.2
 --------------
 New features:
