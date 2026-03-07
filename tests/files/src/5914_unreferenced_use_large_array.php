@@ -4,19 +4,24 @@ namespace NS5914;
 class A5914 { const X = 1; }
 class B5914 { const X = 2; }
 class C5914 { const X = 3; }
+class D5914 { const X = 4; }
 
 namespace NS5914\Test;
 
 use NS5914\A5914;
 use NS5914\B5914;
 use NS5914\C5914;
+use NS5914\D5914;
 
 // Class references at non-first positions in inner arrays should not
 // be lost when the outer array triggers large-literal-array trimming.
 // See https://github.com/phan/phan/issues/5462
+//
+// D5914 is referenced only inside a deeply nested sub-array to verify
+// that expressionHasClassReference recurses into AST_ARRAY/AST_ARRAY_ELEM.
 $arr = [
     ['x' => 'x', 'a' => A5914::class, 'b' => B5914::class, 'c' => C5914::X],
-    ['x' => 'val_2'],
+    ['x' => ['a' => 1, 'b' => 2, 'c' => ['d' => 3, 'e' => [D5914::X => 'val']]]],
     ['x' => 'val_3'],
     ['x' => 'val_4'],
     ['x' => 'val_5'],
