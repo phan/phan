@@ -3234,6 +3234,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 }
                 return true;
             case ast\AST_PROP:
+            case ast\AST_STATIC_PROP:
             case ast\AST_DIM:
                 return false;
             default:

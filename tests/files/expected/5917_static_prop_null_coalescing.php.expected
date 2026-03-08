@@ -1,0 +1,1 @@
+%s:20 PhanCoalescingNeverNull Using non-null self::$count of type int as the left hand side of a null coalescing (??) operation. The right hand side may be unnecessary.
