@@ -1014,6 +1014,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 return $this->removeTypesNotSupportingAccessFromVariable($expr, $context, ConditionVisitor::ACCESS_IS_OBJECT);
             }
             return $context;
+        } elseif ($var_node->kind === ast\AST_STATIC_PROP) {
+            // e.g. !empty(self::$prop) means the property is non-falsey
+            return $this->removeFalseyFromVariable($var_node, $context, true);
         } else {
             $context = $this->checkComplexNegatedEmpty($var_node);
         }
