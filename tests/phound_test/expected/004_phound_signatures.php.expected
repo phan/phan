@@ -51,6 +51,15 @@
 \Cat::__construct	method	\Cat	__construct	\Cat	0	public	src/002_phound_override_return_types.php	5
 \Cat::class	const	\Cat	class	'Cat'	0	public	src/002_phound_override_return_types.php	5
 \Cat::shedFur	method	\Cat	shedFur		0	public	src/002_phound_override_return_types.php	6
+\Chain005::__construct	method	\Chain005	__construct	\Chain005	0	public	src/005_phound_missed_callsites.php	21
+\Chain005::class	const	\Chain005	class	'Chain005'	0	public	src/005_phound_missed_callsites.php	21
+\Chain005::end	method	\Chain005	end	void	0	public	src/005_phound_missed_callsites.php	23
+\Chain005::next	method	\Chain005	next	\Chain005|static	0	public	src/005_phound_missed_callsites.php	22
+\Child005::class	const	\Child005	class	'Child005'	0	public	src/005_phound_missed_callsites.php	30
+\Child005::ownMethod	method	\Child005	ownMethod	void	0	public	src/005_phound_missed_callsites.php	38
+\Child005::parentMethod	method	\Child005	parentMethod	void	0	public	src/005_phound_missed_callsites.php	27
+\Child005::selfMethod	method	\Child005	selfMethod	void	1	public	src/005_phound_missed_callsites.php	37
+\Child005::test	method	\Child005	test	void	0	public	src/005_phound_missed_callsites.php	31
 \CommercialVehicleInterface::class	const	\CommercialVehicleInterface	class	'CommercialVehicleInterface'	0	public	src/003_phound_hierarchy.php	33
 \CommercialVehicleInterface::drive	method	\CommercialVehicleInterface	drive	void	0	public	src/003_phound_hierarchy.php	20
 \CommercialVehicleInterface::isOperational	method	\CommercialVehicleInterface	isOperational	bool	0	public	src/003_phound_hierarchy.php	5
@@ -177,6 +186,8 @@
 \MovableTrait::speed	prop	\MovableTrait	speed	int	0	protected	src/003_phound_hierarchy.php	41
 \OperationalInterface::class	const	\OperationalInterface	class	'OperationalInterface'	0	public	src/003_phound_hierarchy.php	3
 \OperationalInterface::isOperational	method	\OperationalInterface	isOperational	bool	0	public	src/003_phound_hierarchy.php	5
+\Parent005::class	const	\Parent005	class	'Parent005'	0	public	src/005_phound_missed_callsites.php	26
+\Parent005::parentMethod	method	\Parent005	parentMethod	void	0	public	src/005_phound_missed_callsites.php	27
 \PersonalVehicleInterface::class	const	\PersonalVehicleInterface	class	'PersonalVehicleInterface'	0	public	src/003_phound_hierarchy.php	28
 \PersonalVehicleInterface::isOperational	method	\PersonalVehicleInterface	isOperational	bool	0	public	src/003_phound_hierarchy.php	5
 \PersonalVehicleInterface::move	method	\PersonalVehicleInterface	move	void	0	public	src/003_phound_hierarchy.php	10
@@ -215,6 +226,17 @@
 \SailingTrait::sail	method	\SailingTrait	sail	void	0	public	src/003_phound_hierarchy.php	93
 \SailingTrait::setSpeed	method	\SailingTrait	setSpeed	void	0	public	src/003_phound_hierarchy.php	45
 \SailingTrait::speed	prop	\SailingTrait	speed	int	0	protected	src/003_phound_hierarchy.php	41
+\Target005::__construct	method	\Target005	__construct	\Target005	0	public	src/005_phound_missed_callsites.php	5
+\Target005::class	const	\Target005	class	'Target005'	0	public	src/005_phound_missed_callsites.php	5
+\Target005::filter	method	\Target005	filter	bool|true	0	public	src/005_phound_missed_callsites.php	9
+\Target005::method	method	\Target005	method	void	0	public	src/005_phound_missed_callsites.php	6
+\Target005::prop	prop	\Target005	prop	int	0	public	src/005_phound_missed_callsites.php	8
+\Target005::replace	method	\Target005	replace	''|string	0	public	src/005_phound_missed_callsites.php	10
+\Target005::staticMethod	method	\Target005	staticMethod	void	1	public	src/005_phound_missed_callsites.php	7
+\TargetImpl005::class	const	\TargetImpl005	class	'TargetImpl005'	0	public	src/005_phound_missed_callsites.php	17
+\TargetImpl005::method	method	\TargetImpl005	method	void	0	public	src/005_phound_missed_callsites.php	18
+\TargetInterface005::class	const	\TargetInterface005	class	'TargetInterface005'	0	public	src/005_phound_missed_callsites.php	13
+\TargetInterface005::method	method	\TargetInterface005	method	void	0	public	src/005_phound_missed_callsites.php	14
 \Taxi::__construct	method	\Taxi	__construct	void	0	public	src/003_phound_hierarchy.php	137
 \Taxi::class	const	\Taxi	class	'Taxi'	0	public	src/003_phound_hierarchy.php	135
 \Taxi::clutchEngaged	prop	\Taxi	clutchEngaged	bool	0	protected	src/003_phound_hierarchy.php	69
@@ -281,9 +303,15 @@
 \anonymous_class_3022f2ed::toggleClutch	method	\anonymous_class_3022f2ed	toggleClutch	void	0	public	src/003_phound_hierarchy.php	73
 \anonymous_class_3022f2ed::toggleMotor	method	\anonymous_class_3022f2ed	toggleMotor	void	0	public	src/003_phound_hierarchy.php	70
 \anonymous_class_3022f2ed::type	prop	\anonymous_class_3022f2ed	type	string	0	protected	src/003_phound_hierarchy.php	181
+\closure_2783a184a74b	function		{closure}	int	0		src/005_phound_missed_callsites.php	99
+\closure_9510cc481f5c	function		{closure}	void	0		src/005_phound_missed_callsites.php	46
+\closure_b939854a7d43	function		{closure}	void	0		src/005_phound_missed_callsites.php	95
+\closure_bf692bc6d6f6	function		{closure}	void	0		src/005_phound_missed_callsites.php	49
 \func_with_defaults	function		func_with_defaults	void	0		src/001_phound_callsites.php	103
 \func_with_variadic	function		func_with_variadic	void	0		src/001_phound_callsites.php	104
 \func_with_variadic_and_default	function		func_with_variadic_and_default	void	0		src/001_phound_callsites.php	105
+\myGen005	function		myGen005	\Generator	0		src/005_phound_missed_callsites.php	52
+\testInterface005	function		testInterface005	void	0		src/005_phound_missed_callsites.php	81
 \yo	function		yo	void	0		src/001_phound_callsites.php	64
 <-----------> Parameters <----------->
 \Car::__construct	0	model	string	0	0	0	
@@ -328,6 +356,7 @@
 \SailingTrait::move	0	distance	int	0	0	0	
 \SailingTrait::sail	0	distance	int	0	0	0	
 \SailingTrait::setSpeed	0	speed	int	0	0	0	
+\Target005::replace	0	matches	array	0	0	0	
 \Taxi::drive	0	distance	int	0	0	0	
 \Taxi::move	0	distance	int	0	0	0	
 \Taxi::radio	0	station	?float	0	0	0	
@@ -342,6 +371,9 @@
 \anonymous_class_3022f2ed::drive	0	distance	int	0	0	0	
 \anonymous_class_3022f2ed::move	0	distance	int	0	0	0	
 \anonymous_class_3022f2ed::setSpeed	0	speed	int	0	0	0	
+\closure_2783a184a74b	0	a	\Target005	0	0	0	
+\closure_2783a184a74b	1	b	\Target005	0	0	0	
+\closure_b939854a7d43	0	item	\Target005	0	0	0	
 \func_with_defaults	0	x	int	0	0	1	42
 \func_with_defaults	1	name	string	0	0	1	'hello'
 \func_with_defaults	2	items	?array	0	0	1	null
@@ -350,3 +382,5 @@
 \func_with_variadic	1	rest	string[]	1	0	1	
 \func_with_variadic_and_default	0	count	int	0	0	1	10
 \func_with_variadic_and_default	1	items	string[]	1	0	1	
+\myGen005	0	t	\Target005	0	0	0	
+\testInterface005	0	i	\TargetInterface005	0	0	0	

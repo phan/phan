@@ -1161,63 +1161,47 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
         };
 
         /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
+         * Factory for higher-order function handlers where the callable is at a specific arg index.
          */
-        $call_user_func_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) < 1) {
-                return;
-            }
-            $generic_callback($code_base, $context, $args);
-        };
-
-        /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
-         */
-        $call_user_func_array_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) < 2) {
-                return;
-            }
-            $generic_callback($code_base, $context, $args);
-        };
-
-        /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
-         */
-        $from_callable_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) !== 1) {
-                return;
-            }
-
-            $generic_callback($code_base, $context, $args);
+        $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): Closure {
+            /**
+             * @param list<Node|int|string|float> $args
+             * @throws Exception
+             */
+            return static function (
+                CodeBase $code_base,
+                Context $context,
+                FunctionInterface $unused_function,
+                array $args,
+                ?Node $_
+            ) use ($generic_callback, $callable_arg_idx, $min_args): void {
+                if (\count($args) < $min_args || !\array_key_exists($callable_arg_idx, $args)) {
+                    return;
+                }
+                $generic_callback($code_base, $context, [$args[$callable_arg_idx]]);
+            };
         };
 
         return [
-            'call_user_func'            => $call_user_func_callback,
-            'forward_static_call'       => $call_user_func_callback,
-            'call_user_func_array'      => $call_user_func_array_callback,
-            'forward_static_call_array' => $call_user_func_array_callback,
-            'Closure::fromCallable'     => $from_callable_callback,
+            // call_user_func family: callable at arg 0
+            'call_user_func'            => $make_hof_callback(0, 1),
+            'forward_static_call'       => $make_hof_callback(0, 1),
+            'call_user_func_array'      => $make_hof_callback(0, 2),
+            'forward_static_call_array' => $make_hof_callback(0, 2),
+            'Closure::fromCallable'     => $make_hof_callback(0, 1),
+
+            // Higher-order functions: callable at arg 0
+            'array_map'               => $make_hof_callback(0, 2),
+
+            // Higher-order functions: callable at arg 1
+            'array_filter'            => $make_hof_callback(1, 2),
+            'array_reduce'            => $make_hof_callback(1, 2),
+            'array_walk'              => $make_hof_callback(1, 2),
+            'array_walk_recursive'    => $make_hof_callback(1, 2),
+            'usort'                   => $make_hof_callback(1, 2),
+            'uasort'                  => $make_hof_callback(1, 2),
+            'uksort'                  => $make_hof_callback(1, 2),
+            'preg_replace_callback'   => $make_hof_callback(1, 3),
         ];
     }
 

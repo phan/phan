@@ -25,6 +25,35 @@
 \Vehicle::__construct|method|src/003_phound_hierarchy.php:169
 \MotorBoat::setSpeed|method|src/003_phound_hierarchy.php:170
 \anonymous_class_3022f2ed::__construct|method|src/003_phound_hierarchy.php:178
+\Parent005::parentMethod|method|src/005_phound_missed_callsites.php:32
+\Child005::selfMethod|method|src/005_phound_missed_callsites.php:33
+\Child005::selfMethod|method|src/005_phound_missed_callsites.php:34
+\Child005::ownMethod|method|src/005_phound_missed_callsites.php:35
+\Target005::__construct|method|src/005_phound_missed_callsites.php:43
+\Target005::method|method|src/005_phound_missed_callsites.php:46
+\Target005::method|method|src/005_phound_missed_callsites.php:49
+\Target005::method|method|src/005_phound_missed_callsites.php:53
+\Target005::method|method|src/005_phound_missed_callsites.php:58
+\Target005::method|method|src/005_phound_missed_callsites.php:62
+\Target005::method|method|src/005_phound_missed_callsites.php:65
+\Target005::method|method|src/005_phound_missed_callsites.php:68
+\Chain005::__construct|method|src/005_phound_missed_callsites.php:72
+\Chain005::end|method|src/005_phound_missed_callsites.php:73
+\Chain005::next|method|src/005_phound_missed_callsites.php:73
+\Target005::method|method|src/005_phound_missed_callsites.php:76
+\TargetInterface005::method|method|src/005_phound_missed_callsites.php:82
+\Target005::method|method|src/005_phound_missed_callsites.php:87
+\Target005::__construct|method|src/005_phound_missed_callsites.php:91
+\Target005::method|method|src/005_phound_missed_callsites.php:91
+\Target005::__construct|method|src/005_phound_missed_callsites.php:94
+\Target005::method|method|src/005_phound_missed_callsites.php:95
+\Target005::__construct|method|src/005_phound_missed_callsites.php:98
+\Target005::prop|prop|src/005_phound_missed_callsites.php:99
+\Target005::__construct|method|src/005_phound_missed_callsites.php:103
+\Target005::method|method|src/005_phound_missed_callsites.php:107
+\Target005::method|method|src/005_phound_missed_callsites.php:111
+\Target005::filter|method|src/005_phound_missed_callsites.php:114
+\Target005::replace|method|src/005_phound_missed_callsites.php:117
 <-----------> Classes <----------->
 \A|src/001_phound_callsites.php
 \B|src/001_phound_callsites.php
@@ -47,6 +76,11 @@
 \Taxi|src/003_phound_hierarchy.php
 \Vehicle|src/003_phound_hierarchy.php
 \anonymous_class_3022f2ed|src/003_phound_hierarchy.php
+\Chain005|src/005_phound_missed_callsites.php
+\Child005|src/005_phound_missed_callsites.php
+\Parent005|src/005_phound_missed_callsites.php
+\Target005|src/005_phound_missed_callsites.php
+\TargetImpl005|src/005_phound_missed_callsites.php
 <-----------> Class Interfaces <----------->
 \Car|\MotorizedInterface
 \Car|\OperationalInterface
@@ -68,6 +102,7 @@
 \SailBoat|\OperationalInterface
 \SailBoat|\SailableInterface
 \SailBoat|\VehicleInterface
+\TargetImpl005|\TargetInterface005
 \Taxi|\CommercialVehicleInterface
 \Taxi|\MotorizedInterface
 \Taxi|\OperationalInterface
@@ -87,6 +122,7 @@
 \DeepHierarchy\Root|\DeepHierarchy\Child
 \DeepHierarchy\Root|\DeepHierarchy\Grandchild
 \DeepHierarchy\Root|\DeepHierarchy\GreatGrandchild
+\Parent005|\Child005
 \TestConstructor|\TestConstructor2
 \Vehicle|\Car
 \Vehicle|\MotorBoat
@@ -134,6 +170,7 @@
 \PersonalVehicleInterface|src/003_phound_hierarchy.php
 \SailableInterface|src/003_phound_hierarchy.php
 \VehicleInterface|src/003_phound_hierarchy.php
+\TargetInterface005|src/005_phound_missed_callsites.php
 <-----------> Interface Relationships <----------->
 \DeepHierarchy\I1|\DeepHierarchy\I2
 \DeepHierarchy\I1|\DeepHierarchy\I3
