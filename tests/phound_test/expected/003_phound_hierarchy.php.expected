@@ -43,7 +43,7 @@
 \Target005::method|method|src/005_phound_missed_callsites.php:74
 \TargetInterface005::method|method|src/005_phound_missed_callsites.php:80
 \Target005::method|method|src/005_phound_missed_callsites.php:85
-\Target005::__construct|method|src/005_phound_missed_callsites.php:88
+\Target005::__construct|method|src/005_phound_missed_callsites.php:89
 \Target005::method|method|src/005_phound_missed_callsites.php:89
 \Target005::__construct|method|src/005_phound_missed_callsites.php:92
 \Target005::method|method|src/005_phound_missed_callsites.php:93

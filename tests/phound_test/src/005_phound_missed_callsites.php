@@ -84,9 +84,9 @@ function testInterface005(TargetInterface005 $i): void {
 $flag = true;
 $_ = $flag ? $t->method() : null;
 
-// A11: Method call in null-coalescing (via short ternary-like expression)
-$obj = new Target005;
-$obj->method();
+// A11: Method call on result of null-coalescing expression
+$obj = null;
+($obj ?? new Target005())->method();
 
 // A12: Method call inside array_map arrow function (inner call should be captured)
 $arr = [new Target005];
@@ -109,6 +109,6 @@ $callable();  // EXPECTED MISS: $callable() is AST_CALL
 $arr3 = [$t2];
 array_map([$t2, 'method'], $arr3);  // captured: \Target005::method
 
-// B3: call_user_func with variable method name — runtime-only
+// B3: call_user_func with literal variable method name — captured (Phan resolves the literal)
 $method_name = 'method';
-call_user_func([$t2, $method_name]);  // EXPECTED MISS: variable method name unresolvable
+call_user_func([$t2, $method_name]);  // captured: \Target005::method
