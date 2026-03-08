@@ -1175,7 +1175,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
                 array $args,
                 ?Node $_
             ) use ($generic_callback, $callable_arg_idx, $min_args): void {
-                if (\count($args) < $min_args || !isset($args[$callable_arg_idx])) {
+                if (\count($args) < $min_args || !\array_key_exists($callable_arg_idx, $args)) {
                     return;
                 }
                 $generic_callback($code_base, $context, [$args[$callable_arg_idx]]);

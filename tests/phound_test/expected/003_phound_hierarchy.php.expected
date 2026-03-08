@@ -50,10 +50,10 @@
 \Target005::__construct|method|src/005_phound_missed_callsites.php:98
 \Target005::prop|prop|src/005_phound_missed_callsites.php:99
 \Target005::__construct|method|src/005_phound_missed_callsites.php:103
-\Target005::method|method|src/005_phound_missed_callsites.php:112
-\Target005::method|method|src/005_phound_missed_callsites.php:116
-\Target005::filter|method|src/005_phound_missed_callsites.php:119
-\Target005::replace|method|src/005_phound_missed_callsites.php:122
+\Target005::method|method|src/005_phound_missed_callsites.php:107
+\Target005::method|method|src/005_phound_missed_callsites.php:111
+\Target005::filter|method|src/005_phound_missed_callsites.php:114
+\Target005::replace|method|src/005_phound_missed_callsites.php:117
 <-----------> Classes <----------->
 \A|src/001_phound_callsites.php
 \B|src/001_phound_callsites.php

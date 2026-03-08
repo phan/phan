@@ -98,16 +98,11 @@ array_map(fn(Target005 $item) => $item->method(), $arr);
 $arr2 = [new Target005, new Target005];
 usort($arr2, fn(Target005 $a, Target005 $b): int => (int)($a->prop - $b->prop));
 
-// GROUP B: Patterns EXPECTED to be missed (design limitations)
+// GROUP B: Captured via callable-argument handlers
 
 $t2 = new Target005;
 
-// B1: Variable callable invocation — stored in variable as array callable
-//     PhoundPlugin has no visitCall(), so AST_CALL is never visited
-$callable = [$t2, 'method'];
-$callable();  // EXPECTED MISS: $callable() is AST_CALL
-
-// B2: array_map with array callable syntax — NOW captured by HOF handler
+// B2: array_map with array callable at arg 0 — captured by HOF handler
 $arr3 = [$t2];
 array_map([$t2, 'method'], $arr3);  // captured: \Target005::method
 
@@ -120,3 +115,10 @@ array_filter([$t2], [$t2, 'filter']);  // captured: \Target005::filter
 
 // B5: preg_replace_callback with array callable at arg 1 — captured by HOF handler
 preg_replace_callback('/x/', [$t2, 'replace'], 'test');  // captured: \Target005::replace
+
+// GROUP C: Patterns EXPECTED to be missed (design limitations)
+
+// C1: Variable callable invocation — stored in variable as array callable
+//     PhoundPlugin has no visitCall(), so AST_CALL is never visited
+$callable = [$t2, 'method'];
+$callable();  // EXPECTED MISS: $callable() is AST_CALL
