@@ -1212,12 +1212,44 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
             $generic_callback($code_base, $context, $args);
         };
 
+        /**
+         * Factory for higher-order function handlers where the callable is at a specific arg index.
+         * Reuses $generic_callback which expects the callable at $args[0].
+         */
+        $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): \Closure {
+            return static function (
+                CodeBase $code_base,
+                Context $context,
+                FunctionInterface $unused_function,
+                array $args,
+                ?Node $_
+            ) use ($generic_callback, $callable_arg_idx, $min_args): void {
+                if (\count($args) < $min_args || !isset($args[$callable_arg_idx])) {
+                    return;
+                }
+                $generic_callback($code_base, $context, [$args[$callable_arg_idx]]);
+            };
+        };
+
         return [
             'call_user_func'            => $call_user_func_callback,
             'forward_static_call'       => $call_user_func_callback,
             'call_user_func_array'      => $call_user_func_array_callback,
             'forward_static_call_array' => $call_user_func_array_callback,
             'Closure::fromCallable'     => $from_callable_callback,
+
+            // Higher-order functions: callable at arg 0
+            'array_map'               => $make_hof_callback(0, 2),
+
+            // Higher-order functions: callable at arg 1
+            'array_filter'            => $make_hof_callback(1, 2),
+            'array_reduce'            => $make_hof_callback(1, 2),
+            'array_walk'              => $make_hof_callback(1, 2),
+            'array_walk_recursive'    => $make_hof_callback(1, 2),
+            'usort'                   => $make_hof_callback(1, 2),
+            'uasort'                  => $make_hof_callback(1, 2),
+            'uksort'                  => $make_hof_callback(1, 2),
+            'preg_replace_callback'   => $make_hof_callback(1, 3),
         ];
     }
 
