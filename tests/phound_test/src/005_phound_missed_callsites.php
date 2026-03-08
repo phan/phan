@@ -6,6 +6,8 @@ class Target005 {
     public function method(): void {}
     public static function staticMethod(): void {}
     public int $prop = 1;
+    public function filter(): bool { return true; }
+    public function replace(array $matches): string { return ''; }
 }
 
 interface TargetInterface005 {
@@ -112,3 +114,9 @@ array_map([$t2, 'method'], $arr3);  // captured: \Target005::method
 // B3: call_user_func with literal variable method name — captured (Phan resolves the literal)
 $method_name = 'method';
 call_user_func([$t2, $method_name]);  // captured: \Target005::method
+
+// B4: array_filter with array callable at arg 1 — captured by HOF handler
+array_filter([$t2], [$t2, 'filter']);  // captured: \Target005::filter
+
+// B5: preg_replace_callback with array callable at arg 1 — captured by HOF handler
+preg_replace_callback('/x/', [$t2, 'replace'], 'test');  // captured: \Target005::replace

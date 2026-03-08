@@ -1161,60 +1161,7 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
         };
 
         /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
-         */
-        $call_user_func_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) < 1) {
-                return;
-            }
-            $generic_callback($code_base, $context, $args);
-        };
-
-        /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
-         */
-        $call_user_func_array_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) < 2) {
-                return;
-            }
-            $generic_callback($code_base, $context, $args);
-        };
-
-        /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
-         */
-        $from_callable_callback = static function (
-            CodeBase $code_base,
-            Context $context,
-            FunctionInterface $unused_function,
-            array $args,
-            ?Node $_
-        ) use ($generic_callback) : void {
-            if (\count($args) !== 1) {
-                return;
-            }
-
-            $generic_callback($code_base, $context, $args);
-        };
-
-        /**
          * Factory for higher-order function handlers where the callable is at a specific arg index.
-         * Reuses $generic_callback which expects the callable at $args[0].
          */
         $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): Closure {
             /**
@@ -1236,11 +1183,12 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
         };
 
         return [
-            'call_user_func'            => $call_user_func_callback,
-            'forward_static_call'       => $call_user_func_callback,
-            'call_user_func_array'      => $call_user_func_array_callback,
-            'forward_static_call_array' => $call_user_func_array_callback,
-            'Closure::fromCallable'     => $from_callable_callback,
+            // call_user_func family: callable at arg 0
+            'call_user_func'            => $make_hof_callback(0, 1),
+            'forward_static_call'       => $make_hof_callback(0, 1),
+            'call_user_func_array'      => $make_hof_callback(0, 2),
+            'forward_static_call_array' => $make_hof_callback(0, 2),
+            'Closure::fromCallable'     => $make_hof_callback(0, 1),
 
             // Higher-order functions: callable at arg 0
             'array_map'               => $make_hof_callback(0, 2),
