@@ -1216,7 +1216,11 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
          * Factory for higher-order function handlers where the callable is at a specific arg index.
          * Reuses $generic_callback which expects the callable at $args[0].
          */
-        $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): \Closure {
+        $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): Closure {
+            /**
+             * @param list<Node|int|string|float> $args
+             * @throws Exception
+             */
             return static function (
                 CodeBase $code_base,
                 Context $context,
