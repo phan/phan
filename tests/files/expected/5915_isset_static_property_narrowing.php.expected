@@ -1,0 +1,4 @@
+%s:11 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type string(real=non-null-mixed)
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type null
+%s:28 PhanUnusedVariable Unused definition of variable $d
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type 42|int|string(real=42|non-null-mixed)
