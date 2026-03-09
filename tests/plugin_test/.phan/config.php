@@ -155,5 +155,6 @@ return [
         'StaticVariableMisusePlugin',
         'AddNeverReturnTypePlugin',
         'UncoveredEnumCasesInMatchPlugin',
+        'CaseMismatchPlugin',
     ],
 ];

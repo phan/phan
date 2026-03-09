@@ -1,0 +1,30 @@
+src/317_case_mismatch.php:7 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\MyClass317::doSomething() is declared to return void and it has no side effects
+src/317_case_mismatch.php:8 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\MyClass317::staticMethod() is declared to return void and it has no side effects
+src/317_case_mismatch.php:12 PhanUnreferencedClass Possibly zero references to interface \TestNs317\MyInterface317
+src/317_case_mismatch.php:18 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\myFunc317() is declared to return void and it has no side effects
+src/317_case_mismatch.php:27 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_class_mismatch()
+src/317_case_mismatch.php:29 PhanPluginCaseMismatchClassName Class reference myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6
+src/317_case_mismatch.php:33 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_interface_mismatch()
+src/317_case_mismatch.php:36 PhanPluginCaseMismatchClassName Class reference myinterface317 has a casing mismatch with declaration MyInterface317 defined at src/317_case_mismatch.php:12
+src/317_case_mismatch.php:36 PhanPluginConstantVariableNull Variable $x is probably constant with a value of null
+src/317_case_mismatch.php:41 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Refs\test_function_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:41 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_function_mismatch()
+src/317_case_mismatch.php:43 PhanPluginCaseMismatchFunctionName Function call MYFUNC317() has a casing mismatch with declaration myFunc317() defined at src/317_case_mismatch.php:18
+src/317_case_mismatch.php:46 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_method_mismatch()
+src/317_case_mismatch.php:49 PhanPluginCaseMismatchMethodName Method call DoSomething() has a casing mismatch with declaration doSomething() defined at src/317_case_mismatch.php:7
+src/317_case_mismatch.php:52 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Refs\test_static_method_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:52 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_static_method_mismatch()
+src/317_case_mismatch.php:54 PhanPluginCaseMismatchMethodName Method call StaticMethod() has a casing mismatch with declaration staticMethod() defined at src/317_case_mismatch.php:8
+src/317_case_mismatch.php:57 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_catch_mismatch()
+src/317_case_mismatch.php:60 PhanPluginCaseMismatchClassName Class reference myexception317 has a casing mismatch with declaration MyException317 defined at src/317_case_mismatch.php:16
+src/317_case_mismatch.php:65 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Refs\test_namespace_mismatch_fq() is declared to return void and it has no side effects
+src/317_case_mismatch.php:65 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_namespace_mismatch_fq()
+src/317_case_mismatch.php:67 PhanPluginCaseMismatchNamespace Namespace segment \testns317 has a casing mismatch with declaration \TestNs317
+src/317_case_mismatch.php:67 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:72 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_correct_casing()
+src/317_case_mismatch.php:80 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_magic_method()
+src/317_case_mismatch.php:86 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Refs\test_self_static_parent() is declared to return void and it has no side effects
+src/317_case_mismatch.php:86 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Refs\test_self_static_parent()
+src/317_case_mismatch.php:88 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:94 PhanUnreferencedClass Possibly zero references to class \TestNs317\TraitUser\UsesWrongCase317
+src/317_case_mismatch.php:95 PhanPluginCaseMismatchClassName Class reference mytrait317 has a casing mismatch with declaration MyTrait317 defined at src/317_case_mismatch.php:14
