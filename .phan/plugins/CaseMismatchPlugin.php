@@ -28,6 +28,10 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability
     }
 }
 
+/**
+ * Visitor that checks for casing mismatches in class, function, method,
+ * and namespace references.
+ */
 class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 {
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
@@ -125,7 +129,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 $fqsen_string,
                 $this->context
             );
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return;
         }
 
@@ -141,6 +145,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // For unqualified names resolved via use, compare against the alias casing
         if ($flags === ast\flags\NAME_NOT_FQ) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
             $namespace_map = $this->context->getNamespaceMap();
             $entry = $namespace_map[ast\flags\USE_FUNCTION][strtolower($reference_name)] ?? null;
             if ($entry !== null) {
@@ -341,7 +346,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 $fqsen_string,
                 $this->context
             );
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return;
         }
 
@@ -358,6 +363,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // For unqualified names resolved via use, compare against the alias casing
         if ($flags === ast\flags\NAME_NOT_FQ) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
             $namespace_map = $this->context->getNamespaceMap();
             $entry = $namespace_map[ast\flags\USE_NORMAL][strtolower($reference_name)] ?? null;
             if ($entry !== null) {
@@ -415,7 +421,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             $fqsen_string = '\\' . $name;
             try {
                 $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return;
             }
             if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
@@ -440,7 +446,7 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             $fqsen_string = '\\' . $name;
             try {
                 $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return;
             }
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -524,8 +530,8 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         try {
             $context_node = new ContextNode($this->code_base, $this->context, $node);
-            $method = $context_node->getMethod($method_name, $is_static);
-        } catch (NodeException | CodeBaseException | IssueException $e) {
+            $method = $context_node->getMethod($method_name, $is_static, false);
+        } catch (NodeException | CodeBaseException | IssueException) {
             return;
         }
 
