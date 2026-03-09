@@ -477,6 +477,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     return $context;
                 }
                 continue;
+            } elseif ($kind === ast\AST_STATIC_PROP) {
+                // isset(self::$prop) means the property is non-null
+                return $this->modifyStaticPropertySimple(
+                    $var_node,
+                    static function (UnionType $type): UnionType {
+                        return $type->nonNullableClone();
+                    },
+                    $context
+                );
             }
 
             // TODO: Handle more than one level of nesting

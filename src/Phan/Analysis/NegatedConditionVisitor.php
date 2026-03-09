@@ -931,6 +931,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             $context = $this->modifyPropertySimple($var_node, static function (UnionType $_): UnionType {
                 return NullType::instance(false)->asPHPDocUnionType();
             }, $context);
+        } elseif ($var_node->kind === ast\AST_STATIC_PROP) {
+            // !isset(self::$prop) means the property is null
+            $context = $this->modifyStaticPropertySimple($var_node, static function (UnionType $_): UnionType {
+                return NullType::instance(false)->asPHPDocUnionType();
+            }, $context);
         }
         return $context;
     }
