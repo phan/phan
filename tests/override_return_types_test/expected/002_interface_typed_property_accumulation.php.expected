@@ -1,1 +1,0 @@
-src/002_interface_typed_property_accumulation.php:29 PhanPossiblyUndeclaredMethod Call to possibly undeclared method writeln on type \OutputInterface|\ConsoleOutput (\OutputInterface does not declare the method)
