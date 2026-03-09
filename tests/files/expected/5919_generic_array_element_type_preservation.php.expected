@@ -1,0 +1,4 @@
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type string
+%s:12 PhanUnusedVariable Unused definition of variable $name
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $val - it has union type \C5919|mixed|string
+%s:18 PhanUnusedVariable Unused definition of variable $val
