@@ -209,3 +209,29 @@ namespace TestNs317\Alias {
         renamedFunc317();
     }
 }
+
+// --- Unqualified function call in namespace (no use statement) ---
+
+namespace TestNs317 {
+    function test_unqualified_func_in_ns(): void {
+        // Unqualified call should resolve to \TestNs317\myFunc317 via namespace fallback
+        MYFUNC317();  // should warn (function name mismatch)
+    }
+
+    // Correct casing — no warnings
+    function test_unqualified_func_correct(): void {
+        myFunc317();
+    }
+}
+
+// --- Group use statement casing mismatches ---
+
+namespace TestNs317\GroupUse {
+    use TestNs317\{myclass317, MyInterface317};  // should warn (myclass317 class name)
+    use TestNs317\{MyTrait317, myexception317};  // should warn (myexception317 class name)
+
+    function test_group_use(): void {
+        $x = new myclass317();
+        echo $x::class;
+    }
+}

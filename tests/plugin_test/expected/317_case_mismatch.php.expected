@@ -69,3 +69,15 @@ src/317_case_mismatch.php:201 PhanPluginUseReturnValueNoopVoid The function/meth
 src/317_case_mismatch.php:201 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Alias\test_func_alias_mismatch()
 src/317_case_mismatch.php:202 PhanPluginCaseMismatchFunctionName Function call RENAMEDFUNC317() has a casing mismatch with use alias renamedFunc317()
 src/317_case_mismatch.php:206 PhanUnreferencedFunction Possibly zero references to function \TestNs317\Alias\test_alias_correct()
+src/317_case_mismatch.php:216 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\test_unqualified_func_in_ns() is declared to return void and it has no side effects
+src/317_case_mismatch.php:216 PhanUnreferencedFunction Possibly zero references to function \TestNs317\test_unqualified_func_in_ns()
+src/317_case_mismatch.php:218 PhanPluginCaseMismatchFunctionName Function call MYFUNC317() has a casing mismatch with declaration myFunc317() defined at src/317_case_mismatch.php:18
+src/317_case_mismatch.php:222 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\test_unqualified_func_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:222 PhanUnreferencedFunction Possibly zero references to function \TestNs317\test_unqualified_func_correct()
+src/317_case_mismatch.php:230 PhanPluginCaseMismatchClassName Use statement for myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6
+src/317_case_mismatch.php:230 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace MyInterface317 (\TestNs317\MyInterface317)
+src/317_case_mismatch.php:231 PhanPluginCaseMismatchClassName Use statement for myexception317 has a casing mismatch with declaration MyException317 defined at src/317_case_mismatch.php:16
+src/317_case_mismatch.php:231 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace MyTrait317 (\TestNs317\MyTrait317)
+src/317_case_mismatch.php:231 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace myexception317 (\TestNs317\MyException317)
+src/317_case_mismatch.php:233 PhanUnreferencedFunction Possibly zero references to function \TestNs317\GroupUse\test_group_use()
+src/317_case_mismatch.php:234 PhanPluginCaseMismatchClassName Class reference myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6

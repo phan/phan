@@ -120,16 +120,14 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
 
-        // AST strips the leading \ for fully-qualified names and stores it in flags.
         $flags = $expression->flags;
-        $fqsen_string = $flags === ast\flags\NAME_FQ ? '\\' . $reference_name : $reference_name;
 
-        try {
-            $function_fqsen = FullyQualifiedFunctionName::fromStringInContext(
-                $fqsen_string,
-                $this->context
-            );
-        } catch (\Exception) {
+        // Resolve the function FQSEN using the same logic as ContextNode::getFunction():
+        // For unqualified names: check use map, then try namespace, then global fallback.
+        // For FQ names: resolve directly with leading \.
+        // For relative names: resolve in current namespace.
+        $function_fqsen = $this->resolveFunctionFQSEN($reference_name, $flags);
+        if ($function_fqsen === null) {
             return;
         }
 
@@ -211,6 +209,36 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             $this->checkUseStatementCasing($name, $elem_type, $use_elem->lineno);
+        }
+    }
+
+    public function visitGroupUse(Node $node): void
+    {
+        $prefix = $node->children['prefix'];
+        if (!is_string($prefix)) {
+            return;
+        }
+        $uses_node = $node->children['uses'];
+        if (!($uses_node instanceof Node)) {
+            return;
+        }
+        $group_flags = $node->flags;
+
+        foreach ($uses_node->children as $use_elem) {
+            if (!($use_elem instanceof Node)) {
+                continue;
+            }
+            $suffix = $use_elem->children['name'];
+            if (!is_string($suffix)) {
+                continue;
+            }
+            $elem_type = $group_flags ?: $use_elem->flags;
+            if ($elem_type === ast\flags\USE_CONST) {
+                continue;
+            }
+            // Reconstruct the full name: prefix\suffix
+            $full_name = $prefix . '\\' . $suffix;
+            $this->checkUseStatementCasing($full_name, $elem_type, $use_elem->lineno);
         }
     }
 
@@ -513,6 +541,48 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                     Issue::SEVERITY_LOW
                 );
             }
+        }
+    }
+
+    /**
+     * Resolve a function FQSEN using PHP's name resolution rules:
+     * - NAME_FQ: fully qualified (e.g. \Foo\bar)
+     * - NAME_RELATIVE: relative to current namespace (e.g. namespace\bar)
+     * - NAME_NOT_FQ: check use map, then current namespace, then global fallback
+     *
+     * @return ?FullyQualifiedFunctionName null if the name cannot be resolved
+     */
+    private function resolveFunctionFQSEN(string $reference_name, int $flags): ?FullyQualifiedFunctionName
+    {
+        try {
+            if ($flags === ast\flags\NAME_FQ) {
+                return FullyQualifiedFunctionName::fromFullyQualifiedString('\\' . $reference_name);
+            }
+
+            $namespace = $this->context->getNamespace();
+
+            if (($flags & ast\flags\NAME_RELATIVE) !== 0) {
+                return FullyQualifiedFunctionName::make($namespace, $reference_name);
+            }
+
+            // NAME_NOT_FQ: check use map first
+            if ($this->context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $reference_name)) {
+                $fqsen = $this->context->getNamespaceMapFor(ast\flags\USE_FUNCTION, $reference_name);
+                if ($fqsen instanceof FullyQualifiedFunctionName) {
+                    return $fqsen;
+                }
+            }
+
+            // Try current namespace first
+            $namespaced_fqsen = FullyQualifiedFunctionName::make($namespace, $reference_name);
+            if ($this->code_base->hasFunctionWithFQSEN($namespaced_fqsen)) {
+                return $namespaced_fqsen;
+            }
+
+            // Fall back to global namespace
+            return FullyQualifiedFunctionName::make('', $reference_name);
+        } catch (\Exception) {
+            return null;
         }
     }
 
