@@ -489,6 +489,16 @@ class ASTSimplifier
             case ast\AST_BINARY_OP:
                 return self::expressionHasClassReference($node->children['left'])
                     || self::expressionHasClassReference($node->children['right']);
+            case ast\AST_ARRAY:
+                foreach ($node->children as $child) {
+                    if (self::expressionHasClassReference($child)) {
+                        return true;
+                    }
+                }
+                return false;
+            case ast\AST_ARRAY_ELEM:
+                return self::expressionHasClassReference($node->children['key'] ?? null)
+                    || self::expressionHasClassReference($node->children['value'] ?? null);
             default:
                 return false;
         }
