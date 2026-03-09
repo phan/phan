@@ -2543,7 +2543,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // (e.g., non-empty-array<string, T>) so that downstream
                 // method resolution can still find concrete types.
                 foreach ($union_type->getTypeSet() as $type) {
-                    if ($type instanceof GenericArrayInterface) {
+                    if ($type instanceof GenericArrayInterface && !($type instanceof ArrayShapeType)) {
                         $result = $result->withUnionType($type->genericArrayElementUnionType());
                     }
                 }
