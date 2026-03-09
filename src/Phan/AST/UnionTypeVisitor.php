@@ -3330,12 +3330,26 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (!$expr_node instanceof Node) {
             return null;
         }
-        $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $expr_node,
-            $this->should_catch_issue_exception
-        );
+        if ($expr_node->kind === ast\AST_VAR) {
+            $variable_name = $expr_node->children['name'] ?? null;
+            if (\is_string($variable_name) && $variable_name !== '' && $this->context->getScope()->hasVariableWithName($variable_name)) {
+                $expr_union_type = $this->context->getScope()->getVariableByName($variable_name)->getUnionType();
+            } else {
+                $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $expr_node,
+                    $this->should_catch_issue_exception
+                );
+            }
+        } else {
+            $expr_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node,
+                $this->should_catch_issue_exception
+            );
+        }
         if ($expr_union_type->isEmpty()) {
             return null;
         }
