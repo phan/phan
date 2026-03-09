@@ -1,0 +1,2 @@
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type \C5916|\I5916
+%s:31 PhanUnusedVariable Unused definition of variable $result

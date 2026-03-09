@@ -90,9 +90,6 @@ final class ClassStringType extends StringType
                     $result = $result->withUnionType($inner_type->getClassUnionType());
                 }
             }
-            if (!$result->isEmpty()) {
-                return $result;
-            }
             foreach ($type->asStringScalarValues() as $string) {
                 // Convert string arguments to the classes they represent
                 try {
