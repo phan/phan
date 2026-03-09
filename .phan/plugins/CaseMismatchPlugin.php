@@ -160,6 +160,31 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    public function visitUse(Node $node): void
+    {
+        $use_type = $node->flags;
+        // Skip constants — they are case-sensitive
+        if ($use_type === ast\flags\USE_CONST) {
+            return;
+        }
+
+        foreach ($node->children as $use_elem) {
+            if (!($use_elem instanceof Node)) {
+                continue;
+            }
+            $name = $use_elem->children['name'];
+            if (!is_string($name)) {
+                continue;
+            }
+            // In group use declarations, flags may be on the child element
+            $elem_type = $use_type ?: $use_elem->flags;
+            if ($elem_type === ast\flags\USE_CONST) {
+                continue;
+            }
+            $this->checkUseStatementCasing($name, $elem_type, $use_elem->lineno);
+        }
+    }
+
     public function visitMethodCall(Node $node): void
     {
         $this->checkMethodNameCasing($node, false);
@@ -230,6 +255,68 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 $class_fqsen->getNamespace(),
                 $class_node->lineno
             );
+        }
+    }
+
+    /**
+     * Check casing of a use statement (e.g., `use Foo\Bar\Baz;` or `use function Foo\myFunc;`).
+     * Use statements always reference fully-qualified names.
+     */
+    private function checkUseStatementCasing(string $name, int $use_type, int $lineno): void
+    {
+        $parts = explode('\\', $name);
+        $short_name = array_pop($parts);
+
+        if ($use_type === ast\flags\USE_FUNCTION) {
+            $fqsen_string = '\\' . $name;
+            try {
+                $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+            } catch (\Exception $e) {
+                return;
+            }
+            if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                return;
+            }
+            $function = $this->code_base->getFunctionByFQSEN($function_fqsen);
+            $declared_name = $function->getName();
+            $declared_namespace = $function_fqsen->getNamespace();
+
+            if ($short_name !== $declared_name && strtolower($short_name) === strtolower($declared_name)) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    (clone $this->context)->withLineNumberStart($lineno),
+                    self::CaseMismatchFunctionName,
+                    'Use statement for {FUNCTION} has a casing mismatch with declaration {FUNCTION} defined at {FILE}:{LINE}',
+                    [$short_name . '()', $declared_name . '()', $function->getContext()->getFile(), $function->getContext()->getLineNumberStart()],
+                    Issue::SEVERITY_LOW
+                );
+            }
+            $this->checkNamespaceCasing($parts, $function_fqsen->getNamespace(), $lineno);
+        } else {
+            // USE_NORMAL — class/interface/trait/enum
+            $fqsen_string = '\\' . $name;
+            try {
+                $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
+            } catch (\Exception $e) {
+                return;
+            }
+            if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                return;
+            }
+            $class = $this->code_base->getClassByFQSEN($class_fqsen);
+            $declared_name = $class->getName();
+
+            if ($short_name !== $declared_name && strtolower($short_name) === strtolower($declared_name)) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    (clone $this->context)->withLineNumberStart($lineno),
+                    self::CaseMismatchClassName,
+                    'Use statement for {CLASS} has a casing mismatch with declaration {CLASS} defined at {FILE}:{LINE}',
+                    [$short_name, $declared_name, $class->getContext()->getFile(), $class->getContext()->getLineNumberStart()],
+                    Issue::SEVERITY_LOW
+                );
+            }
+            $this->checkNamespaceCasing($parts, $class_fqsen->getNamespace(), $lineno);
         }
     }
 

@@ -28,3 +28,13 @@ src/317_case_mismatch.php:86 PhanUnreferencedFunction Possibly zero references t
 src/317_case_mismatch.php:88 PhanUnusedVariable Unused definition of variable $x
 src/317_case_mismatch.php:94 PhanUnreferencedClass Possibly zero references to class \TestNs317\TraitUser\UsesWrongCase317
 src/317_case_mismatch.php:95 PhanPluginCaseMismatchClassName Class reference mytrait317 has a casing mismatch with declaration MyTrait317 defined at src/317_case_mismatch.php:14
+src/317_case_mismatch.php:103 PhanPluginCaseMismatchClassName Use statement for myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6
+src/317_case_mismatch.php:105 PhanPluginCaseMismatchNamespace Namespace segment \testns317 has a casing mismatch with declaration \TestNs317
+src/317_case_mismatch.php:107 PhanPluginCaseMismatchClassName Use statement for myexception317 has a casing mismatch with declaration MyException317 defined at src/317_case_mismatch.php:16
+src/317_case_mismatch.php:107 PhanPluginCaseMismatchNamespace Namespace segment \testns317 has a casing mismatch with declaration \TestNs317
+src/317_case_mismatch.php:107 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace myexception317 (\TestNs317\MyException317)
+src/317_case_mismatch.php:109 PhanPluginCaseMismatchFunctionName Use statement for MYFUNC317() has a casing mismatch with declaration myFunc317() defined at src/317_case_mismatch.php:18
+src/317_case_mismatch.php:109 PhanUnreferencedUseFunction Possibly zero references to use statement for function MYFUNC317 (\TestNs317\myFunc317)
+src/317_case_mismatch.php:111 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace MyTrait317 (\TestNs317\MyTrait317)
+src/317_case_mismatch.php:113 PhanUnreferencedFunction Possibly zero references to function \TestNs317\UseStmts\test_use_stmt_mismatches()
+src/317_case_mismatch.php:114 PhanPluginCaseMismatchClassName Class reference myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6

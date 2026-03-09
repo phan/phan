@@ -95,3 +95,26 @@ namespace TestNs317\TraitUser {
         use \TestNs317\mytrait317;  // should warn (class name)
     }
 }
+
+// --- Use statement casing mismatches ---
+
+namespace TestNs317\UseStmts {
+    // Class name mismatch in use statement
+    use TestNs317\myclass317;  // should warn (class name)
+    // Namespace mismatch in use statement
+    use testns317\MyInterface317;  // should warn (namespace)
+    // Both namespace and class name mismatch
+    use testns317\myexception317;  // should warn (namespace + class name)
+    // Function name mismatch in use statement
+    use function TestNs317\MYFUNC317;  // should warn (function name)
+    // Correct casing — no warnings
+    use TestNs317\MyTrait317;
+
+    function test_use_stmt_mismatches(): void {
+        $x = new myclass317();
+        echo $x::class;
+        if ($x instanceof MyInterface317) {
+            echo 'yes';
+        }
+    }
+}
