@@ -139,6 +139,30 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
         $reference_parts = explode('\\', $reference_name);
         $reference_short = array_pop($reference_parts);
 
+        // For unqualified names resolved via use, compare against the alias casing
+        if ($flags === ast\flags\NAME_NOT_FQ) {
+            $namespace_map = $this->context->getNamespaceMap();
+            $entry = $namespace_map[ast\flags\USE_FUNCTION][strtolower($reference_name)] ?? null;
+            if ($entry !== null) {
+                $alias_name = $entry->original_name;
+                // When the alias is a true rename (use function X as Y), compare against the alias
+                if (strtolower($alias_name) !== strtolower($declared_name)) {
+                    if ($reference_short !== $alias_name && strtolower($reference_short) === strtolower($alias_name)) {
+                        $this->emitPluginIssue(
+                            $this->code_base,
+                            (clone $this->context)->withLineNumberStart($expression->lineno),
+                            self::CaseMismatchFunctionName,
+                            'Function call {FUNCTION} has a casing mismatch with use alias {FUNCTION}',
+                            [$reference_short . '()', $alias_name . '()'],
+                            Issue::SEVERITY_LOW
+                        );
+                    }
+                    return;
+                }
+                // Plain import (no as) — fall through to compare against declaration
+            }
+        }
+
         if ($reference_short !== $declared_name && strtolower($reference_short) === strtolower($declared_name)) {
             $this->emitPluginIssue(
                 $this->code_base,
@@ -185,6 +209,79 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
+    public function visitClassConst(Node $node): void
+    {
+        $class_node = $node->children['class'];
+        if ($class_node instanceof Node) {
+            $this->checkClassNameCasing($class_node);
+        }
+    }
+
+    public function visitClass(Node $node): void
+    {
+        $extends_node = $node->children['extends'];
+        if ($extends_node instanceof Node) {
+            $this->checkClassNameCasing($extends_node);
+        }
+
+        $implements_node = $node->children['implements'];
+        if ($implements_node instanceof Node) {
+            foreach ($implements_node->children as $name_node) {
+                if ($name_node instanceof Node) {
+                    $this->checkClassNameCasing($name_node);
+                }
+            }
+        }
+    }
+
+    public function visitParam(Node $node): void
+    {
+        $type_node = $node->children['type'];
+        if ($type_node instanceof Node) {
+            $this->checkTypeNodeCasing($type_node);
+        }
+    }
+
+    public function visitFuncDecl(Node $node): void
+    {
+        $return_type = $node->children['returnType'];
+        if ($return_type instanceof Node) {
+            $this->checkTypeNodeCasing($return_type);
+        }
+    }
+
+    public function visitMethod(Node $node): void
+    {
+        $return_type = $node->children['returnType'];
+        if ($return_type instanceof Node) {
+            $this->checkTypeNodeCasing($return_type);
+        }
+    }
+
+    public function visitClosure(Node $node): void
+    {
+        $return_type = $node->children['returnType'];
+        if ($return_type instanceof Node) {
+            $this->checkTypeNodeCasing($return_type);
+        }
+    }
+
+    public function visitArrowFunc(Node $node): void
+    {
+        $return_type = $node->children['returnType'];
+        if ($return_type instanceof Node) {
+            $this->checkTypeNodeCasing($return_type);
+        }
+    }
+
+    public function visitPropGroup(Node $node): void
+    {
+        $type_node = $node->children['type'];
+        if ($type_node instanceof Node) {
+            $this->checkTypeNodeCasing($type_node);
+        }
+    }
+
     public function visitMethodCall(Node $node): void
     {
         $this->checkMethodNameCasing($node, false);
@@ -193,6 +290,29 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
     public function visitNullsafeMethodCall(Node $node): void
     {
         $this->checkMethodNameCasing($node, false);
+    }
+
+    private function checkTypeNodeCasing(Node $type_node): void
+    {
+        switch ($type_node->kind) {
+            case ast\AST_NAME:
+                $this->checkClassNameCasing($type_node);
+                break;
+            case ast\AST_NULLABLE_TYPE:
+                $inner = $type_node->children['type'];
+                if ($inner instanceof Node) {
+                    $this->checkTypeNodeCasing($inner);
+                }
+                break;
+            case ast\AST_TYPE_UNION:
+            case ast\AST_TYPE_INTERSECTION:
+                foreach ($type_node->children as $child) {
+                    if ($child instanceof Node) {
+                        $this->checkTypeNodeCasing($child);
+                    }
+                }
+                break;
+        }
     }
 
     private function checkClassNameCasing(Node $class_node): void
@@ -236,7 +356,31 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
         $reference_parts = explode('\\', $reference_name);
         $reference_short = array_pop($reference_parts);
 
-        // Check short name casing
+        // For unqualified names resolved via use, compare against the alias casing
+        if ($flags === ast\flags\NAME_NOT_FQ) {
+            $namespace_map = $this->context->getNamespaceMap();
+            $entry = $namespace_map[ast\flags\USE_NORMAL][strtolower($reference_name)] ?? null;
+            if ($entry !== null) {
+                $alias_name = $entry->original_name;
+                // When the alias is a true rename (use X as Y), compare against the alias
+                if (strtolower($alias_name) !== strtolower($declared_name)) {
+                    if ($reference_short !== $alias_name && strtolower($reference_short) === strtolower($alias_name)) {
+                        $this->emitPluginIssue(
+                            $this->code_base,
+                            (clone $this->context)->withLineNumberStart($class_node->lineno),
+                            self::CaseMismatchClassName,
+                            'Class reference {CLASS} has a casing mismatch with use alias {CLASS}',
+                            [$reference_short, $alias_name],
+                            Issue::SEVERITY_LOW
+                        );
+                    }
+                    return;
+                }
+                // Plain import (no as) — fall through to compare against declaration
+            }
+        }
+
+        // Check short name casing against declaration
         if ($reference_short !== $declared_name && strtolower($reference_short) === strtolower($declared_name)) {
             $this->emitPluginIssue(
                 $this->code_base,
@@ -279,7 +423,6 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             }
             $function = $this->code_base->getFunctionByFQSEN($function_fqsen);
             $declared_name = $function->getName();
-            $declared_namespace = $function_fqsen->getNamespace();
 
             if ($short_name !== $declared_name && strtolower($short_name) === strtolower($declared_name)) {
                 $this->emitPluginIssue(

@@ -118,3 +118,94 @@ namespace TestNs317\UseStmts {
         }
     }
 }
+
+// --- Type hint casing mismatches ---
+
+namespace TestNs317\TypeHints {
+    use TestNs317\MyClass317;
+    use TestNs317\MyInterface317;
+
+    function test_param_type(myclass317 $x): void {  // should warn (param type)
+        echo $x::class;
+    }
+
+    function test_return_type(): myclass317 {  // should warn (return type)
+        return new MyClass317();
+    }
+
+    function test_nullable_param(?myclass317 $x): void {  // should warn (nullable param)
+        echo $x !== null ? $x::class : 'null';
+    }
+
+    function test_union_type(myclass317|myinterface317 $x): void {  // should warn (both types)
+        echo get_class($x);
+    }
+
+    class TypeHintProps317 {
+        public myclass317 $prop;  // should warn (property type)
+        public ?myclass317 $nullable_prop = null;  // should warn (nullable property)
+
+        public function method_return(): myclass317 {  // should warn (method return)
+            return $this->prop;
+        }
+    }
+
+    // Correct casing — no warnings
+    function test_correct_type_hints(MyClass317 $x): MyClass317 {
+        return $x;
+    }
+}
+
+// --- Class constant access ---
+
+namespace TestNs317\ClassConst {
+    use TestNs317\MyClass317;
+
+    function test_class_const_mismatch(): void {
+        // Class constant access with casing mismatch
+        echo myclass317::class;  // should warn
+    }
+
+    // Correct casing — no warnings
+    function test_class_const_correct(): void {
+        echo MyClass317::class;
+    }
+}
+
+// --- extends/implements casing ---
+
+namespace TestNs317\Inheritance {
+    use TestNs317\MyClass317;
+    use TestNs317\MyInterface317;
+
+    class ExtendsWrong317 extends myclass317 {}  // should warn (extends)
+
+    class ImplementsWrong317 implements myinterface317 {}  // should warn (implements)
+
+    // Correct casing — no warnings
+    class ExtendsCorrect317 extends MyClass317 {}
+    class ImplementsCorrect317 implements MyInterface317 {}
+}
+
+// --- Alias casing ---
+
+namespace TestNs317\Alias {
+    use TestNs317\MyClass317 as RenamedClass317;
+    use function TestNs317\myFunc317 as renamedFunc317;
+
+    function test_alias_mismatch(): void {
+        $x = new renamedclass317();  // should warn (alias mismatch)
+        echo $x::class;
+    }
+
+    function test_func_alias_mismatch(): void {
+        RENAMEDFUNC317();  // should warn (function alias mismatch)
+    }
+
+    // Correct casing — no warnings
+    function test_alias_correct(): void {
+        $x = new RenamedClass317();
+        echo $x::class;
+        renamedFunc317();
+    }
+}
