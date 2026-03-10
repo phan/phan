@@ -11,7 +11,12 @@ use Phan\Issue;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\CodeBase;
+use Phan\IssueInstance;
+use Phan\Library\FileCacheEntry;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
+use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 
@@ -20,11 +25,25 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * than the original declaration. While PHP treats these as case-insensitive,
  * inconsistent casing makes grepping harder and can break IDE tooling.
  */
-class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability
+class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AutomaticFixCapability
 {
     public static function getPostAnalyzeNodeVisitorClassName(): string
     {
         return CaseMismatchVisitor::class;
+    }
+
+    /**
+     * @return array<string,Closure(CodeBase,FileCacheEntry,IssueInstance):(?FileEditSet)>
+     */
+    public function getAutomaticFixers(): array
+    {
+        require_once __DIR__ . '/CaseMismatchPlugin/Fixers.php';
+        return [
+            CaseMismatchVisitor::CaseMismatchClassName => \Closure::fromCallable([\CaseMismatchPlugin\Fixers::class, 'fixClassName']),
+            CaseMismatchVisitor::CaseMismatchFunctionName => \Closure::fromCallable([\CaseMismatchPlugin\Fixers::class, 'fixFunctionName']),
+            CaseMismatchVisitor::CaseMismatchMethodName => \Closure::fromCallable([\CaseMismatchPlugin\Fixers::class, 'fixMethodName']),
+            CaseMismatchVisitor::CaseMismatchNamespace => \Closure::fromCallable([\CaseMismatchPlugin\Fixers::class, 'fixNamespace']),
+        ];
     }
 }
 
