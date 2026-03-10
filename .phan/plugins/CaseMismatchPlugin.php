@@ -4,19 +4,26 @@ declare(strict_types=1);
 
 use ast\Node;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\CallableInterface;
+use Phan\Language\Type\ClosureType;
 use Phan\CodeBase;
 use Phan\IssueInstance;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\AutomaticFixCapability;
+use Phan\PluginV3\IssueEmitter;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 
@@ -25,7 +32,7 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * than the original declaration. While PHP treats these as case-insensitive,
  * inconsistent casing makes grepping harder and can break IDE tooling.
  */
-class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AutomaticFixCapability
+class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AutomaticFixCapability, AnalyzeFunctionCallCapability
 {
     public static function getPostAnalyzeNodeVisitorClassName(): string
     {
@@ -45,6 +52,82 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
             CaseMismatchVisitor::CaseMismatchNamespace => \Closure::fromCallable([\CaseMismatchPlugin\Fixers::class, 'fixNamespace']),
         ];
     }
+
+    /**
+     * @return array<string,\Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void>
+     */
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
+    {
+        $result = [];
+
+        /**
+         * Build a closure that checks callable arguments for casing mismatches.
+         * @param array<int,true> $callable_params map of parameter index => true for callable params
+         * @return Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void
+         */
+        $make_closure = static function (array $callable_params): Closure {
+            /**
+             * @param list<Node|int|float|string> $args
+             */
+            return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($callable_params): void {
+                foreach ($callable_params as $i => $_) {
+                    $arg = $args[$i] ?? null;
+                    if ($arg === null) {
+                        continue;
+                    }
+                    CaseMismatchCallableChecker::checkCallableArg($code_base, $context, $arg);
+                }
+            };
+        };
+
+        // Cache closures by param signature to avoid duplicates (same pattern as CallableParamPlugin)
+        $closure_cache = [];
+
+        $process_function = static function (FunctionInterface $function) use (&$result, $make_closure, &$closure_cache): void {
+            $parameter_list = $function->getParameterList();
+            if (!$parameter_list) {
+                return;
+            }
+            $callable_params = [];
+            foreach ($parameter_list as $i => $param) {
+                $union_type = $param->getUnionType();
+                if ($union_type->isEmpty()) {
+                    continue;
+                }
+                if ($union_type->hasTypeMatchingCallback(static function (\Phan\Language\Type $type): bool {
+                    return $type instanceof CallableInterface || $type instanceof ClosureType;
+                })) {
+                    $callable_params[$i] = true;
+                }
+            }
+            if (!$callable_params) {
+                return;
+            }
+            $key = \json_encode($callable_params);
+            $closure = $closure_cache[$key] ?? ($closure_cache[$key] = $make_closure($callable_params));
+            $result[$function->getFQSEN()->__toString()] = $closure;
+        };
+
+        foreach ($code_base->getFunctionMap() as $function) {
+            $process_function($function);
+        }
+        foreach ($code_base->getMethodSet() as $method) {
+            $process_function($method);
+        }
+
+        // Explicitly register for call_user_func family (CallableParamPlugin removes these)
+        $callable_at_0 = $make_closure([0 => true]);
+        foreach ([
+            '\\call_user_func',
+            '\\call_user_func_array',
+            '\\forward_static_call',
+            '\\forward_static_call_array',
+        ] as $fqsen) {
+            $result[$fqsen] = $callable_at_0;
+        }
+
+        return $result;
+    }
 }
 
 /**
@@ -58,6 +141,9 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
     public const CaseMismatchFunctionName = 'PhanPluginCaseMismatchFunctionName';
     public const CaseMismatchMethodName = 'PhanPluginCaseMismatchMethodName';
     public const CaseMismatchNamespace = 'PhanPluginCaseMismatchNamespace';
+    public const CaseMismatchCallableFunction = 'PhanPluginCaseMismatchCallableFunction';
+    public const CaseMismatchCallableMethod = 'PhanPluginCaseMismatchCallableMethod';
+    public const CaseMismatchCallableClass = 'PhanPluginCaseMismatchCallableClass';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     public function visitNew(Node $node): void
@@ -635,6 +721,339 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 [$method_name . '()', $declared_name . '()', $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()],
                 Issue::SEVERITY_LOW
             );
+        }
+    }
+}
+
+/**
+ * Checks casing of callable arguments (string callables and array callables)
+ * passed to functions like call_user_func, array_map, usort, etc.
+ */
+class CaseMismatchCallableChecker
+{
+    use IssueEmitter;
+
+    /**
+     * Check a single callable argument for casing mismatches.
+     */
+    public static function checkCallableArg(CodeBase $code_base, Context $context, Node|int|float|string $arg): void
+    {
+        if (is_string($arg)) {
+            self::checkStringCallable($code_base, $context, $arg, $context->getLineNumberStart());
+            return;
+        }
+        if (!($arg instanceof Node)) {
+            return;
+        }
+        if ($arg->kind === ast\AST_ARRAY) {
+            self::checkArrayCallable($code_base, $context, $arg);
+            return;
+        }
+        // For variables and other expressions, try to resolve to a string value
+        $value = (new ContextNode($code_base, $context, $arg))->getEquivalentPHPScalarValue();
+        if (is_string($value)) {
+            self::checkStringCallable($code_base, $context, $value, $arg->lineno);
+        }
+    }
+
+    /**
+     * Check a string callable like 'myFunc' or 'ClassName::methodName'.
+     */
+    private static function checkStringCallable(CodeBase $code_base, Context $context, string $callable_string, int $lineno): void
+    {
+        if (str_contains($callable_string, '::')) {
+            [$class_part, $method_part] = explode('::', $callable_string, 2);
+            if (in_array(strtolower($class_part), ['self', 'static', 'parent'], true)) {
+                // Resolve self/static/parent to the actual class from context, then check method casing
+                self::checkSelfStaticParentMethodCallable($code_base, $context, $class_part, $method_part, $lineno);
+                return;
+            }
+            self::checkStaticMethodCallable($code_base, $context, $class_part, $method_part, $lineno);
+        } else {
+            self::checkFunctionCallable($code_base, $context, $callable_string, $lineno);
+        }
+    }
+
+    /**
+     * Check a plain function name callable like 'myFunc'.
+     */
+    private static function checkFunctionCallable(CodeBase $code_base, Context $context, string $function_name, int $lineno): void
+    {
+        try {
+            $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
+        } catch (\Exception) {
+            return;
+        }
+        if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
+            return;
+        }
+        $function = $code_base->getFunctionByFQSEN($function_fqsen);
+        $declared_name = $function->getName();
+
+        // Extract just the short name from a potentially namespaced string
+        $parts = explode('\\', $function_name);
+        $reference_short = array_pop($parts);
+
+        $issue_context = (clone $context)->withLineNumberStart($lineno);
+
+        if ($reference_short !== $declared_name && strtolower($reference_short) === strtolower($declared_name)) {
+            self::emitPluginIssue(
+                $code_base,
+                $issue_context,
+                CaseMismatchVisitor::CaseMismatchCallableFunction,
+                'Callable {FUNCTION} has a casing mismatch with declaration {FUNCTION} defined at {FILE}:{LINE}',
+                [$reference_short . '()', $declared_name . '()', $function->getContext()->getFile(), $function->getContext()->getLineNumberStart()],
+                Issue::SEVERITY_LOW
+            );
+        }
+
+        // Check namespace segments
+        if (count($parts) > 0) {
+            $declared_namespace = $function_fqsen->getNamespace();
+            self::checkNamespaceSegments($code_base, $issue_context, $parts, $declared_namespace);
+        }
+    }
+
+    /**
+     * Check a 'ClassName::methodName' callable.
+     */
+    private static function checkStaticMethodCallable(
+        CodeBase $code_base,
+        Context $context,
+        string $class_part,
+        string $method_part,
+        int $lineno
+    ): void {
+        // Resolve class
+        try {
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_part);
+        } catch (\Exception) {
+            return;
+        }
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+
+        $issue_context = (clone $context)->withLineNumberStart($lineno);
+
+        // Check class name casing
+        $declared_class_name = $class->getName();
+        $class_parts = explode('\\', $class_part);
+        $reference_class_short = array_pop($class_parts);
+
+        if ($reference_class_short !== $declared_class_name && strtolower($reference_class_short) === strtolower($declared_class_name)) {
+            self::emitPluginIssue(
+                $code_base,
+                $issue_context,
+                CaseMismatchVisitor::CaseMismatchCallableClass,
+                'Callable class {CLASS} has a casing mismatch with declaration {CLASS} defined at {FILE}:{LINE}',
+                [$reference_class_short, $declared_class_name, $class->getContext()->getFile(), $class->getContext()->getLineNumberStart()],
+                Issue::SEVERITY_LOW
+            );
+        }
+
+        // Check namespace segments for the class part
+        if (count($class_parts) > 0) {
+            $declared_namespace = $class_fqsen->getNamespace();
+            self::checkNamespaceSegments($code_base, $issue_context, $class_parts, $declared_namespace);
+        }
+
+        // Check method name casing
+        if (!$class->hasMethodWithName($code_base, $method_part, true)) {
+            return;
+        }
+        $method = $class->getMethodByName($code_base, $method_part);
+        $declared_method_name = $method->getName();
+
+        if ($method_part !== $declared_method_name && strtolower($method_part) === strtolower($declared_method_name)) {
+            self::emitPluginIssue(
+                $code_base,
+                $issue_context,
+                CaseMismatchVisitor::CaseMismatchCallableMethod,
+                'Callable method {METHOD} has a casing mismatch with declaration {METHOD} defined at {FILE}:{LINE}',
+                [$method_part . '()', $declared_method_name . '()', $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()],
+                Issue::SEVERITY_LOW
+            );
+        }
+    }
+
+    /**
+     * Check method casing for 'self::method', 'static::method', or 'parent::method' callables.
+     */
+    private static function checkSelfStaticParentMethodCallable(
+        CodeBase $code_base,
+        Context $context,
+        string $class_keyword,
+        string $method_part,
+        int $lineno
+    ): void {
+        if (!$context->isInClassScope()) {
+            return;
+        }
+        try {
+            $class_fqsen = $context->getClassFQSEN();
+            if (strtolower($class_keyword) === 'parent') {
+                if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                    return;
+                }
+                $class = $code_base->getClassByFQSEN($class_fqsen);
+                if (!$class->hasParentType()) {
+                    return;
+                }
+                $class_fqsen = $class->getParentClassFQSEN();
+            }
+        } catch (\Exception) {
+            return;
+        }
+
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$class->hasMethodWithName($code_base, $method_part, true)) {
+            return;
+        }
+        $method = $class->getMethodByName($code_base, $method_part);
+        $declared_method_name = $method->getName();
+
+        if ($method_part !== $declared_method_name && strtolower($method_part) === strtolower($declared_method_name)) {
+            self::emitPluginIssue(
+                $code_base,
+                (clone $context)->withLineNumberStart($lineno),
+                CaseMismatchVisitor::CaseMismatchCallableMethod,
+                'Callable method {METHOD} has a casing mismatch with declaration {METHOD} defined at {FILE}:{LINE}',
+                [$method_part . '()', $declared_method_name . '()', $method->getContext()->getFile(), $method->getContext()->getLineNumberStart()],
+                Issue::SEVERITY_LOW
+            );
+        }
+    }
+
+    /**
+     * Check an array callable like [$obj, 'method'] or ['ClassName', 'method'].
+     */
+    private static function checkArrayCallable(CodeBase $code_base, Context $context, Node $array_node): void
+    {
+        $elements = $array_node->children;
+        if (count($elements) !== 2) {
+            return;
+        }
+
+        // Extract the method name from element[1]
+        $method_elem = $elements[1];
+        $method_name = null;
+        if ($method_elem instanceof Node && $method_elem->kind === ast\AST_ARRAY_ELEM) {
+            $method_value = $method_elem->children['value'];
+            if (is_string($method_value)) {
+                $method_name = $method_value;
+            } elseif ($method_value instanceof Node) {
+                $method_name = (new ContextNode($code_base, $context, $method_value))->getEquivalentPHPScalarValue();
+                if (!is_string($method_name)) {
+                    $method_name = null;
+                }
+            }
+        }
+
+        // Extract the class from element[0]
+        $class_elem = $elements[0];
+        $class_expr = null;
+        if ($class_elem instanceof Node && $class_elem->kind === ast\AST_ARRAY_ELEM) {
+            $class_expr = $class_elem->children['value'];
+        }
+
+        if ($method_name === null || $class_expr === null) {
+            return;
+        }
+
+        $lineno = $array_node->lineno;
+        $issue_context = (clone $context)->withLineNumberStart($lineno);
+
+        // Resolve the callable to get the declared method
+        $function_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $array_node, false);
+        if (!$function_list) {
+            return;
+        }
+
+        foreach ($function_list as $function_like) {
+            $declared_method_name = $function_like->getName();
+            if ($method_name !== $declared_method_name && strtolower($method_name) === strtolower($declared_method_name)) {
+                self::emitPluginIssue(
+                    $code_base,
+                    $issue_context,
+                    CaseMismatchVisitor::CaseMismatchCallableMethod,
+                    'Callable method {METHOD} has a casing mismatch with declaration {METHOD} defined at {FILE}:{LINE}',
+                    [$method_name . '()', $declared_method_name . '()', $function_like->getContext()->getFile(), $function_like->getContext()->getLineNumberStart()],
+                    Issue::SEVERITY_LOW
+                );
+            }
+        }
+
+        // Check class name casing if element[0] is a string
+        if (is_string($class_expr)) {
+            if (in_array(strtolower($class_expr), ['self', 'static', 'parent'], true)) {
+                return;
+            }
+            try {
+                $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_expr);
+            } catch (\Exception) {
+                return;
+            }
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return;
+            }
+            $class = $code_base->getClassByFQSEN($class_fqsen);
+            $declared_class_name = $class->getName();
+            $class_parts = explode('\\', $class_expr);
+            $reference_class_short = array_pop($class_parts);
+
+            if ($reference_class_short !== $declared_class_name && strtolower($reference_class_short) === strtolower($declared_class_name)) {
+                self::emitPluginIssue(
+                    $code_base,
+                    $issue_context,
+                    CaseMismatchVisitor::CaseMismatchCallableClass,
+                    'Callable class {CLASS} has a casing mismatch with declaration {CLASS} defined at {FILE}:{LINE}',
+                    [$reference_class_short, $declared_class_name, $class->getContext()->getFile(), $class->getContext()->getLineNumberStart()],
+                    Issue::SEVERITY_LOW
+                );
+            }
+        }
+    }
+
+    /**
+     * Check namespace segments for casing mismatches.
+     * @param string[] $reference_parts namespace segments from the reference
+     * @param string $declared_namespace the declared namespace (e.g., '\Foo\Bar')
+     */
+    private static function checkNamespaceSegments(
+        CodeBase $code_base,
+        Context $context,
+        array $reference_parts,
+        string $declared_namespace
+    ): void {
+        $declared_parts = array_values(array_filter(explode('\\', $declared_namespace), static function (string $part): bool {
+            return $part !== '';
+        }));
+
+        $ref_count = count($reference_parts);
+        $decl_count = count($declared_parts);
+        $offset = $decl_count - $ref_count;
+        if ($offset < 0) {
+            return;
+        }
+
+        for ($i = 0; $i < $ref_count; $i++) {
+            $ref_segment = $reference_parts[$i];
+            $decl_segment = $declared_parts[$offset + $i];
+            if ($ref_segment !== $decl_segment && strtolower($ref_segment) === strtolower($decl_segment)) {
+                self::emitPluginIssue(
+                    $code_base,
+                    $context,
+                    CaseMismatchVisitor::CaseMismatchNamespace,
+                    'Namespace segment {NAMESPACE} has a casing mismatch with declaration {NAMESPACE}',
+                    ['\\' . $ref_segment, '\\' . $decl_segment],
+                    Issue::SEVERITY_LOW
+                );
+            }
         }
     }
 }
