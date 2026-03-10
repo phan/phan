@@ -704,7 +704,11 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 return $namespaced_fqsen;
             }
 
-            // Fall back to global namespace
+            // Fall back to global namespace (unqualified names only).
+            // PHP doesn't do global fallback for qualified names (containing \).
+            if (str_contains($reference_name, '\\')) {
+                return null;
+            }
             return FullyQualifiedFunctionName::make('', $reference_name);
         } catch (\Exception) {
             return null;
