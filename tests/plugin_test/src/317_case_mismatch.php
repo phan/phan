@@ -77,8 +77,14 @@ namespace TestNs317\Refs {
         \TestNs317\myFunc317();
     }
 
-    function test_magic_method(): void {
-        // Magic methods — no warnings regardless of casing
+    function test_magic_method_mismatch(): void {
+        // Magic method with casing mismatch — should warn
+        $obj = new MyClass317();
+        $obj->__TOSTRING();  // should warn (method name)
+    }
+
+    function test_magic_method_correct(): void {
+        // Magic method with correct casing — no warning
         $obj = new MyClass317();
         echo (string) $obj;
     }

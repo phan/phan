@@ -13,7 +13,6 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClosureType;
 use Phan\CodeBase;
@@ -695,11 +694,6 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
     {
         $method_name = $node->children['method'];
         if (!is_string($method_name)) {
-            return;
-        }
-
-        // Skip magic methods
-        if (isset(FullyQualifiedMethodName::CANONICAL_NAMES[strtolower($method_name)])) {
             return;
         }
 
