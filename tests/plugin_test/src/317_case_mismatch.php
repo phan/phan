@@ -241,3 +241,33 @@ namespace TestNs317\GroupUse {
         echo $x::class;
     }
 }
+
+// --- Qualified NAME_NOT_FQ references with use alias prefix ---
+
+namespace TestNs317\Sub {
+    class SubClass317 {}
+    function subFunc317(): void {}
+}
+
+namespace TestNs317\QualifiedRef {
+    use TestNs317\Sub;
+
+    // "sub" is the use alias (implicit: use TestNs317\Sub as Sub).
+    // "sub\SubClass317" is a qualified NAME_NOT_FQ reference.
+    // The first segment "sub" has wrong casing vs the alias "Sub".
+    // The plugin should warn about the namespace segment.
+
+    function test_qualified_class_alias_mismatch(): void {
+        $x = new sub\SubClass317();  // should warn (namespace segment "sub" vs "Sub")
+    }
+
+    function test_qualified_func_alias_mismatch(): void {
+        sub\subFunc317();  // should warn (namespace segment "sub" vs "Sub")
+    }
+
+    // Correct casing — no warnings
+    function test_qualified_correct(): void {
+        $x = new Sub\SubClass317();
+        Sub\subFunc317();
+    }
+}

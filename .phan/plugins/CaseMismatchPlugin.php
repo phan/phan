@@ -302,8 +302,8 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             );
         }
 
-        // Check namespace casing for qualified function references
-        if ($flags === ast\flags\NAME_FQ || $flags === ast\flags\NAME_RELATIVE) {
+        // Check namespace casing for qualified function references (FQ, relative, or qualified NAME_NOT_FQ)
+        if (count($reference_parts) > 0) {
             $this->checkNamespaceCasing(
                 $reference_parts,
                 $function_fqsen->getNamespace(),
@@ -551,8 +551,8 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             );
         }
 
-        // Check namespace casing for qualified names
-        if ($flags === ast\flags\NAME_FQ || $flags === ast\flags\NAME_RELATIVE) {
+        // Check namespace casing for qualified names (FQ, relative, or qualified NAME_NOT_FQ)
+        if (count($reference_parts) > 0) {
             $this->checkNamespaceCasing(
                 $reference_parts,
                 $class_fqsen->getNamespace(),

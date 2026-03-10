@@ -84,3 +84,14 @@ src/317_case_mismatch.php:237 PhanUnreferencedUseNormal Possibly zero references
 src/317_case_mismatch.php:237 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace myexception317 (\TestNs317\MyException317)
 src/317_case_mismatch.php:239 PhanUnreferencedFunction Possibly zero references to function \TestNs317\GroupUse\test_group_use()
 src/317_case_mismatch.php:240 PhanPluginCaseMismatchClassName Class reference myclass317 has a casing mismatch with declaration MyClass317 defined at src/317_case_mismatch.php:6
+src/317_case_mismatch.php:249 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Sub\subFunc317() is declared to return void and it has no side effects
+src/317_case_mismatch.php:260 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_class_alias_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:260 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_class_alias_mismatch()
+src/317_case_mismatch.php:261 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with declaration \Sub
+src/317_case_mismatch.php:261 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:264 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_func_alias_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:264 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_func_alias_mismatch()
+src/317_case_mismatch.php:265 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with declaration \Sub
+src/317_case_mismatch.php:269 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:269 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_correct()
+src/317_case_mismatch.php:270 PhanUnusedVariable Unused definition of variable $x
