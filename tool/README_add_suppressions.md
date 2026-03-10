@@ -16,8 +16,11 @@ Automatically adds `@phan-suppress` annotations to code based on Phan issue outp
 ### Basic Usage
 
 ```bash
-# Generate suppressions for all Phan issues
+# Generate suppressions for all Phan issues (JSON format)
 ./phan --output-mode json | php tool/add_suppressions.php
+
+# Generate suppressions using checkstyle XML format
+./phan --output-mode checkstyle | php tool/add_suppressions.php --from-checkstyle /dev/stdin
 
 # Dry-run to preview changes
 ./phan --output-mode json | php tool/add_suppressions.php --dry-run
@@ -28,13 +31,18 @@ Automatically adds `@phan-suppress` annotations to code based on Phan issue outp
 # Read from JSON file
 ./phan --output-mode json --no-progress-bar > issues.json
 php tool/add_suppressions.php --from-json issues.json
+
+# Read from checkstyle XML file
+./phan --output-mode checkstyle --no-progress-bar > issues.xml
+php tool/add_suppressions.php --from-checkstyle issues.xml
 ```
 
 ### Command-Line Options
 
 - `--dry-run` - Show what would be changed without modifying files
 - `--interactive` - Confirm each file before making changes
-- `--from-json FILE` - Read issues from JSON file instead of stdin
+- `--from-json FILE` - Read issues from Phan JSON file instead of stdin
+- `--from-checkstyle FILE` - Read issues from Phan checkstyle XML file instead of stdin
 - `--config FILE` - Load configuration from file (default: `.phan/suppress_config.php`)
 - `--verbose` - Show detailed output
 - `--help` - Show help message
@@ -165,6 +173,15 @@ function helper2() { }
 
 ```bash
 ./phan --output-mode json --directory src/ | php tool/add_suppressions.php --dry-run --verbose
+```
+
+### Using Checkstyle XML Input
+
+If your CI pipeline already captures Phan output in checkstyle format, you can feed it directly:
+
+```bash
+# From a saved checkstyle XML file
+php tool/add_suppressions.php --from-checkstyle phan-report.xml --dry-run
 ```
 
 ## Troubleshooting
