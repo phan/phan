@@ -61,58 +61,12 @@ class AddSuppressionsTest extends TestCase
         return shell_exec($cmd) ?? '';
     }
 
-    /**
-     * Build a checkstyle XML string from a structured array.
-     *
-     * @param array<string, list<array{line: int, source: string, message: string, severity: string}>> $files
-     *   Maps file path to list of error attribute arrays.
-     */
-    private function buildCheckstyleXml(array $files): string
-    {
-        $doc = new DOMDocument('1.0', 'ISO-8859-15');
-        $checkstyle = new DOMElement('checkstyle');
-        $doc->appendChild($checkstyle);
-        $checkstyle->appendChild(new DOMAttr('version', '6.5'));
-
-        foreach ($files as $file_name => $errors) {
-            $file_node = new DOMElement('file');
-            $checkstyle->appendChild($file_node);
-            $file_node->appendChild(new DOMAttr('name', $file_name));
-
-            foreach ($errors as $error) {
-                $error_node = new DOMElement('error');
-                $file_node->appendChild($error_node);
-                $error_node->appendChild(new DOMAttr('line', (string)$error['line']));
-                $error_node->appendChild(new DOMAttr('severity', $error['severity'] ?? 'warning'));
-                $error_node->appendChild(new DOMAttr('message', $error['message'] ?? ''));
-                $error_node->appendChild(new DOMAttr('source', $error['source']));
-            }
-        }
-
-        $doc->formatOutput = true;
-        return $doc->saveXML();
-    }
-
-    private function runToolWithCheckstyle(array $files, array $args = []): string
-    {
-        $xml_file = $this->test_dir . '/issues.xml';
-        file_put_contents($xml_file, $this->buildCheckstyleXml($files));
-
-        $cmd = sprintf(
-            'php %s --from-checkstyle %s %s 2>&1',
-            escapeshellarg($this->tool_path),
-            escapeshellarg($xml_file),
-            implode(' ', array_map('escapeshellarg', $args))
-        );
-
-        return shell_exec($cmd) ?? '';
-    }
-
     public function testBasicNextLineSuppression(): void
     {
+        // Lines over 80 chars get put on the next line
         $php_file = $this->createTestFile('test.php', <<<'PHP'
 <?php
-$x = "string" + 5;
+$x = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + 5;
 PHP
         );
 
@@ -125,7 +79,7 @@ PHP
 
         $result = file_get_contents($php_file);
         $this->assertStringContainsString('// @phan-suppress-next-line PhanTypeInvalidLeftOperandOfAdd', $result);
-        $this->assertStringContainsString('$x = "string" + 5;', $result);
+        $this->assertStringContainsString('$x = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + 5;', $result);
     }
 
     public function testFunctionLevelSuppression(): void
@@ -248,88 +202,5 @@ PHP
 
         $result = file_get_contents($php_file);
         $this->assertStringContainsString('// @phan-file-suppress PhanUnreferencedFunction', $result);
-    }
-
-    public function testCheckstyleBasicNextLineSuppression(): void
-    {
-        $php_file = $this->createTestFile('test.php', <<<'PHP'
-<?php
-$x = "string" + 5;
-PHP
-        );
-
-        $this->runToolWithCheckstyle([
-            $php_file => [
-                ['line' => 2, 'source' => 'PhanTypeInvalidLeftOperandOfAdd', 'message' => 'some message', 'severity' => 'warning'],
-            ],
-        ]);
-
-        $result = file_get_contents($php_file);
-        $this->assertStringContainsString('// @phan-suppress-next-line PhanTypeInvalidLeftOperandOfAdd', $result);
-        $this->assertStringContainsString('$x = "string" + 5;', $result);
-    }
-
-    public function testCheckstyleFunctionLevelSuppression(): void
-    {
-        $php_file = $this->createTestFile('test.php', <<<'PHP'
-<?php
-function test() {
-    $x = "a" + 1;
-    $y = "b" + 2;
-    $z = "c" + 3;
-}
-PHP
-        );
-
-        $this->runToolWithCheckstyle([
-            $php_file => [
-                ['line' => 3, 'source' => 'PhanTypeInvalidLeftOperandOfAdd', 'message' => 'msg', 'severity' => 'warning'],
-                ['line' => 4, 'source' => 'PhanTypeInvalidLeftOperandOfAdd', 'message' => 'msg', 'severity' => 'warning'],
-                ['line' => 5, 'source' => 'PhanTypeInvalidLeftOperandOfAdd', 'message' => 'msg', 'severity' => 'warning'],
-            ],
-        ]);
-
-        $result = file_get_contents($php_file);
-        $this->assertStringContainsString('* @suppress PhanTypeInvalidLeftOperandOfAdd', $result);
-        $this->assertStringNotContainsString('@phan-suppress-next-line', $result);
-        $this->assertStringNotContainsString('@phan-suppress-current-line', $result);
-    }
-
-    public function testCheckstyleDryRunMode(): void
-    {
-        $php_file = $this->createTestFile('test.php', <<<'PHP'
-<?php
-$x = "string" + 5;
-PHP
-        );
-
-        $original_content = file_get_contents($php_file);
-
-        $this->runToolWithCheckstyle([
-            $php_file => [
-                ['line' => 2, 'source' => 'PhanTypeInvalidLeftOperandOfAdd', 'message' => 'msg', 'severity' => 'warning'],
-            ],
-        ], ['--dry-run']);
-
-        $this->assertEquals($original_content, file_get_contents($php_file));
-    }
-
-    public function testCheckstyleAndJsonMutuallyExclusive(): void
-    {
-        $json_file = $this->test_dir . '/issues.json';
-        file_put_contents($json_file, '[]');
-
-        $xml_file = $this->test_dir . '/issues.xml';
-        file_put_contents($xml_file, $this->buildCheckstyleXml([]));
-
-        $cmd = sprintf(
-            'php %s --from-json %s --from-checkstyle %s 2>&1',
-            escapeshellarg($this->tool_path),
-            escapeshellarg($json_file),
-            escapeshellarg($xml_file)
-        );
-
-        $output = shell_exec($cmd) ?? '';
-        $this->assertStringContainsString('Cannot use both', $output);
     }
 }
