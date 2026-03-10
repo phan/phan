@@ -63,6 +63,25 @@ This is stricter than Phan's default checks (Phan accepts a function or method t
 - **PhanPluginAlwaysReturnFunction**: `Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value`
 - **PhanPluginNeverReturnFunction**: `Function {FUNCTION} has a return type of {TYPE}, but may try to return a value`
 
+#### CaseMismatchPlugin.php
+
+Warns when a reference to a class, function, method, or namespace uses different casing
+than the original declaration. While PHP treats these identifiers as case-insensitive,
+inconsistent casing makes grepping harder and can break IDE tooling.
+
+This also checks string and array callables passed to functions like `array_map`, `usort`,
+`call_user_func`, etc.
+
+Supports `--automatic-fix` to correct detected mismatches.
+
+- **PhanPluginCaseMismatchClassName**: `Class reference {CLASS} has a casing mismatch with declaration {CLASS}`
+- **PhanPluginCaseMismatchFunctionName**: `Function call {FUNCTION} has a casing mismatch with declaration {FUNCTION}`
+- **PhanPluginCaseMismatchMethodName**: `Method call {METHOD} has a casing mismatch with declaration {METHOD}`
+- **PhanPluginCaseMismatchNamespace**: `Namespace segment {NAMESPACE} has a casing mismatch with declaration {NAMESPACE}`
+- **PhanPluginCaseMismatchCallableFunction**: `Callable {FUNCTION} has a casing mismatch with declaration {FUNCTION}`
+- **PhanPluginCaseMismatchCallableMethod**: `Callable method {METHOD} has a casing mismatch with declaration {METHOD}`
+- **PhanPluginCaseMismatchCallableClass**: `Callable class {CLASS} has a casing mismatch with declaration {CLASS}`
+
 #### DuplicateArrayKeyPlugin.php
 
 Warns about common errors in php array keys and switch statements. Has the following checks (This is able to resolve global and class constants to their scalar values).
