@@ -1058,6 +1058,10 @@ class CaseMismatchCallableChecker
         $declared_parts = array_values(array_filter(explode('\\', $declared_namespace), static function (string $part): bool {
             return $part !== '';
         }));
+        // Filter empty segments (e.g. from leading backslash in '\TestNs\func')
+        $reference_parts = array_values(array_filter($reference_parts, static function (string $part): bool {
+            return $part !== '';
+        }));
 
         $ref_count = count($reference_parts);
         $decl_count = count($declared_parts);

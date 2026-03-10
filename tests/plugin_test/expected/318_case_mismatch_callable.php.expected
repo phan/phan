@@ -69,3 +69,13 @@ src/318_case_mismatch_callable.php:191 PhanPluginCaseMismatchCallableMethod Call
 src/318_case_mismatch_callable.php:199 PhanUnreferencedFunction Possibly zero references to function \TestNs318\Variable\test_variable_callable()
 src/318_case_mismatch_callable.php:202 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
 src/318_case_mismatch_callable.php:202 PhanPluginConstantVariableScalar Variable $fn is probably constant with a value of 'TestNs318\\MYFUNC318'
+src/318_case_mismatch_callable.php:209 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_function_namespace_mismatch()
+src/318_case_mismatch_callable.php:211 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:214 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_function_both_mismatch()
+src/318_case_mismatch_callable.php:216 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:216 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:219 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_static_method_namespace_mismatch()
+src/318_case_mismatch_callable.php:221 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:224 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_array_callable_namespace_mismatch()
+src/318_case_mismatch_callable.php:226 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:230 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_correct()

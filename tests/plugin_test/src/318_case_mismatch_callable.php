@@ -202,3 +202,33 @@ namespace TestNs318\Variable {
         call_user_func($fn);
     }
 }
+
+// --- Leading backslash in callable strings ---
+
+namespace TestNs318\LeadingBackslash {
+    function test_fq_function_namespace_mismatch(): void {
+        // Leading \ in callable string — namespace mismatch should still be detected
+        call_user_func('\testns318\myFunc318');  // should warn (namespace)
+    }
+
+    function test_fq_function_both_mismatch(): void {
+        // Leading \ — both namespace and function name mismatch
+        call_user_func('\testns318\MYFUNC318');  // should warn (namespace + function name)
+    }
+
+    function test_fq_static_method_namespace_mismatch(): void {
+        // Leading \ in static method callable — namespace mismatch
+        call_user_func('\testns318\MyClass318::staticMethod');  // should warn (namespace)
+    }
+
+    function test_fq_array_callable_namespace_mismatch(): void {
+        // Leading \ in array callable class string — namespace mismatch
+        call_user_func(['\testns318\MyClass318', 'staticMethod']);  // should warn (namespace)
+    }
+
+    // Correct casing with leading \ — no warnings
+    function test_fq_correct(): void {
+        call_user_func('\TestNs318\myFunc318');
+        call_user_func('\TestNs318\MyClass318::staticMethod');
+    }
+}
