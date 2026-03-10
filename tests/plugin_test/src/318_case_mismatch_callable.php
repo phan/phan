@@ -119,6 +119,16 @@ namespace TestNs318\ArrayCallable {
         call_user_func(['TestNs318\myclass318', 'STATICMETHOD']);  // should warn (class + method)
     }
 
+    function test_array_namespace_mismatch(): void {
+        // Namespace casing mismatch in string class name in array callable
+        call_user_func(['testns318\MyClass318', 'staticMethod']);  // should warn (namespace)
+    }
+
+    function test_array_all_mismatch(): void {
+        // Namespace, class, and method casing all wrong in array callable
+        call_user_func(['testns318\myclass318', 'STATICMETHOD']);  // should warn (ns + class + method)
+    }
+
     function test_usort_mismatch(): void {
         $arr = [3, 1, 2];
         // Method name mismatch in usort with array callable

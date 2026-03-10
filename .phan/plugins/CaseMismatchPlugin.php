@@ -1016,6 +1016,12 @@ class CaseMismatchCallableChecker
                     Issue::SEVERITY_LOW
                 );
             }
+
+            // Check namespace segments for casing mismatches
+            if (count($class_parts) > 0) {
+                $declared_namespace = $class_fqsen->getNamespace();
+                self::checkNamespaceSegments($code_base, $issue_context, $class_parts, $declared_namespace);
+            }
         }
     }
 
