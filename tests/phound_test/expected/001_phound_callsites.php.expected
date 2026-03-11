@@ -1,46 +1,117 @@
 <-----------> Callsites <----------->
-\A::foo|const|src/001_phound_callsites.php:10
-\A::foo|prop|src/001_phound_callsites.php:11
-\A::fooz|prop|src/001_phound_callsites.php:12
-\A::foo|method|src/001_phound_callsites.php:13
-\A::bar|method|src/001_phound_callsites.php:14
-\B::__construct|method|src/001_phound_callsites.php:19
-\C::__construct|method|src/001_phound_callsites.php:21
-\A::getBOrC|method|src/001_phound_callsites.php:34
-\B::foo|method|src/001_phound_callsites.php:35
-\C::foo|method|src/001_phound_callsites.php:35
-\B::bar|prop|src/001_phound_callsites.php:36
-\C::bar|prop|src/001_phound_callsites.php:36
-\A::getBOrCClassName|method|src/001_phound_callsites.php:38
-\B::zoo|method|src/001_phound_callsites.php:39
-\C::zoo|method|src/001_phound_callsites.php:39
-\B::baz|prop|src/001_phound_callsites.php:40
-\C::baz|prop|src/001_phound_callsites.php:40
-\B::BOO|const|src/001_phound_callsites.php:41
-\C::BOO|const|src/001_phound_callsites.php:41
-\TestConstructor::__construct|method|src/001_phound_callsites.php:71
-\A::__construct|method|src/001_phound_callsites.php:75
-\A::foo|method|src/001_phound_callsites.php:76
-\A::bar|method|src/001_phound_callsites.php:77
-\A::foo|method|src/001_phound_callsites.php:79
-\A::getBOrC|method|src/001_phound_callsites.php:80
-\B::foo|method|src/001_phound_callsites.php:80
-\C::foo|method|src/001_phound_callsites.php:80
-\A::bar|method|src/001_phound_callsites.php:81
-\A::baz|method|src/001_phound_callsites.php:82
-\A::__construct|method|src/001_phound_callsites.php:86
-\A::bar|method|src/001_phound_callsites.php:86
-\A::getBOrCClassName|method|src/001_phound_callsites.php:88
-\B::__construct|method|src/001_phound_callsites.php:89
-\B::foo|method|src/001_phound_callsites.php:89
-\C::__construct|method|src/001_phound_callsites.php:89
-\C::foo|method|src/001_phound_callsites.php:89
-\A::foo|method|src/001_phound_callsites.php:91
-\Closure::fromCallable|method|src/001_phound_callsites.php:91
-\A::getBOrC|method|src/001_phound_callsites.php:94
-\B::foo|method|src/001_phound_callsites.php:94
-\C::foo|method|src/001_phound_callsites.php:94
-\Closure::fromCallable|method|src/001_phound_callsites.php:94
-\A::getBOrC|method|src/001_phound_callsites.php:97
-\B::methodOnlyDefinedInB|method|src/001_phound_callsites.php:99
-\B::prop_only_public_in_b|prop|src/001_phound_callsites.php:100
+\PhoundCallsites\A::foo|const|src/001_phound_callsites.php:12
+\PhoundCallsites\A::foo|prop|src/001_phound_callsites.php:13
+\PhoundCallsites\A::fooz|prop|src/001_phound_callsites.php:14
+\PhoundCallsites\A::foo|method|src/001_phound_callsites.php:15
+\PhoundCallsites\A::bar|method|src/001_phound_callsites.php:16
+\PhoundCallsites\B::__construct|method|src/001_phound_callsites.php:21
+\PhoundCallsites\C::__construct|method|src/001_phound_callsites.php:23
+\PhoundCallsites\A::getBOrC|method|src/001_phound_callsites.php:36
+\PhoundCallsites\B::foo|method|src/001_phound_callsites.php:37
+\PhoundCallsites\C::foo|method|src/001_phound_callsites.php:37
+\PhoundCallsites\B::bar|prop|src/001_phound_callsites.php:38
+\PhoundCallsites\C::bar|prop|src/001_phound_callsites.php:38
+\PhoundCallsites\A::getBOrCClassName|method|src/001_phound_callsites.php:40
+\PhoundCallsites\B::zoo|method|src/001_phound_callsites.php:41
+\PhoundCallsites\C::zoo|method|src/001_phound_callsites.php:41
+\PhoundCallsites\B::baz|prop|src/001_phound_callsites.php:42
+\PhoundCallsites\C::baz|prop|src/001_phound_callsites.php:42
+\PhoundCallsites\B::BOO|const|src/001_phound_callsites.php:43
+\PhoundCallsites\C::BOO|const|src/001_phound_callsites.php:43
+\PhoundCallsites\TestConstructor::__construct|method|src/001_phound_callsites.php:73
+\PhoundCallsites\A::__construct|method|src/001_phound_callsites.php:77
+\PhoundCallsites\A::foo|method|src/001_phound_callsites.php:78
+\PhoundCallsites\A::bar|method|src/001_phound_callsites.php:79
+\PhoundCallsites\A::foo|method|src/001_phound_callsites.php:81
+\PhoundCallsites\A::getBOrC|method|src/001_phound_callsites.php:82
+\PhoundCallsites\B::foo|method|src/001_phound_callsites.php:82
+\PhoundCallsites\C::foo|method|src/001_phound_callsites.php:82
+\PhoundCallsites\A::bar|method|src/001_phound_callsites.php:83
+\PhoundCallsites\A::baz|method|src/001_phound_callsites.php:84
+\PhoundCallsites\A::__construct|method|src/001_phound_callsites.php:88
+\PhoundCallsites\A::bar|method|src/001_phound_callsites.php:88
+\PhoundCallsites\A::getBOrCClassName|method|src/001_phound_callsites.php:90
+\PhoundCallsites\B::__construct|method|src/001_phound_callsites.php:91
+\PhoundCallsites\B::foo|method|src/001_phound_callsites.php:91
+\PhoundCallsites\C::__construct|method|src/001_phound_callsites.php:91
+\PhoundCallsites\C::foo|method|src/001_phound_callsites.php:91
+\Closure::fromCallable|method|src/001_phound_callsites.php:93
+\PhoundCallsites\A::foo|method|src/001_phound_callsites.php:93
+\Closure::fromCallable|method|src/001_phound_callsites.php:96
+\PhoundCallsites\A::getBOrC|method|src/001_phound_callsites.php:96
+\PhoundCallsites\B::foo|method|src/001_phound_callsites.php:96
+\PhoundCallsites\C::foo|method|src/001_phound_callsites.php:96
+\PhoundCallsites\A::getBOrC|method|src/001_phound_callsites.php:99
+\PhoundCallsites\B::methodOnlyDefinedInB|method|src/001_phound_callsites.php:101
+\PhoundCallsites\B::prop_only_public_in_b|prop|src/001_phound_callsites.php:102
+<-----------> Classes <----------->
+\PhoundCallsites\A|src/001_phound_callsites.php
+\PhoundCallsites\B|src/001_phound_callsites.php
+\PhoundCallsites\C|src/001_phound_callsites.php
+\PhoundCallsites\DefaultParams|src/001_phound_callsites.php
+\PhoundCallsites\TestConstructor|src/001_phound_callsites.php
+\PhoundCallsites\TestConstructor2|src/001_phound_callsites.php
+<-----------> Class Interfaces <----------->
+<-----------> Class Relationships <----------->
+\PhoundCallsites\TestConstructor|\PhoundCallsites\TestConstructor2
+<-----------> Class Traits <----------->
+<-----------> Interfaces <----------->
+<-----------> Interface Relationships <----------->
+<-----------> Traits <----------->
+<-----------> Trait Traits <----------->
+<-----------> Signatures <----------->
+\PhoundCallsites\A::__construct	method	\PhoundCallsites\A	__construct	\PhoundCallsites\A	0	public	src/001_phound_callsites.php	4
+\PhoundCallsites\A::bar	method	\PhoundCallsites\A	bar		1	public	src/001_phound_callsites.php	9
+\PhoundCallsites\A::baz	method	\PhoundCallsites\A	baz		0	public	src/001_phound_callsites.php	10
+\PhoundCallsites\A::callBOrC	method	\PhoundCallsites\A	callBOrC		0	public	src/001_phound_callsites.php	35
+\PhoundCallsites\A::class	const	\PhoundCallsites\A	class	'PhoundCallsites\\A'	0	public	src/001_phound_callsites.php	4
+\PhoundCallsites\A::foo	const	\PhoundCallsites\A	foo	1	0	public	src/001_phound_callsites.php	5
+\PhoundCallsites\A::foo	method	\PhoundCallsites\A	foo		0	public	src/001_phound_callsites.php	8
+\PhoundCallsites\A::foo	prop	\PhoundCallsites\A	foo	int	1	public	src/001_phound_callsites.php	6
+\PhoundCallsites\A::fooz	prop	\PhoundCallsites\A	fooz	int	0	public	src/001_phound_callsites.php	7
+\PhoundCallsites\A::getBOrC	method	\PhoundCallsites\A	getBOrC	\PhoundCallsites\B|\PhoundCallsites\C	0	public	src/001_phound_callsites.php	19
+\PhoundCallsites\A::getBOrCClassName	method	\PhoundCallsites\A	getBOrCClassName	'PhoundCallsites\\B'|'PhoundCallsites\\C'	0	public	src/001_phound_callsites.php	27
+\PhoundCallsites\B::BOO	const	\PhoundCallsites\B	BOO	0	0	public	src/001_phound_callsites.php	48
+\PhoundCallsites\B::__construct	method	\PhoundCallsites\B	__construct	\PhoundCallsites\B	0	public	src/001_phound_callsites.php	47
+\PhoundCallsites\B::bar	prop	\PhoundCallsites\B	bar	int	0	public	src/001_phound_callsites.php	49
+\PhoundCallsites\B::baz	prop	\PhoundCallsites\B	baz	int	1	public	src/001_phound_callsites.php	50
+\PhoundCallsites\B::class	const	\PhoundCallsites\B	class	'PhoundCallsites\\B'	0	public	src/001_phound_callsites.php	47
+\PhoundCallsites\B::foo	method	\PhoundCallsites\B	foo		0	public	src/001_phound_callsites.php	52
+\PhoundCallsites\B::methodOnlyDefinedInB	method	\PhoundCallsites\B	methodOnlyDefinedInB		0	public	src/001_phound_callsites.php	54
+\PhoundCallsites\B::prop_only_public_in_b	prop	\PhoundCallsites\B	prop_only_public_in_b	int	0	public	src/001_phound_callsites.php	51
+\PhoundCallsites\B::zoo	method	\PhoundCallsites\B	zoo		1	public	src/001_phound_callsites.php	53
+\PhoundCallsites\C::BOO	const	\PhoundCallsites\C	BOO	0	0	public	src/001_phound_callsites.php	58
+\PhoundCallsites\C::__construct	method	\PhoundCallsites\C	__construct	\PhoundCallsites\C	0	public	src/001_phound_callsites.php	57
+\PhoundCallsites\C::bar	prop	\PhoundCallsites\C	bar	int	0	public	src/001_phound_callsites.php	59
+\PhoundCallsites\C::baz	prop	\PhoundCallsites\C	baz	int	1	public	src/001_phound_callsites.php	60
+\PhoundCallsites\C::class	const	\PhoundCallsites\C	class	'PhoundCallsites\\C'	0	public	src/001_phound_callsites.php	57
+\PhoundCallsites\C::foo	method	\PhoundCallsites\C	foo		0	public	src/001_phound_callsites.php	62
+\PhoundCallsites\C::prop_only_public_in_b	prop	\PhoundCallsites\C	prop_only_public_in_b	int	0	private	src/001_phound_callsites.php	61
+\PhoundCallsites\C::zoo	method	\PhoundCallsites\C	zoo		1	public	src/001_phound_callsites.php	63
+\PhoundCallsites\DefaultParams::class	const	\PhoundCallsites\DefaultParams	class	'PhoundCallsites\\DefaultParams'	0	public	src/001_phound_callsites.php	108
+\PhoundCallsites\DefaultParams::method_with_defaults	method	\PhoundCallsites\DefaultParams	method_with_defaults		0	public	src/001_phound_callsites.php	109
+\PhoundCallsites\DefaultParams::method_with_variadic	method	\PhoundCallsites\DefaultParams	method_with_variadic		0	public	src/001_phound_callsites.php	111
+\PhoundCallsites\DefaultParams::static_with_expr	method	\PhoundCallsites\DefaultParams	static_with_expr		1	public	src/001_phound_callsites.php	110
+\PhoundCallsites\TestConstructor2::__construct	method	\PhoundCallsites\TestConstructor2	__construct	void	0	public	src/001_phound_callsites.php	72
+\PhoundCallsites\TestConstructor2::class	const	\PhoundCallsites\TestConstructor2	class	'PhoundCallsites\\TestConstructor2'	0	public	src/001_phound_callsites.php	71
+\PhoundCallsites\TestConstructor::__construct	method	\PhoundCallsites\TestConstructor	__construct	void	0	public	src/001_phound_callsites.php	69
+\PhoundCallsites\TestConstructor::class	const	\PhoundCallsites\TestConstructor	class	'PhoundCallsites\\TestConstructor'	0	public	src/001_phound_callsites.php	68
+\PhoundCallsites\func_with_defaults	function		func_with_defaults	void	0		src/001_phound_callsites.php	105
+\PhoundCallsites\func_with_variadic	function		func_with_variadic	void	0		src/001_phound_callsites.php	106
+\PhoundCallsites\func_with_variadic_and_default	function		func_with_variadic_and_default	void	0		src/001_phound_callsites.php	107
+\PhoundCallsites\yo	function		yo	void	0		src/001_phound_callsites.php	66
+<-----------> Parameters <----------->
+\PhoundCallsites\DefaultParams::method_with_defaults	0	count	int	0	0	1	0
+\PhoundCallsites\DefaultParams::method_with_defaults	1	flag	bool	0	0	1	true
+\PhoundCallsites\DefaultParams::method_with_defaults	2	sep	string	0	0	1	','
+\PhoundCallsites\DefaultParams::method_with_variadic	0	format	string	0	0	0	
+\PhoundCallsites\DefaultParams::method_with_variadic	1	args	array	1	0	1	
+\PhoundCallsites\DefaultParams::static_with_expr	0	mode	int	0	0	1	(1 + 2)
+\PhoundCallsites\func_with_defaults	0	x	int	0	0	1	42
+\PhoundCallsites\func_with_defaults	1	name	string	0	0	1	'hello'
+\PhoundCallsites\func_with_defaults	2	items	?array	0	0	1	null
+\PhoundCallsites\func_with_defaults	3	rate	float	0	0	1	3.140000000000000124344978758017532527446746826...
+\PhoundCallsites\func_with_variadic	0	first	string	0	0	0	
+\PhoundCallsites\func_with_variadic	1	rest	string[]	1	0	1	
+\PhoundCallsites\func_with_variadic_and_default	0	count	int	0	0	1	10
+\PhoundCallsites\func_with_variadic_and_default	1	items	string[]	1	0	1	

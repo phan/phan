@@ -1,4 +1,6 @@
 <?php
+namespace PhoundCallsites;
+
 class A {
     public const foo = 1;
     public static $foo = 2;
@@ -81,17 +83,17 @@ call_user_func([$a->getBOrC(), 'foo']);
 call_user_func_array(A::class . '::bar', []); // AST_CALL
 $a->baz(); // AST_METHOD_CALL
 
-$class_name = 'A';
+$class_name = A::class;
 $method_name = 'bar';
 (new $class_name)->$method_name();
 
 $class_name = $a->getBOrCClassName();
 (new $class_name)->foo();
 
-$cl = Closure::fromCallable([$a, 'foo']);
+$cl = \Closure::fromCallable([$a, 'foo']);
 $cl();
 
-$cl = Closure::fromCallable([$a->getBOrC(), 'foo']);
+$cl = \Closure::fromCallable([$a->getBOrC(), 'foo']);
 $cl();
 
 $b_or_c = $a->getBOrC();
