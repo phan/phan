@@ -100,3 +100,6 @@ function testDescribable(Describable $d): void {
     $d->greet();   // \Describable::greet -> \Greetable::greet (via interface_relationships)
     $d->describe(); // \Describable::describe stays (Greetable doesn't have describe)
 }
+
+// 11) ::class pseudo-constant -> should NOT propagate (it's lexical, not inherited)
+$leafClass = Leaf::class; // \Leaf::class callsite only, NOT \Middle::class or \Base::class
