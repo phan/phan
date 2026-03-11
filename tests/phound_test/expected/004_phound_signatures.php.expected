@@ -28,6 +28,41 @@
 \C::foo	method	\C	foo		0	public	src/001_phound_callsites.php	60
 \C::prop_only_public_in_b	prop	\C	prop_only_public_in_b	int	0	private	src/001_phound_callsites.php	59
 \C::zoo	method	\C	zoo		1	public	src/001_phound_callsites.php	61
+\CallsitePropagation\Base::BASE_CONST	const	\CallsitePropagation\Base	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
+\CallsitePropagation\Base::baseMethod	method	\CallsitePropagation\Base	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
+\CallsitePropagation\Base::baseProp	prop	\CallsitePropagation\Base	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
+\CallsitePropagation\Base::class	const	\CallsitePropagation\Base	class	'CallsitePropagation\\Base'	0	public	src/006_phound_callsite_propagation.php	37
+\CallsitePropagation\Describable::class	const	\CallsitePropagation\Describable	class	'CallsitePropagation\\Describable'	0	public	src/006_phound_callsite_propagation.php	18
+\CallsitePropagation\Describable::describe	method	\CallsitePropagation\Describable	describe	string	0	public	src/006_phound_callsite_propagation.php	19
+\CallsitePropagation\Describable::greet	method	\CallsitePropagation\Describable	greet	string	0	public	src/006_phound_callsite_propagation.php	15
+\CallsitePropagation\GreetTrait::class	const	\CallsitePropagation\GreetTrait	class	'CallsitePropagation\\GreetTrait'	0	public	src/006_phound_callsite_propagation.php	22
+\CallsitePropagation\GreetTrait::greet	method	\CallsitePropagation\GreetTrait	greet	'hello'|string	0	public	src/006_phound_callsite_propagation.php	23
+\CallsitePropagation\Greetable::class	const	\CallsitePropagation\Greetable	class	'CallsitePropagation\\Greetable'	0	public	src/006_phound_callsite_propagation.php	14
+\CallsitePropagation\Greetable::greet	method	\CallsitePropagation\Greetable	greet	string	0	public	src/006_phound_callsite_propagation.php	15
+\CallsitePropagation\InnerTrait::class	const	\CallsitePropagation\InnerTrait	class	'CallsitePropagation\\InnerTrait'	0	public	src/006_phound_callsite_propagation.php	28
+\CallsitePropagation\InnerTrait::innerMethod	method	\CallsitePropagation\InnerTrait	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
+\CallsitePropagation\Leaf::BASE_CONST	const	\CallsitePropagation\Leaf	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
+\CallsitePropagation\Leaf::__construct	method	\CallsitePropagation\Leaf	__construct	\CallsitePropagation\Leaf	0	public	src/006_phound_callsite_propagation.php	48
+\CallsitePropagation\Leaf::baseMethod	method	\CallsitePropagation\Leaf	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
+\CallsitePropagation\Leaf::baseProp	prop	\CallsitePropagation\Leaf	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
+\CallsitePropagation\Leaf::class	const	\CallsitePropagation\Leaf	class	'CallsitePropagation\\Leaf'	0	public	src/006_phound_callsite_propagation.php	48
+\CallsitePropagation\Leaf::describe	method	\CallsitePropagation\Leaf	describe	'leaf'|string	0	public	src/006_phound_callsite_propagation.php	50
+\CallsitePropagation\Leaf::greet	method	\CallsitePropagation\Leaf	greet	string	0	public	src/006_phound_callsite_propagation.php	23
+\CallsitePropagation\Leaf::innerMethod	method	\CallsitePropagation\Leaf	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
+\CallsitePropagation\Leaf::middleOnly	method	\CallsitePropagation\Leaf	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	45
+\CallsitePropagation\Leaf::outerMethod	method	\CallsitePropagation\Leaf	outerMethod	void	0	public	src/006_phound_callsite_propagation.php	34
+\CallsitePropagation\Middle::BASE_CONST	const	\CallsitePropagation\Middle	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
+\CallsitePropagation\Middle::__construct	method	\CallsitePropagation\Middle	__construct	\CallsitePropagation\Middle	0	public	src/006_phound_callsite_propagation.php	43
+\CallsitePropagation\Middle::baseMethod	method	\CallsitePropagation\Middle	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
+\CallsitePropagation\Middle::baseProp	prop	\CallsitePropagation\Middle	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
+\CallsitePropagation\Middle::class	const	\CallsitePropagation\Middle	class	'CallsitePropagation\\Middle'	0	public	src/006_phound_callsite_propagation.php	43
+\CallsitePropagation\Middle::greet	method	\CallsitePropagation\Middle	greet	string	0	public	src/006_phound_callsite_propagation.php	23
+\CallsitePropagation\Middle::middleOnly	method	\CallsitePropagation\Middle	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	45
+\CallsitePropagation\OuterTrait::class	const	\CallsitePropagation\OuterTrait	class	'CallsitePropagation\\OuterTrait'	0	public	src/006_phound_callsite_propagation.php	32
+\CallsitePropagation\OuterTrait::innerMethod	method	\CallsitePropagation\OuterTrait	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
+\CallsitePropagation\OuterTrait::outerMethod	method	\CallsitePropagation\OuterTrait	outerMethod	void	0	public	src/006_phound_callsite_propagation.php	34
+\CallsitePropagation\standaloneFunc	function		standaloneFunc	void	0		src/006_phound_callsite_propagation.php	82
+\CallsitePropagation\testDescribable	function		testDescribable	void	0		src/006_phound_callsite_propagation.php	86
 \Car::__construct	method	\Car	__construct	void	0	public	src/003_phound_hierarchy.php	116
 \Car::class	const	\Car	class	'Car'	0	public	src/003_phound_hierarchy.php	112
 \Car::clutchEngaged	prop	\Car	clutchEngaged	bool	0	protected	src/003_phound_hierarchy.php	69
@@ -314,6 +349,7 @@
 \testInterface005	function		testInterface005	void	0		src/005_phound_missed_callsites.php	81
 \yo	function		yo	void	0		src/001_phound_callsites.php	64
 <-----------> Parameters <----------->
+\CallsitePropagation\testDescribable	0	d	\CallsitePropagation\Describable	0	0	0	
 \Car::__construct	0	model	string	0	0	0	
 \Car::drive	0	distance	int	0	0	0	
 \Car::move	0	distance	int	0	0	0	

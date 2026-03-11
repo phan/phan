@@ -38,7 +38,7 @@ fi
 #   for example, 'foo.php:10' might otherwise appear ahead of 'foo.php:9' when treated as a string.
 #
 # Together, these order by clauses ensure the output is ordered by file and line number.
-CALLSITES=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type')
+CALLSITES=$(sqlite3 ~/phound.db "SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ':')), cast(substr(callsite, instr(callsite, ':') + 1) as integer), element, type")
 CLASSES=$(sqlite3 ~/phound.db 'SELECT * FROM classes ORDER BY filepath, name')
 CLASS_INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM class_interfaces ORDER BY class, interface')
 CLASS_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM class_relationships ORDER BY parent, child')
