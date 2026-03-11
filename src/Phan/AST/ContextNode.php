@@ -589,7 +589,7 @@ class ContextNode
                         return $this->node->flags !== ast\flags\TYPE_STATIC;
                     }
                 }
-                return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT && $type instanceof StringType);
+                return $type->isObject() || ($type instanceof MixedType) || $type->hasTemplateTypeRecursive() || ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT && $type instanceof StringType);
             })) {
                 if ($warn_if_wrong_type) {
                     if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
