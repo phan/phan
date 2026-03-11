@@ -3281,7 +3281,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // across all scopes. The shape-derived type is scope-specific and more
                 // precise, so return it directly rather than merging with the global type.
                 if ($property->isDynamicProperty()
-                    && $property->getClassFQSEN()->__toString() === '\\stdClass'
+                    && $property->getClassFQSEN() === FullyQualifiedClassName::getStdClassFQSEN()
                 ) {
                     return $stdclass_shape_union;
                 }
