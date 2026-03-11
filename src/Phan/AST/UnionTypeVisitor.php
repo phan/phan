@@ -2538,7 +2538,16 @@ class UnionTypeVisitor extends AnalysisVisitor
             // back to genericArrayElementTypes() which would incorrectly extract types from
             // unrelated array shape fields.
             if ($has_truly_generic_array) {
-                return MixedType::instance(false)->asPHPDocUnionType();
+                $result = MixedType::instance(false)->asPHPDocUnionType();
+                // Also include element types from typed generic arrays
+                // (e.g., non-empty-array<string, T>) so that downstream
+                // method resolution can still find concrete types.
+                foreach ($union_type->getTypeSet() as $type) {
+                    if ($type instanceof GenericArrayInterface && !($type instanceof ArrayShapeType)) {
+                        $result = $result->withUnionType($type->genericArrayElementUnionType());
+                    }
+                }
+                return $result;
             }
             return null;
         }
