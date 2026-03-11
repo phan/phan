@@ -83,7 +83,7 @@ call_user_func([$a->getBOrC(), 'foo']);
 call_user_func_array(A::class . '::bar', []); // AST_CALL
 $a->baz(); // AST_METHOD_CALL
 
-$class_name = A::class;
+$class_name = 'PhoundCallsites\A';
 $method_name = 'bar';
 (new $class_name)->$method_name();
 
