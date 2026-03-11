@@ -1,6 +1,7 @@
 <-----------> Callsites <----------->
 \CallsitePropagation\Middle::privateMethod|method|src/006_phound_callsite_propagation.php:52
 \CallsitePropagation\Middle::privateProp|prop|src/006_phound_callsite_propagation.php:53
+\CallsitePropagation\Base::__construct|method|src/006_phound_callsite_propagation.php:67
 \CallsitePropagation\Leaf::__construct|method|src/006_phound_callsite_propagation.php:67
 \CallsitePropagation\Middle::__construct|method|src/006_phound_callsite_propagation.php:67
 \CallsitePropagation\Base::baseMethod|method|src/006_phound_callsite_propagation.php:68
@@ -22,6 +23,7 @@
 \CallsitePropagation\InnerTrait::innerMethod|method|src/006_phound_callsite_propagation.php:81
 \CallsitePropagation\Leaf::innerMethod|method|src/006_phound_callsite_propagation.php:81
 \CallsitePropagation\OuterTrait::innerMethod|method|src/006_phound_callsite_propagation.php:81
+\CallsitePropagation\Base::__construct|method|src/006_phound_callsite_propagation.php:84
 \CallsitePropagation\Middle::__construct|method|src/006_phound_callsite_propagation.php:84
 \CallsitePropagation\Middle::middleOnly|method|src/006_phound_callsite_propagation.php:85
 \CallsitePropagation\GreetTrait::greet|method|src/006_phound_callsite_propagation.php:88
@@ -61,6 +63,7 @@
 \CallsitePropagation\OuterTrait|\CallsitePropagation\InnerTrait
 <-----------> Signatures <----------->
 \CallsitePropagation\Base::BASE_CONST	const	\CallsitePropagation\Base	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
+\CallsitePropagation\Base::__construct	method	\CallsitePropagation\Base	__construct	\CallsitePropagation\Base	0	public	src/006_phound_callsite_propagation.php	37
 \CallsitePropagation\Base::baseMethod	method	\CallsitePropagation\Base	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
 \CallsitePropagation\Base::baseProp	prop	\CallsitePropagation\Base	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
 \CallsitePropagation\Base::class	const	\CallsitePropagation\Base	class	'CallsitePropagation\\Base'	0	public	src/006_phound_callsite_propagation.php	37

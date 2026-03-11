@@ -49,11 +49,13 @@
 \PhoundMissedCallsites\Chain005::class	const	\PhoundMissedCallsites\Chain005	class	'PhoundMissedCallsites\\Chain005'	0	public	src/005_phound_missed_callsites.php	22
 \PhoundMissedCallsites\Chain005::end	method	\PhoundMissedCallsites\Chain005	end	void	0	public	src/005_phound_missed_callsites.php	24
 \PhoundMissedCallsites\Chain005::next	method	\PhoundMissedCallsites\Chain005	next	\PhoundMissedCallsites\Chain005|static	0	public	src/005_phound_missed_callsites.php	23
+\PhoundMissedCallsites\Child005::__construct	method	\PhoundMissedCallsites\Child005	__construct	\PhoundMissedCallsites\Child005	0	public	src/005_phound_missed_callsites.php	31
 \PhoundMissedCallsites\Child005::class	const	\PhoundMissedCallsites\Child005	class	'PhoundMissedCallsites\\Child005'	0	public	src/005_phound_missed_callsites.php	31
 \PhoundMissedCallsites\Child005::ownMethod	method	\PhoundMissedCallsites\Child005	ownMethod	void	0	public	src/005_phound_missed_callsites.php	39
 \PhoundMissedCallsites\Child005::parentMethod	method	\PhoundMissedCallsites\Child005	parentMethod	void	0	public	src/005_phound_missed_callsites.php	28
 \PhoundMissedCallsites\Child005::selfMethod	method	\PhoundMissedCallsites\Child005	selfMethod	void	1	public	src/005_phound_missed_callsites.php	38
 \PhoundMissedCallsites\Child005::test	method	\PhoundMissedCallsites\Child005	test	void	0	public	src/005_phound_missed_callsites.php	32
+\PhoundMissedCallsites\Parent005::__construct	method	\PhoundMissedCallsites\Parent005	__construct	\PhoundMissedCallsites\Parent005	0	public	src/005_phound_missed_callsites.php	27
 \PhoundMissedCallsites\Parent005::class	const	\PhoundMissedCallsites\Parent005	class	'PhoundMissedCallsites\\Parent005'	0	public	src/005_phound_missed_callsites.php	27
 \PhoundMissedCallsites\Parent005::parentMethod	method	\PhoundMissedCallsites\Parent005	parentMethod	void	0	public	src/005_phound_missed_callsites.php	28
 \PhoundMissedCallsites\Target005::__construct	method	\PhoundMissedCallsites\Target005	__construct	\PhoundMissedCallsites\Target005	0	public	src/005_phound_missed_callsites.php	6
@@ -63,6 +65,7 @@
 \PhoundMissedCallsites\Target005::prop	prop	\PhoundMissedCallsites\Target005	prop	int	0	public	src/005_phound_missed_callsites.php	9
 \PhoundMissedCallsites\Target005::replace	method	\PhoundMissedCallsites\Target005	replace	''|string	0	public	src/005_phound_missed_callsites.php	11
 \PhoundMissedCallsites\Target005::staticMethod	method	\PhoundMissedCallsites\Target005	staticMethod	void	1	public	src/005_phound_missed_callsites.php	8
+\PhoundMissedCallsites\TargetImpl005::__construct	method	\PhoundMissedCallsites\TargetImpl005	__construct	\PhoundMissedCallsites\TargetImpl005	0	public	src/005_phound_missed_callsites.php	18
 \PhoundMissedCallsites\TargetImpl005::class	const	\PhoundMissedCallsites\TargetImpl005	class	'PhoundMissedCallsites\\TargetImpl005'	0	public	src/005_phound_missed_callsites.php	18
 \PhoundMissedCallsites\TargetImpl005::method	method	\PhoundMissedCallsites\TargetImpl005	method	void	0	public	src/005_phound_missed_callsites.php	19
 \PhoundMissedCallsites\TargetInterface005::class	const	\PhoundMissedCallsites\TargetInterface005	class	'PhoundMissedCallsites\\TargetInterface005'	0	public	src/005_phound_missed_callsites.php	14

@@ -982,6 +982,16 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             $class_fqsen = $clazz->getFQSEN();
             $class_fqsen_str = $class_fqsen->__toString();
 
+            // Ensure the implicit constructor is materialized for non-trait,
+            // non-interface classes. Phan lazily creates default constructors
+            // only when getMethodByName('__construct') is called (e.g., from
+            // a `new` expression). Classes that are never directly instantiated
+            // won't have a __construct in the method map, which means
+            // propagated callsites can't find the ancestor's constructor.
+            if (!$clazz->isTrait() && !$clazz->isInterface()) {
+                $clazz->getMethodByName($code_base, '__construct');
+            }
+
             foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
                 if ($method->isPHPInternal()) {
                     continue;

@@ -183,6 +183,7 @@
 \PhoundHierarchy\MotorizedTrait|\PhoundHierarchy\MovableTrait
 \PhoundHierarchy\SailingTrait|\PhoundHierarchy\MovableTrait
 <-----------> Signatures <----------->
+\DeepHierarchy\Child::__construct	method	\DeepHierarchy\Child	__construct	\DeepHierarchy\Child	0	public	src/003_phound_hierarchy.php	246
 \DeepHierarchy\Child::class	const	\DeepHierarchy\Child	class	'DeepHierarchy\\Child'	0	public	src/003_phound_hierarchy.php	246
 \DeepHierarchy\Child::i1Method	method	\DeepHierarchy\Child	i1Method	void	0	public	src/003_phound_hierarchy.php	241
 \DeepHierarchy\Child::i2Method	method	\DeepHierarchy\Child	i2Method	void	0	public	src/003_phound_hierarchy.php	247
@@ -192,6 +193,7 @@
 \DeepHierarchy\Child::t2Prop	prop	\DeepHierarchy\Child	t2Prop	int	0	protected	src/003_phound_hierarchy.php	223
 \DeepHierarchy\Child::t3Method	method	\DeepHierarchy\Child	t3Method	void	0	public	src/003_phound_hierarchy.php	232
 \DeepHierarchy\Child::t3Prop	prop	\DeepHierarchy\Child	t3Prop	int	0	protected	src/003_phound_hierarchy.php	231
+\DeepHierarchy\Grandchild::__construct	method	\DeepHierarchy\Grandchild	__construct	\DeepHierarchy\Grandchild	0	public	src/003_phound_hierarchy.php	252
 \DeepHierarchy\Grandchild::class	const	\DeepHierarchy\Grandchild	class	'DeepHierarchy\\Grandchild'	0	public	src/003_phound_hierarchy.php	252
 \DeepHierarchy\Grandchild::i1Method	method	\DeepHierarchy\Grandchild	i1Method	void	0	public	src/003_phound_hierarchy.php	241
 \DeepHierarchy\Grandchild::i2Method	method	\DeepHierarchy\Grandchild	i2Method	void	0	public	src/003_phound_hierarchy.php	247
@@ -201,6 +203,7 @@
 \DeepHierarchy\Grandchild::t2Prop	prop	\DeepHierarchy\Grandchild	t2Prop	int	0	protected	src/003_phound_hierarchy.php	223
 \DeepHierarchy\Grandchild::t3Method	method	\DeepHierarchy\Grandchild	t3Method	void	0	public	src/003_phound_hierarchy.php	232
 \DeepHierarchy\Grandchild::t3Prop	prop	\DeepHierarchy\Grandchild	t3Prop	int	0	protected	src/003_phound_hierarchy.php	231
+\DeepHierarchy\GreatGrandchild::__construct	method	\DeepHierarchy\GreatGrandchild	__construct	\DeepHierarchy\GreatGrandchild	0	public	src/003_phound_hierarchy.php	256
 \DeepHierarchy\GreatGrandchild::class	const	\DeepHierarchy\GreatGrandchild	class	'DeepHierarchy\\GreatGrandchild'	0	public	src/003_phound_hierarchy.php	256
 \DeepHierarchy\GreatGrandchild::i1Method	method	\DeepHierarchy\GreatGrandchild	i1Method	void	0	public	src/003_phound_hierarchy.php	241
 \DeepHierarchy\GreatGrandchild::i2Method	method	\DeepHierarchy\GreatGrandchild	i2Method	void	0	public	src/003_phound_hierarchy.php	247
@@ -226,6 +229,7 @@
 \DeepHierarchy\I4::i2Method	method	\DeepHierarchy\I4	i2Method	void	0	public	src/003_phound_hierarchy.php	202
 \DeepHierarchy\I4::i3Method	method	\DeepHierarchy\I4	i3Method	void	0	public	src/003_phound_hierarchy.php	206
 \DeepHierarchy\I4::i4Method	method	\DeepHierarchy\I4	i4Method	void	0	public	src/003_phound_hierarchy.php	210
+\DeepHierarchy\Root::__construct	method	\DeepHierarchy\Root	__construct	\DeepHierarchy\Root	0	public	src/003_phound_hierarchy.php	239
 \DeepHierarchy\Root::class	const	\DeepHierarchy\Root	class	'DeepHierarchy\\Root'	0	public	src/003_phound_hierarchy.php	239
 \DeepHierarchy\Root::i1Method	method	\DeepHierarchy\Root	i1Method	void	0	public	src/003_phound_hierarchy.php	241
 \DeepHierarchy\Root::t1Method	method	\DeepHierarchy\Root	t1Method	void	0	public	src/003_phound_hierarchy.php	216

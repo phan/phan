@@ -88,6 +88,7 @@
 \PhoundCallsites\C::foo	method	\PhoundCallsites\C	foo		0	public	src/001_phound_callsites.php	62
 \PhoundCallsites\C::prop_only_public_in_b	prop	\PhoundCallsites\C	prop_only_public_in_b	int	0	private	src/001_phound_callsites.php	61
 \PhoundCallsites\C::zoo	method	\PhoundCallsites\C	zoo		1	public	src/001_phound_callsites.php	63
+\PhoundCallsites\DefaultParams::__construct	method	\PhoundCallsites\DefaultParams	__construct	\PhoundCallsites\DefaultParams	0	public	src/001_phound_callsites.php	108
 \PhoundCallsites\DefaultParams::class	const	\PhoundCallsites\DefaultParams	class	'PhoundCallsites\\DefaultParams'	0	public	src/001_phound_callsites.php	108
 \PhoundCallsites\DefaultParams::method_with_defaults	method	\PhoundCallsites\DefaultParams	method_with_defaults		0	public	src/001_phound_callsites.php	109
 \PhoundCallsites\DefaultParams::method_with_variadic	method	\PhoundCallsites\DefaultParams	method_with_variadic		0	public	src/001_phound_callsites.php	111
