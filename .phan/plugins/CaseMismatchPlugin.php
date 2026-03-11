@@ -489,16 +489,23 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
 
-        // AST strips the leading \ for fully-qualified names and stores it in flags.
-        // We need to add it back for fromStringInContext to resolve correctly.
+        // Resolve the class FQSEN based on the name flags.
         $flags = $class_node->flags;
-        $fqsen_string = $flags === ast\flags\NAME_FQ ? '\\' . $reference_name : $reference_name;
-
         try {
-            $class_fqsen = FullyQualifiedClassName::fromStringInContext(
-                $fqsen_string,
-                $this->context
-            );
+            if ($flags === ast\flags\NAME_FQ) {
+                $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . $reference_name);
+            } elseif ($flags === ast\flags\NAME_RELATIVE) {
+                // NAME_RELATIVE (namespace\Foo) must resolve in the current namespace,
+                // bypassing the use map. fromStringInContext doesn't handle this.
+                $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
+                    '\\' . ltrim($this->context->getNamespace(), '\\') . '\\' . $reference_name
+                );
+            } else {
+                $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+                    $reference_name,
+                    $this->context
+                );
+            }
         } catch (\Exception) {
             return;
         }

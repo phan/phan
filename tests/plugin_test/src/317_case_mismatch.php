@@ -271,3 +271,20 @@ namespace TestNs317\QualifiedRef {
         Sub\subFunc317();
     }
 }
+
+// --- NAME_RELATIVE (namespace\Foo) casing ---
+
+namespace TestNs317\RelNs\Inner {
+    class InnerRelClass317 {}
+}
+
+namespace TestNs317\RelNs {
+    function test_relative_class_mismatch(): void {
+        // Multi-segment NAME_RELATIVE: should resolve to \TestNs317\RelNs\Inner\InnerRelClass317
+        $x = new namespace\Inner\innerrelclass317();  // should warn (class name mismatch)
+    }
+
+    function test_relative_class_correct(): void {
+        $x = new namespace\Inner\InnerRelClass317();  // no warning
+    }
+}

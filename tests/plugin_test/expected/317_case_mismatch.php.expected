@@ -95,3 +95,10 @@ src/317_case_mismatch.php:265 PhanPluginCaseMismatchNamespace Namespace segment 
 src/317_case_mismatch.php:269 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_correct() is declared to return void and it has no side effects
 src/317_case_mismatch.php:269 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_correct()
 src/317_case_mismatch.php:270 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:282 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:282 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_mismatch()
+src/317_case_mismatch.php:284 PhanPluginCaseMismatchClassName Class reference innerrelclass317 has a casing mismatch with declaration InnerRelClass317 defined at src/317_case_mismatch.php:278
+src/317_case_mismatch.php:284 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:287 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:287 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_correct()
+src/317_case_mismatch.php:288 PhanUnusedVariable Unused definition of variable $x
