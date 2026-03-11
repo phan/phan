@@ -134,6 +134,7 @@ return [
         'PHPDocRedundantPlugin',
         'DeprecateAliasPlugin',
         'PreferNamespaceUsePlugin',
+        'CaseMismatchPlugin',
     ],
 
     // Don't load bundled stubs - this test targets PHP 8.1 but may run on PHP 8.4+

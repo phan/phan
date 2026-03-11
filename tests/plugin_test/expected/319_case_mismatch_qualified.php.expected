@@ -1,0 +1,6 @@
+src/319_case_mismatch_qualified.php:12 PhanPluginUseReturnValueNoopVoid The function/method \QualNs319\myFunc319() is declared to return void and it has no side effects
+src/319_case_mismatch_qualified.php:16 PhanUnreferencedFunction Possibly zero references to function \OtherNs319\test_qualified_no_false_positive()
+src/319_case_mismatch_qualified.php:20 PhanUndeclaredFunction Call to undeclared function \OtherNs319\QualNs319\MYFUNC319() (Did you mean \QualNs319\myFunc319())
+src/319_case_mismatch_qualified.php:23 PhanPluginUseReturnValueNoopVoid The function/method \OtherNs319\test_fq_should_still_warn() is declared to return void and it has no side effects
+src/319_case_mismatch_qualified.php:23 PhanUnreferencedFunction Possibly zero references to function \OtherNs319\test_fq_should_still_warn()
+src/319_case_mismatch_qualified.php:26 PhanPluginCaseMismatchFunctionName Function call MYFUNC319() has a casing mismatch with declaration myFunc319() defined at src/319_case_mismatch_qualified.php:12

@@ -40,6 +40,7 @@ fi
 TEST_SUITES+=" __FakeInferMissingTypesTest"
 TEST_SUITES+=" __FakeOverrideReturnTypesTest"
 TEST_SUITES+=" __FakeEmptyMethodsPluginTest"
+TEST_SUITES+=" __FakeCaseMismatchLazyTest"
 
 FAILURES=""
 

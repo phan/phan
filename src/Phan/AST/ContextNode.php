@@ -1094,10 +1094,6 @@ class ContextNode
     ): Func {
         if ($return_placeholder_for_undefined) {
             $functions = $this->code_base->getPlaceholdersForUndeclaredFunction($function_fqsen);
-            // Debug logging for exit
-            if (\strtolower($function_fqsen->getName()) === 'exit') {
-                \error_log("DEBUG ContextNode: exit lookup, found=" . count($functions) . " functions");
-            }
             // Only emit UndeclaredFunction if no placeholder was found in the signature map
             if (!$functions) {
                 Issue::maybeEmitWithParameters(

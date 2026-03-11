@@ -1,0 +1,2 @@
+src/001_lazy_callable.php:9 PhanUnreferencedFunction Possibly zero references to function \TestLazy\test_lazy_loaded_callable()
+src/001_lazy_callable.php:10 PhanPluginCaseMismatchCallableFunction Callable MYFUNC() has a casing mismatch with declaration myFunc() defined at src/001_lazy_callable.php:5

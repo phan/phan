@@ -1,0 +1,81 @@
+src/318_case_mismatch_callable.php:7 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\MyClass318::doSomething() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:8 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\MyClass318::staticMethod() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:11 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\myFunc318() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:22 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringFunc\test_call_user_func()
+src/318_case_mismatch_callable.php:24 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:27 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringFunc\test_call_user_func_array()
+src/318_case_mismatch_callable.php:29 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:32 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\StringFunc\test_array_map() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:32 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringFunc\test_array_map()
+src/318_case_mismatch_callable.php:34 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:34 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \array_map
+src/318_case_mismatch_callable.php:37 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringFunc\test_user_defined_callable()
+src/318_case_mismatch_callable.php:39 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:43 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringFunc\test_correct_function_name()
+src/318_case_mismatch_callable.php:51 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringNs\test_namespace_mismatch()
+src/318_case_mismatch_callable.php:53 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:56 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringNs\test_namespace_and_function_mismatch()
+src/318_case_mismatch_callable.php:58 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:58 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:62 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringNs\test_correct_namespace()
+src/318_case_mismatch_callable.php:70 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringMethod\test_method_mismatch()
+src/318_case_mismatch_callable.php:72 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:75 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringMethod\test_class_mismatch()
+src/318_case_mismatch_callable.php:77 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:80 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringMethod\test_both_mismatch()
+src/318_case_mismatch_callable.php:82 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:82 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:85 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringMethod\test_namespace_class_method_mismatch()
+src/318_case_mismatch_callable.php:87 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:87 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:87 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:91 PhanUnreferencedFunction Possibly zero references to function \TestNs318\StringMethod\test_correct_static_method()
+src/318_case_mismatch_callable.php:101 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_method_mismatch()
+src/318_case_mismatch_callable.php:104 PhanPluginCaseMismatchCallableMethod Callable method DoSomething() has a casing mismatch with declaration doSomething() defined at src/318_case_mismatch_callable.php:7
+src/318_case_mismatch_callable.php:107 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_static_mismatch()
+src/318_case_mismatch_callable.php:109 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:112 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_string_class_mismatch()
+src/318_case_mismatch_callable.php:114 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:117 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_both_mismatch()
+src/318_case_mismatch_callable.php:119 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:119 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:122 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_namespace_mismatch()
+src/318_case_mismatch_callable.php:124 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:127 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_array_all_mismatch()
+src/318_case_mismatch_callable.php:129 PhanPluginCaseMismatchCallableClass Callable class myclass318 has a casing mismatch with declaration MyClass318 defined at src/318_case_mismatch_callable.php:6
+src/318_case_mismatch_callable.php:129 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:129 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:132 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_usort_mismatch()
+src/318_case_mismatch_callable.php:135 PhanPluginCaseMismatchCallableMethod Callable method DoSomething() has a casing mismatch with declaration doSomething() defined at src/318_case_mismatch_callable.php:7
+src/318_case_mismatch_callable.php:139 PhanUnreferencedFunction Possibly zero references to function \TestNs318\ArrayCallable\test_correct_array_callable()
+src/318_case_mismatch_callable.php:151 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\NoWarn\test_closure_no_warn() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:151 PhanUnreferencedFunction Possibly zero references to function \TestNs318\NoWarn\test_closure_no_warn()
+src/318_case_mismatch_callable.php:153 PhanPluginPossiblyStaticClosure Closure($x) can be static
+src/318_case_mismatch_callable.php:153 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \array_map
+src/318_case_mismatch_callable.php:156 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\NoWarn\test_arrow_fn_no_warn() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:156 PhanUnreferencedFunction Possibly zero references to function \TestNs318\NoWarn\test_arrow_fn_no_warn()
+src/318_case_mismatch_callable.php:158 PhanPluginPossiblyStaticClosure Closure($x) can be static
+src/318_case_mismatch_callable.php:158 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \array_map
+src/318_case_mismatch_callable.php:161 PhanPluginUseReturnValueNoopVoid The function/method \TestNs318\NoWarn\test_first_class_callable_no_warn() is declared to return void and it has no side effects
+src/318_case_mismatch_callable.php:161 PhanUnreferencedFunction Possibly zero references to function \TestNs318\NoWarn\test_first_class_callable_no_warn()
+src/318_case_mismatch_callable.php:163 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \array_map
+src/318_case_mismatch_callable.php:166 PhanUnreferencedFunction Possibly zero references to function \TestNs318\NoWarn\test_correct_string_callable()
+src/318_case_mismatch_callable.php:179 PhanUnreferencedClass Possibly zero references to class \TestNs318\SelfStatic\Child318
+src/318_case_mismatch_callable.php:180 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNs318\SelfStatic\Child318::test()
+src/318_case_mismatch_callable.php:187 PhanUnreferencedPublicMethod Possibly zero references to public method \TestNs318\SelfStatic\Child318::testMethodMismatch()
+src/318_case_mismatch_callable.php:189 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:190 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:191 PhanPluginCaseMismatchCallableMethod Callable method STATICMETHOD() has a casing mismatch with declaration staticMethod() defined at src/318_case_mismatch_callable.php:8
+src/318_case_mismatch_callable.php:199 PhanUnreferencedFunction Possibly zero references to function \TestNs318\Variable\test_variable_callable()
+src/318_case_mismatch_callable.php:202 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:202 PhanPluginConstantVariableScalar Variable $fn is probably constant with a value of 'TestNs318\\MYFUNC318'
+src/318_case_mismatch_callable.php:209 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_function_namespace_mismatch()
+src/318_case_mismatch_callable.php:211 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:214 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_function_both_mismatch()
+src/318_case_mismatch_callable.php:216 PhanPluginCaseMismatchCallableFunction Callable MYFUNC318() has a casing mismatch with declaration myFunc318() defined at src/318_case_mismatch_callable.php:11
+src/318_case_mismatch_callable.php:216 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:219 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_static_method_namespace_mismatch()
+src/318_case_mismatch_callable.php:221 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:224 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_array_callable_namespace_mismatch()
+src/318_case_mismatch_callable.php:226 PhanPluginCaseMismatchNamespace Namespace segment \testns318 has a casing mismatch with declaration \TestNs318
+src/318_case_mismatch_callable.php:230 PhanUnreferencedFunction Possibly zero references to function \TestNs318\LeadingBackslash\test_fq_correct()

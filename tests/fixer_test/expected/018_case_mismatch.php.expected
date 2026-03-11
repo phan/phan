@@ -1,0 +1,24 @@
+src_copy/018_case_mismatch.php:11 PhanUnreferencedClass Possibly zero references to interface \FixerTest018\MyInterface018
+src_copy/018_case_mismatch.php:21 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_class_mismatch()
+src_copy/018_case_mismatch.php:22 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:26 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_function_mismatch()
+src_copy/018_case_mismatch.php:27 PhanPluginCaseMismatchFunctionName Function call MYFUNC018() has a casing mismatch with declaration myFunc018() defined at src_copy/018_case_mismatch.php:13
+src_copy/018_case_mismatch.php:30 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_method_mismatch()
+src_copy/018_case_mismatch.php:32 PhanPluginCaseMismatchMethodName Method call DoSomething() has a casing mismatch with declaration doSomething() defined at src_copy/018_case_mismatch.php:7
+src_copy/018_case_mismatch.php:35 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_static_method_mismatch()
+src_copy/018_case_mismatch.php:36 PhanPluginCaseMismatchMethodName Method call StaticMethod() has a casing mismatch with declaration staticMethod() defined at src_copy/018_case_mismatch.php:8
+src_copy/018_case_mismatch.php:39 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_namespace_mismatch()
+src_copy/018_case_mismatch.php:40 PhanPluginCaseMismatchNamespace Namespace segment \fixertest018 has a casing mismatch with declaration \FixerTest018
+src_copy/018_case_mismatch.php:44 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Refs\test_catch_mismatch()
+src_copy/018_case_mismatch.php:47 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:47 PhanPluginCaseMismatchNamespace Namespace segment \fixertest018 has a casing mismatch with declaration \FixerTest018
+src_copy/018_case_mismatch.php:56 PhanPluginCaseMismatchClassName Use statement for myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:58 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\UseStmts\test_use()
+src_copy/018_case_mismatch.php:59 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:69 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:69 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\TypeHints\test_param_type()
+src_copy/018_case_mismatch.php:73 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:73 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\TypeHints\test_return_type()
+src_copy/018_case_mismatch.php:77 PhanPluginCaseMismatchClassName Class reference myclass018 has a casing mismatch with declaration MyClass018 defined at src_copy/018_case_mismatch.php:6
+src_copy/018_case_mismatch.php:77 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\TypeHints\test_nullable_param()
+src_copy/018_case_mismatch.php:87 PhanUnreferencedFunction Possibly zero references to function \FixerTest018\Correct\test_correct()

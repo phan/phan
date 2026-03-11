@@ -80,6 +80,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeCaseMismatchLazyTest)
+		cd tests/misc/case_mismatch_lazy_test
+		./test.sh
+		exit $?
+		;;
 	__FakeFixerTest)
 		cd tests/fixer_test
 		./test.sh
