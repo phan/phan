@@ -16,7 +16,6 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClosureType;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\IssueInstance;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
@@ -87,11 +86,6 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
             $result[$fqsen] = $callable_at_0;
         }
 
-        // Remove excluded functions/methods (iterate over the small exclude list, not all results)
-        foreach (self::getCallableExcludeSet() as $excluded_fqsen => $_) {
-            unset($result[$excluded_fqsen]);
-        }
-
         return $result;
     }
 
@@ -100,12 +94,6 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
      */
     public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function): void
     {
-        static $excluded;
-        $excluded ??= self::getCallableExcludeSet();
-        $fqsen = $function->getFQSEN()->__toString();
-        if (isset($excluded[$fqsen])) {
-            return;
-        }
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
             $function->addFunctionCallAnalyzer($closure, $this);
@@ -161,26 +149,6 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
         return $closure_cache[$key] ?? ($closure_cache[$key] = self::makeCallableParamClosure($callable_params));
     }
 
-    /**
-     * @return array<string,true> Set of FQSENs to exclude from callable argument checking.
-     *                            Keys are canonical FQSENs (e.g. '\MyNs\myFunc', '\MyClass::myMethod').
-     */
-    private static function getCallableExcludeSet(): array
-    {
-        static $set = null;
-        if ($set === null) {
-            /** @var list<string> */
-            $list = Config::getValue('plugin_config')['case_mismatch_callable_exclude'] ?? [];
-            $set = [];
-            foreach ($list as $fqsen) {
-                if ($fqsen !== '' && $fqsen[0] !== '\\') {
-                    $fqsen = '\\' . $fqsen;
-                }
-                $set[$fqsen] = true;
-            }
-        }
-        return $set;
-    }
 }
 
 /**
