@@ -3277,9 +3277,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
             if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
-                // For dynamic properties (e.g. stdClass), the global property accumulates
-                // types across all scopes, so the shape-derived type is more precise.
-                if ($property->isDynamicProperty()) {
+                // For stdClass dynamic properties, the global property accumulates types
+                // across all scopes. The shape-derived type is scope-specific and more
+                // precise, so return it directly rather than merging with the global type.
+                if ($property->isDynamicProperty()
+                    && $property->getClassFQSEN()->__toString() === '\\stdClass'
+                ) {
                     return $stdclass_shape_union;
                 }
                 $union_type = $union_type->withUnionType($stdclass_shape_union);
