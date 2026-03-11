@@ -110,7 +110,7 @@
 \PhoundCallsites\func_with_defaults	0	x	int	0	0	1	42
 \PhoundCallsites\func_with_defaults	1	name	string	0	0	1	'hello'
 \PhoundCallsites\func_with_defaults	2	items	?array	0	0	1	null
-\PhoundCallsites\func_with_defaults	3	rate	float	0	0	1	3.140000000000000124344978758017532527446746826...
+\PhoundCallsites\func_with_defaults	3	rate	float	0	0	1	1.5
 \PhoundCallsites\func_with_variadic	0	first	string	0	0	0	
 \PhoundCallsites\func_with_variadic	1	rest	string[]	1	0	1	
 \PhoundCallsites\func_with_variadic_and_default	0	count	int	0	0	1	10

@@ -102,7 +102,7 @@ $b_or_c->$method_name();
 echo $b_or_c->prop_only_public_in_b;
 
 // Test parameter defaults for signature coverage
-function func_with_defaults(int $x = 42, string $name = 'hello', ?array $items = null, float $rate = 3.14) {}
+function func_with_defaults(int $x = 42, string $name = 'hello', ?array $items = null, float $rate = 1.5) {}
 function func_with_variadic(string $first, string ...$rest) {}
 function func_with_variadic_and_default(int $count = 10, string ...$items) {}
 class DefaultParams {
