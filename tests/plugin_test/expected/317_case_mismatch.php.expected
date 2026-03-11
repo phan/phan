@@ -87,18 +87,29 @@ src/317_case_mismatch.php:240 PhanPluginCaseMismatchClassName Class reference my
 src/317_case_mismatch.php:249 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\Sub\subFunc317() is declared to return void and it has no side effects
 src/317_case_mismatch.php:260 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_class_alias_mismatch() is declared to return void and it has no side effects
 src/317_case_mismatch.php:260 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_class_alias_mismatch()
-src/317_case_mismatch.php:261 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with declaration \Sub
+src/317_case_mismatch.php:261 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with use alias \Sub
 src/317_case_mismatch.php:261 PhanUnusedVariable Unused definition of variable $x
 src/317_case_mismatch.php:264 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_func_alias_mismatch() is declared to return void and it has no side effects
 src/317_case_mismatch.php:264 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_func_alias_mismatch()
-src/317_case_mismatch.php:265 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with declaration \Sub
+src/317_case_mismatch.php:265 PhanPluginCaseMismatchNamespace Namespace segment \sub has a casing mismatch with use alias \Sub
 src/317_case_mismatch.php:269 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\QualifiedRef\test_qualified_correct() is declared to return void and it has no side effects
 src/317_case_mismatch.php:269 PhanUnreferencedFunction Possibly zero references to function \TestNs317\QualifiedRef\test_qualified_correct()
 src/317_case_mismatch.php:270 PhanUnusedVariable Unused definition of variable $x
-src/317_case_mismatch.php:282 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_mismatch() is declared to return void and it has no side effects
-src/317_case_mismatch.php:282 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_mismatch()
-src/317_case_mismatch.php:284 PhanPluginCaseMismatchClassName Class reference innerrelclass317 has a casing mismatch with declaration InnerRelClass317 defined at src/317_case_mismatch.php:278
-src/317_case_mismatch.php:284 PhanUnusedVariable Unused definition of variable $x
-src/317_case_mismatch.php:287 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_correct() is declared to return void and it has no side effects
-src/317_case_mismatch.php:287 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_correct()
-src/317_case_mismatch.php:288 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:279 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\AliasPkg\aliasPkgFunc317() is declared to return void and it has no side effects
+src/317_case_mismatch.php:285 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\AliasPkgRef\test_alias_segment_class_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:285 PhanUnreferencedFunction Possibly zero references to function \TestNs317\AliasPkgRef\test_alias_segment_class_mismatch()
+src/317_case_mismatch.php:286 PhanPluginCaseMismatchNamespace Namespace segment \pkg317 has a casing mismatch with use alias \Pkg317
+src/317_case_mismatch.php:286 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:289 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\AliasPkgRef\test_alias_segment_func_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:289 PhanUnreferencedFunction Possibly zero references to function \TestNs317\AliasPkgRef\test_alias_segment_func_mismatch()
+src/317_case_mismatch.php:290 PhanPluginCaseMismatchNamespace Namespace segment \pkg317 has a casing mismatch with use alias \Pkg317
+src/317_case_mismatch.php:293 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\AliasPkgRef\test_alias_segment_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:293 PhanUnreferencedFunction Possibly zero references to function \TestNs317\AliasPkgRef\test_alias_segment_correct()
+src/317_case_mismatch.php:294 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:306 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:306 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_mismatch()
+src/317_case_mismatch.php:308 PhanPluginCaseMismatchClassName Class reference innerrelclass317 has a casing mismatch with declaration InnerRelClass317 defined at src/317_case_mismatch.php:302
+src/317_case_mismatch.php:308 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:311 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:311 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_correct()
+src/317_case_mismatch.php:312 PhanUnusedVariable Unused definition of variable $x

@@ -272,6 +272,30 @@ namespace TestNs317\QualifiedRef {
     }
 }
 
+// --- Qualified NAME_NOT_FQ with explicit alias rename ---
+
+namespace TestNs317\AliasPkg {
+    class AliasPkgClass317 {}
+    function aliasPkgFunc317(): void {}
+}
+
+namespace TestNs317\AliasPkgRef {
+    use TestNs317\AliasPkg as Pkg317;
+
+    function test_alias_segment_class_mismatch(): void {
+        $x = new pkg317\AliasPkgClass317();  // should warn ("pkg317" vs alias "Pkg317")
+    }
+
+    function test_alias_segment_func_mismatch(): void {
+        pkg317\aliasPkgFunc317();  // should warn ("pkg317" vs alias "Pkg317")
+    }
+
+    function test_alias_segment_correct(): void {
+        $x = new Pkg317\AliasPkgClass317();  // no warning
+        Pkg317\aliasPkgFunc317();  // no warning
+    }
+}
+
 // --- NAME_RELATIVE (namespace\Foo) casing ---
 
 namespace TestNs317\RelNs\Inner {

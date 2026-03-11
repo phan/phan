@@ -304,10 +304,11 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // Check namespace casing for qualified function references (FQ, relative, or qualified NAME_NOT_FQ)
         if (count($reference_parts) > 0) {
-            $this->checkNamespaceCasing(
+            $this->checkNamespaceOrAliasCasing(
                 $reference_parts,
                 $function_fqsen->getNamespace(),
-                $expression->lineno
+                $expression->lineno,
+                $flags
             );
         }
     }
@@ -560,10 +561,11 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // Check namespace casing for qualified names (FQ, relative, or qualified NAME_NOT_FQ)
         if (count($reference_parts) > 0) {
-            $this->checkNamespaceCasing(
+            $this->checkNamespaceOrAliasCasing(
                 $reference_parts,
                 $class_fqsen->getNamespace(),
-                $class_node->lineno
+                $class_node->lineno,
+                $flags
             );
         }
     }
@@ -674,6 +676,51 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                 );
             }
         }
+    }
+
+    /**
+     * Check namespace segment casing, handling the case where the first segment
+     * of a qualified NAME_NOT_FQ reference is a use alias (e.g., `use Foo\Bar as Pkg; new pkg\Thing();`).
+     *
+     * @param string[] $reference_ns_parts Namespace segments from the reference
+     * @param string $declared_namespace The declared namespace (e.g., '\Foo\Bar')
+     * @param int $lineno Line number of the reference
+     * @param int $flags AST name flags (NAME_FQ, NAME_NOT_FQ, NAME_RELATIVE)
+     */
+    private function checkNamespaceOrAliasCasing(
+        array $reference_ns_parts,
+        string $declared_namespace,
+        int $lineno,
+        int $flags
+    ): void {
+        // For qualified NAME_NOT_FQ, the first segment may be a use alias
+        if ($flags === ast\flags\NAME_NOT_FQ) {
+            $first_segment = $reference_ns_parts[0];
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $namespace_map = $this->context->getNamespaceMap();
+            $entry = $namespace_map[ast\flags\USE_NORMAL][strtolower($first_segment)] ?? null;
+            if ($entry !== null) {
+                $alias_name = $entry->original_name;
+                if ($first_segment !== $alias_name && strtolower($first_segment) === strtolower($alias_name)) {
+                    $this->emitPluginIssue(
+                        $this->code_base,
+                        (clone $this->context)->withLineNumberStart($lineno),
+                        self::CaseMismatchNamespace,
+                        'Namespace segment {NAMESPACE} has a casing mismatch with use alias {NAMESPACE}',
+                        ['\\' . $first_segment, '\\' . $alias_name],
+                        Issue::SEVERITY_LOW
+                    );
+                }
+                // Check remaining segments (after the alias) against the declared namespace
+                $remaining = array_slice($reference_ns_parts, 1);
+                if (count($remaining) > 0) {
+                    $this->checkNamespaceCasing($remaining, $declared_namespace, $lineno);
+                }
+                return;
+            }
+        }
+
+        $this->checkNamespaceCasing($reference_ns_parts, $declared_namespace, $lineno);
     }
 
     /**
