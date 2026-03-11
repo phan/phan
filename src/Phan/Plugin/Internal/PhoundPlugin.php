@@ -860,7 +860,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @throws Exception
      */
-    public static function propagateCallsitesToAncestors(\SQLite3 $db): void
+    public static function propagateCallsitesToAncestors(SQLite3 $db): void
     {
         // All five propagation paths are combined into a single INSERT ... UNION ALL
         // so SQLite evaluates the entire SELECT as one snapshot before inserting.
@@ -880,6 +880,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             JOIN signatures s
                 ON s.fqsen = cr.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
+                AND s.visibility != 'private'
 
             UNION ALL
 
@@ -894,6 +895,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             JOIN signatures s
                 ON s.fqsen = ci.interface || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
+                AND s.visibility != 'private'
 
             UNION ALL
 
@@ -908,6 +910,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             JOIN signatures s
                 ON s.fqsen = ct.trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
+                AND s.visibility != 'private'
 
             UNION ALL
 
@@ -922,6 +925,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             JOIN signatures s
                 ON s.fqsen = ir.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
+                AND s.visibility != 'private'
 
             UNION ALL
 
@@ -936,6 +940,7 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             JOIN signatures s
                 ON s.fqsen = tt.uses_trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
+                AND s.visibility != 'private'
 
             -- Insert in PK order (element, type, callsite) for better B-tree performance
             ORDER BY 1, 2, 3

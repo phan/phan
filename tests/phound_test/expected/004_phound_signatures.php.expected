@@ -32,6 +32,8 @@
 \CallsitePropagation\Base::baseMethod	method	\CallsitePropagation\Base	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
 \CallsitePropagation\Base::baseProp	prop	\CallsitePropagation\Base	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
 \CallsitePropagation\Base::class	const	\CallsitePropagation\Base	class	'CallsitePropagation\\Base'	0	public	src/006_phound_callsite_propagation.php	37
+\CallsitePropagation\Base::privateMethod	method	\CallsitePropagation\Base	privateMethod	void	0	private	src/006_phound_callsite_propagation.php	41
+\CallsitePropagation\Base::privateProp	prop	\CallsitePropagation\Base	privateProp	int	0	private	src/006_phound_callsite_propagation.php	42
 \CallsitePropagation\Describable::class	const	\CallsitePropagation\Describable	class	'CallsitePropagation\\Describable'	0	public	src/006_phound_callsite_propagation.php	18
 \CallsitePropagation\Describable::describe	method	\CallsitePropagation\Describable	describe	string	0	public	src/006_phound_callsite_propagation.php	19
 \CallsitePropagation\Describable::greet	method	\CallsitePropagation\Describable	greet	string	0	public	src/006_phound_callsite_propagation.php	15
@@ -42,27 +44,33 @@
 \CallsitePropagation\InnerTrait::class	const	\CallsitePropagation\InnerTrait	class	'CallsitePropagation\\InnerTrait'	0	public	src/006_phound_callsite_propagation.php	28
 \CallsitePropagation\InnerTrait::innerMethod	method	\CallsitePropagation\InnerTrait	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
 \CallsitePropagation\Leaf::BASE_CONST	const	\CallsitePropagation\Leaf	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
-\CallsitePropagation\Leaf::__construct	method	\CallsitePropagation\Leaf	__construct	\CallsitePropagation\Leaf	0	public	src/006_phound_callsite_propagation.php	48
+\CallsitePropagation\Leaf::__construct	method	\CallsitePropagation\Leaf	__construct	\CallsitePropagation\Leaf	0	public	src/006_phound_callsite_propagation.php	57
 \CallsitePropagation\Leaf::baseMethod	method	\CallsitePropagation\Leaf	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
 \CallsitePropagation\Leaf::baseProp	prop	\CallsitePropagation\Leaf	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
-\CallsitePropagation\Leaf::class	const	\CallsitePropagation\Leaf	class	'CallsitePropagation\\Leaf'	0	public	src/006_phound_callsite_propagation.php	48
-\CallsitePropagation\Leaf::describe	method	\CallsitePropagation\Leaf	describe	'leaf'|string	0	public	src/006_phound_callsite_propagation.php	50
+\CallsitePropagation\Leaf::callPrivates	method	\CallsitePropagation\Leaf	callPrivates	void	0	public	src/006_phound_callsite_propagation.php	51
+\CallsitePropagation\Leaf::class	const	\CallsitePropagation\Leaf	class	'CallsitePropagation\\Leaf'	0	public	src/006_phound_callsite_propagation.php	57
+\CallsitePropagation\Leaf::describe	method	\CallsitePropagation\Leaf	describe	'leaf'|string	0	public	src/006_phound_callsite_propagation.php	59
 \CallsitePropagation\Leaf::greet	method	\CallsitePropagation\Leaf	greet	string	0	public	src/006_phound_callsite_propagation.php	23
 \CallsitePropagation\Leaf::innerMethod	method	\CallsitePropagation\Leaf	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
-\CallsitePropagation\Leaf::middleOnly	method	\CallsitePropagation\Leaf	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	45
+\CallsitePropagation\Leaf::middleOnly	method	\CallsitePropagation\Leaf	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	47
 \CallsitePropagation\Leaf::outerMethod	method	\CallsitePropagation\Leaf	outerMethod	void	0	public	src/006_phound_callsite_propagation.php	34
+\CallsitePropagation\Leaf::privateMethod	method	\CallsitePropagation\Leaf	privateMethod	void	0	private	src/006_phound_callsite_propagation.php	48
+\CallsitePropagation\Leaf::privateProp	prop	\CallsitePropagation\Leaf	privateProp	int	0	private	src/006_phound_callsite_propagation.php	49
 \CallsitePropagation\Middle::BASE_CONST	const	\CallsitePropagation\Middle	BASE_CONST	1	0	public	src/006_phound_callsite_propagation.php	39
-\CallsitePropagation\Middle::__construct	method	\CallsitePropagation\Middle	__construct	\CallsitePropagation\Middle	0	public	src/006_phound_callsite_propagation.php	43
+\CallsitePropagation\Middle::__construct	method	\CallsitePropagation\Middle	__construct	\CallsitePropagation\Middle	0	public	src/006_phound_callsite_propagation.php	45
 \CallsitePropagation\Middle::baseMethod	method	\CallsitePropagation\Middle	baseMethod	void	0	public	src/006_phound_callsite_propagation.php	40
 \CallsitePropagation\Middle::baseProp	prop	\CallsitePropagation\Middle	baseProp	int	0	public	src/006_phound_callsite_propagation.php	38
-\CallsitePropagation\Middle::class	const	\CallsitePropagation\Middle	class	'CallsitePropagation\\Middle'	0	public	src/006_phound_callsite_propagation.php	43
+\CallsitePropagation\Middle::callPrivates	method	\CallsitePropagation\Middle	callPrivates	void	0	public	src/006_phound_callsite_propagation.php	51
+\CallsitePropagation\Middle::class	const	\CallsitePropagation\Middle	class	'CallsitePropagation\\Middle'	0	public	src/006_phound_callsite_propagation.php	45
 \CallsitePropagation\Middle::greet	method	\CallsitePropagation\Middle	greet	string	0	public	src/006_phound_callsite_propagation.php	23
-\CallsitePropagation\Middle::middleOnly	method	\CallsitePropagation\Middle	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	45
+\CallsitePropagation\Middle::middleOnly	method	\CallsitePropagation\Middle	middleOnly	void	0	public	src/006_phound_callsite_propagation.php	47
+\CallsitePropagation\Middle::privateMethod	method	\CallsitePropagation\Middle	privateMethod	void	0	private	src/006_phound_callsite_propagation.php	48
+\CallsitePropagation\Middle::privateProp	prop	\CallsitePropagation\Middle	privateProp	int	0	private	src/006_phound_callsite_propagation.php	49
 \CallsitePropagation\OuterTrait::class	const	\CallsitePropagation\OuterTrait	class	'CallsitePropagation\\OuterTrait'	0	public	src/006_phound_callsite_propagation.php	32
 \CallsitePropagation\OuterTrait::innerMethod	method	\CallsitePropagation\OuterTrait	innerMethod	void	0	public	src/006_phound_callsite_propagation.php	29
 \CallsitePropagation\OuterTrait::outerMethod	method	\CallsitePropagation\OuterTrait	outerMethod	void	0	public	src/006_phound_callsite_propagation.php	34
-\CallsitePropagation\standaloneFunc	function		standaloneFunc	void	0		src/006_phound_callsite_propagation.php	82
-\CallsitePropagation\testDescribable	function		testDescribable	void	0		src/006_phound_callsite_propagation.php	86
+\CallsitePropagation\standaloneFunc	function		standaloneFunc	void	0		src/006_phound_callsite_propagation.php	95
+\CallsitePropagation\testDescribable	function		testDescribable	void	0		src/006_phound_callsite_propagation.php	99
 \Car::__construct	method	\Car	__construct	void	0	public	src/003_phound_hierarchy.php	116
 \Car::class	const	\Car	class	'Car'	0	public	src/003_phound_hierarchy.php	112
 \Car::clutchEngaged	prop	\Car	clutchEngaged	bool	0	protected	src/003_phound_hierarchy.php	69
