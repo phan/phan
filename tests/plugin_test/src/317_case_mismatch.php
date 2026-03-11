@@ -312,3 +312,17 @@ namespace TestNs317\RelNs {
         $x = new namespace\Inner\InnerRelClass317();  // no warning
     }
 }
+
+// --- NAME_RELATIVE in global namespace ---
+
+namespace {
+    class GlobalRelClass317 {}
+
+    function test_global_relative_mismatch(): void {
+        $x = new namespace\globalrelclass317();  // should warn (class name mismatch)
+    }
+
+    function test_global_relative_correct(): void {
+        $x = new namespace\GlobalRelClass317();  // no warning
+    }
+}

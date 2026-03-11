@@ -113,3 +113,10 @@ src/317_case_mismatch.php:308 PhanUnusedVariable Unused definition of variable $
 src/317_case_mismatch.php:311 PhanPluginUseReturnValueNoopVoid The function/method \TestNs317\RelNs\test_relative_class_correct() is declared to return void and it has no side effects
 src/317_case_mismatch.php:311 PhanUnreferencedFunction Possibly zero references to function \TestNs317\RelNs\test_relative_class_correct()
 src/317_case_mismatch.php:312 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:321 PhanPluginUseReturnValueNoopVoid The function/method \test_global_relative_mismatch() is declared to return void and it has no side effects
+src/317_case_mismatch.php:321 PhanUnreferencedFunction Possibly zero references to function \test_global_relative_mismatch()
+src/317_case_mismatch.php:322 PhanPluginCaseMismatchClassName Class reference globalrelclass317 has a casing mismatch with declaration GlobalRelClass317 defined at src/317_case_mismatch.php:319
+src/317_case_mismatch.php:322 PhanUnusedVariable Unused definition of variable $x
+src/317_case_mismatch.php:325 PhanPluginUseReturnValueNoopVoid The function/method \test_global_relative_correct() is declared to return void and it has no side effects
+src/317_case_mismatch.php:325 PhanUnreferencedFunction Possibly zero references to function \test_global_relative_correct()
+src/317_case_mismatch.php:326 PhanUnusedVariable Unused definition of variable $x

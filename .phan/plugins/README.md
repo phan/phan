@@ -82,6 +82,19 @@ Supports `--automatic-fix` to correct detected mismatches.
 - **PhanPluginCaseMismatchCallableMethod**: `Callable method {METHOD} has a casing mismatch with declaration {METHOD}`
 - **PhanPluginCaseMismatchCallableClass**: `Callable class {CLASS} has a casing mismatch with declaration {CLASS}`
 
+To exclude specific functions or methods from callable argument checking (useful when a parameter
+is typed `string|Closure` and the strings are not actually callables), add their FQSENs to
+`plugin_config`:
+
+```php
+'plugin_config' => [
+    'case_mismatch_callable_exclude' => [
+        '\MyNamespace\myFunction',
+        '\MyClass::myMethod',
+    ],
+],
+```
+
 #### DuplicateArrayKeyPlugin.php
 
 Warns about common errors in php array keys and switch statements. Has the following checks (This is able to resolve global and class constants to their scalar values).
