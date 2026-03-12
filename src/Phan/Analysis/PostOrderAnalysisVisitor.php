@@ -4360,16 +4360,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (Config::getValue('override_parameter_types') && $method instanceof Method && $method->getNode()) {
             $parameter_list = $method->getParameterList();
             foreach ($argument_list as $i => $argument) {
-                if (!($argument instanceof Node)) {
+                if ($argument === null) {
                     continue;
                 }
+                // Unwrap named arguments to get the actual expression and resolve
+                // the parameter index by name instead of position.
+                $arg_expression = $argument;
                 $param_index = $i;
-                if ($param_index >= count($parameter_list)) {
-                    $last_index = count($parameter_list) - 1;
-                    if ($last_index >= 0 && $parameter_list[$last_index]->isVariadic()) {
-                        $param_index = $last_index;
-                    } else {
+                if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                    $arg_expression = $argument->children['expr'];
+                    if ($arg_expression === null) {
                         continue;
+                    }
+                    $arg_name = $argument->children['name'];
+                    $param_index = null;
+                    foreach ($parameter_list as $pi => $p) {
+                        if ($p->getName() === $arg_name) {
+                            $param_index = $pi;
+                            break;
+                        }
+                    }
+                    if ($param_index === null) {
+                        continue;
+                    }
+                } else {
+                    if ($param_index >= count($parameter_list)) {
+                        $last_index = count($parameter_list) - 1;
+                        if ($last_index >= 0 && $parameter_list[$last_index]->isVariadic()) {
+                            $param_index = $last_index;
+                        } else {
+                            continue;
+                        }
                     }
                 }
                 $actual_param = $parameter_list[$param_index];
@@ -4379,7 +4400,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $arg_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,
-                    $argument,
+                    $arg_expression,
                     true
                 );
                 if (!$arg_type->isEmpty()) {

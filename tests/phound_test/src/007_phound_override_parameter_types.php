@@ -34,6 +34,18 @@ class Factory {
     }
 }
 
+class Fish implements Animal {
+    public function speak(): string {
+        return "blub";
+    }
+}
+
+class Bird implements Animal {
+    public function speak(): string {
+        return "tweet";
+    }
+}
+
 /** @phan-suppress-next-line PhanUnreferencedClass */
 class Caller {
     /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
@@ -43,5 +55,21 @@ class Caller {
         $dog->speak();
         $cat = $factory->create(Cat::class);
         $cat->speak();
+    }
+
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
+    public function runWithScalar(): void {
+        $factory = new Factory();
+        // Passing a literal string instead of Fish::class
+        $fish = $factory->create('OverrideParameterTypes\Fish');
+        $fish->speak();
+    }
+
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
+    public function runWithNamedArg(): void {
+        $factory = new Factory();
+        // Passing via named argument
+        $bird = $factory->create(class_name: Bird::class);
+        $bird->speak();
     }
 }
