@@ -27,4 +27,5 @@ return [
     // detect more callsite possibilities. See the [PR description](https://github.com/phan/phan/pull/4874) where
     // this setting was added for more details.
     'override_return_types' => true,
+    'override_parameter_types' => true,
 ];

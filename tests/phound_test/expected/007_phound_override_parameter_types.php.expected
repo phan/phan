@@ -1,0 +1,44 @@
+<-----------> Callsites <----------->
+\OverrideParameterTypes\Cat::__construct|method|src/007_phound_override_parameter_types.php:33
+\OverrideParameterTypes\Dog::__construct|method|src/007_phound_override_parameter_types.php:33
+\OverrideParameterTypes\Factory::__construct|method|src/007_phound_override_parameter_types.php:41
+\OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:42
+\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:43
+\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:43
+\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:43
+\OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:44
+\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:45
+\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:45
+\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:45
+<-----------> Classes <----------->
+\OverrideParameterTypes\Caller|src/007_phound_override_parameter_types.php
+\OverrideParameterTypes\Cat|src/007_phound_override_parameter_types.php
+\OverrideParameterTypes\Dog|src/007_phound_override_parameter_types.php
+\OverrideParameterTypes\Factory|src/007_phound_override_parameter_types.php
+<-----------> Class Interfaces <----------->
+\OverrideParameterTypes\Cat|\OverrideParameterTypes\Animal
+\OverrideParameterTypes\Dog|\OverrideParameterTypes\Animal
+<-----------> Class Relationships <----------->
+<-----------> Class Traits <----------->
+<-----------> Interfaces <----------->
+\OverrideParameterTypes\Animal|src/007_phound_override_parameter_types.php
+<-----------> Interface Relationships <----------->
+<-----------> Traits <----------->
+<-----------> Trait Traits <----------->
+<-----------> Signatures <----------->
+\OverrideParameterTypes\Animal::class	const	\OverrideParameterTypes\Animal	class	'OverrideParameterTypes\\Animal'	0	public	src/007_phound_override_parameter_types.php	11
+\OverrideParameterTypes\Animal::speak	method	\OverrideParameterTypes\Animal	speak	string	0	public	src/007_phound_override_parameter_types.php	12
+\OverrideParameterTypes\Caller::__construct	method	\OverrideParameterTypes\Caller	__construct	\OverrideParameterTypes\Caller	0	public	src/007_phound_override_parameter_types.php	38
+\OverrideParameterTypes\Caller::class	const	\OverrideParameterTypes\Caller	class	'OverrideParameterTypes\\Caller'	0	public	src/007_phound_override_parameter_types.php	38
+\OverrideParameterTypes\Caller::run	method	\OverrideParameterTypes\Caller	run	void	0	public	src/007_phound_override_parameter_types.php	40
+\OverrideParameterTypes\Cat::__construct	method	\OverrideParameterTypes\Cat	__construct	\OverrideParameterTypes\Cat	0	public	src/007_phound_override_parameter_types.php	21
+\OverrideParameterTypes\Cat::class	const	\OverrideParameterTypes\Cat	class	'OverrideParameterTypes\\Cat'	0	public	src/007_phound_override_parameter_types.php	21
+\OverrideParameterTypes\Cat::speak	method	\OverrideParameterTypes\Cat	speak	'meow'|string	0	public	src/007_phound_override_parameter_types.php	22
+\OverrideParameterTypes\Dog::__construct	method	\OverrideParameterTypes\Dog	__construct	\OverrideParameterTypes\Dog	0	public	src/007_phound_override_parameter_types.php	15
+\OverrideParameterTypes\Dog::class	const	\OverrideParameterTypes\Dog	class	'OverrideParameterTypes\\Dog'	0	public	src/007_phound_override_parameter_types.php	15
+\OverrideParameterTypes\Dog::speak	method	\OverrideParameterTypes\Dog	speak	'woof'|string	0	public	src/007_phound_override_parameter_types.php	16
+\OverrideParameterTypes\Factory::__construct	method	\OverrideParameterTypes\Factory	__construct	\OverrideParameterTypes\Factory	0	public	src/007_phound_override_parameter_types.php	28
+\OverrideParameterTypes\Factory::class	const	\OverrideParameterTypes\Factory	class	'OverrideParameterTypes\\Factory'	0	public	src/007_phound_override_parameter_types.php	28
+\OverrideParameterTypes\Factory::create	method	\OverrideParameterTypes\Factory	create	\OverrideParameterTypes\Animal|\OverrideParameterTypes\Cat|\OverrideParameterTypes\Dog|object	0	public	src/007_phound_override_parameter_types.php	32
+<-----------> Parameters <----------->
+\OverrideParameterTypes\Factory::create	0	class_name	'OverrideParameterTypes\\Cat'|'OverrideParameterTypes\\Dog'|string	0	0	0

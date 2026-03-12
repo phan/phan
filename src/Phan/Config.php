@@ -352,6 +352,15 @@ class Config
         // this setting was added for more details.
         'override_return_types' => false,
 
+        // Widen parameter types based on the types of arguments passed by callers. When enabled,
+        // if callers pass more specific types (e.g. class-string<Foo>) than the declared parameter
+        // type (e.g. string), the parameter type is widened to include the caller's argument types.
+        // This allows the function body to use the richer type information for downstream analysis.
+        //
+        // Disabled by default. Most useful with `--analyze-twice` and `override_return_types` to
+        // propagate concrete types through factory methods like `create(string $class_name)`.
+        'override_parameter_types' => false,
+
         // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
         // This will have some false positives due to Phan not checking for setters and initializing helpers.
         // This does not affect inherited properties.

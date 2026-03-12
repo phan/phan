@@ -4353,6 +4353,43 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $code_base
         );
 
+        // When override_parameter_types is enabled, accumulate the inferred argument
+        // types onto the method's parameters. On the second analysis pass (--analyze-twice),
+        // the function body will use these widened parameter types, enabling downstream
+        // type resolution (e.g. `new $class_name()` where $class_name is class-string<Foo>).
+        if (Config::getValue('override_parameter_types') && $method instanceof Method && $method->getNode()) {
+            $parameter_list = $method->getParameterList();
+            foreach ($argument_list as $i => $argument) {
+                if (!($argument instanceof Node)) {
+                    continue;
+                }
+                $param_index = $i;
+                if ($param_index >= count($parameter_list)) {
+                    $last_index = count($parameter_list) - 1;
+                    if ($last_index >= 0 && $parameter_list[$last_index]->isVariadic()) {
+                        $param_index = $last_index;
+                    } else {
+                        continue;
+                    }
+                }
+                $actual_param = $parameter_list[$param_index];
+                if ($actual_param->isPassByReference()) {
+                    continue;
+                }
+                $arg_type = UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $argument,
+                    true
+                );
+                if (!$arg_type->isEmpty()) {
+                    $actual_param->setUnionType(
+                        $actual_param->getUnionType()->withUnionType($arg_type)
+                    );
+                }
+            }
+        }
+
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list as $i => $argument) {
