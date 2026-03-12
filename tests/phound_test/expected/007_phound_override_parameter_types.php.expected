@@ -41,4 +41,4 @@
 \OverrideParameterTypes\Factory::class	const	\OverrideParameterTypes\Factory	class	'OverrideParameterTypes\\Factory'	0	public	src/007_phound_override_parameter_types.php	28
 \OverrideParameterTypes\Factory::create	method	\OverrideParameterTypes\Factory	create	\OverrideParameterTypes\Animal|\OverrideParameterTypes\Cat|\OverrideParameterTypes\Dog|object	0	public	src/007_phound_override_parameter_types.php	32
 <-----------> Parameters <----------->
-\OverrideParameterTypes\Factory::create	0	class_name	'OverrideParameterTypes\\Cat'|'OverrideParameterTypes\\Dog'|string	0	0	0
+\OverrideParameterTypes\Factory::create	0	class_name	'OverrideParameterTypes\\Cat'|'OverrideParameterTypes\\Dog'|string	0	0	0	
