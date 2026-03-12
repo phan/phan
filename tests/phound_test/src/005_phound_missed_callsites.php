@@ -1,4 +1,5 @@
 <?php
+namespace PhoundMissedCallsites;
 
 // Classes used in tests
 
@@ -49,7 +50,7 @@ $fn = function () use ($t) { $t->method(); };
 $afn = fn() => $t->method();
 
 // A3: Method call inside generator
-function myGen005(Target005 $t): Generator {
+function myGen005(Target005 $t): \Generator {
     yield $t->method();
 }
 

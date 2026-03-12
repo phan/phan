@@ -1,8 +1,45 @@
-\Cat::__construct|method|src/002_phound_override_return_types.php:20
-\Dog::__construct|method|src/002_phound_override_return_types.php:20
-\Cat::__construct|method|src/002_phound_override_return_types.php:28
-\PhoundOverrideReturnTypesTest::getAnimal|method|src/002_phound_override_return_types.php:33
-\Cat::shedFur|method|src/002_phound_override_return_types.php:34
-\Dog::shedFur|method|src/002_phound_override_return_types.php:34
-\PhoundOverrideReturnTypesTest::getAnimal2|method|src/002_phound_override_return_types.php:36
-\Cat::shedFur|method|src/002_phound_override_return_types.php:37
+<-----------> Callsites <----------->
+\PhoundOverrideReturnTypes\Animal::__construct|method|src/002_phound_override_return_types.php:21
+\PhoundOverrideReturnTypes\Cat::__construct|method|src/002_phound_override_return_types.php:21
+\PhoundOverrideReturnTypes\Dog::__construct|method|src/002_phound_override_return_types.php:21
+\PhoundOverrideReturnTypes\Animal::__construct|method|src/002_phound_override_return_types.php:29
+\PhoundOverrideReturnTypes\Cat::__construct|method|src/002_phound_override_return_types.php:29
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::getAnimal|method|src/002_phound_override_return_types.php:34
+\PhoundOverrideReturnTypes\Cat::shedFur|method|src/002_phound_override_return_types.php:35
+\PhoundOverrideReturnTypes\Dog::shedFur|method|src/002_phound_override_return_types.php:35
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::getAnimal2|method|src/002_phound_override_return_types.php:37
+\PhoundOverrideReturnTypes\Cat::shedFur|method|src/002_phound_override_return_types.php:38
+<-----------> Classes <----------->
+\PhoundOverrideReturnTypes\Animal|src/002_phound_override_return_types.php
+\PhoundOverrideReturnTypes\Cat|src/002_phound_override_return_types.php
+\PhoundOverrideReturnTypes\Dog|src/002_phound_override_return_types.php
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest|src/002_phound_override_return_types.php
+\PhoundOverrideReturnTypes\Vegetable|src/002_phound_override_return_types.php
+<-----------> Class Interfaces <----------->
+<-----------> Class Relationships <----------->
+\PhoundOverrideReturnTypes\Animal|\PhoundOverrideReturnTypes\Cat
+\PhoundOverrideReturnTypes\Animal|\PhoundOverrideReturnTypes\Dog
+<-----------> Class Traits <----------->
+<-----------> Interfaces <----------->
+<-----------> Interface Relationships <----------->
+<-----------> Traits <----------->
+<-----------> Trait Traits <----------->
+<-----------> Signatures <----------->
+\PhoundOverrideReturnTypes\Animal::__construct	method	\PhoundOverrideReturnTypes\Animal	__construct	\PhoundOverrideReturnTypes\Animal	0	public	src/002_phound_override_return_types.php	4
+\PhoundOverrideReturnTypes\Animal::class	const	\PhoundOverrideReturnTypes\Animal	class	'PhoundOverrideReturnTypes\\Animal'	0	public	src/002_phound_override_return_types.php	4
+\PhoundOverrideReturnTypes\Cat::__construct	method	\PhoundOverrideReturnTypes\Cat	__construct	\PhoundOverrideReturnTypes\Cat	0	public	src/002_phound_override_return_types.php	6
+\PhoundOverrideReturnTypes\Cat::class	const	\PhoundOverrideReturnTypes\Cat	class	'PhoundOverrideReturnTypes\\Cat'	0	public	src/002_phound_override_return_types.php	6
+\PhoundOverrideReturnTypes\Cat::shedFur	method	\PhoundOverrideReturnTypes\Cat	shedFur		0	public	src/002_phound_override_return_types.php	7
+\PhoundOverrideReturnTypes\Dog::__construct	method	\PhoundOverrideReturnTypes\Dog	__construct	\PhoundOverrideReturnTypes\Dog	0	public	src/002_phound_override_return_types.php	10
+\PhoundOverrideReturnTypes\Dog::class	const	\PhoundOverrideReturnTypes\Dog	class	'PhoundOverrideReturnTypes\\Dog'	0	public	src/002_phound_override_return_types.php	10
+\PhoundOverrideReturnTypes\Dog::shedFur	method	\PhoundOverrideReturnTypes\Dog	shedFur		0	public	src/002_phound_override_return_types.php	11
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::__construct	method	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	__construct	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	0	public	src/002_phound_override_return_types.php	18
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::class	const	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	class	'PhoundOverrideReturnTypes\\PhoundOverrideReturnTypesTest'	0	public	src/002_phound_override_return_types.php	18
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::getAnimal	method	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	getAnimal	\PhoundOverrideReturnTypes\Animal|\PhoundOverrideReturnTypes\Cat|\PhoundOverrideReturnTypes\Dog	0	public	src/002_phound_override_return_types.php	20
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::getAnimal2	method	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	getAnimal2	\PhoundOverrideReturnTypes\Cat|\PhoundOverrideReturnTypes\Vegetable	0	public	src/002_phound_override_return_types.php	28
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::plant	method	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	plant	void	0	public	src/002_phound_override_return_types.php	41
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::run	method	\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest	run	void	0	public	src/002_phound_override_return_types.php	33
+\PhoundOverrideReturnTypes\Vegetable::__construct	method	\PhoundOverrideReturnTypes\Vegetable	__construct	\PhoundOverrideReturnTypes\Vegetable	0	public	src/002_phound_override_return_types.php	15
+\PhoundOverrideReturnTypes\Vegetable::class	const	\PhoundOverrideReturnTypes\Vegetable	class	'PhoundOverrideReturnTypes\\Vegetable'	0	public	src/002_phound_override_return_types.php	15
+<-----------> Parameters <----------->
+\PhoundOverrideReturnTypes\PhoundOverrideReturnTypesTest::plant	0	v	\PhoundOverrideReturnTypes\Vegetable	0	0	0	

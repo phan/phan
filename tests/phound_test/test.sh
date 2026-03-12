@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -u
 
+# Usage: bash test.sh [--update]
+#   --update: regenerate expected files from actual DB output instead of comparing
+
+UPDATE=false
+if [ "${1:-}" = "--update" ]; then
+    UPDATE=true
+fi
+
 if ! type sqlite3 >/dev/null; then
     echo "sqlite3, which is necessary for this test, is not installed!"
     exit 1
 fi
 
-EXPECTED_PATH=expected/all_output.expected
-if [ ! -d expected  ]; then
+if [ ! -d expected ]; then
     echo "Error: must run this script from tests/phound_test folder"
-    exit 1
-fi
-echo "Generating test cases"
-for path in $(echo expected/*.php.expected | LC_ALL=C sort); do cat "$path"; done > $EXPECTED_PATH
-EXIT_CODE=$?
-if [[ $EXIT_CODE != 0 ]]; then
-    echo "Failed to concatenate test cases" 1>&2
     exit 1
 fi
 
@@ -29,53 +29,13 @@ if ! ../../phan --force-polyfill-parser --memory-limit 1G --analyze-twice ; then
     exit 1
 fi
 
-# Regarding the ORDER BY clause:
-# 1) `substr(callsite, 0, instr(callsite, ":"))`
-#   This transforms a callsite like `001_my_test_file.php:10`` to `001_my_test_file.php`
-# 2) `cast(substr(callsite, instr(callsite, ":") + 1) as integer)`
-#   This transforms a callsite like 001_my_test_file.php:10 to `10`.
-#   That is, it transforms it to the callsite line number as an integer. It avoids weirdness where,
-#   for example, 'foo.php:10' might otherwise appear ahead of 'foo.php:9' when treated as a string.
-#
-# Together, these order by clauses ensure the output is ordered by file and line number.
-CALLSITES=$(sqlite3 ~/phound.db 'SELECT * FROM callsites ORDER BY substr(callsite, 0, instr(callsite, ":")), cast(substr(callsite, instr(callsite, ":") + 1) as integer), element, type')
-CLASSES=$(sqlite3 ~/phound.db 'SELECT * FROM classes ORDER BY filepath, name')
-CLASS_INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM class_interfaces ORDER BY class, interface')
-CLASS_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM class_relationships ORDER BY parent, child')
-CLASS_TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM class_traits ORDER BY class, trait')
-INTERFACES=$(sqlite3 ~/phound.db 'SELECT * FROM interfaces ORDER BY filepath, name')
-INTERFACE_RELATIONSHIPS=$(sqlite3 ~/phound.db 'SELECT * FROM interface_relationships ORDER BY parent, child')
-TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM traits ORDER BY filepath, name')
-TRAIT_TRAITS=$(sqlite3 ~/phound.db 'SELECT * FROM trait_traits ORDER BY trait, uses_trait')
-SIGNATURES=$(sqlite3 -separator $'\t' ~/phound.db 'SELECT fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno FROM signatures ORDER BY fqsen, kind')
-PARAMETERS=$(sqlite3 -separator $'\t' ~/phound.db 'SELECT fqsen, idx, name, type, is_variadic, is_reference, is_optional, default_repr FROM parameters ORDER BY fqsen, idx')
+DB=~/phound.db
 
-ACTUAL="<-----------> Callsites <----------->
-$CALLSITES
-<-----------> Classes <----------->
-$CLASSES
-<-----------> Class Interfaces <----------->
-$CLASS_INTERFACES
-<-----------> Class Relationships <----------->
-$CLASS_RELATIONSHIPS
-<-----------> Class Traits <----------->
-$CLASS_TRAITS
-<-----------> Interfaces <----------->
-$INTERFACES
-<-----------> Interface Relationships <----------->
-$INTERFACE_RELATIONSHIPS
-<-----------> Traits <----------->
-$TRAITS
-<-----------> Trait Traits <----------->
-$TRAIT_TRAITS
-<-----------> Signatures <----------->
-$SIGNATURES
-<-----------> Parameters <----------->
-$PARAMETERS"
-# diff returns a non-zero exit code if files differ or are missing
-# This outputs the difference between actual and expected output.
-echo "$ACTUAL"
-echo "Comparing the output:"
+# Helper: print a section header, followed by content (if non-empty)
+section() {
+    echo "<-----------> $1 <----------->"
+    if [ -n "${2:-}" ]; then echo "$2"; fi
+}
 
 if type colordiff >/dev/null 2>&1; then
     DIFF="colordiff"
@@ -83,11 +43,79 @@ else
     DIFF="diff"
 fi
 
-$DIFF $EXPECTED_PATH <(echo "$ACTUAL")
-EXIT_CODE=$?
-if [ "$EXIT_CODE" == 0 ]; then
-    echo "The sqlite3 DB content matches what was expected"
+FAILED=0
+
+for src_file in src/*.php; do
+    filename=$(basename "$src_file")
+    FILE_PATH="src/${filename}"
+    expected_file="expected/${filename}.expected"
+
+    # Query each table filtered to this source file.
+    # Tables with filepath columns are filtered directly.
+    # Relationship tables use subqueries to filter by the classes/interfaces/traits
+    # defined in this file.
+    PF_CALLSITES=$(sqlite3 "$DB" "SELECT * FROM callsites WHERE callsite LIKE '${FILE_PATH}:%' ORDER BY cast(substr(callsite, instr(callsite, ':') + 1) as integer), element, type")
+
+    PF_CLASSES=$(sqlite3 "$DB" "SELECT * FROM classes WHERE filepath = '${FILE_PATH}' ORDER BY name")
+
+    PF_CLASS_INTERFACES=$(sqlite3 "$DB" "SELECT class, interface FROM class_interfaces WHERE class IN (SELECT name FROM classes WHERE filepath = '${FILE_PATH}') ORDER BY class, interface")
+
+    PF_CLASS_RELATIONSHIPS=$(sqlite3 "$DB" "SELECT parent, child FROM class_relationships WHERE child IN (SELECT name FROM classes WHERE filepath = '${FILE_PATH}') ORDER BY parent, child")
+
+    PF_CLASS_TRAITS=$(sqlite3 "$DB" "SELECT class, trait FROM class_traits WHERE class IN (SELECT name FROM classes WHERE filepath = '${FILE_PATH}') ORDER BY class, trait")
+
+    PF_INTERFACES=$(sqlite3 "$DB" "SELECT * FROM interfaces WHERE filepath = '${FILE_PATH}' ORDER BY name")
+
+    PF_INTERFACE_RELATIONSHIPS=$(sqlite3 "$DB" "SELECT parent, child FROM interface_relationships WHERE child IN (SELECT name FROM interfaces WHERE filepath = '${FILE_PATH}') ORDER BY parent, child")
+
+    PF_TRAITS=$(sqlite3 "$DB" "SELECT * FROM traits WHERE filepath = '${FILE_PATH}' ORDER BY name")
+
+    PF_TRAIT_TRAITS=$(sqlite3 "$DB" "SELECT trait, uses_trait FROM trait_traits WHERE trait IN (SELECT name FROM traits WHERE filepath = '${FILE_PATH}') ORDER BY trait, uses_trait")
+
+    PF_SIGNATURES=$(sqlite3 -separator $'\t' "$DB" "SELECT fqsen, kind, class_fqsen, name, type, is_static, visibility, filepath, lineno FROM signatures WHERE filepath = '${FILE_PATH}' ORDER BY fqsen, kind")
+
+    PF_PARAMETERS=$(sqlite3 -separator $'\t' "$DB" "SELECT p.fqsen, p.idx, p.name, p.type, p.is_variadic, p.is_reference, p.is_optional, p.default_repr FROM parameters p WHERE p.fqsen IN (SELECT DISTINCT fqsen FROM signatures WHERE filepath = '${FILE_PATH}') ORDER BY p.fqsen, p.idx")
+
+    ACTUAL="$(section "Callsites" "$PF_CALLSITES")
+$(section "Classes" "$PF_CLASSES")
+$(section "Class Interfaces" "$PF_CLASS_INTERFACES")
+$(section "Class Relationships" "$PF_CLASS_RELATIONSHIPS")
+$(section "Class Traits" "$PF_CLASS_TRAITS")
+$(section "Interfaces" "$PF_INTERFACES")
+$(section "Interface Relationships" "$PF_INTERFACE_RELATIONSHIPS")
+$(section "Traits" "$PF_TRAITS")
+$(section "Trait Traits" "$PF_TRAIT_TRAITS")
+$(section "Signatures" "$PF_SIGNATURES")
+$(section "Parameters" "$PF_PARAMETERS")"
+
+    if [ "$UPDATE" = true ]; then
+        echo "$ACTUAL" > "$expected_file"
+        echo "Updated $expected_file"
+    else
+        if [ ! -f "$expected_file" ]; then
+            echo "FAIL: $filename (expected file missing: $expected_file)"
+            FAILED=1
+            continue
+        fi
+        if $DIFF "$expected_file" <(echo "$ACTUAL") > /dev/null 2>&1; then
+            echo "PASS: $filename"
+        else
+            echo "FAIL: $filename"
+            $DIFF "$expected_file" <(echo "$ACTUAL")
+            FAILED=1
+        fi
+    fi
+done
+
+if [ "$UPDATE" = true ]; then
+    echo "All expected files updated."
+    exit 0
+fi
+
+echo ""
+if [ $FAILED -eq 0 ]; then
+    echo "All tests passed!"
 else
-    echo "The sqlite3 DB content does not match what was expected"
-    exit $EXIT_CODE
+    echo "Some tests FAILED."
+    exit 1
 fi

@@ -821,12 +821,23 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 
         self::writeSignatures($code_base);
 
-        // Create all indexes after bulk loading for better performance
+        // Create indexes needed by propagation queries (which join on the child column)
+        $propagation_indexes = [
+            'CREATE INDEX IF NOT EXISTS class_relationships_child ON class_relationships (child)',
+            'CREATE INDEX IF NOT EXISTS interface_relationships_child ON interface_relationships (child)',
+        ];
+        foreach ($propagation_indexes as $index_sql) {
+            if (!self::$db->exec($index_sql)) {
+                throw new Exception("Failed to create index: $index_sql");
+            }
+        }
+
+        self::propagateCallsitesToAncestors(self::$db);
+
+        // Create remaining indexes after bulk loading for better performance
         $indexes = [
             'CREATE INDEX IF NOT EXISTS element_and_callsite ON callsites (element, callsite)',
             'CREATE INDEX IF NOT EXISTS class_interfaces_interface ON class_interfaces (interface)',
-            'CREATE INDEX IF NOT EXISTS class_relationships_child ON class_relationships (child)',
-            'CREATE INDEX IF NOT EXISTS interface_relationships_child ON interface_relationships (child)',
             'CREATE INDEX IF NOT EXISTS signatures_name ON signatures (name)',
             'CREATE INDEX IF NOT EXISTS signatures_class ON signatures (class_fqsen)',
             'CREATE INDEX IF NOT EXISTS signatures_filepath ON signatures (filepath)',
@@ -835,6 +846,107 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             if (!self::$db->exec($index_sql)) {
                 throw new Exception("Failed to create index: $index_sql");
             }
+        }
+    }
+
+    /**
+     * Propagate callsites up the class/interface/trait hierarchy.
+     * After this, a call to \Child::method also appears as a callsite
+     * of \Parent::method (and interface/trait methods), provided the
+     * ancestor actually declares that member (verified via signatures).
+     *
+     * Requires that hierarchy tables are already flattened and signatures
+     * are already written. Uses INSERT OR IGNORE to avoid duplicates.
+     *
+     * @throws Exception
+     */
+    public static function propagateCallsitesToAncestors(SQLite3 $db): void
+    {
+        // All five propagation paths are combined into a single INSERT ... UNION ALL
+        // so SQLite evaluates the entire SELECT as one snapshot before inserting.
+        // This avoids later subqueries scanning rows inserted by earlier ones
+        // (which would only produce duplicates discarded by INSERT OR IGNORE).
+        $propagate = "
+            INSERT OR IGNORE INTO callsites (element, type, callsite)
+
+            -- Class hierarchy (uses already-flattened class_relationships)
+            SELECT
+                cr.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2),
+                c.type,
+                c.callsite
+            FROM callsites c
+            JOIN class_relationships cr
+                ON cr.child = SUBSTR(c.element, 1, INSTR(c.element, '::') - 1)
+            JOIN signatures s
+                ON s.fqsen = cr.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
+                AND s.kind = c.type
+                AND s.visibility != 'private'
+
+            UNION ALL
+
+            -- Interfaces (uses already-flattened class_interfaces)
+            SELECT
+                ci.interface || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2),
+                c.type,
+                c.callsite
+            FROM callsites c
+            JOIN class_interfaces ci
+                ON ci.class = SUBSTR(c.element, 1, INSTR(c.element, '::') - 1)
+            JOIN signatures s
+                ON s.fqsen = ci.interface || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
+                AND s.kind = c.type
+                AND s.visibility != 'private'
+
+            UNION ALL
+
+            -- Traits (uses already-flattened class_traits)
+            SELECT
+                ct.trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2),
+                c.type,
+                c.callsite
+            FROM callsites c
+            JOIN class_traits ct
+                ON ct.class = SUBSTR(c.element, 1, INSTR(c.element, '::') - 1)
+            JOIN signatures s
+                ON s.fqsen = ct.trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
+                AND s.kind = c.type
+                AND s.visibility != 'private'
+
+            UNION ALL
+
+            -- Interface hierarchy (uses already-flattened interface_relationships)
+            SELECT
+                ir.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2),
+                c.type,
+                c.callsite
+            FROM callsites c
+            JOIN interface_relationships ir
+                ON ir.child = SUBSTR(c.element, 1, INSTR(c.element, '::') - 1)
+            JOIN signatures s
+                ON s.fqsen = ir.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
+                AND s.kind = c.type
+                AND s.visibility != 'private'
+
+            UNION ALL
+
+            -- Trait hierarchy (uses already-flattened trait_traits)
+            SELECT
+                tt.uses_trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2),
+                c.type,
+                c.callsite
+            FROM callsites c
+            JOIN trait_traits tt
+                ON tt.trait = SUBSTR(c.element, 1, INSTR(c.element, '::') - 1)
+            JOIN signatures s
+                ON s.fqsen = tt.uses_trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
+                AND s.kind = c.type
+                AND s.visibility != 'private'
+
+            -- Insert in PK order (element, type, callsite) for better B-tree performance
+            ORDER BY 1, 2, 3
+        ";
+        if (!$db->exec($propagate)) {
+            throw new Exception("Failed to propagate callsites to ancestors");
         }
     }
 
@@ -869,6 +981,16 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
             }
             $class_fqsen = $clazz->getFQSEN();
             $class_fqsen_str = $class_fqsen->__toString();
+
+            // Ensure the implicit constructor is materialized for non-trait,
+            // non-interface classes. Phan lazily creates default constructors
+            // only when getMethodByName('__construct') is called (e.g., from
+            // a `new` expression). Classes that are never directly instantiated
+            // won't have a __construct in the method map, which means
+            // propagated callsites can't find the ancestor's constructor.
+            if (!$clazz->isTrait() && !$clazz->isInterface()) {
+                $clazz->getMethodByName($code_base, '__construct');
+            }
 
             foreach ($code_base->getMethodMapByFullyQualifiedClassName($class_fqsen) as $method) {
                 if ($method->isPHPInternal()) {
