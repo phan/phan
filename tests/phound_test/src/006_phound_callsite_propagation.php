@@ -101,5 +101,8 @@ function testDescribable(Describable $d): void {
     $d->describe(); // \Describable::describe stays (Greetable doesn't have describe)
 }
 
-// 11) ::class pseudo-constant -> should NOT propagate (it's lexical, not inherited)
-$leafClass = Leaf::class; // \Leaf::class callsite only, NOT \Middle::class or \Base::class
+// 11) ::class pseudo-constant — not a propagation concern.
+//     PHP represents Foo::class as AST_CLASS_NAME (not AST_CLASS_CONST),
+//     so visitClassConst is never triggered and no callsite is recorded.
+//     This means ::class can never be propagated, even without an explicit filter.
+$leafClass = Leaf::class;

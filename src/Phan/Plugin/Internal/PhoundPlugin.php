@@ -881,7 +881,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 ON s.fqsen = cr.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
                 AND s.visibility != 'private'
-                AND s.name != 'class'
 
             UNION ALL
 
@@ -897,7 +896,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 ON s.fqsen = ci.interface || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
                 AND s.visibility != 'private'
-                AND s.name != 'class'
 
             UNION ALL
 
@@ -913,7 +911,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 ON s.fqsen = ct.trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
                 AND s.visibility != 'private'
-                AND s.name != 'class'
 
             UNION ALL
 
@@ -929,7 +926,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 ON s.fqsen = ir.parent || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
                 AND s.visibility != 'private'
-                AND s.name != 'class'
 
             UNION ALL
 
@@ -945,7 +941,6 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
                 ON s.fqsen = tt.uses_trait || '::' || SUBSTR(c.element, INSTR(c.element, '::') + 2)
                 AND s.kind = c.type
                 AND s.visibility != 'private'
-                AND s.name != 'class'
 
             -- Insert in PK order (element, type, callsite) for better B-tree performance
             ORDER BY 1, 2, 3
