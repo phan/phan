@@ -4357,68 +4357,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // types onto the method's parameters. On the second analysis pass (--analyze-twice),
         // the function body will use these widened parameter types, enabling downstream
         // type resolution (e.g. `new $class_name()` where $class_name is class-string<Foo>).
-        if (Config::getValue('override_parameter_types') && $method instanceof Method && $method->getNode()) {
-            $parameter_list = $method->getParameterList();
-            foreach ($argument_list as $i => $argument) {
-                if ($argument === null) {
-                    continue;
-                }
-                // Unwrap named arguments to get the actual expression and resolve
-                // the parameter index by name instead of position.
-                $arg_expression = $argument;
-                $param_index = $i;
-                if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
-                    $arg_expression = $argument->children['expr'];
-                    if ($arg_expression === null) {
-                        continue;
-                    }
-                    $arg_name = $argument->children['name'];
-                    $param_index = null;
-                    foreach ($parameter_list as $pi => $p) {
-                        if ($p->getName() === $arg_name) {
-                            $param_index = $pi;
-                            break;
-                        }
-                    }
-                    if ($param_index === null) {
-                        continue;
-                    }
-                } else {
-                    if ($param_index >= count($parameter_list)) {
-                        $last_index = count($parameter_list) - 1;
-                        if ($last_index >= 0 && $parameter_list[$last_index]->isVariadic()) {
-                            $param_index = $last_index;
-                        } else {
-                            continue;
-                        }
-                    }
-                }
-                $actual_param = $parameter_list[$param_index];
-                if ($actual_param->isPassByReference()) {
-                    continue;
-                }
-                $arg_type = UnionTypeVisitor::unionTypeFromNode(
-                    $code_base,
-                    $context,
-                    $arg_expression,
-                    true
-                );
-                if ($arg_type->isEmpty()) {
-                    continue;
-                }
-                // Only merge argument types that are compatible with the real
-                // (not PHPDoc) parameter type. This avoids contamination from
-                // incorrect calls and is robust against wrong PHPDoc annotations.
-                $real_param_type = $actual_param->getNonVariadicUnionType()->getRealUnionType();
-                if (!$real_param_type->isEmpty() && !$arg_type->canCastToUnionType($real_param_type, $code_base)) {
-                    continue;
-                }
-                // For variadic parameters, merge into the element type (getNonVariadicUnionType)
-                // rather than the wrapped list type (getUnionType), to avoid corrupting the type.
-                $actual_param->setUnionType(
-                    $actual_param->getNonVariadicUnionType()->withUnionType($arg_type)
-                );
-            }
+        if (Config::getValue('override_parameter_types') && $method->getNode()) {
+            $this->widenParameterTypesFromArguments($method, $argument_list, $code_base, $context);
         }
 
         // Take another pass over pass-by-reference parameters
@@ -4489,6 +4429,86 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    /**
+     * Widen parameter types based on the types of arguments passed by callers.
+     *
+     * For each argument, the inferred type is merged into the corresponding
+     * parameter's union type, provided it is compatible with the parameter's
+     * real (PHP) type. This enables downstream analysis (e.g. resolving
+     * `new $class_name()`) to use more specific types on the second pass.
+     *
+     * @param array<int,Node|string|int|float|null> $argument_list
+     */
+    private function widenParameterTypesFromArguments(
+        FunctionInterface $method,
+        array $argument_list,
+        CodeBase $code_base,
+        Context $context
+    ): void {
+        $parameter_list = $method->getParameterList();
+        $parameter_count = count($parameter_list);
+        foreach ($argument_list as $i => $argument) {
+            if ($argument === null) {
+                continue;
+            }
+            // Unwrap named arguments to get the actual expression and resolve
+            // the parameter index by name instead of position.
+            $arg_expression = $argument;
+            $param_index = $i;
+            if ($argument instanceof Node && $argument->kind === ast\AST_NAMED_ARG) {
+                $arg_expression = $argument->children['expr'];
+                if ($arg_expression === null) {
+                    continue;
+                }
+                $arg_name = $argument->children['name'];
+                $param_index = null;
+                foreach ($parameter_list as $pi => $p) {
+                    if ($p->getName() === $arg_name) {
+                        $param_index = $pi;
+                        break;
+                    }
+                }
+                if ($param_index === null) {
+                    continue;
+                }
+            } else {
+                if ($param_index >= $parameter_count) {
+                    $last_index = $parameter_count - 1;
+                    if ($last_index >= 0 && $parameter_list[$last_index]->isVariadic()) {
+                        $param_index = $last_index;
+                    } else {
+                        continue;
+                    }
+                }
+            }
+            $actual_param = $parameter_list[$param_index];
+            if ($actual_param->isPassByReference()) {
+                continue;
+            }
+            $arg_type = UnionTypeVisitor::unionTypeFromNode(
+                $code_base,
+                $context,
+                $arg_expression,
+                true
+            );
+            if ($arg_type->isEmpty()) {
+                continue;
+            }
+            // Only merge argument types that are compatible with the real
+            // (not PHPDoc) parameter type. This avoids contamination from
+            // incorrect calls and is robust against wrong PHPDoc annotations.
+            $real_param_type = $actual_param->getNonVariadicUnionType()->getRealUnionType();
+            if (!$real_param_type->isEmpty() && !$arg_type->canCastToUnionType($real_param_type, $code_base)) {
+                continue;
+            }
+            // For variadic parameters, merge into the element type (getNonVariadicUnionType)
+            // rather than the wrapped list type (getUnionType), to avoid corrupting the type.
+            $actual_param->setUnionType(
+                $actual_param->getNonVariadicUnionType()->withUnionType($arg_type)
+            );
+        }
     }
 
     /**
