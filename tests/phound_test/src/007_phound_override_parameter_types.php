@@ -74,6 +74,23 @@ class Caller {
     }
 
     /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
+    public function runWithVariadic(): void {
+        // Variadic parameter: argument types should widen the element type,
+        // not get merged into the wrapped list<T> form.
+        $this->processAnimals(new Dog(), new Cat());
+    }
+
+    /**
+     * @param Animal ...$animals
+     * @phan-suppress-next-line PhanUnreferencedPublicMethod
+     */
+    public function processAnimals(Animal ...$animals): void {
+        foreach ($animals as $animal) {
+            $animal->speak();
+        }
+    }
+
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public function runWithIncompatibleArg(): void {
         $factory = new Factory();
         // Passing an incompatible type (array instead of string) — should NOT

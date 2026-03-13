@@ -30,13 +30,19 @@
 \OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:73
 \OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:73
 \OverrideParameterTypes\Fish::speak|method|src/007_phound_override_parameter_types.php:73
-\OverrideParameterTypes\Factory::__construct|method|src/007_phound_override_parameter_types.php:78
-\OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:82
-\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:83
-\OverrideParameterTypes\Bird::speak|method|src/007_phound_override_parameter_types.php:83
-\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:83
-\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:83
-\OverrideParameterTypes\Fish::speak|method|src/007_phound_override_parameter_types.php:83
+\OverrideParameterTypes\Caller::processAnimals|method|src/007_phound_override_parameter_types.php:80
+\OverrideParameterTypes\Cat::__construct|method|src/007_phound_override_parameter_types.php:80
+\OverrideParameterTypes\Dog::__construct|method|src/007_phound_override_parameter_types.php:80
+\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:89
+\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:89
+\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:89
+\OverrideParameterTypes\Factory::__construct|method|src/007_phound_override_parameter_types.php:95
+\OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:99
+\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:100
+\OverrideParameterTypes\Bird::speak|method|src/007_phound_override_parameter_types.php:100
+\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:100
+\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:100
+\OverrideParameterTypes\Fish::speak|method|src/007_phound_override_parameter_types.php:100
 <-----------> Classes <----------->
 \OverrideParameterTypes\Bird|src/007_phound_override_parameter_types.php
 \OverrideParameterTypes\Caller|src/007_phound_override_parameter_types.php
@@ -64,10 +70,12 @@
 \OverrideParameterTypes\Bird::speak	method	\OverrideParameterTypes\Bird	speak	'tweet'|string	0	public	src/007_phound_override_parameter_types.php	44
 \OverrideParameterTypes\Caller::__construct	method	\OverrideParameterTypes\Caller	__construct	\OverrideParameterTypes\Caller	0	public	src/007_phound_override_parameter_types.php	50
 \OverrideParameterTypes\Caller::class	const	\OverrideParameterTypes\Caller	class	'OverrideParameterTypes\\Caller'	0	public	src/007_phound_override_parameter_types.php	50
+\OverrideParameterTypes\Caller::processAnimals	method	\OverrideParameterTypes\Caller	processAnimals	void	0	public	src/007_phound_override_parameter_types.php	87
 \OverrideParameterTypes\Caller::run	method	\OverrideParameterTypes\Caller	run	void	0	public	src/007_phound_override_parameter_types.php	52
-\OverrideParameterTypes\Caller::runWithIncompatibleArg	method	\OverrideParameterTypes\Caller	runWithIncompatibleArg	void	0	public	src/007_phound_override_parameter_types.php	77
+\OverrideParameterTypes\Caller::runWithIncompatibleArg	method	\OverrideParameterTypes\Caller	runWithIncompatibleArg	void	0	public	src/007_phound_override_parameter_types.php	94
 \OverrideParameterTypes\Caller::runWithNamedArg	method	\OverrideParameterTypes\Caller	runWithNamedArg	void	0	public	src/007_phound_override_parameter_types.php	69
 \OverrideParameterTypes\Caller::runWithScalar	method	\OverrideParameterTypes\Caller	runWithScalar	void	0	public	src/007_phound_override_parameter_types.php	61
+\OverrideParameterTypes\Caller::runWithVariadic	method	\OverrideParameterTypes\Caller	runWithVariadic	void	0	public	src/007_phound_override_parameter_types.php	77
 \OverrideParameterTypes\Cat::__construct	method	\OverrideParameterTypes\Cat	__construct	\OverrideParameterTypes\Cat	0	public	src/007_phound_override_parameter_types.php	21
 \OverrideParameterTypes\Cat::class	const	\OverrideParameterTypes\Cat	class	'OverrideParameterTypes\\Cat'	0	public	src/007_phound_override_parameter_types.php	21
 \OverrideParameterTypes\Cat::speak	method	\OverrideParameterTypes\Cat	speak	'meow'|string	0	public	src/007_phound_override_parameter_types.php	22
@@ -81,4 +89,5 @@
 \OverrideParameterTypes\Fish::class	const	\OverrideParameterTypes\Fish	class	'OverrideParameterTypes\\Fish'	0	public	src/007_phound_override_parameter_types.php	37
 \OverrideParameterTypes\Fish::speak	method	\OverrideParameterTypes\Fish	speak	'blub'|string	0	public	src/007_phound_override_parameter_types.php	38
 <-----------> Parameters <----------->
+\OverrideParameterTypes\Caller::processAnimals	0	animals	\OverrideParameterTypes\Animal[]|\OverrideParameterTypes\Cat[]|\OverrideParameterTypes\Dog[]	1	0	1	
 \OverrideParameterTypes\Factory::create	0	class_name	'OverrideParameterTypes\\Bird'|'OverrideParameterTypes\\Cat'|'OverrideParameterTypes\\Dog'|'OverrideParameterTypes\\Fish'|string	0	0	0	
