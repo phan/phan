@@ -421,7 +421,7 @@
 \PhoundHierarchy\anonymous_class_411edd3f::toggleMotor	method	\PhoundHierarchy\anonymous_class_411edd3f	toggleMotor	void	0	public	src/003_phound_hierarchy.php	71
 \PhoundHierarchy\anonymous_class_411edd3f::type	prop	\PhoundHierarchy\anonymous_class_411edd3f	type	string	0	protected	src/003_phound_hierarchy.php	182
 <-----------> Parameters <----------->
-\PhoundHierarchy\Car::__construct	0	model	string	0	0	0	
+\PhoundHierarchy\Car::__construct	0	model	'crown victoria'|string	0	0	0	
 \PhoundHierarchy\Car::drive	0	distance	int	0	0	0	
 \PhoundHierarchy\Car::move	0	distance	int	0	0	0	
 \PhoundHierarchy\Car::radio	0	station	?float	0	0	0	
@@ -461,12 +461,12 @@
 \PhoundHierarchy\Taxi::radio	0	station	?float	0	0	0	
 \PhoundHierarchy\Taxi::setSpeed	0	speed	int	0	0	0	
 \PhoundHierarchy\Taxi::transport	0	passengers	mixed	0	1	0	
-\PhoundHierarchy\Vehicle::__construct	0	type	string	0	0	0	
+\PhoundHierarchy\Vehicle::__construct	0	type	'car'|'motorboat'|'sailboat'|string	0	0	0	
 \PhoundHierarchy\Vehicle::move	0	distance	int	0	0	0	
 \PhoundHierarchy\Vehicle::setSpeed	0	speed	int	0	0	0	
 \PhoundHierarchy\VehicleInterface::move	0	distance	int	0	0	0	
 \PhoundHierarchy\VehicleInterface::setSpeed	0	speed	int	0	0	0	
-\PhoundHierarchy\anonymous_class_411edd3f::__construct	0	type	string	0	0	0	
+\PhoundHierarchy\anonymous_class_411edd3f::__construct	0	type	'mystery'|string	0	0	0	
 \PhoundHierarchy\anonymous_class_411edd3f::drive	0	distance	int	0	0	0	
 \PhoundHierarchy\anonymous_class_411edd3f::move	0	distance	int	0	0	0	
 \PhoundHierarchy\anonymous_class_411edd3f::setSpeed	0	speed	int	0	0	0	
