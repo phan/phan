@@ -4394,7 +4394,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     }
                 }
                 $actual_param = $parameter_list[$param_index];
-                if ($actual_param->isPassByReference()) {
+                if ($actual_param->isPassByReference() || $actual_param->isVariadic()) {
                     continue;
                 }
                 $arg_type = UnionTypeVisitor::unionTypeFromNode(
@@ -4413,10 +4413,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if (!$real_param_type->isEmpty() && !$arg_type->canCastToUnionType($real_param_type, $code_base)) {
                     continue;
                 }
-                // For variadic parameters, merge into the element type (getNonVariadicUnionType)
-                // rather than the wrapped list type (getUnionType), to avoid corrupting the type.
                 $actual_param->setUnionType(
-                    $actual_param->getNonVariadicUnionType()->withUnionType($arg_type)
+                    $actual_param->getUnionType()->withUnionType($arg_type)
                 );
             }
         }

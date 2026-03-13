@@ -34,8 +34,6 @@
 \OverrideParameterTypes\Cat::__construct|method|src/007_phound_override_parameter_types.php:80
 \OverrideParameterTypes\Dog::__construct|method|src/007_phound_override_parameter_types.php:80
 \OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:89
-\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:89
-\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:89
 \OverrideParameterTypes\Factory::__construct|method|src/007_phound_override_parameter_types.php:95
 \OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:99
 \OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:100
@@ -89,5 +87,5 @@
 \OverrideParameterTypes\Fish::class	const	\OverrideParameterTypes\Fish	class	'OverrideParameterTypes\\Fish'	0	public	src/007_phound_override_parameter_types.php	37
 \OverrideParameterTypes\Fish::speak	method	\OverrideParameterTypes\Fish	speak	'blub'|string	0	public	src/007_phound_override_parameter_types.php	38
 <-----------> Parameters <----------->
-\OverrideParameterTypes\Caller::processAnimals	0	animals	\OverrideParameterTypes\Animal[]|\OverrideParameterTypes\Cat[]|\OverrideParameterTypes\Dog[]	1	0	1	
+\OverrideParameterTypes\Caller::processAnimals	0	animals	\OverrideParameterTypes\Animal[]	1	0	1	
 \OverrideParameterTypes\Factory::create	0	class_name	'OverrideParameterTypes\\Bird'|'OverrideParameterTypes\\Cat'|'OverrideParameterTypes\\Dog'|'OverrideParameterTypes\\Fish'|string	0	0	0	
