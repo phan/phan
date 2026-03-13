@@ -4406,12 +4406,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($arg_type->isEmpty()) {
                     continue;
                 }
-                // Only merge argument types that are compatible with the declared
-                // parameter type. Incompatible calls (e.g. passing array to string)
-                // are already flagged by ArgumentType::analyze — widening the
-                // parameter with those types would contaminate downstream analysis.
-                $declared_param_type = $actual_param->getNonVariadicUnionType();
-                if (!$declared_param_type->isEmpty() && !$arg_type->canCastToUnionType($declared_param_type, $code_base)) {
+                // Only merge argument types that are compatible with the real
+                // (not PHPDoc) parameter type. This avoids contamination from
+                // incorrect calls and is robust against wrong PHPDoc annotations.
+                $real_param_type = $actual_param->getNonVariadicUnionType()->getRealUnionType();
+                if (!$real_param_type->isEmpty() && !$arg_type->canCastToUnionType($real_param_type, $code_base)) {
                     continue;
                 }
                 // For variadic parameters, merge into the element type (getNonVariadicUnionType)
