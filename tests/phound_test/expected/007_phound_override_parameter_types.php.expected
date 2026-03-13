@@ -30,6 +30,13 @@
 \OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:73
 \OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:73
 \OverrideParameterTypes\Fish::speak|method|src/007_phound_override_parameter_types.php:73
+\OverrideParameterTypes\Factory::__construct|method|src/007_phound_override_parameter_types.php:78
+\OverrideParameterTypes\Factory::create|method|src/007_phound_override_parameter_types.php:82
+\OverrideParameterTypes\Animal::speak|method|src/007_phound_override_parameter_types.php:83
+\OverrideParameterTypes\Bird::speak|method|src/007_phound_override_parameter_types.php:83
+\OverrideParameterTypes\Cat::speak|method|src/007_phound_override_parameter_types.php:83
+\OverrideParameterTypes\Dog::speak|method|src/007_phound_override_parameter_types.php:83
+\OverrideParameterTypes\Fish::speak|method|src/007_phound_override_parameter_types.php:83
 <-----------> Classes <----------->
 \OverrideParameterTypes\Bird|src/007_phound_override_parameter_types.php
 \OverrideParameterTypes\Caller|src/007_phound_override_parameter_types.php
@@ -58,6 +65,7 @@
 \OverrideParameterTypes\Caller::__construct	method	\OverrideParameterTypes\Caller	__construct	\OverrideParameterTypes\Caller	0	public	src/007_phound_override_parameter_types.php	50
 \OverrideParameterTypes\Caller::class	const	\OverrideParameterTypes\Caller	class	'OverrideParameterTypes\\Caller'	0	public	src/007_phound_override_parameter_types.php	50
 \OverrideParameterTypes\Caller::run	method	\OverrideParameterTypes\Caller	run	void	0	public	src/007_phound_override_parameter_types.php	52
+\OverrideParameterTypes\Caller::runWithIncompatibleArg	method	\OverrideParameterTypes\Caller	runWithIncompatibleArg	void	0	public	src/007_phound_override_parameter_types.php	77
 \OverrideParameterTypes\Caller::runWithNamedArg	method	\OverrideParameterTypes\Caller	runWithNamedArg	void	0	public	src/007_phound_override_parameter_types.php	69
 \OverrideParameterTypes\Caller::runWithScalar	method	\OverrideParameterTypes\Caller	runWithScalar	void	0	public	src/007_phound_override_parameter_types.php	61
 \OverrideParameterTypes\Cat::__construct	method	\OverrideParameterTypes\Cat	__construct	\OverrideParameterTypes\Cat	0	public	src/007_phound_override_parameter_types.php	21

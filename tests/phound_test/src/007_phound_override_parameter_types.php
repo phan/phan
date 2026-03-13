@@ -72,4 +72,14 @@ class Caller {
         $bird = $factory->create(class_name: Bird::class);
         $bird->speak();
     }
+
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
+    public function runWithIncompatibleArg(): void {
+        $factory = new Factory();
+        // Passing an incompatible type (array instead of string) — should NOT
+        // widen the parameter type, since this is a type error.
+        /** @phan-suppress-next-line PhanTypeMismatchArgument,PhanTypeMismatchArgumentReal */
+        $result = $factory->create([1, 2, 3]);
+        $result->speak();
+    }
 }
