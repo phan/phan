@@ -91,6 +91,16 @@ class Caller {
     }
 
     /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
+    public function runWithUnpack(): void {
+        // Unpacked arguments (...) should be skipped entirely —
+        // we can't reliably map them to parameter indices.
+        // Uses Fish and Bird (not Dog/Cat) so we can detect if unpack
+        // incorrectly widens the parameter type.
+        $animals = [new Fish(), new Bird()];
+        $this->processAnimals(...$animals);
+    }
+
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public function runWithIncompatibleArg(): void {
         $factory = new Factory();
         // Passing an incompatible type (array instead of string) — should NOT

@@ -4453,6 +4453,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($argument === null) {
                 continue;
             }
+            // Skip unpacked arguments (...$args) — the array type can't be
+            // reliably mapped to individual parameter indices.
+            if ($argument instanceof Node && $argument->kind === ast\AST_UNPACK) {
+                continue;
+            }
             // Unwrap named arguments to get the actual expression and resolve
             // the parameter index by name instead of position.
             $arg_expression = $argument;
