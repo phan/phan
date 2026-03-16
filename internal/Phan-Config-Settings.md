@@ -693,6 +693,7 @@ a concrete implementation, Phan will track both the interface and concrete type
 This also enables the return type override behavior (subsuming the deprecated
 [`override_return_types`](#override_return_types) setting): Phan will add inferred types to all return types,
 even if a `@return` type or real return type signature exists.
+This can be disabled on individual methods by adding `@phan-hardcode-return-type` to the doc comment.
 
 This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
 detect more callsite possibilities.
