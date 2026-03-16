@@ -105,8 +105,8 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
-	__FakeOverrideReturnTypesTest)
-		cd tests/override_return_types_test
+	__FakeTrackAllInferredTypesTest)
+		cd tests/track_all_inferred_types_test
 		./test.sh
 		exit $?
 		;;

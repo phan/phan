@@ -120,7 +120,7 @@ abstract class Scope
     /**
      * @return FQSEN in which this scope was declared
      * (e.g. a FullyQualifiedFunctionName, FullyQualifiedClassName, etc.)
-     * @suppress PhanPartialTypeMismatchReturn callers should call hasFQSEN
+     * @suppress PhanPossiblyNullTypeReturn callers should call hasFQSEN
      */
     public function getFQSEN(): FQSEN
     {

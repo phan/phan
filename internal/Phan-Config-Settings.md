@@ -487,6 +487,8 @@ by changing this setting.
 
 ## override_return_types
 
+**Deprecated.** Use `track_all_inferred_types` instead, which subsumes this setting.
+
 Add types to all return types. Normally, Phan only adds inferred returned types when there is no `@return` type
 or real return type signature. This setting can be disabled on individual methods by adding
 `@phan-hardcode-return-type` to the doc comment.
@@ -1088,5 +1090,21 @@ both array shape types and generic mixed array types.
 When disabled (default), Phan is more lenient and only warns if the offset is invalid
 across all union members. This avoids false positives when an array can be a generic
 mixed array (which accepts any key) or a shape with specific keys.
+
+(Default: `false`)
+
+## track_all_inferred_types
+
+If enabled, Phan will accumulate all inferred concrete types alongside declared types
+for properties. For example, if a property is declared as an interface type and assigned
+a concrete implementation, Phan will track both the interface and concrete type
+(e.g. `OutputInterface|ConsoleOutput` rather than just `OutputInterface`).
+
+This also enables the return type override behavior (subsuming the deprecated
+`override_return_types` setting): Phan will add inferred types to all return types,
+even if a `@return` type or real return type signature exists.
+
+This is useful for tools like phound that need to track all possible callsites,
+but may reduce the accuracy of type-checking warnings.
 
 (Default: `false`)

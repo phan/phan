@@ -70,6 +70,7 @@ class ConfigEntry
         'use_tentative_return_type' => self::CATEGORY_ANALYSIS,
         'allow_overriding_vague_return_types' => self::CATEGORY_ANALYSIS,
         'override_return_types' => self::CATEGORY_ANALYSIS,
+        'track_all_inferred_types' => self::CATEGORY_ANALYSIS,
         'infer_default_properties_in_construct' => self::CATEGORY_ANALYSIS,
         'inherit_phpdoc_types' => self::CATEGORY_ANALYSIS,
         'minimum_severity' => self::CATEGORY_ISSUE_FILTERING,

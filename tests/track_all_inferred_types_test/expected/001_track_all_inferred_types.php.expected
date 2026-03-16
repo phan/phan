@@ -1,0 +1,4 @@
+src/001_track_all_inferred_types.php:33 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \Animal5920|\Cat5920|\Dog5920(real=\Animal5920)
+src/001_track_all_inferred_types.php:33 PhanUnusedVariable Unused definition of variable $a
+src/001_track_all_inferred_types.php:40 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \Animal5920|\Cat5920(real=\Animal5920|\Cat5920)
+src/001_track_all_inferred_types.php:40 PhanUnusedVariable Unused definition of variable $b

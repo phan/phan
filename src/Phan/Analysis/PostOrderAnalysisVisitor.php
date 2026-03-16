@@ -1720,7 +1720,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
-        $override_return_types = Config::getValue('override_return_types');
+        $override_return_types = Config::getValue('override_return_types') || Config::get_track_all_inferred_types();
         $allow_overriding_vague_return_types = Config::getValue('allow_overriding_vague_return_types');
 
         // Mark the method as returning something (even if void)

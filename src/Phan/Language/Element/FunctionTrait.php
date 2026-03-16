@@ -353,7 +353,7 @@ trait FunctionTrait
      * 2) The setting `allow_overriding_vague_return_types` is enabled and the method had a vague enough return
      *      type that Phan would add types to it (return type is inferred from the method signature
      *      itself and the docblock).
-     * 3) The setting `override_return_types` is enabled and the method has no hardcoded or dependent return type.
+     * 3) The setting `override_return_types` or `track_all_inferred_types` is enabled and the method has no hardcoded or dependent return type.
      */
     public function isReturnTypeModifiable(): bool
     {
@@ -363,7 +363,7 @@ trait FunctionTrait
 
         $has_hardcoded_return_type = (bool) ($this->getPhanFlags() & Flags::HARDCODED_RETURN_TYPE);
 
-        if (Config::getValue('override_return_types')) {
+        if (Config::getValue('override_return_types') || Config::get_track_all_inferred_types()) {
             if ($has_hardcoded_return_type || $this->hasDependentReturnType()) {
                 // If the return type is hardcoded or we have a plugin that's inferring the return
                 // type based on method params, assume that those will do a better job of
