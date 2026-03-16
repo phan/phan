@@ -189,6 +189,10 @@ return [
     // @deprecated Use `track_all_inferred_types` instead.
     'override_return_types' => false,
 
+    // When enabled, Phan will accumulate all inferred concrete types alongside declared types
+    // for properties and widen return types with inferred types. This subsumes `override_return_types`.
+    // This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
+    // detect more callsite possibilities.
     'track_all_inferred_types' => false,
 
     // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
