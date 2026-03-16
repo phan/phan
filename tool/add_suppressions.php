@@ -242,8 +242,7 @@ class SuppressionTool
     {
         $doc = new \DOMDocument();
         if (!@$doc->loadXML($xml_input)) {
-            fwrite(STDERR, "Error: Could not parse checkstyle XML input.\n");
-            return;
+            throw new Exception("Could not parse checkstyle XML input.");
         }
 
         $issues = [];
@@ -838,7 +837,6 @@ Phan Suppression Auto-Fixer
 
 Usage:
   ./phan --output-mode json        | php tool/add_suppressions.php [options]
-  ./phan --output-mode checkstyle  | php tool/add_suppressions.php --checkstyle-stdin [options]
   php tool/add_suppressions.php --from-json issues.json [options]
   php tool/add_suppressions.php --from-checkstyle issues.xml [options]
 
