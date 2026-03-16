@@ -444,8 +444,8 @@ class Config
         // `override_return_types` setting): Phan will add inferred types to all return types,
         // even if a `@return` type or real return type signature exists.
         //
-        // This is useful for tools like phound that need to track all possible callsites,
-        // but may reduce the accuracy of type-checking warnings.
+        // This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
+        // detect more callsite possibilities.
         'track_all_inferred_types' => false,
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,

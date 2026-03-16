@@ -2151,7 +2151,11 @@ class AssignmentVisitor extends AnalysisVisitor
 
         // For interface-typed properties, don't accumulate inferred types unless
         // track_all_inferred_types is enabled. Keep the declared type as-is to ensure
-        // method calls are validated against the declared contract, not runtime assignments.
+        // method calls and other operations are validated against the declared contract,
+        // not runtime assignments. This prevents false negatives where a property type
+        // is expanded beyond its declared interface type based on assignments, causing
+        // methods to be validated incorrectly. Interface-typed properties should only
+        // allow methods from the interface, not from potential implementations.
         if (!Config::get_track_all_inferred_types()) {
             $declared_type = $property->getPHPDocUnionType();
             foreach ($declared_type->getTypeSet() as $type) {

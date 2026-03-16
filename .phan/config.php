@@ -189,6 +189,8 @@ return [
     // @deprecated Use `track_all_inferred_types` instead.
     'override_return_types' => false,
 
+    'track_all_inferred_types' => false,
+
     // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
     // This will have some false positives due to Phan not checking for setters and initializing helpers.
     // This does not affect inherited properties.
