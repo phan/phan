@@ -439,6 +439,11 @@ class Config
         // for properties. For example, if a property is declared as an interface type and assigned
         // a concrete implementation, Phan will track both the interface and concrete type
         // (e.g. OutputInterface|ConsoleOutput rather than just OutputInterface).
+        //
+        // This also enables the return type override behavior (subsuming the deprecated
+        // `override_return_types` setting): Phan will add inferred types to all return types,
+        // even if a `@return` type or real return type signature exists.
+        //
         // This is useful for tools like phound that need to track all possible callsites,
         // but may reduce the accuracy of type-checking warnings.
         'track_all_inferred_types' => false,
