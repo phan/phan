@@ -3,10 +3,14 @@
 \PhoundTrackAllInferredTypes\Page::renderer|prop|src/007_phound_track_all_inferred_types.php:35
 \PhoundTrackAllInferredTypes\JsonRenderer::__construct|method|src/007_phound_track_all_inferred_types.php:39
 \PhoundTrackAllInferredTypes\Page::renderer|prop|src/007_phound_track_all_inferred_types.php:39
-\PhoundTrackAllInferredTypes\HtmlRenderer::render|method|src/007_phound_track_all_inferred_types.php:47
-\PhoundTrackAllInferredTypes\JsonRenderer::render|method|src/007_phound_track_all_inferred_types.php:47
-\PhoundTrackAllInferredTypes\Page::renderer|prop|src/007_phound_track_all_inferred_types.php:47
-\PhoundTrackAllInferredTypes\Renderable::render|method|src/007_phound_track_all_inferred_types.php:47
+\PhoundTrackAllInferredTypes\HtmlRenderer::__construct|method|src/007_phound_track_all_inferred_types.php:45
+\PhoundTrackAllInferredTypes\HtmlRenderer::render|method|src/007_phound_track_all_inferred_types.php:53
+\PhoundTrackAllInferredTypes\JsonRenderer::render|method|src/007_phound_track_all_inferred_types.php:53
+\PhoundTrackAllInferredTypes\Page::renderer|prop|src/007_phound_track_all_inferred_types.php:53
+\PhoundTrackAllInferredTypes\Renderable::render|method|src/007_phound_track_all_inferred_types.php:53
+\PhoundTrackAllInferredTypes\HtmlRenderer::render|method|src/007_phound_track_all_inferred_types.php:58
+\PhoundTrackAllInferredTypes\Page::getRenderer|method|src/007_phound_track_all_inferred_types.php:58
+\PhoundTrackAllInferredTypes\Renderable::render|method|src/007_phound_track_all_inferred_types.php:58
 <-----------> Classes <----------->
 \PhoundTrackAllInferredTypes\HtmlRenderer|src/007_phound_track_all_inferred_types.php
 \PhoundTrackAllInferredTypes\JsonRenderer|src/007_phound_track_all_inferred_types.php
@@ -32,7 +36,8 @@
 \PhoundTrackAllInferredTypes\JsonRenderer::render	method	\PhoundTrackAllInferredTypes\JsonRenderer	render	'\x7b\x7d'|string	0	public	src/007_phound_track_all_inferred_types.php	22
 \PhoundTrackAllInferredTypes\Page::__construct	method	\PhoundTrackAllInferredTypes\Page	__construct	void	0	public	src/007_phound_track_all_inferred_types.php	34
 \PhoundTrackAllInferredTypes\Page::class	const	\PhoundTrackAllInferredTypes\Page	class	'PhoundTrackAllInferredTypes\\Page'	0	public	src/007_phound_track_all_inferred_types.php	31
-\PhoundTrackAllInferredTypes\Page::output	method	\PhoundTrackAllInferredTypes\Page	output	'\x3chtml\x3e'|'\x7b\x7d'|string	0	public	src/007_phound_track_all_inferred_types.php	43
+\PhoundTrackAllInferredTypes\Page::getRenderer	method	\PhoundTrackAllInferredTypes\Page	getRenderer	\PhoundTrackAllInferredTypes\HtmlRenderer|\PhoundTrackAllInferredTypes\Renderable	0	public	src/007_phound_track_all_inferred_types.php	44
+\PhoundTrackAllInferredTypes\Page::output	method	\PhoundTrackAllInferredTypes\Page	output	string	0	public	src/007_phound_track_all_inferred_types.php	49
 \PhoundTrackAllInferredTypes\Page::renderer	prop	\PhoundTrackAllInferredTypes\Page	renderer	\PhoundTrackAllInferredTypes\HtmlRenderer|\PhoundTrackAllInferredTypes\JsonRenderer|\PhoundTrackAllInferredTypes\Renderable	0	private	src/007_phound_track_all_inferred_types.php	32
 \PhoundTrackAllInferredTypes\Page::switchRenderer	method	\PhoundTrackAllInferredTypes\Page	switchRenderer	void	0	public	src/007_phound_track_all_inferred_types.php	38
 \PhoundTrackAllInferredTypes\Renderable::class	const	\PhoundTrackAllInferredTypes\Renderable	class	'PhoundTrackAllInferredTypes\\Renderable'	0	public	src/007_phound_track_all_inferred_types.php	8
