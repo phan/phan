@@ -155,9 +155,10 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
-            // AST_THROW has $node->children['expr']; call nodes (AST_STATIC_CALL, AST_METHOD_CALL,
-            // AST_NULLSAFE_METHOD_CALL) do not. AST_CALL does have 'expr', but using the call
-            // node itself is a clearer representation of where the throw originates.
+            // AST_THROW has children['expr'] (the thrown value); AST_STATIC_CALL does not
+            // (it uses children['class'/'method'/'args']). AST_CALL and AST_METHOD_CALL do
+            // have children['expr'], but for all call nodes we use $node itself to show the
+            // full call expression as the throw origin rather than just the callee/receiver.
             $throw_expr = $call !== null ? $node : $node->children['expr'];
             $this->emitIssue(
                 Issue::TypeInvalidThrowStatementNonThrowable,
