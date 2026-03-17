@@ -242,7 +242,10 @@ class SuppressionTool
     public function readIssuesFromCheckstyle(string $xml_input): bool
     {
         $doc = new \DOMDocument();
-        if (!@$doc->loadXML($xml_input)) {
+        libxml_use_internal_errors(true);
+        $loaded = $doc->loadXML($xml_input, LIBXML_NONET);
+        libxml_use_internal_errors(false);
+        if (!$loaded) {
             fwrite(STDERR, "Failed to parse checkstyle XML input. Please ensure the input is valid XML.\n");
             return false;
         }

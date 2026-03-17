@@ -263,4 +263,25 @@ XML;
         $this->assertNotSame(0, $exit_code);
         $this->assertStringContainsString('Failed to parse checkstyle XML', $output);
     }
+
+    public function testCheckstyleAndJsonTogetherExitsNonZero(): void
+    {
+        $json_file = $this->test_dir . '/issues.json';
+        file_put_contents($json_file, '[]');
+        $xml_file = $this->test_dir . '/issues.xml';
+        file_put_contents($xml_file, '<checkstyle/>');
+
+        $cmd = sprintf(
+            'php %s --from-json %s --from-checkstyle %s 2>&1; echo "EXIT:$?"',
+            escapeshellarg($this->tool_path),
+            escapeshellarg($json_file),
+            escapeshellarg($xml_file)
+        );
+        $output = shell_exec($cmd) ?? '';
+        preg_match('/EXIT:(\d+)$/', rtrim($output), $m);
+        $exit_code = (int)($m[1] ?? 0);
+
+        $this->assertNotSame(0, $exit_code);
+        $this->assertStringContainsString('Cannot use both', $output);
+    }
 }
