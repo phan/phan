@@ -1,0 +1,12 @@
+src/136_throw_non_throwable_from_call.php:10 PhanUnreferencedClass Possibly zero references to class \NS5490\NotAThrowable
+src/136_throw_non_throwable_from_call.php:12 PhanUnreferencedClass Possibly zero references to class \NS5490\Caller
+src/136_throw_non_throwable_from_call.php:16 PhanPluginUseReturnValueNoopVoid The function/method \NS5490\Caller::staticMethod() is declared to return void and it has no side effects
+src/136_throw_non_throwable_from_call.php:16 PhanTypeInvalidThrowsNonThrowable @throws annotation of staticMethod has suspicious class type \NS5490\NotAThrowable, which does not extend Error/Exception
+src/136_throw_non_throwable_from_call.php:21 PhanPluginUseReturnValueNoopVoid The function/method \NS5490\Caller::instanceMethod() is declared to return void and it has no side effects
+src/136_throw_non_throwable_from_call.php:21 PhanTypeInvalidThrowsNonThrowable @throws annotation of instanceMethod has suspicious class type \NS5490\NotAThrowable, which does not extend Error/Exception
+src/136_throw_non_throwable_from_call.php:26 PhanPluginUseReturnValueNoopVoid The function/method \NS5490\Caller::caller() is declared to return void and it has no side effects
+src/136_throw_non_throwable_from_call.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \NS5490\Caller::caller()
+src/136_throw_non_throwable_from_call.php:28 PhanThrowTypeMismatchForCall \NS5490\Caller::caller() throws \NS5490\NotAThrowable because it calls \NS5490\Caller::staticMethod(), but it only has declarations of '@throws \RuntimeException'
+src/136_throw_non_throwable_from_call.php:28 PhanTypeInvalidThrowStatementNonThrowable \NS5490\Caller::caller() can throw self::staticMethod() of type \NS5490\NotAThrowable here which can't cast to \Throwable
+src/136_throw_non_throwable_from_call.php:29 PhanThrowTypeMismatchForCall \NS5490\Caller::caller() throws \NS5490\NotAThrowable because it calls \NS5490\Caller::instanceMethod(), but it only has declarations of '@throws \RuntimeException'
+src/136_throw_non_throwable_from_call.php:29 PhanTypeInvalidThrowStatementNonThrowable \NS5490\Caller::caller() can throw $this->instanceMethod() of type \NS5490\NotAThrowable here which can't cast to \Throwable

@@ -143,7 +143,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind ast\AST_THROW
+     * @param Node $node a node of kind ast\AST_THROW, ast\AST_CALL, ast\AST_STATIC_CALL, ast\AST_METHOD_CALL, or ast\AST_NULLSAFE_METHOD_CALL
      */
     protected function warnAboutPossiblyThrownType(
         Node $node,
@@ -155,11 +155,17 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
+            // All call-context callers (visitCall, visitMethodCall, visitStaticCall,
+            // visitNullsafeMethodCall) pass $invoked_function as $call, so $call !== null
+            // for any call node. AST_STATIC_CALL has no children['expr'] (it uses
+            // children['class'/'method'/'args']), so we use $node itself to show the full
+            // call expression. AST_THROW always has children['expr'] and passes $call = null.
+            $throw_expr = $call !== null ? $node : $node->children['expr'];
             $this->emitIssue(
                 Issue::TypeInvalidThrowStatementNonThrowable,
                 $node->lineno,
                 $analyzed_function->getRepresentationForIssue(),
-                ASTReverter::toShortString($node->children['expr']),
+                ASTReverter::toShortString($throw_expr),
                 (string)$union_type,
                 '\Throwable'
             );
@@ -304,7 +310,8 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->warnAboutPossiblyThrownType(
                     $node,
                     $analyzed_function,
-                    $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false)
+                    $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false),
+                    $invoked_function
                 );
             }
         } catch (CodeBaseException) {

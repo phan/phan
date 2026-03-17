@@ -1,4 +1,5 @@
 src/072_custom_assertions.php:41 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $x of type string but \intdiv() takes int
+src/072_custom_assertions.php:42 PhanThrowTypeAbsentForCall \SomeNS\my_expect_mixed() can throw \InvalidArgumentException because it calls \SomeNS\my_assert_instance(), but has no '@throws' declarations for that class
 src/072_custom_assertions.php:43 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $y of type \stdClass but \intdiv() takes int
 src/072_custom_assertions.php:86 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $arg of type false|string but \intdiv() takes int
 src/072_custom_assertions.php:87 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is $obj of type \stdClass but \intdiv() takes int

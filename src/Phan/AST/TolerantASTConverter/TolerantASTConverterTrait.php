@@ -46,7 +46,7 @@ trait TolerantASTConverterTrait
             };
         }
         $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        // @phan-suppress-next-line PhanThrowTypeMismatch
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall
         return $callback($n, TolerantASTConverter::getStartLine($n));
     }
 
@@ -71,7 +71,7 @@ trait TolerantASTConverterTrait
             };
         }
         $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        // @phan-suppress-next-line PhanThrowTypeAbsent
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $result = $callback($n, TolerantASTConverter::$file_position_map->getStartLine($n));
         if (($result instanceof ast\Node) && $result->kind === ast\AST_NAME) {
             return new ast\Node(ast\AST_CONST, 0, ['name' => $result], $result->lineno);
