@@ -242,7 +242,8 @@ class SuppressionTool
     {
         $doc = new \DOMDocument();
         if (!@$doc->loadXML($xml_input)) {
-            throw new Exception("Could not parse checkstyle XML input.");
+            fwrite(STDERR, "Failed to parse checkstyle XML input. Please ensure the input is valid XML.\n");
+            return;
         }
 
         $issues = [];
