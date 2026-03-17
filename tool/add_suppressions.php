@@ -111,6 +111,20 @@ class PhanIssue
         $issue->severity = $json['severity'] ?? 0;
         return $issue;
     }
+
+    /**
+     * Parse from a checkstyle XML error element (attributes as array)
+     */
+    public static function fromCheckstyle(string $file, array $error): self
+    {
+        $issue = new self();
+        $issue->type = $error['source'] ?? '';
+        $issue->file = $file;
+        $issue->line = (int)($error['line'] ?? 0);
+        $issue->description = $error['message'] ?? '';
+        $issue->severity = 0;
+        return $issue;
+    }
 }
 
 /**
@@ -185,18 +199,18 @@ class SuppressionTool
     /**
      * Read issues from JSON input
      */
-    public function readIssues(string $json_input): void
+    public function readIssuesFromJson(string $json_input): void
     {
         // Try to decode as JSON array first
         $json_data = json_decode(trim($json_input), true);
 
         if (is_array($json_data)) {
             // It's a JSON array
-            $issues = $json_data;
+            $raw_issues = $json_data;
         } else {
             // Try line-delimited JSON
             $lines = explode("\n", trim($json_input));
-            $issues = [];
+            $raw_issues = [];
 
             foreach ($lines as $line) {
                 if (empty($line)) {
@@ -205,18 +219,64 @@ class SuppressionTool
 
                 $data = json_decode($line, true);
                 if (is_array($data)) {
-                    $issues[] = $data;
+                    $raw_issues[] = $data;
                 }
             }
         }
 
-        foreach ($issues as $data) {
+        $issues = [];
+        foreach ($raw_issues as $data) {
             if (!isset($data['check_name'])) {
                 continue;
             }
+            $issues[] = PhanIssue::fromJson($data);
+        }
 
-            $issue = PhanIssue::fromJson($data);
+        $this->addIssues($issues);
+    }
 
+    /**
+     * Read issues from checkstyle XML input
+     * @return bool false if XML could not be parsed
+     */
+    public function readIssuesFromCheckstyle(string $xml_input): bool
+    {
+        $doc = new \DOMDocument();
+        $prev_libxml_errors = libxml_use_internal_errors(true);
+        $loaded = $doc->loadXML($xml_input, LIBXML_NONET);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev_libxml_errors);
+        if (!$loaded) {
+            fwrite(STDERR, "Failed to parse checkstyle XML input. Please ensure the input is valid XML.\n");
+            return false;
+        }
+
+        $issues = [];
+        foreach ($doc->getElementsByTagName('file') as $file_node) {
+            $file_name = $file_node->getAttribute('name');
+            foreach ($file_node->getElementsByTagName('error') as $error_node) {
+                $error = [
+                    'line'    => $error_node->getAttribute('line'),
+                    'source'  => $error_node->getAttribute('source'),
+                    'message' => $error_node->getAttribute('message'),
+                    'severity' => $error_node->getAttribute('severity'),
+                ];
+                $issues[] = PhanIssue::fromCheckstyle($file_name, $error);
+            }
+        }
+
+        $this->addIssues($issues);
+        return true;
+    }
+
+    /**
+     * Add a list of parsed issues, applying never_suppress filtering and grouping by file/line
+     *
+     * @param list<PhanIssue> $issues
+     */
+    private function addIssues(array $issues): void
+    {
+        foreach ($issues as $issue) {
             // Skip issues we should never suppress
             if (in_array($issue->type, $this->config->never_suppress)) {
                 if ($this->config->verbose) {
@@ -772,6 +832,7 @@ function main(): int
         'dry-run',
         'interactive',
         'from-json:',
+        'from-checkstyle:',
         'config:',
         'verbose',
         'help',
@@ -782,16 +843,18 @@ function main(): int
 Phan Suppression Auto-Fixer
 
 Usage:
-  ./phan --output-mode json | php tool/add_suppressions.php [options]
+  ./phan --output-mode json        | php tool/add_suppressions.php [options]
   php tool/add_suppressions.php --from-json issues.json [options]
+  php tool/add_suppressions.php --from-checkstyle issues.xml [options]
 
 Options:
-  --dry-run         Show what would be changed without modifying files
-  --interactive     Confirm each file before making changes
-  --from-json FILE  Read issues from JSON file instead of stdin
-  --config FILE     Load configuration from file (default: .phan/suppress_config.php)
-  --verbose         Show detailed output
-  --help            Show this help message
+  --dry-run                  Show what would be changed without modifying files
+  --interactive              Confirm each file before making changes
+  --from-json FILE           Read issues from Phan JSON file instead of stdin
+  --from-checkstyle FILE     Read issues from Phan checkstyle XML file instead of stdin
+  --config FILE              Load configuration from file (default: .phan/suppress_config.php)
+  --verbose                  Show detailed output
+  --help                     Show this help message
 
 Examples:
   # Dry-run to preview changes
@@ -800,9 +863,13 @@ Examples:
   # Interactive mode with confirmation
   ./phan --output-mode json | php tool/add_suppressions.php --interactive
 
-  # Read from file
+  # Read from JSON file
   ./phan --output-mode json --no-progress-bar > issues.json
   php tool/add_suppressions.php --from-json issues.json
+
+  # Read from checkstyle XML file
+  ./phan --output-mode checkstyle --no-progress-bar > issues.xml
+  php tool/add_suppressions.php --from-checkstyle issues.xml
 
 HELP;
         return 0;
@@ -819,19 +886,33 @@ HELP;
     $dry_run = isset($options['dry-run']);
     $interactive = isset($options['interactive']);
 
-    // Read input
-    if (isset($options['from-json'])) {
-        $json_input = file_get_contents($options['from-json']);
-        if ($json_input === false) {
+    // Determine input source and format
+    $use_checkstyle = isset($options['from-checkstyle']);
+    $use_json = isset($options['from-json']);
+
+    if ($use_checkstyle && $use_json) {
+        fwrite(STDERR, "Error: Cannot use both --from-json and --from-checkstyle at the same time.\n");
+        return 1;
+    }
+
+    if ($use_checkstyle) {
+        $input = file_get_contents($options['from-checkstyle']);
+        if ($input === false) {
+            fwrite(STDERR, "Error: Could not read file: {$options['from-checkstyle']}\n");
+            return 1;
+        }
+    } elseif ($use_json) {
+        $input = file_get_contents($options['from-json']);
+        if ($input === false) {
             fwrite(STDERR, "Error: Could not read file: {$options['from-json']}\n");
             return 1;
         }
     } else {
-        $json_input = stream_get_contents(STDIN);
+        $input = stream_get_contents(STDIN);
     }
 
-    if (empty($json_input)) {
-        fwrite(STDERR, "Error: No input provided. Use --from-json or pipe JSON output from Phan.\n");
+    if (empty($input)) {
+        fwrite(STDERR, "Error: No input provided. Use --from-json, --from-checkstyle, or pipe output from Phan.\n");
         return 1;
     }
 
@@ -842,7 +923,13 @@ HELP;
         echo "Reading issues...\n";
     }
 
-    $tool->readIssues($json_input);
+    if ($use_checkstyle) {
+        if (!$tool->readIssuesFromCheckstyle($input)) {
+            return 1;
+        }
+    } else {
+        $tool->readIssuesFromJson($input);
+    }
 
     if ($config->verbose) {
         echo "Analyzing suppressions...\n";

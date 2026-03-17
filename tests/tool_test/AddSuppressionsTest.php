@@ -61,11 +61,37 @@ class AddSuppressionsTest extends TestCase
         return shell_exec($cmd) ?? '';
     }
 
+    /**
+     * Run the tool with a checkstyle XML file, returning combined stdout+stderr output.
+     * $exit_code is set to the process exit code.
+     */
+    private function runToolWithCheckstyle(string $xml, array $args = [], int &$exit_code = 0): string
+    {
+        $xml_file = $this->test_dir . '/issues.xml';
+        file_put_contents($xml_file, $xml);
+
+        $cmd = sprintf(
+            'php %s --from-checkstyle %s %s 2>&1; echo "EXIT:$?"',
+            escapeshellarg($this->tool_path),
+            escapeshellarg($xml_file),
+            implode(' ', array_map('escapeshellarg', $args))
+        );
+
+        $output = shell_exec($cmd) ?? '';
+        if (preg_match('/EXIT:(\d+)$/', rtrim($output), $m)) {
+            $exit_code = (int)$m[1];
+            $output = substr($output, 0, strrpos($output, "\nEXIT:") + 1);
+            $output = rtrim($output, "\n");
+        }
+        return $output;
+    }
+
     public function testBasicNextLineSuppression(): void
     {
+        // Lines over 80 chars get put on the next line
         $php_file = $this->createTestFile('test.php', <<<'PHP'
 <?php
-$x = "string" + 5;
+$x = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + 5;
 PHP
         );
 
@@ -78,7 +104,7 @@ PHP
 
         $result = file_get_contents($php_file);
         $this->assertStringContainsString('// @phan-suppress-next-line PhanTypeInvalidLeftOperandOfAdd', $result);
-        $this->assertStringContainsString('$x = "string" + 5;', $result);
+        $this->assertStringContainsString('$x = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + 5;', $result);
     }
 
     public function testFunctionLevelSuppression(): void
@@ -201,5 +227,61 @@ PHP
 
         $result = file_get_contents($php_file);
         $this->assertStringContainsString('// @phan-file-suppress PhanUnreferencedFunction', $result);
+    }
+
+    public function testCheckstyleBasicSuppression(): void
+    {
+        $php_file = $this->createTestFile('test.php', <<<'PHP'
+<?php
+$x = "string" + 5;
+PHP
+        );
+
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="3.0.0">
+  <file name="{$php_file}">
+    <error line="2" severity="error" message="..." source="PhanTypeInvalidLeftOperandOfAdd"/>
+  </file>
+</checkstyle>
+XML;
+
+        $exit_code = 0;
+        $this->runToolWithCheckstyle($xml, [], $exit_code);
+
+        $this->assertSame(0, $exit_code);
+        $result = file_get_contents($php_file);
+        $this->assertStringContainsString('@phan-suppress', $result);
+        $this->assertStringContainsString('PhanTypeInvalidLeftOperandOfAdd', $result);
+    }
+
+    public function testCheckstyleInvalidXmlExitsNonZero(): void
+    {
+        $exit_code = 0;
+        $output = $this->runToolWithCheckstyle('this is not xml', [], $exit_code);
+
+        $this->assertNotSame(0, $exit_code);
+        $this->assertStringContainsString('Failed to parse checkstyle XML', $output);
+    }
+
+    public function testCheckstyleAndJsonTogetherExitsNonZero(): void
+    {
+        $json_file = $this->test_dir . '/issues.json';
+        file_put_contents($json_file, '[]');
+        $xml_file = $this->test_dir . '/issues.xml';
+        file_put_contents($xml_file, '<checkstyle/>');
+
+        $cmd = sprintf(
+            'php %s --from-json %s --from-checkstyle %s 2>&1; echo "EXIT:$?"',
+            escapeshellarg($this->tool_path),
+            escapeshellarg($json_file),
+            escapeshellarg($xml_file)
+        );
+        $output = shell_exec($cmd) ?? '';
+        preg_match('/EXIT:(\d+)$/', rtrim($output), $m);
+        $exit_code = (int)($m[1] ?? 0);
+
+        $this->assertNotSame(0, $exit_code);
+        $this->assertStringContainsString('Cannot use both', $output);
     }
 }
