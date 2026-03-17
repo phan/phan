@@ -1,0 +1,2 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $last - it has union type (empty union type)
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type (empty union type)

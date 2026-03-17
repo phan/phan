@@ -966,25 +966,12 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         $stubs = Config::getValue('autoload_internal_extension_signatures');
-        // If null (e.g., in -n mode), use bundled stubs
-        // Note: If user provided a config, setValue() already merged it with defaults
+        // If null (e.g., in -n mode), use bundled stubs.
+        // Note: If user provided a config, setValue() already merged it with defaults.
+        // $default_config already selects the correct stubs based on min(target_php_version, runtime),
+        // so we use it directly rather than recomputing based on PHP_VERSION_ID alone.
         if ($stubs === null) {
             $stubs = $default_config['autoload_internal_extension_signatures'];
-
-            // Select the appropriate stubs based on runtime PHP version
-            // PHP 8.4+ has typed constants in SPL and new array functions in standard
-            $spl_stub = \PHP_VERSION_ID >= 80400
-                ? 'spl.phan_php'
-                : 'spl_php81.phan_php';
-            $standard_stub = \PHP_VERSION_ID >= 80400
-                ? 'standard_templates.phan_php'
-                : 'standard_templates_php81.phan_php';
-
-            // Update the stub paths based on runtime version
-            $phan_dir = \dirname(\dirname(__DIR__));
-            $bundled_stubs_dir = $phan_dir . '/internal/stubs';
-            $stubs['spl'] = "$bundled_stubs_dir/$spl_stub";
-            $stubs['standard'] = "$bundled_stubs_dir/$standard_stub";
         }
 
         foreach ($stubs as $extension_name => $path_to_extension) {
