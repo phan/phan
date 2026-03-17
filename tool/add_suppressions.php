@@ -237,13 +237,14 @@ class SuppressionTool
 
     /**
      * Read issues from checkstyle XML input
+     * @return bool false if XML could not be parsed
      */
-    public function readIssuesFromCheckstyle(string $xml_input): void
+    public function readIssuesFromCheckstyle(string $xml_input): bool
     {
         $doc = new \DOMDocument();
         if (!@$doc->loadXML($xml_input)) {
             fwrite(STDERR, "Failed to parse checkstyle XML input. Please ensure the input is valid XML.\n");
-            return;
+            return false;
         }
 
         $issues = [];
@@ -261,6 +262,7 @@ class SuppressionTool
         }
 
         $this->addIssues($issues);
+        return true;
     }
 
     /**
@@ -918,7 +920,9 @@ HELP;
     }
 
     if ($use_checkstyle) {
-        $tool->readIssuesFromCheckstyle($input);
+        if (!$tool->readIssuesFromCheckstyle($input)) {
+            return 1;
+        }
     } else {
         $tool->readIssuesFromJson($input);
     }
