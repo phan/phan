@@ -143,7 +143,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind ast\AST_THROW, ast\AST_CALL, or ast\AST_STATIC_CALL
+     * @param Node $node a node of kind ast\AST_THROW, ast\AST_CALL, ast\AST_STATIC_CALL, ast\AST_METHOD_CALL, or ast\AST_NULLSAFE_METHOD_CALL
      */
     protected function warnAboutPossiblyThrownType(
         Node $node,
@@ -155,8 +155,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
-            // When called from visitCall/visitStaticCall, $node is a call node (no 'expr' child).
-            // When called from visitThrow, $node is AST_THROW with $node->children['expr'].
+            // AST_THROW has $node->children['expr']; call nodes (AST_STATIC_CALL, AST_METHOD_CALL,
+            // AST_NULLSAFE_METHOD_CALL) do not. AST_CALL does have 'expr', but using the call
+            // node itself is a clearer representation of where the throw originates.
             $throw_expr = $call !== null ? $node : $node->children['expr'];
             $this->emitIssue(
                 Issue::TypeInvalidThrowStatementNonThrowable,
