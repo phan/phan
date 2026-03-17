@@ -143,7 +143,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind ast\AST_THROW
+     * @param Node $node a node of kind ast\AST_THROW, ast\AST_CALL, or ast\AST_STATIC_CALL
      */
     protected function warnAboutPossiblyThrownType(
         Node $node,
@@ -155,11 +155,14 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
+            // When called from visitCall/visitStaticCall, $node is a call node (no 'expr' child).
+            // When called from visitThrow, $node is AST_THROW with $node->children['expr'].
+            $throw_expr = $call !== null ? $node : $node->children['expr'];
             $this->emitIssue(
                 Issue::TypeInvalidThrowStatementNonThrowable,
                 $node->lineno,
                 $analyzed_function->getRepresentationForIssue(),
-                ASTReverter::toShortString($node->children['expr']),
+                ASTReverter::toShortString($throw_expr),
                 (string)$union_type,
                 '\Throwable'
             );
