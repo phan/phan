@@ -1,0 +1,2 @@
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type \OutputInterface5918(real=\OutputInterface5918)
+%s:24 PhanUnusedVariable Unused definition of variable $o

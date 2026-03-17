@@ -186,14 +186,14 @@ return [
     // Disabled by default. This is more useful with `--analyze-twice`.
     'allow_overriding_vague_return_types' => true,
 
-    // Add types to all return types. Normally, Phan only adds inferred returned types when there is no `@return` type
-    // or real return type signature. This setting can be disabled on individual methods by adding
-    // `@phan-hardcode-return-type` to the doc comment.
-    //
-    // Disabled by default. This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
-    // detect more callsite possibilities. See the [PR description](https://github.com/phan/phan/pull/4874) where
-    // this setting was added for more details.
+    // @deprecated Use `track_all_inferred_types` instead.
     'override_return_types' => false,
+
+    // When enabled, Phan will accumulate all inferred concrete types alongside declared types
+    // for properties and widen return types with inferred types. This subsumes `override_return_types`.
+    // This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
+    // detect more callsite possibilities.
+    'track_all_inferred_types' => false,
 
     // When enabled, infer that the types of the properties of `$this` are equal to their default values at the start of `__construct()`.
     // This will have some false positives due to Phan not checking for setters and initializing helpers.

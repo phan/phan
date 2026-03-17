@@ -2149,26 +2149,28 @@ class AssignmentVisitor extends AnalysisVisitor
 
         $updated_property_types = $original_property_types;
 
-        // For interface-typed properties, don't accumulate inferred types.
-        // Keep the declared type as-is to ensure method calls and other operations
-        // are validated against the declared contract, not runtime assignments.
-        // This prevents false negatives where a property type is expanded beyond
-        // its declared interface type based on assignments, causing methods to be validated
-        // incorrectly. Interface-typed properties should only allow methods from the interface,
-        // not from potential implementations.
-        $declared_type = $property->getPHPDocUnionType();
-        foreach ($declared_type->getTypeSet() as $type) {
-            try {
-                $type_fqsen = $type->asFQSEN();
-                if ($type_fqsen instanceof FullyQualifiedClassName && $this->code_base->hasClassWithFQSEN($type_fqsen)) {
-                    $class = $this->code_base->getClassByFQSEN($type_fqsen);
-                    if ($class->isInterface()) {
-                        // Don't modify interface-typed properties - keep the declared type as-is
-                        return;
+        // For interface-typed properties, don't accumulate inferred types unless
+        // track_all_inferred_types is enabled. Keep the declared type as-is to ensure
+        // method calls and other operations are validated against the declared contract,
+        // not runtime assignments. This prevents false negatives where a property type
+        // is expanded beyond its declared interface type based on assignments, causing
+        // methods to be validated incorrectly. Interface-typed properties should only
+        // allow methods from the interface, not from potential implementations.
+        if (!Config::get_track_all_inferred_types()) {
+            $declared_type = $property->getPHPDocUnionType();
+            foreach ($declared_type->getTypeSet() as $type) {
+                try {
+                    $type_fqsen = $type->asFQSEN();
+                    if ($type_fqsen instanceof FullyQualifiedClassName && $this->code_base->hasClassWithFQSEN($type_fqsen)) {
+                        $class = $this->code_base->getClassByFQSEN($type_fqsen);
+                        if ($class->isInterface()) {
+                            // Don't modify interface-typed properties - keep the declared type as-is
+                            return;
+                        }
                     }
+                } catch (Throwable) {
+                    // Ignore types that don't have valid FQSENs
                 }
-            } catch (Throwable) {
-                // Ignore types that don't have valid FQSENs
             }
         }
 

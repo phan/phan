@@ -113,6 +113,9 @@ class Config
     /** @var bool replicates Config::getValue('strict_array_checking') */
     private static $strict_array_checking = false;
 
+    /** @var bool replicates Config::getValue('track_all_inferred_types') */
+    private static $track_all_inferred_types = false;
+
     /** @var bool replicates Config::getValue('track_references') */
     private static $track_references = false;
 
@@ -343,6 +346,7 @@ class Config
         // Disabled by default. This is more useful with `--analyze-twice`.
         'allow_overriding_vague_return_types' => false,
 
+        // @deprecated Use `track_all_inferred_types` instead.
         // Add types to all return types. Normally, Phan only adds inferred returned types when there is no `@return` type
         // or real return type signature. This setting can be disabled on individual methods by adding
         // `@phan-hardcode-return-type` to the doc comment.
@@ -430,6 +434,20 @@ class Config
         // across all union members. This avoids false positives when an array can be a generic
         // mixed array (which accepts any key) or a shape with specific keys.
         'strict_array_checking' => false,
+
+        // If enabled, Phan will accumulate all inferred concrete types alongside declared types
+        // for properties. For example, if a property is declared as an interface type and assigned
+        // a concrete implementation, Phan will track both the interface and concrete type
+        // (e.g. OutputInterface|ConsoleOutput rather than just OutputInterface).
+        //
+        // This also enables the return type override behavior (subsuming the deprecated
+        // `override_return_types` setting): Phan will add inferred types to all return types,
+        // even if a `@return` type or real return type signature exists.
+        // This can be disabled on individual methods by adding `@phan-hardcode-return-type` to the doc comment.
+        //
+        // This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
+        // detect more callsite possibilities.
+        'track_all_inferred_types' => false,
 
         // If enabled, Phan will act as though it's certain of real return types of a subset of internal functions,
         // even if those return types aren't available in reflection (real types were taken from php 8.4).
@@ -1208,6 +1226,12 @@ class Config
         return self::$array_casts_as_null;
     }
 
+    /** If true, then Phan accumulates all inferred concrete types alongside declared types for properties. */
+    public static function get_track_all_inferred_types(): bool
+    {
+        return self::$track_all_inferred_types;
+    }
+
     /** If true, then Phan tracks references to elements */
     public static function get_track_references(): bool
     {
@@ -1408,6 +1432,9 @@ class Config
                 break;
             case 'strict_array_checking':
                 self::$strict_array_checking = $value;
+                break;
+            case 'track_all_inferred_types':
+                self::$track_all_inferred_types = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':
@@ -1828,6 +1855,7 @@ class Config
             'suggestion_check_limit' => $is_int_strict,
             'suppress_issue_types' => $is_string_list,
             'target_php_version' => $is_scalar,
+            'track_all_inferred_types' => $is_bool,
             'unused_variable_detection' => $is_bool,
             'redundant_condition_detection' => $is_bool,
             'assume_real_types_for_internal_functions' => $is_bool,

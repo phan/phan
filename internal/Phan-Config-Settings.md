@@ -487,6 +487,7 @@ by changing this setting.
 
 ## override_return_types
 
+@deprecated Use [`track_all_inferred_types`](#track_all_inferred_types) instead.
 Add types to all return types. Normally, Phan only adds inferred returned types when there is no `@return` type
 or real return type signature. This setting can be disabled on individual methods by adding
 `@phan-hardcode-return-type` to the doc comment.
@@ -681,6 +682,23 @@ Defaults to true as of Phan 3.0.3.
 This still helps with some edge cases such as assignments in compound conditions.
 
 (Default: `true`)
+
+## track_all_inferred_types
+
+If enabled, Phan will accumulate all inferred concrete types alongside declared types
+for properties. For example, if a property is declared as an interface type and assigned
+a concrete implementation, Phan will track both the interface and concrete type
+(e.g. OutputInterface|ConsoleOutput rather than just OutputInterface).
+
+This also enables the return type override behavior (subsuming the deprecated
+[`override_return_types`](#override_return_types) setting): Phan will add inferred types to all return types,
+even if a `@return` type or real return type signature exists.
+This can be disabled on individual methods by adding `@phan-hardcode-return-type` to the doc comment.
+
+This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
+detect more callsite possibilities.
+
+(Default: `false`)
 
 ## use_tentative_return_type
 

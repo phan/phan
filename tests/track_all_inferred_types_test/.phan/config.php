@@ -10,7 +10,7 @@ use \Phan\Issue;
  * @see src/Phan/Config.php
  * See Config for all configurable options.
  *
- * This is a config file which tests Phan's ability to infer and report missing types.
+ * This is a config file which tests Phan's behavior when track_all_inferred_types is enabled.
  */
 return [
     'target_php_version' => '8.1',
@@ -132,14 +132,12 @@ return [
     // Disabled by default. This is more useful with `--analyze-twice`.
     'allow_overriding_vague_return_types' => false,
 
-    // Add types to all return types. Normally, Phan only adds inferred returned types when there is no `@return` type
-    // or real return type signature. This setting can be disabled on individual methods by adding
-    // `@phan-hardcode-return-type` to the doc comment.
+    // When enabled, Phan will accumulate all inferred concrete types alongside declared types
+    // for properties, and will add inferred types to all return types (subsuming override_return_types).
+    // This is useful for tools like phound that need to track all possible callsites.
     //
-    // Disabled by default. This is more useful with `--analyze-twice` and in conjunction with `PhoundPlugin` to
-    // detect more callsite possibilities. See the [PR description](https://github.com/phan/phan/pull/4874) where
-    // this setting was added for more details.
-    'override_return_types' => true,
+    // Disabled by default. This is more useful with `--analyze-twice`.
+    'track_all_inferred_types' => true,
 
     // Don't load bundled stubs - this test targets PHP 8.1 but may run on PHP 8.4+
     // Loading PHP 8.4 stubs would cause false positives about typed class constants
