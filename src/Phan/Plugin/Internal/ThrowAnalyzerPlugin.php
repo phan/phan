@@ -155,10 +155,11 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         if (!$union_type->canCastToDeclaredType($this->code_base, $this->context, UnionType::fromFullyQualifiedRealString('\Throwable'))) {
-            // AST_THROW has children['expr'] (the thrown value); AST_STATIC_CALL does not
-            // (it uses children['class'/'method'/'args']). AST_CALL and AST_METHOD_CALL do
-            // have children['expr'], but for all call nodes we use $node itself to show the
-            // full call expression as the throw origin rather than just the callee/receiver.
+            // All call-context callers (visitCall, visitMethodCall, visitStaticCall,
+            // visitNullsafeMethodCall) pass $invoked_function as $call, so $call !== null
+            // for any call node. AST_STATIC_CALL has no children['expr'] (it uses
+            // children['class'/'method'/'args']), so we use $node itself to show the full
+            // call expression. AST_THROW always has children['expr'] and passes $call = null.
             $throw_expr = $call !== null ? $node : $node->children['expr'];
             $this->emitIssue(
                 Issue::TypeInvalidThrowStatementNonThrowable,
@@ -309,7 +310,8 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->warnAboutPossiblyThrownType(
                     $node,
                     $analyzed_function,
-                    $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false)
+                    $this->withoutCaughtUnionTypes($invoked_function->getOwnThrowsUnionType(), false),
+                    $invoked_function
                 );
             }
         } catch (CodeBaseException) {
