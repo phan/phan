@@ -1,0 +1,5 @@
+%s:21 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Bug5491\WithFunctionInHook->value
+%s:31 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Bug5491\WithSetHookAndDefault->value
+%s:49 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Bug5491\WithWidenedSetHook->someValue
+%s:59 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Bug5491\WithNarrowingSetHook->strict
+%s:73 PhanTypeMismatchPropertyReal Assigning [] of type array{} to property but \Bug5491\WithWidenedSetHook->someValue is int|string
