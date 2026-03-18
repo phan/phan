@@ -683,14 +683,14 @@ class Phan implements IgnoredFilesFilterInterface
                     $real_collector = self::getIssueCollector();
                     self::setIssueCollector(new NullCollector());
 
-                    // Build index and snapshot types BEFORE pass 1 so we can
-                    // detect what changed during pass 1 for reordering pass 2.
+                    // Build the element index before pass 1.
+                    // Reference lists are populated during analysis and used
+                    // by reorderForPass2() to build the dependency graph.
                     $convergence_worklist = new ConvergenceWorklist(
                         $code_base,
                         $analyze_until_convergence ? Config::getValue('__convergence_max_iterations') : 0
                     );
                     $convergence_worklist->buildIndex();
-                    $convergence_worklist->snapshotTypes();
 
                     // Pass 1: type gathering
                     foreach ($analyze_file_path_list as $i => $file_path) {

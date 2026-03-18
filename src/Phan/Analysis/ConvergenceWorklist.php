@@ -28,9 +28,6 @@ class ConvergenceWorklist
     /** @var array<string, string> FQSEN string => union type string */
     private $type_snapshots = [];
 
-    /** @var array<string, list<FunctionInterface>> file path => elements defined in it */
-    private $file_elements_index = [];
-
     /** @var list<FunctionInterface> all tracked elements */
     private $tracked_elements = [];
 
@@ -50,16 +47,12 @@ class ConvergenceWorklist
             if ($method->isPHPInternal()) {
                 continue;
             }
-            $file = $method->getFileRef()->getFile();
-            $this->file_elements_index[$file][] = $method;
             $this->tracked_elements[] = $method;
         }
         foreach ($this->code_base->getFunctionMap() as $func) {
             if ($func->isPHPInternal()) {
                 continue;
             }
-            $file = $func->getFileRef()->getFile();
-            $this->file_elements_index[$file][] = $func;
             $this->tracked_elements[] = $func;
         }
     }
@@ -156,8 +149,9 @@ class ConvergenceWorklist
         }
 
         $sorted = [];
-        while (count($queue) > 0) {
-            $file = array_shift($queue);
+        $queue_index = 0;
+        while ($queue_index < count($queue)) {
+            $file = $queue[$queue_index++];
             $sorted[] = $file;
             foreach ($consumers_of[$file] ?? [] as $consumer) {
                 $in_degree[$consumer]--;
@@ -205,13 +199,17 @@ class ConvergenceWorklist
 
             // Re-analyze each file
             CLI::resetLongProgressState();
-            CLI::progress('convergence', 0.0, null, 0, $file_count);
             foreach ($changed_files as $i => $file_path) {
+                CLI::progress('analyze', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
                 $analysis_worker($i, $file_path, $file_count);
             }
 
             // Check what changed in this pass
             $changed_files = $this->getChangedElementFiles();
+        }
+
+        if ($iteration >= $this->max_iterations && count($changed_files) > 0) {
+            CLI::printToStderr("Warning: --analyze-until-convergence hit the maximum of $this->max_iterations iterations without reaching a fixpoint\n");
         }
 
         return $iteration;
