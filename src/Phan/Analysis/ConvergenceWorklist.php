@@ -177,9 +177,9 @@ class ConvergenceWorklist
      * Run the worklist loop until convergence or max iterations.
      *
      * @param Closure(int, string, int): void $analysis_worker
-     * @return int number of extra passes performed
+     * @return array{int, bool} [iterations performed, whether convergence was reached]
      */
-    public function run(Closure $analysis_worker): int
+    public function run(Closure $analysis_worker): array
     {
         // Detect what changed between pass 1 and pass 2
         $changed_files = $this->getChangedElementFiles();
@@ -203,10 +203,11 @@ class ConvergenceWorklist
             $changed_files = $this->getChangedElementFiles();
         }
 
-        if ($iteration >= $this->max_iterations && count($changed_files) > 0) {
+        $converged = count($changed_files) === 0;
+        if (!$converged) {
             CLI::printToStderr("Warning: --analyze-until-convergence hit the maximum of $this->max_iterations iterations without reaching a fixpoint\n");
         }
 
-        return $iteration;
+        return [$iteration, $converged];
     }
 }

@@ -710,8 +710,10 @@ class Phan implements IgnoredFilesFilterInterface
                     $pass2_file_list = $convergence_worklist->reorderForPass2($analyze_file_path_list);
                     $pass2_file_count = count($pass2_file_list);
 
-                    // Snapshot types after pass 1 for convergence detection
-                    $convergence_worklist->snapshotTypes();
+                    // Snapshot types after pass 1 for convergence detection (only needed for convergence loop)
+                    if ($analyze_until_convergence) {
+                        $convergence_worklist->snapshotTypes();
+                    }
 
                     // Pass 2: full analysis with reordered files
                     CLI::resetLongProgressState();
@@ -722,9 +724,12 @@ class Phan implements IgnoredFilesFilterInterface
 
                     // Run worklist-based convergence passes after pass 2
                     if ($analyze_until_convergence) {
-                        $extra_passes = $convergence_worklist->run($analysis_worker);
+                        [$extra_passes, $converged] = $convergence_worklist->run($analysis_worker);
                         if ($extra_passes > 0) {
-                            CLI::printToStderr("Convergence reached after $extra_passes additional targeted pass(es)\n");
+                            CLI::printToStderr($converged
+                                ? "Convergence reached after $extra_passes additional targeted pass(es)\n"
+                                : "Gave up after $extra_passes targeted pass(es) without reaching convergence\n"
+                            );
                         }
                     }
                 } else {
