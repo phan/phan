@@ -58,9 +58,11 @@ class WithWidenedSetHook {
 class WithNarrowingSetHook {
     public int $strict = 0 {
         set(int|string $num) {
-            // This assigns string to int property — should warn, but only against
-            // the property type (int), NOT the hook param type (int|string).
-            $this->strict = $num;  // Should warn PhanTypeMismatchProperty
+            // Inside the hook body, this writes directly to backing storage (int).
+            // Assigning a string literal is incompatible with the property type.
+            // Without the edge case fix, this would incorrectly check against the
+            // hook param type (int|string) and not warn.
+            $this->strict = 'not an int';  // Should warn PhanTypeMismatchProperty
         }
     }
 }

@@ -760,8 +760,10 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
 
-        // A default value is only disallowed for virtual properties (get-only, without $field
-        // reference). Any property with a set hook has backing storage and can have a default.
+        // A property with a set hook always has backing storage and can have a default.
+        // Get-only virtual properties (no $field reference) cannot have defaults, but
+        // detecting $field usage requires body traversal, so we approximate by checking
+        // for the presence of a set hook.
         if ($default_node !== null) {
             $has_set_hook = false;
             foreach ($hooks_node->children as $hook_node) {
